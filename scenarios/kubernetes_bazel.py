@@ -192,7 +192,7 @@ def main(args):
     except subprocess.CalledProcessError as exp:
         res = exp.returncode
 
-    if args.release and res == 0:
+    if args.push or args.release and res == 0:
         version = get_version()
         if not version:
             print 'Kubernetes version missing; not uploading ci artifacts.'
@@ -237,6 +237,8 @@ def create_parser():
     # TODO(krzyzacy): Convert to bazel build rules
     parser.add_argument(
         '--install', action="append", help='Python dependency(s) that need to be installed')
+    parser.add_argument(
+        '--push', action='store_true', help='Push release without building it')
     parser.add_argument(
         '--release', help='Run bazel build, and push release build to --gcs bucket')
     parser.add_argument(
