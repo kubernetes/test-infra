@@ -466,9 +466,11 @@ for kubernetes in 1.13.3 1.14.0 master; do
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
-      # ... but not the RBAC rules.
+      # ... but the RBAC rules only when testing on master.
+      # The other jobs test against the unmodified deployment for
+      # that Kubernetes version, i.e. with the original RBAC rules.
       - name: UPDATE_RBAC_RULES
-        value: "false"
+        value: "$([ "$kubernetes" = "master" ] && echo "true" || echo "false")"
       - name: CSI_PROW_TESTS
         value: "$(expand_tests "$tests")"
       # docker-in-docker needs privileged mode

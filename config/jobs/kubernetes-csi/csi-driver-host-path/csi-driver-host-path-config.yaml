@@ -558,7 +558,9 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
-      # ... but not the RBAC rules.
+      # ... but the RBAC rules only when testing on master.
+      # The other jobs test against the unmodified deployment for
+      # that Kubernetes version, i.e. with the original RBAC rules.
       - name: UPDATE_RBAC_RULES
         value: "false"
       - name: CSI_PROW_TESTS
@@ -597,7 +599,9 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
-      # ... but not the RBAC rules.
+      # ... but the RBAC rules only when testing on master.
+      # The other jobs test against the unmodified deployment for
+      # that Kubernetes version, i.e. with the original RBAC rules.
       - name: UPDATE_RBAC_RULES
         value: "false"
       - name: CSI_PROW_TESTS
@@ -636,9 +640,11 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
-      # ... but not the RBAC rules.
+      # ... but the RBAC rules only when testing on master.
+      # The other jobs test against the unmodified deployment for
+      # that Kubernetes version, i.e. with the original RBAC rules.
       - name: UPDATE_RBAC_RULES
-        value: "false"
+        value: "true"
       - name: CSI_PROW_TESTS
         value: "sanity serial parallel"
       # docker-in-docker needs privileged mode
@@ -675,9 +681,11 @@ periodics:
       # Replace images....
       - name: CSI_PROW_HOSTPATH_CANARY
         value: "canary"
-      # ... but not the RBAC rules.
+      # ... but the RBAC rules only when testing on master.
+      # The other jobs test against the unmodified deployment for
+      # that Kubernetes version, i.e. with the original RBAC rules.
       - name: UPDATE_RBAC_RULES
-        value: "false"
+        value: "true"
       - name: CSI_PROW_TESTS
         value: "serial-alpha parallel-alpha"
       # docker-in-docker needs privileged mode
