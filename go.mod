@@ -80,7 +80,7 @@ require (
 	github.com/qor/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
-	github.com/sirupsen/logrus v1.2.0
+	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
