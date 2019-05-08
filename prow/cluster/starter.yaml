@@ -461,7 +461,6 @@ spec:
         - --plugin-config=/etc/plugins/plugins.yaml
         - --config-path=/etc/config/config.yaml
         - --github-token-path=/etc/github/oauth
-        - --job-config-path=/etc/job-config
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
