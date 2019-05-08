@@ -355,7 +355,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes/client-go",
 	"kubernetes/cloud-provider-gcp",
 	"kubernetes/cloud-provider-openstack",
-	"kubernetes/community",
 	"kubernetes/dns",
 	"kubernetes/enhancements",
 	"kubernetes/ingress-gce",
