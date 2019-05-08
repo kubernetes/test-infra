@@ -2419,6 +2419,9 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-katib-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_katib/kubeflow-katib-postsubmit
+- name: kubeflow-kfserving-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-kfserving-presubmit
+  num_columns_recent: 30
 - name: kubeflow-experimental-kvc-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-experimental-kvc-presubmit
   num_columns_recent: 30
@@ -6054,6 +6057,9 @@ dashboards:
   - name: kubeflow-katib-presubmit
     description: Presubmits for kubeflow/katib.
     test_group_name: kubeflow-katib-presubmit
+  - name: kubeflow-kfserving-presubmit
+    description: Presubmits for kubeflow/kfserving.
+    test_group_name: kubeflow-kfserving-presubmit
   - name: kubeflow-experimental-kvc-postsubmit
     description: Postsubmit kubeflow/experimental-kvc.
     test_group_name: kubeflow-experimental-kvc-postsubmit
