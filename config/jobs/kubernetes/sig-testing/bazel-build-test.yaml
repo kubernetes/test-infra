@@ -171,47 +171,14 @@ periodics:
 # periodic bazel build jobs
 - name: periodic-kubernetes-bazel-build-master
   interval: 5m
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
-    fork-per-release-periodic-interval: 6h
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--timeout=60"
-      - "--scenario=kubernetes_bazel"
-      - "--" # end bootstrap args, scenario args below
-      - "--build=//... -//vendor/..."
-      - "--release=//build/release-tars"
-      - "--gcs=gs://kubernetes-release-dev/ci"
-      - "--version-suffix=-bazel"
-      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
-      env:
-      # so we can use the right cache id
-      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
-      - name: REPO_OWNER
-        value: kubernetes
-      - name: REPO_NAME
-        value: kubernetes
-      resources:
-        requests:
-          memory: "6Gi"
-
-- name: periodic-kubernetes-bazel-build-rbe-master
-  interval: 5m
   decorate: true
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
+    fork-per-release-periodic-interval: 6h
   extra_refs:
   - base_ref: master
     org: kubernetes
@@ -234,8 +201,8 @@ periodics:
                   "--build=//... -//vendor/..." \
                   --release=//build/release-tars \
                   --gcs=gs://kubernetes-release-dev/ci \
-                  --version-suffix=-bazel-rbe \
-                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
+                  --version-suffix=-bazel \
+                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
 
 # periodic bazel test jobs
 - interval: 5m
@@ -244,6 +211,9 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 6h
   extra_refs:
   - base_ref: master
     org: kubernetes

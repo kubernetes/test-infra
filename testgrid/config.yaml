@@ -2247,8 +2247,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-14
 - name: periodic-kubernetes-bazel-build-master
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-master
-- name: periodic-kubernetes-bazel-build-rbe-master
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-rbe-master
 - name: periodic-kubernetes-bazel-build-1-11
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-11
 - name: periodic-kubernetes-bazel-build-1-12
@@ -5051,8 +5049,6 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build
   - name: periodic-bazel-build-master
     test_group_name: periodic-kubernetes-bazel-build-master
-  - name: periodic-bazel-build-rbe-master
-    test_group_name: periodic-kubernetes-bazel-build-rbe-master
   - name: bazel-build-1.11
     test_group_name: ci-kubernetes-bazel-build-1-11
   - name: bazel-build-1.12
