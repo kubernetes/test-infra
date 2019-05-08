@@ -95,3 +95,5 @@ spec:
         image: gcr.io/k8s-testimages/janitor-aws:v20190326-5dd3da15c
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
+        # Turn off sweeping until https://github.com/kubernetes/test-infra/issues/12527 is resolved
+        - --sweep-count=0
