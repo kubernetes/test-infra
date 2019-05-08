@@ -3091,10 +3091,30 @@ test_groups:
 - name: istio-unit-tests-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests
   days_of_results: 7
+- name: integ-framework-local-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-framework-local-presubmit-tests
+  days_of_results: 7
+- name: integ-framework-k8s-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-framework-k8s-presubmit-tests
+  days_of_results: 7
 - name: integ-galley-local-presubmit-tests
   gcs_prefix: istio-prow/pr-logs/directory/integ-galley-local-presubmit-tests
+  days_of_results: 7
 - name: integ-galley-k8s-presubmit-tests
   gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests
+  days_of_results: 7
+- name: integ-pilot-local-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-local-presubmit-tests
+  days_of_results: 7
+- name: integ-pilot-k8s-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-k8s-presubmit-tests
+  days_of_results: 7
+- name: integ-security-local-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-security-local-presubmit-tests
+  days_of_results: 7
+- name: integ-security-k8s-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-security-k8s-presubmit-tests
+  days_of_results: 7
 - name: istio-integ-local-tests-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/istio-integ-local-tests
 - name: istio-integ-k8s-tests-presubmit
@@ -8048,10 +8068,22 @@ dashboards:
     test_group_name: istio-integ-local-tests-presubmit
   - name: integration-k8s-tests
     test_group_name: istio-integ-k8s-tests-presubmit
+  - name: integ-framework-local-presubmit-tests
+    test_group_name: integ-framework-k8s-presubmit-tests
+  - name: integ-framework-k8s-presubmit-tests
+    test_group_name: integ-framework-local-presubmit-tests
   - name: integ-galley-local-presubmit-tests
     test_group_name: integ-galley-k8s-presubmit-tests
   - name: integ-galley-k8s-presubmit-tests
     test_group_name: integ-galley-local-presubmit-tests
+  - name: integ-pilot-local-presubmit-tests
+    test_group_name: integ-pilot-k8s-presubmit-tests
+  - name: integ-pilot-k8s-presubmit-tests
+    test_group_name: integ-pilot-local-presubmit-tests
+  - name: integ-security-local-presubmit-tests
+    test_group_name: integ-security-k8s-presubmit-tests
+  - name: integ-security-k8s-presubmit-tests
+    test_group_name: integ-security-local-presubmit-tests
   - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   - name: e2e-mixer-no_auth
