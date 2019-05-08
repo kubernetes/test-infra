@@ -3109,6 +3109,26 @@ test_groups:
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3
 - name: istio-e2e-bookInfoTests-trustdomain-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-trustdomain
+# Istio Prow Presubmits Master
+- name: istio-unit-tests-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests-master
+  days_of_results: 7
+- name: istio-integ-local-tests-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/istio-integ-local-tests-master
+- name: istio-integ-k8s-tests-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/istio-integ-k8s-tests-master
+- name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-e2e-envoyv2-v1alpha3-master
+- name: istio-e2e-mixer-no_auth-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-mixer-no_auth-master
+- name: istio-e2e-dashboard-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-dashboard-master
+- name: istio-e2e-simpleTests-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTests-master
+- name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3-master
+- name: istio-e2e-bookInfoTests-trustdomain-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-trustdomain-master
 # Istio Prow Postsubmits
 - name: istio-postsubmit
   gcs_prefix: istio-prow/logs/istio-postsubmit
@@ -3139,6 +3159,37 @@ test_groups:
   num_failures_to_alert: 1
 - name: istio-e2e-simpleTests-minProfile
   gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile
+  num_failures_to_alert: 1
+# Istio Prow Postsubmits Master
+- name: istio-postsubmit-master
+  gcs_prefix: istio-prow/logs/istio-postsubmit-master-master
+  days_of_results: 7
+- name: istio-integ-local-tests-master
+  gcs_prefix: istio-prow/logs/istio-integ-local-tests-master
+  num_failures_to_alert: 1
+- name: istio-integ-k8s-tests-master
+  gcs_prefix: istio-prow/logs/istio-integ-k8s-tests-master
+  num_failures_to_alert: 1
+- name: istio-e2e-simpleTests-master
+  gcs_prefix: istio-prow/logs/e2e-simpleTests-master
+  num_failures_to_alert: 1
+- name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-master
+  gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-master
+  num_failures_to_alert: 1
+- name: istio-pilot-e2e-envoyv2-v1alpha3-master
+  gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3-master
+  num_failures_to_alert: 1
+- name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
+  gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
+  num_failures_to_alert: 1
+- name: istio-e2e-mixer-no_auth-master
+  gcs_prefix: istio-prow/logs/e2e-mixer-no_auth-master
+  num_failures_to_alert: 1
+- name: istio-e2e-dashboard-master
+  gcs_prefix: istio-prow/logs/e2e-dashboard-master
+  num_failures_to_alert: 1
+- name: istio-e2e-simpleTests-minProfile-master
+  gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile-master
   num_failures_to_alert: 1
 # Istio CircleCI Presubmits
 - name: istio-circleci-e2e-simple-presubmit
@@ -3172,6 +3223,34 @@ test_groups:
 - name: istio-circleci-test-integration-kubernetes-presubmit
   gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes
   days_of_results: 7
+# Istio CircleCI Presubmits Master
+- name: istio-circleci-e2e-simple-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/e2e-simple-master
+- name: istio-circleci-e2e-dashboard-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/e2e-dashboard-master
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2-master
+  days_of_results: 15
+- name: istio-circleci-e2e-galley-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/e2e-galley-master
+- name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-cloudfoundry-v1alpha3-v2-master
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2-master
+- name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2-master
+- name: istio-circleci-test-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/test-master
+  days_of_results: 7
+- name: istio-circleci-codecov-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/codecov-master
+- name: istio-circleci-racetest-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/racetest-master
+- name: istio-circleci-test-integration-local-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/test-integration-local-master
+- name: istio-circleci-test-integration-kubernetes-presubmit-master
+  gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes-master
+  days_of_results: 7
 # Istio CircleCI Postsubmits
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2
@@ -3202,6 +3281,37 @@ test_groups:
   days_of_results: 3
   gcs_prefix: istio-circleci/racetest
   num_failures_to_alert: 5
+# Istio CircleCI Postsubmits Master
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2-master
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-simple-master
+  gcs_prefix: istio-circleci/e2e-simple-master
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-dashboard-master
+  gcs_prefix: istio-circleci/e2e-dashboard-master
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/e2e-pilot-auth-v1alpha3-v2-master
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2-master
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-galley-master
+  gcs_prefix: istio-circleci/e2e-galley-master
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/e2e-pilot-cloudfoundry-v1alpha3-v2-master
+  num_failures_to_alert: 5
+- name: istio-circleci-test-master
+  days_of_results: 3
+  gcs_prefix: istio-circleci/test-master
+  num_failures_to_alert: 5
+- name: istio-circleci-racetest-master
+  days_of_results: 3
+  gcs_prefix: istio-circleci/racetest-master
+  num_failures_to_alert: 5
+
 # Istio releases
 - name: istio-release-unit-tests
   gcs_prefix: istio-prow/pr-logs/directory/release-unit-tests
@@ -8096,6 +8206,50 @@ dashboards:
   - name: circleci-integration-kubernetes
     test_group_name: istio-circleci-test-integration-kubernetes-presubmit
 
+- name: istio-presubmits-master
+  dashboard_tab:
+  - name: unit-tests
+    test_group_name: istio-unit-tests-presubmit-master
+  - name: integration-local-tests
+    test_group_name: istio-integ-local-tests-presubmit-master
+  - name: integration-k8s-tests
+    test_group_name: istio-integ-k8s-tests-presubmit-master
+  - name: pilot-e2e-envoyv2-v1alpha3
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit-master
+  - name: e2e-mixer-no_auth
+    test_group_name: istio-e2e-mixer-no_auth-presubmit-master
+  - name: e2e-dashboard
+    test_group_name: istio-e2e-dashboard-presubmit-master
+  - name: e2e-simpleTests
+    test_group_name: istio-e2e-simpleTests-presubmit-master
+  - name: e2e-bookInfoTests-envoyv2-v1alpha3
+    test_group_name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit-master
+  - name: e2e-bookInfoTests-trustdomain
+    test_group_name: istio-e2e-bookInfoTests-trustdomain-presubmit-master
+  - name: circleci-e2e-simple
+    test_group_name: istio-circleci-e2e-simple-presubmit-master
+  - name: circleci-e2e-dashboard
+    test_group_name: istio-circleci-e2e-dashboard-presubmit-master
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit-master
+  - name: circleci-e2e-galley
+    test_group_name: istio-circleci-e2e-galley-presubmit-master
+  - name: circleci-e2e-pilot-cloudfoundry-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit-master
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit-master
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit-master
+  - name: circleci-unit-tests
+    test_group_name: istio-circleci-test-presubmit-master
+  - name: circleci-codecov-tests
+    test_group_name: istio-circleci-codecov-presubmit-master
+  - name: circleci-racetest
+    test_group_name: istio-circleci-racetest-presubmit-master
+  - name: circleci-integration-local
+    test_group_name: istio-circleci-test-integration-local-presubmit-master
+  - name: circleci-integration-kubernetes
+    test_group_name: istio-circleci-test-integration-kubernetes-presubmit-master
 
 - name: istio-postsubmits
   dashboard_tab:
@@ -8173,6 +8327,85 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-racetest
     test_group_name: istio-circleci-racetest
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+
+- name: istio-postsubmits-master
+  dashboard_tab:
+  - name: unit-tests
+    test_group_name: istio-postsubmit-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integration-local-tests
+    test_group_name: istio-integ-local-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integration-k8s-tests
+    test_group_name: istio-integ-k8s-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-simpleTests
+    test_group_name: istio-e2e-simpleTests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-bookInfoTests-envoyv2-v1alpha3
+    test_group_name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: pilot-e2e-envoyv2-v1alpha3
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: pilot-e2e-envoyv2-v1alpha3-k8s-latest
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-mixer-no_auth
+    test_group_name: istio-e2e-mixer-no_auth-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-dashboard
+    test_group_name: istio-e2e-dashboard-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-simpleTests-minProfile
+    test_group_name: istio-e2e-simpleTests-minProfile-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-simple
+    test_group_name: istio-circleci-e2e-simple-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-dashboard
+    test_group_name: istio-circleci-e2e-dashboard-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-galley
+    test_group_name: istio-circleci-e2e-galley-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-pilot-cloudfoundry-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-test
+    test_group_name: istio-circleci-test-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-racetest
+    test_group_name: istio-circleci-racetest-master
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
 
@@ -8602,6 +8835,8 @@ dashboard_groups:
   - istio-gke
   - istio-postsubmits
   - istio-presubmits
+  - istio-postsubmits-master
+  - istio-presubmits-master
 
 - name: presubmits
   dashboard_names:
