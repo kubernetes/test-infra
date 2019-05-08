@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -37,14 +38,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	clienttesting "k8s.io/client-go/testing"
-	"sigs.k8s.io/yaml"
-
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
+	"sigs.k8s.io/yaml"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -647,4 +651,96 @@ func TestListProwJobs(t *testing.T) {
 			t.Errorf("%s: got unexpected jobs in filtered list: %v", testCase.name, extra.List())
 		}
 	}
+}
+
+func Test_gatherOptions(t *testing.T) {
+	cases := []struct {
+		name     string
+		args     map[string]string
+		del      sets.String
+		expected func(*options)
+		err      bool
+	}{
+		{
+			name: "minimal flags work",
+		},
+		{
+			name: "explicitly set --config-path",
+			args: map[string]string{
+				"--config-path": "/random/value",
+			},
+			expected: func(o *options) {
+				o.configPath = "/random/value"
+			},
+		},
+		{
+			name: "empty config-path defaults to old value",
+			args: map[string]string{
+				"--config-path": "",
+			},
+			expected: func(o *options) {
+				o.configPath = config.DefaultConfigPath
+			},
+		},
+		{
+			name: "explicitly set both --hidden-only and --show-hidden to true",
+			args: map[string]string{
+				"--hidden-only": "true",
+				"--show-hidden": "true",
+			},
+			err: true,
+		},
+		{
+			name: "explicitly set --plugin-config",
+			args: map[string]string{
+				"--hidden-only": "true",
+				"--show-hidden": "true",
+			},
+			err: true,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			expected := &options{
+				configPath:            "yo",
+				githubOAuthConfigFile: "/etc/github/secret",
+				cookieSecretFile:      "/etc/cookie/secret",
+				staticFilesLocation:   "/static",
+				templateFilesLocation: "/template",
+				spyglassFilesLocation: "/lenses",
+				kubernetes:            flagutil.ExperimentalKubernetesOptions{},
+			}
+			if tc.expected != nil {
+				tc.expected(expected)
+			}
+
+			argMap := map[string]string{
+				"--config-path": "yo",
+			}
+			for k, v := range tc.args {
+				argMap[k] = v
+			}
+			for k := range tc.del {
+				delete(argMap, k)
+			}
+
+			var args []string
+			for k, v := range argMap {
+				args = append(args, k+"="+v)
+			}
+			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
+			actual := gatherOptions(fs, args...)
+			switch err := actual.Validate(); {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive expected error")
+			case !reflect.DeepEqual(*expected, actual):
+				t.Errorf("%#v != expected %#v", actual, *expected)
+			}
+		})
+	}
+
 }
