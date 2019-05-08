@@ -39,21 +39,24 @@ def check_output(*cmd):
 
 
 class Bazel(object):
-    def __init__(self, batch):
-        self.batch = batch
+    def __init__(self, cfgs):
+        self.cfgs = cfgs or []
 
-    def check(self, *cmd):
-        """wrapper for check('bazel', *cmd) that respects batch"""
-        if self.batch:
-            check('bazel', '--batch', *cmd)
-        else:
-            check('bazel', *cmd)
+    def _commands(self, cmd, *args, **kw):
+        commands = ['bazel', cmd]
+        if self.cfgs and kw.get('config', True):
+            commands.extend(['--config=%s' % c for c in self.cfgs])
+        if args:
+            commands.extend(args)
+        return commands
 
-    def check_output(self, *cmd):
-        """wrapper for check_output('bazel', *cmd) that respects batch"""
-        if self.batch:
-            return check_output('bazel', '--batch', *cmd)
-        return check_output('bazel', *cmd)
+    def check(self, cmd, *args, **kw):
+        """wrapper for check('bazel', *cmd)."""
+        check(*self._commands(cmd, *args, **kw))
+
+    def check_output(self, cmd, *args, **kw):
+        """wrapper for check_output('bazel', *cmd)."""
+        return check_output(*self._commands(cmd, *args, **kw))
 
     def query(self, kind, selected_pkgs, changed_pkgs):
         """
@@ -87,7 +90,8 @@ class Bazel(object):
             'query',
             '--keep_going',
             '--noshow_progress',
-            query_pat % (kind, selection, changes)
+            query_pat % (kind, selection, changes),
+            config=False,
         ).split('\n') if target.startswith("//")]
 
 
@@ -141,9 +145,10 @@ def main(args):
                 raise ValueError('Invalid install path: %s' % install)
             check('pip', 'install', '-r', install)
 
-    bazel = Bazel(args.batch)
+    bazel = Bazel(args.config)
 
-    bazel.check('version')
+    bazel.check('version', config=False)
+
     res = 0
     try:
         affected = None
@@ -234,6 +239,8 @@ def create_parser():
         '--manual-build',
         help='Bazel build targets that should always be manually included, split by one space'
     )
+    parser.add_argument(
+        '--config', action='append', help='--config=foo rules to apply to bazel commands')
     # TODO(krzyzacy): Convert to bazel build rules
     parser.add_argument(
         '--install', action="append", help='Python dependency(s) that need to be installed')
@@ -264,8 +271,6 @@ def create_parser():
     parser.add_argument(
         '--version-suffix',
         help='version suffix for build pushing')
-    parser.add_argument(
-        '--batch', action='store_true', help='run Bazel in batch mode')
     return parser
 
 def parse_args(args=None):
