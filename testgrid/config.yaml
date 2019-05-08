@@ -3751,12 +3751,16 @@ test_groups:
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 
 - name: pull-community-tempelis-check
-  gcs_prefix: kubernetes-jenkins/pr-logs/community/directory/pull-community-tempelis-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-tempelis-check
+  num_columns_recent: 20
 - name: post-community-tempelis-apply
-  gcs_prefix: kubernetes-jenkins/logs/community/post-community-tempelis-apply
+  gcs_prefix: kubernetes-jenkins/logs/post-community-tempelis-apply
   alert_options:
     alert_mail_to_addresses: ktbry@google.com
     num_failures_to_alert: 1
+- name: pull-community-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-verify
+  num_columns_recent: 20
 
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-private-cluster-correctness
@@ -5559,6 +5563,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   - name: gke-gci-1.13-gci-1.12-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
+
+- name: sig-contribex-community
+  dashboard_tab:
+  - name: pull-verify
+    test_group_name: pull-community-verify
 
 - name: sig-contribex-tempelis
   dashboard_tab:
@@ -8609,6 +8618,7 @@ dashboard_groups:
 
 - name: sig-contribex
   dashboard_names:
+  - sig-contribex-community
   - sig-contribex-tempelis
 
 - name: sig-multicluster
