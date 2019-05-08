@@ -81,12 +81,14 @@ func FindAll(ghc githubClient, log *logrus.Entry, label, orgRepoTokens string) (
 		return Blockers{}, fmt.Errorf("error searching for blocker issues: %v", err)
 	}
 
-	return fromIssues(issues), nil
+	return fromIssues(issues, log), nil
 }
 
-func fromIssues(issues []Issue) Blockers {
+func fromIssues(issues []Issue, log *logrus.Entry) Blockers {
+	log.Debugf("Finding blockers from %d issues.", len(issues))
 	res := Blockers{Repo: make(map[orgRepo][]Blocker), Branch: make(map[orgRepoBranch][]Blocker)}
 	for _, issue := range issues {
+		logger := log.WithFields(logrus.Fields{"org": issue.Repository.Owner, "repo": issue.Repository.Name, "issue": issue.Number})
 		strippedTitle := branchRE.ReplaceAllLiteralString(string(issue.Title), "")
 		block := Blocker{
 			Number: int(issue.Number),
@@ -100,6 +102,7 @@ func fromIssues(issues []Issue) Blockers {
 					repo:   string(issue.Repository.Name),
 					branch: branch,
 				}
+				logger.WithField("branch", branch).Debug("Blocking merges to branch via issue.")
 				res.Branch[key] = append(res.Branch[key], block)
 			}
 		} else {
@@ -107,6 +110,7 @@ func fromIssues(issues []Issue) Blockers {
 				org:  string(issue.Repository.Owner.Login),
 				repo: string(issue.Repository.Name),
 			}
+			logger.Debug("Blocking merges to all branches via issue.")
 			res.Repo[key] = append(res.Repo[key], block)
 		}
 	}

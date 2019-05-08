@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	githubql "github.com/shurcooL/githubv4"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -382,7 +383,7 @@ func TestBlockers(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Logf("Running test case %q.", tc.name)
-		b := fromIssues(tc.issues)
+		b := fromIssues(tc.issues, logrus.WithField("test", tc.name))
 		for _, c := range tc.checks {
 			actuals := b.GetApplicable(c.org, c.repo, c.branch)
 			nums := sets.NewInt()
