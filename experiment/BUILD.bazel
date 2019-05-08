@@ -51,6 +51,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//experiment/add-hook:all-srcs",
+        "//experiment/autobumper:all-srcs",
         "//experiment/aws-stockout:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/config-forker:all-srcs",

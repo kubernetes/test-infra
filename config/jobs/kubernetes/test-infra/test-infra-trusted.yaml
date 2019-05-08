@@ -687,12 +687,15 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20190401-918468dbb-0.24.0
       command:
-      - prow/autobump.sh
+      - bazel
+      - run
+      - //experiment/autobumper
+      - --
       args:
-      - k8s-ci-robot
-      - /etc/github-token/oauth
-      - "Kubernetes Prow Robot"
-      - "k8s.ci.robot@gmail.com"
+      - --github-login=k8s-ci-robot
+      - --github-token=/etc/github-token/oauth
+      - --git-name=Kubernetes Prow Robot
+      - --git-email=k8s.ci.robot@gmail.com
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
