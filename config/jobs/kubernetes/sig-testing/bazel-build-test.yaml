@@ -82,6 +82,34 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: post-kubernetes-bazel-build
+    branches:
+    - master
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+        command:
+        - bash
+        args:
+        - -c
+        - |
+                set -o errexit
+                gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+                ../test-infra/scenarios/kubernetes_bazel.py \
+                    --config=ci \
+                    "--build=//... -//vendor/..." \
+                    --release=//build/release-tars \
+                    --gcs=gs://kubernetes-release-dev/ci \
+                    --version-suffix=-bazel-rbe \
+                    --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
 
   - name: ci-kubernetes-bazel-test # TODO(fejta): delete after 1m (dup of post-kubernetes-bazel-test)
     decorate: true
@@ -177,6 +205,38 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
+
+- name: periodic-kubernetes-bazel-build-rbe-master
+  interval: 5m
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+      command:
+      - bash
+      args:
+      - -c
+      - |
+              set -o errexit
+              gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+              ../test-infra/scenarios/kubernetes_bazel.py \
+                  --config=ci \
+                  "--build=//... -//vendor/..." \
+                  --release=//build/release-tars \
+                  --gcs=gs://kubernetes-release-dev/ci \
+                  --version-suffix=-bazel-rbe \
+                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
+
 # periodic bazel test jobs
 - interval: 5m
   name: periodic-kubernetes-bazel-test-master
