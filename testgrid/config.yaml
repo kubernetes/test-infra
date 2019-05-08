@@ -3755,9 +3755,7 @@ test_groups:
   num_columns_recent: 20
 - name: post-community-tempelis-apply
   gcs_prefix: kubernetes-jenkins/logs/post-community-tempelis-apply
-  alert_options:
-    alert_mail_to_addresses: ktbry@google.com
-    num_failures_to_alert: 1
+  num_failures_to_alert: 1
 - name: pull-community-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-verify
   num_columns_recent: 20
@@ -5575,6 +5573,8 @@ dashboards:
     test_group_name: pull-community-tempelis-check
   - name: postsubmit
     test_group_name: post-community-tempelis-apply
+    alert_options:
+      alert_mail_to_addresses: ktbry@google.com
 
 - name: sig-release-misc
   dashboard_tab:
