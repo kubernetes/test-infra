@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/mail"
 	"os"
 	"regexp"
 	"strings"
@@ -444,6 +445,7 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		}
 	}
 }
+
 func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
 	// TODO(spiffxp): start with master, enforce for all release branches
 	re := regexp.MustCompile("^sig-release-master-(blocking|informing)$")
@@ -474,6 +476,23 @@ func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
 					t.Logf("NOTICE: %v: - Must have alert_options", intro)
 				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
 					t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
+				}
+			}
+		}
+	}
+}
+
+func TestNoEmpyMailToAddresses(t *testing.T) {
+	for _, dashboard := range cfg.Dashboards {
+		for _, dashboardtab := range dashboard.DashboardTab {
+			intro := fmt.Sprintf("dashboard_tab %v/%v", dashboard.Name, dashboardtab.Name)
+			if dashboardtab.AlertOptions != nil {
+				mails := strings.Split(dashboardtab.AlertOptions.AlertMailToAddresses, ",")
+				for _, m := range mails {
+					_, err := mail.ParseAddress(m)
+					if err != nil {
+						t.Errorf("%v: - invalid alert_mail_to_address '%v': %v", intro, m, err)
+					}
 				}
 			}
 		}
