@@ -176,6 +176,9 @@ def main(args):
         if build_pkgs or manual_build_targets or affected:
             buildables = bazel.query('.*_binary', build_pkgs, affected) + manual_build_targets
 
+        if args.release:
+            buildables.extend(args.release.split(' '))
+
         if buildables:
             bazel.check('build', *buildables)
         else:
@@ -184,9 +187,6 @@ def main(args):
 
         # clean up previous test.xml
         clean_file_in_dir('./bazel-testlogs', 'test.xml')
-
-        if args.release:
-            bazel.check('build', *args.release.split(' '))
 
         if test_pkgs or manual_test_targets or affected:
             tests = bazel.query('test', test_pkgs, affected) + manual_test_targets
