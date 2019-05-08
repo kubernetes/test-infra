@@ -240,42 +240,6 @@ periodics:
 # periodic bazel test jobs
 - interval: 5m
   name: periodic-kubernetes-bazel-test-master
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 6h
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-      args:
-      - --repo=k8s.io/kubernetes
-      - --root=/go/src
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--timeout=60"
-      - "--scenario=kubernetes_bazel"
-      - "--" # end bootstrap args, scenario args below
-      - "--test=//... -//build/... -//vendor/..."
-      - "--manual-test=//hack:verify-all"
-      - "--test-args=--config=unit"
-      - "--test-args=--build_tag_filters=-e2e,-integration"
-      - "--test-args=--test_tag_filters=-e2e,-integration"
-      - "--test-args=--flaky_test_attempts=3"
-      env:
-      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
-      - name: REPO_OWNER
-        value: kubernetes
-      - name: REPO_NAME
-        value: kubernetes
-      resources:
-        requests:
-          memory: "6Gi"
-
-- interval: 5m
-  name: periodic-kubernetes-bazel-test-rbe-master
   decorate: true
   labels:
     preset-service-account: "true"
