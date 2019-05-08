@@ -1,0 +1,27 @@
+presubmits:
+  kubernetes-sigs/kubebuilder:
+  - name: pull-kubebuilder-test
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/kubebuilder"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - "./test.sh"
+        env:
+        - name: TRACE
+          value: "1"
+  - name: pull-kubebuilder-install-test
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/kubebuilder"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - "./scripts/install_test.sh"

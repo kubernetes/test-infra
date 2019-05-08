@@ -1,0 +1,15 @@
+presubmits:
+  kubernetes-sigs/controller-runtime:
+  - name: pull-controller-runtime-check-everything
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/controller-runtime"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+        command:
+        - "./hack/check-everything.sh"
+        env:
+        - name: TRACE
+          value: "1"
