@@ -5118,9 +5118,13 @@ dashboards:
   - name: build-master
     test_group_name: ci-kubernetes-build-fast
     description: "OWNER: sig-release (release-engineering); Ends up running: make quick-release"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: integration-master
     test_group_name: ci-kubernetes-integration-master
     description: "OWNER: sig-release (release-team); Ends up running: make test-cmd test-integration"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: bazel-build-master
     test_group_name: ci-kubernetes-bazel-build
     description: "OWNER: sig-testing; Builds kubernetes using bazel"
@@ -5142,18 +5146,24 @@ dashboards:
   - name: gce-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gce
     description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-device-plugin-gpu-master
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
     description: "OWNER: sig-scheduling; Uses kubetest to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
   - name: gce-cos-master-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
     description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-cos-master-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
   - name: gce-cos-master-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
     description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with cluster/kube-up.sh"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-cos-master-scalability-100
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
     description: "OWNER: sig-scalability;  Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
