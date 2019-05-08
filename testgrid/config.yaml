@@ -5107,64 +5107,82 @@ dashboards:
   dashboard_tab:
   - name: build-master
     test_group_name: ci-kubernetes-build-fast
+    description: "OWNER: sig-release (release-engineering); Ends up running: make quick-release"
   - name: integration-master
     test_group_name: ci-kubernetes-integration-master
+    description: "OWNER: sig-release (release-team); Ends up running: make test-cmd test-integration"
   - name: bazel-build-master
     test_group_name: ci-kubernetes-bazel-build
+    description: "OWNER: sig-testing; Builds kubernetes using bazel"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
   - name: bazel-test-master
     test_group_name: ci-kubernetes-bazel-test
+    description: "OWNER: sig-testing; Runs kubernetes unit tests using bazel"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
   - name: verify-master
     test_group_name: ci-kubernetes-verify-master
+    description: "OWNER: sig-testing; Ends up running: make verify"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
   - name: node-kubelet-master
     test_group_name: ci-kubernetes-node-kubelet
+    description: "OWNER: sig-node; Uses kubetest to run a subset of node-e2e tests (+NodeConformance, -Flaky|Serial)"
   - name: gce-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gce
-  # https://github.com/kubernetes/kubernetes/issues/73444
-  #- name: kops-aws-master
-  #  test_group_name: ci-kubernetes-e2e-kops-aws
+    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
   - name: gce-device-plugin-gpu-master
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
+    description: "OWNER: sig-scheduling; Uses kubetest to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
   - name: gce-cos-master-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
+    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
   - name: gce-cos-master-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
+    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
   - name: gce-cos-master-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with cluster/kube-up.sh"
   - name: gce-cos-master-scalability-100
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+    description: "OWNER: sig-scalability;  Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
   - name: gce-cos-master-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: gce-cos-master-reboot
-    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
+    description: "OWNER: sig-networking (ingress); Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh"
 
 - name: sig-release-master-informing
   dashboard_tab:
   - name: Conformance - GCE
-    description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest
+    description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
   - name: Conformance - OpenStack
-    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
   - name: Conformance - vSphere-cloud-provider
-    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
     test_group_name: ci-cloud-provider-vsphere-conformance-latest
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
   - name: Conformance - vSphere
-    description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
     test_group_name: ci-vsphere-conformance-latest
+    description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
   - name: gce-master-scale-correctness
-    description: Runs 1000-node performance test once a week and checks that operational results are still all correct at that scale
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
+    description: "OWNER: sig-scalability; Runs 1000-node performance test once a week and checks that operational results are still all correct at that scale"
   - name: gce-master-scale-performance
-    description: 5000-node performance test, runs once a day on weekdays
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
+    description: "OWNER: sig-scalability; 5000-node performance test, runs once a day on weekdays"
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
+    description: "OWNER: sig-testing (kind); Uses kubetest to run e2e tests (+Conformance, -Serial|Alpha|Kubectl|Disruptive|Flaky|Feature) against a cluster created with sigs.k8s.io/kind"
   - name: kubeadm-kinder-master-on-stable
     test_group_name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to run kubeadm-e2e and e2e tests (+Conformance, -Aggregator|Alpha|Kubectl|Disruptive|Flaky|Feature) against a cluster created using kinder's skew-master-on-stable workflow"
   - name: kubeadm-kinder-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to run kubeadm-e2e and e2e tests (+Conformance, -Aggregator|Alpha|Kubectl|Disruptive|Flaky|Feature) against a cluster created using kinder's upgrade-stable-master workflow"
   - name: bazel-test-master
     test_group_name: post-kubernetes-bazel-test
+    description: "OWNER: sig-testing; Runs kubernetes unit tests using bazel"
   - name: gce-new-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
     description: Upgrade master only, in gce(gci), from 1.14 to master, run non-parallel-safe tests only
@@ -5189,6 +5207,9 @@ dashboards:
   - name: gce-new-master-upgrade-cluster-new-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
     description: Upgrade master and node, in gce(gci), from 1.14 to master, and run skewed e2e tests.  We skip the serial & disruptive tests; those are run in the non-parallel test.
+  - name: gce-cos-master-reboot
+    test_group_name: ci-kubernetes-e2e-gci-gce-reboot
+    description: "Uses kubetest to run a subset of e2e tests (+Feature:Reboot) against a cluster created with cluster/kube-up.sh"
 
 - name: sig-release-1.14-all
   dashboard_tab:
@@ -7290,7 +7311,7 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
   - name: autoupdate-patch
     description: Weekly module update to latest patched versions
     test_group_name: ci-test-infra-autoupdate-patch
@@ -7392,9 +7413,8 @@ dashboards:
     test_group_name: ci-test-infra-triage
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
   - name: metrics-bigquery
     description: Runs BigQuery queries to generate data for metrics.
     test_group_name: metrics-bigquery
@@ -7405,9 +7425,8 @@ dashboards:
     test_group_name: metrics-kettle
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
     alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com,
   - name: ci-kubernetes-local-e2e
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
@@ -7436,14 +7455,14 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
   - name: label_sync
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
     test_group_name: ci-test-infra-label-sync
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
 
 - name: sig-testing-canaries
   dashboard_tab:
