@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"sort"
 	"strings"
 	"sync"
@@ -12,7 +13,8 @@ import (
 	"github.com/golang/protobuf/ptypes"
 
 	"cloud.google.com/go/storage"
-	pb "github.com/kzmrv/gcsreader/proto"
+	pb "github.com/kzmrv/logviewer/gcsreader/work"
+	mixerPb "github.com/kzmrv/logviewer/mixer/request"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
@@ -20,38 +22,78 @@ import (
 )
 
 const (
-	address        = "localhost:17654"
-	timeoutSeconds = 240
-	bucketName     = "kubernetes-jenkins"
+	address         = "localhost:17654"
+	mixerServerPort = 17655
+	timeoutSeconds  = 300
+	bucketName      = "kubernetes-jenkins"
+	batchSize       = 100
 )
 
-type userRequest struct {
-	buildNumber     int
-	filePrefix      string
-	targetSubstring string
-	since           time.Time
-	until           time.Time
-}
-
-type callResult struct {
-	workResult *pb.WorkResult
-	err        error
-}
-
 func main() {
+	setup()
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", mixerServerPort))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	grpcServer := grpc.NewServer()
+	mixerPb.RegisterMixerServiceServer(grpcServer, &mixerServer{})
+	log.Infof("Listening on port %v", mixerServerPort)
+	grpcServer.Serve(lis)
+}
+
+func (*mixerServer) DoWork(request *mixerPb.MixerRequest, server mixerPb.MixerService_DoWorkServer) error {
+	works, err := getWorks(request)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	rpcResponses := make([]chan *callResult, len(works))
+	var wg sync.WaitGroup
+	wg.Add(len(works))
+	for i, work := range works {
+		rpcResponses[i] = make(chan *callResult, 100000)
+		go dispatch(&wg, work, workers, rpcResponses[i])
+	}
+
+	wg.Wait()
+	lines := processWorkResults(rpcResponses, works)
+
+	batchCount := (len(lines) + 1) / batchSize
+	for i := 0; i < batchCount; i++ {
+		err := server.Send(&mixerPb.MixerResult{LogLines: lines[batchSize*i : batchSize*(i+1)]})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+var workers []pb.WorkerClient
+
+func setup() func() {
 	log.InitFlags(nil)
 	connections, err := initWorkers()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	workers := make([]pb.WorkerClient, len(connections))
+	workers = make([]pb.WorkerClient, len(connections))
 	for i, connection := range connections {
 		workers[i] = pb.NewWorkerClient(connection)
-		defer connection.Close()
 	}
 
-	request := getNextRequest()
+	cl := func() {
+		for _, conn := range connections {
+			conn.Close()
+		}
+	}
+	return cl
+}
+
+func localMain() {
+	closeConns := setup()
+	defer closeConns()
+	request := getSampleRequest()
 	works, err := getWorks(request)
 
 	if err != nil {
@@ -71,7 +113,7 @@ func main() {
 	log.Info("App finished")
 }
 
-func processWorkResults(rpcResponses []chan *callResult, works []*pb.Work) {
+func processWorkResults(rpcResponses []chan *callResult, works []*pb.Work) []*pb.LogLine {
 	matchingLines := make([]*pb.LogLine, 0)
 	for i := 0; i < len(works); i++ {
 		counter := 0
@@ -98,9 +140,7 @@ func processWorkResults(rpcResponses []chan *callResult, works []*pb.Work) {
 			(tsLess.Seconds == tsGreater.Seconds && tsLess.Nanos < tsGreater.Nanos)
 	})
 
-	for _, line := range matchingLines {
-		log.Infof("%v : %v", ptypes.TimestampString(line.Timestamp), line.Entry)
-	}
+	return matchingLines
 }
 
 func initWorkers() ([]*grpc.ClientConn, error) {
@@ -114,17 +154,18 @@ func initWorkers() ([]*grpc.ClientConn, error) {
 	return workers, nil
 }
 
-// TODO replace with real requests
-func getNextRequest() *userRequest {
+func getSampleRequest() *mixerPb.MixerRequest {
 	since, _ := time.Parse(time.RFC3339Nano, "2019-02-15T15:38:48.908485Z")
 	until, _ := time.Parse(time.RFC3339Nano, "2019-02-15T18:38:48.908485Z")
+	pSince, _ := ptypes.TimestampProto(since)
+	pUntil, _ := ptypes.TimestampProto(until)
 
-	return &userRequest{
-		buildNumber:     310,
-		filePrefix:      "kube-apiserver-audit.log-",
-		targetSubstring: "9a27",
-		since:           since,
-		until:           until,
+	return &mixerPb.MixerRequest{
+		BuildNumber:     310,
+		FilePrefix:      "kube-apiserver-audit.log-",
+		TargetSubstring: "9a27",
+		Since:           pSince,
+		Until:           pUntil,
 	}
 }
 
@@ -151,23 +192,21 @@ func dispatch(wg *sync.WaitGroup, work *pb.Work, workers []pb.WorkerClient, rpcR
 	}
 }
 
-func getWorks(request *userRequest) ([]*pb.Work, error) {
-	prefix := fmt.Sprintf("logs/ci-kubernetes-e2e-gce-scale-performance/%v/artifacts/gce-scale-cluster-master/", request.buildNumber)
-	files, err := getFiles(prefix, request.filePrefix)
+func getWorks(request *mixerPb.MixerRequest) ([]*pb.Work, error) {
+	prefix := fmt.Sprintf("logs/ci-kubernetes-e2e-gce-scale-performance/%v/artifacts/gce-scale-cluster-master/", request.BuildNumber)
+	files, err := getFiles(prefix, request.FilePrefix)
 	if err != nil {
 		return nil, err
 	}
 
 	works := make([]*pb.Work, len(files))
 
-	since, _ := ptypes.TimestampProto(request.since)
-	until, _ := ptypes.TimestampProto(request.until)
 	for i, file := range files {
 		work := &pb.Work{
 			File:            file.Name,
-			TargetSubstring: request.targetSubstring,
-			Since:           since,
-			Until:           until,
+			TargetSubstring: request.TargetSubstring,
+			Since:           request.Since,
+			Until:           request.Until,
 		}
 		works[i] = work
 	}
@@ -198,4 +237,11 @@ func getFiles(prefix string, substring string) ([]*storage.ObjectAttrs, error) {
 		return result, nil
 	}
 	return nil, err
+}
+
+type mixerServer struct{}
+
+type callResult struct {
+	workResult *pb.WorkResult
+	err        error
 }

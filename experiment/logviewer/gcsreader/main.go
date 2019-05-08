@@ -31,7 +31,7 @@ import (
 	"cloud.google.com/go/storage"
 	ts "github.com/golang/protobuf/ptypes/timestamp"
 	gzip "github.com/klauspost/pgzip"
-	pb "github.com/kzmrv/gcsreader/proto"
+	pb "github.com/kzmrv/logviewer/gcsreader/work"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	log "k8s.io/klog"

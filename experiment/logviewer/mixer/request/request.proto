@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "gcsreader/work/work.proto";
+
+option go_package = "github.com/kzmrv/logviewer/mixer/request";
+
+package request;
+
+message MixerRequest {
+    int32 buildNumber = 1;
+    string targetSubstring = 2;
+    string filePrefix = 3;
+    google.protobuf.Timestamp since = 4;
+    google.protobuf.Timestamp until = 5;
+  }
+
+  message MixerResult {
+    repeated work.LogLine logLines = 1;
+  }
+
+  service MixerService {
+    rpc DoWork (MixerRequest) returns (stream MixerResult) {}
+  }
