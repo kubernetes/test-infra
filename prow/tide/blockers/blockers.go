@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	branchRE = regexp.MustCompile(`(?im)\bbranch:[^\w-]*([\w-]+)\b`)
+	branchRE = regexp.MustCompile(`(?im)\bbranch:[^\w-]*([\w-./]+)\b`)
 )
 
 type githubClient interface {
