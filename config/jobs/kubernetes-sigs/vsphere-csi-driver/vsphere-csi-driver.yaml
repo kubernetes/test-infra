@@ -12,7 +12,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
         command:
         - "make"
         args:
@@ -29,7 +29,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
         command:
         - "make"
         args:
@@ -46,7 +46,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
         command:
         - "make"
         args:
@@ -69,7 +69,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
         command:
         - "make"
         args:
