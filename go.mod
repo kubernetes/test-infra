@@ -18,6 +18,7 @@ require (
 	github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c
 	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
 	github.com/bwmarrin/snowflake v0.0.0
+	github.com/client9/misspell v0.3.4
 	github.com/deckarep/golang-set v0.0.0-20171013212420-1d4478f51bed
 	github.com/denisenkom/go-mssqldb v0.0.0-20190111225525-2fea367d496d // indirect
 	github.com/djherbis/atime v1.0.0
