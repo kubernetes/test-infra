@@ -27,4 +27,3 @@ presubmits:
         args:
         - make
         - test
-

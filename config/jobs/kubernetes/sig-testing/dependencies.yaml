@@ -4,10 +4,7 @@ presubmits:
     path_alias: "k8s.io/kubernetes"
     decorate: true
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+ # per-release job
     always_run: true
     skip_report: false
     labels:
@@ -30,6 +27,36 @@ presubmits:
         - name: WHAT
           value: "vendor vendor-licenses"
 
+  - name: pull-kubernetes-dependencies-canary
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    always_run: true
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - name: main
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: "vendor vendor-licenses"
+        - name: GOPROXY
+          value: https://proxy.golang.org
+        - name: GOSUMDB
+          value: sum.golang.org
 
   - name: pull-kubernetes-godeps
     run_if_changed: '^((build\/|Godeps\/|vendor\/|hack\/lib\/|hack\/.*godep|staging\/).*)$'

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# used in presubmits / CI testing
-# bazel build then unit test, exiting non-zero if either failed
-
-set -o nounset
 set -o errexit
+set -o nounset
 set -o pipefail
 
-# --config=unit ignores lint tests
-# --nobuild_tests_only builds all targets, not just test targets
-"$(dirname "${BASH_SOURCE[0]}")/bazel.sh" test --config=ci --config=unit --nobuild_tests_only //...
+cd "$(git rev-parse --show-toplevel)"
+find hack -name 'verify-*.sh' -not -name "$(basename "$0")" \( -print -exec '{}' ';' -o -quit \)

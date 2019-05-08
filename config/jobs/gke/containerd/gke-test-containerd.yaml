@@ -339,4 +339,3 @@ periodics:
       - --timeout=800m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-

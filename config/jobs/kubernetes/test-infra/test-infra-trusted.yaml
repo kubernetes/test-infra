@@ -73,6 +73,9 @@ postsubmits:
   - name: post-test-infra-push-velodrome
     cluster: test-infra-trusted
     run_if_changed: '^velodrome/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "velodrome"
     decorate: true
     branches:
       - master
@@ -98,6 +101,9 @@ postsubmits:
   - name: post-test-infra-push-boskos
     cluster: test-infra-trusted
     run_if_changed: '^boskos/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "boskos"
     decorate: true
     branches:
       - master
@@ -122,6 +128,9 @@ postsubmits:
             secretName: deployer-service-account
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "kettle"
     run_if_changed: '^kettle/'
     decorate: true
     branches:
@@ -147,6 +156,9 @@ postsubmits:
             secretName: deployer-service-account
   - name: post-test-infra-push-planter
     cluster: test-infra-trusted
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "planter"
     run_if_changed: '^planter/'
     decorate: true
     branches:
@@ -173,6 +185,9 @@ postsubmits:
   - name: post-test-infra-push-triage
     cluster: test-infra-trusted
     run_if_changed: '^triage/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "triage"
     decorate: true
     branches:
       - master
@@ -198,6 +213,9 @@ postsubmits:
   - name: post-test-infra-push-bazelbuild
     cluster: test-infra-trusted
     run_if_changed: '^images/bazelbuild/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "bazelbuild"
     decorate: true
     branches:
       - master
@@ -223,6 +241,9 @@ postsubmits:
   - name: post-test-infra-push-bazel-krte
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel-krte/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "bazel-krte"
     decorate: true
     branches:
       - master
@@ -248,6 +269,9 @@ postsubmits:
   - name: post-test-infra-push-bigquery
     cluster: test-infra-trusted
     run_if_changed: '^images/bigquery/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "bigquery"
     decorate: true
     branches:
       - master
@@ -273,6 +297,9 @@ postsubmits:
   - name: post-test-infra-push-bootstrap
     cluster: test-infra-trusted
     run_if_changed: '^(images/bootstrap|scenarios)/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "bootstrap"
     decorate: true
     branches:
       - master
@@ -298,6 +325,9 @@ postsubmits:
   - name: post-test-infra-push-cluster-api
     cluster: test-infra-trusted
     run_if_changed: '^images/cluster-api/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "cluster-api"
     decorate: true
     branches:
       - master
@@ -323,6 +353,9 @@ postsubmits:
   - name: post-test-infra-push-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "gcloud"
     decorate: true
     branches:
       - master
@@ -348,6 +381,9 @@ postsubmits:
   - name: post-test-infra-push-kubekins-e2e
     cluster: test-infra-trusted
     run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "kubekins-e2e"
     decorate: true
     branches:
       - master
@@ -373,6 +409,9 @@ postsubmits:
   - name: post-test-infra-push-kubekins-test
     cluster: test-infra-trusted
     run_if_changed: '^images/kubekins-test/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "kubekins-test"
     decorate: true
     branches:
       - master
@@ -398,6 +437,9 @@ postsubmits:
   - name: post-test-infra-push-kubemci
     cluster: test-infra-trusted
     run_if_changed: '^images/kubemci/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "kubemci"
     decorate: true
     branches:
       - master
@@ -423,6 +465,9 @@ postsubmits:
   - name: post-test-infra-push-test-gubernator
     cluster: test-infra-trusted
     run_if_changed: '^images/pull-test-infra-gubernator/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "gubernator"
     decorate: true
     branches:
       - master
@@ -435,6 +480,34 @@ postsubmits:
             - --scratch-bucket=gs://k8s-testimages-scratch
             - --project=k8s-testimages
             - images/pull-test-infra-gubernator/
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /creds/service-account.json
+          volumeMounts:
+            - name: creds
+              mountPath: /creds
+      volumes:
+        - name: creds
+          secret:
+            secretName: deployer-service-account
+  - name: post-test-infra-push-image-builder
+    cluster: test-infra-trusted
+    run_if_changed: '^images/builder/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "image-builder"
+    decorate: true
+    branches:
+      - master
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/gcloud-bazel:v20190402-v0.1-35-g8b2d62a
+          command:
+            - images/builder/ci-runner.sh
+          args:
+            - --scratch-bucket=gs://k8s-testimages-scratch
+            - --project=k8s-testimages
+            - images/builder/
           env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /creds/service-account.json
@@ -699,7 +772,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20190430-6a7dd776a
+      image: gcr.io/k8s-prow/branchprotector:v20190506-d97b87848
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -726,7 +799,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20190430-6a7dd776a
+      image: gcr.io/k8s-prow/label_sync:v20190506-d97b87848
       command:
       - /app/label_sync/app.binary
       args:

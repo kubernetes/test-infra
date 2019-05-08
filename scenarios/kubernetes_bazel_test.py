@@ -166,7 +166,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('//b/...', call)
         self.assertIn('//c/...', call)
 
-
     def test_all_bazel(self):
         """Make sure all commands starts with bazel except for coarse."""
         args = kubernetes_bazel.parse_args([

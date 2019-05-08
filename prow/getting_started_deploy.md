@@ -280,6 +280,49 @@ rolebindings afterwards.
 fields after deploying the prow components, you will need to redeploy them
 so that they pick up the change.
 
+### Configure Cloud Storage
+
+When configuring Prow jobs to use the [Pod utilities](./pod-utilities.md)
+with `decorate: true`, job metdata, logs, and artifacts will be uploaded
+to a GCS bucket in order to persist results from tests and allow for the
+job overview page to load those results at a later point. In order to run
+these jobs, it is required to set up a GCS bucket for job outputs. If your
+Prow deployment is targeted at an open source community, it is strongly
+suggested to make this bucket world-readable.
+
+In order to configure the bucket, follow the following steps:
+
+1. [provision](https://cloud.google.com/iam/docs/creating-managing-service-accounts) a new service account for interaction with the bucket
+1. [create](https://cloud.google.com/storage/docs/creating-buckets) the bucket
+1. (optionally) [expose](https://cloud.google.com/storage/docs/access-control/making-data-public) the bucket contents to the world
+1. [grant access](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) to write to the bucket for the service account
+1. [serialize](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) a key for the service account
+1. upload the key to a `Secret` under the `service-account.json` key
+1. edit the `plank` configuration for `default_decoration_config.gcs_credentials_secret` to point to the `Secret` above
+
+After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating, 
+the following script will execute the above steps for you:
+
+```sh
+gcloud iam service-accounts create prow-gcs-publisher # step 1
+identifier="$(  gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)' )"
+gsutil mb gs://prow-artifacts/ # step 2
+gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
+gsutil iam ch "serviceAccount:${identifier}:objectCreator" gs://prow-artifacts # step 4
+gcloud iam service-accounts keys create --iam-account "${identifier}" service-account.json # step 5
+kubectl create secret generic gcs-credentials --from-file=service-account.json # step 6
+```
+
+Then, set the field in your `config.yaml`:
+
+```yaml
+plank:
+  # other config ...
+  default_decoration_config:
+    # other config ...
+    gcs_credentials_secret: gcs-credentials
+```
+
 ### Add more jobs by modifying `config.yaml`
 
 Add the following to `config.yaml`:

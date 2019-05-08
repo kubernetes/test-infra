@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -52,7 +53,18 @@ var (
 		"sig",
 		"wg",
 	}
-	prefixes = [][]string{orgs, companies}
+	dashboardPrefixes = [][]string{orgs, companies}
+
+	// gcs prefixes populated by the kubernetes prow instance
+	prowGcsPrefixes = []string{
+		"kubernetes-jenkins/logs/",
+		"kubernetes-jenkins/pr-logs/directory/",
+	}
+)
+
+const (
+	prowPath = "../../../prow/config.yaml"
+	jobPath  = "../../../config/jobs"
 )
 
 // Shared testgrid config, loaded at TestMain.
@@ -72,6 +84,16 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	pca := &prow_config.Agent{}
+	if err := pca.Start(prowPath, jobPath); err != nil {
+		fmt.Printf("Prow config agent error: %v", err)
+		os.Exit(1)
+	}
+	if err := applyProwjobAnnotations(&c, pca); err != nil {
+		fmt.Printf("Couldn't apply prowjob annotations: %v", err)
+		os.Exit(1)
+	}
+
 	cfg, err = c.Raw()
 	if err != nil {
 		fmt.Printf("Error validating config: %v", err)
@@ -88,7 +110,7 @@ func TestConfig(t *testing.T) {
 	for testgroupidx, testgroup := range cfg.TestGroups {
 		// All testgroup must have a name and a query
 		if testgroup.Name == "" || testgroup.GcsPrefix == "" {
-			t.Errorf("Testgroup #%v (Name: '%v', Query: '%v'): - Must have a name and query",
+			t.Errorf("Testgroup #%v (Name: '%v', GcsPrefix: '%v'): - Must have a name and gcs_prefix",
 				testgroupidx, testgroup.Name, testgroup.GcsPrefix)
 		}
 
@@ -102,17 +124,21 @@ func TestConfig(t *testing.T) {
 		if !testgroup.IsExternal {
 			t.Errorf("Testgroup %v: IsExternal should always be true!", testgroup.Name)
 		}
+
 		if !testgroup.UseKubernetesClient {
 			t.Errorf("Testgroup %v: UseKubernetesClient should always be true!", testgroup.Name)
 		}
 
-		if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
-			// The expectation is that testgroup.Name is the name of a Prow job and the GCSPrefix
-			// follows the convention kubernetes-jenkins/logs/.../jobName
-			// The final part of the prefix should be the job name.
-			expected := filepath.Join(filepath.Dir(testgroup.GcsPrefix), testgroup.Name)
-			if expected != testgroup.GcsPrefix {
-				t.Errorf("Kubernetes Testgroup %v GcsPrefix; Got %v; Want %v", testgroup.Name, testgroup.GcsPrefix, expected)
+		for _, prowGcsPrefix := range prowGcsPrefixes {
+			if strings.Contains(testgroup.GcsPrefix, prowGcsPrefix) {
+				// The expectation is that testgroup.Name is the name of a Prow job and the GCSPrefix
+				// follows the convention kubernetes-jenkins/logs/.../jobName
+				// The final part of the prefix should be the job name.
+				expected := filepath.Join(filepath.Dir(testgroup.GcsPrefix), testgroup.Name)
+				if expected != testgroup.GcsPrefix {
+					t.Errorf("Kubernetes Testgroup %v GcsPrefix; Got %v; Want %v", testgroup.Name, testgroup.GcsPrefix, expected)
+				}
+				break // out of prowGcsPrefix for loop
 			}
 		}
 
@@ -144,7 +170,7 @@ func TestConfig(t *testing.T) {
 		}
 
 		found := false
-		for _, kind := range prefixes {
+		for _, kind := range dashboardPrefixes {
 			for _, prefix := range kind {
 				if strings.HasPrefix(dashboard.Name, prefix+"-") || dashboard.Name == prefix {
 					found = true
@@ -156,7 +182,7 @@ func TestConfig(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Errorf("Dashboard %v: must prefix with one of: %v", dashboard.Name, prefixes)
+			t.Errorf("Dashboard %v: must prefix with one of: %v", dashboard.Name, dashboardPrefixes)
 		}
 
 		// All dashboard must not have duplicated names
@@ -249,7 +275,7 @@ func TestConfig(t *testing.T) {
 		}
 
 		found := false
-		for _, kind := range prefixes {
+		for _, kind := range dashboardPrefixes {
 			for _, prefix := range kind {
 				if strings.HasPrefix(dashboardGroup.Name, prefix+"-") || prefix == dashboardGroup.Name {
 					found = true
@@ -261,7 +287,7 @@ func TestConfig(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Errorf("Dashboard group %v: must prefix with one of: %v", dashboardGroup.Name, prefixes)
+			t.Errorf("Dashboard group %v: must prefix with one of: %v", dashboardGroup.Name, dashboardPrefixes)
 		}
 
 		// All dashboardgroup must not have duplicated names
@@ -301,7 +327,56 @@ func TestConfig(t *testing.T) {
 	}
 }
 
-func TestJobsTestgridEntryMatch(t *testing.T) {
+// TODO(spiffxp): These are all repos that don't have their presubmits in testgrid.
+// Convince sig leads or subproject owners this is a bad idea and whittle this down
+// to just kubernetes-security/
+var noPresubmitsInTestgridPrefixes = []string{
+	"GoogleCloudPlatform/k8s-multicluster-ingress",
+	"containerd/cri",
+	"kubeflow/pipelines",
+	"kubernetes-csi/csi-driver-host-path",
+	"kubernetes-csi/csi-lib-utils",
+	"kubernetes-csi/csi-release-tools",
+	"kubernetes-csi/csi-test",
+	"kubernetes-csi/external-attacher",
+	"kubernetes-csi/external-provisioner",
+	"kubernetes-csi/external-snapshotter",
+	"kubernetes-csi/livenessprobe",
+	"kubernetes-csi/node-driver-registrar",
+	"kubernetes-incubator/service-catalog",
+	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
+	"kubernetes-sigs/gcp-filestore-csi-driver",
+	"kubernetes-sigs/kind",
+	"kubernetes-sigs/kube-storage-version-migrator",
+	"kubernetes-sigs/kubebuilder-declarative-pattern",
+	"kubernetes-sigs/sig-storage-local-static-provisioner",
+	"kubernetes-sigs/slack-infra",
+	"kubernetes-sigs/testing_frameworks",
+	"kubernetes/client-go",
+	"kubernetes/cloud-provider-gcp",
+	"kubernetes/cloud-provider-openstack",
+	"kubernetes/dns",
+	"kubernetes/enhancements",
+	"kubernetes/ingress-gce",
+	"kubernetes/k8s.io",
+	"kubernetes/kubeadm",
+	"kubernetes/minikube",
+	"kubernetes/release",
+	"kubernetes-csi/csi-driver-host-path",
+	// This is the one entry that should be here
+	"kubernetes-security/",
+}
+
+func hasAnyPrefix(s string, prefixes []string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(s, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T) {
 	prowPath := "../../../prow/config.yaml"
 	jobPath := "../../../config/jobs"
 
@@ -312,58 +387,13 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}
 
-	// Also check k/k presubmit, prow postsubmit and periodic jobs
-	for _, job := range prowConfig.AllPresubmits([]string{
-		"bazelbuild/rules_k8s",
-		"google/cadvisor",
-		"helm/charts",
-		"GoogleCloudPlatform/k8s-cluster-bundle",
-		"kubeflow/arena",
-		"kubeflow/caffe2-operator",
-		"kubeflow/chainer-operator",
-		"kubeflow/examples",
-		"kubeflow/experimental-beagle",
-		"kubeflow/experimental-kvc",
-		"kubeflow/experimental-seldon",
-		"kubeflow/fairing",
-		"kubeflow/katib",
-		"kubeflow/kubebench",
-		"kubeflow/kubeflow",
-		"kubeflow/metadata",
-		"kubeflow/mpi-operator",
-		"kubeflow/mxnet-operator",
-		"kubeflow/pytorch-operator",
-		"kubeflow/reporting",
-		"kubeflow/testing",
-		"kubeflow/tf-operator",
-		"kubeflow/website",
-		"kubernetes/cloud-provider-aws",
-		"kubernetes/cloud-provider-azure",
-		"kubernetes/cloud-provider-vsphere",
-		"kubernetes/cluster-registry",
-		"kubernetes/federation",
-		"kubernetes/kops",
-		"kubernetes/kubernetes",
-		"kubernetes/node-problem-detector",
-		"kubernetes/org",
-		"kubernetes/publishing-bot",
-		"kubernetes/test-infra",
-		"kubernetes-sigs/aws-alb-ingress-controller",
-		"kubernetes-sigs/aws-ebs-csi-driver",
-		"kubernetes-sigs/cluster-api",
-		"kubernetes-sigs/cluster-api-provider-aws",
-		"kubernetes-sigs/cluster-api-provider-azure",
-		"kubernetes-sigs/cluster-api-provider-digitalocean",
-		"kubernetes-sigs/cluster-api-provider-gcp",
-		"kubernetes-sigs/cluster-api-provider-vsphere",
-		"kubernetes-sigs/cluster-api-provider-openstack",
-		"kubernetes-sigs/poseidon",
-		"kubernetes-sigs/kube-batch",
-		"kubernetes-sigs/structured-merge-diff",
-		"kubernetes-sigs/vsphere-csi-driver",
-		"tensorflow/minigo",
-	}) {
-		jobs[job.Name] = false
+	for repo, presubmits := range prowConfig.Presubmits {
+		if hasAnyPrefix(repo, noPresubmitsInTestgridPrefixes) {
+			continue
+		}
+		for _, job := range presubmits {
+			jobs[job.Name] = false
+		}
 	}
 
 	for _, job := range prowConfig.AllPostsubmits([]string{}) {
@@ -374,23 +404,22 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		jobs[job.Name] = false
 	}
 
-	// For now anything outsite k8s-jenkins/(pr-)logs are considered to be fine
+	// Ignore any test groups that get their results from a gcs prefix
+	// that is not populated by the kubernetes prow instance
 	testgroups := make(map[string]bool)
 	for _, testgroup := range cfg.TestGroups {
-		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
-			// The convention is that the job name is the final part of the GcsPrefix
-			job := filepath.Base(testgroup.GcsPrefix)
-			testgroups[job] = false
-		}
-
-		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
-			job := strings.TrimPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/")
-			testgroups[job] = false
+		for _, prowGcsPrefix := range prowGcsPrefixes {
+			if strings.Contains(testgroup.GcsPrefix, prowGcsPrefix) {
+				// The convention is that the job name is the final part of the GcsPrefix
+				job := filepath.Base(testgroup.GcsPrefix)
+				testgroups[job] = false
+				break // to next testgroup
+			}
 		}
 	}
 
-	// Cross check
-	// -- Each job need to have a match testgrid group
+	// Each job running in the kubernetes prow instance must have an
+	// identically named test_groups entry in the kubernetes testgrid config
 	for job := range jobs {
 		if _, ok := testgroups[job]; ok {
 			testgroups[job] = true
@@ -403,7 +432,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	for job, valid := range jobs {
 		if !valid {
 			badjobs = append(badjobs, job)
-			fmt.Printf("Job %v does not have a matching testgrid testgroup\n", job)
+			t.Errorf("Job %v does not have a matching testgrid testgroup", job)
 		}
 	}
 
@@ -411,19 +440,42 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	for testgroup, valid := range testgroups {
 		if !valid {
 			badconfigs = append(badconfigs, testgroup)
-			fmt.Printf("Testgrid group %v does not have a matching jenkins or prow job\n", testgroup)
+			t.Errorf("Testgrid group %v does not have a matching jenkins or prow job", testgroup)
 		}
 	}
-
-	if len(badconfigs) > 0 {
-		fmt.Printf("Total bad config(s) - %v\n", len(badconfigs))
-	}
-
-	if len(badjobs) > 0 {
-		fmt.Printf("Total bad job(s) - %v\n", len(badjobs))
-	}
-
-	if len(badconfigs) > 0 || len(badjobs) > 0 {
-		t.Fatal("Failed with invalid config or job entries")
+}
+func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
+	// TODO(spiffxp): start with master, enforce for all release branches
+	re := regexp.MustCompile("^sig-release-master-(blocking|informing)$")
+	for _, dashboard := range cfg.Dashboards {
+		if !re.MatchString(dashboard.Name) {
+			continue
+		}
+		suffix := re.FindStringSubmatch(dashboard.Name)[1]
+		for _, dashboardtab := range dashboard.DashboardTab {
+			intro := fmt.Sprintf("dashboard_tab %v/%v is release-%v", dashboard.Name, dashboardtab.Name, suffix)
+			if dashboardtab.Name == "" {
+				t.Errorf("%v: - Must have a name", intro)
+			}
+			if dashboardtab.TestGroupName == "" {
+				t.Errorf("%v: - Must have a test_group_name", intro)
+			}
+			if dashboardtab.Description == "" {
+				t.Errorf("%v: - Must have a description", intro)
+			}
+			// TODO(spiffxp): enforce for informing as well
+			if suffix == "blocking" {
+				// TODO(spiffxp): remove this check when alert_options are populated
+				if !strings.HasPrefix(dashboardtab.Description, "OWNER: ") {
+					t.Errorf("%v: - Must have a description that starts with OWNER: ", intro)
+				}
+				// TODO(spiffxp): convert these from a warn to failure once alert_options are populated
+				if dashboardtab.AlertOptions == nil {
+					t.Logf("NOTICE: %v: - Must have alert_options", intro)
+				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
+					t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
+				}
+			}
+		}
 	}
 }

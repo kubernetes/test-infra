@@ -151,6 +151,8 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaul
 			j.DecorationConfig.UtilityImages = nil
 		}
 	}
+	// Drop annotations to avoid confusing other tools
+	j.Annotations = nil
 
 	// handle k8s job args, volumes etc
 	if j.Agent == "kubernetes" {

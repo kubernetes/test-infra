@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o nounset
-set -o pipefail
+# Used by gcr.io/k8s-testimages/image-builder.
+# See ci-runner.sh for the version prow uses to build and run on the fly.
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-bazel run //:tslint -- -p "${TESTINFRA_ROOT}"
-result=$?
+set -e
 
-if [[ "${result}" -ne 0 ]]; then
-  echo "tslint failed. \`bazel run //:tslint -- -p \$PWD --fix\` might help."
+echo "Activating service account..."
+gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+
+echo "Running..."
+if [[ ! -z "${ARTIFACTS}" ]]; then
+  echo "\$ARTIFACTS is set, sending logs to ${ARTIFACTS}"
+  ./builder --log-dir="${ARTIFACTS}" "$@"
+else
+  ./builder "$@"
 fi
-
-exit "${result}"

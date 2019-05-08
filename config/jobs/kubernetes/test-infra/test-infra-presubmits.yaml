@@ -66,7 +66,6 @@ presubmits:
           value: "/workspace"
 
   - name: pull-test-infra-lint
-    skip_report: true
     always_run: true
     decorate: true
     labels:
@@ -82,32 +81,6 @@ presubmits:
         - --config=ci
         - --config=lint
         - //...
-
-  - name: pull-test-infra-verify-tslint
-    branches:
-      - master
-    run_if_changed: '\.ts$'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
-          command:
-            - ./hack/verify-tslint.sh
-
-  - name: pull-test-infra-verify-bazel
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
-        command:
-        - ./hack/verify-bazel.sh
 
   - name: pull-test-infra-verify-config
     branches:
@@ -231,15 +204,14 @@ presubmits:
         command:
         - ./hack/verify-file-perms.sh
 
-  - name: pull-test-infra-verify-github-spelling
-    branches:
-    - master
+  - name: pull-test-infra-yamllint
     always_run: true
     decorate: true
-    labels:
-      preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
+      - image: quay.io/kubermatic/yamllint:0.1
         command:
-        - ./hack/verify-github-spelling.sh
+        - yamllint
+        - -c
+        - config/jobs/.yamllint.conf
+        - config/jobs

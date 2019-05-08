@@ -34,10 +34,15 @@ go_library(
     name = "go_default_library",
     srcs = [
         "main.go",
+        "prow.go",
         "yaml2proto.go",
     ],
     importpath = "k8s.io/test-infra/testgrid/cmd/configurator",
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/config:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
+        "//prow/pod-utils/gcs:go_default_library",
         "//testgrid/config:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",

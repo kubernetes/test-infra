@@ -17,9 +17,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ -z "${TEST_WORKSPACE:-}" ]]; then
-  echo "Usage: bazel test //hack:verify-protos" >&2
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Checking protos for changes..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
   exit 1
+else
+  (
+    set -o xtrace
+    bazel test //hack:verify-protos
+  )
+  exit 0
 fi
 
 TESTINFRA_ROOT=$PWD
@@ -30,11 +38,15 @@ trap "rm -rf ${_tmpdir}" EXIT
 cp -a "${TESTINFRA_ROOT}/." "${_tmpdir}"
 
 # Update protos, outputting to $_tmpdir
-update_protos=$1
-protoc=$2
-plugin=$3
-boiler=$4
-"$update_protos" "$protoc" "$plugin" "$boiler" "${_tmpdir}"
+(
+  update_protos=$1
+  protoc=$2
+  plugin=$3
+  boiler=$4
+
+  export BUILD_WORKSPACE_DIRECTORY=${_tmpdir}
+  "$update_protos" "$protoc" "$plugin" "$boiler"
+)
 
 # Ensure nothing changed
 diff=$(diff -Nupr \
@@ -46,6 +58,6 @@ diff=$(diff -Nupr \
 if [[ -n "${diff}" ]]; then
   echo "${diff}" >&2
   echo >&2
-  echo "Run bazel run //hack:update-protos" >&2
+  echo "ERROR: protos changed. Run bazel run //hack:update-protos" >&2
   exit 1
 fi

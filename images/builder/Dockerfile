@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# used in presubmits / CI testing
-# bazel build then unit test, exiting non-zero if either failed
-
-res=0
-
-bazel --bazelrc=rbe.bazelrc build //... --config=remote --remote_instance_name=projects/rbe-eytankidron-prod-0/instances/default_instance
-if [[ $? -ne 0 ]]; then
-    res=1
-fi
-
-bazel --bazelrc=rbe.bazelrc test //... --config=unit --config=remote --remote_instance_name=projects/rbe-eytankidron-prod-0/instances/default_instance
-if [[ $? -ne 0 ]]; then
-    res=1
-fi
-
-exit ${res}
+FROM google/cloud-sdk:244.0.0-alpine
+COPY builder run.sh /
+CMD ["/run.sh"]

@@ -20,6 +20,8 @@ import (
 	"mime"
 	"strings"
 
+	"cloud.google.com/go/storage"
+
 	"k8s.io/test-infra/testgrid/metadata"
 )
 
@@ -31,16 +33,17 @@ type Started = metadata.Started
 // Finished holds finished.json data
 type Finished = metadata.Finished
 
-// MetadataFromFileName guesses file metadata from the filename and a
-// simplifed filename.  For example, build-log.txt.gz would be:
+// AttributesFromFileName guesses file attributes from the filename
+// and returns the attributes and a simplifed filename.  For example,
+// build-log.txt.gz would be:
 //
 //   Content-Type: text/plain; charset=utf-8
 //   Content-Encoding: gzip
 //
 // and the simplified filename would be build-log.txt (excluding the
 // content encoding extension).
-func MetadataFromFileName(filename string) (string, map[string]string) {
-	metadata := make(map[string]string)
+func AttributesFromFileName(filename string) (string, *storage.ObjectAttrs) {
+	attrs := &storage.ObjectAttrs{}
 	segments := strings.Split(filename, ".")
 	index := len(segments) - 1
 	segment := segments[index]
@@ -48,10 +51,10 @@ func MetadataFromFileName(filename string) (string, map[string]string) {
 	// https://www.iana.org/assignments/http-parameters/http-parameters.xhtml#content-coding
 	switch segment {
 	case "gz", "gzip":
-		metadata["Content-Encoding"] = "gzip"
+		attrs.ContentEncoding = "gzip"
 	}
 
-	if _, ok := metadata["Content-Encoding"]; ok {
+	if attrs.ContentEncoding != "" {
 		if index == 0 {
 			segment = ""
 		} else {
@@ -64,16 +67,14 @@ func MetadataFromFileName(filename string) (string, map[string]string) {
 	if segment != "" {
 		mediaType := mime.TypeByExtension("." + segment)
 		if mediaType != "" {
-			metadata["Content-Type"] = mediaType
+			attrs.ContentType = mediaType
 		}
 	}
 
-	if _, ok := metadata["Content-Type"]; !ok {
-		if _, ok := metadata["Content-Encoding"]; ok {
-			metadata["Content-Type"] = "application/gzip"
-			delete(metadata, "Content-Encoding")
-		}
+	if attrs.ContentType == "" && attrs.ContentEncoding == "gzip" {
+		attrs.ContentType = "application/gzip"
+		attrs.ContentEncoding = ""
 	}
 
-	return filename, metadata
+	return filename, attrs
 }

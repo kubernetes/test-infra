@@ -541,6 +541,31 @@ periodics:
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
 
+- name: ci-benchmark-microbenchmarks
+  interval: 20m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ./pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - ../kubernetes/pkg/api/...
+
 # Experimental config for testing private gce clusters.
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
   # TODO(mm4tt): Lower the timeout once we know how long the test takes.
@@ -551,7 +576,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190506-4306ad7b3-master
         args:
           - --timeout=300
           - --bare
@@ -563,10 +588,10 @@ periodics:
           - --gcp-master-image=gci
           - --gcp-node-image=gci
           - --gcp-nodes=5
+          - --gcp-ssh-proxy-instance-name=private-gce-test-master
           - --gcp-zone=us-east1-b
           - --ginkgo-parallel=5
           - --provider=gce
-          # TODO(mm4tt): Start setting --ssh-proxy-instance-name= when it's supported in kubetest
           - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
           - --timeout=240m
           - --use-logexporter

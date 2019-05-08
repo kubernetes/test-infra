@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"text/template"
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
@@ -323,8 +324,8 @@ periodics:
       - "test"
       - "./..."`,
 			expected: &prowapi.DecorationConfig{
-				Timeout:     prowapi.Duration{Duration: 2 * time.Hour},
-				GracePeriod: prowapi.Duration{Duration: 15 * time.Second},
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:default",
 					InitUpload: "initupload:default",
@@ -382,8 +383,8 @@ periodics:
       - "test"
       - "./..."`,
 			expected: &prowapi.DecorationConfig{
-				Timeout:     prowapi.Duration{Duration: 1 * time.Nanosecond},
-				GracePeriod: prowapi.Duration{Duration: 1 * time.Nanosecond},
+				Timeout:     &prowapi.Duration{Duration: 1 * time.Nanosecond},
+				GracePeriod: &prowapi.Duration{Duration: 1 * time.Nanosecond},
 				UtilityImages: &prowapi.UtilityImages{
 					CloneRefs:  "clonerefs:explicit",
 					InitUpload: "initupload:explicit",
@@ -1688,12 +1689,40 @@ func TestBrancher_Intersects(t *testing.T) {
 			},
 			result: true,
 		},
+		{
+			name: "NoIntersectionBecauseRegexSkip",
+			a: Brancher{
+				SkipBranches: []string{`release-\d+\.\d+`},
+			},
+			b: Brancher{
+				Branches: []string{`release-1.14`, `release-1.13`},
+			},
+			result: false,
+		},
+		{
+			name: "IntersectionDespiteRegexSkip",
+			a: Brancher{
+				SkipBranches: []string{`release-\d+\.\d+`},
+			},
+			b: Brancher{
+				Branches: []string{`release-1.14`, `master`},
+			},
+			result: true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(st *testing.T) {
-			r1 := tc.a.Intersects(tc.b)
-			r2 := tc.b.Intersects(tc.a)
+			a, err := setBrancherRegexes(tc.a)
+			if err != nil {
+				st.Fatalf("Failed to set brancher A regexes: %v", err)
+			}
+			b, err := setBrancherRegexes(tc.b)
+			if err != nil {
+				st.Fatalf("Failed to set brancher B regexes: %v", err)
+			}
+			r1 := a.Intersects(b)
+			r2 := b.Intersects(a)
 			for _, result := range []bool{r1, r2} {
 				if result != tc.result {
 					st.Errorf("Expected %v got %v", tc.result, result)
@@ -1839,6 +1868,134 @@ github_reporter:
 		if err == nil {
 			if !reflect.DeepEqual(cfg.GitHubReporter.JobTypesToReport, tc.expectTypes) {
 				t.Errorf("tc %s: expected %#v\n!=\nactual %#v", tc.name, tc.expectTypes, cfg.GitHubReporter.JobTypesToReport)
+			}
+		}
+	}
+}
+
+func TestMergeCommitTemplateLoading(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		prowConfig  string
+		expectError bool
+		expect      map[string]TideMergeCommitTemplate
+	}{
+		{
+			name: "no template",
+			prowConfig: `
+tide:
+  merge_commit_template:
+`,
+			expect: nil,
+		},
+		{
+			name: "empty template",
+			prowConfig: `
+tide:
+  merge_commit_template:
+    kubernetes/ingress:
+`,
+			expect: map[string]TideMergeCommitTemplate{
+				"kubernetes/ingress": {},
+			},
+		},
+		{
+			name: "two proper templates",
+			prowConfig: `
+tide:
+  merge_commit_template:
+    kubernetes/ingress:
+      title: "{{ .Title }}"
+      body: "{{ .Body }}"
+`,
+			expect: map[string]TideMergeCommitTemplate{
+				"kubernetes/ingress": {
+					TitleTemplate: "{{ .Title }}",
+					BodyTemplate:  "{{ .Body }}",
+					Title:         template.Must(template.New("CommitTitle").Parse("{{ .Title }}")),
+					Body:          template.Must(template.New("CommitBody").Parse("{{ .Body }}")),
+				},
+			},
+		},
+		{
+			name: "only title template",
+			prowConfig: `
+tide:
+  merge_commit_template:
+    kubernetes/ingress:
+      title: "{{ .Title }}"
+`,
+			expect: map[string]TideMergeCommitTemplate{
+				"kubernetes/ingress": {
+					TitleTemplate: "{{ .Title }}",
+					BodyTemplate:  "",
+					Title:         template.Must(template.New("CommitTitle").Parse("{{ .Title }}")),
+					Body:          nil,
+				},
+			},
+		},
+		{
+			name: "only body template",
+			prowConfig: `
+tide:
+  merge_commit_template:
+    kubernetes/ingress:
+      body: "{{ .Body }}"
+`,
+			expect: map[string]TideMergeCommitTemplate{
+				"kubernetes/ingress": {
+					TitleTemplate: "",
+					BodyTemplate:  "{{ .Body }}",
+					Title:         nil,
+					Body:          template.Must(template.New("CommitBody").Parse("{{ .Body }}")),
+				},
+			},
+		},
+		{
+			name: "malformed title template",
+			prowConfig: `
+tide:
+  merge_commit_template:
+    kubernetes/ingress:
+      title: "{{ .Title"
+`,
+			expectError: true,
+		},
+		{
+			name: "malformed body template",
+			prowConfig: `
+tide:
+  merge_commit_template:
+    kubernetes/ingress:
+      body: "{{ .Body"
+`,
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		// save the config
+		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+		if err != nil {
+			t.Fatalf("fail to make tempdir: %v", err)
+		}
+		defer os.RemoveAll(prowConfigDir)
+
+		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+		if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+			t.Fatalf("fail to write prow config: %v", err)
+		}
+
+		cfg, err := Load(prowConfig, "")
+		if tc.expectError && err == nil {
+			t.Errorf("tc %s: Expect error, but got nil", tc.name)
+		} else if !tc.expectError && err != nil {
+			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+		}
+
+		if err == nil {
+			if !reflect.DeepEqual(cfg.Tide.MergeTemplate, tc.expect) {
+				t.Errorf("tc %s: expected %#v\n!=\nactual %#v", tc.name, tc.expect, cfg.Tide.MergeTemplate)
 			}
 		}
 	}

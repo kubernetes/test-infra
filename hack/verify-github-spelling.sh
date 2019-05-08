@@ -17,15 +17,4 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-failed="false"
-for file in $(  find . \( -not -path '*vendor*' -and -not -path '*gubernator/*' -and -not -path '*.git*' -and -not -path '*hack/verify-github-spelling.sh*' \) -type f )
-do
-  if grep -q 'Github' "${file}"; then
-      echo "[ERROR] ${file}: contains mis-spelling 'Github'"
-      failed="true"
-  fi
-done
-
-if [[ "${failed}" == "true" ]]; then
-    exit 1
-fi
+"$(dirname "$0")"/verify-spelling.sh

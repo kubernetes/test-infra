@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -52,18 +51,6 @@ func init() {
 	if err := admissionregistrationv1beta1.AddToScheme(vscheme); err != nil {
 		logrus.Errorf("Add admission registration scheme: %v", err)
 	}
-}
-
-// runServer starts an http server on :8443, responding to /validate requests
-func runServer(cert, privateKey string) {
-	http.HandleFunc("/validate", handle)
-	s := http.Server{
-		Addr: ":8443",
-		TLSConfig: &tls.Config{
-			ClientAuth: tls.NoClientCert,
-		},
-	}
-	logrus.Error(s.ListenAndServeTLS(cert, privateKey))
 }
 
 const contentTypeJSON = "application/json"

@@ -198,11 +198,11 @@ func (d *Duration) MarshalJSON() ([]byte, error) {
 type DecorationConfig struct {
 	// Timeout is how long the pod utilities will wait
 	// before aborting a job with SIGINT.
-	Timeout Duration `json:"timeout,omitempty"`
+	Timeout *Duration `json:"timeout,omitempty"`
 	// GracePeriod is how long the pod utilities will wait
 	// after sending SIGINT to send SIGKILL when aborting
 	// a job. Only applicable if decorating the PodSpec.
-	GracePeriod Duration `json:"grace_period,omitempty"`
+	GracePeriod *Duration `json:"grace_period,omitempty"`
 
 	// UtilityImages holds pull specs for utility container
 	// images used to decorate a PodSpec.
@@ -246,10 +246,10 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	merged.UtilityImages = merged.UtilityImages.ApplyDefault(def.UtilityImages)
 	merged.GCSConfiguration = merged.GCSConfiguration.ApplyDefault(def.GCSConfiguration)
 
-	if merged.Timeout.Duration == 0 {
+	if merged.Timeout == nil {
 		merged.Timeout = def.Timeout
 	}
-	if merged.GracePeriod.Duration == 0 {
+	if merged.GracePeriod == nil {
 		merged.GracePeriod = def.GracePeriod
 	}
 	if merged.GCSCredentialsSecret == "" {
@@ -303,6 +303,13 @@ func (d *DecorationConfig) Validate() error {
 		return fmt.Errorf("GCS configuration is invalid: %v", err)
 	}
 	return nil
+}
+
+func (d *Duration) Get() time.Duration {
+	if d == nil {
+		return 0
+	}
+	return d.Duration
 }
 
 // UtilityImages holds pull specs for the utility images
