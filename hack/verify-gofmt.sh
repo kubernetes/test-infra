@@ -17,16 +17,26 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-cmd="bazel run //:gofmt --"
-if ! which bazel &> /dev/null; then
-  echo "Bazel is the preferred way to build and test the test-infra repo." >&2
-  echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
-  cmd="gofmt"
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Validating gofmt..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-gofmt
+  )
+  exit 0
 fi
-diff=$(find . -name "*.go" | grep -v "\/vendor\/" | xargs ${cmd} -s -d)
+
+
+
+gofmt="$1"
+diff=$(find . -name "*.go" \( -not -path '*/vendor/*' -prune \) -exec "$gofmt" -s -d '{}' +)
 if [[ -n "${diff}" ]]; then
   echo "${diff}"
   echo
-  echo "Please run hack/update-gofmt.sh"
+  echo "ERROR: found unformatted go files. Fix with hack/update-gofmt.sh"
   exit 1
 fi

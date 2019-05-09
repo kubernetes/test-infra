@@ -159,19 +159,6 @@ presubmits:
           requests:
             memory: "2Gi"
 
-  - name: pull-test-infra-verify-gofmt
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
-        command:
-        - ./hack/verify-gofmt.sh
-
   - name: pull-test-infra-verify-labels
     branches:
     - master
