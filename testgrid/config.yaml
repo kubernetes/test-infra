@@ -50,6 +50,13 @@ default_dashboard_tab:
 # Start testgroups
 #
 
+# NOTE: If you're adding a periodic or postsubmit and don't want to specially configure your test
+# group, you don't need to add it here: we implicitly assume a testgroup exists for all periodics
+# and postsubmits. You still need to add presubmits here, and all jobs still need to be added to a
+# dashboard further down.
+#
+# If you want to do some special configuration on your test group (e.g. specifying name_elements,
+# days_of_results, num_columns_recent, etc.) you can still add it to this test_groups list manually.
 test_groups:
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
