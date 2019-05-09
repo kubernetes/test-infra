@@ -73,16 +73,19 @@ var cfg *config_pb.Configuration
 
 func TestMain(m *testing.M) {
 	//make sure we can parse config.yaml
-	yamlData, err := ioutil.ReadFile("../../config.yaml")
-	if err != nil {
-		fmt.Printf("IO Error : Cannot Open File config.yaml")
-		os.Exit(1)
-	}
-
 	c := Config{}
-	if err := c.Update(yamlData); err != nil {
-		fmt.Printf("Yaml2Proto - Conversion Error %v", err)
-		os.Exit(1)
+	yamlFiles := []string{"../../config.yaml", "../../generated-test-config.yaml"}
+	for _, path := range yamlFiles {
+		yamlData, err := ioutil.ReadFile(path)
+		if err != nil {
+			fmt.Printf("IO Error : Cannot Open File %s", path)
+			os.Exit(1)
+		}
+
+		if err := c.Update(yamlData); err != nil {
+			fmt.Printf("Yaml2Proto - Conversion Error %v", err)
+			os.Exit(1)
+		}
 	}
 
 	pca := &prow_config.Agent{}
@@ -95,6 +98,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	var err error
 	cfg, err = c.Raw()
 	if err != nil {
 		fmt.Printf("Error validating config: %v", err)

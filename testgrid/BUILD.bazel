@@ -1,6 +1,6 @@
 filegroup(
     name = "config-yaml",
-    srcs = ["config.yaml"],
+    srcs = ["config.yaml", "generated-test-config.yaml"],
     visibility = ["//visibility:public"],
 )
 
