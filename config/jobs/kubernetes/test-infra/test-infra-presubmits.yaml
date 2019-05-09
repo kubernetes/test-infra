@@ -92,7 +92,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-experimental
         command:
         - runner.sh
         args:
@@ -111,7 +111,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -135,7 +135,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-experimental
         command:
         - runner.sh
         args:
@@ -152,7 +152,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-experimental
         command:
         - ./hack/verify-codegen.sh
         resources:
@@ -168,7 +168,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-experimental
         command:
         - ./hack/verify-file-perms.sh
 
