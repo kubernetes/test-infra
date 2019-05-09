@@ -17,13 +17,25 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-LABELS_CONFIG=${LABELS_CONFIG:-"${TESTINFRA_ROOT}/label_sync/labels.yaml"}
-LABELS_DOCS_TEMPLATE=${LABELS_DOCS_TEMPLATE:-"${TESTINFRA_ROOT}/label_sync/labels.md.tmpl"}
-LABELS_DOCS_OUTPUT=${LABELS_DOCS_OUTPUT:-"${TESTINFRA_ROOT}/label_sync/labels.md"}
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating labels..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:update-labels
+  )
+  exit 0
+fi
 
-bazel run //label_sync -- \
---config=${LABELS_CONFIG} \
---action=docs \
---docs-template=${LABELS_DOCS_TEMPLATE} \
---docs-output=${LABELS_DOCS_OUTPUT}
+label_sync=$PWD/$1
+cd "$BUILD_WORKSPACE_DIRECTORY"
+out=${2:-label_sync/labels.md}
+
+"$label_sync" \
+    --config=label_sync/labels.yaml \
+    --action=docs \
+    --docs-template=label_sync/labels.md.tmpl \
+    "--docs-output=$out"
