@@ -449,6 +449,8 @@ tide:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-incubator/service-catalog: squash
+    kubernetes-sigs/controller-runtime: squash
+    kubernetes-sigs/controller-tools: squash
     kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-azure: squash
@@ -459,6 +461,7 @@ tide:
     kubernetes-sigs/cluster-api-provider-vsphere: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/krew-index: squash
+    kubernetes-sigs/kubebuilder: squash
     kubernetes-sigs/kubespray: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
