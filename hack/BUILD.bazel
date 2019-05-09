@@ -226,6 +226,24 @@ py_binary(
     ],
 )
 
+sh_binary(
+    name = "update-gofmt",
+    srcs = ["update-gofmt.sh"],
+    args = ["$(location @go_sdk//:bin/gofmt)"],
+    data = ["@go_sdk//:bin/gofmt"],
+)
+
+sh_test(
+    name = "verify-gofmt",
+    srcs = ["verify-gofmt.sh"],
+    args = ["$(location @go_sdk//:bin/gofmt)"],
+    data = [
+        "@//:all-srcs",
+        "@go_sdk//:bin/gofmt",
+    ],
+    tags = ["lint"],
+)
+
 genrule(
     name = "generate-security-jobs",
     srcs = [
