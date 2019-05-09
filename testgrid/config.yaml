@@ -8215,21 +8215,21 @@ dashboards:
   - name: integration-k8s-tests
     test_group_name: istio-integ-k8s-tests-presubmit
   - name: integ-framework-local-presubmit-tests
-    test_group_name: integ-framework-k8s-presubmit-tests
-  - name: integ-framework-k8s-presubmit-tests
     test_group_name: integ-framework-local-presubmit-tests
+  - name: integ-framework-k8s-presubmit-tests
+    test_group_name: integ-framework-k8s-presubmit-tests
   - name: integ-galley-local-presubmit-tests
-    test_group_name: integ-galley-k8s-presubmit-tests
-  - name: integ-galley-k8s-presubmit-tests
     test_group_name: integ-galley-local-presubmit-tests
+  - name: integ-galley-k8s-presubmit-tests
+    test_group_name: integ-galley-k8s-presubmit-tests
   - name: integ-pilot-local-presubmit-tests
-    test_group_name: integ-pilot-k8s-presubmit-tests
-  - name: integ-pilot-k8s-presubmit-tests
     test_group_name: integ-pilot-local-presubmit-tests
+  - name: integ-pilot-k8s-presubmit-tests
+    test_group_name: integ-pilot-k8s-presubmit-tests
   - name: integ-security-local-presubmit-tests
-    test_group_name: integ-security-k8s-presubmit-tests
-  - name: integ-security-k8s-presubmit-tests
     test_group_name: integ-security-local-presubmit-tests
+  - name: integ-security-k8s-presubmit-tests
+    test_group_name: integ-security-k8s-presubmit-tests
   - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   - name: e2e-mixer-no_auth
@@ -8276,21 +8276,21 @@ dashboards:
   - name: integration-k8s-tests
     test_group_name: istio-integ-k8s-tests-presubmit-master
   - name: integ-framework-local-presubmit-tests
-    test_group_name: integ-framework-k8s-presubmit-tests-master
-  - name: integ-framework-k8s-presubmit-tests
     test_group_name: integ-framework-local-presubmit-tests-master
+  - name: integ-framework-k8s-presubmit-tests
+    test_group_name: integ-framework-k8s-presubmit-tests-master
   - name: integ-galley-local-presubmit-tests
-    test_group_name: integ-galley-k8s-presubmit-tests-master
-  - name: integ-galley-k8s-presubmit-tests
     test_group_name: integ-galley-local-presubmit-tests-master
+  - name: integ-galley-k8s-presubmit-tests
+    test_group_name: integ-galley-k8s-presubmit-tests-master
   - name: integ-pilot-local-presubmit-tests
-    test_group_name: integ-pilot-k8s-presubmit-tests-master
-  - name: integ-pilot-k8s-presubmit-tests
     test_group_name: integ-pilot-local-presubmit-tests-master
+  - name: integ-pilot-k8s-presubmit-tests
+    test_group_name: integ-pilot-k8s-presubmit-tests-master
   - name: integ-security-local-presubmit-tests
-    test_group_name: integ-security-k8s-presubmit-tests-master
-  - name: integ-security-k8s-presubmit-tests
     test_group_name: integ-security-local-presubmit-tests-master
+  - name: integ-security-k8s-presubmit-tests
+    test_group_name: integ-security-k8s-presubmit-tests-master
   - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit-master
   - name: e2e-mixer-no_auth
