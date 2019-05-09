@@ -370,7 +370,7 @@ func (c *controller) terminateDupProwJobs(ctx string, namespace string) error {
 	if err != nil {
 		return err
 	}
-	return pjutil.TerminateOlderPresubmitJobs(pjClient, log, jobs, func(toCancel prowjobv1.ProwJob) error {
+	return pjutil.TerminateOlderJobs(pjClient, log, jobs, func(toCancel prowjobv1.ProwJob) error {
 		if c.allowCancellations() {
 			if err := c.deleteBuild(ctx, namespace, toCancel.GetName()); err != nil && !apierrors.IsNotFound(err) {
 				return fmt.Errorf("deleting build: %v", err)

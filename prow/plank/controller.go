@@ -263,7 +263,7 @@ func (c *Controller) SyncMetrics() {
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.
 func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi.Pod) error {
 	log := c.log.WithField("aborter", "pod")
-	return pjutil.TerminateOlderPresubmitJobs(c.kc, log, pjs, func(toCancel prowapi.ProwJob) error {
+	return pjutil.TerminateOlderJobs(c.kc, log, pjs, func(toCancel prowapi.ProwJob) error {
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in GitHub pull requests.
 		if c.config().Plank.AllowCancellations {
