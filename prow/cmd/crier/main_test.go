@@ -121,7 +121,7 @@ func TestOptions(t *testing.T) {
 }
 
 /*
-The GithubOptions object has several private fields and objects
+The GitHubOptions object has several private fields and objects
 This unit testing covers only the public portions
  */
 func TestGitHubOptions(t *testing.T){
