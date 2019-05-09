@@ -20,8 +20,12 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
+	"mime"
+	"strings"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
@@ -48,6 +52,11 @@ type Options struct {
 	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
 	DryRun             bool   `json:"dry_run"`
 
+	// Extensions holds additional extensions to add to Go's builtin's
+	// and the local system's defaults.  Values are colon-delimited
+	// {extension}:{media-type}, for example: log:text/plain.
+	Extensions flagutil.Strings `json:"extensions,omitempty"`
+
 	// gcsPath is used to store human-provided GCS
 	// paths that are parsed to get more granular
 	// fields.
@@ -57,6 +66,19 @@ type Options struct {
 // Validate ensures that the set of options are
 // self-consistent and valid.
 func (o *Options) Validate() error {
+	for _, extension := range o.Extensions.Strings() {
+		parts := strings.SplitN(extension, ":", 2)
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid extension %q: missing colon delimiter", extension)
+		}
+
+		_, mediaType := parts[0], parts[1]
+		_, _, err := mime.ParseMediaType(mediaType)
+		if err != nil {
+			return fmt.Errorf("invalid media type %q in extension %q: %v", mediaType, extension, err)
+		}
+	}
+
 	if o.gcsPath.String() != "" {
 		o.Bucket = o.gcsPath.Bucket()
 		o.PathPrefix = o.gcsPath.Object()
@@ -103,6 +125,8 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.gcsPath, "gcs-path", "GCS path to upload into")
 	fs.StringVar(&o.GcsCredentialsFile, "gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
 	fs.BoolVar(&o.DryRun, "dry-run", true, "do not interact with GCS")
+
+	fs.Var(&o.Extensions, "extensions", "Optional comma-delimited set of extensions.  Each extension is colon-delimited {extension}:{media-type}, for example, log:text/plain.")
 }
 
 const (
