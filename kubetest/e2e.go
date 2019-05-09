@@ -229,7 +229,7 @@ func run(deploy deployer, o options) error {
 
 	var kubemarkWg sync.WaitGroup
 	var kubemarkDownErr error
-	if o.kubemark {
+	if o.down && o.kubemark {
 		kubemarkWg.Add(1)
 		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, dump)
 	}

@@ -112,6 +112,30 @@ sh_test(
     ],
 )
 
+sh_binary(
+    name = "update-labels",
+    srcs = ["update-labels.sh"],
+    args = ["$(location //label_sync)"],
+    data = ["//label_sync"],
+)
+
+sh_test(
+    name = "verify-labels",
+    srcs = ["verify-labels.sh"],
+    args = [
+        "$(location :update-labels)",
+        "$(location //label_sync)",
+    ],
+    data = [
+        ":update-labels",
+        "//label_sync",
+        "//label_sync:labels.md",
+        "//label_sync:labels.md.tmpl",
+        "//label_sync:labels.yaml",
+    ],
+    tags = ["lint"],
+)
+
 test_suite(
     name = "verify-all",
     tags = ["lint"],  # picks up all non-manual targets with this tag
@@ -224,6 +248,24 @@ py_binary(
         "@yaml",
         requirement("setuptools"),
     ],
+)
+
+sh_binary(
+    name = "update-gofmt",
+    srcs = ["update-gofmt.sh"],
+    args = ["$(location @go_sdk//:bin/gofmt)"],
+    data = ["@go_sdk//:bin/gofmt"],
+)
+
+sh_test(
+    name = "verify-gofmt",
+    srcs = ["verify-gofmt.sh"],
+    args = ["$(location @go_sdk//:bin/gofmt)"],
+    data = [
+        "@//:all-srcs",
+        "@go_sdk//:bin/gofmt",
+    ],
+    tags = ["lint"],
 )
 
 genrule(

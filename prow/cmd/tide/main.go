@@ -175,11 +175,9 @@ func main() {
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	pushGateway := cfg().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("tide", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	metrics.ExposeMetrics("tide", pushGateway.Endpoint, pushGateway.Interval)
 
 	start := time.Now()
 	sync(c)

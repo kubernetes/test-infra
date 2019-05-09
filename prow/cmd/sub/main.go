@@ -27,7 +27,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
@@ -121,11 +120,9 @@ func main() {
 
 	promMetrics := subscriber.NewMetrics()
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Expose prometheus metrics
 	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("sub", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	metrics.ExposeMetrics("sub", pushGateway.Endpoint, pushGateway.Interval)
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,
@@ -136,7 +133,6 @@ func main() {
 
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-	http.Handle("/metrics", promhttp.Handler())
 
 	// Will call shutdown which will stop the errGroup
 	shutdownCtx, shutdown := context.WithCancel(context.Background())

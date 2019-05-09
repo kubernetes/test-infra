@@ -65,7 +65,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -82,6 +82,34 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: post-kubernetes-bazel-build
+    branches:
+    - master
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-master
+        command:
+        - bash
+        args:
+        - -c
+        - |
+                set -o errexit
+                gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+                ../test-infra/scenarios/kubernetes_bazel.py \
+                    --config=ci \
+                    "--build=//... -//vendor/..." \
+                    --release=//build/release-tars \
+                    --gcs=gs://kubernetes-release-dev/ci \
+                    --version-suffix=-bazel-rbe \
+                    --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
 
   - name: ci-kubernetes-bazel-test # TODO(fejta): delete after 1m (dup of post-kubernetes-bazel-test)
     decorate: true
@@ -143,83 +171,49 @@ periodics:
 # periodic bazel build jobs
 - name: periodic-kubernetes-bazel-build-master
   interval: 5m
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
-    fork-per-release-periodic-interval: 6h
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--timeout=60"
-      - "--scenario=kubernetes_bazel"
-      - "--" # end bootstrap args, scenario args below
-      - "--build=//... -//vendor/..."
-      - "--release=//build/release-tars"
-      - "--gcs=gs://kubernetes-release-dev/ci"
-      - "--version-suffix=-bazel"
-      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
-      env:
-      # so we can use the right cache id
-      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
-      - name: REPO_OWNER
-        value: kubernetes
-      - name: REPO_NAME
-        value: kubernetes
-      resources:
-        requests:
-          memory: "6Gi"
-# periodic bazel test jobs
-- interval: 5m
-  name: periodic-kubernetes-bazel-test-master
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 6h
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-      args:
-      - --repo=k8s.io/kubernetes
-      - --root=/go/src
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--timeout=60"
-      - "--scenario=kubernetes_bazel"
-      - "--" # end bootstrap args, scenario args below
-      - "--test=//... -//build/... -//vendor/..."
-      - "--manual-test=//hack:verify-all"
-      - "--test-args=--config=unit"
-      - "--test-args=--build_tag_filters=-e2e,-integration"
-      - "--test-args=--test_tag_filters=-e2e,-integration"
-      - "--test-args=--flaky_test_attempts=3"
-      env:
-      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
-      - name: REPO_OWNER
-        value: kubernetes
-      - name: REPO_NAME
-        value: kubernetes
-      resources:
-        requests:
-          memory: "6Gi"
-
-- interval: 5m
-  name: periodic-kubernetes-bazel-test-rbe-master
   decorate: true
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
+    fork-per-release-periodic-interval: 6h
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-7d6039b-master
+      command:
+      - bash
+      args:
+      - -c
+      - |
+              set -o errexit
+              gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+              ../test-infra/scenarios/kubernetes_bazel.py \
+                  --config=ci \
+                  "--build=//... -//vendor/..." \
+                  --release=//build/release-tars \
+                  --gcs=gs://kubernetes-release-dev/ci \
+                  --version-suffix=-bazel \
+                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+
+# periodic bazel test jobs
+- interval: 5m
+  name: periodic-kubernetes-bazel-test-master
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 6h
   extra_refs:
   - base_ref: master
     org: kubernetes

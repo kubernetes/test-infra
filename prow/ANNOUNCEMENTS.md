@@ -61,6 +61,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *May 2, 2019* All components exposing Prometheus metrics will now either push them
+   to the Prometheus PushGateway, if configured, or serve them locally on port 9090 at
+   `/metrics`, if not configured (the default).
  - *April 26, 2019* `blunderbuss`, `approve`, and other plugins that read OWNERS
    now treat `owners_dir_blacklist` as a list of regular expressions matched
    against the entire (repository-relative) directory path of the OWNERS file rather

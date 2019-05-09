@@ -19,6 +19,7 @@ package gcsupload
 import (
 	"context"
 	"fmt"
+	"mime"
 	"os"
 	"path"
 	"path/filepath"
@@ -39,6 +40,12 @@ import (
 // to their destination in GCS, so the caller can
 // operate relative to the base of the GCS dir.
 func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
+	for _, extension := range o.Extensions.Strings() {
+		parts := strings.SplitN(extension, ":", 2)
+		ext, mediaType := parts[0], parts[1]
+		mime.AddExtensionType("."+ext, mediaType)
+	}
+
 	uploadTargets := o.assembleTargets(spec, extra)
 
 	if !o.DryRun {

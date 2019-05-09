@@ -29,7 +29,7 @@ import (
 )
 
 var (
-	branchRE = regexp.MustCompile(`(?im)\bbranch:[^\w-]*([\w-]+)\b`)
+	branchRE = regexp.MustCompile(`(?im)\bbranch:[^\w-]*([\w-./]+)\b`)
 )
 
 type githubClient interface {
@@ -88,7 +88,7 @@ func fromIssues(issues []Issue, log *logrus.Entry) Blockers {
 	log.Debugf("Finding blockers from %d issues.", len(issues))
 	res := Blockers{Repo: make(map[orgRepo][]Blocker), Branch: make(map[orgRepoBranch][]Blocker)}
 	for _, issue := range issues {
-		logger := log.WithFields(logrus.Fields{"org": issue.Repository.Owner, "repo": issue.Repository.Name, "issue": issue.Number})
+		logger := log.WithFields(logrus.Fields{"org": issue.Repository.Owner.Login, "repo": issue.Repository.Name, "issue": issue.Number})
 		strippedTitle := branchRE.ReplaceAllLiteralString(string(issue.Title), "")
 		block := Blocker{
 			Number: int(issue.Number),

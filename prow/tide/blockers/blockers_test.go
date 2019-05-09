@@ -206,6 +206,34 @@ func TestBlockers(t *testing.T) {
 			},
 		},
 		{
+			name: "1 repo blocker for a branch",
+			issues: []Issue{
+				testIssue(6, "BLOCK THE release-1.11 BRANCH! branch:release-1.11", "k", "t-i"),
+			},
+			checks: []check{
+				{
+					org:      "k",
+					repo:     "t-i",
+					branch:   "release-1.11",
+					blockers: sets.NewInt(6),
+				},
+			},
+		},
+		{
+			name: "1 repo blocker for a branch",
+			issues: []Issue{
+				testIssue(6, "BLOCK THE slash/in/name BRANCH! branch:slash/in/name", "k", "t-i"),
+			},
+			checks: []check{
+				{
+					org:      "k",
+					repo:     "t-i",
+					branch:   "slash/in/name",
+					blockers: sets.NewInt(6),
+				},
+			},
+		},
+		{
 			name: "2 repo blockers for same repo",
 			issues: []Issue{
 				testIssue(5, "BLOCK THE WHOLE REPO!", "k", "t-i"),

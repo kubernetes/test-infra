@@ -41,8 +41,9 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	description := j.Name
 
 	mustMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "true"
+	mustNotMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "false"
 	dashboards, addToDashboards := j.Annotations[testgridDashboardsAnnotation]
-	mightMakeGroup := mustMakeGroup || addToDashboards
+	mightMakeGroup := (mustMakeGroup || addToDashboards || jobType != prowapi.PresubmitJob) && !mustNotMakeGroup
 
 	if mightMakeGroup {
 		if c.config.FindTestGroup(testGroupName) != nil {
