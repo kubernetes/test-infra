@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+      - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -69,7 +69,7 @@ periodics:
     fork-per-release-periodic-interval: 2h 2h 6h 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+    - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
       args:
       - --repo=k8s.io/kubernetes
       - --timeout=100

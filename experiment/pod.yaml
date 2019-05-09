@@ -16,7 +16,7 @@ metadata:
 spec:
   containers:
   - name: k8s-e2e-test
-    image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170606-e69a3df0
+    image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170929-9413e407
     args:
     - "--timeout=60"
     env:
