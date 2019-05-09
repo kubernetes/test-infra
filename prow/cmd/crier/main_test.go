@@ -23,12 +23,10 @@ import (
 	"testing"
 )
 
-
-
 func TestOptions(t *testing.T) {
 
 	defaultGitHubOptions := flagutil.GitHubOptions{}
-	defaultGitHubOptions.AddFlags(flag.NewFlagSet("",flag.ContinueOnError))
+	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
 
 	cases := []struct {
 		name     string
@@ -42,7 +40,7 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "config-path is empty string, reject",
-			args: []string{"--pubsub-workers=1","--config-path="},
+			args: []string{"--pubsub-workers=1", "--config-path="},
 		},
 		//Gerrit Reporter
 		{
@@ -55,7 +53,7 @@ func TestOptions(t *testing.T) {
 					"foo": {"bar"},
 				},
 				configPath: "foo",
-				github: defaultGitHubOptions,
+				github:     defaultGitHubOptions,
 			},
 		},
 		{
@@ -71,7 +69,7 @@ func TestOptions(t *testing.T) {
 					"foo": {"bar"},
 				},
 				configPath: "foo",
-				github: defaultGitHubOptions,
+				github:     defaultGitHubOptions,
 			},
 		},
 		//PubSub Reporter
@@ -80,28 +78,28 @@ func TestOptions(t *testing.T) {
 			args: []string{"--pubsub-workers=7", "--config-path=baz"},
 			expected: &options{
 				pubsubWorkers: 7,
-				configPath: "baz",
-				github: defaultGitHubOptions,
+				configPath:    "baz",
+				github:        defaultGitHubOptions,
 			},
 		},
 		{
 			name: "pubsub workers set to negative, rejects",
-			args: []string{"--pubsub-workers=-3","--config-path=foo",},
+			args: []string{"--pubsub-workers=-3", "--config-path=foo"},
 		},
 		//Slack Reporter
 		{
 			name: "slack workers, sets workers",
-			args: []string{"--slack-workers=13","--slack-token-file=/bar/baz","--config-path=foo"},
+			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo"},
 			expected: &options{
-				slackWorkers:13,
-				slackTokenFile:"/bar/baz",
-				configPath: "foo",
-				github: defaultGitHubOptions,
+				slackWorkers:   13,
+				slackTokenFile: "/bar/baz",
+				configPath:     "foo",
+				github:         defaultGitHubOptions,
 			},
 		},
 		{
 			name: "slack missing --slack-token, rejects",
-			args: []string{"--slack-workers=1","--config-path=foo"},
+			args: []string{"--slack-workers=1", "--config-path=foo"},
 		},
 	}
 
@@ -123,8 +121,8 @@ func TestOptions(t *testing.T) {
 /*
 The GitHubOptions object has several private fields and objects
 This unit testing covers only the public portions
- */
-func TestGitHubOptions(t *testing.T){
+*/
+func TestGitHubOptions(t *testing.T) {
 	cases := []struct {
 		name              string
 		args              []string
@@ -132,14 +130,14 @@ func TestGitHubOptions(t *testing.T){
 		expectedTokenPath string
 	}{
 		{
-			name: "github workers, sets workers",
-			args: []string{"--github-workers=5", "--github-token-path=tkpath", "--config-path=foo"},
+			name:              "github workers, sets workers",
+			args:              []string{"--github-workers=5", "--github-token-path=tkpath", "--config-path=foo"},
 			expectedWorkers:   5,
 			expectedTokenPath: "tkpath",
 		},
 		{
-			name: "github missing --github-token-path, uses default",
-			args: []string{"--github-workers=5", "--config-path=foo"},
+			name:              "github missing --github-token-path, uses default",
+			args:              []string{"--github-workers=5", "--config-path=foo"},
 			expectedWorkers:   5,
 			expectedTokenPath: "/etc/github/oauth",
 		},
@@ -155,11 +153,11 @@ func TestGitHubOptions(t *testing.T){
 		}
 		if actual.githubWorkers != tc.expectedWorkers {
 			t.Errorf("%s: worker mismatch: actual %d != expected %d",
-				tc.name, actual.githubWorkers,tc.expectedWorkers)
+				tc.name, actual.githubWorkers, tc.expectedWorkers)
 		}
 		if actual.github.TokenPath != tc.expectedTokenPath {
 			t.Errorf("%s: path mismatch: actual %s != expected %s",
-				tc.name, actual.github.TokenPath,tc.expectedTokenPath)
+				tc.name, actual.github.TokenPath, tc.expectedTokenPath)
 		}
 	}
 }

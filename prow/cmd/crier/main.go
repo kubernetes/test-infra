@@ -115,7 +115,7 @@ func (o *options) validate() error {
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
-	o.gerritProjects = gerritclient.ProjectsFlag{};
+	o.gerritProjects = gerritclient.ProjectsFlag{}
 
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.gerritProjects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
@@ -138,7 +138,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.Parse(args)
 
 	if len(o.gerritProjects) == 0 {
-		o.gerritProjects = nil;
+		o.gerritProjects = nil
 	}
 
 	return o.validate()
