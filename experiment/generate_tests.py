@@ -75,7 +75,6 @@ def write_prow_configs_file(output_file, job_defs):
     with open(output_file, 'w') as fp:
         yaml.dump(
             job_defs, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
-        fp.write('\n')
 
 
 def apply_job_overrides(envs_or_args, job_envs_or_args):
