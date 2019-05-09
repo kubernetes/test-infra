@@ -18,6 +18,8 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"io"
 	"net"
 	"os"
@@ -37,8 +39,11 @@ import (
 	log "k8s.io/klog"
 )
 
+var (
+	port = flag.Int("port", 17654, "Port to run grpc worker service")
+)
+
 const (
-	port       = ":17654"
 	bucketName = "kubernetes-jenkins"
 	lineBuffer = 100000
 )
@@ -53,12 +58,13 @@ type lineFilter struct {
 
 func main() {
 	log.InitFlags(nil)
+	flag.Parse()
 
-	listener, err := net.Listen("tcp", port)
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", *port))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
-	log.Infof("Listening on port: %v", port)
+	log.Infof("Listening on port: %v", *port)
 	server := grpc.NewServer()
 	pb.RegisterWorkerServer(server, &serverType{})
 	err = server.Serve(listener)
@@ -82,8 +88,14 @@ func (*serverType) DoWork(request *pb.Work, server pb.Worker_DoWorkServer) error
 		return err
 	}
 
-	since, _ := ptypes.Timestamp(request.Since)
-	until, _ := ptypes.Timestamp(request.Until)
+	since, err := ptypes.Timestamp(request.Since)
+	if err != nil {
+		return fmt.Errorf("Unable to parse request.Since: %v", err)
+	}
+	until, err := ptypes.Timestamp(request.Until)
+	if err != nil {
+		return fmt.Errorf("Unable to parse request.Until: %v", err)
+	}
 	filters := &lineFilter{
 		regex: regex,
 		since: since,

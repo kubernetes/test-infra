@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -21,23 +22,27 @@ import (
 	log "k8s.io/klog"
 )
 
+var (
+	// Todo support & discovery for multiple workers
+	address         = flag.String("address", "localhost:17654", "Worker address")
+	mixerServerPort = flag.Int("port", 17655, "Mixer server port")
+)
+
 const (
-	address         = "localhost:17654"
-	mixerServerPort = 17655
-	timeoutSeconds  = 300
-	bucketName      = "kubernetes-jenkins"
-	batchSize       = 100
+	timeoutSeconds = 300
+	bucketName     = "kubernetes-jenkins"
+	batchSize      = 100
 )
 
 func main() {
 	setup()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", mixerServerPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *mixerServerPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
 	mixerPb.RegisterMixerServiceServer(grpcServer, &mixerServer{})
-	log.Infof("Listening on port %v", mixerServerPort)
+	log.Infof("Listening on port %v", *mixerServerPort)
 	grpcServer.Serve(lis)
 }
 
@@ -72,6 +77,8 @@ var workers []pb.WorkerClient
 
 func setup() func() {
 	log.InitFlags(nil)
+	flag.Parse()
+
 	connections, err := initWorkers()
 	if err != nil {
 		log.Fatalln(err)
@@ -144,7 +151,7 @@ func processWorkResults(rpcResponses []chan *callResult, works []*pb.Work) []*pb
 }
 
 func initWorkers() ([]*grpc.ClientConn, error) {
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := grpc.Dial(*address, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
