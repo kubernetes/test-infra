@@ -367,7 +367,8 @@ if __name__ == '__main__':
         '--output-dir',
         help='Prowjob config output dir',
         default='config/jobs/kubernetes/generated/')
-    PARSER.add_argument('--testgrid-output-path',
+    PARSER.add_argument(
+        '--testgrid-output-path',
         help='Path to testgrid output file',
         default='testgrid/generated-test-config.yaml')
     ARGS = PARSER.parse_args()
