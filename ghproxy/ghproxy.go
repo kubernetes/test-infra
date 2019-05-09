@@ -129,12 +129,10 @@ func main() {
 		cache = ghcache.NewMemCache(http.DefaultTransport, o.maxConcurrency)
 	} else {
 		cache = ghcache.NewDiskCache(http.DefaultTransport, o.dir, o.sizeGB, o.maxConcurrency)
-	}
-
-	if o.pushGateway != "" {
-		go metrics.PushMetrics("ghproxy", o.pushGateway, o.pushGatewayInterval)
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
+
+	metrics.ExposeMetrics("ghproxy", o.pushGateway, o.pushGatewayInterval)
 
 	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), proxy))

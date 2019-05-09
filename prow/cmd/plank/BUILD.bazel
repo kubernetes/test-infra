@@ -29,7 +29,6 @@ go_library(
         "//prow/metrics:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/plank:go_default_library",
-        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
     ],

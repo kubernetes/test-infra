@@ -31,7 +31,6 @@ import (
 	"time"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/test-infra/prow/pjutil"
@@ -204,14 +203,12 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Expose prometheus metrics
 	pushGateway := cfg().PushGateway
-	if pushGateway.Endpoint != "" {
-		go m.PushMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	m.ExposeMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval)
+
 	// Serve Jenkins logs here and proxy deck to use this endpoint
-	// instead of baking agent-specific logic in deck. This func also
-	// serves prometheus metrics.
+	// instead of baking agent-specific logic in deck
 	go serve(jc)
 	// gather metrics for the jobs handled by the jenkins controller.
 	go gather(c)
@@ -262,11 +259,9 @@ func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
 }
 
 // serve starts a http server and serves Jenkins logs
-// and prometheus metrics. Meant to be called inside
-// a goroutine.
+// and. Meant to be called inside a goroutine.
 func serve(jc *jenkins.Client) {
 	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
-	http.Handle("/metrics", promhttp.Handler())
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
