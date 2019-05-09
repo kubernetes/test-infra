@@ -18,23 +18,33 @@ package main
 
 import (
 	"flag"
+	"k8s.io/test-infra/prow/flagutil"
 	"reflect"
 	"testing"
-
-	"k8s.io/test-infra/prow/flagutil"
-	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 )
 
+
+
 func TestOptions(t *testing.T) {
+
+	defaultGitHubOptions := flagutil.GitHubOptions{}
+	defaultGitHubOptions.AddFlags(flag.NewFlagSet("",flag.ContinueOnError))
+
 	cases := []struct {
 		name     string
 		args     []string
 		expected *options
 	}{
+		//General
 		{
-			name: "empty, reject",
+			name: "no args, reject",
 			args: []string{},
 		},
+		{
+			name: "config-path is empty string, reject",
+			args: []string{"--pubsub-workers=1","--config-path="},
+		},
+		//Gerrit Reporter
 		{
 			name: "gerrit only support one worker",
 			args: []string{"--gerrit-workers=99", "--gerrit-projects=foo=bar", "--cookiefile=foobar", "--config-path=foo"},
@@ -45,6 +55,7 @@ func TestOptions(t *testing.T) {
 					"foo": {"bar"},
 				},
 				configPath: "foo",
+				github: defaultGitHubOptions,
 			},
 		},
 		{
@@ -60,17 +71,44 @@ func TestOptions(t *testing.T) {
 					"foo": {"bar"},
 				},
 				configPath: "foo",
+				github: defaultGitHubOptions,
 			},
+		},
+		//PubSub Reporter
+		{
+			name: "pubsub workers, sets workers",
+			args: []string{"--pubsub-workers=7", "--config-path=baz"},
+			expected: &options{
+				pubsubWorkers: 7,
+				configPath: "baz",
+				github: defaultGitHubOptions,
+			},
+		},
+		{
+			name: "pubsub workers set to negative, rejects",
+			args: []string{"--pubsub-workers=-3","--config-path=foo",},
+		},
+		//Slack Reporter
+		{
+			name: "slack workers, sets workers",
+			args: []string{"--slack-workers=13","--slack-token-file=/bar/baz","--config-path=foo"},
+			expected: &options{
+				slackWorkers:13,
+				slackTokenFile:"/bar/baz",
+				configPath: "foo",
+				github: defaultGitHubOptions,
+			},
+		},
+		{
+			name: "slack missing --slack-token, rejects",
+			args: []string{"--slack-workers=1","--config-path=foo"},
 		},
 	}
 
 	for _, tc := range cases {
 		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
-		actual := options{
-			gerritProjects: gerritclient.ProjectsFlag{},
-		}
+		actual := options{}
 		err := actual.parseArgs(flags, tc.args)
-		actual.github = flagutil.GitHubOptions{}
 		switch {
 		case err == nil && tc.expected == nil:
 			t.Errorf("%s: failed to return an error", tc.name)
@@ -78,6 +116,50 @@ func TestOptions(t *testing.T) {
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
 			t.Errorf("%s: actual %v != expected %v", tc.name, actual, *tc.expected)
+		}
+	}
+}
+
+/*
+The GithubOptions object has several private fields and objects
+This unit testing covers only the public portions
+ */
+func TestGitHubOptions(t *testing.T){
+	cases := []struct {
+		name              string
+		args              []string
+		expectedWorkers   int
+		expectedTokenPath string
+	}{
+		{
+			name: "github workers, sets workers",
+			args: []string{"--github-workers=5", "--github-token-path=tkpath", "--config-path=foo"},
+			expectedWorkers:   5,
+			expectedTokenPath: "tkpath",
+		},
+		{
+			name: "github missing --github-token-path, uses default",
+			args: []string{"--github-workers=5", "--config-path=foo"},
+			expectedWorkers:   5,
+			expectedTokenPath: "/etc/github/oauth",
+		},
+	}
+
+	for _, tc := range cases {
+		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+		actual := options{}
+		err := actual.parseArgs(flags, tc.args)
+
+		if err != nil {
+			t.Errorf("%s: unexpected error: %v", tc.name, err)
+		}
+		if actual.githubWorkers != tc.expectedWorkers {
+			t.Errorf("%s: worker mismatch: actual %d != expected %d",
+				tc.name, actual.githubWorkers,tc.expectedWorkers)
+		}
+		if actual.github.TokenPath != tc.expectedTokenPath {
+			t.Errorf("%s: path mismatch: actual %s != expected %s",
+				tc.name, actual.github.TokenPath,tc.expectedTokenPath)
 		}
 	}
 }

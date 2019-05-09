@@ -114,6 +114,9 @@ func (o *options) validate() error {
 }
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
+
+	o.gerritProjects = gerritclient.ProjectsFlag{};
+
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.gerritProjects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
 	fs.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
@@ -134,13 +137,15 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
 	fs.Parse(args)
 
+	if len(o.gerritProjects) == 0 {
+		o.gerritProjects = nil;
+	}
+
 	return o.validate()
 }
 
 func parseOptions() options {
-	o := options{
-		gerritProjects: gerritclient.ProjectsFlag{},
-	}
+	o := options{}
 
 	if err := o.parseArgs(flag.CommandLine, os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatal("Invalid flag options")
