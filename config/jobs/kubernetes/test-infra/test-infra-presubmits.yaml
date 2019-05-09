@@ -159,25 +159,6 @@ presubmits:
           requests:
             memory: "2Gi"
 
-  - name: pull-test-infra-verify-labels
-    branches:
-    - master
-    run_if_changed: '^label_sync/labels.yaml'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-labels.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
   - name: pull-test-infra-verify-file-perms
     branches:
     - master

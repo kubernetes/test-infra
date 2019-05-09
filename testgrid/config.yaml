@@ -2131,9 +2131,6 @@ test_groups:
 - name: pull-test-infra-verify-deps
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-deps
   num_columns_recent: 20
-- name: pull-test-infra-verify-labels
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-labels
-  num_columns_recent: 20
 - name: pull-test-infra-verify-file-perms
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-file-perms
   num_columns_recent: 20
@@ -7234,9 +7231,6 @@ dashboards:
     base_options: width=10
   - name: verify-deps
     test_group_name: pull-test-infra-verify-deps
-    base_options: width=10
-  - name: verify-labels
-    test_group_name: pull-test-infra-verify-labels
     base_options: width=10
   - name: verify-codegen
     test_group_name: pull-test-infra-verify-codegen
