@@ -115,6 +115,11 @@ type Blunderbuss struct {
 	// insufficient reviewers are available. If ExcludeApprovers is true,
 	// approvers will never be considered as reviewers.
 	ExcludeApprovers bool `json:"exclude_approvers,omitempty"`
+	// UseStatusAvailability controls whether blunderbuss will consider GitHub's
+	// status availability when requesting reviews for users. This will use at one
+	// additional token per successful reviewer (and potentially more depending on
+	// how many busy reviewers it had to pass over).
+	UseStatusAvailability bool `json:"use_status_availability,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
