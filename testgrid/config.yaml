@@ -3268,31 +3268,31 @@ test_groups:
   days_of_results: 7
 # Istio CircleCI Presubmits Master
 - name: istio-circleci-e2e-simple-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/e2e-simple-master
+  gcs_prefix: istio-circleci/presubmit/master/e2e-simple
 - name: istio-circleci-e2e-dashboard-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/e2e-dashboard-master
+  gcs_prefix: istio-circleci/presubmit/master/e2e-dashboard
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/presubmit/master/e2e-mixer-noauth-v1alpha3-v2
   days_of_results: 15
 - name: istio-circleci-e2e-galley-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/e2e-galley-master
+  gcs_prefix: istio-circleci/presubmit/master/e2e-galley
 - name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/e2e-pilot-cloudfoundry-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/presubmit/master/e2e-pilot-cloudfoundry-v1alpha3-v2
 - name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/presubmit/master/e2e-pilot-auth-v1alpha3-v2
 - name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/presubmit/master/e2e-pilot-noauth-v1alpha3-v2
 - name: istio-circleci-test-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/test-master
+  gcs_prefix: istio-circleci/presubmit/master/test
   days_of_results: 7
 - name: istio-circleci-codecov-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/codecov-master
+  gcs_prefix: istio-circleci/presubmit/master/codecov
 - name: istio-circleci-racetest-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/racetest-master
+  gcs_prefix: istio-circleci/presubmit/master/racetest
 - name: istio-circleci-test-integration-local-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/test-integration-local-master
+  gcs_prefix: istio-circleci/presubmit/master/test-integration-local
 - name: istio-circleci-test-integration-kubernetes-presubmit-master
-  gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes-master
+  gcs_prefix: istio-circleci/presubmit/master/test-integration-kubernetes
   days_of_results: 7
 # Istio CircleCI Postsubmits
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
@@ -3326,33 +3326,33 @@ test_groups:
   num_failures_to_alert: 5
 # Istio CircleCI Postsubmits Master
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-master
-  gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/master/e2e-mixer-noauth-v1alpha3-v2
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-simple-master
-  gcs_prefix: istio-circleci/e2e-simple-master
+  gcs_prefix: istio-circleci/master/e2e-simple
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-dashboard-master
-  gcs_prefix: istio-circleci/e2e-dashboard-master
+  gcs_prefix: istio-circleci/master/e2e-dashboard
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-master
-  gcs_prefix: istio-circleci/e2e-pilot-auth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/master/e2e-pilot-auth-v1alpha3-v2
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-master
-  gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/master/e2e-pilot-noauth-v1alpha3-v2
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-galley-master
-  gcs_prefix: istio-circleci/e2e-galley-master
+  gcs_prefix: istio-circleci/master/e2e-galley
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-master
-  gcs_prefix: istio-circleci/e2e-pilot-cloudfoundry-v1alpha3-v2-master
+  gcs_prefix: istio-circleci/master/e2e-pilot-cloudfoundry-v1alpha3-v2
   num_failures_to_alert: 5
 - name: istio-circleci-test-master
   days_of_results: 3
-  gcs_prefix: istio-circleci/test-master
+  gcs_prefix: istio-circleci/master/test
   num_failures_to_alert: 5
 - name: istio-circleci-racetest-master
   days_of_results: 3
-  gcs_prefix: istio-circleci/racetest-master
+  gcs_prefix: istio-circleci/master/racetest
   num_failures_to_alert: 5
 
 # Istio releases
