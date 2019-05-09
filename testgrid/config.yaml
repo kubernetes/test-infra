@@ -51,14 +51,6 @@ default_dashboard_tab:
 #
 
 test_groups:
-- name: post-k8sio-cip
-  gcs_prefix: kubernetes-jenkins/logs/post-k8sio-cip
-- name: ci-k8sio-cip
-  gcs_prefix: kubernetes-jenkins/logs/ci-k8sio-cip
-- name: ci-cadvisor-canarypush
-  gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-canarypush
-- name: ci-cadvisor-e2e
-  gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-e2e
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
   test_name_config:
@@ -101,66 +93,10 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-cri-containerd-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-build
-- name: ci-containerd-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build
-- name: ci-containerd-build-1-1
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build-1-1
-- name: ci-containerd-build-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-build-1-2
-- name: ci-cri-containerd-e2e-gci-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce
-- name: ci-cri-containerd-e2e-ubuntu-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-ubuntu-gce
-- name: ci-cri-containerd-e2e-gci-gce-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-reboot
-- name: ci-cri-containerd-e2e-gci-gce-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-serial
-- name: ci-cri-containerd-e2e-gci-gce-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-slow
-- name: ci-cri-containerd-e2e-gci-gce-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-flaky
-- name: ci-cri-containerd-e2e-gci-gce-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-alpha-features
-- name: ci-cri-containerd-e2e-gci-gce-statefulset
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-statefulset
-- name: ci-cri-containerd-e2e-gci-gce-proto
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-proto
-- name: ci-containerd-soak-gci-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-soak-gci-gce
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-device-plugin-gpu
   alert_stale_results_hours: 24
   num_failures_to_alert: 8 # Runs every 3h. Alert when it's been failing for a day.
-- name: ci-cri-containerd-e2e-gci-gce-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ingress
-- name: ci-cri-containerd-e2e-gce-multizone
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-multizone
-- name: ci-cri-containerd-e2e-gci-gce-sd-logging
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-sd-logging
-- name: ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
-- name: ci-cri-containerd-e2e-gci-gce-es-logging
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-es-logging
-- name: ci-cri-containerd-e2e-gce-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-stackdriver
-- name: ci-cri-containerd-e2e-gci-gce-ip-alias
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ip-alias
-- name: ci-containerd-e2e-gci-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce
-- name: ci-containerd-e2e-gci-gce-1-1
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-1
-- name: ci-containerd-e2e-gci-gce-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-gci-gce-1-2
-- name: ci-containerd-e2e-shielded-gci-gce-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-shielded-gci-gce-1-2
-- name: ci-containerd-e2e-shielded-gci-gce-slow-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-shielded-gci-gce-slow-1-2
-- name: ci-containerd-e2e-shielded-gci-gce-serial-1-2
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-shielded-gci-gce-serial-1-2
-- name: ci-containerd-e2e-ubuntu-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-e2e-ubuntu-gce
 - name: ci-cri-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e
   test_name_config:
@@ -238,68 +174,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-docker-node-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-conformance
-- name: ci-docker-node-legacy
-  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-legacy
-- name: ci-docker-node-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-features
-- name: ci-ingress-gce-image-push
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-image-push
-- name: ci-ingress-gce-e2e
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e
-- name: ci-ingress-gce-e2e-multi-zone
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-multi-zone
-- name: ci-ingress-gce-e2e-release-1-3
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-3
-- name: ci-ingress-gce-e2e-release-1-4
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-4
-- name: ci-ingress-gce-e2e-release-1-5
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-5
-- name: ci-ingress-gce-e2e-scale
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-scale
-- name: ci-cluster-api-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-build
-- name: ci-cluster-api-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-test
-- name: ci-cluster-api-provider-gcp-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-gcp-build
-- name: ci-cluster-api-provider-gcp-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-gcp-test
-- name: ci-kubemci-image-push
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-image-push
-- name: ci-kubernetes-build-fast
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-fast
-- name: ci-kubernetes-build-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-beta
-- name: ci-kubernetes-build-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-stable1
-- name: ci-kubernetes-build-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-stable2
-- name: ci-kubernetes-build-stable3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-stable3
-- name: ci-kubernetes-e2e-kops-aws
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
-- name: ci-kubernetes-e2e-kops-aws-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
-- name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
-- name: ci-kubernetes-e2e-kops-aws-sig-cli
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-sig-cli
-- name: ci-kubernetes-e2e-kops-aws-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-updown
-- name: ci-kubernetes-e2e-kops-aws-weave
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-weave
-- name: ci-kubernetes-e2e-kops-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce
-- name: ci-kubernetes-e2e-kops-gce-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-canary
-- name: ci-kubernetes-e2e-kops-gce-channelalpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-channelalpha
-- name: ci-kubernetes-e2e-kops-gce-ha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-ha
-- name: ci-kubernetes-e2e-gce-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-coverage-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
   short_text_metric: coverage
@@ -322,36 +196,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-enabled-default
-- name: ci-kubernetes-e2e-gci-gce-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
-- name: ci-kubernetes-e2e-gci-gce-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling
-- name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-migs
-- name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-hpa
-- name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
-- name: ci-kubernetes-e2e-autoscaling-vpa-recommender
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-recommender
-- name: ci-kubernetes-e2e-autoscaling-vpa-updater
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-updater
-- name: ci-kubernetes-e2e-autoscaling-vpa-actuation
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-actuation
-- name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-admission-controller
-- name: ci-kubernetes-e2e-autoscaling-vpa-full
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-full
-- name: ci-kubernetes-e2e-gce-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stackdriver
-- name: ci-kubernetes-e2e-gce-prometheus
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-prometheus
-- name: ci-kubernetes-e2e-gce-influxdb
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-influxdb
-- name: ci-kubernetes-e2e-gce-node-throughput
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-node-throughput
 - name: ci-kubernetes-e2e-gce-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-correctness
   days_of_results: 60
@@ -362,49 +206,13 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gci-gce-es-logging
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
-- name: ci-kubernetes-e2e-gci-gce-sd-logging
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
-- name: ci-kubernetes-e2e-gci-gce-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
-- name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-single-flake-attempt
-- name: ci-kubernetes-e2e-gci-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce
 - name: ci-kubernetes-e2e-gci-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gci-gce-scalability-killer
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-killer
-- name: ci-kubernetes-e2e-gci-gce-ip-alias
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
 - name: ci-kubernetes-e2e-gci-gce-ipvs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ipvs
   alert_stale_results_hours: 24
   num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours.
-- name: ci-kubernetes-e2e-gci-gce-coredns
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns
-- name: ci-kubernetes-e2e-gci-gce-kube-dns
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns
-- name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns-nodecache
-- name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
-- name: ci-kubernetes-e2e-gce-alpha-api
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
-- name: ci-kubernetes-e2e-gci-gce-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
-- name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-kube-dns
-- name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
-- name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-serial-sig-cli
-- name: ci-kubernetes-e2e-gci-gce-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow
-- name: ci-kubernetes-e2e-gci-gce-sig-cli
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sig-cli
 - name: ci-kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
   alert_stale_results_hours: 24
@@ -434,16 +242,6 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-manual-network
   alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gce-multizone
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-multizone
-- name: ci-kubernetes-e2e-gci-gce-statefulset
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-statefulset
-- name: ci-kubernetes-e2e-gci-gce-proto
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-proto
-- name: ci-kubernetes-e2e-gci-gce-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot
-- name: ci-kubernetes-e2e-gce-scalability-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-canary
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu
   alert_stale_results_hours: 24
@@ -484,44 +282,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gci-gke-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
-- name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-enabled-default
-- name: ci-kubernetes-e2e-gci-gke-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling
-- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
-- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
-- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
-- name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-regional
-- name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-hpa
-- name: ci-kubernetes-e2e-gke-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stackdriver
-- name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-sd-logging-gci-latest
-- name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
-- name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-sd-logging-gci-beta
-- name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-- name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-- name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
-- name: ci-kubernetes-e2e-gci-gke-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-flaky
-- name: ci-kubernetes-e2e-gci-gke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke
-- name: ci-kubernetes-e2e-gci-gke-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-serial
-- name: ci-kubernetes-e2e-gci-gke-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow
 - name: ci-kubernetes-e2e-gci-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress
   alert_stale_results_hours: 24
@@ -538,14 +298,6 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gci-gke-multizone
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
-- name: ci-kubernetes-e2e-gke-regional
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional
-- name: ci-kubernetes-e2e-gke-regional-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional-serial
-- name: ci-kubernetes-e2e-gke-regional-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional-slow
 - name: ci-kubernetes-e2e-gke-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
   days_of_results: 60
@@ -556,40 +308,6 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gci-gke-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot
-- name: ci-kubernetes-e2e-gce-ha-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ha-master
-- name: ci-kubernetes-e2e-gci-gke-sig-cli
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-sig-cli
-- name: ci-kubernetes-e2e-gci-gke-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-updown
-- name: ci-kubernetes-e2e-gke-gci-ci-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-ci-master
-- name: ci-kubernetes-e2e-gke-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-canary
-- name: ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
-- name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
-- name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
-- name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
-- name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
-- name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
-- name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
-- name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
-- name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
-- name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
-- name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
   num_failures_to_alert: 1
@@ -609,48 +327,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-local-e2e
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
-- name: ci-kubernetes-soak-gce-gci
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci
-- name: ci-kubernetes-soak-gke-gci
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci
-- name: ci-kubernetes-soak-gke-cos-containerd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-cos-containerd
-- name: ci-kubernetes-integration-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-integration-beta
-- name: ci-kubernetes-integration-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-integration-master
-- name: ci-kubernetes-integration-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-integration-stable1
-- name: ci-kubernetes-integration-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-integration-stable2
-- name: ci-kubernetes-integration-stable3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-integration-stable3
-- name: ci-kubernetes-verify-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-beta
-- name: ci-kubernetes-verify-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-master
-- name: ci-kubernetes-verify-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-stable1
-- name: ci-kubernetes-verify-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-stable2
-- name: ci-kubernetes-verify-stable3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-stable3
-- name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
 - name: ci-kubernetes-node-kubelet-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
   test_name_config:
@@ -709,130 +385,23 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kops-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
-- name: maintenance-boskos-config-upload
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
   num_failures_to_alert: 2
-- name: maintenance-ci-aws-janitor
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
-- name: maintenance-ci-janitor
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
-- name: maintenance-pull-janitor
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-janitor
-- name: maintenance-pull-scale-janitor
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-scale-janitor
-- name: ci-kubernetes-build-debian-unstable
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
-- name: ci-kubernetes-e2e-gce-taint-evict
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
-- name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
   alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gce-cos-k8sstable3-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-reboot
-- name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-default
-- name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-serial
-- name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-slow
 - name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
   alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-- name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable3-default
-- name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-- name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable3-slow
-- name: ci-kubernetes-soak-gci-gce-stable3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable3
 # Manual, federated groups
 # bazel, run on prow
-- name: ci-kubernetes-bazel-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build
-- name: post-kubernetes-bazel-build
-  gcs_prefix: kubernetes-jenkins/logs/post-kubernetes-bazel-build
-- name: ci-kubernetes-bazel-build-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-11
-- name: ci-kubernetes-bazel-build-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-12
-- name: ci-kubernetes-bazel-build-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-13
-- name: ci-kubernetes-bazel-build-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-14
-- name: ci-kubernetes-bazel-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
-- name: post-kubernetes-bazel-test
-  gcs_prefix: kubernetes-jenkins/logs/post-kubernetes-bazel-test
-- name: ci-kubernetes-bazel-test-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-11
-- name: ci-kubernetes-bazel-test-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-12
-- name: ci-kubernetes-bazel-test-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-13
-- name: ci-kubernetes-bazel-test-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-14
-- name: ci-test-infra-build-smoke
-  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-build-smoke
 - name: pull-test-infra-build-smoke
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-build-smoke
   num_columns_recent: 20
 - name: pull-test-infra-build-smoke-fail
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-build-smoke-fail
   num_columns_recent: 20
-- name: post-test-infra-build-smoke
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-build-smoke
-- name: post-test-infra-bazel
-  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-bazel
-- name: ci-test-infra-bazel
-  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
-- name: ci-test-infra-canary-echo-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-canary-echo-test
-- name: ci-test-infra-benchmark-demo
-  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-benchmark-demo
-- name: ci-test-infra-resultstore-upload
-  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-resultstore-upload
-# Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
-- name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial
-- name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec
-- name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable1-serial
-- name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable2-gkespec
-- name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable2-serial
-- name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable3-gkespec
-- name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable3-serial
-- name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec
-- name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial
-- name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
-- name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
-- name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable2-gkespec
-- name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable2-serial
-- name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
-- name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
 # Ubuntu cluster e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
 # ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-*
 - name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-default
@@ -1462,40 +1031,6 @@ test_groups:
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
-
-# COS image validation
-- name: ci-kubernetes-e2enode-cos1-k8sbeta-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sbeta-gkespec
-- name: ci-kubernetes-e2enode-cos1-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sbeta-serial
-- name: ci-kubernetes-e2enode-cos1-k8sstable1-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable1-gkespec
-- name: ci-kubernetes-e2enode-cos1-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable1-serial
-- name: ci-kubernetes-e2enode-cos1-k8sstable2-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable2-gkespec
-- name: ci-kubernetes-e2enode-cos1-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable2-serial
-- name: ci-kubernetes-e2enode-cos1-k8sstable3-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable3-gkespec
-- name: ci-kubernetes-e2enode-cos1-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable3-serial
-- name: ci-kubernetes-e2enode-cos2-k8sbeta-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sbeta-gkespec
-- name: ci-kubernetes-e2enode-cos2-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sbeta-serial
-- name: ci-kubernetes-e2enode-cos2-k8sstable1-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable1-gkespec
-- name: ci-kubernetes-e2enode-cos2-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable1-serial
-- name: ci-kubernetes-e2enode-cos2-k8sstable2-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable2-gkespec
-- name: ci-kubernetes-e2enode-cos2-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable2-serial
-- name: ci-kubernetes-e2enode-cos2-k8sstable3-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable3-gkespec
-- name: ci-kubernetes-e2enode-cos2-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable3-serial
 
 # ci-kubernetes-e2e-gce-cos1-k8sbeta-*
 - name: ci-kubernetes-e2e-gce-cos1-k8sbeta-default
@@ -2131,83 +1666,11 @@ test_groups:
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm64
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
-# kubeadm-gce tests
-- name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11
-- name: ci-kubernetes-e2e-kubeadm-gce-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-12
-- name: ci-kubernetes-e2e-kubeadm-gce-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-13
-- name: ci-kubernetes-e2e-kubeadm-gce-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-14
-- name: ci-kubernetes-e2e-kubeadm-gce-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-master
-# kubeadm-kind tests
-- name: ci-kubernetes-e2e-kubeadm-kind-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-master
-- name: ci-kubernetes-e2e-kubeadm-kind-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-14
-- name: ci-kubernetes-e2e-kubeadm-kind-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-13
-- name: ci-kubernetes-e2e-kubeadm-kind-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kind-1-12
-# kubeadm-kinder tests
-- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
-- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
-- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
-- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
-- name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
-- name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
-- name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
-- name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
-# kubeadm x-on-y tests
-- name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
-- name: ci-kubernetes-e2e-kubeadm-gce-1-12-on-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-12-on-1-13
-- name: ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-13-on-1-14
-- name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-# kubeadm upgrade tests
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-12-1-13
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-13-1-14
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-# packages tests
-- name: periodic-kubernetes-e2e-packages-pushed
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
-- name: periodic-kubernetes-e2e-packages-install-deb
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-install-deb
-# manifest list tests
-- name: periodic-kubernetes-e2e-manifest-lists
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-manifest-lists
 
 # EKS e2e results
 - name: pull-kubernetes-e2e-aws-eks-1-11-correctness
   gcs_prefix: kubernetes-jenkins/logs/pull-kubernetes-e2e-aws-eks-1-11-correctness
-- name: ci-kubernetes-e2e-aws-eks-1-11-correctness
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-11-correctness
-- name: ci-kubernetes-e2e-aws-eks-1-11-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-11-conformance
-- name: ci-kubernetes-e2e-aws-eks-1-11-scalability
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aws-eks-1-11-scalability
 
-# charts tests
-- name: ci-kubernetes-charts-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
 # prow jobs
 - name: ci-test-infra-branchprotector
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-branchprotector
@@ -2221,90 +1684,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
   alert_stale_results_hours: 12
   num_failures_to_alert: 18 # Runs every 20m. Alert when it's been failing for 6 hours
-- name: ci-kubernetes-e2e-prow-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
-- name: ci-kubernetes-e2e-node-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-node-canary
-- name: issue-creator
-  gcs_prefix: kubernetes-jenkins/logs/issue-creator
-- name: metrics-bigquery
-  gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 - name: metrics-kettle
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
   alert_stale_results_hours: 12
   num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
-- name: periodic-enhancements-unfreeze
-  gcs_prefix: kubernetes-jenkins/logs/periodic-enhancements-unfreeze
-- name: periodic-kubernetes-bazel-test-master
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
-- name: periodic-kubernetes-bazel-test-1-11
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-11
-- name: periodic-kubernetes-bazel-test-1-12
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-12
-- name: periodic-kubernetes-bazel-test-1-13
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-13
-- name: periodic-kubernetes-bazel-test-1-14
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-14
-- name: periodic-kubernetes-bazel-build-master
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-master
-- name: periodic-kubernetes-bazel-build-1-11
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-11
-- name: periodic-kubernetes-bazel-build-1-12
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-12
-- name: periodic-kubernetes-bazel-build-1-13
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-13
-- name: periodic-kubernetes-bazel-build-1-14
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-14
-- name: periodic-test-infra-stale
-  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-stale
-- name: periodic-test-infra-rotten
-  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-rotten
-- name: periodic-test-infra-close
-  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-close
-- name: periodic-test-infra-cla
-  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-cla
-- name: periodic-api-review-help
-  gcs_prefix: kubernetes-jenkins/logs/periodic-api-review-help
-- name: periodic-test-infra-retester
-  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
-- name: periodic-secping
-  gcs_prefix: kubernetes-jenkins/logs/periodic-secping
-# perf tests
-- name: ci-perf-tests-e2e-gce-clusterloader
-  gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
-- name: ci-perf-tests-kubemark-100-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-kubemark-100-benchmark
-# benchmarks
-- name: ci-benchmark-kube-dns-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-kube-dns-master
-- name: ci-benchmark-scheduler-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
-- name: ci-benchmark-microbenchmarks
-  gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-microbenchmarks
-- name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-default
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable2-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: kops-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kops-postsubmit
-- name: ci-kubernetes-e2e-kops-aws-channelalpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-channelalpha
-- name: ci-kubernetes-e2e-kops-aws-ena-nvme
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-ena-nvme
-- name: ci-kubernetes-e2e-kops-aws-ha-uswest2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-ha-uswest2
-- name: ci-kubernetes-e2e-kops-aws-imagecentos7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imagecentos7
-- name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imageubuntu1604
-- name: ci-kubernetes-e2e-kops-aws-newrunner
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-newrunner
-- name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-slow
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable2-slow
   column_header:
@@ -2322,63 +1711,7 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
-- name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-- name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
-- name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-- name: ci-kubernetes-soak-gci-gce-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable2
 
-# master-2 to master
-- name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
-# master-1 to master
-- name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master
-- name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
-- name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-downgrade-cluster
-- name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new-parallel
-- name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
-- name: ci-kubernetes-multicluster-ingress-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-multicluster-ingress-test
-- name: kubeflow-periodic-0-5-branch
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-0-5-branch
-- name: kubeflow-periodic-0-4-branch
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-0-4-branch
-- name: kubeflow-periodic-0-3-branch
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-0-3-branch
-- name: kubeflow-periodic-master
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-master
-- name: kubeflow-periodic-examples
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-examples
 - name: kubeflow-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-presubmit
   num_columns_recent: 30
@@ -2878,16 +2211,6 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-kops-aws-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-stable1
-- name: ci-kubernetes-e2e-kops-aws-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-stable2
-- name: ci-kubernetes-e2e-kops-aws-stable3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-stable3
-- name: ci-kubernetes-e2e-kops-aws-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-beta
-- name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-slow
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   column_header:
@@ -2913,76 +2236,6 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable3
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
-- name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-- name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
-- name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-- name: ci-kubernetes-soak-gci-gce-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1
-- name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
-- name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-- name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
-- name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
-- name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gce-min-node-permissions
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-min-node-permissions
 # GCE Guest compute-image-tools
 - name: ci-daisy-e2e
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
@@ -3004,70 +2257,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gosrc
   num_columns_recent: 20
 # k8s-beta (active release branch) jobs
-- name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-default
-- name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
-- name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-slow
-- name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-serial
-- name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-- name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
-- name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-default
-- name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
-- name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-slow
-- name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-serial
-- name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
-- name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
-- name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new-parallel
-- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
-- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-master-parallel
-- name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
-- name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
-- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
-- name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gci-gce-scalability-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-beta
   num_failures_to_alert: 1
@@ -3362,8 +2551,6 @@ test_groups:
 - name: istio-release-upgrade-tests-1.0.2
   gcs_prefix: istio-prow/pr-logs/directory/release-upgrade-tests-1.0.1
   num_failures_to_alert: 1
-- name: istio-periodic-e2e-gke-addon
-  gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
@@ -3609,12 +2796,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/post-k8s-cluster-bundle-bazel-test
 
 # acs-engine on Azure tests
-- name: ci-kubernetes-e2e-aks-engine-azure-master-windows
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-master-windows
-- name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
-- name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-aks-engine-azure-1-14-windows
 - name: pull-kubernetes-e2e-aks-engine-azure-windows
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-windows
   num_columns_recent: 30
@@ -3628,17 +2809,9 @@ test_groups:
 - name: pull-cloud-provider-azure-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-check
   num_columns_recent: 30
-- name: ci-cloud-provider-azure-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-master
-- name: ci-cloud-provider-azure-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-conformance
-- name: ci-cloud-provider-azure-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-autoscaling
 - name: pull-cloud-provider-azure-e2e-ccm
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-azure-e2e-ccm
   num_columns_recent: 30
-- name: ci-cloud-provider-azure-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-cloud-provider-azure-slow
 
 # Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
@@ -3652,27 +2825,8 @@ test_groups:
 
 # Add New Testgroups Here
 
-- name: ci-kubernetes-e2e-gce-coredns-performance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance
-- name: ci-kubernetes-e2e-gce-kubedns-performance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance
-- name: ci-kubernetes-e2e-gce-coredns-performance-nodecache
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance-nodecache
-- name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance-nodecache
 
 # GCE windows test groups.
-- name: ci-kubernetes-e2e-windows-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce
-- name: ci-kubernetes-e2e-windows-gce-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-alpha-features
-- name: ci-kubernetes-e2e-windows-gce-poc
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-poc
-- name: ci-kubernetes-e2e-windows-gce-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-serial
-
-- name: ci-kubernetes-e2e-windows-gce-k8sbeta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-windows-gce-k8sbeta
 - name: pull-kubernetes-e2e-windows-gce
   gcs_prefix: kubernetes-jenkins/logs/pull-kubernetes-e2e-windows-gce
 
@@ -3727,18 +2881,6 @@ test_groups:
 - name: pull-structured-merge-diff-gofmt
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-structured-merge-diff-gofmt
   num_columns_recent: 30
-- name: ci-structured-merge-diff-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-structured-merge-diff-test
-- name: ci-structured-merge-diff-gofmt
-  gcs_prefix: kubernetes-jenkins/logs/ci-structured-merge-diff-gofmt
-
-# GCP Compute Persistent Disk CSI Driver Test Groups
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
-- name: ci-gcp-compute-persistent-disk-csi-driver-0-4-0-k8s-integration-stable-1-13-5
-  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-0-4-0-k8s-integration-stable-1-13-5
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-migration-stable-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-migration-stable-master
 
 # AWS Test Groups
 - name: pull-aws-alb-ingress-controller-lint
@@ -3788,45 +2930,6 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.1
 - name: release-openshift-osd-e2e-4.0
   gcs_prefix: redhat-openshift-osd-e2e/logs/release-openshift-osd-e2e-4.0
-
-# sig-storage-local-static-provisioner
-- name: ci-sig-storage-local-static-provisioner-master-gce-latest
-  gcs_prefix: kubernetes-jenkins/logs/ci-sig-storage-local-static-provisioner-master-gce-latest
-
-- name: ci-sig-storage-local-static-provisioner-master-gke-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-sig-storage-local-static-provisioner-master-gke-default
-
-- name: post-sig-storage-local-static-provisioner-build-canary
-  gcs_prefix: kubernetes-jenkins/logs/post-sig-storage-local-static-provisioner-build-canary
-
-- name: post-sig-storage-local-static-provisioner-build-release
-  gcs_prefix: kubernetes-jenkins/logs/post-sig-storage-local-static-provisioner-build-release
-
-# Kubernetes-CSI test groups
-- name: ci-kubernetes-csi-1-13-on-kubernetes-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-1-13
-- name: ci-kubernetes-csi-1-13-on-kubernetes-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-1-14
-- name: ci-kubernetes-csi-1-13-on-kubernetes-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-13-on-kubernetes-master
-- name: ci-kubernetes-csi-1-14-on-kubernetes-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-1-13
-- name: ci-kubernetes-csi-1-14-on-kubernetes-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-1-14
-- name: ci-kubernetes-csi-1-14-on-kubernetes-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-1-14-on-kubernetes-master
-- name: ci-kubernetes-csi-alpha-1-13-on-kubernetes-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-alpha-1-13-on-kubernetes-1-13
-- name: ci-kubernetes-csi-alpha-1-14-on-kubernetes-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-alpha-1-14-on-kubernetes-1-14
-- name: ci-kubernetes-csi-canary-on-kubernetes-1-13
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-canary-on-kubernetes-1-13
-- name: ci-kubernetes-csi-canary-on-kubernetes-1-14
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-canary-on-kubernetes-1-14
-- name: ci-kubernetes-csi-canary-on-kubernetes-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-canary-on-kubernetes-master
-- name: ci-kubernetes-csi-alpha-canary-on-kubernetes-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-csi-alpha-canary-on-kubernetes-master
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
@@ -3901,8 +3004,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-verify
   num_columns_recent: 20
 
-- name: ci-kubernetes-e2e-gce-private-cluster-correctness
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-private-cluster-correctness
 #
 # Start dashboards
 #
