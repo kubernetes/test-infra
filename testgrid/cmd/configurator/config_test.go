@@ -321,10 +321,16 @@ func TestConfig(t *testing.T) {
 	}
 
 	// All Testgroup should be mapped to one or more tabs
+	missedTestgroups := false
 	for testgroupname, occurrence := range testgroupMap {
 		if occurrence == 1 {
-			t.Errorf("Testgroup %v - defined but not used in any dashboards", testgroupname)
+			t.Errorf("Testgroup %v - defined but not used in any dashboards.", testgroupname)
+			missedTestgroups = true
 		}
+	}
+	if missedTestgroups {
+		t.Logf("Note: Testgroups are automatically defined for postsubmits and periodics.")
+		t.Logf("Testgroups can be added to a dashboard either by using the `testgrid-dashboards` annotation on the prowjob, or by adding them to testgrid/config.yaml")
 	}
 }
 
