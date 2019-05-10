@@ -106,7 +106,7 @@ type buildConfig struct {
 }
 
 // newBuildConfig returns a client and informer capable of mutating and monitoring the specified config.
-func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
+func newBuildConfig(cfg rest.Config, namespace string, stop chan struct{}) (*buildConfig, error) {
 	bc, err := buildset.NewForConfig(&cfg)
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 		return nil, err
 	}
 	// Assume watches receive updates, but resync every 30m in case something wonky happens
-	bif := buildinfo.NewSharedInformerFactory(bc, 30*time.Minute)
+	bif := buildinfo.NewSharedInformerFactoryWithOptions(bc, 30*time.Minute, buildinfo.WithNamespace(namespace))
 	bif.Build().V1alpha1().Builds().Lister()
 	go bif.Start(stop)
 	return &buildConfig{
@@ -165,14 +165,17 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create prowjob client")
 	}
-	pjif := prowjobinfo.NewSharedInformerFactory(pjc, 30*time.Minute)
+	pjNamespace := configAgent.Config().ProwJobNamespace
+	pjif := prowjobinfo.NewSharedInformerFactoryWithOptions(pjc, 30*time.Minute,
+		prowjobinfo.WithNamespace(pjNamespace))
 	pjif.Prow().V1().ProwJobs().Lister()
 	go pjif.Start(stop)
 
 	buildConfigs := map[string]buildConfig{}
 	for context, cfg := range configs {
 		var bc *buildConfig
-		bc, err = newBuildConfig(cfg, stop)
+		buildNamesapce := configAgent.Config().PodNamespace
+		bc, err = newBuildConfig(cfg, buildNamesapce, stop)
 		if apierrors.IsNotFound(err) {
 			logrus.WithError(err).Warnf("Ignoring %s: knative build CRD not deployed", context)
 			continue
