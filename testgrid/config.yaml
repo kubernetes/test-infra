@@ -1379,9 +1379,6 @@ test_groups:
 - name: ci-kubernetes-kind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance
   num_columns_recent: 3
-- name: ci-kubernetes-kind-conformance-latest-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-latest-1-11
-  num_columns_recent: 3
 - name: ci-kubernetes-kind-conformance-latest-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-latest-1-12
   num_columns_recent: 3
@@ -1792,9 +1789,6 @@ dashboards:
   - name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
-  - name: kind, v1.11 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes release-1.11 with a kubernetes-in-docker cluster
-    test_group_name: ci-kubernetes-kind-conformance-latest-1-11
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
     test_group_name: ci-kubernetes-local-e2e
@@ -1988,11 +1982,6 @@ dashboards:
   - name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
-    alert_options:
-      alert_mail_to_addresses: bentheelder@google.com
-  - name: kind, v1.11 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes release-1.11 with a kubernetes-in-docker cluster
-    test_group_name: ci-kubernetes-kind-conformance-latest-1-11
     alert_options:
       alert_mail_to_addresses: bentheelder@google.com
   - name: kind-image, master (dev)
@@ -5102,9 +5091,6 @@ dashboards:
   - name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
-  - name: kind, v1.11 (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes relase-1.11 with a kubernetes-in-docker cluster
-    test_group_name: ci-kubernetes-kind-conformance-latest-1-11
   - name: conformance-image, master (dev)
     description: Runs conformance test using connformance image against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-conformance-image-test
