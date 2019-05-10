@@ -3128,6 +3128,8 @@ test_groups:
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3
 - name: istio-e2e-bookInfoTests-trustdomain-presubmit
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-trustdomain
+- name: istio-e2e-simpleTests-minProfile
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTestsMinProfile
 # Istio Prow Presubmits Master
 - name: istio-unit-tests-presubmit-master
   gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests-master
@@ -3172,6 +3174,8 @@ test_groups:
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3-master
 - name: istio-e2e-bookInfoTests-trustdomain-presubmit-master
   gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-trustdomain-master
+- name: istio-e2e-simpleTests-minProfile-master
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTestsMinProfile-master
 # Istio Prow Postsubmits
 - name: istio-postsubmit
   gcs_prefix: istio-prow/logs/istio-postsubmit
@@ -3231,7 +3235,7 @@ test_groups:
 - name: istio-e2e-dashboard-master
   gcs_prefix: istio-prow/logs/e2e-dashboard-master
   num_failures_to_alert: 1
-- name: istio-e2e-simpleTests-minProfile-master
+- name: istio-e2e-simpleTests-minProfile-post-master
   gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile-master
   num_failures_to_alert: 1
 # Istio CircleCI Presubmits
@@ -8266,7 +8270,9 @@ dashboards:
     test_group_name: istio-circleci-test-integration-local-presubmit
   - name: circleci-integration-kubernetes
     test_group_name: istio-circleci-test-integration-kubernetes-presubmit
-
+  - name: e2e-simpleTests-minProfile
+    test_group_name: istio-e2e-simpleTests-minProfile
+ 
 - name: istio-presubmits-master
   dashboard_tab:
   - name: unit-tests
@@ -8327,7 +8333,9 @@ dashboards:
     test_group_name: istio-circleci-test-integration-local-presubmit-master
   - name: circleci-integration-kubernetes
     test_group_name: istio-circleci-test-integration-kubernetes-presubmit-master
-
+  - name: e2e-simpleTests-minProfile
+    test_group_name: istio-e2e-simpleTests-minProfile-master
+ 
 - name: istio-postsubmits
   dashboard_tab:
   - name: unit-tests
@@ -8446,7 +8454,7 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: e2e-simpleTests-minProfile
-    test_group_name: istio-e2e-simpleTests-minProfile-master
+    test_group_name: istio-e2e-simpleTests-minProfile-post-master
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-mixer-noauth-v1alpha3-v2
