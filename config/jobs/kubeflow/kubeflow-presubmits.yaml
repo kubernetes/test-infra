@@ -235,6 +235,18 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/manifests:
+  - name: kubeflow-manifests-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubeflow/pipelines:
   - name: kubeflow-pipeline-e2e-test
     always_run: true
