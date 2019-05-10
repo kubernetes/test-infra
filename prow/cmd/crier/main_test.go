@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"reflect"
 	"testing"
 )
@@ -100,6 +101,24 @@ func TestOptions(t *testing.T) {
 		{
 			name: "slack missing --slack-token, rejects",
 			args: []string{"--slack-workers=1", "--config-path=foo"},
+		},
+		{
+			name: "slack with --dry-run, sets",
+			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo", "--dry-run", "--deck-url=http://www.example.com"},
+			expected: &options{
+				slackWorkers:   13,
+				slackTokenFile: "/bar/baz",
+				configPath:     "foo",
+				github:         defaultGitHubOptions,
+				dryrun:         true,
+				client: prowflagutil.ExperimentalKubernetesOptions{
+					DeckURI: "http://www.example.com",
+				},
+			},
+		},
+		{
+			name: "Dry run with no --deck-url, rejects",
+			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo", "--dry-run"},
 		},
 	}
 

@@ -54,7 +54,6 @@ type options struct {
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
 
-	// TODO(krzyzacy): drop config agent!
 	configPath    string
 	jobConfigPath string
 
@@ -130,7 +129,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
-	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github only)")
+	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
 
 	o.github.AddFlags(fs)
 	o.client.AddFlags(fs)
