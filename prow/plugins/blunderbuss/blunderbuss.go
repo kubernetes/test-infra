@@ -337,7 +337,7 @@ func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability boo
 		if !busy {
 			return candidate
 		}
-		// if we haven't returned the canidate, then they must be busy.
+		// if we haven't returned the candidate, then they must be busy.
 		busyReviewers.Insert(candidate)
 	}
 	return ""
