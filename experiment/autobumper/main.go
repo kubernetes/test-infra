@@ -46,6 +46,10 @@ const (
 	githubRepo      = "test-infra"
 )
 
+var extraFiles = map[string]bool{
+	"experiment/generate_tests.py": true,
+}
+
 func cdToRootDir() error {
 	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
 		if err := os.Chdir(bazelWorkspace); err != nil {
@@ -123,7 +127,7 @@ func updateReferences() (map[string]string, error) {
 	filter := regexp.MustCompile(prowPrefix + "|" + testImagePrefix)
 
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-		if strings.HasSuffix(path, ".yaml") {
+		if strings.HasSuffix(path, ".yaml") || extraFiles[path] {
 			if err := bumper.UpdateFile(path, filter); err != nil {
 				logrus.WithError(err).Errorf("Failed to update path %s.", path)
 			}
