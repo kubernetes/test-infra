@@ -26,6 +26,7 @@ py_binary(
         "//config:prowjobs",
         "//jobs",
         "//prow:configs",
+        "//testgrid:config-yaml",
     ],
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
