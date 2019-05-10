@@ -43,12 +43,14 @@ const (
 
 // ReportMessage is a message structure used to pass a prowjob status to Pub/Sub topic.s
 type ReportMessage struct {
-	Project string               `json:"project"`
-	Topic   string               `json:"topic"`
-	RunID   string               `json:"runid"`
-	Status  prowapi.ProwJobState `json:"status"`
-	URL     string               `json:"url"`
-	GCSPath string               `json:"gcs_path"`
+	Project  string               `json:"project"`
+	Topic    string               `json:"topic"`
+	RunID    string               `json:"runid"`
+	Status   prowapi.ProwJobState `json:"status"`
+	URL      string               `json:"url"`
+	GCSPath  string               `json:"gcs_path"`
+	PRNumber int                  `json:"prnumber"`
+	JobType  prowapi.ProwJobType  `json:"job_type"`
 }
 
 // Client is a reporter client fed to crier controller
@@ -121,12 +123,22 @@ func (c *Client) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 
 func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel, PubSubRunIDLabel)
+
+	var number int
+	if (pj.Spec.Refs == nil) || len(pj.Spec.Refs.Pulls) == 0 {
+		number = 0
+	} else {
+		number = pj.Spec.Refs.Pulls[0].Number
+	}
+
 	return &ReportMessage{
-		Project: pubSubMap[PubSubProjectLabel],
-		Topic:   pubSubMap[PubSubTopicLabel],
-		RunID:   pubSubMap[PubSubRunIDLabel],
-		Status:  pj.Status.State,
-		URL:     pj.Status.URL,
-		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
+		Project:  pubSubMap[PubSubProjectLabel],
+		Topic:    pubSubMap[PubSubTopicLabel],
+		RunID:    pubSubMap[PubSubRunIDLabel],
+		Status:   pj.Status.State,
+		URL:      pj.Status.URL,
+		GCSPath:  strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
+		PRNumber: number,
+		JobType:  pj.Spec.Type,
 	}
 }
