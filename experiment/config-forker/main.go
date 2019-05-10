@@ -35,8 +35,9 @@ import (
 
 const (
 	forkAnnotation             = "fork-per-release"
+	suffixAnnotation           = "fork-per-release-generic-suffix"
 	periodicIntervalAnnotation = "fork-per-release-periodic-interval"
-	replacementAnnotation      = "fork-per-release-extra-arg-replacements"
+	replacementAnnotation      = "fork-per-release-replacements"
 )
 
 func generatePostsubmits(c config.JobConfig, version string) (map[string][]config.Postsubmit, error) {
@@ -47,7 +48,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 				continue
 			}
 			p := postsubmit
-			p.Name = generateNameVariant(p.Name, version)
+			p.Name = generateNameVariant(p.Name, version, postsubmit.Annotations[suffixAnnotation] == "true")
 			p.SkipBranches = nil
 			p.Branches = []string{"release-" + version}
 			if p.Spec != nil {
@@ -105,7 +106,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 			continue
 		}
 		p := periodic
-		p.Name = generateNameVariant(p.Name, version)
+		p.Name = generateNameVariant(p.Name, version, periodic.Annotations[suffixAnnotation] == "true")
 		if p.Spec != nil {
 			for i := range p.Spec.Containers {
 				c := &p.Spec.Containers[i]
@@ -239,12 +240,15 @@ func fixEnvVars(vars []v1.EnvVar, version string) []v1.EnvVar {
 	return newVars
 }
 
-func generateNameVariant(name, version string) string {
-	nameVersion := strings.ReplaceAll(version, ".", "-")
-	if !strings.HasSuffix(name, "-master") {
-		return name + "-" + nameVersion
+func generateNameVariant(name, version string, generic bool) string {
+	suffix := "-beta"
+	if !generic {
+		suffix = "-" + strings.ReplaceAll(version, ".", "-")
 	}
-	return strings.ReplaceAll(name, "-master", "-"+nameVersion)
+	if !strings.HasSuffix(name, "-master") {
+		return name + suffix
+	}
+	return strings.ReplaceAll(name, "-master", suffix)
 }
 
 type options struct {

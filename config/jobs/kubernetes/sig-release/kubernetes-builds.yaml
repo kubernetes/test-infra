@@ -82,7 +82,7 @@ periodics:
     preset-dind-enabled: "true"
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-{{.Version}}"
+    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
     testgrid-dashboards: sig-release-master-informing
   spec:
     containers:
