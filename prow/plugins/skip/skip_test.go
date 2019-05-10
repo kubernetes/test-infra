@@ -31,13 +31,13 @@ func TestSkipStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		presubmits []config.Presubmit
-		sha        string
-		event      *github.GenericCommentEvent
-		prChanges  map[int][]github.PullRequestChange
-		existing   []github.Status
-
-		expected []github.Status
+		presubmits     []config.Presubmit
+		sha            string
+		event          *github.GenericCommentEvent
+		prChanges      map[int][]github.PullRequestChange
+		existing       []github.Status
+		combinedStatus string
+		expected       []github.Status
 	}{
 		{
 			name: "required contexts should not be skipped regardless of their state",
@@ -242,8 +242,55 @@ func TestSkipStatus(t *testing.T) {
 				},
 			},
 		},
-	}
+		{
+			name: "no contexts should be skipped if the combined status is success",
 
+			presubmits: []config.Presubmit{
+				{
+					Optional: true,
+					Reporter: config.Reporter{
+						Context: "failed-tests",
+					},
+				},
+				{
+					Optional: true,
+					Reporter: config.Reporter{
+						Context: "pending-tests",
+					},
+				},
+			},
+			sha:            "shalala",
+			combinedStatus: github.StatusSuccess,
+			event: &github.GenericCommentEvent{
+				IsPR:       true,
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body:       "/skip",
+				Number:     1,
+				Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			},
+			existing: []github.Status{
+				{
+					State:   github.StatusFailure,
+					Context: "failed-tests",
+				},
+				{
+					State:   github.StatusPending,
+					Context: "pending-tests",
+				},
+			},
+			expected: []github.Status{
+				{
+					State:   github.StatusFailure,
+					Context: "failed-tests",
+				},
+				{
+					State:   github.StatusPending,
+					Context: "pending-tests",
+				},
+			},
+		},
+	}
 	for _, test := range tests {
 		if err := config.SetPresubmitRegexes(test.presubmits); err != nil {
 			t.Fatalf("%s: could not set presubmit regexes: %v", test.name, err)
@@ -261,6 +308,12 @@ func TestSkipStatus(t *testing.T) {
 			PullRequestChanges: test.prChanges,
 			CreatedStatuses: map[string][]github.Status{
 				test.sha: test.existing,
+			},
+			CombinedStatuses: map[string]*github.CombinedStatus{
+				test.sha: {
+					State:    test.combinedStatus,
+					Statuses: test.existing,
+				},
 			},
 		}
 		l := logrus.WithField("plugin", pluginName)

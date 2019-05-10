@@ -229,9 +229,10 @@ Instructions for interacting with me using PR comments are available [here](http
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &fakegithub.FakeClient{
-				CreatedStatuses: make(map[string][]github.Status),
-				PullRequests:    map[int]*github.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest},
-				IssueComments:   make(map[int][]github.IssueComment),
+				CombinedStatuses: make(map[string]*github.CombinedStatus),
+				CreatedStatuses:  make(map[string][]github.Status),
+				PullRequests:     map[int]*github.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest},
+				IssueComments:    make(map[int][]github.IssueComment),
 				CommitMap: map[string][]github.RepositoryCommit{
 					"/#3": tc.commits,
 				},
@@ -242,11 +243,22 @@ Instructions for interacting with me using PR comments are available [here](http
 			if tc.hasDCONo {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
 			}
+			combinedStatus := &github.CombinedStatus{
+				Statuses: []github.Status{},
+			}
 			if tc.status != "" {
 				fc.CreatedStatuses["sha"] = []github.Status{
 					{Context: dcoContextName, State: tc.status},
 				}
+				combinedStatus = &github.CombinedStatus{
+					SHA: "sha",
+					Statuses: []github.Status{
+						{Context: dcoContextName, State: tc.status},
+					},
+				}
 			}
+			fc.CombinedStatuses["sha"] = combinedStatus
+
 			if err := handlePullRequest(fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.pullRequestEvent); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
@@ -385,9 +397,10 @@ Instructions for interacting with me using PR comments are available [here](http
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &fakegithub.FakeClient{
-				CreatedStatuses: make(map[string][]github.Status),
-				PullRequests:    tc.pullRequests,
-				IssueComments:   make(map[int][]github.IssueComment),
+				CreatedStatuses:  make(map[string][]github.Status),
+				CombinedStatuses: make(map[string]*github.CombinedStatus),
+				PullRequests:     tc.pullRequests,
+				IssueComments:    make(map[int][]github.IssueComment),
 				CommitMap: map[string][]github.RepositoryCommit{
 					"/#3": tc.commits,
 				},
@@ -398,11 +411,22 @@ Instructions for interacting with me using PR comments are available [here](http
 			if tc.hasDCONo {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
 			}
+			combinedStatus := &github.CombinedStatus{
+				Statuses: []github.Status{},
+			}
 			if tc.status != "" {
 				fc.CreatedStatuses["sha"] = []github.Status{
 					{Context: dcoContextName, State: tc.status},
 				}
+				combinedStatus = &github.CombinedStatus{
+					SHA: "sha",
+					Statuses: []github.Status{
+						{Context: dcoContextName, State: tc.status},
+					},
+				}
 			}
+			fc.CombinedStatuses["sha"] = combinedStatus
+
 			if err := handleComment(fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.commentEvent); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
