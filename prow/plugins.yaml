@@ -413,6 +413,7 @@ plugins:
   - slackevents
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -421,14 +422,12 @@ plugins:
   - milestonestatus
   - release-note
   - require-matching-label
-  - welcome
 
   kubernetes/cloud-provider-azure:
   - milestone
   - milestonestatus
   - release-note
   - require-matching-label
-  - welcome
 
   kubernetes/cloud-provider-openstack:
   - override
@@ -437,7 +436,6 @@ plugins:
   - blockade
   - milestone
   - require-sig
-  - welcome
 
   kubernetes/enhancements:
   - blockade
@@ -463,18 +461,15 @@ plugins:
   kubernetes/release:
   - milestone
   - override
-  - welcome
 
   kubernetes/sig-release:
   - milestone
   - override
-  - welcome
 
   kubernetes/test-infra:
   - config-updater
   - milestone
   - override
-  - welcome
   - project
 
   kubernetes/utils:
@@ -504,6 +499,7 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -529,6 +525,7 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -553,6 +550,7 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -580,12 +578,12 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
   kubernetes-sigs/kind:
   - override
-  - welcome
 
   kubernetes-sigs/cluster-api:
   - milestone
@@ -598,14 +596,12 @@ plugins:
   - milestonestatus
   - release-note
   - require-matching-label
-  - welcome
 
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - milestone
 
   kubernetes-sigs/contributor-playground:
   - require-sig
-  - welcome
 
   containerd/cri:
   - assign
