@@ -39,7 +39,7 @@ import (
 var (
 	match = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
 	meow  = &realClowder{
-		url: "https://api.thecatapi.com/api/images/get?format=json&results_per_page=1",
+		url: "https://api.thecatapi.com/v1/images/search?format=json&results_per_page=1",
 	}
 )
 
