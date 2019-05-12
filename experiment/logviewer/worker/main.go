@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -30,14 +29,15 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 
-	"cloud.google.com/go/storage"
 	ts "github.com/golang/protobuf/ptypes/timestamp"
-	gzip "github.com/klauspost/pgzip"
-	pb "github.com/kzmrv/logviewer/gcsreader/work"
-	"google.golang.org/api/option"
+	pb "github.com/kzmrv/logviewer/worker/work"
 	"google.golang.org/grpc"
 	log "k8s.io/klog"
 )
+
+type dataReader interface {
+	downloadAndDecompress(objectPath string) (io.Reader, error)
+}
 
 var (
 	port = flag.Int("port", 17654, "Port to run grpc worker service")
@@ -48,7 +48,10 @@ const (
 	lineBuffer = 100000
 )
 
-type serverType struct{}
+type serverType struct {
+	logReader dataReader
+	send      func(ch chan *lineEntry, server pb.Worker_DoWorkServer)
+}
 
 type lineFilter struct {
 	regex *regexp.Regexp
@@ -66,19 +69,20 @@ func main() {
 	}
 	log.Infof("Listening on port: %v", *port)
 	server := grpc.NewServer()
-	pb.RegisterWorkerServer(server, &serverType{})
+
+	pb.RegisterWorkerServer(server, &serverType{logReader: &gcsReader{}, send: batchAndSend})
 	err = server.Serve(listener)
 	if err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
 
-func (*serverType) DoWork(request *pb.Work, server pb.Worker_DoWorkServer) error {
+func (srv *serverType) DoWork(request *pb.Work, server pb.Worker_DoWorkServer) error {
 	defer timeTrack(time.Now(), "Call duration")
 	log.Infof("Received: file %v, substring %v, since %v, until %v",
 		request.File, request.TargetSubstring, ptypes.TimestampString(request.Since), ptypes.TimestampString(request.Until))
 
-	reader, err := downloadAndDecompress(request.File)
+	reader, err := srv.logReader.downloadAndDecompress(request.File)
 	if err != nil {
 		return err
 	}
@@ -87,23 +91,28 @@ func (*serverType) DoWork(request *pb.Work, server pb.Worker_DoWorkServer) error
 	if err != nil {
 		return err
 	}
-
-	since, err := ptypes.Timestamp(request.Since)
-	if err != nil {
-		return fmt.Errorf("Unable to parse request.Since: %v", err)
-	}
-	until, err := ptypes.Timestamp(request.Until)
-	if err != nil {
-		return fmt.Errorf("Unable to parse request.Until: %v", err)
-	}
 	filters := &lineFilter{
 		regex: regex,
-		since: since,
-		until: until,
+	}
+
+	if request.Since != nil {
+		since, err := ptypes.Timestamp(request.Since)
+		if err != nil {
+			return fmt.Errorf("Unable to parse request.Since: %v", err)
+		}
+		filters.since = since
+	}
+
+	if request.Until != nil {
+		until, err := ptypes.Timestamp(request.Until)
+		if err != nil {
+			return fmt.Errorf("Unable to parse request.Until: %v", err)
+		}
+		filters.until = until
 	}
 
 	go getMatchingLines(reader, lineChannel, filters)
-	batchAndSend(lineChannel, server)
+	srv.send(lineChannel, server)
 
 	return nil
 }
@@ -146,53 +155,15 @@ func batchAndSend(ch chan *lineEntry, server pb.Worker_DoWorkServer) {
 	log.Infof("Finished with %v lines", lineCounter)
 }
 
-func downloadAndDecompress(objectPath string) (io.Reader, error) {
-	//return loadFromLocalFS(objectPath)
-	reader, err := download(objectPath)
-	if err != nil {
-		return nil, err
-	}
-
-	decompressed, err := decompress(reader)
-	if err != nil {
-		return nil, err
-	}
-	return decompressed, nil
-}
-
-func download(objectPath string) (io.Reader, error) {
-	context := context.Background()
-	client, err := storage.NewClient(context, option.WithoutAuthentication())
-	if err != nil {
-		return nil, err
-	}
-
-	bucket := client.Bucket(bucketName)
-
-	remoteFile := bucket.Object(objectPath).ReadCompressed(true)
-	reader, err := remoteFile.NewReader(context)
-	if err != nil {
-		return nil, err
-	}
-
-	return reader, err
-}
-
-func decompress(reader io.Reader) (io.Reader, error) {
-	newReader, err := gzip.NewReader(reader)
-	if err != nil {
-		return nil, err
-	}
-	return newReader, nil
-}
-
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.Infof("%s took %s", name, elapsed)
 }
 
+type localFsReader struct{}
+
 // for testing purposes
-func loadFromLocalFS(objectPath string) (io.Reader, error) {
+func (r *localFsReader) loadFromLocalFS(objectPath string) (io.Reader, error) {
 	const folder = "/Downloads/kubernetes-jenkins-310"
 	idx := strings.LastIndex(objectPath, "/") + 1
 	fileName := strings.TrimSuffix(objectPath[idx:], ".gz")
