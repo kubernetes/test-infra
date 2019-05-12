@@ -33,7 +33,7 @@ func TestParseSingleLine(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedTime := time.Unix(1546441276, 105964000)
+	expectedTime := time.Unix(1546444876, 105964000)
 	if line.time.UTC() != expectedTime.UTC() {
 		t.Fatalf("Expected time %s received %s", expectedTime, line.time)
 	}

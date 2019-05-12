@@ -61,7 +61,7 @@ func (*mixerServer) DoWork(request *mixerPb.MixerRequest, server mixerPb.MixerSe
 	}
 
 	wg.Wait()
-	lines := processWorkResults(rpcResponses, works)
+	lines := processWorkResults(rpcResponses)
 
 	batchCount := (len(lines) + 1) / batchSize
 	for i := 0; i < batchCount; i++ {
@@ -115,15 +115,14 @@ func localMain() {
 	}
 
 	wg.Wait()
-	processWorkResults(rpcResponses, works)
+	processWorkResults(rpcResponses)
 
 	log.Info("App finished")
 }
 
-func processWorkResults(rpcResponses []chan *callResult, works []*pb.Work) []*pb.LogLine {
+func processWorkResults(rpcResponses []chan *callResult) []*pb.LogLine {
 	matchingLines := make([]*pb.LogLine, 0)
-	for i := 0; i < len(works); i++ {
-		counter := 0
+	for i := 0; i < len(rpcResponses); i++ {
 		for {
 			batchResult, hasMore := <-rpcResponses[i]
 			if !hasMore {
@@ -131,13 +130,11 @@ func processWorkResults(rpcResponses []chan *callResult, works []*pb.Work) []*pb
 			}
 			if batchResult.err != nil {
 				log.Errorf("Error in result batch: %v", batchResult.err)
-			} else {
-				matchingLines = append(matchingLines, batchResult.workResult.LogLines...)
-				counter += len(batchResult.workResult.LogLines)
+				continue
 			}
-
+			matchingLines = append(matchingLines, batchResult.workResult.LogLines...)
 		}
-		log.Infof("File %v found %d matching lines", works[i].File, len(matchingLines))
+		log.Infof("Work #%v found %v matching lines", i, len(matchingLines))
 	}
 
 	sort.Slice(matchingLines, func(less, greater int) bool {
