@@ -5506,6 +5506,10 @@ dashboards:
     test_group_name: integ-galley-local-presubmit-tests
   - name: integ-galley-k8s-presubmit-tests
     test_group_name: integ-galley-k8s-presubmit-tests
+  - name: integ-mixer-local-presubmit-tests
+    test_group_name: integ-mixer-local-presubmit-tests
+  - name: integ-mixer-k8s-presubmit-tests
+    test_group_name: integ-mixer-k8s-presubmit-tests
   - name: integ-pilot-local-presubmit-tests
     test_group_name: integ-pilot-local-presubmit-tests
   - name: integ-pilot-k8s-presubmit-tests
