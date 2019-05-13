@@ -460,7 +460,7 @@ periodics:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
-      testgrid-dashboards: sig-release-1.11-all, sig-release-1.11-blocking, sig-node-kubelet
+      testgrid-dashboards: sig-release-1.11-blocking, sig-release-1.11-all, sig-node-kubelet
       testgrid-tab-name: node-kubelet-1.11
     spec:
       containers:

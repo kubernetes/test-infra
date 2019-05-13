@@ -294,16 +294,17 @@ class E2ETest(object):
         tg_config = self.__get_testgrid_config()
 
         annotations = prow_config.setdefault('annotations', {})
-        dashboards = 'sig-release-%s-all' % k8s_version['version']
+        dashboards = ['sig-release-%s-all' % k8s_version['version']]
         tab_name = '%s-%s-%s-%s' % (fields[3], fields[4], fields[5], fields[6])
         annotations['testgrid-tab-name'] = tab_name
         if self.job.get('releaseBlocking'):
-            dashboards += ', sig-release-%s-blocking' % k8s_version['version']
+            dashboards.insert(
+                0, 'sig-release-%s-blocking' % k8s_version['version'])
         if image.get('testgrid_prefix') is not None:
             dashboard = '%s-%s-%s' % (image['testgrid_prefix'], fields[4],
                                       fields[5])
-            dashboards += ', ' + dashboard
-        annotations['testgrid-dashboards'] = dashboards
+            dashboards.append(dashboard)
+        annotations['testgrid-dashboards'] = ', '.join(dashboards)
 
         return job_config, prow_config, tg_config
 
