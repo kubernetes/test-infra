@@ -31,6 +31,7 @@ import (
 const testgridCreateTestGroupAnnotation = "testgrid-create-test-group"
 const testgridDashboardsAnnotation = "testgrid-dashboards"
 const testgridTabNameAnnotation = "testgrid-tab-name"
+const testgridEmailAnnotation = "testgrid-alert-email"
 const descriptionAnnotation = "description"
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
@@ -77,6 +78,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	}
 
 	if addToDashboards {
+		firstDashboard := true
 		for _, dashboardName := range strings.Split(dashboards, ",") {
 			dashboardName = strings.TrimSpace(dashboardName)
 			d := c.config.FindDashboard(dashboardName)
@@ -87,6 +89,12 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 				Name:          tabName,
 				TestGroupName: testGroupName,
 				Description:   description,
+			}
+			if firstDashboard {
+				firstDashboard = false
+				if emails, ok := j.Annotations[testgridEmailAnnotation]; ok {
+					dt.AlertOptions = &config.DashboardTabAlertOptions{AlertMailToAddresses: emails}
+				}
 			}
 			ReconcileDashboardTab(dt, c.defaultConfig.DefaultDashboardTab)
 			d.DashboardTab = append(d.DashboardTab, dt)
