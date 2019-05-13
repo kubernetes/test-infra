@@ -600,7 +600,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 			names[n] = t
 			older[n] = append(older[n], val)
 		default: // t does not have smallest id, add it to older set
-			logger.Debugf("Adding team to older set as a smaller ID is already recoded for it.", val.ID)
+			logger.Debugf("Adding team (%d) to older set as a smaller ID is already recoded for it.", val.ID)
 			older[n] = append(older[n], val)
 		}
 	}

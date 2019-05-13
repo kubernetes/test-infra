@@ -353,7 +353,7 @@ func (c *controller) buildID(pj prowjobv1.ProwJob) (string, string, error) {
 }
 
 func (c *controller) defaultBuildTimeout() time.Duration {
-	return c.config().DefaultJobTimeout
+	return c.config().DefaultJobTimeout.Duration
 }
 
 func (c *controller) allowCancellations() bool {

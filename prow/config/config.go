@@ -126,7 +126,7 @@ type ProwConfig struct {
 
 	// DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 	// no timeout is configured at the job level. This value is set to 24 hours.
-	DefaultJobTimeout time.Duration `json:"default_job_timeout,omitempty"`
+	DefaultJobTimeout *metav1.Duration `json:"default_job_timeout,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
@@ -157,11 +157,9 @@ type PushGateway struct {
 	// Endpoint is the location of the prometheus pushgateway
 	// where prow will push metrics to.
 	Endpoint string `json:"endpoint,omitempty"`
-	// IntervalString compiles into Interval at load time.
-	IntervalString string `json:"interval,omitempty"`
 	// Interval specifies how often prow will push metrics
 	// to the pushgateway. Defaults to 1m.
-	Interval time.Duration `json:"-"`
+	Interval *metav1.Duration `json:"interval,omitempty"`
 }
 
 // Controller holds configuration applicable to all agent-specific
@@ -198,11 +196,9 @@ type Controller struct {
 // Plank is config for the plank controller.
 type Plank struct {
 	Controller `json:",inline"`
-	// PodPendingTimeoutString compiles into PodPendingTimeout at load time.
-	PodPendingTimeoutString string `json:"pod_pending_timeout,omitempty"`
 	// PodPendingTimeout is after how long the controller will perform a garbage
 	// collection on pending pods. Defaults to one day.
-	PodPendingTimeout time.Duration `json:"-"`
+	PodPendingTimeout *metav1.Duration `json:"pod_pending_timeout,omitempty"`
 	// PodRunningTimeout is after how long the controller will abort a prowjob pod
 	// stuck in running state. Defaults to two days.
 	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
@@ -235,8 +231,7 @@ func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
 // Gerrit is config for the gerrit controller.
 type Gerrit struct {
 	// TickInterval is how often we do a sync with binded gerrit instance
-	TickIntervalString string        `json:"tick_interval,omitempty"`
-	TickInterval       time.Duration `json:"-"`
+	TickInterval *metav1.Duration `json:"tick_interval,omitempty"`
 	// RateLimit defines how many changes to query per gerrit API call
 	// default is 5
 	RateLimit int `json:"ratelimit,omitempty"`
@@ -270,21 +265,15 @@ type GitHubReporter struct {
 
 // Sinker is config for the sinker controller.
 type Sinker struct {
-	// ResyncPeriodString compiles into ResyncPeriod at load time.
-	ResyncPeriodString string `json:"resync_period,omitempty"`
 	// ResyncPeriod is how often the controller will perform a garbage
 	// collection. Defaults to one hour.
-	ResyncPeriod time.Duration `json:"-"`
-	// MaxProwJobAgeString compiles into MaxProwJobAge at load time.
-	MaxProwJobAgeString string `json:"max_prowjob_age,omitempty"`
+	ResyncPeriod *metav1.Duration `json:"resync_period,omitempty"`
 	// MaxProwJobAge is how old a ProwJob can be before it is garbage-collected.
 	// Defaults to one week.
-	MaxProwJobAge time.Duration `json:"-"`
-	// MaxPodAgeString compiles into MaxPodAge at load time.
-	MaxPodAgeString string `json:"max_pod_age,omitempty"`
+	MaxProwJobAge *metav1.Duration `json:"max_prowjob_age,omitempty"`
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
 	// Defaults to one day.
-	MaxPodAge time.Duration `json:"-"`
+	MaxPodAge *metav1.Duration `json:"max_pod_age,omitempty"`
 }
 
 // Spyglass holds config for Spyglass
@@ -322,10 +311,8 @@ type Spyglass struct {
 type Deck struct {
 	// Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck
 	Spyglass Spyglass `json:"spyglass,omitempty"`
-	// TideUpdatePeriodString compiles into TideUpdatePeriod at load time.
-	TideUpdatePeriodString string `json:"tide_update_period,omitempty"`
 	// TideUpdatePeriod specifies how often Deck will fetch status from Tide. Defaults to 10s.
-	TideUpdatePeriod time.Duration `json:"-"`
+	TideUpdatePeriod *metav1.Duration `json:"tide_update_period,omitempty"`
 	// HiddenRepos is a list of orgs and/or repos that should not be displayed by Deck.
 	HiddenRepos []string `json:"hidden_repos,omitempty"`
 	// ExternalAgentLogs ensures external agents can expose
@@ -907,28 +894,16 @@ func parseProwConfig(c *Config) error {
 		return fmt.Errorf("validating plank config: %v", err)
 	}
 
-	if c.Plank.PodPendingTimeoutString == "" {
-		c.Plank.PodPendingTimeout = 24 * time.Hour
-	} else {
-		podPendingTimeout, err := time.ParseDuration(c.Plank.PodPendingTimeoutString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for plank.pod_pending_timeout: %v", err)
-		}
-		c.Plank.PodPendingTimeout = podPendingTimeout
+	if c.Plank.PodPendingTimeout == nil {
+		c.Plank.PodPendingTimeout = &metav1.Duration{Duration: 24 * time.Hour}
 	}
 
 	if c.Plank.PodRunningTimeout == nil {
 		c.Plank.PodRunningTimeout = &metav1.Duration{Duration: 48 * time.Hour}
 	}
 
-	if c.Gerrit.TickIntervalString == "" {
-		c.Gerrit.TickInterval = time.Minute
-	} else {
-		tickInterval, err := time.ParseDuration(c.Gerrit.TickIntervalString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for c.gerrit.tick_interval: %v", err)
-		}
-		c.Gerrit.TickInterval = tickInterval
+	if c.Gerrit.TickInterval == nil {
+		c.Gerrit.TickInterval = &metav1.Duration{Duration: time.Minute}
 	}
 
 	if c.Gerrit.RateLimit == 0 {
@@ -981,14 +956,8 @@ func parseProwConfig(c *Config) error {
 		c.Deck.ExternalAgentLogs[i].Selector = s
 	}
 
-	if c.Deck.TideUpdatePeriodString == "" {
-		c.Deck.TideUpdatePeriod = time.Second * 10
-	} else {
-		period, err := time.ParseDuration(c.Deck.TideUpdatePeriodString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for deck.tide_update_period: %v", err)
-		}
-		c.Deck.TideUpdatePeriod = period
+	if c.Deck.TideUpdatePeriod == nil {
+		c.Deck.TideUpdatePeriod = &metav1.Duration{Duration: time.Second * 10}
 	}
 
 	if c.Deck.Spyglass.SizeLimit == 0 {
@@ -1022,63 +991,28 @@ func parseProwConfig(c *Config) error {
 		}
 	}
 
-	if c.PushGateway.IntervalString == "" {
-		c.PushGateway.Interval = time.Minute
-	} else {
-		interval, err := time.ParseDuration(c.PushGateway.IntervalString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for push_gateway.interval: %v", err)
-		}
-		c.PushGateway.Interval = interval
+	if c.PushGateway.Interval == nil {
+		c.PushGateway.Interval = &metav1.Duration{Duration: time.Minute}
 	}
 
-	if c.Sinker.ResyncPeriodString == "" {
-		c.Sinker.ResyncPeriod = time.Hour
-	} else {
-		resyncPeriod, err := time.ParseDuration(c.Sinker.ResyncPeriodString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for sinker.resync_period: %v", err)
-		}
-		c.Sinker.ResyncPeriod = resyncPeriod
+	if c.Sinker.ResyncPeriod == nil {
+		c.Sinker.ResyncPeriod = &metav1.Duration{Duration: time.Hour}
 	}
 
-	if c.Sinker.MaxProwJobAgeString == "" {
-		c.Sinker.MaxProwJobAge = 7 * 24 * time.Hour
-	} else {
-		maxProwJobAge, err := time.ParseDuration(c.Sinker.MaxProwJobAgeString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for max_prowjob_age: %v", err)
-		}
-		c.Sinker.MaxProwJobAge = maxProwJobAge
+	if c.Sinker.MaxProwJobAge == nil {
+		c.Sinker.MaxProwJobAge = &metav1.Duration{Duration: 7 * 24 * time.Hour}
 	}
 
-	if c.Sinker.MaxPodAgeString == "" {
-		c.Sinker.MaxPodAge = 24 * time.Hour
-	} else {
-		maxPodAge, err := time.ParseDuration(c.Sinker.MaxPodAgeString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for max_pod_age: %v", err)
-		}
-		c.Sinker.MaxPodAge = maxPodAge
+	if c.Sinker.MaxPodAge == nil {
+		c.Sinker.MaxPodAge = &metav1.Duration{Duration: 24 * time.Hour}
 	}
 
-	if c.Tide.SyncPeriodString == "" {
-		c.Tide.SyncPeriod = time.Minute
-	} else {
-		period, err := time.ParseDuration(c.Tide.SyncPeriodString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for tide.sync_period: %v", err)
-		}
-		c.Tide.SyncPeriod = period
+	if c.Tide.SyncPeriod == nil {
+		c.Tide.SyncPeriod = &metav1.Duration{Duration: time.Minute}
 	}
-	if c.Tide.StatusUpdatePeriodString == "" {
+
+	if c.Tide.StatusUpdatePeriod == nil {
 		c.Tide.StatusUpdatePeriod = c.Tide.SyncPeriod
-	} else {
-		period, err := time.ParseDuration(c.Tide.StatusUpdatePeriodString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for tide.status_update_period: %v", err)
-		}
-		c.Tide.StatusUpdatePeriod = period
 	}
 
 	if c.Tide.MaxGoroutines == 0 {
@@ -1167,8 +1101,8 @@ func parseProwConfig(c *Config) error {
 	logrus.SetLevel(lvl)
 
 	// Avoid using a job timeout of infinity by setting the default value to 24 hours
-	if c.DefaultJobTimeout == 0 {
-		c.DefaultJobTimeout = DefaultJobTimeout
+	if c.DefaultJobTimeout == nil {
+		c.DefaultJobTimeout = &metav1.Duration{Duration: DefaultJobTimeout}
 	}
 
 	return nil

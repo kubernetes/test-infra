@@ -144,7 +144,7 @@ func main() {
 		if o.runOnce {
 			break
 		}
-		time.Sleep(cfg().Sinker.ResyncPeriod)
+		time.Sleep(cfg().Sinker.ResyncPeriod.Duration)
 	}
 }
 
@@ -259,7 +259,7 @@ func (c *controller) clean() {
 	isExist := sets.NewString()
 	isFinished := sets.NewString()
 
-	maxProwJobAge := c.config().Sinker.MaxProwJobAge
+	maxProwJobAge := c.config().Sinker.MaxProwJobAge.Duration
 	for _, prowJob := range prowJobs.Items {
 		isExist.Insert(prowJob.ObjectMeta.Name)
 		// Handle periodics separately.
@@ -327,7 +327,7 @@ func (c *controller) clean() {
 			return
 		}
 		metrics.podsCreated += len(pods.Items)
-		maxPodAge := c.config().Sinker.MaxPodAge
+		maxPodAge := c.config().Sinker.MaxPodAge.Duration
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
 			reason := reasonPodAged

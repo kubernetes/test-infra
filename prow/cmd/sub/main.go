@@ -122,7 +122,7 @@ func main() {
 
 	// Expose prometheus metrics
 	pushGateway := configAgent.Config().PushGateway
-	metrics.ExposeMetrics("sub", pushGateway.Endpoint, pushGateway.Interval)
+	metrics.ExposeMetrics("sub", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,

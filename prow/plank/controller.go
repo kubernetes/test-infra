@@ -396,7 +396,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			pj.Status.Description = "Job failed."
 
 		case coreapi.PodPending:
-			maxPodPending := c.config().Plank.PodPendingTimeout
+			maxPodPending := c.config().Plank.PodPendingTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
 				// Pod is running. Do nothing.
 				c.incrementNumPendingJobs(pj.Spec.Job)
