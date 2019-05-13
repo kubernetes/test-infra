@@ -254,7 +254,7 @@ postsubmits:
         preset-bazel-scratch-dir: "true"
         preset-bazel-remote-cache-enabled: "true"
       annotations:
-        testgrid-dashboards: google-unit
+        testgrid-dashboards: sig-release-1.11-blocking, sig-release-1.11-all, google-unit
         testgrid-tab-name: bazel-build-1.11
       spec:
         containers:
