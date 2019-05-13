@@ -4,6 +4,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 1h 2h 6h 24h
+    fork-per-release-generic-suffix: "true"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
