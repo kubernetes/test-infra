@@ -109,6 +109,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 2h 2h 6h 24h
+    fork-per-release-generic-suffix: "true"
   decorate: true
   extra_refs:
   - org: kubernetes

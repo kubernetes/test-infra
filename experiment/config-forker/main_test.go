@@ -332,25 +332,38 @@ func TestFixEnvVars(t *testing.T) {
 
 func TestGenerateNameVariant(t *testing.T) {
 	tests := []struct {
-		name     string
-		testName string
-		expected string
+		name          string
+		testName      string
+		genericSuffix bool
+		expected      string
 	}{
 		{
-			name:     "jobs ending in -master have it replaced",
+			name:     "jobs ending in -master have it replaced with a version",
 			testName: "ci-party-master",
 			expected: "ci-party-1-15",
+		},
+		{
+			name:          "generic jobs ending in -master have it replaced with -beta",
+			testName:      "ci-party-master",
+			genericSuffix: true,
+			expected:      "ci-party-beta",
 		},
 		{
 			name:     "jobs not ending in in -master have a number appended",
 			testName: "ci-party",
 			expected: "ci-party-1-15",
 		},
+		{
+			name:          "generic jobs not ending in in -master have 'beta' appended",
+			testName:      "ci-party",
+			genericSuffix: true,
+			expected:      "ci-party-beta",
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			if result := generateNameVariant(tc.testName, "1.15"); result != tc.expected {
+			if result := generateNameVariant(tc.testName, "1.15", tc.genericSuffix); result != tc.expected {
 				t.Errorf("Expected name %q, but got name %q.", tc.expected, result)
 			}
 		})
@@ -454,6 +467,13 @@ func TestGeneratePeriodics(t *testing.T) {
 			},
 		},
 		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "some-generic-periodic-master",
+				Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true"},
+			},
+		},
+		{
 			Interval: "1h",
 			JobBase: config.JobBase{
 				Name: "periodic-with-replacements",
@@ -499,6 +519,13 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-forked-periodic-1-15",
 				Annotations: map[string]string{},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "some-generic-periodic-beta",
+				Annotations: map[string]string{suffixAnnotation: "true"},
 			},
 		},
 		{
@@ -556,6 +583,15 @@ func TestGeneratePostsubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
+					Name:        "post-kubernetes-generic",
+					Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true"},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+			},
+			{
+				JobBase: config.JobBase{
 					Name: "post-replace-some-things-master",
 					Annotations: map[string]string{
 						forkAnnotation:        "true",
@@ -591,6 +627,15 @@ func TestGeneratePostsubmits(t *testing.T) {
 				JobBase: config.JobBase{
 					Name:        "post-kubernetes-e2e-1-15",
 					Annotations: map[string]string{},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "post-kubernetes-generic-beta",
+					Annotations: map[string]string{suffixAnnotation: "true"},
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
