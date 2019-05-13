@@ -1047,6 +1047,12 @@ test_groups:
 - name: integ-galley-k8s-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests-master
   days_of_results: 7
+- name: integ-mixer-local-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-local-presubmit-tests-master
+  days_of_results: 7
+- name: integ-mixer-k8s-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-presubmit-tests-master
+  days_of_results: 7
 - name: integ-pilot-local-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-local-presubmit-tests-master
   days_of_results: 7
