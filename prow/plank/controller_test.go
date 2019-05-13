@@ -46,6 +46,7 @@ type fca struct {
 
 const (
 	podPendingTimeout = time.Hour
+	podRunningTimeout = time.Hour * 2
 )
 
 func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
@@ -84,6 +85,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 						MaxGoroutines:  20,
 					},
 					PodPendingTimeout: podPendingTimeout,
+					PodRunningTimeout: podRunningTimeout,
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -1101,6 +1103,35 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedComplete: true,
 			expectedReport:   true,
 			expectedURL:      "nightmare/error",
+		},
+		{
+			name: "stale running prow job",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "endless",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "endless",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "endless",
+					},
+					Status: kube.PodStatus{
+						Phase:     kube.PodRunning,
+						StartTime: startTime(time.Now().Add(-podRunningTimeout)),
+					},
+				},
+			},
+			expectedState:    prowapi.AbortedState,
+			expectedNumPods:  0,
+			expectedComplete: true,
+			expectedReport:   true,
+			expectedURL:      "endless/aborted",
 		},
 	}
 	for _, tc := range testcases {
