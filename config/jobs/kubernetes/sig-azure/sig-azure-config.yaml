@@ -38,7 +38,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"

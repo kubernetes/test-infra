@@ -21,7 +21,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-master
 
 # manual-release-bump-required (add a job for the new version and delete the job for the oldest version)
 - interval: 6h
@@ -43,7 +43,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.11
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-12
@@ -64,7 +64,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.12
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.12
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-13
@@ -85,7 +85,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.13
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.13
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-14
@@ -106,4 +106,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.14
