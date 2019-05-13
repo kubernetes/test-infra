@@ -418,7 +418,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale pending pod.")
 
 		case coreapi.PodRunning:
-			maxPodRunning := c.config().Plank.PodRunningTimeout
+			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
 				c.incrementNumPendingJobs(pj.Spec.Job)
