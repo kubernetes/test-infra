@@ -997,6 +997,12 @@ test_groups:
 - name: integ-galley-k8s-presubmit-tests
   gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests
   days_of_results: 7
+- name: integ-mixer-local-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-local-presubmit-tests
+  days_of_results: 7
+- name: integ-mixer-k8s-presubmit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests
+  days_of_results: 7
 - name: integ-pilot-local-presubmit-tests
   gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-local-presubmit-tests
   days_of_results: 7
@@ -1040,6 +1046,12 @@ test_groups:
   days_of_results: 7
 - name: integ-galley-k8s-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests-master
+  days_of_results: 7
+- name: integ-mixer-local-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-local-presubmit-tests-master
+  days_of_results: 7
+- name: integ-mixer-k8s-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-presubmit-tests-master
   days_of_results: 7
 - name: integ-pilot-local-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-local-presubmit-tests-master
@@ -5529,6 +5541,10 @@ dashboards:
     test_group_name: integ-galley-local-presubmit-tests
   - name: integ-galley-k8s-presubmit-tests
     test_group_name: integ-galley-k8s-presubmit-tests
+  - name: integ-mixer-local-presubmit-tests
+    test_group_name: integ-mixer-local-presubmit-tests
+  - name: integ-mixer-k8s-presubmit-tests
+    test_group_name: integ-mixer-k8s-presubmit-tests
   - name: integ-pilot-local-presubmit-tests
     test_group_name: integ-pilot-local-presubmit-tests
   - name: integ-pilot-k8s-presubmit-tests
@@ -5590,6 +5606,10 @@ dashboards:
     test_group_name: integ-galley-local-presubmit-tests-master
   - name: integ-galley-k8s-presubmit-tests
     test_group_name: integ-galley-k8s-presubmit-tests-master
+  - name: integ-mixer-local-presubmit-tests
+    test_group_name: integ-mixer-local-presubmit-tests-master
+  - name: integ-mixer-k8s-presubmit-tests
+    test_group_name: integ-mixer-k8s-presubmit-tests-master
   - name: integ-pilot-local-presubmit-tests
     test_group_name: integ-pilot-local-presubmit-tests-master
   - name: integ-pilot-k8s-presubmit-tests
