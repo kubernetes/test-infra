@@ -59,6 +59,10 @@ postsubmits:
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
+      testgrid-dashboards: sig-release-master-blocking, google-unit
+      testgrid-tab-name: bazel-build-master
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+      description: "OWNER: sig-testing; Builds kubernetes using bazel"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -116,6 +120,11 @@ postsubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
+    annotations:
+      testgrid-dashboards: sig-release-master-blocking, google-unit
+      testgrid-tab-name: bazel-test-master
+      testgrid-alert-email: kubernetes-sig-testing-alert@googlegroups.com
+      description: "OWNER: sig-testing. Tests kubernetes using bazel."
     extra_refs:
     - base_ref: master
       org: kubernetes
