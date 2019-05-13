@@ -51,6 +51,7 @@ type ReportMessage struct {
 	GCSPath string               `json:"gcs_path"`
 	Refs    []prowapi.Refs       `json:"refs,omitempty"`
 	JobType prowapi.ProwJobType  `json:"job_type"`
+	JobName string               `json:"job_name"`
 }
 
 // Client is a reporter client fed to crier controller
@@ -138,5 +139,6 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
 		Refs:    refs,
 		JobType: pj.Spec.Type,
+		JobName: pj.Spec.Job,
 	}
 }

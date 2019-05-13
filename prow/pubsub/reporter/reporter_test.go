@@ -68,6 +68,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PresubmitJob,
+					Job:  "test1",
 					Refs: &prowapi.Refs{
 						Pulls: []prowapi.Pull{{Number: 123}},
 					},
@@ -86,6 +87,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 					},
 				},
 				JobType: prowapi.PresubmitJob,
+				JobName: "test1",
 			},
 		},
 		{
@@ -105,6 +107,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PeriodicJob,
+					Job:  "test1",
 				},
 			},
 			expectedMessage: &ReportMessage{
@@ -115,6 +118,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				URL:     "guber/test1",
 				GCSPath: "gs://test1",
 				JobType: prowapi.PeriodicJob,
+				JobName: "test1",
 			},
 		},
 		{
