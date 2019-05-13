@@ -2,7 +2,7 @@
 
 periodics:
 - name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
-  interval: 1h
+  interval: 2h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -33,7 +33,7 @@ periodics:
           memory: "9000Mi"
           cpu: 2000m
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
-  interval: 1h
+  interval: 12h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -64,7 +64,7 @@ periodics:
           memory: "9000Mi"
           cpu: 2000m
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
-  interval: 1h
+  interval: 12h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -95,7 +95,7 @@ periodics:
           memory: "9000Mi"
           cpu: 2000m
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
-  interval: 1h
+  interval: 12h
   decorate: true
   labels:
     preset-dind-enabled: "true"
