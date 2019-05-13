@@ -85,7 +85,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 						MaxGoroutines:  20,
 					},
 					PodPendingTimeout: podPendingTimeout,
-					PodRunningTimeout: podRunningTimeout,
+					PodRunningTimeout: &metav1.Duration{Duration: podRunningTimeout},
 				},
 			},
 			JobConfig: config.JobConfig{

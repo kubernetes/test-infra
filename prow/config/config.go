@@ -34,6 +34,7 @@ import (
 	"github.com/sirupsen/logrus"
 	cron "gopkg.in/robfig/cron.v2"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -202,11 +203,9 @@ type Plank struct {
 	// PodPendingTimeout is after how long the controller will perform a garbage
 	// collection on pending pods. Defaults to one day.
 	PodPendingTimeout time.Duration `json:"-"`
-	// PodRunningTimeoutString compiles into PodRunningTimeout at load time.
-	PodRunningTimeoutString string `json:"pod_running_timeout,omitempty"`
 	// PodRunningTimeout is after how long the controller will abort a prowjob pod
 	// stuck in running state. Defaults to two days.
-	PodRunningTimeout time.Duration `json:"-"`
+	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
@@ -918,14 +917,8 @@ func parseProwConfig(c *Config) error {
 		c.Plank.PodPendingTimeout = podPendingTimeout
 	}
 
-	if c.Plank.PodRunningTimeoutString == "" {
-		c.Plank.PodRunningTimeout = 48 * time.Hour
-	} else {
-		podRunningTimeout, err := time.ParseDuration(c.Plank.PodRunningTimeoutString)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for plank.pod_running_timeout: %v", err)
-		}
-		c.Plank.PodRunningTimeout = podRunningTimeout
+	if c.Plank.PodRunningTimeout == nil {
+		c.Plank.PodRunningTimeout = &metav1.Duration{Duration: 48 * time.Hour}
 	}
 
 	if c.Gerrit.TickIntervalString == "" {
