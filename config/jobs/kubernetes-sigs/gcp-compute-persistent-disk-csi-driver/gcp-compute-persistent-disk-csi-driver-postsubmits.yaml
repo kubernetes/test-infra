@@ -64,7 +64,7 @@ periodics:
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=60" # Minutes
+      - "--timeout=180" # Minutes
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration-migration.sh"
