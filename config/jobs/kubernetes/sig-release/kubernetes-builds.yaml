@@ -84,7 +84,9 @@ periodics:
     fork-per-release: "true"
     fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
     fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-release-master-informing
+    testgrid-dashboards: sig-release-master-blocking
+    testgrid-tab-name: build-master
+    description: "OWNER: sig-release (rel-engineering)"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e

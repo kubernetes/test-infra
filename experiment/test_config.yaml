@@ -1021,20 +1021,25 @@ jobs:
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
     interval: 1h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
     interval: 1h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 1h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     interval: 1h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
     interval: 1h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
     interval: 1h
     sigOwners: ['sig-gcp']
@@ -1060,25 +1065,30 @@ jobs:
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: ['sig-gcp']
-
+    releaseBlocking: true
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
     interval: 2h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-ingress:
     interval: 2h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 2h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     interval: 2h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-slow:
     interval: 2h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gke-cos-k8sstable1-ingress:
     interval: 2h
     sigOwners: ['sig-gcp']
@@ -1102,23 +1112,29 @@ jobs:
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
     interval: 6h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
     interval: 6h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-default:
     interval: 6h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
     interval: 6h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
     interval: 6h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gke-cos-k8sstable2-ingress:
     interval: 6h
     sigOwners: ['sig-gcp']
@@ -1142,20 +1158,25 @@ jobs:
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
 
   # stable3
   ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
     interval: 24h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
     interval: 24h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-default:
     interval: 24h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
     interval: 24h
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
     interval: 24h
     sigOwners: ['sig-gcp']
@@ -1181,6 +1202,7 @@ jobs:
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
     sigOwners: ['sig-gcp']
+    releaseBlocking: true
 
 # The following settings are used by cluster e2e tests.
 
@@ -1232,22 +1254,28 @@ images:
     args:
     - --gcp-node-image=gci
 
+# manual-release-bump-required
 k8sVersions:
   dev:
     args:
     - --extract=ci/latest
+    version: 'master'
   beta:
     args:
     - --extract=ci/k8s-beta
+    version: '1.14'
   stable1:
     args:
     - --extract=ci/k8s-stable1
+    version: '1.13'
   stable2:
     args:
     - --extract=ci/k8s-stable2
+    version: '1.12'
   stable3:
     args:
     - --extract=ci/k8s-stable3
+    version: '1.11'
 
 testSuites:
   alphafeatures:

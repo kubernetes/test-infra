@@ -40,9 +40,12 @@ Add something like this to your prowjob:
 
 ```yaml
 annotations:
-  testgrid-dashboards: dashboard-name  # a dashboard defined in config.yaml
-  tab-name: some-short-name            # optionally, a shorter name for the tab. If omitted, just uses the job name.
+  testgrid-dashboards: dashboard-name  # a dashboard defined in config.yaml.
+  testgrid-tab-name: some-short-name   # optionally, a shorter name for the tab. If omitted, just uses the job name.
+  testgrid-alert-email: me@me.com      # optionally, an alert email that will be applied to the tab created in the
+                                       # first dashboard specified in testgrid-dashboards. 
   description: Words about your job.   # optionally, a description of your job. If omitted, just uses the job name.
+  
 ```
 
 If you need to create a new dashboard, or do anything more advanced, read on.

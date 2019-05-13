@@ -110,6 +110,10 @@ periodics:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 2h 2h 6h 24h
     fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: verify-master
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    description: "OWNER: sig-testing; Ends up running: make verify"
   decorate: true
   extra_refs:
   - org: kubernetes
