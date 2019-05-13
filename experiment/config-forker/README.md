@@ -13,7 +13,8 @@ config-forker forks presubmit, periodic, and postsubmit job configs with the `fo
 
 - `fork-per-release`: only jobs with this set to `"true"` will be forked.
 - `fork-per-release-replacements`: allows replacing values in container `args` (see [Custom replacements](#custom-replacements)).
-- `fork-per-release-periodic-interval`: if set, forked jobs will use this value instead. If multiple space-separated values are provided, the first will be used.
+- `fork-per-release-periodic-interval`: if set, forked jobs will use this value for `interval`. If multiple space-separated values are provided, the first will be used.
+- `fork-per-release-cron`: if set, forked jobs will use this value for `cron`. If multiple values separated with `, ` are provided, the first will be used.
 
 ## Actions taken
 

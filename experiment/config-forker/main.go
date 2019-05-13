@@ -37,6 +37,7 @@ const (
 	forkAnnotation             = "fork-per-release"
 	suffixAnnotation           = "fork-per-release-generic-suffix"
 	periodicIntervalAnnotation = "fork-per-release-periodic-interval"
+	cronAnnotation             = "fork-per-release-cron"
 	replacementAnnotation      = "fork-per-release-replacements"
 )
 
@@ -127,9 +128,20 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 			p.ExtraRefs = fixExtraRefs(p.ExtraRefs, version)
 		}
 		if interval, ok := p.Annotations[periodicIntervalAnnotation]; ok {
+			if _, ok := p.Annotations[cronAnnotation]; ok {
+				return nil, fmt.Errorf("%q specifies both %s and %s, which is illegal", periodic.Name, periodicIntervalAnnotation, cronAnnotation)
+			}
 			f := strings.Fields(interval)
 			if len(f) > 0 {
 				p.Interval = f[0]
+				p.Cron = ""
+			}
+		}
+		if cron, ok := p.Annotations[cronAnnotation]; ok {
+			c := strings.Split(cron, ", ")
+			if len(c) > 0 {
+				p.Cron = c[0]
+				p.Interval = ""
 			}
 		}
 		p.Annotations = cleanAnnotations(p.Annotations)
