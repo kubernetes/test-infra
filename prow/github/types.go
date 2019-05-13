@@ -148,6 +148,7 @@ type Status struct {
 type CombinedStatus struct {
 	SHA      string   `json:"sha"`
 	Statuses []Status `json:"statuses"`
+	State    string   `json:"state"`
 }
 
 // User is a GitHub user account.
