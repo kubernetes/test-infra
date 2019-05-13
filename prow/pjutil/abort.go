@@ -18,6 +18,8 @@ package pjutil
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -36,35 +38,50 @@ type prowClient interface {
 // message.
 type ProwJobResourcesCleanup func(pj prowapi.ProwJob) error
 
-// jobIndentifier keeps the information required to uniquely identify a prow job
-type jobIndentifier struct {
-	job          string
-	organization string
-	repository   string
-	pullRequest  int
+// digestRefs digests a Refs to the fields we care about
+// for termination, ensuring that permutations of pulls
+// do not cause different digests
+func digestRefs(ref prowapi.Refs) string {
+	var pulls []int
+	for _, pull := range ref.Pulls {
+		pulls = append(pulls, pull.Number)
+	}
+	sort.Ints(pulls)
+	return fmt.Sprintf("%s/%s@%s %v", ref.Org, ref.Repo, ref.BaseRef, pulls)
 }
 
-// String returns the string representation of a prow job identifier
-func (i *jobIndentifier) String() string {
-	return fmt.Sprintf("%s %s/%s#%d", i.job, i.organization, i.repository, i.pullRequest)
-}
-
-// TerminateOlderPresubmitJobs aborts all presubmit jobs from the given list that have a newer version. It calls
+// TerminateOlderJobs aborts all presubmit jobs from the given list that have a newer version. It calls
 // the cleanup callback for each job before updating its status as aborted.
-func TerminateOlderPresubmitJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob,
+func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob,
 	cleanup ProwJobResourcesCleanup) error {
-	dupes := map[jobIndentifier]int{}
+	dupes := map[string]int{}
 	for i, pj := range pjs {
-		if pj.Complete() || pj.Spec.Type != prowapi.PresubmitJob {
+		if pj.Complete() || !(pj.Spec.Type == prowapi.PresubmitJob || pj.Spec.Type == prowapi.BatchJob) {
 			continue
 		}
 
-		ji := jobIndentifier{
-			job:          pj.Spec.Job,
-			organization: pj.Spec.Refs.Org,
-			repository:   pj.Spec.Refs.Repo,
-			pullRequest:  pj.Spec.Refs.Pulls[0].Number,
+		// we want to use salient fields of the job spec to create
+		// an identifier, so we digest the job spec and to ensure
+		// reentrancy, we must sort all of the slices in our identifier
+		// so that equivalent permutations of the refs map to the
+		// same identifier. We do not want commit hashes to matter
+		// here as a test for a newer set of commits but for the
+		// same set of names can abort older versions. We digest
+		// into strings as Go doesn't define equality for slices,
+		// so they are not valid to use in map keys.
+		identifiers := []string{
+			string(pj.Spec.Type),
+			pj.Spec.Job,
 		}
+		if pj.Spec.Refs != nil {
+			identifiers = append(identifiers, digestRefs(*pj.Spec.Refs))
+		}
+		for _, ref := range pj.Spec.ExtraRefs {
+			identifiers = append(identifiers, digestRefs(ref))
+		}
+
+		sort.Strings(identifiers)
+		ji := strings.Join(identifiers, ",")
 		prev, ok := dupes[ji]
 		if !ok {
 			dupes[ji] = i
