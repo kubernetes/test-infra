@@ -52,7 +52,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 		expectedError   error
 	}{
 		{
-			name: "Prowjob with all information should work with no error",
+			name: "Prowjob with all information for presubmit jobs should work with no error",
 			pj: &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test1",
@@ -66,6 +66,13 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 					State: prowapi.SuccessState,
 					URL:   "guber/test1",
 				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PresubmitJob,
+					Job:  "test1",
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{Number: 123}},
+					},
+				},
 			},
 			expectedMessage: &ReportMessage{
 				Project: testPubSubProjectName,
@@ -74,6 +81,44 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				Status:  prowapi.SuccessState,
 				URL:     "guber/test1",
 				GCSPath: "gs://test1",
+				Refs: []prowapi.Refs{
+					{
+						Pulls: []prowapi.Pull{{Number: 123}},
+					},
+				},
+				JobType: prowapi.PresubmitJob,
+				JobName: "test1",
+			},
+		},
+		{
+			name: "Prowjob with all information for periodic jobs should work with no error",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Labels: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+					URL:   "guber/test1",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
+					Job:  "test1",
+				},
+			},
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   testPubSubRunID,
+				Status:  prowapi.SuccessState,
+				URL:     "guber/test1",
+				GCSPath: "gs://test1",
+				JobType: prowapi.PeriodicJob,
+				JobName: "test1",
 			},
 		},
 		{
