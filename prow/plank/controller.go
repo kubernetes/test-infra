@@ -417,8 +417,29 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			}
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale pending pod.")
 
+		case coreapi.PodRunning:
+			maxPodRunning := c.config().Plank.PodRunningTimeout
+			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
+				// Pod is still running. Do nothing.
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
+
+			// Pod is stuck in running state longer than maxPodRunning
+			// abort the job, and talk to GitHub
+			pj.SetComplete()
+			pj.Status.State = prowapi.AbortedState
+			pj.Status.Description = "Pod running timeout."
+			client, ok := c.pkcs[pj.ClusterAlias()]
+			if !ok {
+				return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+			}
+			if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
+				return fmt.Errorf("failed to delete pod %s that was in running timeout: %v", pod.Name, err)
+			}
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale running pod.")
 		default:
-			// Pod is running. Do nothing.
+			// other states, ignore
 			c.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
 		}

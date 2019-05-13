@@ -202,6 +202,11 @@ type Plank struct {
 	// PodPendingTimeout is after how long the controller will perform a garbage
 	// collection on pending pods. Defaults to one day.
 	PodPendingTimeout time.Duration `json:"-"`
+	// PodRunningTimeoutString compiles into PodRunningTimeout at load time.
+	PodRunningTimeoutString string `json:"pod_running_timeout,omitempty"`
+	// PodRunningTimeout is after how long the controller will abort a prowjob pod
+	// stuck in running state. Defaults to two days.
+	PodRunningTimeout time.Duration `json:"-"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
@@ -911,6 +916,16 @@ func parseProwConfig(c *Config) error {
 			return fmt.Errorf("cannot parse duration for plank.pod_pending_timeout: %v", err)
 		}
 		c.Plank.PodPendingTimeout = podPendingTimeout
+	}
+
+	if c.Plank.PodRunningTimeoutString == "" {
+		c.Plank.PodRunningTimeout = 48 * time.Hour
+	} else {
+		podRunningTimeout, err := time.ParseDuration(c.Plank.PodRunningTimeoutString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for plank.pod_running_timeout: %v", err)
+		}
+		c.Plank.PodRunningTimeout = podRunningTimeout
 	}
 
 	if c.Gerrit.TickIntervalString == "" {
