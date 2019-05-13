@@ -136,10 +136,6 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
 	fs.Parse(args)
 
-	if len(o.gerritProjects) == 0 {
-		o.gerritProjects = nil
-	}
-
 	return o.validate()
 }
 

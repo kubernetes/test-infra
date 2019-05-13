@@ -29,6 +29,8 @@ func TestOptions(t *testing.T) {
 	defaultGitHubOptions := flagutil.GitHubOptions{}
 	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
 
+	defaultGerritProjects := map[string][]string{}
+
 	cases := []struct {
 		name     string
 		args     []string
@@ -78,9 +80,10 @@ func TestOptions(t *testing.T) {
 			name: "pubsub workers, sets workers",
 			args: []string{"--pubsub-workers=7", "--config-path=baz"},
 			expected: &options{
-				pubsubWorkers: 7,
-				configPath:    "baz",
-				github:        defaultGitHubOptions,
+				pubsubWorkers:  7,
+				configPath:     "baz",
+				github:         defaultGitHubOptions,
+				gerritProjects: defaultGerritProjects,
 			},
 		},
 		{
@@ -96,6 +99,7 @@ func TestOptions(t *testing.T) {
 				slackTokenFile: "/bar/baz",
 				configPath:     "foo",
 				github:         defaultGitHubOptions,
+				gerritProjects: defaultGerritProjects,
 			},
 		},
 		{
@@ -109,11 +113,12 @@ func TestOptions(t *testing.T) {
 				slackWorkers:   13,
 				slackTokenFile: "/bar/baz",
 				configPath:     "foo",
-				github:         defaultGitHubOptions,
 				dryrun:         true,
 				client: prowflagutil.ExperimentalKubernetesOptions{
 					DeckURI: "http://www.example.com",
 				},
+				github:         defaultGitHubOptions,
+				gerritProjects: defaultGerritProjects,
 			},
 		},
 		{
