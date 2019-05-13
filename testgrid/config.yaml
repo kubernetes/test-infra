@@ -2655,6 +2655,8 @@ dashboards:
   - name: gce-cos-master-scalability-100
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
     description: "OWNER: sig-scalability;  Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-scale@googlegroups.com
   - name: gce-cos-master-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
     description: "OWNER: sig-networking (ingress); Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh"
