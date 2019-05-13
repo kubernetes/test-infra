@@ -32,14 +32,14 @@ func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []
 	currentRevision := change.Revisions[change.CurrentRevision].Number
 	for _, message := range change.Messages {
 		messageTime := message.Date.Time
-		if message.RevisionNumber != currentRevision || messageTime.Before(lastUpdate) {
+		if message.RevisionNumber != currentRevision || !messageTime.After(lastUpdate) {
 			continue
 		}
 
 		if !pjutil.TestAllRe.MatchString(message.Message) {
 			for _, presubmit := range presubmits {
 				if presubmit.TriggerMatches(message.Message) {
-					logrus.Infof("Comment %s matches triggering regex, for %s.", message.Message, presubmit.Name)
+					logrus.Infof("Change %d: Comment %s matches triggering regex, for %s.", change.Number, message.Message, presubmit.Name)
 					filters = append(filters, pjutil.CommandFilter(message.Message))
 				}
 			}

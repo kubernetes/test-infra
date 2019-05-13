@@ -26,6 +26,7 @@ py_binary(
         "//config:prowjobs",
         "//jobs",
         "//prow:configs",
+        "//testgrid:config-yaml",
     ],
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
@@ -51,9 +52,12 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//experiment/add-hook:all-srcs",
+        "//experiment/autobumper:all-srcs",
         "//experiment/aws-stockout:all-srcs",
         "//experiment/ci-janitor:all-srcs",
+        "//experiment/config-forker:all-srcs",
         "//experiment/coverage:all-srcs",
+        "//experiment/dummybenchmarks:all-srcs",
         "//experiment/image-bumper:all-srcs",
         "//experiment/logviewer/gcsreader:all-srcs",
         "//experiment/manual-trigger:all-srcs",

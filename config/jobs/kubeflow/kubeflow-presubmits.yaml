@@ -223,6 +223,30 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/kfserving:
+  - name: kubeflow-kfserving-presubmit
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/manifests:
+  - name: kubeflow-manifests-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubeflow/pipelines:
   - name: kubeflow-pipeline-e2e-test
     always_run: true
@@ -231,7 +255,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -247,7 +271,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -265,7 +289,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         command:
         - ./test/upgrade-tests.sh
         args:
@@ -279,7 +303,7 @@ presubmits:
 #       preset-service-account: "true"
 #     spec:
 #       containers:
-#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:

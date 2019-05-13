@@ -32,6 +32,7 @@ release(
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
     component("sinker", "deployment"),
+    component("statusreconciler", "deployment"),
     component("tide", "service", "deployment"),
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),

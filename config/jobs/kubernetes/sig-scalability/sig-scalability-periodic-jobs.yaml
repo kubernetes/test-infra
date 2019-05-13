@@ -9,7 +9,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -47,7 +47,7 @@ periodics:
     preset-e2e-scalability-node: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -114,7 +114,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       resources:
         requests:
           cpu: 6
@@ -162,7 +162,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       resources:
         requests:
           cpu: 6
@@ -196,7 +196,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       resources:
         requests:
           cpu: 6
@@ -243,7 +243,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1270m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       resources:
         requests:
           cpu: 6
@@ -262,7 +262,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -309,8 +309,7 @@ periodics:
     preset-e2e-kubemark-gce-big: "true"
   spec:
     containers:
-      # TODO(mm4tt): Update it everywhere if it works.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190418-925ad44-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -358,7 +357,7 @@ periodics:
     preset-e2e-kubemark-gce-scale: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -407,7 +406,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -449,7 +448,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -476,7 +475,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -495,7 +494,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=55
@@ -520,7 +519,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -542,6 +541,31 @@ periodics:
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
 
+- name: ci-benchmark-microbenchmarks
+  interval: 20m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ./pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - ../kubernetes/pkg/api/...
+
 # Experimental config for testing private gce clusters.
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
   # TODO(mm4tt): Lower the timeout once we know how long the test takes.
@@ -552,7 +576,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         args:
           - --timeout=300
           - --bare
@@ -564,10 +588,10 @@ periodics:
           - --gcp-master-image=gci
           - --gcp-node-image=gci
           - --gcp-nodes=5
+          - --gcp-ssh-proxy-instance-name=private-gce-test-master
           - --gcp-zone=us-east1-b
           - --ginkgo-parallel=5
           - --provider=gce
-          # TODO(mm4tt): Start setting --ssh-proxy-instance-name= when it's supported in kubetest
           - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
           - --timeout=240m
           - --use-logexporter

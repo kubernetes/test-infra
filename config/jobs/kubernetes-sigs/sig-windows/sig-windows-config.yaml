@@ -7,7 +7,7 @@ presets:
   - name: AZURE_SSH_PUBLIC_KEY_FILE
     value: /etc/azure-ssh/azure-ssh-pub
   - name: CLOUD_CONFIG
-    value: random 
+    value: random
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
   - name: REGISTRY
@@ -49,7 +49,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -93,7 +93,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -112,11 +112,11 @@ periodics:
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+      - "--acsengine-download-url=https://k8swin.blob.core.windows.net/k8s-windows/acs-engine-dirty-10-05-2019.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
       - "--acsengine-orchestratorRelease=1.14"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
@@ -134,7 +134,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -174,7 +174,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -193,7 +193,7 @@ periodics:
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+      - "--acsengine-download-url=https://k8swin.blob.core.windows.net/k8s-windows/acs-engine-dirty-10-05-2019.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
       - "--acsengine-orchestratorRelease=1.14"

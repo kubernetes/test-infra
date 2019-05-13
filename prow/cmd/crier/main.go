@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	pubsubreporter "k8s.io/test-infra/prow/pubsub/reporter"
+	slackreporter "k8s.io/test-infra/prow/slack/reporter"
 )
 
 const (
@@ -60,6 +61,9 @@ type options struct {
 	gerritWorkers int
 	pubsubWorkers int
 	githubWorkers int
+	slackWorkers  int
+
+	slackTokenFile string
 
 	dryrun      bool
 	reportAgent string
@@ -76,7 +80,7 @@ func (o *options) validate() error {
 		o.gerritWorkers = 1
 	}
 
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -96,6 +100,12 @@ func (o *options) validate() error {
 		}
 	}
 
+	if o.slackWorkers > 0 {
+		if o.slackTokenFile == "" {
+			return errors.New("--slack-token-file must be set")
+		}
+	}
+
 	if err := o.client.Validate(o.dryrun); err != nil {
 		return err
 	}
@@ -109,7 +119,9 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
-	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github only)")
+	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
+	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
+	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
@@ -163,6 +175,25 @@ func main() {
 
 	// track all worker status before shutdown
 	wg := &sync.WaitGroup{}
+
+	if o.slackWorkers > 0 {
+		if cfg().SlackReporter == nil {
+			logrus.Fatal("slackreporter is enabled but has no config")
+		}
+		slackReporter, err := slackreporter.New(*cfg().SlackReporter, o.dryrun, o.slackTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to create slackreporter")
+		}
+		controllers = append(
+			controllers,
+			crier.NewController(
+				prowjobClientset,
+				kube.RateLimiter(slackReporter.GetName()),
+				prowjobInformerFactory.Prow().V1().ProwJobs(),
+				slackReporter,
+				o.slackWorkers,
+				wg))
+	}
 
 	if o.gerritWorkers > 0 {
 		informer := prowjobInformerFactory.Prow().V1().ProwJobs()

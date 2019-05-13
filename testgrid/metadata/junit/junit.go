@@ -44,15 +44,49 @@ type Suite struct {
 	 */
 }
 
+// Property defines the xml element that stores additional metrics about each benchmark.
+type Property struct {
+	Name  string `xml:"name,attr"`
+	Value string `xml:"value,attr"`
+}
+
+// Properties defines the xml element that stores the list of properties that are associated with one benchmark.
+type Properties struct {
+	PropertyList []Property `xml:"property"`
+}
+
 // Result holds <testcase/> results
 type Result struct {
-	Name      string  `xml:"name,attr"`
-	Time      float64 `xml:"time,attr"`
-	ClassName string  `xml:"classname,attr"`
-	Failure   *string `xml:"failure,omitempty"`
-	Output    *string `xml:"system-out,omitempty"`
-	Error     *string `xml:"system-err,omitempty"`
-	Skipped   *string `xml:"skipped,omitempty"`
+	Name       string      `xml:"name,attr"`
+	Time       float64     `xml:"time,attr"`
+	ClassName  string      `xml:"classname,attr"`
+	Failure    *string     `xml:"failure,omitempty"`
+	Output     *string     `xml:"system-out,omitempty"`
+	Error      *string     `xml:"system-err,omitempty"`
+	Skipped    *string     `xml:"skipped,omitempty"`
+	Properties *Properties `xml:"properties,omitempty"`
+}
+
+// SetProperty adds the specified property to the Result or replaces the
+// existing value if a property with that name already exists.
+func (r *Result) SetProperty(name, value string) {
+	if r.Properties == nil {
+		r.Properties = &Properties{}
+	}
+	for i, existing := range r.Properties.PropertyList {
+		if existing.Name == name {
+			r.Properties.PropertyList[i].Value = value
+			return
+		}
+	}
+	// Didn't find an existing property. Add a new one.
+	r.Properties.PropertyList = append(
+		r.Properties.PropertyList,
+		Property{
+			Name:  name,
+			Value: value,
+		},
+	)
 }
 
 // Message extracts the message for the junit test case.

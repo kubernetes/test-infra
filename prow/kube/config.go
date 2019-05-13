@@ -50,12 +50,12 @@ func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
 	}
 	configs := map[string]rest.Config{}
 	for context := range cfg.Contexts {
-		logrus.Infof("* %s", context)
 		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
 		if err != nil {
 			return nil, "", fmt.Errorf("create %s client: %v", context, err)
 		}
 		configs[context] = *contextCfg
+		logrus.Infof("Parsed kubeconfig context: %s", context)
 	}
 	return configs, cfg.CurrentContext, nil
 }
@@ -144,7 +144,7 @@ func LoadClusterConfigs(kubeconfig, buildCluster string) (map[string]rest.Config
 	// This will work if we are running inside kubernetes
 	localCfg, err := localConfig()
 	if err != nil {
-		logrus.WithError(err).Warn("Failed to create in-cluster config")
+		logrus.WithError(err).Warn("Could not create in-cluster config (expected when running outside the cluster).")
 	}
 
 	kubeCfgs, currentContext, err := kubeConfigs(kubeconfig)

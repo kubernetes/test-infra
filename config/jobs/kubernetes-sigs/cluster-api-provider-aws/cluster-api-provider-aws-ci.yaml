@@ -1,4 +1,4 @@
-periodics:  
+periodics:
 - name: periodic-cluster-api-provider-aws-test-creds
   decorate: true
   interval: 4h
@@ -13,7 +13,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-1.12
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.14
       command:
       - "./scripts/ci-aws-cred-test.sh"
 - name: periodic-cluster-api-provider-aws-bazel-e2e
@@ -32,14 +32,14 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.12
-      command:
-      - make
-      args:
-      - e2e
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.14
+      command: ["runner.sh"]
+      args: ["make", "e2e"]
       env:
       - name: BOSKOS_HOST
         value: "boskos.test-pods.svc.cluster.local"
+      - name: AWS_REGION
+        value: "us-west-2"
       securityContext:
         privileged: true
 postsubmits:
@@ -56,15 +56,16 @@ postsubmits:
       preset-aws-credential: "true"
     branches:
     - ^master$
+    - ^release-.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190220-615bdbe2e-1.12
-        command:
-        - make
-        args:
-        - e2e
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.14
+        command: ["runner.sh"]
+        args: ["make", "e2e"]
         env:
         - name: BOSKOS_HOST
           value: "boskos.test-pods.svc.cluster.local"
+        - name: AWS_REGION
+          value: "us-west-2"
         securityContext:
           privileged: true

@@ -43,7 +43,7 @@ type prowJobClient interface {
 
 type jenkinsClient interface {
 	Build(*prowapi.ProwJob, string) error
-	ListBuilds(jobs []string) (map[string]Build, error)
+	ListBuilds(jobs []BuildQueryParams) (map[string]Build, error)
 	Abort(job string, build *Build) error
 }
 
@@ -238,19 +238,21 @@ func (c *Controller) SyncMetrics() {
 
 // getJenkinsJobs returns all the Jenkins jobs for all active
 // prowjobs from the provided list. It handles deduplication.
-func getJenkinsJobs(pjs []prowapi.ProwJob) []string {
-	jenkinsJobs := make(map[string]struct{})
+func getJenkinsJobs(pjs []prowapi.ProwJob) []BuildQueryParams {
+	jenkinsJobs := []BuildQueryParams{}
+
 	for _, pj := range pjs {
 		if pj.Complete() {
 			continue
 		}
-		jenkinsJobs[getJobName(&pj.Spec)] = struct{}{}
+
+		jenkinsJobs = append(jenkinsJobs, BuildQueryParams{
+			JobName:   getJobName(&pj.Spec),
+			ProwJobID: pj.Name,
+		})
 	}
-	var jobs []string
-	for job := range jenkinsJobs {
-		jobs = append(jobs, job)
-	}
-	return jobs
+
+	return jenkinsJobs
 }
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs

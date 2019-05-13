@@ -145,7 +145,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -167,7 +167,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -191,7 +191,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --timeout=340
       - --bare
@@ -218,7 +218,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --timeout=340
       - --bare
@@ -246,7 +246,7 @@ periodics:
     preset-ingress-v1.3-and-above-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --timeout=340
       - --bare
@@ -259,7 +259,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] 
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
       - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-4
@@ -270,7 +270,7 @@ periodics:
     preset-ingress-v1.3-and-above-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --timeout=340
       - --bare
@@ -283,7 +283,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] 
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
       - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-5
@@ -294,7 +294,7 @@ periodics:
     preset-ingress-v1.3-and-above-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --timeout=340
       - --bare
@@ -307,7 +307,7 @@ periodics:
       - --gcp-project-type=ingress-project
       - --ginkgo-parallel=1
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\] 
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
       - --timeout=320m
 
 - name: ci-ingress-gce-e2e-scale
@@ -318,7 +318,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       args:
       - --timeout=340
       - --bare

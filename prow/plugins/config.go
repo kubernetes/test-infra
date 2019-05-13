@@ -115,6 +115,11 @@ type Blunderbuss struct {
 	// insufficient reviewers are available. If ExcludeApprovers is true,
 	// approvers will never be considered as reviewers.
 	ExcludeApprovers bool `json:"exclude_approvers,omitempty"`
+	// UseStatusAvailability controls whether blunderbuss will consider GitHub's
+	// status availability when requesting reviews for users. This will use at one
+	// additional token per successful reviewer (and potentially more depending on
+	// how many busy reviewers it had to pass over).
+	UseStatusAvailability bool `json:"use_status_availability,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -254,27 +259,7 @@ type Approve struct {
 var (
 	warnImplicitSelfApprove time.Time
 	warnReviewActsAsApprove time.Time
-	warnLock                sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
 )
-
-func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
-	// have we warned within the last freq?
-	warnLock.RLock()
-	fresh := time.Now().Sub(*last) <= freq
-	warnLock.RUnlock()
-	if fresh { // we've warned recently
-		return
-	}
-	// Warning is stale, will we win the race to warn?
-	warnLock.Lock()
-	defer warnLock.Unlock()
-	now := time.Now()           // Recalculate now, we might wait awhile for the lock
-	if now.Sub(*last) <= freq { // Nope, we lost
-		return
-	}
-	*last = now
-	logrus.Warn(msg)
-}
 
 func (a Approve) HasSelfApproval() bool {
 	if a.DeprecatedImplicitSelfApprove != nil {
@@ -565,6 +550,29 @@ func (r RequireMatchingLabel) validate() error {
 	return nil
 }
 
+var warnLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
+
+// warnDeprecated prints a deprecation warning for a particular configuration
+// option.
+func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
+	// have we warned within the last freq?
+	warnLock.RLock()
+	fresh := time.Now().Sub(*last) <= freq
+	warnLock.RUnlock()
+	if fresh { // we've warned recently
+		return
+	}
+	// Warning is stale, will we win the race to warn?
+	warnLock.Lock()
+	defer warnLock.Unlock()
+	now := time.Now()           // Recalculate now, we might wait awhile for the lock
+	if now.Sub(*last) <= freq { // Nope, we lost
+		return
+	}
+	*last = now
+	logrus.Warn(msg)
+}
+
 // Describe generates a human readable description of the behavior that this
 // configuration specifies.
 func (r RequireMatchingLabel) Describe() string {
@@ -813,6 +821,8 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 	return nil
 }
 
+var warnBlunderbussFileWeightCount time.Time
+
 func validateBlunderbuss(b *Blunderbuss) error {
 	if b.ReviewerCount != nil && b.FileWeightCount != nil {
 		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
@@ -822,6 +832,9 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	}
 	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
 		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
+	}
+	if b.FileWeightCount != nil {
+		warnDeprecated(&warnBlunderbussFileWeightCount, 5*time.Minute, "file_weight_count is being deprecated in favour of max_request_count. Please ensure your configuration is updated before the end of May 2019.")
 	}
 	return nil
 }

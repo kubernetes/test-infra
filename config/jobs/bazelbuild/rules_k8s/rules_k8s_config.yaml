@@ -7,7 +7,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/rules-k8s/gcloud-bazel:v20190313-v0.1-24-g7e16d1f
+      - image: gcr.io/rules-k8s/gcloud-bazel:v20190507-v0.1-58-g37b9460
         args:
         - bash
         - -c

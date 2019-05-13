@@ -82,11 +82,11 @@ func TestLevelFromPermissions(t *testing.T) {
 			level:       Read,
 		},
 		{
-			permissions: RepoPermissions{Push: true},
+			permissions: RepoPermissions{Pull: true, Push: true},
 			level:       Write,
 		},
 		{
-			permissions: RepoPermissions{Admin: true},
+			permissions: RepoPermissions{Pull: true, Push: true, Admin: true},
 			level:       Admin,
 		},
 	}
@@ -117,11 +117,11 @@ func TestPermissionsFromLevel(t *testing.T) {
 		},
 		{
 			level:       Write,
-			permissions: RepoPermissions{Push: true},
+			permissions: RepoPermissions{Pull: true, Push: true},
 		},
 		{
 			level:       Admin,
-			permissions: RepoPermissions{Admin: true},
+			permissions: RepoPermissions{Pull: true, Push: true, Admin: true},
 		},
 	}
 

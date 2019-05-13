@@ -1,4 +1,4 @@
-presubmits:  
+presubmits:
   kubernetes-sigs/poseidon:
   - name: ci-poseidon-e2e-gce
     always_run: true
@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -35,7 +35,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -60,7 +60,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
         args:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

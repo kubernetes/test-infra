@@ -234,7 +234,10 @@ func main() {
 	}
 	if len(errs) > 0 {
 		reportWarning(o.strict, errorutil.NewAggregate(errs...))
+		return
 	}
+
+	logrus.Info("checkconfig passes without any error!")
 }
 func policyIsStrict(p config.Policy) bool {
 	if p.Protect == nil || !*p.Protect {

@@ -149,13 +149,15 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() error {
-	// gerrit timestamp only has second precision
-	syncTime := time.Now().Truncate(time.Second)
+	syncTime := c.lastUpdate
 
 	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.config().Gerrit.RateLimit) {
 		for _, change := range changes {
 			if err := c.ProcessChange(instance, change); err != nil {
 				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
+			}
+			if syncTime.Before(change.Updated.Time) {
+				syncTime = change.Updated.Time
 			}
 		}
 

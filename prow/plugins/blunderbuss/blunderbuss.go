@@ -17,12 +17,14 @@ limitations under the License.
 package blunderbuss
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"math/rand"
 	"regexp"
 	"sort"
 
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -113,6 +115,7 @@ type githubClient interface {
 	RequestReview(org, repo string, number int, logins []string) error
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
 type repoownersClient interface {
@@ -144,6 +147,7 @@ func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry
 		config.FileWeightCount,
 		config.MaxReviewerCount,
 		config.ExcludeApprovers,
+		config.UseStatusAvailability,
 		repo,
 		pr,
 	)
@@ -186,12 +190,13 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 		config.FileWeightCount,
 		config.MaxReviewerCount,
 		config.ExcludeApprovers,
+		config.UseStatusAvailability,
 		repo,
 		pr,
 	)
 }
 
-func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, repo *github.Repo, pr *github.PullRequest) error {
+func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, useStatusAvailability bool, repo *github.Repo, pr *github.PullRequest) error {
 	oc, err := roc.LoadRepoOwners(repo.Owner.Login, repo.Name, pr.Base.Ref)
 	if err != nil {
 		return fmt.Errorf("error loading RepoOwners: %v", err)
@@ -208,7 +213,7 @@ func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerC
 	case oldReviewCount != nil:
 		reviewers = getReviewersOld(log, oc, pr.User.Login, changes, *oldReviewCount)
 	case reviewerCount != nil:
-		reviewers, requiredReviewers, err = getReviewers(oc, pr.User.Login, changes, *reviewerCount)
+		reviewers, requiredReviewers, err = getReviewers(oc, ghc, log, pr.User.Login, changes, *reviewerCount, useStatusAvailability)
 		if err != nil {
 			return err
 		}
@@ -219,7 +224,7 @@ func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerC
 				// and approvers and the search might stop too early if it finds
 				// duplicates.
 				frc := fallbackReviewersClient{ownersClient: oc}
-				approvers, _, err := getReviewers(frc, pr.User.Login, changes, *reviewerCount)
+				approvers, _, err := getReviewers(frc, ghc, log, pr.User.Login, changes, *reviewerCount, useStatusAvailability)
 				if err != nil {
 					return err
 				}
@@ -249,11 +254,12 @@ func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerC
 	return nil
 }
 
-func getReviewers(rc reviewersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, []string, error) {
+func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, author string, files []github.PullRequestChange, minReviewers int, useStatusAvailability bool) ([]string, []string, error) {
 	authorSet := sets.NewString(github.NormLogin(author))
 	reviewers := sets.NewString()
 	requiredReviewers := sets.NewString()
 	leafReviewers := sets.NewString()
+	busyReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
@@ -271,12 +277,16 @@ func getReviewers(rc reviewersClient, author string, files []github.PullRequestC
 			continue
 		}
 		leafReviewers = leafReviewers.Union(fileUnusedLeafs)
-		reviewers.Insert(popRandom(fileUnusedLeafs))
+		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileUnusedLeafs); r != "" {
+			reviewers.Insert(r)
+		}
 	}
 	// now ensure that we request review from at least minReviewers reviewers. Favor leaf reviewers.
 	unusedLeafs := leafReviewers.Difference(reviewers)
 	for reviewers.Len() < minReviewers && unusedLeafs.Len() > 0 {
-		reviewers.Insert(popRandom(unusedLeafs))
+		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &unusedLeafs); r != "" {
+			reviewers.Insert(r)
+		}
 	}
 	for _, file := range files {
 		if reviewers.Len() >= minReviewers {
@@ -284,19 +294,72 @@ func getReviewers(rc reviewersClient, author string, files []github.PullRequestC
 		}
 		fileReviewers := rc.Reviewers(file.Filename).Difference(authorSet)
 		for reviewers.Len() < minReviewers && fileReviewers.Len() > 0 {
-			reviewers.Insert(popRandom(fileReviewers))
+			if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileReviewers); r != "" {
+				reviewers.Insert(r)
+			}
 		}
 	}
 	return reviewers.List(), requiredReviewers.List(), nil
 }
 
 // popRandom randomly selects an element of 'set' and pops it.
-func popRandom(set sets.String) string {
+func popRandom(set *sets.String) string {
 	list := set.List()
 	sort.Strings(list)
 	sel := list[rand.Intn(len(list))]
 	set.Delete(sel)
 	return sel
+}
+
+// findReviewer finds a reviewer from a set, potentially using status
+// availability.
+func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability bool, busyReviewers, targetSet *sets.String) string {
+	// if we don't care about status availability, just pop a target from the set
+	if !useStatusAvailability {
+		return popRandom(targetSet)
+	}
+
+	// if we do care, start looping through the candidates
+	for {
+		if targetSet.Len() == 0 {
+			// if there are no candidates left, then break
+			break
+		}
+		candidate := popRandom(targetSet)
+		if busyReviewers.Has(candidate) {
+			// we've already verified this reviewer is busy
+			continue
+		}
+		busy, err := isUserBusy(ghc, candidate)
+		if err != nil {
+			log.Errorf("error checking user availability: %v", err)
+		}
+		if !busy {
+			return candidate
+		}
+		// if we haven't returned the candidate, then they must be busy.
+		busyReviewers.Insert(candidate)
+	}
+	return ""
+}
+
+type githubAvailabilityQuery struct {
+	User struct {
+		Login  githubql.String
+		Status struct {
+			IndicatesLimitedAvailability githubql.Boolean
+		}
+	} `graphql:"user(login: $user)"`
+}
+
+func isUserBusy(ghc githubClient, user string) (bool, error) {
+	var query githubAvailabilityQuery
+	vars := map[string]interface{}{
+		"user": githubql.String(user),
+	}
+	ctx := context.Background()
+	err := ghc.Query(ctx, &query, vars)
+	return bool(query.User.Status.IndicatesLimitedAvailability), err
 }
 
 func getReviewersOld(log *logrus.Entry, oc ownersClient, author string, changes []github.PullRequestChange, reviewerCount int) []string {

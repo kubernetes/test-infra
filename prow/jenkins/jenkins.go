@@ -52,9 +52,10 @@ const (
 )
 
 const (
-	success = "SUCCESS"
-	failure = "FAILURE"
-	aborted = "ABORTED"
+	success  = "SUCCESS"
+	failure  = "FAILURE"
+	unstable = "UNSTABLE"
+	aborted  = "ABORTED"
 )
 
 // NotFoundError is returned by the Jenkins client when
@@ -132,7 +133,7 @@ func (jb *Build) IsSuccess() bool {
 
 // IsFailure means the job completed with problems.
 func (jb *Build) IsFailure() bool {
-	return jb.Result != nil && *jb.Result == failure
+	return jb.Result != nil && (*jb.Result == failure || *jb.Result == unstable)
 }
 
 // IsAborted means something stopped the job before it could finish.
@@ -239,6 +240,12 @@ type BasicAuthConfig struct {
 // BearerTokenAuthConfig authenticates jenkins using an oauth bearer token.
 type BearerTokenAuthConfig struct {
 	GetToken func() []byte
+}
+
+// BuildQueryParams is used to query Jenkins for running and enqueued builds
+type BuildQueryParams struct {
+	JobName   string
+	ProwJobID string
 }
 
 // NewClient instantiates a client with provided values.
@@ -617,7 +624,7 @@ func (c *Client) BuildFromSpec(spec *prowapi.ProwJobSpec, buildID, prowJobID str
 
 // ListBuilds returns a list of all Jenkins builds for the
 // provided jobs (both scheduled and enqueued).
-func (c *Client) ListBuilds(jobs []string) (map[string]Build, error) {
+func (c *Client) ListBuilds(jobs []BuildQueryParams) (map[string]Build, error) {
 	// Get queued builds.
 	jenkinsBuilds, err := c.GetEnqueuedBuilds(jobs)
 	if err != nil {
@@ -641,7 +648,7 @@ func (c *Client) ListBuilds(jobs []string) (map[string]Build, error) {
 			} else {
 				buildChan <- builds
 			}
-		}(job)
+		}(job.JobName)
 	}
 	wg.Wait()
 
@@ -664,7 +671,7 @@ func (c *Client) ListBuilds(jobs []string) (map[string]Build, error) {
 }
 
 // GetEnqueuedBuilds lists all enqueued builds for the provided jobs.
-func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]Build, error) {
+func (c *Client) GetEnqueuedBuilds(jobs []BuildQueryParams) (map[string]Build, error) {
 	c.logger.Debug("GetEnqueuedBuilds")
 
 	data, err := c.Get("/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]")
@@ -687,7 +694,7 @@ func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]Build, error) {
 		// Ignore builds for jobs we didn't ask for.
 		var exists bool
 		for _, job := range jobs {
-			if jb.Task.Name == job {
+			if prowJobID == job.ProwJobID {
 				exists = true
 				break
 			}

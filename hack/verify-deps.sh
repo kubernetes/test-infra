@@ -16,29 +16,52 @@
 set -o nounset
 set -o errexit
 set -o pipefail
-set -o xtrace
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-cd "${TESTINFRA_ROOT}"
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Checking modules for changes..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed //hack:verify-deps
+  )
+  exit 0
+fi
 
-_tmpdir="$(mktemp -d -t verify-deps.XXXXXX)"
-cd "${_tmpdir}"
-_tmpdir="$(pwd)"
 
-trap "rm -rf ${_tmpdir}" EXIT
+tmpfiles=$TEST_TMPDIR/files
 
-cp -a "${TESTINFRA_ROOT}/." "${_tmpdir}"
-./hack/update-deps.sh
+(
+  mkdir -p "$tmpfiles"
+  rm -f bazel-*
+  cp -aL "." "$tmpfiles"
+  export BUILD_WORKSPACE_DIRECTORY=$tmpfiles
+  export HOME=$(realpath "$TEST_TMPDIR/home")
+  unset GOPATH
+  go=$(realpath "$2")
+  export PATH=$(dirname "$go"):$PATH
+  "$@"
+)
 
-diff=$(diff -Nupr \
+(
+  # Remove the platform/binary for gazelle and kazel
+  gazelle=$(dirname "$3")
+  kazel=$(dirname "$4")
+  rm -rf {.,"$tmpfiles"}/{"$gazelle","$kazel"}
+)
+# Avoid diff -N so we handle empty files correctly
+diff=$(diff -upr \
   -x ".git" \
   -x "bazel-*" \
   -x "_output" \
-  "${TESTINFRA_ROOT}" "${_tmpdir}" 2>/dev/null || true)
+  "." "$tmpfiles" 2>/dev/null || true)
 
 if [[ -n "${diff}" ]]; then
   echo "${diff}" >&2
   echo >&2
-  echo "Run ./hack/update-deps.sh" >&2
+  echo "ERROR: modules changed. Update with ./hack/update-deps.sh" >&2
   exit 1
 fi
+echo "SUCCESS: modules up-to-date"

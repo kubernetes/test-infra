@@ -18,22 +18,31 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ $# -lt 3 ]]; then
-  echo "Usage: bazel run //hack:update-protos [-- tmpdir]" >&2
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating protos..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
   exit 1
+else
+  (
+    set -o xtrace
+    bazel run //hack:update-protos
+  )
+  exit 0
 fi
 
 protoc=$1
 plugin=$2
 boiler=$3
-dest=${4:-$BUILD_WORKSPACE_DIRECTORY}
+dest=$BUILD_WORKSPACE_DIRECTORY
 
 genproto() {
   dir=$(dirname "$1")
   base=$(basename "$1")
+  out=$dest/$dir/${base%.proto}.pb.go
+  rm -f "$out" # mac will complain otherwise
   "$protoc" "--plugin=$plugin" "--proto_path=$dir" "--go_out=$dest/$dir" "$1"
   tmp=$(mktemp)
-  out=$dest/$dir/${base%.proto}.pb.go
   mv "$out" "$tmp"
   cat "$boiler" "$tmp" > "$out"
 }

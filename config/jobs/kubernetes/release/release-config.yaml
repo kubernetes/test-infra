@@ -29,7 +29,20 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         resources:
           requests:
             memory: "6Gi"
+
+  - name: unit-test
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+        - image: golang:1.12
+          command:
+            - go
+          args:
+            - test
+            - ./...

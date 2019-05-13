@@ -18,7 +18,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-testimages/janitor:v20190320-fb2c17c2f
+        image: gcr.io/k8s-testimages/janitor:v20190509-e418529
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gke-project
@@ -55,7 +55,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-testimages/janitor:v20190320-fb2c17c2f
+        image: gcr.io/k8s-testimages/janitor:v20190509-e418529
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-project
@@ -95,3 +95,5 @@ spec:
         image: gcr.io/k8s-testimages/janitor-aws:v20190326-5dd3da15c
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
+        # Turn off sweeping until https://github.com/kubernetes/test-infra/issues/12527 is resolved
+        - --sweep-count=0

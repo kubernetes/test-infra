@@ -21,6 +21,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/slack/reporter:all-srcs",
+    ],
     tags = ["automanaged"],
 )

@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-'''
+"""
 Summarize groups failed tests together by finding edit distances between their failure strings,
 and emits JSON for rendering in a browser.
-'''
+"""
 
 # pylint: disable=invalid-name,missing-docstring
 
@@ -32,6 +32,9 @@ import re
 import sys
 import time
 import zlib
+
+import six
+from six.moves import range
 
 import berghelroach
 
@@ -99,7 +102,7 @@ def normalize_name(name):
 
     Matches code in testgrid and kubernetes/hack/update_owners.py.
     """
-    name = re.sub(r'\[.*?\]|\{.*?\}', '', name)
+    name = re.sub(r'\[.*?\]|{.*?\}', '', name)
     name = re.sub(r'\s+', ' ', name)
     return name.strip()
 
@@ -120,7 +123,7 @@ def make_ngram_counts(s, ngram_counts={}):
     size = 64
     if s not in ngram_counts:
         counts = [0] * size
-        for x in xrange(len(s)-3):
+        for x in range(len(s)-3):
             counts[zlib.crc32(s[x:x+4].encode('utf8')) & (size - 1)] += 1
         ngram_counts[s] = counts  # memoize
     return ngram_counts[s]
@@ -146,14 +149,14 @@ def ngram_editdist(a, b):
     """
     counts_a = make_ngram_counts(a)
     counts_b = make_ngram_counts(b)
-    return sum(abs(x-y) for x, y in zip(counts_a, counts_b))/4
+    return sum(abs(x-y) for x, y in zip(counts_a, counts_b))//4
 
 
 def make_ngram_counts_digest(s):
     """
     Returns a hashed version of the ngram counts.
     """
-    return hashlib.sha1(str(make_ngram_counts(s))).hexdigest()[:20]
+    return hashlib.sha1(str(make_ngram_counts(s)).encode()).hexdigest()[:20]
 
 
 def file_memoize(description, name):
@@ -205,7 +208,7 @@ def load_failures(builds_file, tests_files):
         for line in open(tests_file, 'r'):
             test = json.loads(line)
             failed_tests.setdefault(test['name'], []).append(test)
-    for tests in failed_tests.itervalues():
+    for tests in six.itervalues(failed_tests):
         tests.sort(key=lambda t: t['build'])
 
     return builds, failed_tests
@@ -277,7 +280,7 @@ def cluster_local(failed_tests):
     logging.info("Clustering failures for %d unique tests...", len(failed_tests))
     # Look at tests with the most failures first
     for n, (test_name, tests) in enumerate(
-            sorted(failed_tests.iteritems(),
+            sorted(six.iteritems(failed_tests),
                    key=lambda x: len(x[1]),
                    reverse=True),
             1):
@@ -324,13 +327,14 @@ def cluster_global(clustered, previous_clustered):
 
     # Look at tests with the most failures over all clusters first
     for n, (test_name, test_clusters) in enumerate(
-            sorted(clustered.iteritems(),
-                   key=lambda (k, v): sum(len(x) for x in v.itervalues()),
+            sorted(six.iteritems(clustered),
+                   key=lambda kv: sum(len(x) for x in six.itervalues(kv[1])),
                    reverse=True),
             1):
         logging.info('%4d/%4d, %d clusters, %s', n, len(clustered), len(test_clusters), test_name)
         # Look at clusters with the most failures first
-        for key, tests in sorted(test_clusters.iteritems(), key=lambda x: len(x[1]), reverse=True):
+        for key, tests in sorted(six.iteritems(test_clusters),
+                                 key=lambda x: len(x[1]), reverse=True):
             num_failures += len(tests)
             if key in clusters:
                 clusters[key].setdefault(test_name, []).extend(tests)
@@ -343,7 +347,7 @@ def cluster_global(clustered, previous_clustered):
 
     # If we seeded clusters using the previous run's keys, some of those
     # clusters may have disappeared. Remove the resulting empty entries.
-    for k in {k for k, v in clusters.iteritems() if not v}:
+    for k in {k for k, v in six.iteritems(clusters) if not v}:
         clusters.pop(k)
 
     elapsed = time.time() - start
@@ -363,8 +367,8 @@ def tests_group_by_job(tests, builds):
             continue
         if 'number' in build:
             groups.setdefault(build['job'], set()).add(build['number'])
-    return sorted(((key, sorted(value, reverse=True)) for key, value in groups.iteritems()),
-                  key=lambda (k, v): (-len(v), k))
+    return sorted(((key, sorted(value, reverse=True)) for key, value in six.iteritems(groups)),
+                  key=lambda kv: (-len(kv[1]), kv[0]))
 
 
 SPAN_RE = re.compile(r'\w+|\W+')
@@ -420,7 +424,7 @@ def clusters_to_display(clustered, builds):
             "jobs": [{"name": n, "builds": [str(x) for x in b]}
                      for n, b in tests_group_by_job(tests, builds)]
             }
-                  for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
+                  for test_name, tests in sorted(clusters, key=lambda nt: (-len(nt[1]), nt[0]))
                  ]
         }
             for key, key_id, clusters in clustered if sum(len(x[1]) for x in clusters) > 1
@@ -436,11 +440,11 @@ def builds_to_columns(builds):
 
     cols = {v: [] for v in 'started tests_failed elapsed tests_run result executor pr'.split()}
     out = {'jobs': jobs, 'cols': cols, 'job_paths': {}}
-    for build in sorted(builds.itervalues(), key=lambda b: (b['job'], b['number'])):
+    for build in sorted(six.itervalues(builds), key=lambda b: (b['job'], b['number'])):
         if 'number' not in build:
             continue
         index = len(cols['started'])
-        for key, entries in cols.iteritems():
+        for key, entries in six.iteritems(cols):
             entries.append(build.get(key))
         job = jobs.setdefault(build['job'], {})
         if not job:
@@ -465,11 +469,11 @@ def builds_to_columns(builds):
 
 def render(builds, clustered):
     clustered_sorted = sorted(
-        clustered.iteritems(),
-        key=lambda (k, v): (-sum(len(ts) for ts in v.itervalues()), k))
+        six.iteritems(clustered),
+        key=lambda kv: (-sum(len(ts) for ts in six.itervalues(kv[1])), kv[0]))
     clustered_tuples = [(k,
                          make_ngram_counts_digest(k),
-                         sorted(clusters.items(), key=lambda (n, t): (-len(t), n)))
+                         sorted(clusters.items(), key=lambda nt: (-len(nt[1]), nt[0])))
                         for k, clusters in clustered_sorted]
 
     return {'clustered': clusters_to_display(clustered_tuples, builds),
@@ -487,7 +491,7 @@ def annotate_owners(data, builds, owners):
             sig.replace('-', '_'),  # regex group names can't have -
             '|'.join(re.escape(p) for p in prefixes)
         )
-        for sig, prefixes in owners.iteritems()
+        for sig, prefixes in six.iteritems(owners)
     ))
     job_paths = data['builds']['job_paths']
     yesterday = max(data['builds']['cols']['started']) - (60 * 60 * 24)
@@ -502,7 +506,7 @@ def annotate_owners(data, builds, owners):
                 m = owner_re.match(normalize_name(test['name']))
                 if not m or not m.groupdict():
                     continue
-                owner = next(k for k, v in m.groupdict().iteritems() if v)
+                owner = next(k for k, v in six.iteritems(m.groupdict()) if v)
             owner = owner.replace('_', '-')
             counts = owner_counts.setdefault(owner, [0, 0])
             for job in test['jobs']:
@@ -515,7 +519,7 @@ def annotate_owners(data, builds, owners):
                     else:
                         counts[1] += 1
         if owner_counts:
-            owner = max(owner_counts.items(), key=lambda (o, c): (c, o))[0]
+            owner = max(owner_counts.items(), key=lambda oc: (oc[1], oc[0]))[0]
             cluster['owner'] = owner
         else:
             cluster['owner'] = 'testing'
@@ -536,7 +540,7 @@ def render_slice(data, builds, prefix='', owner=''):
         for test in cluster['tests']:
             for job in test['jobs']:
                 jobs.add(job['name'])
-    for path, build in builds.iteritems():
+    for path, build in six.iteritems(builds):
         if build['job'] in jobs:
             builds_out[path] = build
     return {'clustered': clustered, 'builds': builds_to_columns(builds_out)}

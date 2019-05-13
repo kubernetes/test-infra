@@ -2266,13 +2266,13 @@ func TestConfigureTeamRepos(t *testing.T) {
 			},
 			existingRepos: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Admin: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
 			}},
 			expected: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Admin: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
 			}},
 		},
 		{
@@ -2289,14 +2289,14 @@ func TestConfigureTeamRepos(t *testing.T) {
 			},
 			existingRepos: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Admin: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
 			}},
 			expected: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Admin: true}},
-				{Name: "other-admin", Permissions: github.RepoPermissions{Admin: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+				{Name: "other-admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
 			}},
 		},
 		{
@@ -2312,12 +2312,12 @@ func TestConfigureTeamRepos(t *testing.T) {
 			},
 			existingRepos: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Admin: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
 			}},
 			expected: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
 				{Name: "admin", Permissions: github.RepoPermissions{Pull: true}},
 			}},
 		},
@@ -2333,11 +2333,11 @@ func TestConfigureTeamRepos(t *testing.T) {
 			},
 			existingRepos: map[int][]github.Repo{1: {
 				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Admin: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
 			}},
 			expected: map[int][]github.Repo{1: {
-				{Name: "write", Permissions: github.RepoPermissions{Push: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
 				{Name: "admin", Permissions: github.RepoPermissions{Pull: true}},
 			}},
 		},

@@ -31,6 +31,22 @@ The video demos power features of testgrid, including:
 
 Please have a look!
 
+# Minimal Configuration
+
+If you just have a prowjob you want to appear in an existing dashboard and don't care about anything
+else, you can add annotations to that prowjob instead of making changes here.
+
+Add something like this to your prowjob:
+
+```yaml
+annotations:
+  testgrid-dashboards: dashboard-name  # a dashboard defined in config.yaml
+  tab-name: some-short-name            # optionally, a shorter name for the tab. If omitted, just uses the job name.
+  description: Words about your job.   # optionally, a description of your job. If omitted, just uses the job name.
+```
+
+If you need to create a new dashboard, or do anything more advanced, read on.
+
 ## Configuration
 Open [`config.yaml`] in your favorite editor and:
 1. Configure the test groups

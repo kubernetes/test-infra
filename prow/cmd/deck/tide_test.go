@@ -34,6 +34,7 @@ func TestFilterHidden(t *testing.T) {
 
 		hiddenRepos []string
 		hiddenOnly  bool
+		showHidden  bool
 		queries     []config.TideQuery
 		pools       []tide.Pool
 		hist        map[string][]history.Record
@@ -143,6 +144,68 @@ func TestFilterHidden(t *testing.T) {
 				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
 			},
 		},
+		{
+			name: "frontend for everything",
+
+			showHidden: true,
+			hiddenRepos: []string{
+				"kubernetes-security",
+				"kubernetes/website",
+			},
+
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -151,6 +214,7 @@ func TestFilterHidden(t *testing.T) {
 		ta := &tideAgent{
 			hiddenRepos: test.hiddenRepos,
 			hiddenOnly:  test.hiddenOnly,
+			showHidden:  test.showHidden,
 			log:         logrus.WithField("agent", "tide"),
 		}
 

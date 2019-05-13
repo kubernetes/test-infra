@@ -67,14 +67,8 @@ step() {
     return 0
 }
 
-step hack/verify-bazel.sh
-step hack/verify-gofmt.sh
-step hack/verify-tslint.sh
-step //:golint bazel run //:golint -- "${dirs[@]}"
+step "//hack:verify-all" bazel test //hack:verify-all
 step "bazel test" bazel test --build_tests_only "${tests[@]}"
-step hack/verify_boilerplate.py
-step hack/verify-spelling.sh
-step hack/verify-github-spelling.sh
 
 if [[ "${#failing[@]}" != 0 ]]; then
     echo "FAILURE: ${#failing[@]} steps failed: ${failing[@]}"

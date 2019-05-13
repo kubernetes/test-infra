@@ -10,7 +10,6 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/peribolos",
     visibility = ["//visibility:private"],
     deps = [
-        "//prow/config:go_default_library",
         "//prow/config/org:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/errorutil:go_default_library",

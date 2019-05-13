@@ -716,7 +716,9 @@ func TestReconcile(t *testing.T) {
 			} else if tc.namespace == errorUpdateProwJob {
 				name = errorUpdateProwJob
 			}
-
+			if tc.context == "" {
+				tc.context = kube.DefaultClusterAlias
+			}
 			r := &fakeReconciler{
 				jobs:      map[string]prowjobv1.ProwJob{},
 				pipelines: map[string]pipelinev1alpha1.PipelineRun{},

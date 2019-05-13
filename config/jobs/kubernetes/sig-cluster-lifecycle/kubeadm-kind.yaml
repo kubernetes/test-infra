@@ -2,7 +2,7 @@
 
 periodics:
 - name: ci-kubernetes-e2e-kubeadm-kind-1-12
-  interval: 4h
+  interval: 12h
   decorate: true
   labels:
     preset-bazel-scratch-dir: "true"
@@ -81,7 +81,7 @@ periodics:
         type: Directory
 
 - name: ci-kubernetes-e2e-kubeadm-kind-1-13
-  interval: 4h
+  interval: 12h
   decorate: true
   labels:
     preset-bazel-scratch-dir: "true"
@@ -160,7 +160,7 @@ periodics:
         type: Directory
 
 - name: ci-kubernetes-e2e-kubeadm-kind-1-14
-  interval: 4h
+  interval: 12h
   decorate: true
   labels:
     preset-bazel-scratch-dir: "true"
@@ -239,7 +239,7 @@ periodics:
         type: Directory
 
 - name: ci-kubernetes-e2e-kubeadm-kind-master
-  interval: 1h
+  interval: 2h
   decorate: true
   labels:
     preset-bazel-scratch-dir: "true"

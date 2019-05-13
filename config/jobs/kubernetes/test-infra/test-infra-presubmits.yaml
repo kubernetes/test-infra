@@ -37,37 +37,17 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
-        command:
-        - runner.sh
-        - ./scenarios/kubernetes_execute_bazel.py
-        args:
-        - hack/build-then-unit.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-bazel-rbe
-    branches:
-    - master
-    always_run: true
-    skip_report: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - hack/build-then-unit.sh
-        resources:
-          requests:
-            memory: "2Gi"
+        - hack/bazel.sh
+        args:
+        - test
+        - --config=ci
+        - --config=unit
+        - --nobuild_tests_only
+        - //...
 
   - name: pull-test-infra-gubernator
     branches:
@@ -91,47 +71,16 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+      - image: launcher.gcr.io/google/bazel:0.24.1
         command:
-        - runner.sh
-        - ./scenarios/kubernetes_bazel.py
+        - hack/bazel.sh
         args:
-        - "--install=gubernator/test_requirements.txt"
-        - "--test=//..."
-        - "--test-args=--config=lint"
-        volumeMounts:
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-tslint
-    branches:
-      - master
-    run_if_changed: '\.ts$'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
-          command:
-            - ./hack/verify-tslint.sh
-
-  - name: pull-test-infra-verify-bazel
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
-        command:
-        - ./hack/verify-bazel.sh
+        - test
+        - --config=ci
+        - --config=lint
+        - //...
 
   - name: pull-test-infra-verify-config
     branches:
@@ -143,7 +92,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
         command:
         - runner.sh
         args:
@@ -162,7 +111,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -186,7 +135,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
         command:
         - runner.sh
         args:
@@ -203,41 +152,9 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
         command:
         - ./hack/verify-codegen.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-gofmt
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
-        command:
-        - ./hack/verify-gofmt.sh
-
-  - name: pull-test-infra-verify-labels
-    branches:
-    - master
-    run_if_changed: '^label_sync/labels.yaml'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-labels.sh
         resources:
           requests:
             memory: "2Gi"
@@ -251,19 +168,18 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
         command:
         - ./hack/verify-file-perms.sh
 
-  - name: pull-test-infra-verify-github-spelling
-    branches:
-    - master
+  - name: pull-test-infra-yamllint
     always_run: true
     decorate: true
-    labels:
-      preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-experimental
+      - image: quay.io/kubermatic/yamllint:0.1
         command:
-        - ./hack/verify-github-spelling.sh
+        - yamllint
+        - -c
+        - config/jobs/.yamllint.conf
+        - config/jobs

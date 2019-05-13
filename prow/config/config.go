@@ -41,7 +41,6 @@ import (
 
 	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -73,14 +72,14 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
-	Tide             Tide                  `json:"tide,omitempty"`
-	Plank            Plank                 `json:"plank,omitempty"`
-	Sinker           Sinker                `json:"sinker,omitempty"`
-	Deck             Deck                  `json:"deck,omitempty"`
-	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
-	Orgs             map[string]org.Config `json:"orgs,omitempty"`
-	Gerrit           Gerrit                `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter        `json:"github_reporter,omitempty"`
+	Tide             Tide             `json:"tide,omitempty"`
+	Plank            Plank            `json:"plank,omitempty"`
+	Sinker           Sinker           `json:"sinker,omitempty"`
+	Deck             Deck             `json:"deck,omitempty"`
+	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
+	Gerrit           Gerrit           `json:"gerrit,omitempty"`
+	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
+	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -109,8 +108,8 @@ type ProwConfig struct {
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
 
-	// OwnersDirBlacklist is used to configure which directories to ignore when
-	// searching for OWNERS{,_ALIAS} files in a repo.
+	// OwnersDirBlacklist is used to configure regular expressions matching directories
+	// to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
 
 	// Pub/Sub Subscriptions that we want to listen to
@@ -129,8 +128,8 @@ type ProwConfig struct {
 	DefaultJobTimeout time.Duration `json:"default_job_timeout,omitempty"`
 }
 
-// OwnersDirBlacklist is used to configure which directories to ignore when
-// searching for OWNERS{,_ALIAS} files in a repo.
+// OwnersDirBlacklist is used to configure regular expressions matching directories
+// to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 type OwnersDirBlacklist struct {
 	// Repos configures a directory blacklist per repo (or org)
 	Repos map[string][]string `json:"repos"`
@@ -139,7 +138,7 @@ type OwnersDirBlacklist struct {
 	Default []string `json:"default"`
 }
 
-// DirBlacklist returns directories which are used to ignore when
+// DirBlacklist returns regular expressions matching directories to ignore when
 // searching for OWNERS{,_ALIAS} files in a repo.
 func (ownersDirBlacklist OwnersDirBlacklist) DirBlacklist(org, repo string) (blacklist []string) {
 	blacklist = append(blacklist, ownersDirBlacklist.Default...)
@@ -381,6 +380,36 @@ type GitHubOptions struct {
 	LinkURL *url.URL
 }
 
+// SlackReporter represents the config for the Slack reporter
+type SlackReporter struct {
+	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report"`
+	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report"`
+	Channel           string                 `json:"channel"`
+	ReportTemplate    string                 `json:"report_template"`
+}
+
+func (cfg *SlackReporter) DefaultAndValidate() error {
+	// Default ReportTemplate
+	if cfg.ReportTemplate == "" {
+		cfg.ReportTemplate = `Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>`
+	}
+
+	if cfg.Channel == "" {
+		return errors.New("channel must be set")
+	}
+
+	// Validate ReportTemplate
+	tmpl, err := template.New("").Parse(cfg.ReportTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse template: %v", err)
+	}
+	if err := tmpl.Execute(&bytes.Buffer{}, &prowapi.ProwJob{}); err != nil {
+		return fmt.Errorf("failed to execute report_template: %v", err)
+	}
+
+	return nil
+}
+
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	// we never want config loading to take down the prow components
@@ -405,52 +434,27 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	return c, nil
 }
 
-// loadConfig loads one or multiple config files and returns a config object.
-func loadConfig(prowConfig, jobConfig string) (*Config, error) {
-	stat, err := os.Stat(prowConfig)
+// ReadJobConfig reads the JobConfig yaml, but does not expand or validate it.
+func ReadJobConfig(jobConfig string) (JobConfig, error) {
+	stat, err := os.Stat(jobConfig)
 	if err != nil {
-		return nil, err
-	}
-
-	if stat.IsDir() {
-		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
-	}
-
-	var nc Config
-	if err := yamlToConfig(prowConfig, &nc); err != nil {
-		return nil, err
-	}
-	if err := parseProwConfig(&nc); err != nil {
-		return nil, err
-	}
-
-	// TODO(krzyzacy): temporary allow empty jobconfig
-	//                 also temporary allow job config in prow config
-	if jobConfig == "" {
-		return &nc, nil
-	}
-
-	stat, err = os.Stat(jobConfig)
-	if err != nil {
-		return nil, err
+		return JobConfig{}, err
 	}
 
 	if !stat.IsDir() {
 		// still support a single file
 		var jc JobConfig
 		if err := yamlToConfig(jobConfig, &jc); err != nil {
-			return nil, err
+			return JobConfig{}, err
 		}
-		if err := nc.mergeJobConfig(jc); err != nil {
-			return nil, err
-		}
-		return &nc, nil
+		return jc, nil
 	}
 
 	// we need to ensure all config files have unique basenames,
 	// since updateconfig plugin will use basename as a key in the configmap
 	uniqueBasenames := sets.String{}
 
+	jc := JobConfig{}
 	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logrus.WithError(err).Errorf("walking path %q.", path)
@@ -485,10 +489,47 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		if err := yamlToConfig(path, &subConfig); err != nil {
 			return err
 		}
-		return nc.mergeJobConfig(subConfig)
+		jc, err = mergeJobConfigs(jc, subConfig)
+		return err
 	})
 
 	if err != nil {
+		return JobConfig{}, err
+	}
+
+	return jc, nil
+}
+
+// loadConfig loads one or multiple config files and returns a config object.
+func loadConfig(prowConfig, jobConfig string) (*Config, error) {
+	stat, err := os.Stat(prowConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	if stat.IsDir() {
+		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
+	}
+
+	var nc Config
+	if err := yamlToConfig(prowConfig, &nc); err != nil {
+		return nil, err
+	}
+	if err := parseProwConfig(&nc); err != nil {
+		return nil, err
+	}
+
+	// TODO(krzyzacy): temporary allow empty jobconfig
+	//                 also temporary allow job config in prow config
+	if jobConfig == "" {
+		return &nc, nil
+	}
+
+	jc, err := ReadJobConfig(jobConfig)
+	if err != nil {
+		return nil, err
+	}
+	if err := nc.mergeJobConfig(jc); err != nil {
 		return nil, err
 	}
 
@@ -560,16 +601,34 @@ func ReadFileMaybeGZIP(path string) ([]byte, error) {
 	return ioutil.ReadAll(gzipReader)
 }
 
-// mergeConfig merges two JobConfig together
+func (c *Config) mergeJobConfig(jc JobConfig) error {
+	m, err := mergeJobConfigs(JobConfig{
+		Presets:     c.Presets,
+		Presubmits:  c.Presubmits,
+		Periodics:   c.Periodics,
+		Postsubmits: c.Postsubmits,
+	}, jc)
+	if err != nil {
+		return err
+	}
+	c.Presets = m.Presets
+	c.Presubmits = m.Presubmits
+	c.Periodics = m.Periodics
+	c.Postsubmits = m.Postsubmits
+	return nil
+}
+
+// mergeJobConfigs merges two JobConfig together
 // It will try to merge:
 //	- Presubmits
 //	- Postsubmits
 // 	- Periodics
 //	- PodPresets
-func (c *Config) mergeJobConfig(jc JobConfig) error {
+func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	// Merge everything
 	// *** Presets ***
-	c.Presets = append(c.Presets, jc.Presets...)
+	c := JobConfig{}
+	c.Presets = append(a.Presets, b.Presets...)
 
 	// validate no duplicated preset key-value pairs
 	validLabels := map[string]bool{}
@@ -577,32 +636,33 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		for label, val := range preset.Labels {
 			pair := label + ":" + val
 			if _, ok := validLabels[pair]; ok {
-				return fmt.Errorf("duplicated preset 'label:value' pair : %s", pair)
+				return JobConfig{}, fmt.Errorf("duplicated preset 'label:value' pair : %s", pair)
 			}
 			validLabels[pair] = true
 		}
 	}
 
 	// *** Periodics ***
-	c.Periodics = append(c.Periodics, jc.Periodics...)
+	c.Periodics = append(a.Periodics, b.Periodics...)
 
 	// *** Presubmits ***
-	if c.Presubmits == nil {
-		c.Presubmits = make(map[string][]Presubmit)
+	c.Presubmits = make(map[string][]Presubmit)
+	for repo, jobs := range a.Presubmits {
+		c.Presubmits[repo] = jobs
 	}
-	for repo, jobs := range jc.Presubmits {
+	for repo, jobs := range b.Presubmits {
 		c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
 	}
 
 	// *** Postsubmits ***
-	if c.Postsubmits == nil {
-		c.Postsubmits = make(map[string][]Postsubmit)
+	c.Postsubmits = make(map[string][]Postsubmit)
+	for repo, jobs := range a.Postsubmits {
+		c.Postsubmits[repo] = jobs
 	}
-	for repo, jobs := range jc.Postsubmits {
+	for repo, jobs := range b.Postsubmits {
 		c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
 	}
-
-	return nil
+	return c, nil
 }
 
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
@@ -701,6 +761,12 @@ func (c *Config) validateComponentConfig() error {
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
 			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
+		}
+	}
+
+	if c.SlackReporter != nil {
+		if err := c.SlackReporter.DefaultAndValidate(); err != nil {
+			return fmt.Errorf("failed to validate slackreporter config: %v", err)
 		}
 	}
 	return nil
@@ -822,7 +888,7 @@ func (c *Config) validateJobConfig() error {
 const DefaultConfigPath = "/etc/config/config.yaml"
 
 // ConfigPath returns the value for the component's configPath if provided
-// explicityly or default otherwise.
+// explicitly or default otherwise.
 func ConfigPath(value string) string {
 
 	if value != "" {
@@ -1020,6 +1086,30 @@ func parseProwConfig(c *Config) error {
 			method != github.MergeSquash {
 			return fmt.Errorf("merge type %q for %s is not a valid type", method, name)
 		}
+	}
+
+	for name, templates := range c.Tide.MergeTemplate {
+		if templates.TitleTemplate != "" {
+			titleTemplate, err := template.New("CommitTitle").Parse(templates.TitleTemplate)
+
+			if err != nil {
+				return fmt.Errorf("parsing template for commit title: %v", err)
+			}
+
+			templates.Title = titleTemplate
+		}
+
+		if templates.BodyTemplate != "" {
+			bodyTemplate, err := template.New("CommitBody").Parse(templates.BodyTemplate)
+
+			if err != nil {
+				return fmt.Errorf("parsing template for commit body: %v", err)
+			}
+
+			templates.Body = bodyTemplate
+		}
+
+		c.Tide.MergeTemplate[name] = templates
 	}
 
 	for i, tq := range c.Tide.Queries {

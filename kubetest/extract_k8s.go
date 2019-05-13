@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -315,6 +316,36 @@ func setReleaseFromGcs(prefix, suffix string, getSrc bool) error {
 	return getKube(url, strings.TrimSpace(string(release)), getSrc)
 }
 
+var httpCat = func(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Unexpected HTTP status code: %d", resp.StatusCode)
+	}
+
+	release, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return release, nil
+}
+
+func setReleaseFromHTTP(prefix, suffix string, getSrc bool) error {
+	url := fmt.Sprintf("https://storage.googleapis.com/%s", prefix)
+	release, err := httpCat(fmt.Sprintf("%s/%s.txt", url, suffix))
+	if err != nil {
+		return err
+	}
+
+	return getKube(url, strings.TrimSpace(string(release)), getSrc)
+}
+
 func setupGciVars(family string) (string, error) {
 	p := "container-vm-image-staging"
 	b, err := control.Output(exec.Command("gcloud", "compute", "images", "describe-from-family", family, fmt.Sprintf("--project=%v", p), "--format=value(name)"))
@@ -440,13 +471,13 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		defer os.Unsetenv("CLUSTER_API_VERSION")
 		return setReleaseFromGcs("kubernetes-release-dev/ci", "latest-"+mat[1], extractSrc)
 	case ci:
-		prefix := "kubernetes-release-dev/ci"
 		if strings.HasPrefix(e.option, "gke-") {
-			prefix = "kubernetes-release-gke/release"
+			return setReleaseFromGcs("kubernetes-release-gke/release", e.option, extractSrc)
 		}
-		return setReleaseFromGcs(prefix, e.option, extractSrc)
+
+		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
 	case rc, stable:
-		return setReleaseFromGcs("kubernetes-release/release", e.option, extractSrc)
+		return setReleaseFromHTTP("kubernetes-release/release", e.option, extractSrc)
 	case version:
 		var url string
 		release := e.option
@@ -475,7 +506,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		return getKube("", e.option, extractSrc)
 	case ciCross:
 		prefix := "kubernetes-release-dev/ci-cross"
-		return setReleaseFromGcs(prefix, e.option, extractSrc)
+		return setReleaseFromHTTP(prefix, e.option, extractSrc)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
 }

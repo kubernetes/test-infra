@@ -11,16 +11,23 @@ metadata:
   name: "sinker"
 rules:
   - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - delete
-      - list
-  - apiGroups:
       - "prow.k8s.io"
     resources:
       - prowjobs
+    verbs:
+      - delete
+      - list
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "sinker"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
     verbs:
       - delete
       - list
@@ -37,3 +44,17 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "sinker"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "sinker"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "sinker"
+subjects:
+- kind: ServiceAccount
+  name: "sinker"
+  namespace: default

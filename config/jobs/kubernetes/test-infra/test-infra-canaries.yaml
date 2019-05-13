@@ -1,28 +1,24 @@
-presubmits:  
+presubmits:
   kubernetes/test-infra:
   - name: pull-test-infra-bazel-canary
-    always_run: false
+    decorate: true
+    skip_report: true
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      - image: launcher.gcr.io/google/bazel
         imagePullPolicy: Always
+        command:
+        - hack/bazel.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--timeout=15"
-        - "--" # end bootstrap args, scenario args below
-        - "hack/build-then-unit.sh"
-        volumeMounts:
-        resources:
-          requests:
-            memory: "2Gi"
+        - test
+        - --config=ci
+        - --config=unit
+        - --nobuild_tests_only
+        - //...
 
 # Testing to make sure things still update.
 periodics:
@@ -33,3 +29,24 @@ periodics:
       containers:
         - image: alpine
           command: ["/bin/date"]
+
+  - name: ci-test-infra-benchmark-demo
+    interval: 20m
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: golang:latest
+        command:
+        - go
+        args:
+        - run
+        - ./pkg/benchmarkjunit
+        - --log-file=$(ARTIFACTS)/benchmark-log.txt
+        - --output=$(ARTIFACTS)/junit_benchmarks.xml
+        - --pass-on-error
+        - ./experiment/dummybenchmarks/...

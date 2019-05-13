@@ -2,7 +2,7 @@
 
 periodics:
 - name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
-  interval: 1h
+  interval: 2h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -11,20 +11,114 @@ periodics:
     timeout: 2400000000000 #40m
   extra_refs:
   - org: kubernetes
-    repo: kubeadm
-    base_ref: master
-    path_alias: k8s.io/kubeadm
-  - org: kubernetes
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
       command:
-      - "./kinder/ci/kinder-run.sh"
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
       - "upgrade-stable-master"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.14
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "upgrade-1.13-1.14"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.13
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "upgrade-1.12-1.13"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decoration_config:
+    timeout: 2400000000000 #40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.12
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "upgrade-1.11-1.12"
       securityContext:
         privileged: true
       resources:

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -27,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/errorutil"
@@ -79,7 +79,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.IntVar(&o.minAdmins, "min-admins", defaultMinAdmins, "Ensure config specifies at least this many admins")
 	flags.BoolVar(&o.requireSelf, "require-self", true, "Ensure --github-token-path user is an admin")
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
-	flags.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
+	flags.StringVar(&o.config, "config-path", "", "Path to org config.yaml")
 	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
@@ -119,6 +119,10 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	}
 	if o.config != "" && o.dump != "" {
 		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
+	}
+
+	if o.jobConfig != "" {
+		logrus.Warn("--job-config-path is deprecated and unused, stop using it before July 2019")
 	}
 
 	if o.dumpFull && o.dump == "" {
@@ -168,10 +172,8 @@ func main() {
 		}
 		var output interface{}
 		if o.dumpFull {
-			output = struct {
-				Orgs map[string]*org.Config `json:"orgs,omitempty"`
-			}{
-				Orgs: map[string]*org.Config{o.dump: ret},
+			output = org.FullConfig{
+				Orgs: map[string]org.Config{o.dump: *ret},
 			}
 		} else {
 			output = ret
@@ -185,9 +187,14 @@ func main() {
 		return
 	}
 
-	cfg, err := config.Load(o.config, o.jobConfig)
+	raw, err := ioutil.ReadFile(o.config)
 	if err != nil {
-		logrus.Fatalf("Failed to load --config=%s: %v", o.config, err)
+		logrus.WithError(err).Fatal("Could not read --config-path file")
+	}
+
+	var cfg org.FullConfig
+	if err := yaml.Unmarshal(raw, &cfg); err != nil {
+		logrus.WithError(err).Fatal("Failed to load configuration")
 	}
 
 	for name, orgcfg := range cfg.Orgs {
@@ -566,6 +573,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	if err != nil {
 		return nil, fmt.Errorf("failed to list teams: %v", err)
 	}
+	logrus.Debugf("Found %d teams", len(teamList))
 	for _, t := range teamList {
 		if ignoreSecretTeams && org.Privacy(t.Privacy) == org.Secret {
 			continue
@@ -573,19 +581,26 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 		ids[t.ID] = t
 		ints.Insert(t.ID)
 	}
+	if ignoreSecretTeams {
+		logrus.Debugf("Found %d non-secret teams", len(teamList))
+	}
 
 	// What is the lowest ID for each team?
 	older := map[string][]github.Team{}
 	names := map[string]github.Team{}
 	for _, t := range ids {
+		logger := logrus.WithFields(logrus.Fields{"id": t.ID, "name": t.Name})
 		n := t.Name
 		switch val, ok := names[n]; {
 		case !ok: // first occurrence of the name
+			logger.Debug("First occurrence of this team name.")
 			names[n] = t
 		case ok && t.ID < val.ID: // t has the lower ID, replace and send current to older set
+			logger.Debugf("Replacing previous recorded team (%d) with this one due to smaller ID.", val.ID)
 			names[n] = t
 			older[n] = append(older[n], val)
 		default: // t does not have smallest id, add it to older set
+			logger.Debugf("Adding team to older set as a smaller ID is already recoded for it.", val.ID)
 			older[n] = append(older[n], val)
 		}
 	}
@@ -597,13 +612,16 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	var match func(teams map[string]org.Team)
 	match = func(teams map[string]org.Team) {
 		for name, orgTeam := range teams {
+			logger := logrus.WithField("name", name)
 			match(orgTeam.Children)
 			t := findTeam(names, name, orgTeam.Previously...)
 			if t == nil {
 				missing[name] = orgTeam
+				logger.Debug("Could not find team in GitHub for this configuration.")
 				continue
 			}
 			matches[name] = *t // t.Name != name if we matched on orgTeam.Previously
+			logger.WithField("id", t.ID).Debug("Found a team in GitHub for this configuration.")
 			used.Insert(t.ID)
 		}
 	}

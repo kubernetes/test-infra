@@ -38,7 +38,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -60,7 +60,7 @@ presubmits:
         - "--ginkgo-parallel=30"
         - "--acsengine-agentpoolcount=3"
         - "--acsengine-admin-username=azureuser"
-        - "--acsengine-creds=$AZURE_CREDENTIALS" 
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
         - "--acsengine-orchestratorRelease=1.14" # needed for now until aks-engine supports `custom`
         - "--acsengine-mastervmsize=Standard_DS2_v2"
         - "--acsengine-agentvmsize=Standard_DS2_v2"

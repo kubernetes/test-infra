@@ -204,7 +204,7 @@ func (d *Deployer) prepareKindBinary() error {
 	case kindBinaryBuild:
 		log.Println("Building a kind binary from source.")
 		// Build the kind binary.
-		cmd := exec.Command("go", "build", "-o", d.kindBinaryPath)
+		cmd := exec.Command("make", "install", "INSTALL_DIR="+d.kindBinaryDir)
 		cmd.Dir = d.importPathKind
 		if err := d.control.FinishRunning(cmd); err != nil {
 			return err
