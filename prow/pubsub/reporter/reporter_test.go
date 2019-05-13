@@ -69,7 +69,7 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PresubmitJob,
 					Refs: &prowapi.Refs{
-						Pulls: []prowapi.Pull{prowapi.Pull{Number: 123}},
+						Pulls: []prowapi.Pull{{Number: 123}},
 					},
 				},
 			},
@@ -80,8 +80,10 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				Status:  prowapi.SuccessState,
 				URL:     "guber/test1",
 				GCSPath: "gs://test1",
-				Refs: &prowapi.Refs{
-					Pulls: []prowapi.Pull{prowapi.Pull{Number: 123}},
+				Refs: []prowapi.Refs{
+					{
+						Pulls: []prowapi.Pull{{Number: 123}},
+					},
 				},
 				JobType: prowapi.PresubmitJob,
 			},
