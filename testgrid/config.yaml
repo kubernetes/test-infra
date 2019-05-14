@@ -3778,6 +3778,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-aws-ebs-csi-driver-e2e-multi-az
   num_columns_recent: 30
 
+# Alibaba Cloud Test Groups
+- name: pull-cloud-provider-alibaba-cloud-check
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-alibaba-cloud-check
+  num_columns_recent: 30
+- name: pull-cloud-provider-alibaba-cloud-unit-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-alibaba-cloud-unit-test
+  num_columns_recent: 30
+
 # OpenShift
 - name: release-openshift-origin-installer-e2e-aws-4.1
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.1
@@ -6365,6 +6373,15 @@ dashboards:
   - name: test
     test_group_name: pull-cloud-provider-aws-test
     description: aws cloud provider tests
+
+- name: cloud-provider-alibaba
+  dashboard_tab:
+  - name: check
+    test_group_name: pull-cloud-provider-alibaba-cloud-check
+    description: alibaba cloud provider checks
+  - name: unit-test
+    test_group_name: pull-cloud-provider-alibaba-cloud-unit-test
+    description: alibaba cloud provider unit test
 
 - name: sig-aws-ebs-csi-driver
   dashboard_tab:
@@ -9046,3 +9063,7 @@ dashboard_groups:
 - name: redhat
   dashboard_names:
   - redhat-openshift-release-blocking
+
+- name: sig-cloud-provider
+  dashboard_names:
+  - cloud-provider-alibaba
