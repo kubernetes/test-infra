@@ -17,22 +17,28 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-cd "$(git rev-parse --show-toplevel)"
-
-export GOPATH="${GOPATH:-$HOME/go}"
-export PATH="${GOPATH}/bin:${PATH}"
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
 
 ensure-in-gopath() {
-  if [[ "${PWD}" != "${GOPATH}/src/k8s.io/test-infra" ]]; then
-    echo Sadly, $(basename "$0") must run inside GOPATH=$GOPATH, not $PWD >&2
-    exit 1
-  fi
+  fake_gopath=$(mktemp -d --tmpdir codegen.gopath.XXXX)
+  trap 'rm -rf "$fake_gopath"' EXIT
+
+  fake_repopath=$fake_gopath/src/k8s.io/test-infra
+  mkdir -p "$(dirname "$fake_repopath")"
+  ln -s "$repo_root" "$fake_repopath"
+
+  export GOPATH=$fake_gopath
+  cd "$fake_repopath"
 }
 
 codegen-init() {
   echo "Ensuring generators exist..." >&2
   go install ./vendor/k8s.io/code-generator/cmd/{deepcopy,client,lister,informer}-gen
+  export GOPATH="${GOPATH:-$HOME/go}"
+  export PATH="${GOPATH}/bin:${PATH}"
 }
+
 
 gen-deepcopy() {
   echo "Generating DeepCopy() methods..." >&2
@@ -71,8 +77,10 @@ gen-informer() {
     --output-package k8s.io/test-infra/prow/client/informers
 }
 
-ensure-in-gopath
+export GO111MODULE=on
 codegen-init
+ensure-in-gopath
+export GO111MODULE=off
 gen-deepcopy
 gen-client
 gen-lister
