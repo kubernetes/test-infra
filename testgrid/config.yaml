@@ -6374,7 +6374,7 @@ dashboards:
     test_group_name: pull-cloud-provider-aws-test
     description: aws cloud provider tests
 
-- name: cloud-provider-alibaba
+- name: presubmits-cloud-provider-alibaba
   dashboard_tab:
   - name: check
     test_group_name: pull-cloud-provider-alibaba-cloud-check
@@ -9064,6 +9064,6 @@ dashboard_groups:
   dashboard_names:
   - redhat-openshift-release-blocking
 
-- name: sig-cloud-provider
+- name: presubmits-cloud-provider
   dashboard_names:
-  - sig-cloud-provider-alibaba
+  - presubmits-cloud-provider-alibaba
