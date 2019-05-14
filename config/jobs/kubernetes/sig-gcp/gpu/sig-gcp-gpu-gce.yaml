@@ -23,7 +23,7 @@ periodics:
     testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: gce-device-plugin-gpu-master
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
-    description: "OWNER: sig-scheduling; Uses kubetest to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
   spec:
     containers:
     - args:

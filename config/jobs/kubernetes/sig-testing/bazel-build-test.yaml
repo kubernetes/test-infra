@@ -62,7 +62,7 @@ postsubmits:
       testgrid-dashboards: sig-release-master-blocking, google-unit
       testgrid-tab-name: bazel-build-master
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
-      description: "OWNER: sig-testing; Builds kubernetes using bazel"
+      description: "Builds kubernetes using bazel"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"

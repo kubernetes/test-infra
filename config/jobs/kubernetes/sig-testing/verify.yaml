@@ -113,7 +113,7 @@ periodics:
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: verify-master
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
-    description: "OWNER: sig-testing; Ends up running: make verify"
+    description: "Ends up running: make verify"
   decorate: true
   extra_refs:
   - org: kubernetes

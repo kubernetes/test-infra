@@ -2528,47 +2528,49 @@ dashboards:
   dashboard_tab:
   - name: build-master-fast
     test_group_name: ci-kubernetes-build-fast
-    description: "OWNER: sig-release (release-engineering); Ends up running: make quick-release"
+    description: "Ends up running: make quick-release"
     alert_options:
       alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-cos-master-default
     test_group_name: ci-kubernetes-e2e-gci-gce
-    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
     alert_options:
       alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-cos-master-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
     alert_options:
       alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-cos-master-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh"
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-cos-master-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-    description: "OWNER: sig-release (release-team); Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with cluster/kube-up.sh"
     alert_options:
       alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
   - name: gce-cos-master-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-    description: "OWNER: sig-networking (ingress); Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh"
+    description: "Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh"
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
 - name: sig-release-master-informing
   dashboard_tab:
   - name: bazel-build-master
-    description: Builds kubernetes at each bommit using bazel with RBE
     test_group_name: post-kubernetes-bazel-build
+    description: "OWNER: sig-testing; Builds kubernetes at each bommit using bazel with RBE"
   - name: Conformance - OpenStack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
+    description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
   - name: Conformance - vSphere-cloud-provider
     test_group_name: ci-cloud-provider-vsphere-conformance-latest
-    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
+    description: "OWNER: sig-vmware; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere"
   - name: Conformance - vSphere
     test_group_name: ci-vsphere-conformance-latest
-    description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
+    description: "OWNER: sig-vmware; Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere"
   - name: gce-master-scale-correctness
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
     description: "OWNER: sig-scalability; Runs 1000-node performance test once a week and checks that operational results are still all correct at that scale"
@@ -2589,10 +2591,10 @@ dashboards:
     description: "OWNER: sig-testing; Runs kubernetes unit tests using bazel"
   - name: gce-new-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: Upgrade master only, in gce(gci), from 1.14 to master, run non-parallel-safe tests only
+    description: "OWNER: kube-up-owners; Upgrade master only, in gce(gci), from 1.14 to master, run non-parallel-safe tests only"
   - name: gce-new-master-upgrade-master-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master-parallel
-    description: Upgrade master only, in gce(gci), from 1.14 to master, run parallel tests only
+    description: "OWNER: kube-upowners; Upgrade master only, in gce(gci), from 1.14 to master, run parallel tests only"
   - name: gce-new-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
     description: Upgrade master and node, in gce(gci), from 1.14 to master, run parallel tests only
