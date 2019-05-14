@@ -213,6 +213,39 @@ periodics:
                   --version-suffix=-bazel \
                   --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
 
+- name: periodic-kubernetes-bazel-build-canary
+  interval: 1h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  # do not fork
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      imagePullPolicy: Always
+      command:
+      - bash
+      args:
+      - -c
+      - |
+              set -o errexit
+              gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+              ../test-infra/scenarios/kubernetes_bazel.py \
+                  --config=ci \
+                  "--build=//... -//vendor/..." \
+                  --release=//build/release-tars \
+                  --gcs=gs://kubernetes-release-dev/ci \
+                  --version-suffix=-bazel \
+                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+
 # periodic bazel test jobs
 - interval: 5m
   name: periodic-kubernetes-bazel-test-master
@@ -233,6 +266,34 @@ periodics:
   spec:
     containers:
     - image: launcher.gcr.io/google/bazel:0.24.1
+      command:
+      - ../test-infra/hack/bazel.sh
+      args:
+      - test
+      - --config=unit
+      - --config=remote
+      - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+      - //...
+      - //hack:verify-all
+      - --
+      - -//build/...
+      - -//vendor/...
+- interval: 1h
+  name: periodic-kubernetes-bazel-test-canary
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel
       command:
       - ../test-infra/hack/bazel.sh
       args:

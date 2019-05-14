@@ -4568,43 +4568,49 @@ dashboards:
 
 - name: sig-testing-canaries
   dashboard_tab:
-  - name: gce-canary
+  - name: gce
     test_group_name: ci-kubernetes-e2e-gce-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: gke-canary
+  - name: gke
     test_group_name: ci-kubernetes-e2e-gke-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: kops-aws-canary
+  - name: kops-aws
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: prow-canary
+  - name: prow
     test_group_name: ci-kubernetes-e2e-prow-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: node-canary
+  - name: node
     test_group_name: ci-kubernetes-e2e-node-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: kubemark-canary
+  - name: kubemark
     test_group_name: ci-kubernetes-kubemark-100-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: scalability-canary
+  - name: scalability
     test_group_name: ci-kubernetes-e2e-gce-scalability-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: test-infra-bazel-canary
+  - name: test-infra-bazel
     test_group_name: pull-test-infra-bazel-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: bazel-build-canary
+  - name: bazel-build
+    test_group_name: periodic-kubernetes-bazel-build-canary
+    description: run kubernetes-bazel-build with latest image
+  - name: pull-bazel-build
     test_group_name: pull-kubernetes-bazel-build-canary
-  - name: bazel-test-canary
+  - name: bazel-test
+    test_group_name: periodic-kubernetes-bazel-test-canary
+    description: run kubernetes-bazel-test with latest image
+  - name: pull-bazel-test
     test_group_name: pull-kubernetes-bazel-test-canary
-  - name: bazel-test-integration-canary
+  - name: pull-bazel-test-integration
     test_group_name: pull-kubernetes-bazel-test-integration-canary
   - name: pull-kubernetes-integration-podutil
     test_group_name: pull-kubernetes-integration-podutil
