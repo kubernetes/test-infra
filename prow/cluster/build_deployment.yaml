@@ -15,7 +15,7 @@ spec:
       labels:
         app: prow-build
     spec:
-      serviceAccount: prow-build # build_rbac.yaml
+      # serviceAccountName: prow-build # build_rbac.yaml
       containers:
       - name: build
         image: gcr.io/k8s-prow/build:v20190510-1285909e0
