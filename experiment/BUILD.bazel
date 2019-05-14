@@ -40,6 +40,15 @@ py_binary(
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
 
+py_binary(
+    name = "prepare_release_branch",
+    srcs = ["prepare_release_branch.py"],
+    deps = [
+        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
+        "@sh",
+    ],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
