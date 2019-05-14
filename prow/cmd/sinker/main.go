@@ -19,13 +19,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -85,12 +84,6 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	metricsMux := http.NewServeMux()
-	metricsMux.Handle("/metrics", promhttp.Handler())
-	go func() {
-		logrus.WithError(http.ListenAndServe(":9090", metricsMux)).Fatal("ListenAndServe returned while serving metrics.")
-	}()
-
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
@@ -112,6 +105,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+
+	pushGateway := cfg().PushGateway
+	metrics.ExposeMetrics("sinker", pushGateway.Endpoint, pushGateway.Interval)
 
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun.Value)
 	if err != nil {
