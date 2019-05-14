@@ -71,7 +71,7 @@ periodics:
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: integration-master
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
-    description: "OWNER: sig-release (release-team); Ends up running: make test-cmd test-integration"
+    description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
