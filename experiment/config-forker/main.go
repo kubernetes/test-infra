@@ -135,6 +135,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 			if len(f) > 0 {
 				p.Interval = f[0]
 				p.Cron = ""
+				p.Annotations[periodicIntervalAnnotation] = strings.Join(f[1:], " ")
 			}
 		}
 		if cron, ok := p.Annotations[cronAnnotation]; ok {
@@ -142,6 +143,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 			if len(c) > 0 {
 				p.Cron = c[0]
 				p.Interval = ""
+				p.Annotations[cronAnnotation] = strings.Join(c[1:], ", ")
 			}
 		}
 		p.Annotations = cleanAnnotations(p.Annotations)
@@ -153,9 +155,16 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 func cleanAnnotations(annotations map[string]string) map[string]string {
 	result := map[string]string{}
 	for k, v := range annotations {
-		if k != forkAnnotation && k != replacementAnnotation {
-			result[k] = v
+		if k == forkAnnotation || k == replacementAnnotation {
+			continue
 		}
+		if k == periodicIntervalAnnotation && v == "" {
+			continue
+		}
+		if k == cronAnnotation && v == "" {
+			continue
+		}
+		result[k] = v
 	}
 	return result
 }

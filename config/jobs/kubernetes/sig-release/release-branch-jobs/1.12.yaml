@@ -459,6 +459,7 @@ periodics:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
+      fork-per-release-periodic-interval: 24h
       testgrid-dashboards: sig-release-1.12-blocking, sig-release-1.12-all, sig-node-kubelet
       testgrid-tab-name: node-kubelet-1.12
     spec:
@@ -517,6 +518,7 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     annotations:
+      fork-per-release-periodic-interval: 24h
       testgrid-dashboards: sig-release-1.12-blocking, sig-release-1.12-all, google-unit
       testgrid-tab-name: verify-1.12
     spec:
@@ -609,6 +611,7 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     annotations:
+      fork-per-release-periodic-interval: 24h
       testgrid-dashboards: sig-release-1.12-blocking, sig-release-1.12-all, google-unit
       testgrid-tab-name: integration-1.12
     spec:
@@ -635,6 +638,7 @@ periodics:
       preset-k8s-ssh: "true"
       preset-ci-gce-device-plugin-gpu: "true"
     annotations:
+      fork-per-release-cron: 0 8-23/24 * * *
       testgrid-dashboards: sig-release-1.12-blocking, sig-release-1.12-all
       testgrid-tab-name: gce-device-gpu-plugin-1.12
     spec:
@@ -663,6 +667,7 @@ periodics:
       preset-k8s-ssh: "true"
       preset-e2e-scalability-common: "true"
     annotations:
+      fork-per-release-cron: 0 8-20/12 * * *
       testgrid-dashboards: sig-release-1.12-blocking, sig-release-1.12-all, sig-scalability-gce, google-gce
       testgrid-tab-name: gce-cos-1.12-scalability-100
     spec:
