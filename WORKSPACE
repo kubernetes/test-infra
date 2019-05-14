@@ -5,11 +5,11 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "8d43844d1d4447be2a108834771d617a1ad2a107f1680190bfe44925e7bf530e",
-    strip_prefix = "bazel-toolchains-4c003ad45e8a2d829ffc40e3aecfb6b8577a9406",
+    sha256 = "341ec0efd68307c5bdc013e0bb360bd7127c40df993f207a301638971ced272b",
+    strip_prefix = "bazel-toolchains-0dc4917",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/4c003ad45e8a2d829ffc40e3aecfb6b8577a9406.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/4c003ad45e8a2d829ffc40e3aecfb6b8577a9406.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0dc4917.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0dc4917.tar.gz",
     ],
 )
 
@@ -33,8 +33,8 @@ versions.check(minimum_bazel_version = "0.23.0")
 # This silences the shallow_since message (and increases cache hit rate)
 git_repository(
     name = "com_google_protobuf",
-    remote = "https://github.com/protocolbuffers/protobuf",
     commit = "582743bf40c5d3639a70f98f183914a2c0cd0680",  # v3.7.0, as of 2019-03-03
+    remote = "https://github.com/protocolbuffers/protobuf",
     shallow_since = "1551387314 -0800",
 )
 
