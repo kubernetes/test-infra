@@ -17,8 +17,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-repo_root=$(git rev-parse --show-toplevel)
-cd "$repo_root"
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating codegen files..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:update-codegen
+  )
+  exit 0
+fi
+
+go_sdk=$PWD/external/go_sdk
+clientgen=$PWD/$1
+deepcopygen=$PWD/$2
+informergen=$PWD/$3
+listergen=$PWD/$4
 
 ensure-in-gopath() {
   fake_gopath=$(mktemp -d --tmpdir codegen.gopath.XXXX)
@@ -26,23 +42,16 @@ ensure-in-gopath() {
 
   fake_repopath=$fake_gopath/src/k8s.io/test-infra
   mkdir -p "$(dirname "$fake_repopath")"
-  ln -s "$repo_root" "$fake_repopath"
+  ln -s "$BUILD_WORKSPACE_DIRECTORY" "$fake_repopath"
 
   export GOPATH=$fake_gopath
+  export GOROOT=$go_sdk
   cd "$fake_repopath"
 }
 
-codegen-init() {
-  echo "Ensuring generators exist..." >&2
-  go install ./vendor/k8s.io/code-generator/cmd/{deepcopy,client,lister,informer}-gen
-  export GOPATH="${GOPATH:-$HOME/go}"
-  export PATH="${GOPATH}/bin:${PATH}"
-}
-
-
 gen-deepcopy() {
   echo "Generating DeepCopy() methods..." >&2
-  deepcopy-gen \
+  "$deepcopygen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-file-base zz_generated.deepcopy \
@@ -51,7 +60,7 @@ gen-deepcopy() {
 
 gen-client() {
   echo "Generating client..." >&2
-  client-gen \
+  "$clientgen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --clientset-name versioned \
     --input-base "" \
@@ -61,7 +70,7 @@ gen-client() {
 
 gen-lister() {
   echo "Generating lister..." >&2
-  lister-gen \
+  "$listergen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-package k8s.io/test-infra/prow/client/listers
@@ -69,7 +78,7 @@ gen-lister() {
 
 gen-informer() {
   echo "Generating informer..." >&2
-  informer-gen \
+  "$informergen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --versioned-clientset-package k8s.io/test-infra/prow/client/clientset/versioned \
@@ -77,10 +86,8 @@ gen-informer() {
     --output-package k8s.io/test-infra/prow/client/informers
 }
 
-export GO111MODULE=on
-codegen-init
-ensure-in-gopath
 export GO111MODULE=off
+ensure-in-gopath
 gen-deepcopy
 gen-client
 gen-lister

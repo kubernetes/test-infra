@@ -46,6 +46,46 @@ nodejs_test(
 MISSPELL = "//vendor/github.com/client9/misspell/cmd/misspell"
 
 sh_test(
+    name = "verify-codegen",
+    srcs = ["verify-codegen.sh"],
+    args = [
+        "$(location :update-codegen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/client-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/deepcopy-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/informer-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
+    ],
+    data = [
+        ":update-codegen",
+        "//vendor/k8s.io/code-generator/cmd/client-gen",
+        "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
+        "//vendor/k8s.io/code-generator/cmd/informer-gen",
+        "//vendor/k8s.io/code-generator/cmd/lister-gen",
+        "@//:all-srcs",
+        "@go_sdk//:files",
+    ],
+    tags = ["lint"],
+)
+
+sh_binary(
+    name = "update-codegen",
+    srcs = ["update-codegen.sh"],
+    args = [
+        "$(location //vendor/k8s.io/code-generator/cmd/client-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/deepcopy-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/informer-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
+    ],
+    data = [
+        "//vendor/k8s.io/code-generator/cmd/client-gen",
+        "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
+        "//vendor/k8s.io/code-generator/cmd/informer-gen",
+        "//vendor/k8s.io/code-generator/cmd/lister-gen",
+        "@go_sdk//:files",
+    ],
+)
+
+sh_test(
     name = "verify-spelling",
     srcs = ["verify-spelling.sh"],
     args = [
