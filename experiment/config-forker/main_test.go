@@ -65,6 +65,14 @@ func TestCleanAnnotations(t *testing.T) {
 				"someOtherAnnotation": "pony party",
 			},
 		},
+		{
+			name: "blank periodic annotations",
+			annotations: map[string]string{
+				periodicIntervalAnnotation: "",
+				cronAnnotation:             "",
+			},
+			expected: map[string]string{},
+		},
 	}
 
 	for _, tc := range tests {
@@ -533,7 +541,7 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name: "periodic-with-replacements-1-15",
 				Annotations: map[string]string{
-					periodicIntervalAnnotation: "6h 12h 24h 24h",
+					periodicIntervalAnnotation: "12h 24h 24h",
 				},
 				Spec: &v1.PodSpec{
 					Containers: []v1.Container{
