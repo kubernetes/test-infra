@@ -123,6 +123,9 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-generic-suffix: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-master
