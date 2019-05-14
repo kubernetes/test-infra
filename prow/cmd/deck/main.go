@@ -321,7 +321,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			log:  logrus.WithField("agent", "tide"),
 			path: o.tideURL,
 			updatePeriod: func() time.Duration {
-				return cfg().Deck.TideUpdatePeriod
+				return cfg().Deck.TideUpdatePeriod.Duration
 			},
 			hiddenRepos: cfg().Deck.HiddenRepos,
 			hiddenOnly:  o.hiddenOnly,

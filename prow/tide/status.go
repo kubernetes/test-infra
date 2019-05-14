@@ -408,7 +408,7 @@ func (sc *statusController) run() {
 // this function returns immediately without syncing.
 func (sc *statusController) waitSync() {
 	// wait for the min sync period time to elapse if needed.
-	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.config().Tide.StatusUpdatePeriod)))
+	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.config().Tide.StatusUpdatePeriod.Duration)))
 	for {
 		select {
 		case <-wait:

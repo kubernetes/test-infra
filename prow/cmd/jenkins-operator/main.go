@@ -205,7 +205,7 @@ func main() {
 
 	// Expose prometheus metrics
 	pushGateway := cfg().PushGateway
-	m.ExposeMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval)
+	m.ExposeMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	// Serve Jenkins logs here and proxy deck to use this endpoint
 	// instead of baking agent-specific logic in deck

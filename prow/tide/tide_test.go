@@ -31,6 +31,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	clienttesting "k8s.io/client-go/testing"
 
@@ -1553,8 +1554,9 @@ func TestSync(t *testing.T) {
 		ca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Tide: config.Tide{
-					Queries:       []config.TideQuery{{}},
-					MaxGoroutines: 4,
+					Queries:            []config.TideQuery{{}},
+					MaxGoroutines:      4,
+					StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
 				},
 			},
 		})

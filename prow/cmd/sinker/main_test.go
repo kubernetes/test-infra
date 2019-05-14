@@ -54,8 +54,8 @@ func newFakeConfigAgent() *fca {
 				ProwJobNamespace: "ns",
 				PodNamespace:     "ns",
 				Sinker: config.Sinker{
-					MaxProwJobAge: maxProwJobAge,
-					MaxPodAge:     maxPodAge,
+					MaxProwJobAge: &metav1.Duration{Duration: maxProwJobAge},
+					MaxPodAge:     &metav1.Duration{Duration: maxPodAge},
 				},
 			},
 			JobConfig: config.JobConfig{

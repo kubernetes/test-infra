@@ -22,10 +22,10 @@ import (
 	"strings"
 	"sync"
 	"text/template"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
@@ -74,15 +74,11 @@ type TideMergeCommitTemplate struct {
 
 // Tide is config for the tide pool.
 type Tide struct {
-	// SyncPeriodString compiles into SyncPeriod at load time.
-	SyncPeriodString string `json:"sync_period,omitempty"`
 	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
-	SyncPeriod time.Duration `json:"-"`
-	// StatusUpdatePeriodString compiles into StatusUpdatePeriod at load time.
-	StatusUpdatePeriodString string `json:"status_update_period,omitempty"`
+	SyncPeriod *metav1.Duration `json:"sync_period,omitempty"`
 	// StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
 	// Defaults to the value of SyncPeriod.
-	StatusUpdatePeriod time.Duration `json:"-"`
+	StatusUpdatePeriod *metav1.Duration `json:"status_update_period,omitempty"`
 	// Queries represents a list of GitHub search queries that collectively
 	// specify the set of PRs that meet merge requirements.
 	Queries TideQueries `json:"queries,omitempty"`
