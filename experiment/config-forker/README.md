@@ -29,6 +29,10 @@ For all jobs:
   `master`, the value will be changed to `release-1.15`.
 - If the `fork-per-release-replacements` annotation is specified, those replacements will be performed in the `args`
   of all containers for that job.
+- If the `testgrid-dashboards` annotation is specified, references to `master-blocking` and `master-informing` are
+  changed to `1.15-blocking` and `1.15-informing`.
+- If the `testgrid-tab-name` annotation is specified, references to `master` are changed to `1.15`.
+- If the `description` annotation is specified, it is removed (for now).
 
 For presubmits and postsubmits:
 
@@ -38,6 +42,7 @@ For presubmits and postsubmits:
 For periodics and postsubmits:
 
 - If the job `name` ends in `-master`, it will be replaced with `-1-15`, otherwise `-1-15` will be appended
+- `sig-release-1.15-all` is added to the job's `testgrid-dashboards` annotation (creating the annotation if necessary)
 
 For periodics only:
 
