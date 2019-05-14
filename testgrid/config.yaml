@@ -406,6 +406,11 @@ test_groups:
 
 # manual-release-bump-required
 # TODO(Katharine): automate these.
+- name: ci-kubernetes-gce-conformance-latest-1-15
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-15
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-14
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-14
   num_columns_recent: 3
@@ -418,11 +423,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-12
-  num_columns_recent: 3
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-- name: ci-kubernetes-gce-conformance-latest-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-11
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
