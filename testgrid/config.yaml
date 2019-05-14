@@ -1360,6 +1360,11 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+- name: ci-kubernetes-gce-conformance-stable-1-15
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-15
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-stable-1-14
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-14
   num_columns_recent: 3
@@ -1372,11 +1377,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-stable-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-12
-  num_columns_recent: 3
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-- name: ci-kubernetes-gce-conformance-stable-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-11
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
@@ -1754,6 +1754,9 @@ dashboards:
 - name: conformance-all
   # entries are named $PROVIDER, $KUBERNETES_RELEASE
   dashboard_tab:
+  - name: GCE, v1.15 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.15 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-15
   - name: GCE, v1.14 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-14
@@ -1763,9 +1766,6 @@ dashboards:
   - name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-12
-  - name: GCE, v1.11 (release)
-    description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
-    test_group_name: ci-kubernetes-gce-conformance-stable-1-11
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
@@ -1927,6 +1927,9 @@ dashboards:
 
 - name: conformance-gce
   dashboard_tab:
+  - name: GCE, v1.15 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.15 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-15
   - name: GCE, v1.14 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-14
@@ -1936,9 +1939,6 @@ dashboards:
   - name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-12
-  - name: GCE, v1.11 (release)
-    description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
-    test_group_name: ci-kubernetes-gce-conformance-stable-1-11
 
 - name: conformance-kind
   dashboard_tab:
@@ -2617,10 +2617,18 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
     description: "Uses kubetest to run a subset of e2e tests (+Feature:Reboot) against a cluster created with cluster/kube-up.sh"
 
+- name: sig-release-1.15-blocking
+- name: sig-release-1.15-informing
+- name: sig-release-1.15-all
+  dashboard_tab:
+  # TODO(Katharine): fork this job.
+  - name: soak-gci-gce-1.15
+    test_group_name: ci-kubernetes-soak-gci-gce-beta
+
 - name: sig-release-1.14-all
   dashboard_tab:
   - name: soak-gci-gce-1.14
-    test_group_name: ci-kubernetes-soak-gci-gce-beta
+    test_group_name: ci-kubernetes-soak-gci-gce-stable1
   - name: gce-1.14-1.13-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
   - name: gce-1.14-1.13-downgrade-cluster-parallel
@@ -2669,8 +2677,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   - name: kops-aws-1.14
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
-  - name: node-kubelet-1.14-features
-    test_group_name: ci-kubernetes-node-kubelet-features-beta
   - name: periodic-bazel-test-1.14
     test_group_name: periodic-kubernetes-bazel-test-1-14
   - name: kubeadm-kind-1.14
@@ -2696,9 +2702,9 @@ dashboards:
   - name: kubeadm-kinder-upgrade-1.12-1.13
     test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
   - name: soak-gci-gce-1.13
-    test_group_name: ci-kubernetes-soak-gci-gce-stable1
+    test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: kops-aws-1.13
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
   - name: gke-gci-1.11-gci-1.13-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
   - name: gke-gci-1.11-gci-1.13-upgrade-cluster
@@ -2733,10 +2739,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
   - name: gce-1.12-1.13-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+    # TODO(Katharine): Fork these two
   - name: gke-device-plugin-gpu-1.13
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   - name: gke-device-plugin-gpu-p100-1.13
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
 
 - name: sig-release-1.13-blocking
 - name: sig-release-1.13-informing
@@ -2842,7 +2849,7 @@ dashboards:
   - name: kubeadm-kinder-upgrade-1.11-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
   - name: soak-gci-gce-1.12
-    test_group_name: ci-kubernetes-soak-gci-gce-stable2
+    test_group_name: ci-kubernetes-soak-gci-gce-stable3
   - name: gke-device-plugin-gpu-1.12
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   - name: gke-device-plugin-gpu-p100-1.12
@@ -2855,16 +2862,6 @@ dashboards:
 # The first test/suite in the list is the primary suite for release purposes
 - name: sig-release-1.12-blocking
 - name: sig-release-1.12-informing
-
-- name: sig-release-1.11-all
-  dashboard_tab:
-  - name: kops-aws-1.11
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
-  - name: soak-gci-gce-1.11
-    test_group_name: ci-kubernetes-soak-gci-gce-stable3
-
-- name: sig-release-1.11-blocking
-- name: sig-release-1.11-informing
 
 - name: sig-release-publishing-bot
   dashboard_tab:
@@ -5906,6 +5903,9 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
+  - sig-release-1.15-all
+  - sig-release-1.15-blocking
+  - sig-release-1.15-informing
   - sig-release-1.14-all
   - sig-release-1.14-blocking
   - sig-release-1.14-informing
@@ -5915,9 +5915,6 @@ dashboard_groups:
   - sig-release-1.12-all
   - sig-release-1.12-blocking
   - sig-release-1.12-informing
-  - sig-release-1.11-all
-  - sig-release-1.11-blocking
-  - sig-release-1.11-informing
   - sig-release-misc
   - sig-release-publishing-bot
 

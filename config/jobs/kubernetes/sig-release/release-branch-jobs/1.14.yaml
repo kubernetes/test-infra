@@ -88,6 +88,10 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-1.14
       name: ""
       resources: {}
+  annotations:
+    # TODO(Katharine): Figure out why/how these don't get added automatically.
+    testgrid-dashboards: sig-release-1.15-all
+    testgrid-tab-name: node-kubetlet-features-1.15
 - annotations:
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all
     testgrid-tab-name: build-1.14
