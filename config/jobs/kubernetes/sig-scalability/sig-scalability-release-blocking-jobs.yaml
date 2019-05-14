@@ -56,6 +56,7 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      - --env=FLUENTD_GCP_VERSION=0.6-1.6.0-1
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
