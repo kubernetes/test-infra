@@ -338,6 +338,61 @@ func TestFixEnvVars(t *testing.T) {
 	}
 }
 
+func TestFixTestgridAnnotations(t *testing.T) {
+	tests := []struct {
+		name        string
+		annotations map[string]string
+		expected    map[string]string
+		isPresubmit bool
+	}{
+		{
+			name:        "update master-blocking to point at 1.15-blocking",
+			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-blocking"},
+			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-blocking"},
+			isPresubmit: true,
+		},
+		{
+			name:        "update master-informing to point at 1.15-informing",
+			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-informing"},
+			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-informing"},
+			isPresubmit: true,
+		},
+		{
+			name:        "periodic updates master-blocking to point at 1.15-blocking and adds 1.15-all",
+			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-blocking"},
+			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-blocking, sig-release-1.15-all"},
+			isPresubmit: false,
+		},
+		{
+			name:        "update master-blocking to point at 1.15-blocking and leave other entries alone",
+			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-blocking, google-unit"},
+			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-blocking, google-unit"},
+			isPresubmit: true,
+		},
+		{
+			name:        "drop 'description'",
+			annotations: map[string]string{"description": "some description"},
+			expected:    map[string]string{},
+			isPresubmit: true,
+		},
+		{
+			name:        "update tab names",
+			annotations: map[string]string{"testgrid-tab-name": "foo master"},
+			expected:    map[string]string{"testgrid-tab-name": "foo 1.15"},
+			isPresubmit: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := fixTestgridAnnotations(tc.annotations, "1.15", tc.isPresubmit)
+			if !reflect.DeepEqual(result, tc.expected) {
+				t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(tc.expected, result))
+			}
+		})
+	}
+}
+
 func TestGenerateNameVariant(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -526,14 +581,14 @@ func TestGeneratePeriodics(t *testing.T) {
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
 				Name:        "some-forked-periodic-1-15",
-				Annotations: map[string]string{},
+				Annotations: map[string]string{"testgrid-dashboards": "sig-release-1.15-all"},
 			},
 		},
 		{
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-beta",
-				Annotations: map[string]string{suffixAnnotation: "true"},
+				Annotations: map[string]string{suffixAnnotation: "true", "testgrid-dashboards": "sig-release-1.15-all"},
 			},
 		},
 		{
@@ -542,6 +597,7 @@ func TestGeneratePeriodics(t *testing.T) {
 				Name: "periodic-with-replacements-1-15",
 				Annotations: map[string]string{
 					periodicIntervalAnnotation: "12h 24h 24h",
+					"testgrid-dashboards":      "sig-release-1.15-all",
 				},
 				Spec: &v1.PodSpec{
 					Containers: []v1.Container{
@@ -558,7 +614,7 @@ func TestGeneratePeriodics(t *testing.T) {
 			Interval: "2h",
 			JobBase: config.JobBase{
 				Name:        "decorated-periodic-1-15",
-				Annotations: map[string]string{},
+				Annotations: map[string]string{"testgrid-dashboards": "sig-release-1.15-all"},
 				UtilityConfig: config.UtilityConfig{
 					Decorate:  true,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"}},
@@ -591,8 +647,12 @@ func TestGeneratePostsubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name:        "post-kubernetes-generic",
-					Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true"},
+					Name: "post-kubernetes-generic",
+					Annotations: map[string]string{
+						forkAnnotation:        "true",
+						suffixAnnotation:      "true",
+						"testgrid-dashboards": "sig-release-master-blocking, google-unit",
+					},
 				},
 				Brancher: config.Brancher{
 					SkipBranches: []string{`release-\d\.\d`},
@@ -634,7 +694,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 			{
 				JobBase: config.JobBase{
 					Name:        "post-kubernetes-e2e-1-15",
-					Annotations: map[string]string{},
+					Annotations: map[string]string{"testgrid-dashboards": "sig-release-1.15-all"},
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
@@ -642,8 +702,11 @@ func TestGeneratePostsubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name:        "post-kubernetes-generic-beta",
-					Annotations: map[string]string{suffixAnnotation: "true"},
+					Name: "post-kubernetes-generic-beta",
+					Annotations: map[string]string{
+						suffixAnnotation:      "true",
+						"testgrid-dashboards": "sig-release-1.15-blocking, google-unit, sig-release-1.15-all",
+					},
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
@@ -653,7 +716,8 @@ func TestGeneratePostsubmits(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "post-replace-some-things-1-15",
 					Annotations: map[string]string{
-						"some-annotation": "yup",
+						"some-annotation":     "yup",
+						"testgrid-dashboards": "sig-release-1.15-all",
 					},
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{

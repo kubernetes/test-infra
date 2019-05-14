@@ -64,7 +64,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 					}
 				}
 			}
-			p.Annotations = cleanAnnotations(p.Annotations)
+			p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
 			newPostsubmits[repo] = append(newPostsubmits[repo], p)
 		}
 	}
@@ -93,7 +93,7 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 					}
 				}
 			}
-			p.Annotations = cleanAnnotations(p.Annotations)
+			p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, true))
 			newPresubmits[repo] = append(newPresubmits[repo], p)
 		}
 	}
@@ -146,7 +146,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 				p.Annotations[cronAnnotation] = strings.Join(c[1:], ", ")
 			}
 		}
-		p.Annotations = cleanAnnotations(p.Annotations)
+		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
 		newPeriodics = append(newPeriodics, p)
 	}
 	return newPeriodics, nil
@@ -259,6 +259,38 @@ func fixEnvVars(vars []v1.EnvVar, version string) []v1.EnvVar {
 		newVars = append(newVars, v)
 	}
 	return newVars
+}
+
+func fixTestgridAnnotations(annotations map[string]string, version string, isPresubmit bool) map[string]string {
+	r := strings.NewReplacer(
+		"master-blocking", version+"-blocking",
+		"master-informing", version+"-informing",
+	)
+	a := map[string]string{}
+	didDashboards := false
+annotations:
+	for k, v := range annotations {
+		switch k {
+		case "testgrid-dashboards":
+			v = r.Replace(v)
+			if !isPresubmit {
+				v += ", " + "sig-release-" + version + "-all"
+			}
+			didDashboards = true
+			break
+		case "testgrid-tab-name":
+			v = strings.ReplaceAll(v, "master", version)
+			break
+		case "description":
+			continue annotations
+		}
+		a[k] = v
+	}
+	if !didDashboards && !isPresubmit {
+		a["testgrid-dashboards"] = "sig-release-" + version + "-all"
+	}
+	return a
+
 }
 
 func generateNameVariant(name, version string, generic bool) string {
