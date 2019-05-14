@@ -499,6 +499,22 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/54/bb/f1db86504f7a49e1d9b9301531181b00a1c7325dc85a29160ee3eaa73a54/python-dateutil-2.6.1.tar.gz"],
 )
 
+# find the most recent version at https://pypi.org/project/sh/
+http_archive(
+    name = "sh",
+    build_file_content = """
+py_library(
+    name = "sh",
+    srcs = ["__init__.py"],
+    visibility = ["//visibility:public"],
+)
+""",
+    patch_cmds = ["mv sh.py __init__.py"],
+    sha256 = "b52bf5833ed01c7b5c5fb73a7f71b3d98d48e9b9b8764236237bdc7ecae850fc",
+    strip_prefix = "sh-1.12.14",
+    urls = ["https://files.pythonhosted.org/packages/7c/71/199d27d3e7e78bf448bcecae0105a1d5b29173ffd2bbadaa95a74c156770/sh-1.12.14.tar.gz"],
+)
+
 # TODO(fejta): get this to work
 git_repository(
     name = "io_bazel_rules_appengine",
