@@ -1139,6 +1139,9 @@ test_groups:
 - name: istio-postsubmit-master
   gcs_prefix: istio-prow/logs/istio-postsubmit-master
   days_of_results: 7
+- name: istio-kind-simpleTest-master
+  gcs_prefix: istio-prow/logs/istio-kind-simpleTest-master
+  num_failures_to_alert: 1
 - name: istio-integ-local-tests-master
   gcs_prefix: istio-prow/logs/istio-integ-local-tests-master
   num_failures_to_alert: 1
@@ -5321,6 +5324,10 @@ dashboards:
     test_group_name: istio-postsubmit-master
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: kind-simpleTest-master
+    test_group_name: istio-kind-simpleTest-master
+    alert_options:
+      alert_mail_to_addresses: angwar@google.com
   - name: integration-local-tests
     test_group_name: istio-integ-local-tests-master
     alert_options:
