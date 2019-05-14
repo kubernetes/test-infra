@@ -9066,4 +9066,4 @@ dashboard_groups:
 
 - name: sig-cloud-provider
   dashboard_names:
-  - cloud-provider-alibaba
+  - sig-cloud-provider-alibaba
