@@ -32,7 +32,7 @@ presubmits:
               - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
               - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
               - --timeout=65m
-            image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+            image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             resources:
               requests:
                 memory: "6Gi"
@@ -71,7 +71,7 @@ presubmits:
               - --stage-suffix=pull-kubernetes-e2e-gke
               - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
               - --timeout=65m
-            image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+            image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             resources:
               requests:
                 memory: "6Gi"
@@ -90,7 +90,7 @@ presubmits:
         preset-pull-gce-device-plugin-gpu: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - --root=/go/src
               - "--job=$(JOB_NAME)"
@@ -128,7 +128,7 @@ presubmits:
         preset-bazel-scratch-dir: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - --root=/go/src
               - "--job=$(JOB_NAME)"
@@ -168,7 +168,7 @@ presubmits:
         preset-k8s-ssh: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - --root=/go/src
               - "--job=$(JOB_NAME)"
@@ -200,7 +200,7 @@ presubmits:
         preset-bazel-remote-cache-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - "--job=$(JOB_NAME)"
               - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -224,7 +224,7 @@ presubmits:
         preset-bazel-remote-cache-enabled: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - "--job=$(JOB_NAME)"
               - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -258,7 +258,7 @@ postsubmits:
         testgrid-tab-name: bazel-build-1.11
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - "--job=$(JOB_NAME)"
               - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -287,7 +287,7 @@ postsubmits:
         testgrid-tab-name: bazel-test-1.11
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - "--job=$(JOB_NAME)"
               - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -317,7 +317,7 @@ postsubmits:
           - name: main
             command:
               - make
-            image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+            image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - verify
             env:
@@ -339,7 +339,7 @@ postsubmits:
         preset-e2e-kubemark-gce-big: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - --root=/go/src
               - "--job=$(JOB_NAME)"
@@ -400,7 +400,7 @@ postsubmits:
         preset-e2e-platform-aws: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
             args:
               - --root=/go/src
               - "--job=$(JOB_NAME)"
@@ -453,7 +453,7 @@ periodics:
             - --provider=gce
             - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
             - --timeout=200m
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
   - name: ci-kubernetes-node-kubelet-stable3
     interval: 24h
     labels:
@@ -464,7 +464,7 @@ periodics:
       testgrid-tab-name: node-kubelet-1.11
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
           args:
             - --repo=k8s.io/kubernetes=release-1.11
             - --timeout=90
@@ -548,7 +548,7 @@ periodics:
       testgrid-tab-name: periodic-bazel-build-1.11
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
           args:
             - "--job=$(JOB_NAME)"
             - "--repo=k8s.io/kubernetes=release-1.11"
@@ -578,7 +578,7 @@ periodics:
       testgrid-tab-name: periodic-bazel-test-1.11
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-1.11
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
           args:
             - --root=/go/src
             - "--job=$(JOB_NAME)"
@@ -671,4 +671,4 @@ periodics:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=120m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master

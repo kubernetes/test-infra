@@ -11,7 +11,7 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
       command:
       - go
       args:
@@ -29,7 +29,7 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190510-1285909-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
       command:
       - bash
       - -c
