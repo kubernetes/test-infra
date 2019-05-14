@@ -1,0 +1,29 @@
+presubmits:
+  kubernetes/cloud-provider-alibaba-cloud:
+  - name: pull-cloud-provider-alibaba-cloud-check
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: pouchcontainer/pouchlinter:v0.1.2
+        imagePullPolicy: Always
+        command:
+        - make
+        args:
+        - check
+
+  - name: pull-cloud-provider-alibaba-cloud-unit-test
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
