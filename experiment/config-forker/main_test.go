@@ -347,38 +347,38 @@ func TestFixTestgridAnnotations(t *testing.T) {
 	}{
 		{
 			name:        "update master-blocking to point at 1.15-blocking",
-			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-blocking"},
-			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-blocking"},
+			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking"},
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking"},
 			isPresubmit: true,
 		},
 		{
 			name:        "update master-informing to point at 1.15-informing",
-			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-informing"},
-			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-informing"},
+			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-informing"},
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-informing"},
 			isPresubmit: true,
 		},
 		{
 			name:        "periodic updates master-blocking to point at 1.15-blocking and adds 1.15-all",
-			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-blocking"},
-			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-blocking, sig-release-1.15-all"},
+			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking"},
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking, sig-release-1.15-all"},
 			isPresubmit: false,
 		},
 		{
 			name:        "update master-blocking to point at 1.15-blocking and leave other entries alone",
-			annotations: map[string]string{"testgrid-dashboards": "sig-release-master-blocking, google-unit"},
-			expected:    map[string]string{"testgrid-dashboards": "sig-release-1.15-blocking, google-unit"},
+			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking, google-unit"},
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit"},
 			isPresubmit: true,
 		},
 		{
 			name:        "drop 'description'",
-			annotations: map[string]string{"description": "some description"},
+			annotations: map[string]string{descriptionAnnotation: "some description"},
 			expected:    map[string]string{},
 			isPresubmit: true,
 		},
 		{
 			name:        "update tab names",
-			annotations: map[string]string{"testgrid-tab-name": "foo master"},
-			expected:    map[string]string{"testgrid-tab-name": "foo 1.15"},
+			annotations: map[string]string{testgridTabNameAnnotation: "foo master"},
+			expected:    map[string]string{testgridTabNameAnnotation: "foo 1.15"},
 			isPresubmit: true,
 		},
 	}
@@ -581,14 +581,14 @@ func TestGeneratePeriodics(t *testing.T) {
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
 				Name:        "some-forked-periodic-1-15",
-				Annotations: map[string]string{"testgrid-dashboards": "sig-release-1.15-all"},
+				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all"},
 			},
 		},
 		{
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-beta",
-				Annotations: map[string]string{suffixAnnotation: "true", "testgrid-dashboards": "sig-release-1.15-all"},
+				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-1.15-all"},
 			},
 		},
 		{
@@ -596,8 +596,8 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name: "periodic-with-replacements-1-15",
 				Annotations: map[string]string{
-					periodicIntervalAnnotation: "12h 24h 24h",
-					"testgrid-dashboards":      "sig-release-1.15-all",
+					periodicIntervalAnnotation:   "12h 24h 24h",
+					testgridDashboardsAnnotation: "sig-release-1.15-all",
 				},
 				Spec: &v1.PodSpec{
 					Containers: []v1.Container{
@@ -614,7 +614,7 @@ func TestGeneratePeriodics(t *testing.T) {
 			Interval: "2h",
 			JobBase: config.JobBase{
 				Name:        "decorated-periodic-1-15",
-				Annotations: map[string]string{"testgrid-dashboards": "sig-release-1.15-all"},
+				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all"},
 				UtilityConfig: config.UtilityConfig{
 					Decorate:  true,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"}},
@@ -649,9 +649,9 @@ func TestGeneratePostsubmits(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "post-kubernetes-generic",
 					Annotations: map[string]string{
-						forkAnnotation:        "true",
-						suffixAnnotation:      "true",
-						"testgrid-dashboards": "sig-release-master-blocking, google-unit",
+						forkAnnotation:               "true",
+						suffixAnnotation:             "true",
+						testgridDashboardsAnnotation: "sig-release-master-blocking, google-unit",
 					},
 				},
 				Brancher: config.Brancher{
@@ -694,7 +694,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 			{
 				JobBase: config.JobBase{
 					Name:        "post-kubernetes-e2e-1-15",
-					Annotations: map[string]string{"testgrid-dashboards": "sig-release-1.15-all"},
+					Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all"},
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
@@ -704,8 +704,8 @@ func TestGeneratePostsubmits(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "post-kubernetes-generic-beta",
 					Annotations: map[string]string{
-						suffixAnnotation:      "true",
-						"testgrid-dashboards": "sig-release-1.15-blocking, google-unit, sig-release-1.15-all",
+						suffixAnnotation:             "true",
+						testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit, sig-release-1.15-all",
 					},
 				},
 				Brancher: config.Brancher{
@@ -716,8 +716,8 @@ func TestGeneratePostsubmits(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "post-replace-some-things-1-15",
 					Annotations: map[string]string{
-						"some-annotation":     "yup",
-						"testgrid-dashboards": "sig-release-1.15-all",
+						"some-annotation":            "yup",
+						testgridDashboardsAnnotation: "sig-release-1.15-all",
 					},
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{

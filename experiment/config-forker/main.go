@@ -34,11 +34,14 @@ import (
 )
 
 const (
-	forkAnnotation             = "fork-per-release"
-	suffixAnnotation           = "fork-per-release-generic-suffix"
-	periodicIntervalAnnotation = "fork-per-release-periodic-interval"
-	cronAnnotation             = "fork-per-release-cron"
-	replacementAnnotation      = "fork-per-release-replacements"
+	forkAnnotation               = "fork-per-release"
+	suffixAnnotation             = "fork-per-release-generic-suffix"
+	periodicIntervalAnnotation   = "fork-per-release-periodic-interval"
+	cronAnnotation               = "fork-per-release-cron"
+	replacementAnnotation        = "fork-per-release-replacements"
+	testgridDashboardsAnnotation = "testgrid-dashboards"
+	testgridTabNameAnnotation    = "testgrid-tab-name"
+	descriptionAnnotation        = "description"
 )
 
 func generatePostsubmits(c config.JobConfig, version string) (map[string][]config.Postsubmit, error) {
@@ -271,23 +274,23 @@ func fixTestgridAnnotations(annotations map[string]string, version string, isPre
 annotations:
 	for k, v := range annotations {
 		switch k {
-		case "testgrid-dashboards":
+		case testgridDashboardsAnnotation:
 			v = r.Replace(v)
 			if !isPresubmit {
 				v += ", " + "sig-release-" + version + "-all"
 			}
 			didDashboards = true
 			break
-		case "testgrid-tab-name":
+		case testgridTabNameAnnotation:
 			v = strings.ReplaceAll(v, "master", version)
 			break
-		case "description":
+		case descriptionAnnotation:
 			continue annotations
 		}
 		a[k] = v
 	}
 	if !didDashboards && !isPresubmit {
-		a["testgrid-dashboards"] = "sig-release-" + version + "-all"
+		a[testgridDashboardsAnnotation] = "sig-release-" + version + "-all"
 	}
 	return a
 
