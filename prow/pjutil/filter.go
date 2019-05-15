@@ -66,7 +66,9 @@ func AggregateFilter(filters []Filter) Filter {
 func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
 
 	var toTrigger []config.Presubmit
+	var namesToTrigger []string
 	var toSkip []config.Presubmit
+	var namesToSkip []string
 	for _, presubmit := range presubmits {
 		matches, forced, defaults := filter(presubmit)
 		if !matches {
@@ -78,11 +80,13 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 		}
 		if shouldRun {
 			toTrigger = append(toTrigger, presubmit)
+			namesToTrigger = append(namesToTrigger, presubmit.Name)
 		} else {
 			toSkip = append(toSkip, presubmit)
+			namesToSkip = append(namesToSkip, presubmit.Name)
 		}
 	}
 
-	logger.WithFields(logrus.Fields{"to-trigger": toTrigger, "to-skip": toSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkip))
+	logger.WithFields(logrus.Fields{"to-trigger": namesToTrigger, "to-skip": namesToSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkip))
 	return toTrigger, toSkip, nil
 }
