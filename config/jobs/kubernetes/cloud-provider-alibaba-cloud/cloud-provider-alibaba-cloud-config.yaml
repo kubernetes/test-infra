@@ -2,28 +2,38 @@ presubmits:
   kubernetes/cloud-provider-alibaba-cloud:
   - name: pull-cloud-provider-alibaba-cloud-check
     always_run: true
+    branches:
+    - master
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: pouchcontainer/pouchlinter:v0.1.2
-        imagePullPolicy: Always
-        command:
-        - make
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
         args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
         - check
 
   - name: pull-cloud-provider-alibaba-cloud-unit-test
     always_run: true
+    branches:
+    - master
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master
-        command:
-        - runner.sh
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
         args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
         - make
         - unit-test
