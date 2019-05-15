@@ -78,10 +78,10 @@ mode="${1:-}"
 shift || true
 case "$mode" in
 --minor)
-    "$go" get -u
+    "$go" get -u "$@"
     ;;
 --patch)
-    "$go" get -u=patch
+    "$go" get -u=patch "$@"
     ;;
 "")
     # Just validate, or maybe manual go.mod edit
