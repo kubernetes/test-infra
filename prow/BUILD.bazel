@@ -25,6 +25,8 @@ prow_push(
         "horologium",
         "initupload",
         "jenkins-operator",
+        "mkpj",
+        "mkpod",
         "peribolos",
         "plank",
         "sidecar",
