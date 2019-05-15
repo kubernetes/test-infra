@@ -34,9 +34,7 @@ periodics:
           memory: "16Gi"
 
 # This is a sig-release-master-blocking job.
-# TODO(#76579): Switch the cron settings once the density passes.
-#- cron: '1 8 * * 1,2,3,4,5' # Run at 00:01PST (8:01 UTC) on Mon, Thu, Wed, Thu and Fri
-- cron: '30 7,11,15,19,23 * * 1,2,3,4,5' # Run (7:30,11:30,15:30,19:30,23:30 UTC) on Mon-Fri
+- cron: '1 8 * * 1,2,3,4,5' # Run at 00:01PST (8:01 UTC) on Mon, Thu, Wed, Thu and Fri
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
@@ -48,7 +46,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=240 # TODO(#76579): Change back to 1080.
+      - --timeout=1080
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -68,13 +66,12 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
-      # TODO(#76579): Uncomment once density passes.
-      #- --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
       # TODO(https://github.com/kubernetes/kubernetes/issues/75294): Enable when fixed
       - --test-cmd-args=--enable-prometheus-server=false
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=210m # TODO(#76579): Change back to 1050m.
+      - --timeout=1050m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
       resources:
