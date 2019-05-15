@@ -160,6 +160,7 @@ blockades:
 
 blunderbuss:
   max_request_count: 2
+  use_status_availability: true
 
 cat:
   key_path: /etc/cat-api/api-key
@@ -599,7 +600,7 @@ plugins:
   - release-note
   - require-matching-label
   - welcome
-  
+
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - milestone
 
