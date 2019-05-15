@@ -872,9 +872,6 @@ test_groups:
 - name: pull-test-infra-verify-file-perms
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-file-perms
   num_columns_recent: 20
-- name: pull-test-infra-verify-codegen
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-codegen
-  num_columns_recent: 20
 - name: pull-test-infra-yamllint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-yamllint
   num_columns_recent: 20
@@ -5021,9 +5018,6 @@ dashboards:
     base_options: width=10
   - name: verify-file-perms
     test_group_name: pull-test-infra-verify-file-perms
-    base_options: width=10
-  - name: verify-codegen
-    test_group_name: pull-test-infra-verify-codegen
     base_options: width=10
   - name: verify-yaml
     test_group_name: pull-test-infra-yamllint

@@ -65,21 +65,6 @@ presubmits:
         - name: WORKSPACE
           value: "/workspace"
 
-  - name: pull-test-infra-verify-codegen
-    branches:
-    - master
-    always_run: true
-    path_alias: "k8s.io/test-infra"
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-experimental
-        command:
-        - ./hack/verify-codegen.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
   - name: pull-test-infra-verify-file-perms
     branches:
     - master
