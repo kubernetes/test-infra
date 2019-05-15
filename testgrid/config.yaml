@@ -759,6 +759,9 @@ test_groups:
 - name: pull-kubernetes-e2e-gce-storage-slow
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-storage-slow
   num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-storage-slow-rbe
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-storage-slow-rbe
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-big-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-big-performance
   days_of_results: 60
@@ -4906,6 +4909,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-storage-slow
     test_group_name: pull-kubernetes-e2e-gce-storage-slow
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-storage-slow-rbe
+    test_group_name: pull-kubernetes-e2e-gce-storage-slow-rbe
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-csi-serial
     test_group_name: pull-kubernetes-e2e-gce-csi-serial

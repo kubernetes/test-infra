@@ -3141,6 +3141,67 @@ presubmits:
     branches:
     - master
     cluster: security
+    context: pull-security-kubernetes-e2e-gce-storage-slow-rbe
+    decorate: true
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/release
+      repo: release
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/test-infra
+      repo: test-infra
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-gce-storage-slow-rbe
+    optional: true
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-e2e-gce-storage-slow-rbe
+    run_if_changed: ^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)
+    skip_report: true
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --inject-bazelrc=build --config=ci
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-slow
+        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|gcePD-external
+          --minStartupPods=8
+        - --timeout=80m
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-storage-slow-rbe
+        command:
+        - ../test-infra/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
+        name: ""
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-storage-slow-rbe,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
     context: pull-security-kubernetes-e2e-gce-csi-serial
     labels:
       preset-bazel-scratch-dir: "true"
