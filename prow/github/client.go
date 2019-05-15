@@ -2699,10 +2699,10 @@ func (c *Client) CreateProjectCard(columnID int, projectCard ProjectCard) (*Proj
 }
 
 // GetColumnProjectCard of a specific issue or PR for a specific column in a board/project
-//
-// See https://developer.github.com/v3/projects/cards/#list-project-cards
-func (c *Client) GetColumnProjectCard(columnID int, cardNumber int) (*ProjectCard, error) {
-	c.log("GetColumnProjectCard", columnID, cardNumber)
+// This method requires the URL of the issue/pr to compare the issue with the content_url
+// field of the card.  See https://developer.github.com/v3/projects/cards/#list-project-cards
+func (c *Client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error) {
+	c.log("GetColumnProjectCard", columnID, issueURL)
 	if c.fake {
 		return nil, nil
 	}
@@ -2710,7 +2710,8 @@ func (c *Client) GetColumnProjectCard(columnID int, cardNumber int) (*ProjectCar
 	var cards []ProjectCard
 	err := c.readPaginatedResults(
 		path,
-		acceptNone,
+		//projects api requies the accept header to be set this way
+		"application/vnd.github.inertia-preview+json",
 		func() interface{} {
 			return &[]ProjectCard{}
 		},
@@ -2721,8 +2722,9 @@ func (c *Client) GetColumnProjectCard(columnID int, cardNumber int) (*ProjectCar
 	if err != nil {
 		return nil, err
 	}
+
 	for _, card := range cards {
-		if card.ContentID == cardNumber {
+		if card.ContentURL == issueURL {
 			return &card, nil
 		}
 	}
@@ -2734,11 +2736,16 @@ func (c *Client) GetColumnProjectCard(columnID int, cardNumber int) (*ProjectCar
 // See https://developer.github.com/v3/projects/cards/#move-a-project-card
 func (c *Client) MoveProjectCard(projectCardID int, newColumnID int) error {
 	c.log("MoveProjectCard", projectCardID, newColumnID)
+	reqParams := struct {
+		Position string `json:"position"`
+		ColumnID int    `json:"column_id"`
+	}{"top", newColumnID}
+
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/projects/columns/cards/%d/moves", projectCardID),
-		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
-		requestBody: fmt.Sprintf("{column_id: %d}", newColumnID),
+		accept:      "application/vnd.github.inertia-preview+json",
+		requestBody: reqParams,
 		exitCodes:   []int{201},
 	}, nil)
 	return err

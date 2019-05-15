@@ -512,12 +512,13 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 	return nil
 }
 
-func (f *FakeClient) GetColumnProjectCard(columnID int, cardNumber int) (*github.ProjectCard, error) {
+// GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
+func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
 	for _, existingCard := range f.ColumnCardsMap[columnID] {
-		if existingCard.ContentID == cardNumber {
+		if existingCard.ContentURL == contentURL {
 			return &existingCard, nil
 		}
 	}
