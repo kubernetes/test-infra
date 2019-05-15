@@ -31,9 +31,9 @@ import (
 
 	"github.com/spf13/pflag"
 
+	"k8s.io/test-infra/kubetest2/pkg/build"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/metadata"
-
 	"k8s.io/test-infra/kubetest2/pkg/types"
 )
 
@@ -91,6 +91,8 @@ type deployer struct {
 	gcpPrepared    bool
 	testPrepared   bool
 	instanceGroups []*ig
+
+	stageLocation string
 
 	localLogsDir string
 	gcsLogsDir   string
@@ -153,6 +155,7 @@ func bindFlags(d *deployer) *pflag.FlagSet {
 	flags.StringVar(&d.project, "project", "", "Project to deploy to.")
 	flags.StringVar(&d.region, "region", "", "For use with gcloud commands")
 	flags.StringVar(&d.zone, "zone", "", "For use with gcloud commands")
+	flags.StringVar(&d.stageLocation, "stage", "", "Upload binaries to gs://bucket/ci/job-suffix if set")
 	return flags
 }
 
@@ -164,7 +167,16 @@ func (d *deployer) Provider() string {
 }
 
 func (d *deployer) Build() error {
-	return fmt.Errorf("build is not implemented for GKE deployer")
+	if err := build.Build(); err != nil {
+		return err
+	}
+
+	if d.stageLocation != "" {
+		if err := build.Stage(d.stageLocation); err != nil {
+			return fmt.Errorf("error staging build: %v", err)
+		}
+	}
+	return nil
 }
 
 // Deployer implementation methods below

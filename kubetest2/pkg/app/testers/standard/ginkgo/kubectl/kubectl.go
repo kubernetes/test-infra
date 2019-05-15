@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	kubectl = "./kubernetes/cluster/kubectl.sh" // TODO(RonWeber): Actually get, build or find this binary.
+	kubectl = "./kubernetes/client/bin/kubectl"
 )
 
 // APIServerURL obtains the URL of the k8s master from kubectl
