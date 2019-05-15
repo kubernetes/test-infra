@@ -37,6 +37,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/sessions"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -55,6 +56,7 @@ import (
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/prstatus"
@@ -142,6 +144,48 @@ func staticHandlerFromDir(dir string) http.Handler {
 	return gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir))))
 }
 
+var (
+	deckMetrics = struct {
+		httpRequestDuration *prometheus.HistogramVec
+	}{
+		httpRequestDuration: prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Name:    "deck_http_request_duration_seconds",
+				Help:    "http request duration seconds for deck server",
+				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+			},
+			[]string{"path", "method", "status"},
+		),
+	}
+)
+
+type traceResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (trw *traceResponseWriter) WriteHeader(code int) {
+	trw.statusCode = code
+	trw.ResponseWriter.WriteHeader(code)
+}
+
+func init() {
+	prometheus.MustRegister(deckMetrics.httpRequestDuration)
+}
+
+func traceHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t := time.Now()
+		// Initialize the status to 200 in case WriteHeader is not called
+		trw := &traceResponseWriter{w, http.StatusOK}
+		h.ServeHTTP(trw, r)
+		latency := time.Since(t)
+		deckMetrics.httpRequestDuration.With(
+			prometheus.Labels{"path": r.URL.Path, "method": r.Method, "status": strconv.Itoa(trw.statusCode)}).
+			Observe(latency.Seconds())
+	})
+}
+
 func main() {
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
@@ -160,6 +204,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
+
+	pushGateway := cfg().PushGateway
+	metrics.ExposeMetrics("deck", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the
@@ -210,7 +257,7 @@ func main() {
 	health.ServeReady()
 
 	// setup done, actually start the server
-	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
+	logrus.WithError(http.ListenAndServe(":8080", traceHandler(mux))).Fatal("ListenAndServe returned.")
 }
 
 // localOnlyMain contains logic used only when running locally, and is mutually exclusive with
