@@ -1,8 +1,0 @@
-# This file defines the list of versions that's used in
-# `experiment/manage_release_versions.py`
-
-current: "1.13"
-stable1: "1.12"
-stable2: "1.11"
-stable3: "1.10"
-deprecated: "1.9"
