@@ -1,0 +1,16 @@
+presubmits:
+  kubernetes-sigs/kubespray:
+  - name: pull-kubespray-yamllint
+    branches:
+    - master
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: quay.io/kubermatic/yamllint:0.1
+        args:
+        - yamllint
+        - "--strict"
+        - .

@@ -3413,6 +3413,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-batch-verify
   num_columns_recent: 20
 
+# Kubespray
+- name: pull-kubespray-yamllint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubespray-yamllint
+  num_columns_recent: 20
+
 # Prow hosted conformance tests
 - name: ci-kubernetes-gce-conformance-latest
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest
