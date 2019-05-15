@@ -79,6 +79,27 @@ type Deployer interface {
 	Build() error
 }
 
+// Some testers may use information about the deployer not available
+// in the standard deployer interface.
+
+// DeployerWithKubeconfig adds the ability to return a path to kubeconfig file.
+type DeployerWithKubeconfig interface {
+	Deployer
+
+	// Kubeconfig returns a path to a kubeconfig file for the cluster.
+	Kubeconfig() (string, error)
+}
+
+// DeployerWithProvider adds the ability to return a specific provider string.
+// This is reuired for some legacy deployers, which need a specific string to be
+// passed through to e2e.test.
+type DeployerWithProvider interface {
+	Deployer
+
+	// Provider returns the kubernetes provider for legacy deployers.
+	Provider() string
+}
+
 // NewTester should process & store deployerArgs and the common Options
 // kubetest2 will call this once at startup
 // common will provide access to options defined by common flags and kubetest2

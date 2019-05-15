@@ -22,4 +22,5 @@ package standard
 import (
 	// load standard testers
 	_ "k8s.io/test-infra/kubetest2/pkg/app/testers/standard/exec"
+	_ "k8s.io/test-infra/kubetest2/pkg/app/testers/standard/ginkgo"
 )

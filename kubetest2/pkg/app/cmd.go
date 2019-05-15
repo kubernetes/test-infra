@@ -92,8 +92,7 @@ func runE(
 		} else if parseError == nil {
 			// otherwise fail if the named tester does not exist
 			// NOTE: we only retain the first parse error currently, and handle below
-			// TODO(bentheelder): inform the user which testers exist
-			parseError = errors.Errorf("no such tester: %#v", opts.test)
+			parseError = errors.Errorf("no such tester: %#v (Registered testers: %+v)", opts.test, testers.Names())
 		}
 	}
 
