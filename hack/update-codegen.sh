@@ -37,7 +37,7 @@ informergen=$PWD/$3
 listergen=$PWD/$4
 
 ensure-in-gopath() {
-  fake_gopath=$(mktemp -d --tmpdir codegen.gopath.XXXX)
+  fake_gopath=$(mktemp -d -t codegen.gopath.XXXX)
   trap 'rm -rf "$fake_gopath"' EXIT
 
   fake_repopath=$fake_gopath/src/k8s.io/test-infra
