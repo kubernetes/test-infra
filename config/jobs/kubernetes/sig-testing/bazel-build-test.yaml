@@ -16,7 +16,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - bash
         args:
@@ -39,7 +39,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -133,7 +133,7 @@ postsubmits:
     - release-\d+.\d+ # per-release job
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -162,7 +162,7 @@ postsubmits:
     - release-\d+.\d+ # per-release job
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -229,7 +229,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+    - image: launcher.gcr.io/google/bazel
       imagePullPolicy: Always
       command:
       - bash
@@ -265,7 +265,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.24.1
+    - image: launcher.gcr.io/google/bazel:0.25.2
       command:
       - ../test-infra/hack/bazel.sh
       args:

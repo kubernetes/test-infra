@@ -3215,7 +3215,7 @@ presubmits:
           ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance $(bazel query --keep_going --noshow_progress "kind(.*_binary, rdeps(//... -//vendor/..., //...)) except attr('tags', 'manual', //...)") //build/release-tars
         command:
         - bash
-        image: launcher.gcr.io/google/bazel:0.24.1
+        image: launcher.gcr.io/google/bazel:0.25.2
         name: ""
         resources: {}
         volumeMounts:
@@ -3257,7 +3257,7 @@ presubmits:
         - -//vendor/...
         command:
         - ../test-infra/hack/bazel.sh
-        image: launcher.gcr.io/google/bazel:0.24.1
+        image: launcher.gcr.io/google/bazel:0.25.2
         name: ""
         resources: {}
         volumeMounts:
