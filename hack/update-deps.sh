@@ -46,6 +46,7 @@ else
 fi
 
 go=$(realpath "$1")
+export PATH=$(dirname "$go"):$PATH
 gazelle=$(realpath "$2")
 kazel=$(realpath "$3")
 update_bazel=(
