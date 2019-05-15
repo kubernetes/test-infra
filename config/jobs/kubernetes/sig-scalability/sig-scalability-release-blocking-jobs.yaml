@@ -54,6 +54,9 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      # TODO(mborsz): Adjust or remove this change once we understand coredns
+      # memory usage regression.
+      - --env=DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
