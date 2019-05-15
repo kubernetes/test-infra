@@ -813,6 +813,11 @@ repos:
   kubernetes/org:
     labels:
       - color: 0052cc
+        description: Creating a new Project Board
+        name: area/github-board
+        target: issues
+        addedBy: label
+      - color: 0052cc
         description: Third-party integrations, webhooks, or GitHub Apps
         name: area/github-integration
         target: issues
@@ -825,6 +830,11 @@ repos:
       - color: 0052cc
         description: Creating, migrating or deleting a Kubernetes GitHub Repository
         name: area/github-repo
+        target: issues
+        addedBy: label
+      - color: 0052cc
+        description:  Permissions requests and problems
+        name: area/github-permissions
         target: issues
         addedBy: label
   kubernetes/release:

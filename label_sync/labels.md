@@ -216,8 +216,10 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="area/github-board" href="#area/github-board">`area/github-board`</a> | Creating a new Project Board| label | |
 | <a id="area/github-integration" href="#area/github-integration">`area/github-integration`</a> | Third-party integrations, webhooks, or GitHub Apps| label | |
 | <a id="area/github-membership" href="#area/github-membership">`area/github-membership`</a> | Requesting membership in a Kubernetes GitHub Organization or Team| label | |
+| <a id="area/github-permissions" href="#area/github-permissions">`area/github-permissions`</a> | Permissions requests and problems| label | |
 | <a id="area/github-repo" href="#area/github-repo">`area/github-repo`</a> | Creating, migrating or deleting a Kubernetes GitHub Repository| label | |
 
 ## Labels that apply to kubernetes/release, for both issues and PRs
