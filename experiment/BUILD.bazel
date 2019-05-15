@@ -5,20 +5,6 @@ py_binary(
 )
 
 py_binary(
-    name = "manage_release_versions",
-    srcs = ["manage_release_versions.py"],
-    data = [
-        "//:test-infra-README",
-        "//config:prowjobs",
-        "//experiment:fix_testgrid_config.py",
-        "//images/kubekins-e2e:all-srcs",
-        "//scenarios:kubernetes_verify.py",
-        "//testgrid:config-yaml",
-    ],
-    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
-)
-
-py_binary(
     name = "generate_tests",
     srcs = ["generate_tests.py"],
     data = [
