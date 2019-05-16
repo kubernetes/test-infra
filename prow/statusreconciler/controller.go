@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
@@ -43,6 +44,7 @@ func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, pr
 			prowJobClient: prowJobClient,
 			githubClient:  githubClient,
 			configAgent:   configAgent,
+			pluginAgent:   pluginAgent,
 		},
 		githubClient: githubClient,
 		statusMigrator: &gitHubMigrator{
@@ -81,29 +83,32 @@ func (m *gitHubMigrator) migrate(org, repo, from, to string, targetBranchFilter 
 }
 
 type prowJobTriggerer interface {
-	run(pr *github.PullRequest, requestedJobs []config.Presubmit) error
+	runAndSkip(pr *github.PullRequest, requestedJobs, skippedJobs []config.Presubmit) error
 }
 
 type kubeProwJobTriggerer struct {
 	prowJobClient prowv1.ProwJobInterface
 	githubClient  *github.Client
 	configAgent   *config.Agent
+	pluginAgent   *plugins.ConfigAgent
 }
 
-func (t *kubeProwJobTriggerer) run(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
-	return trigger.RunRequested(
+func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs, skippedJobs []config.Presubmit) error {
+	org, repo := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name
+	return trigger.RunAndSkipJobs(
 		trigger.Client{
 			GitHubClient:  t.githubClient,
 			ProwJobClient: t.prowJobClient,
 			Config:        t.configAgent.Config(),
 			Logger:        logrus.WithField("client", "trigger"),
 		},
-		pr, requestedJobs, "none",
+		pr, requestedJobs, skippedJobs, "none", t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
 	)
 }
 
 type githubClient interface {
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
 type trustedChecker interface {
@@ -205,7 +210,20 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 				// launching jobs that instantly fail due to merge conflicts is a waste of time
 				continue
 			}
-			if err := c.triggerIfTrusted(org, repo, pr, presubmits); err != nil {
+			// we want to appropriately trigger and skip from the set of identified presubmits that were
+			// added. we know all of the presubmits we are filtering need to be forced to run, so we can
+			// enforce that with a custom filter
+			filter := func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, false, true
+			}
+			org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
+			changes := config.NewGitHubDeferredChangedFilesProvider(c.githubClient, org, repo, number)
+			logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "number": number, "branch": branch})
+			toTrigger, toSkip, err := pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
+			if err != nil {
+				return err
+			}
+			if err := c.triggerAndSkipIfTrusted(org, repo, pr, toTrigger, toSkip); err != nil {
 				triggerErrors = append(triggerErrors, fmt.Errorf("failed to trigger jobs for %s#%d: %v", orgrepo, pr.Number, err))
 				if !c.continueOnError {
 					return errorutil.NewAggregate(triggerErrors...)
@@ -217,7 +235,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 	return errorutil.NewAggregate(triggerErrors...)
 }
 
-func (c *Controller) triggerIfTrusted(org, repo string, pr github.PullRequest, presubmits []config.Presubmit) error {
+func (c *Controller) triggerAndSkipIfTrusted(org, repo string, pr github.PullRequest, toTrigger, toSkip []config.Presubmit) error {
 	trusted, err := c.trustedChecker.trustedPullRequest(pr.User.Login, org, repo, pr.Number)
 	if err != nil {
 		return fmt.Errorf("failed to determine if %s/%s#%d is trusted: %v", org, repo, pr.Number, err)
@@ -225,17 +243,22 @@ func (c *Controller) triggerIfTrusted(org, repo string, pr github.PullRequest, p
 	if !trusted {
 		return nil
 	}
-	var jobContexts []map[string]string
-	for _, presubmit := range presubmits {
-		jobContexts = append(jobContexts, map[string]string{"job": presubmit.Name, "context": presubmit.Context})
+	var triggeredContexts []map[string]string
+	for _, presubmit := range toTrigger {
+		triggeredContexts = append(triggeredContexts, map[string]string{"job": presubmit.Name, "context": presubmit.Context})
+	}
+	var skippedContexts []map[string]string
+	for _, presubmit := range toTrigger {
+		skippedContexts = append(skippedContexts, map[string]string{"job": presubmit.Name, "context": presubmit.Context})
 	}
 	logrus.WithFields(logrus.Fields{
-		"jobs": jobContexts,
-		"pr":   pr.Number,
-		"org":  org,
-		"repo": repo,
-	}).Info("Triggering new ProwJobs to create newly-required contexts.")
-	return c.prowJobTriggerer.run(&pr, presubmits)
+		"to-trigger": triggeredContexts,
+		"to-skip":    skippedContexts,
+		"pr":         pr.Number,
+		"org":        org,
+		"repo":       repo,
+	}).Info("Triggering and skipping new ProwJobs to create newly-required contexts.")
+	return c.prowJobTriggerer.runAndSkip(&pr, toTrigger, toSkip)
 }
 
 func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config.Presubmit) error {

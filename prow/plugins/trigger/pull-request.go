@@ -230,5 +230,5 @@ func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedCo
 	if err != nil {
 		return err
 	}
-	return runAndSkipJobs(c, pr, toTest, toSkip, eventGUID, elideSkippedContexts)
+	return RunAndSkipJobs(c, pr, toTest, toSkip, eventGUID, elideSkippedContexts)
 }
