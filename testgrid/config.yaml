@@ -969,7 +969,6 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/windows-image-tests
 - name: osconfig-tests
   gcs_prefix: compute-image-tools-test/logs/osconfig-tests
-
 # Cluster registry
 - name: pull-cluster-registry-verify-gensrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
