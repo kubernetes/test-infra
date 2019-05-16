@@ -140,7 +140,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 }
 
 func parseOptions() options {
-	o := options{}
+	var o options
 
 	if err := o.parseArgs(flag.CommandLine, os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatal("Invalid flag options")

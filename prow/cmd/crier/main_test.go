@@ -26,10 +26,10 @@ import (
 
 func TestOptions(t *testing.T) {
 
-	defaultGitHubOptions := flagutil.GitHubOptions{}
+	var defaultGitHubOptions flagutil.GitHubOptions
 	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
 
-	defaultGerritProjects := map[string][]string{}
+	defaultGerritProjects := make(map[string][]string, 0)
 
 	cases := []struct {
 		name     string
@@ -129,7 +129,7 @@ func TestOptions(t *testing.T) {
 
 	for _, tc := range cases {
 		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
-		actual := options{}
+		var actual options
 		err := actual.parseArgs(flags, tc.args)
 		switch {
 		case err == nil && tc.expected == nil:
