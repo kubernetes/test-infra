@@ -29,7 +29,7 @@ fi
 proj=$1
 pool=${2:-}
 workers=200
-disk=200
+disk=600
 machine=n1-standard-2
 
 users=()
