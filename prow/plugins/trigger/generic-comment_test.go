@@ -24,7 +24,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	clienttesting "k8s.io/client-go/testing"
 
@@ -1447,52 +1446,6 @@ func TestRetestFilter(t *testing.T) {
 				if actualDefault != expectedDefault {
 					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)
 				}
-			}
-		})
-	}
-}
-
-func TestDetermineSkippedPresubmits(t *testing.T) {
-	var testCases = []struct {
-		name                      string
-		toTrigger, toSkipSuperset []config.Presubmit
-		expectedToSkip            []config.Presubmit
-	}{
-		{
-			name:           "no inputs leads to no output",
-			toTrigger:      []config.Presubmit{},
-			toSkipSuperset: []config.Presubmit{},
-			expectedToSkip: nil,
-		},
-		{
-			name:           "no superset of skips to choose from leads to no output",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}},
-			toSkipSuperset: []config.Presubmit{},
-			expectedToSkip: nil,
-		},
-		{
-			name:           "disjoint sets of contexts leads to full skip set",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
-			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
-		},
-		{
-			name:           "overlaps on context removes from skip set",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "rab"}}},
-			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "rab"}}},
-		},
-		{
-			name:           "full set of overlaps on context removes everything from skip set",
-			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
-			expectedToSkip: nil,
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			if actual, expected := determineSkippedPresubmits(testCase.toTrigger, testCase.toSkipSuperset, logrus.WithField("test-case", testCase.name)), testCase.expectedToSkip; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: incorrect skipped presubmits determined: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
 			}
 		})
 	}
