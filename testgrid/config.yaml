@@ -1746,6 +1746,38 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-verify
   num_columns_recent: 20
 
+# ingress-nginx
+- name: pull-ingress-nginx-boilerplate
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-boilerplate
+  num_columns_recent: 20
+- name: pull-ingress-nginx-codegen
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-codegen
+  num_columns_recent: 20
+- name: pull-ingress-nginx-gofmt
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-gofmt
+  num_columns_recent: 20
+- name: pull-ingress-nginx-golint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-golint
+  num_columns_recent: 20
+- name: pull-ingress-nginx-test-lua
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-test-lua
+  num_columns_recent: 20
+- name: pull-ingress-nginx-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-test
+  num_columns_recent: 20
+- name: pull-ingress-nginx-e2e-1-12
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-12
+  num_columns_recent: 20
+- name: pull-ingress-nginx-e2e-1-13
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-13
+  num_columns_recent: 20
+- name: pull-ingress-nginx-e2e-1-14
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-14
+  num_columns_recent: 20
+- name: ci-ingress-nginx-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-ingress-nginx-e2e
+  num_columns_recent: 20
+
 #
 # Start dashboards
 #
@@ -3931,6 +3963,29 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
+- name: sig-network-ingress-nginx
+  dashboard_tab:
+  - name: boilerplate
+    test_group_name: pull-ingress-nginx-boilerplate
+  - name: codegen
+    test_group_name: pull-ingress-nginx-codegen
+  - name: gofmt
+    test_group_name: pull-ingress-nginx-gofmt
+  - name: golint
+    test_group_name: pull-ingress-nginx-golint
+  - name: test-lua
+    test_group_name: pull-ingress-nginx-test-lua
+  - name: test
+    test_group_name: pull-ingress-nginx-test
+  - name: e2e-1-12
+    test_group_name: pull-ingress-nginx-e2e-1-12
+  - name: e2e-1-13
+    test_group_name: pull-ingress-nginx-e2e-1-13
+  - name: e2e-1-14
+    test_group_name: pull-ingress-nginx-e2e-1-14
+  - name: ci-e2e
+    test_group_name: ci-ingress-nginx-e2e
+
 - name: sig-network-netd
   dashboard_tab:
   - name: e2e-gci-gce-netd
@@ -5884,6 +5939,7 @@ dashboard_groups:
   - sig-network-gce
   - sig-network-gke
   - sig-network-ingress-gce-e2e
+  - sig-network-ingress-nginx
   - sig-network-netd
 
 - name: sig-node
