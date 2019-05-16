@@ -202,7 +202,7 @@ slack:
         release-1.14:
             - aleksandra-malinowska # 1.14 patch release team
             - tpepper # 1.14 patch release team
-            - hoegaarden # 1.14 branch manager
+            - hoegaarden # 1.14 patch release team
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
