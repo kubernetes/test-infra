@@ -194,10 +194,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.10:
-            - maciekpytel # 1.10 patch release manager
-        release-1.11:
-            - foxish # 1.11 patch release manager
         release-1.12:
             - feiskyer # 1.12 patch release manager
         release-1.13:
