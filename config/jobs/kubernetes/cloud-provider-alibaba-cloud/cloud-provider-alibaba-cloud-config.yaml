@@ -5,11 +5,10 @@ presubmits:
     branches:
     - master
     decorate: true
-    labels:
-      preset-service-account: "true"
+    path_alias: k8s.io/cloud-provider-alibaba-cloud
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-6c3cafa-master
+      - image: quay.io/kubermatic/gometalinter:latest
         command:
         - make
         args:
@@ -20,11 +19,10 @@ presubmits:
     branches:
     - master
     decorate: true
-    labels:
-      preset-service-account: "true"
+    path_alias: k8s.io/cloud-provider-alibaba-cloud
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-6c3cafa-master
+      - image: golang:1.12
         command:
         - make
         args:
