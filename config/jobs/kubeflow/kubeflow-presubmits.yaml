@@ -276,7 +276,7 @@ presubmits:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
         - --workflow_file
-        - sample_test_v2.yaml
+        - sample_test.yaml
         - --test_result_folder
         - sample_test
         - --timeout

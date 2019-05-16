@@ -184,7 +184,7 @@ postsubmits:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
         - --workflow_file
-        - sample_test.yaml
+        - component_test.yaml
         - --test_result_folder
         - sample_test
         - --timeout
