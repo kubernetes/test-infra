@@ -948,6 +948,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to prow's crier component
+        name: area/prow/crier
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to prow's config-bootstrapper utility
         name: area/prow/config-bootstrapper
         target: both
