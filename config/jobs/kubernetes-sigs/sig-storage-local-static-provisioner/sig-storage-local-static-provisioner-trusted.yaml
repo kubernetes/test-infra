@@ -12,7 +12,7 @@ postsubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-6c3cafa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
         command:
         - runner.sh
         args:
@@ -51,7 +51,7 @@ postsubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-6c3cafa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
         command:
         - runner.sh
         args:
