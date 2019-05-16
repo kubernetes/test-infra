@@ -59,6 +59,7 @@ export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
     echo "Enabling IPV6 for Docker."
     # configure the daemon with ipv6
+    mkdir -p /etc/docker/
     cat /etc/docker/daemon.json <<EOF
 {
   "ipv6": true,
