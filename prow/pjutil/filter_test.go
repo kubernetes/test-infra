@@ -289,6 +289,38 @@ func TestFilterPresubmits(t *testing.T) {
 			}},
 			expectErr: false,
 		},
+		{
+			name: "everything matches and some that are forces to run supercede some that are skipped due to shared contexts",
+			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, p.Name == "should-trigger", p.Name == "should-trigger"
+			},
+			presubmits: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "third"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-not-skip"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			changesError: false,
+			expectedToTrigger: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "first"},
+			}, {
+				JobBase:  config.JobBase{Name: "should-trigger"},
+				Reporter: config.Reporter{Context: "second"},
+			}},
+			expectedToSkip: []config.Presubmit{{
+				JobBase:  config.JobBase{Name: "should-skip"},
+				Reporter: config.Reporter{Context: "third"},
+			}},
+			expectErr: false,
+		},
 	}
 
 	branch := "foobar"
@@ -307,6 +339,52 @@ func TestFilterPresubmits(t *testing.T) {
 			}
 			if !reflect.DeepEqual(actualToSkip, testCase.expectedToSkip) {
 				t.Errorf("%s: incorrect set of presubmits to skip: %s", testCase.name, diff.ObjectReflectDiff(actualToSkip, testCase.expectedToSkip))
+			}
+		})
+	}
+}
+
+func TestDetermineSkippedPresubmits(t *testing.T) {
+	var testCases = []struct {
+		name                      string
+		toTrigger, toSkipSuperset []config.Presubmit
+		expectedToSkip            []config.Presubmit
+	}{
+		{
+			name:           "no inputs leads to no output",
+			toTrigger:      []config.Presubmit{},
+			toSkipSuperset: []config.Presubmit{},
+			expectedToSkip: nil,
+		},
+		{
+			name:           "no superset of skips to choose from leads to no output",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}},
+			toSkipSuperset: []config.Presubmit{},
+			expectedToSkip: nil,
+		},
+		{
+			name:           "disjoint sets of contexts leads to full skip set",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
+			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "oof"}}, {Reporter: config.Reporter{Context: "rab"}}},
+		},
+		{
+			name:           "overlaps on context removes from skip set",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "rab"}}},
+			expectedToSkip: []config.Presubmit{{Reporter: config.Reporter{Context: "rab"}}},
+		},
+		{
+			name:           "full set of overlaps on context removes everything from skip set",
+			toTrigger:      []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			toSkipSuperset: []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}, {Reporter: config.Reporter{Context: "bar"}}},
+			expectedToSkip: nil,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual, expected := determineSkippedPresubmits(testCase.toTrigger, testCase.toSkipSuperset, logrus.WithField("test-case", testCase.name)), testCase.expectedToSkip; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: incorrect skipped presubmits determined: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
 			}
 		})
 	}

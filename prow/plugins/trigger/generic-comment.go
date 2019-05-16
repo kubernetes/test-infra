@@ -18,8 +18,9 @@ package trigger
 
 import (
 	"fmt"
-	"k8s.io/test-infra/prow/pjutil"
 	"regexp"
+
+	"k8s.io/test-infra/prow/pjutil"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -153,32 +154,7 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 
 	number, branch := pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(gitHubClient, org, repo, number)
-	toTrigger, toSkipSuperset, err := pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	toSkip := determineSkippedPresubmits(toTrigger, toSkipSuperset, logger)
-	return toTrigger, toSkip, err
-}
-
-// determineSkippedPresubmits identifies the largest set of contexts we can actually
-// post skipped contexts for, given a set of presubmits we're triggering. We don't
-// want to skip a job that posts a context that will be written to by a job we just
-// identified for triggering or the skipped context will override the triggered one
-func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit, logger *logrus.Entry) []config.Presubmit {
-	triggeredContexts := sets.NewString()
-	for _, presubmit := range toTrigger {
-		triggeredContexts.Insert(presubmit.Context)
-	}
-	var toSkip []config.Presubmit
-	for _, presubmit := range toSkipSuperset {
-		if triggeredContexts.Has(presubmit.Context) {
-			logger.WithFields(logrus.Fields{"context": presubmit.Context, "job": presubmit.Name}).Debug("Not skipping job as context will be created by a triggered job.")
-			continue
-		}
-		toSkip = append(toSkip, presubmit)
-	}
-	return toSkip
+	return pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 }
 
 type statusGetter interface {

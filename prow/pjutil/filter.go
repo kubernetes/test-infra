@@ -20,6 +20,7 @@ import (
 	"regexp"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -67,8 +68,7 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 
 	var toTrigger []config.Presubmit
 	var namesToTrigger []string
-	var toSkip []config.Presubmit
-	var namesToSkip []string
+	var toSkipSuperset []config.Presubmit
 	for _, presubmit := range presubmits {
 		matches, forced, defaults := filter(presubmit)
 		if !matches {
@@ -82,11 +82,36 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 			toTrigger = append(toTrigger, presubmit)
 			namesToTrigger = append(namesToTrigger, presubmit.Name)
 		} else {
-			toSkip = append(toSkip, presubmit)
-			namesToSkip = append(namesToSkip, presubmit.Name)
+			toSkipSuperset = append(toSkipSuperset, presubmit)
 		}
 	}
 
-	logger.WithFields(logrus.Fields{"to-trigger": namesToTrigger, "to-skip": namesToSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkip))
+	toSkip := determineSkippedPresubmits(toTrigger, toSkipSuperset, logger)
+	var namesToSkip []string
+	for _, presubmit := range toSkip {
+		namesToSkip = append(namesToSkip, presubmit.Name)
+	}
+
+	logger.WithFields(logrus.Fields{"to-trigger": namesToTrigger, "to-skip": namesToSkip}).Debugf("Filtered %d jobs, found %d to trigger and %d to skip.", len(presubmits), len(toTrigger), len(toSkipSuperset))
 	return toTrigger, toSkip, nil
+}
+
+// determineSkippedPresubmits identifies the largest set of contexts we can actually
+// post skipped contexts for, given a set of presubmits we're triggering. We don't
+// want to skip a job that posts a context that will be written to by a job we just
+// identified for triggering or the skipped context will override the triggered one
+func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit, logger *logrus.Entry) []config.Presubmit {
+	triggeredContexts := sets.NewString()
+	for _, presubmit := range toTrigger {
+		triggeredContexts.Insert(presubmit.Context)
+	}
+	var toSkip []config.Presubmit
+	for _, presubmit := range toSkipSuperset {
+		if triggeredContexts.Has(presubmit.Context) {
+			logger.WithFields(logrus.Fields{"context": presubmit.Context, "job": presubmit.Name}).Debug("Not skipping job as context will be created by a triggered job.")
+			continue
+		}
+		toSkip = append(toSkip, presubmit)
+	}
+	return toSkip
 }
