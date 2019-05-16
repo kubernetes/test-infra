@@ -454,8 +454,6 @@ tide:
   rebase_label: tide/merge-method-rebase
   merge_label: tide/merge-method-merge
   context_options:
-    optional-contexts:
-    - "Submit Queue"
     orgs:
      kubernetes:
       repos:
