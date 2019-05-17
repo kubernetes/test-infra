@@ -416,7 +416,10 @@ tide:
     - needs-rebase
     - needs-sig
   - repos:
-    -  GoogleCloudPlatform/netd
+    - GoogleCloudPlatform/netd
+    - bazelbuild/bazel-toolchains
+    - bazelbuild/rules_docker
+    - bazelbuild/rules_k8s
     labels:
     - lgtm
     - approved
@@ -431,18 +434,6 @@ tide:
     - bazelbuild/bazel-toolchains
     labels:
     - automerge
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-  - repos:
-    - bazelbuild/bazel-toolchains
-    - bazelbuild/rules_docker
-    - bazelbuild/rules_k8s
-    labels:
-    - lgtm
-    - approved
     missingLabels:
     - do-not-merge
     - do-not-merge/hold
