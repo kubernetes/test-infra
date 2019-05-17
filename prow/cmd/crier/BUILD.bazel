@@ -55,8 +55,5 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//prow/flagutil:go_default_library",
-        "//prow/gerrit/client:go_default_library",
-    ],
+    deps = ["//prow/flagutil:go_default_library"],
 )

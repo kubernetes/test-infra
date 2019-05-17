@@ -54,7 +54,6 @@ type options struct {
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
 
-	// TODO(krzyzacy): drop config agent!
 	configPath    string
 	jobConfigPath string
 
@@ -114,6 +113,9 @@ func (o *options) validate() error {
 }
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
+
+	o.gerritProjects = gerritclient.ProjectsFlag{}
+
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.gerritProjects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
 	fs.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
@@ -127,7 +129,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
-	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github only)")
+	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
 
 	o.github.AddFlags(fs)
 	o.client.AddFlags(fs)
@@ -138,9 +140,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 }
 
 func parseOptions() options {
-	o := options{
-		gerritProjects: gerritclient.ProjectsFlag{},
-	}
+	var o options
 
 	if err := o.parseArgs(flag.CommandLine, os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatal("Invalid flag options")
