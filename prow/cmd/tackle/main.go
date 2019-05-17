@@ -446,7 +446,7 @@ func githubToken(choice string) (string, error) {
 	return path, nil
 }
 
-func githubClient(tokenPath string, dry bool) (*github.Client, error) {
+func githubClient(tokenPath string, dry bool) (github.Client, error) {
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{tokenPath}); err != nil {
 		return nil, fmt.Errorf("start agent: %v", err)
@@ -596,7 +596,7 @@ func hmacSecret() string {
 	return fmt.Sprintf("%x", buf)
 }
 
-func findHook(client *github.Client, org, repo string, loc url.URL) (*github.Hook, error) {
+func findHook(client github.Client, org, repo string, loc url.URL) (*github.Hook, error) {
 	loc.Scheme = ""
 	goal := loc.String()
 	var hooks []github.Hook
@@ -665,7 +665,7 @@ func ensureHmac(kc *kubernetes.Clientset, ns string) (string, error) {
 	return hmac, nil
 }
 
-func enableHooks(client *github.Client, loc url.URL, secret string, repos ...string) ([]string, error) {
+func enableHooks(client github.Client, loc url.URL, secret string, repos ...string) ([]string, error) {
 	var enabled []string
 	locStr := loc.String()
 	hasFlagValues := len(repos) > 0

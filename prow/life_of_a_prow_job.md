@@ -8,7 +8,7 @@ To each plugin, hook passes two objects: a [plugin client](https://github.com/ku
 
 ```go
 type PluginClient struct {
-	GitHubClient *github.Client
+	GitHubClient github.Client
 	KubeClient   *kube.Client
 	Config       *config.Config
 	Logger       *logrus.Entry

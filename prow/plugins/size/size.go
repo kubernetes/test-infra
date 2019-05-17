@@ -70,7 +70,7 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, sizesOrDefault(pc.PluginConfig.Size), pc.Logger, pe)
 }
 
-// Strict subset of *github.Client methods.
+// Strict subset of github.Client methods.
 type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error

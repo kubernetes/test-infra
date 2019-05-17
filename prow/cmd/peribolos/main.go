@@ -765,7 +765,7 @@ func orgInvitations(opt options, client inviteClient, orgName string) (sets.Stri
 	return invitees, nil
 }
 
-func configureOrg(opt options, client *github.Client, orgName string, orgConfig org.Config) error {
+func configureOrg(opt options, client github.Client, orgName string, orgConfig org.Config) error {
 	// Ensure that metadata is configured correctly.
 	if !opt.fixOrg {
 		logrus.Infof("Skipping org metadata configuration")
@@ -813,7 +813,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	return nil
 }
 
-func configureTeamAndMembers(opt options, client *github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
+func configureTeamAndMembers(opt options, client github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)

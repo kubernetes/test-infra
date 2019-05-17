@@ -41,7 +41,7 @@ type options struct {
 	events   flagutil.Strings
 }
 
-func (o options) githubClient() (*github.Client, error) {
+func (o options) githubClient() (github.Client, error) {
 	agent := &secret.Agent{}
 	if err := agent.Start([]string{o.TokenPath}); err != nil {
 		return nil, fmt.Errorf("start %s: %v", o.TokenPath, err)
@@ -97,7 +97,7 @@ type changer struct {
 	creator func(org string, req github.HookRequest) (int, error)
 }
 
-func orgChanger(client *github.Client) changer {
+func orgChanger(client github.Client) changer {
 	return changer{
 		lister:  client.ListOrgHooks,
 		editor:  client.EditOrgHook,
@@ -105,7 +105,7 @@ func orgChanger(client *github.Client) changer {
 	}
 }
 
-func repoChanger(client *github.Client, repo string) changer {
+func repoChanger(client github.Client, repo string) changer {
 	return changer{
 		lister: func(org string) ([]github.Hook, error) {
 			return client.ListRepoHooks(org, repo)
