@@ -1403,23 +1403,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190516-8a91f16-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190517-c1df555-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.15
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190516-8a91f16-1.15
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190517-c1df555-1.15
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.14
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190516-8a91f16-1.14
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190517-c1df555-1.14
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.13
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190516-8a91f16-1.13
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190517-c1df555-1.13
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.12
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190516-8a91f16-1.12
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190517-c1df555-1.12
 
 nodeTestSuites:
   default:

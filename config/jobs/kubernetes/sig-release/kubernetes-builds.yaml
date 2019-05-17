@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190516-c6832d9
+      - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -35,7 +35,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190516-c6832d9
+    - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -60,7 +60,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190516-c6832d9
+    - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
       args:
       - --repo=k8s.io/release
       - --root=/go/src
@@ -89,7 +89,7 @@ periodics:
     testgrid-alert-email: "kubernetes-release-team@googlegroups.com"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190516-c6832d9
+      - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
         args:
           - --repo=k8s.io/kubernetes
           - --repo=k8s.io/release
@@ -115,7 +115,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190516-c6832d9
+    - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
