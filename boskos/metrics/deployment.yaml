@@ -46,7 +46,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: metrics
-        image: gcr.io/k8s-testimages/metrics:v20190516-8a91f16
+        image: gcr.io/k8s-testimages/metrics:v20190517-c1df555
         args:
         - --resource-type=gce-project,gke-project,gpu-project,ingress-project,istio-project,scalability-project,aws-account
         ports:
