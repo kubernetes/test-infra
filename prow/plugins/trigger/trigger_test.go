@@ -322,7 +322,7 @@ func TestRunAndSkipJobs(t *testing.T) {
 			Logger:        logrus.WithField("testcase", testCase.name),
 		}
 
-		err := runAndSkipJobs(client, pr, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
+		err := RunAndSkipJobs(client, pr, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
@@ -437,7 +437,7 @@ func TestRunRequested(t *testing.T) {
 			Logger:        logrus.WithField("testcase", testCase.name),
 		}
 
-		err := RunRequested(client, pr, testCase.requestedJobs, "event-guid")
+		err := runRequested(client, pr, testCase.requestedJobs, "event-guid")
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}

@@ -193,14 +193,14 @@ func skippedStatusFor(context string) github.Status {
 	}
 }
 
-// runAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
+// RunAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
 // for the reporting jobs that are skipped
-func runAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
+func RunAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
 	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
 		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
 		return err
 	}
-	runErr := RunRequested(c, pr, requestedJobs, eventGUID)
+	runErr := runRequested(c, pr, requestedJobs, eventGUID)
 	var skipErr error
 	if !elideSkippedContexts {
 		skipErr = skipRequested(c, pr, skippedJobs)
@@ -226,8 +226,8 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 	return nil
 }
 
-// RunRequested executes the config.Presubmits that are requested
-func RunRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
+// runRequested executes the config.Presubmits that are requested
+func runRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
 	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
 	if err != nil {
 		return err
