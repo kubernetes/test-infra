@@ -172,8 +172,9 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		ExtraRefs:        jb.ExtraRefs,
 		DecorationConfig: jb.DecorationConfig,
 
-		PodSpec:   jb.Spec,
-		BuildSpec: jb.BuildSpec,
+		PodSpec:         jb.Spec,
+		BuildSpec:       jb.BuildSpec,
+		PipelineRunSpec: jb.PipelineRunSpec,
 	}
 }
 

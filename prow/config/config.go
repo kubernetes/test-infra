@@ -1169,6 +1169,10 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("job build_specs require agent: %s (found %q)", b, agent)
 	case agent == b && v.BuildSpec == nil:
 		return errors.New("knative-build jobs require a build_spec")
+	case v.PipelineRunSpec != nil && agent != p:
+		return fmt.Errorf("job pipeline_run_spec require agent: %s (found %q)", p, agent)
+	case agent == p && v.PipelineRunSpec == nil:
+		return fmt.Errorf("agent: %s jobs require a pipeline_run_spec", p)
 	case v.DecorationConfig != nil && agent != k && agent != b:
 		// TODO(fejta): only source decoration supported...
 		return fmt.Errorf("decoration requires agent: %s or %s (found %q)", k, b, agent)
