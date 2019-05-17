@@ -102,7 +102,7 @@ type pipelineConfig struct {
 }
 
 // newPipelineConfig returns a client and informer capable of mutating and monitoring the specified config.
-func newPipelineConfig(cfg rest.Config, namespace string, stop chan struct{}) (*pipelineConfig, error) {
+func newPipelineConfig(cfg rest.Config, namespace string, watchNamespace bool, stop chan struct{}) (*pipelineConfig, error) {
 	bc, err := pipelineset.NewForConfig(&cfg)
 	if err != nil {
 		return nil, err
@@ -114,9 +114,14 @@ func newPipelineConfig(cfg rest.Config, namespace string, stop chan struct{}) (*
 		return nil, err
 	}
 
+	var bif pipelineinfo.SharedInformerFactory
 	// Assume watches receive updates, but resync every 30m in case something wonky happens
-	bif := pipelineinfo.NewSharedInformerFactoryWithOptions(bc, 30*time.Minute,
-		pipelineinfo.WithNamespace(namespace))
+	if watchNamespace {
+		bif = pipelineinfo.NewSharedInformerFactoryWithOptions(bc, 30*time.Minute,
+			pipelineinfo.WithNamespace(namespace))
+	} else {
+		bif = pipelineinfo.NewSharedInformerFactory(bc, 30*time.Minute)
+	}
 	bif.Tekton().V1alpha1().PipelineRuns().Lister()
 	go bif.Start(stop)
 	return &pipelineConfig{
@@ -163,8 +168,14 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to create prowjob client")
 	}
 	pjNamespace := configAgent.Config().ProwJobNamespace
-	pjif := prowjobinfo.NewSharedInformerFactoryWithOptions(pjc, 30*time.Minute,
-		prowjobinfo.WithNamespace(pjNamespace))
+	watchNamespace := configAgent.Config().WatchNamespace
+	var pjif prowjobinfo.SharedInformerFactory
+	if watchNamespace {
+		pjif = prowjobinfo.NewSharedInformerFactoryWithOptions(pjc, 30*time.Minute,
+			prowjobinfo.WithNamespace(pjNamespace))
+	} else {
+		pjif = prowjobinfo.NewSharedInformerFactory(pjc, 30*time.Minute)
+	}
 	pjif.Prow().V1().ProwJobs().Lister()
 	go pjif.Start(stop)
 
@@ -172,7 +183,7 @@ func main() {
 	for context, cfg := range configs {
 		var bc *pipelineConfig
 		pipelineNamespace := configAgent.Config().PodNamespace
-		bc, err = newPipelineConfig(cfg, pipelineNamespace, stop)
+		bc, err = newPipelineConfig(cfg, pipelineNamespace, watchNamespace, stop)
 		if apierrors.IsNotFound(err) {
 			logrus.WithError(err).Warnf("Ignoring %s: knative pipeline CRD not deployed", context)
 			continue

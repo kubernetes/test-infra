@@ -96,6 +96,12 @@ type ProwConfig struct {
 	// Defaults to "default".
 	PodNamespace string `json:"pod_namespace,omitempty"`
 
+	// WatchNamespace will make the prow's controllers to watch
+	// only the configured ProwJobNamespace and PodNamespace namespaces.
+	// Defaults to "false" (indicating that the prow's controllers will
+	// watch the entire cluster)
+	WatchNamespace bool `json:"watch_namespace,omitempty"`
+
 	// LogLevel enables dynamically updating the log level of the
 	// standard logger that is used by all prow components.
 	//

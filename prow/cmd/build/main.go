@@ -106,7 +106,7 @@ type buildConfig struct {
 }
 
 // newBuildConfig returns a client and informer capable of mutating and monitoring the specified config.
-func newBuildConfig(cfg rest.Config, namespace string, stop chan struct{}) (*buildConfig, error) {
+func newBuildConfig(cfg rest.Config, namespace string, watchNamespace bool, stop chan struct{}) (*buildConfig, error) {
 	bc, err := buildset.NewForConfig(&cfg)
 	if err != nil {
 		return nil, err
@@ -119,7 +119,12 @@ func newBuildConfig(cfg rest.Config, namespace string, stop chan struct{}) (*bui
 		return nil, err
 	}
 	// Assume watches receive updates, but resync every 30m in case something wonky happens
-	bif := buildinfo.NewSharedInformerFactoryWithOptions(bc, 30*time.Minute, buildinfo.WithNamespace(namespace))
+	var bif buildinfo.SharedInformerFactory
+	if watchNamespace {
+		bif = buildinfo.NewSharedInformerFactoryWithOptions(bc, 30*time.Minute, buildinfo.WithNamespace(namespace))
+	} else {
+		bif = buildinfo.NewSharedInformerFactory(bc, 30*time.Minute)
+	}
 	bif.Build().V1alpha1().Builds().Lister()
 	go bif.Start(stop)
 	return &buildConfig{
@@ -166,8 +171,15 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to create prowjob client")
 	}
 	pjNamespace := configAgent.Config().ProwJobNamespace
-	pjif := prowjobinfo.NewSharedInformerFactoryWithOptions(pjc, 30*time.Minute,
-		prowjobinfo.WithNamespace(pjNamespace))
+	watchNamespace := configAgent.Config().WatchNamespace
+	var pjif prowjobinfo.SharedInformerFactory
+	if watchNamespace {
+		pjif = prowjobinfo.NewSharedInformerFactoryWithOptions(pjc, 30*time.Minute,
+			prowjobinfo.WithNamespace(pjNamespace))
+	} else {
+		pjif = prowjobinfo.NewSharedInformerFactory(pjc, 30*time.Minute)
+	}
+
 	pjif.Prow().V1().ProwJobs().Lister()
 	go pjif.Start(stop)
 
@@ -175,7 +187,7 @@ func main() {
 	for context, cfg := range configs {
 		var bc *buildConfig
 		buildNamesapce := configAgent.Config().PodNamespace
-		bc, err = newBuildConfig(cfg, buildNamesapce, stop)
+		bc, err = newBuildConfig(cfg, buildNamesapce, watchNamespace, stop)
 		if apierrors.IsNotFound(err) {
 			logrus.WithError(err).Warnf("Ignoring %s: knative build CRD not deployed", context)
 			continue
