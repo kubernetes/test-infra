@@ -3,22 +3,26 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "local.go",
+        "gcsreader.go",
         "main.go",
         "parsing.go",
     ],
-    importpath = "k8s.io/test-infra/experiment/logviewer/gcsreader",
+    importpath = "k8s.io/test-infra/experiment/logviewer/worker",
     visibility = ["//visibility:private"],
     deps = [
+        "//experiment/logviewer/worker/work:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/timestamp:go_default_library",
         "//vendor/github.com/klauspost/pgzip:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
+        "//vendor/google.golang.org/grpc:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],
 )
 
 go_binary(
-    name = "gcsreader",
+    name = "worker",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -27,6 +31,11 @@ go_test(
     name = "go_default_test",
     srcs = ["parsing_test.go"],
     embed = [":go_default_library"],
+    deps = [
+        "//experiment/logviewer/worker/work:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/timestamp:go_default_library",
+    ],
 )
 
 filegroup(
@@ -38,7 +47,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//experiment/logviewer/worker/work:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
