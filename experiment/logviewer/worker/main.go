@@ -30,9 +30,9 @@ import (
 	"github.com/golang/protobuf/ptypes"
 
 	ts "github.com/golang/protobuf/ptypes/timestamp"
-	pb "github.com/kzmrv/logviewer/worker/work"
 	"google.golang.org/grpc"
 	log "k8s.io/klog"
+	pb "k8s.io/test-infra/experiment/logviewer/worker/work"
 )
 
 type dataReader interface {

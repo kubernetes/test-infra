@@ -14,12 +14,12 @@ import (
 	"github.com/golang/protobuf/ptypes"
 
 	"cloud.google.com/go/storage"
-	mixerPb "github.com/kzmrv/logviewer/mixer/request"
-	pb "github.com/kzmrv/logviewer/worker/work"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	log "k8s.io/klog"
+	mixerPb "k8s.io/test-infra/experiment/logviewer/mixer/request"
+	pb "k8s.io/test-infra/experiment/logviewer/worker/work"
 )
 
 var (

@@ -24,7 +24,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	ts "github.com/golang/protobuf/ptypes/timestamp"
-	pb "github.com/kzmrv/logviewer/worker/work"
+	pb "k8s.io/test-infra/experiment/logviewer/worker/work"
 )
 
 func TestParseSingleLine(t *testing.T) {

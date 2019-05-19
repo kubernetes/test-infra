@@ -1,9 +1,9 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
-import "worker/work/work.proto";
+import "github.com/kubernetes/test-infra/experiment/logviewer/worker/work/work.proto";
 
-option go_package = "github.com/kzmrv/logviewer/mixer/request";
+option go_package = "k8s.io/test-infra/experiment/logviewer/mixer/request";
 
 package request;
 

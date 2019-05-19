@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
-	mixerPb "github.com/kzmrv/logviewer/mixer/request"
 	"google.golang.org/grpc"
 	log "k8s.io/klog"
+	mixerPb "k8s.io/test-infra/experiment/logviewer/mixer/request"
 )
 
 const (
