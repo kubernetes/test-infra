@@ -564,7 +564,8 @@ periodics:
       - ./pkg/benchmarkjunit
       - --log-file=$(ARTIFACTS)/benchmark-log.txt
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
-      - ../kubernetes/pkg/api/...
+      - ../kubernetes/pkg/api/testing/...
+      - ../kubernetes/vendor/k8s.io/apiserver/pkg/endpoints/...
 
 # Experimental config for testing private gce clusters.
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
