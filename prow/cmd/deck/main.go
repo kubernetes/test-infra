@@ -43,6 +43,7 @@ import (
 	"golang.org/x/oauth2/github"
 	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -1031,10 +1032,13 @@ func handleLog(lc logClient) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logger := logger.WithError(err)
 			msg := "Log not found."
-			if strings.Contains(err.Error(), "PodInitializing") {
+			if strings.Contains(err.Error(), "PodInitializing") || strings.Contains(err.Error(), "not found") {
 				// PodInitializing is really common and not something
 				// that has any actionable items for administrators
-				// monitoring logs, so we should log it as information
+				// monitoring logs, so we should log it as information.
+				// Similarly, if a user asks us to proxy through logs
+				// for a Pod or ProwJob that doesn't exit, it's not
+				// something an administrator wants to see in logs.
 				logger.Info(msg)
 			} else {
 				logger.Warning(msg)
@@ -1070,7 +1074,10 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
-			logrus.WithError(err).Warning("ProwJob not found.")
+			if !kerrors.IsNotFound(err) {
+				// admins only care about errors other than not found
+				logrus.WithError(err).Warning("ProwJob not found.")
+			}
 			return
 		}
 		pjutil := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels)
