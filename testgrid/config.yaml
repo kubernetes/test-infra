@@ -1077,10 +1077,6 @@ test_groups:
 - name: integ-security-k8s-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-security-k8s-presubmit-tests-master
   days_of_results: 7
-- name: istio-integ-local-tests-presubmit-master
-  gcs_prefix: istio-prow/pr-logs/directory/istio-integ-local-tests-master
-- name: istio-integ-k8s-tests-presubmit-master
-  gcs_prefix: istio-prow/pr-logs/directory/istio-integ-k8s-tests-master
 - name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit-master
   gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-e2e-envoyv2-v1alpha3-master
 - name: istio-e2e-mixer-no_auth-presubmit-master
@@ -5243,10 +5239,6 @@ dashboards:
   dashboard_tab:
   - name: unit-tests
     test_group_name: istio-unit-tests-presubmit-master
-  - name: integration-local-tests
-    test_group_name: istio-integ-local-tests-presubmit-master
-  - name: integration-k8s-tests
-    test_group_name: istio-integ-k8s-tests-presubmit-master
   - name: integ-framework-local-presubmit-tests
     test_group_name: integ-framework-local-presubmit-tests-master
   - name: integ-framework-k8s-presubmit-tests
