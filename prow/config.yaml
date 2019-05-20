@@ -4,8 +4,8 @@ plank:
   job_url_prefix: https://prow.k8s.io/view/gcs/
   pod_pending_timeout: 60m
   default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15000000000 # 15s
+    timeout: 2h
+    grace_period: 15s
     utility_images:
       clonerefs: "gcr.io/k8s-prow/clonerefs:v20190517-95ef25d87"
       initupload: "gcr.io/k8s-prow/initupload:v20190517-95ef25d87"

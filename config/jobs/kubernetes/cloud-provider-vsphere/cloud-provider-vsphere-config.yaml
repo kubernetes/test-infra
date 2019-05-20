@@ -133,7 +133,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -159,7 +159,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -185,7 +185,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -211,7 +211,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -241,7 +241,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -269,7 +269,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -297,7 +297,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
@@ -325,7 +325,7 @@ periodics:
   interval: 12h
   decorate: true
   decoration_config:
-    timeout: 10800000000000 # 3h in nanoseconds
+    timeout: 3h
   labels:
     preset-dind-enabled: "true"
     preset-cloud-provider-vsphere-e2e-config: "true"
