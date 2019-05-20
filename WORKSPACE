@@ -993,8 +993,8 @@ go_repository(
 go_repository(
     name = "com_github_gregjones_httpcache",
     importpath = "github.com/gregjones/httpcache",
-    sum = "h1:pdN6V1QBWetyv/0+wjACpqVH+eVULgEjkurDLq3goeM=",
-    version = "v0.0.0-20180305231024-9cad4c3443a7",
+    sum = "h1:f8eY6cV/x1x+HLjOp4r72s/31/V2aTUtg5oKRRPf8/Q=",
+    version = "v0.0.0-20190212212710-3befbb6ad0cc",
 )
 
 go_repository(
@@ -2240,4 +2240,11 @@ go_repository(
     importpath = "github.com/xordataexchange/crypt",
     sum = "h1:ESFSdwYZvkeru3RtdrYueztKhOBCSAAzS4Gf+k0tEow=",
     version = "v0.0.3-0.20170626215501-b2862e3d0a77",
+)
+
+go_repository(
+    name = "com_github_gomodule_redigo",
+    importpath = "github.com/gomodule/redigo",
+    sum = "h1:ZKld1VOtsGhAe37E7wMxEDgAlGM5dvFY+DiOhSkhP9Y=",
+    version = "v1.7.0",
 )
