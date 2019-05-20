@@ -25,3 +25,6 @@ presubmits:
         imagePullPolicy: Always
         command:
         - "./scripts/install_test.sh"
+        env:
+        - name: PROW
+          value: "1"
