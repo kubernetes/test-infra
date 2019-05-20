@@ -56,7 +56,7 @@ periodics:
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
-      - --env=DNS_MEMORY_LIMIT=300Mi
+      - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       # TODO(wojtek-t): Remove once we confirm the impact.
       # That etcd image has an experimental support for concurrent reads
       # and should visibly help with issues we observer in density test.
