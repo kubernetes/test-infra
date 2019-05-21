@@ -1,0 +1,9 @@
+images:
+  ubuntu:
+    image: ubuntu-gke-1804-d1809-0-v20190506
+    project: ubuntu-os-gke-cloud
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
+  cos-stable:
+    image_regex: cos-73-11647-182-0
+    project: cos-cloud
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
