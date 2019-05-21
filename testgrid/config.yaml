@@ -810,10 +810,6 @@ test_groups:
 - name: pull-kubernetes-conformance-image-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-conformance-image-test
   num_columns_recent: 20
-- name: pull-kubernetes-e2e-containerd-gce
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-containerd-gce
-  num_columns_recent: 20
-  num_failures_to_alert: 10
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   num_columns_recent: 20
@@ -4145,9 +4141,6 @@ dashboards:
     test_group_name: ci-cri-containerd-node-e2e-benchmark
   - name: pull-node-e2e
     test_group_name: pull-kubernetes-node-e2e-containerd
-    base_options: width=10
-  - name: pull-e2e-gci
-    test_group_name: pull-kubernetes-e2e-containerd-gce
     base_options: width=10
   - name: soak-gci-gce
     test_group_name: ci-containerd-soak-gci-gce
