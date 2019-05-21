@@ -104,7 +104,7 @@ func call(cmd string, args ...string) error {
 	return c.Run()
 }
 
-func updatePR(gc *github.Client, org, repo, title, body, matchTitle, source, branch string) error {
+func updatePR(gc github.Client, org, repo, title, body, matchTitle, source, branch string) error {
 	logrus.Info("Creating PR...")
 	n, err := updater.UpdatePR(org, repo, title, body, matchTitle, gc)
 	if err != nil {

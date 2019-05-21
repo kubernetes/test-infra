@@ -48,12 +48,12 @@ func (tt *testTime) Until(t time.Time) time.Duration {
 	return t.Sub(tt.now)
 }
 
-func getClient(url string) *Client {
+func getClient(url string) *client {
 	getToken := func() []byte {
 		return []byte("")
 	}
 
-	return &Client{
+	return &client{
 		time:     &testTime{},
 		getToken: getToken,
 		client: &http.Client{

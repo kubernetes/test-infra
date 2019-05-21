@@ -36,7 +36,7 @@ import (
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, prowJobClient prowv1.ProwJobInterface, githubClient *github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
 	return &Controller{
 		continueOnError:         continueOnError,
 		addedPresubmitBlacklist: addedPresubmitBlacklist,
@@ -64,7 +64,7 @@ type statusMigrator interface {
 }
 
 type gitHubMigrator struct {
-	githubClient    *github.Client
+	githubClient    github.Client
 	continueOnError bool
 }
 
@@ -88,7 +88,7 @@ type prowJobTriggerer interface {
 
 type kubeProwJobTriggerer struct {
 	prowJobClient prowv1.ProwJobInterface
-	githubClient  *github.Client
+	githubClient  github.Client
 	configAgent   *config.Agent
 	pluginAgent   *plugins.ConfigAgent
 }
@@ -116,7 +116,7 @@ type trustedChecker interface {
 }
 
 type githubTrustedChecker struct {
-	githubClient *github.Client
+	githubClient github.Client
 	pluginAgent  *plugins.ConfigAgent
 }
 
