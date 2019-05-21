@@ -181,6 +181,20 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-cos-containerd-node-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-cos-containerd-node-e2e-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-coverage-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
   short_text_metric: coverage
@@ -4137,6 +4151,14 @@ dashboards:
     base_options: width=10
   - name: soak-gci-gce
     test_group_name: ci-containerd-soak-gci-gce
+  - name: image-validation-node-e2e
+    test_group_name: ci-cos-containerd-node-e2e
+  - name: image-validation-node-features
+    test_group_name: ci-cos-containerd-node-e2e-features
+  - name: image-validation-cos-e2e
+    test_group_name: ci-cos-containerd-e2e-gci-gce
+  - name: image-validation-ubuntu-e2e
+    test_group_name: ci-cos-containerd-e2e-ubuntu-gce
 
 - name: sig-node-cri
   dashboard_tab:
