@@ -1392,3 +1392,132 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		}
 	}
 }
+
+func TestMaxConcurency(t *testing.T) {
+	testCases := []struct {
+		name             string
+		prowJob          prowapi.ProwJob
+		existingProwJobs []prowapi.ProwJob
+		pendingJobs      map[string]int
+		expectedResult   bool
+	}{
+		{
+			name:           "Max concurency 0 always runs",
+			prowJob:        prowapi.ProwJob{Spec: prowapi.ProwJobSpec{MaxConcurrency: 0}},
+			expectedResult: true,
+		},
+		{
+			name: "Num pending exceeds max concurrency",
+			prowJob: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 10,
+					Job:            "my-pj"}},
+			pendingJobs:    map[string]int{"my-pj": 10},
+			expectedResult: false,
+		},
+		{
+			name: "Num pending plus older instances equals max concurency",
+			prowJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: metav1.Now(),
+				},
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 10,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					}},
+			},
+			pendingJobs:    map[string]int{"my-pj": 9},
+			expectedResult: false,
+		},
+		{
+			name: "Num pending plus older instances exceeds max concurency",
+			prowJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: metav1.Now(),
+				},
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 10,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					}},
+			},
+			pendingJobs:    map[string]int{"my-pj": 10},
+			expectedResult: false,
+		},
+		{
+			name: "Have other jobs that are newer, can execute",
+			prowJob: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 1,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						CreationTimestamp: metav1.Now(),
+					},
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					}},
+			},
+			expectedResult: true,
+		},
+		{
+			name: "Have older jobs that are not pending, can execute",
+			prowJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: metav1.Now(),
+				},
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 2,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.TriggeredState,
+					}},
+			},
+			pendingJobs:    map[string]int{"my-pj": 1},
+			expectedResult: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if tc.pendingJobs == nil {
+				tc.pendingJobs = map[string]int{}
+			}
+			fpc := &fkc{}
+			c := Controller{
+				pjs:         tc.existingProwJobs,
+				pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
+				log:         logrus.NewEntry(logrus.StandardLogger()),
+				config:      newFakeConfigAgent(t, 0).Config,
+				pendingJobs: tc.pendingJobs,
+			}
+			logrus.SetLevel(logrus.DebugLevel)
+
+			result := c.canExecuteConcurrently(&tc.prowJob)
+
+			if result != tc.expectedResult {
+				t.Errorf("Expected result to be %t but was %t", tc.expectedResult, result)
+			}
+		})
+	}
+
+}
