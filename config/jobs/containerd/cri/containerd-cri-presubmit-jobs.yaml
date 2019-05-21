@@ -24,7 +24,7 @@ presubmits:
     - release/1.0
     - release/1.2
     decoration_config:
-      timeout: 6000000000000 # 100m
+      timeout: 100m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -68,7 +68,7 @@ presubmits:
     branches:
     - release/1.2
     decoration_config:
-      timeout: 6000000000000 # 100m
+      timeout: 100m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -112,7 +112,7 @@ presubmits:
     branches:
     - release/1.0
     decoration_config:
-      timeout: 6000000000000 # 100m
+      timeout: 100m
     extra_refs:
     - org: kubernetes
       repo: kubernetes

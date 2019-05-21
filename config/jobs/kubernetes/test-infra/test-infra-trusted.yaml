@@ -767,7 +767,7 @@ periodics:
     app: branchprotector
   decorate: true
   decoration_config:
-    timeout: 18000000000000 # 5 hours
+    timeout: 5h
   extra_refs:
   - org: kubernetes
     repo: test-infra

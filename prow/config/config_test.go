@@ -299,8 +299,8 @@ periodics:
 			rawConfig: `
 plank:
   default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15000000000 # 15s
+    timeout: 2h
+    grace_period: 15s
     utility_images:
       clonerefs: "clonerefs:default"
       initupload: "initupload:default"
@@ -346,8 +346,8 @@ periodics:
 			rawConfig: `
 plank:
   default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15000000000 # 15s
+    timeout: 2h
+    grace_period: 15s
     utility_images:
       clonerefs: "clonerefs:default"
       initupload: "initupload:default"
