@@ -15,3 +15,7 @@ disabled_plugins = ["restart"]
 
 [plugins.cri.registry.mirrors."docker.io"]
   endpoint = ["https://mirror.gcr.io","https://registry-1.docker.io"]
+
+# Runtime handler used for runtime class test.
+[plugins.cri.containerd.runtimes.test-handler]
+  runtime_type = "io.containerd.runtime.v1.linux"
