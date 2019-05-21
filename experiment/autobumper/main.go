@@ -151,7 +151,7 @@ func getNewProwVersion(images map[string]string) string {
 }
 
 func makeCommitSummary(images map[string]string) string {
-	return fmt.Sprintf("Updated prow to %s, and other images as necessary.", getNewProwVersion(images))
+	return fmt.Sprintf("Update prow to %s, and other images as necessary.", getNewProwVersion(images))
 }
 
 func updateConfig() error {
@@ -326,7 +326,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to push changes.")
 	}
 
-	if err := updatePR(gc, githubOrg, githubRepo, makeCommitSummary(images), generatePRBody(images), "Updated prow to", o.githubLogin+":autobump", "master"); err != nil {
+	if err := updatePR(gc, githubOrg, githubRepo, makeCommitSummary(images), generatePRBody(images), "Update prow to", o.githubLogin+":autobump", "master"); err != nil {
 		logrus.WithError(err).Fatal("PR creation failed.")
 	}
 }
