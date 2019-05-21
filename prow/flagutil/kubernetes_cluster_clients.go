@@ -23,8 +23,10 @@ import (
 	"net/url"
 	"os"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 	prow "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
@@ -37,6 +39,8 @@ import (
 type ExperimentalKubernetesOptions struct {
 	buildCluster string
 	kubeconfig   string
+	cfg          rest.Config
+	mapper       meta.RESTMapper
 
 	DeckURI string
 
@@ -103,8 +107,8 @@ func (o *ExperimentalKubernetesOptions) resolve(dryRun bool) (err error) {
 		clients[context] = client
 	}
 
-	localCfg := clusterConfigs[kube.InClusterContext]
-	pjClient, err := prow.NewForConfig(&localCfg)
+	o.cfg = clusterConfigs[kube.InClusterContext]
+	pjClient, err := prow.NewForConfig(&o.cfg)
 	if err != nil {
 		return err
 	}
@@ -127,6 +131,15 @@ func (o *ExperimentalKubernetesOptions) ProwJobClientset(namespace string, dryRu
 	}
 
 	return o.prowJobClientset, nil
+}
+
+// ControlClusterConfig returns a *rest.Config for the control cluster
+func (o *ExperimentalKubernetesOptions) ControlClusterConfig(dryRun bool) (*rest.Config, error) {
+	if err := o.resolve(dryRun); err != nil {
+		return nil, err
+	}
+
+	return &o.cfg, nil
 }
 
 // ProwJobClient returns a ProwJob client.
