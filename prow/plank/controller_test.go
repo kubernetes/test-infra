@@ -1429,7 +1429,7 @@ func TestMaxConcurency(t *testing.T) {
 				{
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
-						State: prowapi.PendingState,
+						State: prowapi.TriggeredState,
 					}},
 			},
 			pendingJobs:    map[string]int{"my-pj": 9},
@@ -1449,7 +1449,7 @@ func TestMaxConcurency(t *testing.T) {
 				{
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
-						State: prowapi.PendingState,
+						State: prowapi.TriggeredState,
 					}},
 			},
 			pendingJobs:    map[string]int{"my-pj": 10},
@@ -1469,13 +1469,13 @@ func TestMaxConcurency(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
-						State: prowapi.PendingState,
+						State: prowapi.TriggeredState,
 					}},
 			},
 			expectedResult: true,
 		},
 		{
-			name: "Have older jobs that are not pending, can execute",
+			name: "Have older jobs that are not triggered, can execute",
 			prowJob: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					CreationTimestamp: metav1.Now(),
@@ -1488,7 +1488,7 @@ func TestMaxConcurency(t *testing.T) {
 				{
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
-						State: prowapi.TriggeredState,
+						State: prowapi.PendingState,
 					}},
 			},
 			pendingJobs:    map[string]int{"my-pj": 1},

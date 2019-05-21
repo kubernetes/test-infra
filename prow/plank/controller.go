@@ -136,21 +136,25 @@ func (c *Controller) canExecuteConcurrently(pj *prowapi.ProwJob) bool {
 		return false
 	}
 
-	var olderMatchingPJs []prowapi.ProwJob
+	var olderMatchingPJs int
+	c.pjLock.RLock()
 	for _, foundPJ := range c.pjs {
-		if foundPJ.Status.State != prowapi.PendingState {
+		if foundPJ.Status.State != prowapi.TriggeredState {
 			continue
 		}
 		if foundPJ.Spec.Job != pj.Spec.Job {
 			continue
 		}
 		if foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
-			olderMatchingPJs = append(olderMatchingPJs, foundPJ)
+			olderMatchingPJs++
 		}
 	}
-	if numPending+len(olderMatchingPJs) >= pj.Spec.MaxConcurrency {
-		c.log.WithFields(pjutil.ProwJobFields(pj)).Debugf("Not starting another instance of %s, already %d running and %d older instances waiting",
-			pj.Spec.Job, numPending, numPending+len(olderMatchingPJs))
+	c.pjLock.RUnlock()
+
+	if numPending+olderMatchingPJs >= pj.Spec.MaxConcurrency {
+		c.log.WithFields(pjutil.ProwJobFields(pj)).
+			Debugf("Not starting another instance of %s, already %d running and %d older instances waiting, together they equal or exceed the total limit of %d",
+				pj.Spec.Job, numPending, olderMatchingPJs, pj.Spec.MaxConcurrency)
 		return false
 	}
 
