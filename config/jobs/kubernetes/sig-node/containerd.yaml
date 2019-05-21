@@ -30,6 +30,13 @@ presets:
   env:
   - name: KUBE_LOAD_IMAGE_COMMAND
     value: /home/containerd/usr/local/bin/ctr cri load
+- labels:
+    preset-e2e-cos-containerd: "true"
+  env:
+  - name: LOG_DUMP_SYSTEMD_SERVICES
+    value: containerd
+  - name: KUBE_CONTAINER_RUNTIME
+    value: containerd
 
 presubmits:
   kubernetes/kubernetes:
@@ -1108,3 +1115,108 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190520-5580555-1.13
+
+- interval: 1h
+  name: ci-cos-containerd-e2e-gci-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-cos-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_POD_SECURITY_POLICY=true
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --image-family=cos-73-lts
+      - --image-project=cos-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190520-5580555-master
+
+
+- interval: 1h
+  name: ci-cos-containerd-e2e-ubuntu-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-cos-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=ubuntu
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190520-5580555-master
+
+- name: ci-cos-containerd-node-e2e
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190520-5580555-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-cos-containerd-node-e2e-features
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190520-5580555-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
