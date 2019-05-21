@@ -69,6 +69,8 @@ type options struct {
 	dir    string
 	sizeGB int
 
+	redisAddress string
+
 	port           int
 	upstream       string
 	upstreamParsed *url.URL
@@ -104,6 +106,7 @@ func flagOptions() *options {
 	o := &options{}
 	flag.StringVar(&o.dir, "cache-dir", "", "Directory to cache to if using a disk cache.")
 	flag.IntVar(&o.sizeGB, "cache-sizeGB", 0, "Cache size in GB if using a disk cache.")
+	flag.StringVar(&o.redisAddress, "redis-address", "", "Redis address if using a redis cache e.g. localhost:6379.")
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	flag.StringVar(&o.upstream, "upstream", "https://api.github.com", "Scheme, host, and base path of reverse proxy upstream.")
 	flag.IntVar(&o.maxConcurrency, "concurrency", 25, "Maximum number of concurrent in-flight requests to GitHub.")
@@ -125,7 +128,9 @@ func main() {
 	}
 
 	var cache http.RoundTripper
-	if o.dir == "" {
+	if o.redisAddress != "" {
+		cache = ghcache.NewRedisCache(http.DefaultTransport, o.redisAddress, o.maxConcurrency)
+	} else if o.dir == "" {
 		cache = ghcache.NewMemCache(http.DefaultTransport, o.maxConcurrency)
 	} else {
 		cache = ghcache.NewDiskCache(http.DefaultTransport, o.dir, o.sizeGB, o.maxConcurrency)
