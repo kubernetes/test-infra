@@ -1,0 +1,11 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+owners:
+  - droot
+  - pwittrock
+approvers:
+  - kubebuilder-admins
+  - kubebuilder-maintainers
+reviewers:
+  - kubebuilder-admins
+  - kubebuilder-maintainers
