@@ -49,9 +49,11 @@ type options struct {
 
 	local bool
 
-	github       prowflagutil.GitHubOptions
-	githubClient githubClient
-	pullRequest  *github.PullRequest
+	github                  prowflagutil.GitHubOptions
+	githubClient            githubClient
+	pullRequest             *github.PullRequest
+	pullRequestChanges      prowflagutil.Strings
+	pullRequestChangedFiles []string
 }
 
 func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJobSpec) {
@@ -114,6 +116,27 @@ func (o *options) getPullRequest() (*github.PullRequest, error) {
 	return pr, nil
 }
 
+func (o *options) getPullRequestChanges() ([]string, error) {
+	if len(o.pullRequestChangedFiles) != 0 {
+		return o.pullRequestChangedFiles, nil
+	}
+	if changes := o.pullRequestChanges.Strings(); len(changes) > 0 {
+		o.pullRequestChangedFiles = changes
+		return o.pullRequestChangedFiles, nil
+	}
+	changes, err := o.githubClient.GetPullRequestChanges(o.org, o.repo, o.pullNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch PullRequest changes from GitHub: %v", err)
+	}
+
+	var changedFiles []string
+	for _, c := range changes {
+		changedFiles = append(changedFiles, c.Filename)
+	}
+	o.pullRequestChangedFiles = changedFiles
+	return changedFiles, nil
+}
+
 func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
 	if pjs.Refs.Pulls[0].Number == 0 {
 		fmt.Fprint(os.Stderr, "PR Number: ")
@@ -135,6 +158,13 @@ func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
 			return err
 		}
 		pjs.Refs.Pulls[0].SHA = pr.Head.SHA
+	}
+	if len(pjs.Refs.Pulls[0].ChangedFiles) == 0 {
+		changes, err := o.getPullRequestChanges()
+		if err != nil {
+			return err
+		}
+		pjs.Refs.Pulls[0].ChangedFiles = changes
 	}
 	return nil
 }
@@ -173,6 +203,7 @@ func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
 
 type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetRef(org, repo, ref string) (string, error)
 }
 
@@ -194,7 +225,9 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	var o options
+	o.pullRequestChanges = prowflagutil.NewStrings()
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.Var(&o.pullRequestChanges, "pull-change", "File changed by PR. Use repeatedly to provide a list of files.")
 	fs.StringVar(&o.jobName, "job", "", "Job to run.")
 	fs.BoolVar(&o.local, "local", false, "Print help for running locally")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")

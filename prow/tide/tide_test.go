@@ -1595,7 +1595,6 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
 				t.Fatalf("Adding initial commit: %v", err)
 			}
-
 			sp := subpool{
 				log:        logrus.WithField("component", "tide"),
 				presubmits: tc.presubmits,

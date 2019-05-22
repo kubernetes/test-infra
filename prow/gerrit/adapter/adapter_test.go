@@ -17,6 +17,7 @@ limitations under the License.
 package adapter
 
 import (
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -161,6 +162,10 @@ func TestCreateRefs(t *testing.T) {
 						Email: "nyan@example.com",
 					},
 				},
+				Files: map[string]gerrit.FileInfo{
+					"a.txt":    {},
+					"b/b.yaml": {},
+				},
 			},
 		},
 	}
@@ -174,13 +179,14 @@ func TestCreateRefs(t *testing.T) {
 		BaseLink: "https://cat.example.com/meow/purr/+/abcdef",
 		Pulls: []prowapi.Pull{
 			{
-				Number:     42,
-				Author:     "Some Cat",
-				SHA:        "123456",
-				Ref:        "refs/changes/00/1/1",
-				Link:       "https://cat-review.example.com/c/meow/purr/+/42",
-				CommitLink: "https://cat.example.com/meow/purr/+/123456",
-				AuthorLink: "https://cat-review.example.com/q/nyan@example.com",
+				Number:       42,
+				Author:       "Some Cat",
+				SHA:          "123456",
+				Ref:          "refs/changes/00/1/1",
+				Link:         "https://cat-review.example.com/c/meow/purr/+/42",
+				CommitLink:   "https://cat.example.com/meow/purr/+/123456",
+				AuthorLink:   "https://cat-review.example.com/q/nyan@example.com",
+				ChangedFiles: []string{"a.txt", "b/b.yaml"},
 			},
 		},
 	}
@@ -191,6 +197,9 @@ func TestCreateRefs(t *testing.T) {
 	actual, err := createRefs(reviewHost, change, cloneURI, "abcdef")
 	if err != nil {
 		t.Errorf("unexpected error creating refs: %v", err)
+	}
+	if len(actual.Pulls) > 0 {
+		sort.Strings(actual.Pulls[0].ChangedFiles)
 	}
 	if !equality.Semantic.DeepEqual(expected, actual) {
 		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))

@@ -396,6 +396,9 @@ func TestHandlePullRequest(t *testing.T) {
 					0: {
 						Number: 0,
 						User:   github.User{Login: tc.Author},
+						Head: github.PullRequestBranch{
+							SHA: "cafe",
+						},
 						Base: github.PullRequestBranch{
 							Ref: "master",
 							Repo: github.Repo{
@@ -406,14 +409,17 @@ func TestHandlePullRequest(t *testing.T) {
 						Draft: tc.prIsDraft,
 					},
 				},
+				Ref: "origin/master",
 			}
 			fakeProwJobClient := fake.NewSimpleClientset(jobToAbort)
+			gitClient, cleanup := getTestGitClient(t, "org", "repo", "master", "cafe")
+			defer cleanup()
 			c := Client{
 				GitHubClient:  g,
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("namespace"),
 				Config:        &config.Config{},
 				Logger:        logrus.WithField("plugin", PluginName),
-				GitClient:     nil,
+				GitClient:     gitClient,
 			}
 
 			presubmits := map[string][]config.Presubmit{
@@ -439,8 +445,11 @@ func TestHandlePullRequest(t *testing.T) {
 				PullRequest: github.PullRequest{
 					Number: 0,
 					User:   github.User{Login: tc.Author},
+					Head: github.PullRequestBranch{
+						SHA: "cafe",
+					},
 					Base: github.PullRequestBranch{
-						Ref: "master",
+						Ref: "origin/master",
 						Repo: github.Repo{
 							Owner:    github.User{Login: "org"},
 							Name:     "repo",

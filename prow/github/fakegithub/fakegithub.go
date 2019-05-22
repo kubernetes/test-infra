@@ -33,6 +33,7 @@ const (
 	// Bot is the exported botName
 	Bot = botName
 	// TestRef is the ref returned when calling GetRef
+	// It can be overridden by setting the Ref field
 	TestRef = "abcde"
 )
 
@@ -112,6 +113,8 @@ type FakeClient struct {
 
 	// Error will be returned if set. Currently only implemented for CreateStatus
 	Error error
+	// The ref returned by GetRef. Overrides the default: TestRef
+	Ref string
 }
 
 // BotName returns authenticated login.
@@ -271,6 +274,9 @@ func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]gith
 
 // GetRef returns the hash of a ref.
 func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
+	if f.Ref != "" {
+		return f.Ref, nil
+	}
 	return TestRef, nil
 }
 

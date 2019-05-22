@@ -891,6 +891,7 @@ func TestCreateRefs(t *testing.T) {
 			HTMLURL: "https://github.example.com/ibzib",
 		},
 	}
+	changedFiles := []string{"a.txt", "b/b.yaml"}
 	expected := prowapi.Refs{
 		Org:      "kubernetes",
 		Repo:     "Hello-World",
@@ -900,16 +901,17 @@ func TestCreateRefs(t *testing.T) {
 		BaseLink: "https://github.example.com/kubernetes/Hello-World/commit/abcdef",
 		Pulls: []prowapi.Pull{
 			{
-				Number:     42,
-				Author:     "ibzib",
-				SHA:        "123456",
-				Link:       "https://github.example.com/kubernetes/Hello-World/pull/42",
-				AuthorLink: "https://github.example.com/ibzib",
-				CommitLink: "https://github.example.com/kubernetes/Hello-World/pull/42/commits/123456",
+				Number:       42,
+				Author:       "ibzib",
+				SHA:          "123456",
+				Link:         "https://github.example.com/kubernetes/Hello-World/pull/42",
+				AuthorLink:   "https://github.example.com/ibzib",
+				CommitLink:   "https://github.example.com/kubernetes/Hello-World/pull/42/commits/123456",
+				ChangedFiles: []string{"a.txt", "b/b.yaml"},
 			},
 		},
 	}
-	if actual := createRefs(pr, "abcdef"); !reflect.DeepEqual(expected, actual) {
+	if actual := createRefs(pr, "abcdef", changedFiles...); !reflect.DeepEqual(expected, actual) {
 		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
 	}
 }

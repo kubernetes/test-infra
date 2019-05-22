@@ -46,6 +46,9 @@ spec:
     org: test-org
     pulls:
     - author: bob
+      changed_files:
+      - a.txt
+      - b/b.yaml
       number: 1
       sha: pullsha
     repo: test-repo

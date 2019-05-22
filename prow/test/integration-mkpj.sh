@@ -57,7 +57,9 @@ for prowJob in prow/test/data/*-prow-job.yaml; do
     "${mkpj}" --config-path prow/test/data/test-config.yaml \
               --job "${prowJobName}"                        \
               --base-ref "master" --base-sha "basesha"      \
-              --pull-number "1" --pull-sha "pullsha" --pull-author "bob" > "${output}/${prowJobName}-prow-job.yaml"
+              --pull-number "1" --pull-sha "pullsha" --pull-author "bob" \
+              --pull-change "a.txt" --pull-change "b/b.yaml" \
+              > "${output}/${prowJobName}-prow-job.yaml"
     case "${action}" in
         "VALIDATE" )
             validate "${prowJob}" "${output}/${prowJobName}-prow-job.yaml" ;;

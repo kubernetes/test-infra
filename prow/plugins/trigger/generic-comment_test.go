@@ -30,6 +30,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
@@ -900,15 +902,18 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 				Collaborators: []string{"k8s-ci-robot"},
+				Ref:           fmt.Sprintf("origin/%s", tc.Branch),
 			}
 			fakeConfig := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}}
 			fakeProwJobClient := fake.NewSimpleClientset()
+			gitClient, cleanup := getTestGitClient(t, "org", "repo", tc.Branch, "cafe")
+			defer cleanup()
 			c := Client{
 				GitHubClient:  g,
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(fakeConfig.ProwJobNamespace),
 				Config:        fakeConfig,
 				Logger:        logrus.WithField("plugin", PluginName),
-				GitClient:     nil,
+				GitClient:     gitClient,
 			}
 			presubmits := tc.Presubmits
 			if presubmits == nil {
@@ -1098,4 +1103,37 @@ func TestRetestFilter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func getTestGitClient(t *testing.T, org, repo, base, head string) (client git.ClientFactory, cleanup func()) {
+	lg, gitClient, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making localgit: %v", err)
+	}
+	cleanup = func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Cleaning up localgit: %v", err)
+		}
+		if err := gitClient.Clean(); err != nil {
+			t.Errorf("Cleaning up client: %v", err)
+		}
+	}
+	if err := lg.MakeFakeRepo(org, repo); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if base != "master" {
+		if err := lg.CheckoutNewBranch(org, repo, base); err != nil {
+			t.Fatalf("Checking out pull branch: %v", err)
+		}
+		if err := lg.AddCommit(org, repo, map[string][]byte{"file1": {}}); err != nil {
+			t.Fatalf("Adding PR commit: %v", err)
+		}
+	}
+	if err := lg.CheckoutNewBranch(org, repo, head); err != nil {
+		t.Fatalf("Checking out pull branch: %v", err)
+	}
+	if err := lg.AddCommit(org, repo, map[string][]byte{"CHANGED": []byte(`foo`)}); err != nil {
+		t.Fatalf("Adding PR commit: %v", err)
+	}
+	return gitClient, cleanup
 }

@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"reflect"
+	"sort"
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -68,11 +70,16 @@ func TestOptions_Validate(t *testing.T) {
 func TestDefaultPR(t *testing.T) {
 	author := "Bernardo Soares"
 	sha := "Esther Greenwood"
-	fakeGitHubClient := &fakegithub.FakeClient{}
-	fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {
-		User: github.User{Login: author},
-		Head: github.PullRequestBranch{SHA: sha},
-	}}
+	fakeGitHubClient := &fakegithub.FakeClient{
+		PullRequests: map[int]*github.PullRequest{2: {
+			User: github.User{Login: author},
+			Head: github.PullRequestBranch{SHA: sha},
+		}},
+		PullRequestChanges: map[int][]github.PullRequestChange{2: {
+			{Filename: "a.txt"},
+			{Filename: "b/b.yaml"},
+		}},
+	}
 	o := &options{pullNumber: 2, githubClient: fakeGitHubClient}
 	pjs := &prowapi.ProwJobSpec{Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{Number: 2}}}}
 	if err := o.defaultPR(pjs); err != nil {
@@ -83,6 +90,11 @@ func TestDefaultPR(t *testing.T) {
 	}
 	if pjs.Refs.Pulls[0].SHA != sha {
 		t.Errorf("Expectged sha to get defaulted to %s but got %s", sha, pjs.Refs.Pulls[0].SHA)
+	}
+	sort.Strings(pjs.Refs.Pulls[0].ChangedFiles)
+	expectedChanges := []string{"a.txt", "b/b.yaml"}
+	if !reflect.DeepEqual(pjs.Refs.Pulls[0].ChangedFiles, expectedChanges) {
+		t.Errorf("Expected changed files to get defaulted to %s but got %s", expectedChanges, pjs.Refs.Pulls[0].ChangedFiles)
 	}
 }
 

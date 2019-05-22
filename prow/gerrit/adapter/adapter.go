@@ -145,6 +145,11 @@ func createRefs(reviewHost string, change client.ChangeInfo, cloneURI *url.URL, 
 	if len(parts) > 1 {
 		codeHost += "." + parts[1]
 	}
+	changedFiles := listChangedFiles(change)
+	changes, err := changedFiles()
+	if err != nil {
+		return prowapi.Refs{}, err
+	}
 	refs := prowapi.Refs{
 		Org:      cloneURI.Host,  // Something like android-review.googlesource.com
 		Repo:     change.Project, // Something like platform/build
@@ -155,13 +160,14 @@ func createRefs(reviewHost string, change client.ChangeInfo, cloneURI *url.URL, 
 		BaseLink: fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, baseSHA),
 		Pulls: []prowapi.Pull{
 			{
-				Number:     change.Number,
-				Author:     rev.Commit.Author.Name,
-				SHA:        change.CurrentRevision,
-				Ref:        rev.Ref,
-				Link:       fmt.Sprintf("%s/c/%s/+/%d", reviewHost, change.Project, change.Number),
-				CommitLink: fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, change.CurrentRevision),
-				AuthorLink: fmt.Sprintf("%s/q/%s", reviewHost, rev.Commit.Author.Email),
+				Number:       change.Number,
+				Author:       rev.Commit.Author.Name,
+				SHA:          change.CurrentRevision,
+				Ref:          rev.Ref,
+				Link:         fmt.Sprintf("%s/c/%s/+/%d", reviewHost, change.Project, change.Number),
+				CommitLink:   fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, change.CurrentRevision),
+				AuthorLink:   fmt.Sprintf("%s/q/%s", reviewHost, rev.Commit.Author.Email),
+				ChangedFiles: changes,
 			},
 		},
 	}

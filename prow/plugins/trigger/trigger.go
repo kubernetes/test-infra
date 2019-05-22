@@ -148,6 +148,10 @@ type prowJobClient interface {
 	Update(context.Context, *prowapi.ProwJob, metav1.UpdateOptions) (*prowapi.ProwJob, error)
 }
 
+type gitClient interface {
+	ClientFor(string) (git.RepoClient, error)
+}
+
 // Client holds the necessary structures to work with prow via logging, github, kubernetes and its configuration.
 //
 // TODO(fejta): consider exporting an interface rather than a struct
@@ -272,10 +276,24 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 
 // RunRequested executes the config.Presubmits that are requested
 func RunRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
+	gitRepo, err := c.GitClient.ClientFor(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := gitRepo.Clean(); err != nil {
+			c.Logger.WithError(err).Error("Error cleaning up repo.")
+		}
+	}()
+	changedFiles, err := gitRepo.Diff(baseSHA, pr.Head.SHA)
+	if err != nil {
+		return err
+	}
+
 	var errors []error
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
-		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
+		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID, changedFiles...)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.ProwJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")

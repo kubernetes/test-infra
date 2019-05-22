@@ -156,9 +156,12 @@ func TestRunRequested(t *testing.T) {
 		},
 	}
 
+	gitClient, cleanup := getTestGitClient(t, "org", "repo", "branch", "foobar1")
+	defer cleanup()
+
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			var fakeGitHubClient fakegithub.FakeClient
+			fakeGitHubClient := fakegithub.FakeClient{Ref: "origin/branch"}
 			fakeProwJobClient := fake.NewSimpleClientset()
 			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
 				switch action := action.(type) {
@@ -177,16 +180,15 @@ func TestRunRequested(t *testing.T) {
 				GitHubClient:  &fakeGitHubClient,
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 				Logger:        logrus.WithField("testcase", testCase.name),
+				GitClient:     gitClient,
 			}
-
-			err := RunRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid")
+			err := RunRequested(client, pr, "origin/branch", testCase.requestedJobs, "event-guid")
 			if err == nil && testCase.expectedErr {
 				t.Error("failed to receive an error")
 			}
 			if err != nil && !testCase.expectedErr {
 				t.Errorf("unexpected error: %v", err)
 			}
-
 			observedCreatedProwJobs := sets.NewString()
 			existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 			if err != nil {

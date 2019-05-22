@@ -1196,12 +1196,18 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		BaseSHA: sp.sha,
 	}
 	for _, pr := range prs {
+		changes := c.changedFiles.prChanges(&pr)
+		changedFiles, err := changes()
+		if err != nil {
+			return err
+		}
 		refs.Pulls = append(
 			refs.Pulls,
 			prowapi.Pull{
-				Number: int(pr.Number),
-				Author: string(pr.Author.Login),
-				SHA:    string(pr.HeadRefOID),
+				Number:       int(pr.Number),
+				Author:       string(pr.Author.Login),
+				SHA:          string(pr.HeadRefOID),
+				ChangedFiles: changedFiles,
 			},
 		)
 	}

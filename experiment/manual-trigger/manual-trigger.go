@@ -160,6 +160,15 @@ func main() {
 		log.Fatalf("Unable to get information on pull request %s/%s#%d: %v", o.org, o.repo, o.num, err)
 	}
 
+	changes, err := gc.GetPullRequestChanges(o.org, o.repo, o.num)
+	if err != nil {
+		log.Fatalf("Unable to get information on pull request changes %s/%s#%d: %v", o.org, o.repo, o.num, err)
+	}
+	var changedFiles []string
+	for _, c := range changes {
+		changedFiles = append(changedFiles, c.Filename)
+	}
+
 	spec := prowapi.ProwJobSpec{
 		Type: prowapi.PresubmitJob,
 		Job:  o.jobName,
@@ -170,9 +179,10 @@ func main() {
 			BaseSHA: pr.Base.SHA,
 			Pulls: []prowapi.Pull{
 				{
-					Number: pr.Number,
-					Author: pr.User.Login,
-					SHA:    pr.Head.SHA,
+					Number:       pr.Number,
+					Author:       pr.User.Login,
+					SHA:          pr.Head.SHA,
+					ChangedFiles: changedFiles,
 				},
 			},
 		},
