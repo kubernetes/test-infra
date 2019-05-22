@@ -747,6 +747,8 @@ type Pull struct {
 	CommitLink string `json:"commit_link,omitempty"`
 	// AuthorLink links to the author of the pull request.
 	AuthorLink string `json:"author_link,omitempty"`
+	// ChangedFiles lists the files changed by the pull request
+	ChangedFiles []string `json:"changed_files,omitempty"`
 }
 
 // Refs describes how the repo was constructed.
