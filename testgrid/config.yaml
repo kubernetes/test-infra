@@ -2685,6 +2685,8 @@ dashboards:
   # TODO(Katharine): fork this job.
   - name: soak-gci-gce-1.15
     test_group_name: ci-kubernetes-soak-gci-gce-beta
+  - name: aks-engine-azure-1-15-windows-release
+    test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-15-windows
 
 - name: sig-release-1.14-all
   dashboard_tab:
@@ -5747,6 +5749,9 @@ dashboards:
   - name: aks-engine-azure-1-14-windows
     description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
     test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
+  - name: aks-engine-azure-1-15-windows
+    description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
+    test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-15-windows
   - name: aks-engine-azure-windows-presubmit
     description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
     test_group_name: pull-kubernetes-e2e-aks-engine-azure-windows
