@@ -38,6 +38,7 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'firewall-rules', None, None, None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
     Resource('', 'compute', 'forwarding-rules', None, 'region', None, False, True),
+    Resource('', 'compute', 'ssl-certificates', None, None, None, False, True),
     Resource('', 'compute', 'target-http-proxies', None, None, None, False, True),
     Resource('', 'compute', 'target-https-proxies', None, None, None, False, True),
     Resource('', 'compute', 'url-maps', None, None, None, False, True),
