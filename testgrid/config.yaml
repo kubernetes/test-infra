@@ -1695,23 +1695,19 @@ test_groups:
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ce-ubuntu16.04-k8s1.13.x
-  column_header:
-  - configuration_value: platform
-  - configuration_value: kube_version
-  - configuration_value: docker_version
-- name: ee18.09-ubuntu16.04-k8s1.13.x-conformance
-  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee-ubuntu16.04-k8s1.13.x
-  column_header:
-  - configuration_value: platform
-  - configuration_value: kube_version
-  - configuration_value: docker_version
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ce18.09-ubuntu16.04-k8s1.13.x
+- name: ce19.03-ubuntu16.04-k8s1.14.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ce19.03-ubuntu16.04-k8s1.14.x
+- name: ee17.06-rhel7.5-k8s1.12.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee17.06-rhel7.5-k8s1.12.x
 - name: ee17.06-ubuntu16.04-k8s1.12.x-conformance
   gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee17.06-ubuntu16.04-k8s1.12.x
-  column_header:
-  - configuration_value: platform
-  - configuration_value: kube_version
-  - configuration_value: docker_version
+- name: ee18.09-rhel7.5-k8s1.13.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee18.09-rhel7.5-k8s1.13.x
+- name: ee18.09-ubuntu16.04-k8s1.14.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee18.09-ubuntu16.04-k8s1.14.x
+- name: ee19.03-ubuntu16.04-k8s1.14.x-conformance
+  gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee19.03-ubuntu16.04-k8s1.14.x
 
 # node-problem-detector
 - name: pull-npd-build
@@ -5851,27 +5847,28 @@ dashboards:
 #Docker node conformance dashboard
 - name: sig-node-docker
   dashboard_tab:
-  - name: ce18.09-node.e2e-ubuntu-k8s1.13
+  - name: ce18.09-node-ubuntu16.04-k8s1.13
     test_group_name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
     description: k8s1.13.x node conformance test results for docker ce-18.09 on ubuntu16.04
-    column_header:
-    - configuration_value: platform
-    - configuration_value: kube_version
-    - configuration_value: docker_version
-  - name: ee18.09-node.e2e-ubuntu-k8s1.13
-    test_group_name: ee18.09-ubuntu16.04-k8s1.13.x-conformance
-    description: k8s1.13.x node conformance test results for ee-18.09 on ubuntu16.04
-    column_header:
-    - configuration_value: platform
-    - configuration_value: kube_version
-    - configuration_value: docker_version
-  - name: ee17.06-node.e2e-ubuntu-k8s1.12
+  - name: ce19.03-node-ubuntu16.04-k8s1.14
+    test_group_name: ce19.03-ubuntu16.04-k8s1.14.x-conformance
+    description: k8s1.14.x node conformance test results for ce-19.03 on ubuntu16.04
+  - name: ee17.06-node-rhel7.5-k8s1.12
+    test_group_name: ee17.06-rhel7.5-k8s1.12.x-conformance
+    description: k8s1.12.x node conformance test results for ee-17.06 on rhel7.5
+  - name: ee17.06-node-ubuntu16.04-k8s1.12
     test_group_name: ee17.06-ubuntu16.04-k8s1.12.x-conformance
     description: k8s1.12.x node conformance test results for ee-17.06 on ubuntu16.04
-    column_header:
-    - configuration_value: platform
-    - configuration_value: kube_version
-    - configuration_value: docker_version
+  - name: ee18.09-node-rhel7.5-k8s1.13
+    test_group_name: ee18.09-rhel7.5-k8s1.13.x-conformance
+    description: k8s1.13.x node conformance test results for ee-18.09 on rhel7.5
+  - name: ee18.09-node-ubuntu16.04-k8s1.14
+    test_group_name: ee18.09-ubuntu16.04-k8s1.14.x-conformance
+    description: k8s1.14.x node conformance test results for ee-18.09 on ubuntu16.04
+  - name: ee19.03-node-ubuntu16.04-k8s1.14
+    test_group_name: ee19.03-ubuntu16.04-k8s1.14.x-conformance
+    description: k8s1.14.x node conformance test results for ee-19.03 on ubuntu16.04
+#
 
 #
 # Start dashboard groups
