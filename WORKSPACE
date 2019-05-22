@@ -2078,3 +2078,10 @@ go_repository(
     sum = "h1:0vLT13EuvQ0hNvakwLuFZ/jYrLp5F3kcWHXdRggjCE8=",
     version = "v2.1.0",
 )
+
+go_repository(
+    name = "com_github_tomnomnom_linkheader",
+    importpath = "github.com/tomnomnom/linkheader",
+    sum = "h1:nrZ3ySNYwJbSpD6ce9duiP+QkD3JuLCcWkdaehUS/3Y=",
+    version = "v0.0.0-20180905144013-02ca5825eb80",
+)

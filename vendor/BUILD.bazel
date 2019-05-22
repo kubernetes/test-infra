@@ -172,6 +172,7 @@ filegroup(
         "//vendor/github.com/tektoncd/pipeline/pkg/list:all-srcs",
         "//vendor/github.com/tektoncd/pipeline/pkg/names:all-srcs",
         "//vendor/github.com/tektoncd/pipeline/pkg/templating:all-srcs",
+        "//vendor/github.com/tomnomnom/linkheader:all-srcs",
         "//vendor/go.opencensus.io:all-srcs",
         "//vendor/golang.org/x/crypto/curve25519:all-srcs",
         "//vendor/golang.org/x/crypto/ed25519:all-srcs",
