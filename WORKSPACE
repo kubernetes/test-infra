@@ -616,8 +616,8 @@ go_repository(
 go_repository(
     name = "com_github_azure_go_autorest",
     importpath = "github.com/Azure/go-autorest",
-    sum = "h1:vdxx6wM1rVkKt/3niByPVjguoLWkWImOcJNvEykgBzY=",
-    version = "v10.15.5+incompatible",
+    sum = "h1:9DfMsQdUMEtg1jKRTjtkNZsvOuZXJOMl4dN1kiQwAc8=",
+    version = "v11.1.0+incompatible",
 )
 
 go_repository(
@@ -1244,8 +1244,8 @@ go_repository(
 go_repository(
     name = "com_github_nytimes_gziphandler",
     importpath = "github.com/NYTimes/gziphandler",
-    sum = "h1:YmY+w0aFpjdvy2zf8dxbSeLfFeE9PqCh21knryKHtok=",
-    version = "v0.0.0-20160419202541-63027b26b87e",
+    sum = "h1:lsxEuwrXEAokXB9qhlbKWPpo3KMLZQ5WB5WLQRW1uq0=",
+    version = "v0.0.0-20170623195520-56545f4a5d46",
 )
 
 go_repository(
@@ -1552,8 +1552,8 @@ go_repository(
 go_repository(
     name = "io_k8s_api",
     importpath = "k8s.io/api",
-    sum = "h1:yU+uHaWFaeWjRoVDuKI2qxcOP9PPFJ+665yJuHI5Ils=",
-    version = "v0.0.0-20181128191700-6db15a15d2d3",
+    sum = "h1:HQoGWsWUe/FmRcX9BU440AAMnzBFEf+DBo4nbkQlNzs=",
+    version = "v0.0.0-20181204000039-89a74a8d264d",
 )
 
 go_repository(
@@ -1566,22 +1566,22 @@ go_repository(
 go_repository(
     name = "io_k8s_apimachinery",
     importpath = "k8s.io/apimachinery",
-    sum = "h1:DRtb2PO1ps3SPBkAUYz9J+rIPvYDZALFAYhWBeyvmcU=",
-    version = "v0.0.0-20181128191346-49ce2735e507",
+    sum = "h1:tT6oQBi0qwLbbZSfDkdIsb23EwaLY85hoAV4SpXfdao=",
+    version = "v0.0.0-20181127025237-2b1284ed4c93",
 )
 
 go_repository(
     name = "io_k8s_client_go",
     importpath = "k8s.io/client-go",
-    sum = "h1:2kqW3X2xQ9SbFvWZjGEHBLlWc1LG9JIJNXWkuqwdZ3A=",
-    version = "v9.0.0+incompatible",
+    sum = "h1:F1IqCqw7oMBzDkqlcBymRq1450wD0eNqLE9jzUrIi34=",
+    version = "v10.0.0+incompatible",
 )
 
 go_repository(
     name = "io_k8s_kube_openapi",
     importpath = "k8s.io/kube-openapi",
-    sum = "h1:mn2F9UzCk6KGa7M/d2ibLyRtBQm7n6QvbCjDe/cDWSg=",
-    version = "v0.0.0-20180711000925-0cf8f7e6ed1d",
+    sum = "h1:f0BTap/vrgs21vVbJ1ySdsNtcivpA1x4ut6Wla9HKKw=",
+    version = "v0.0.0-20190510232812-a01b7d5d6c22",
 )
 
 go_repository(
@@ -1734,8 +1734,8 @@ go_repository(
 go_repository(
     name = "io_k8s_klog",
     importpath = "k8s.io/klog",
-    sum = "h1:I5HMfc/DtuVaGR1KPwUrTc476K8NCqNBldC7H4dYEzk=",
-    version = "v0.1.0",
+    sum = "h1:0VPpR+sizsiivjIfIAQH/rl8tan6jvWkS7lU+0di3lE=",
+    version = "v0.3.0",
 )
 
 go_repository(
@@ -1748,8 +1748,8 @@ go_repository(
 go_repository(
     name = "io_k8s_code_generator",
     importpath = "k8s.io/code-generator",
-    sum = "h1:piQj4auUdxujSfNkNdqNCG3Udqxe5RqHe/zVN5uFbmE=",
-    version = "v0.0.0-20190301173042-b1289fc74931",
+    sum = "h1:KH0fUlgdFZH8UMxJ/FDCYHpczfSQKefetq5NjL6BVF0=",
+    version = "v0.0.0-20181117043124-c2090bec4d9b",
 )
 
 go_repository(
@@ -2077,8 +2077,8 @@ go_repository(
 go_repository(
     name = "io_k8s_kubernetes",
     importpath = "k8s.io/kubernetes",
-    sum = "h1:Gdq2hPpttbaJBoClIanCE6WSu4IZReA54yhkZtvPUOo=",
-    version = "v1.14.2",
+    sum = "h1:rBz6dubDY4bfv85G6zo04v9G5wniTxvBI9yQ/QxJS3g=",
+    version = "v1.13.2",
 )
 
 go_repository(
@@ -2247,4 +2247,67 @@ go_repository(
     importpath = "github.com/gomodule/redigo",
     sum = "h1:ZKld1VOtsGhAe37E7wMxEDgAlGM5dvFY+DiOhSkhP9Y=",
     version = "v1.7.0",
+)
+
+go_repository(
+    name = "com_github_appscode_jsonpatch",
+    importpath = "github.com/appscode/jsonpatch",
+    sum = "h1:Kn3rqvbUFqSepE2OqVu0Pn1CbDw9IuMlONapol0zuwk=",
+    version = "v0.0.0-20190108182946-7c0e3b262f30",
+)
+
+go_repository(
+    name = "com_github_emicklei_go_restful",
+    importpath = "github.com/emicklei/go-restful",
+    sum = "h1:H2pdYOb3KQ1/YsqVWoWNLQO+fusocsw354rqGTZtAgw=",
+    version = "v0.0.0-20170410110728-ff4f55a20633",
+)
+
+go_repository(
+    name = "com_github_go_logr_logr",
+    importpath = "github.com/go-logr/logr",
+    sum = "h1:M1Tv3VzNlEHg6uyACnRdtrploV2P7wZqH8BoQMtz0cg=",
+    version = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_go_logr_zapr",
+    importpath = "github.com/go-logr/zapr",
+    sum = "h1:qXBXPDdNncunGs7XeEpsJt8wCjYBygluzfdLO0G5baE=",
+    version = "v0.1.1",
+)
+
+go_repository(
+    name = "com_github_munnerz_goautoneg",
+    importpath = "github.com/munnerz/goautoneg",
+    sum = "h1:7PxY7LVfSZm7PEeBTyK1rj1gABdCO2mbri6GKO1cMDs=",
+    version = "v0.0.0-20120707110453-a547fc61f48d",
+)
+
+go_repository(
+    name = "com_github_pborman_uuid",
+    importpath = "github.com/pborman/uuid",
+    sum = "h1:J7Q5mO4ysT1dv8hyrUGHb9+ooztCXu1D8MY8DZYsu3g=",
+    version = "v1.2.0",
+)
+
+go_repository(
+    name = "io_k8s_sigs_controller_runtime",
+    importpath = "sigs.k8s.io/controller-runtime",
+    sum = "h1:amLOmcekVdnsD1uIpmgRqfTbQWJ2qxvQkcdeFhcotn4=",
+    version = "v0.1.10",
+)
+
+go_repository(
+    name = "io_k8s_sigs_structured_merge_diff",
+    importpath = "sigs.k8s.io/structured-merge-diff",
+    sum = "h1:xJNnO2qzHtgVCSPoGkkltSpyEX7D7IJw1TmbE3G/7lY=",
+    version = "v0.0.0-20190426204423-ea680f03cc65",
+)
+
+go_repository(
+    name = "io_k8s_sigs_testing_frameworks",
+    importpath = "sigs.k8s.io/testing_frameworks",
+    sum = "h1:cP2l8fkA3O9vekpy5Ks8mmA0NW/F7yBdXf8brkWhVrs=",
+    version = "v0.1.1",
 )

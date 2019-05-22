@@ -7,12 +7,13 @@ require (
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
-	github.com/Azure/go-autorest v10.15.5+incompatible
+	github.com/Azure/go-autorest v11.1.0+incompatible
 	github.com/Microsoft/go-winio v0.4.12 // indirect
-	github.com/NYTimes/gziphandler v0.0.0-20160419202541-63027b26b87e
+	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
+	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30 // indirect
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
 	github.com/aws/aws-sdk-go v1.16.36
 	github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c
@@ -30,6 +31,8 @@ require (
 	github.com/evanphx/json-patch v4.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
+	github.com/go-logr/logr v0.1.0 // indirect
+	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/go-openapi/jsonpointer v0.0.0-20170102174223-779f45308c19 // indirect
 	github.com/go-openapi/jsonreference v0.0.0-20161105162150-36d33bfe519e // indirect
 	github.com/go-openapi/spec v0.0.0-20171219195406-fa03337d7da5
@@ -74,6 +77,7 @@ require (
 	github.com/mattn/go-zglob v0.0.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.3.0
 	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
 	github.com/pkg/errors v0.8.1
@@ -100,17 +104,19 @@ require (
 	google.golang.org/grpc v1.19.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.2
-	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
+	k8s.io/api v0.0.0-20181204000039-89a74a8d264d
 	k8s.io/apiextensions-apiserver v0.0.0-20181128195303-1f84094d7e8e
-	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507
-	k8s.io/client-go v9.0.0+incompatible
-	k8s.io/code-generator v0.0.0-20190301173042-b1289fc74931
+	k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
+	k8s.io/client-go v10.0.0+incompatible
+	k8s.io/code-generator v0.0.0-20181117043124-c2090bec4d9b
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
-	k8s.io/klog v0.1.0
-	k8s.io/kube-openapi v0.0.0-20180711000925-0cf8f7e6ed1d // indirect
-	k8s.io/kubernetes v1.14.2 // indirect
+	k8s.io/klog v0.3.0
+	k8s.io/kube-openapi v0.0.0-20190510232812-a01b7d5d6c22 // indirect
+	k8s.io/kubernetes v1.13.2 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
+	sigs.k8s.io/controller-runtime v0.1.10
+	sigs.k8s.io/testing_frameworks v0.1.1 // indirect
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4
 )
