@@ -126,7 +126,7 @@ periodics:
       securityContext:
         privileged: true
 
-- interval: 6h
+- interval: 12h
   name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   labels:
     preset-service-account: "true"
