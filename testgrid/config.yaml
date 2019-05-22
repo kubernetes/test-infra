@@ -1798,6 +1798,22 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-ingress-nginx-e2e
   num_columns_recent: 20
 
+- name: ci-kubernetes-e2e-gce-private-cluster-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-private-cluster-correctness
+
+# kubebuilder, controller-tools, controller-runtime
+- name: pull-kubebuilder-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubebuilder-test
+  num_columns_recent: 20
+- name: pull-kubebuilder-install-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubebuilder-install-test
+  num_columns_recent: 20
+- name: pull-controller-tools-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-controller-tools-test
+  num_columns_recent: 20
+- name: pull-controller-runtime-check-everything
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-controller-runtime-check-everything
+  num_columns_recent: 20
 #
 # Start dashboards
 #
@@ -5873,6 +5889,18 @@ dashboards:
     - configuration_value: kube_version
     - configuration_value: docker_version
 
+# Kubebuilder, controller-tools, controller-runtime dashboard
+- name: presubmits-kubebuilder-controller-tools
+  dashboard_tab:
+  - name: kubebuilder-test
+    test_group_name: pull-kubebuilder-test
+  - name: kubebuilder-install-test
+    test_group_name: pull-kubebuilder-install-test
+  - name: controller-tools
+    test_group_name: pull-controller-tools-test
+  - name: controller-runtime
+    test_group_name: pull-controller-runtime-check-everything
+
 #
 # Start dashboard groups
 #
@@ -5938,6 +5966,7 @@ dashboard_groups:
   - presubmits-poseidon
   - presubmits-kube-batch
   - presubmits-misc
+  - presubmits-kubebuilder-controller-tools
 
 - name: sig-api-machinery
   dashboard_names:
