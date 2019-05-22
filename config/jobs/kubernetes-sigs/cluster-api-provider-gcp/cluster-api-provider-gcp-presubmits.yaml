@@ -32,7 +32,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190520-5580555-1.13
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-1.13
         resources:
           requests:
             memory: "6Gi"
