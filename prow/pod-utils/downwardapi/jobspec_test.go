@@ -58,6 +58,43 @@ func TestEnvironmentForSpec(t *testing.T) {
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
+					Pulls: []prowapi.Pull{{
+						Number:       1,
+						Author:       "author-name",
+						SHA:          "pull-sha",
+						ChangedFiles: []string{"a.txt", "b/b.yaml"},
+					}},
+				},
+			},
+			expected: map[string]string{
+				"CI":                 "true",
+				"JOB_NAME":           "job-name",
+				"BUILD_ID":           "0",
+				"PROW_JOB_ID":        "prowjob",
+				"JOB_TYPE":           "postsubmit",
+				"JOB_SPEC":           `{"type":"postsubmit","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha","changed_files":["a.txt","b/b.yaml"]}]}}`,
+				"REPO_OWNER":         "org-name",
+				"REPO_NAME":          "repo-name",
+				"PULL_BASE_REF":      "base-ref",
+				"PULL_BASE_SHA":      "base-sha",
+				"PULL_REFS":          "base-ref:base-sha,1:pull-sha",
+				"PULL_NUMBER":        "1",
+				"PULL_PULL_SHA":      "pull-sha",
+				"PULL_CHANGED_FILES": "a.txt,b/b.yaml",
+			},
+		},
+		{
+			name: "postsubmit job without a PullRequest",
+			spec: JobSpec{
+				Type:      prowapi.PostsubmitJob,
+				Job:       "job-name",
+				BuildID:   "0",
+				ProwJobID: "prowjob",
+				Refs: &prowapi.Refs{
+					Org:     "org-name",
+					Repo:    "repo-name",
+					BaseRef: "base-ref",
+					BaseSHA: "base-sha",
 				},
 			},
 			expected: map[string]string{
@@ -87,28 +124,33 @@ func TestEnvironmentForSpec(t *testing.T) {
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
 					Pulls: []prowapi.Pull{{
-						Number: 1,
-						Author: "author-name",
-						SHA:    "pull-sha",
+						Number:       1,
+						Author:       "author-name",
+						SHA:          "pull-sha",
+						ChangedFiles: []string{"a.txt", "b/b.yaml"},
 					}, {
-						Number: 2,
-						Author: "other-author-name",
-						SHA:    "second-pull-sha",
+						Number:       2,
+						Author:       "other-author-name",
+						SHA:          "second-pull-sha",
+						ChangedFiles: []string{"a.txt", "c/c.yaml"},
 					}},
 				},
 			},
 			expected: map[string]string{
-				"CI":            "true",
-				"JOB_NAME":      "job-name",
-				"BUILD_ID":      "0",
-				"PROW_JOB_ID":   "prowjob",
-				"JOB_TYPE":      "batch",
-				"JOB_SPEC":      `{"type":"batch","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"},{"number":2,"author":"other-author-name","sha":"second-pull-sha"}]}}`,
-				"REPO_OWNER":    "org-name",
-				"REPO_NAME":     "repo-name",
-				"PULL_BASE_REF": "base-ref",
-				"PULL_BASE_SHA": "base-sha",
-				"PULL_REFS":     "base-ref:base-sha,1:pull-sha,2:second-pull-sha",
+				"CI":                 "true",
+				"JOB_NAME":           "job-name",
+				"BUILD_ID":           "0",
+				"PROW_JOB_ID":        "prowjob",
+				"JOB_TYPE":           "batch",
+				"JOB_SPEC":           `{"type":"batch","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha","changed_files":["a.txt","b/b.yaml"]},{"number":2,"author":"other-author-name","sha":"second-pull-sha","changed_files":["a.txt","c/c.yaml"]}]}}`,
+				"REPO_OWNER":         "org-name",
+				"REPO_NAME":          "repo-name",
+				"PULL_BASE_REF":      "base-ref",
+				"PULL_BASE_SHA":      "base-sha",
+				"PULL_REFS":          "base-ref:base-sha,1:pull-sha,2:second-pull-sha",
+				"PULL_NUMBER":        "1,2",
+				"PULL_PULL_SHA":      "pull-sha,second-pull-sha",
+				"PULL_CHANGED_FILES": "a.txt,b/b.yaml,c/c.yaml",
 			},
 		},
 		{
@@ -124,26 +166,28 @@ func TestEnvironmentForSpec(t *testing.T) {
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
 					Pulls: []prowapi.Pull{{
-						Number: 1,
-						Author: "author-name",
-						SHA:    "pull-sha",
+						Number:       1,
+						Author:       "author-name",
+						SHA:          "pull-sha",
+						ChangedFiles: []string{"a.txt", "b/b.yaml"},
 					}},
 				},
 			},
 			expected: map[string]string{
-				"CI":            "true",
-				"JOB_NAME":      "job-name",
-				"BUILD_ID":      "0",
-				"PROW_JOB_ID":   "prowjob",
-				"JOB_TYPE":      "presubmit",
-				"JOB_SPEC":      `{"type":"presubmit","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}`,
-				"REPO_OWNER":    "org-name",
-				"REPO_NAME":     "repo-name",
-				"PULL_BASE_REF": "base-ref",
-				"PULL_BASE_SHA": "base-sha",
-				"PULL_REFS":     "base-ref:base-sha,1:pull-sha",
-				"PULL_NUMBER":   "1",
-				"PULL_PULL_SHA": "pull-sha",
+				"CI":                 "true",
+				"JOB_NAME":           "job-name",
+				"BUILD_ID":           "0",
+				"PROW_JOB_ID":        "prowjob",
+				"JOB_TYPE":           "presubmit",
+				"JOB_SPEC":           `{"type":"presubmit","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha","changed_files":["a.txt","b/b.yaml"]}]}}`,
+				"REPO_OWNER":         "org-name",
+				"REPO_NAME":          "repo-name",
+				"PULL_BASE_REF":      "base-ref",
+				"PULL_BASE_SHA":      "base-sha",
+				"PULL_REFS":          "base-ref:base-sha,1:pull-sha",
+				"PULL_NUMBER":        "1",
+				"PULL_PULL_SHA":      "pull-sha",
+				"PULL_CHANGED_FILES": "a.txt,b/b.yaml",
 			},
 		},
 		{
@@ -186,13 +230,15 @@ func TestEnvironmentForSpec(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		env, err := EnvForSpec(test.spec)
-		if err != nil {
-			t.Errorf("%s: unexpected error: %v", test.name, err)
-		}
-		if actual, expected := env, test.expected; !reflect.DeepEqual(actual, expected) {
-			t.Errorf("%s: got environment:\n\t%v\n\tbut expected:\n\t%v", test.name, actual, expected)
-		}
+		t.Run(test.name, func(t *testing.T) {
+			env, err := EnvForSpec(test.spec)
+			if err != nil {
+				t.Errorf("%s: unexpected error: %v", test.name, err)
+			}
+			if actual, expected := env, test.expected; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got environment:\n\t%v\n\tbut expected:\n\t%v", test.name, actual, expected)
+			}
+		})
 	}
 }
 

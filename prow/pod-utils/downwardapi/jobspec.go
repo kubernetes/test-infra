@@ -21,7 +21,9 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
@@ -92,13 +94,14 @@ const (
 	buildIDEnv     = "BUILD_ID"
 	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
 
-	repoOwnerEnv   = "REPO_OWNER"
-	repoNameEnv    = "REPO_NAME"
-	pullBaseRefEnv = "PULL_BASE_REF"
-	pullBaseShaEnv = "PULL_BASE_SHA"
-	pullRefsEnv    = "PULL_REFS"
-	pullNumberEnv  = "PULL_NUMBER"
-	pullPullShaEnv = "PULL_PULL_SHA"
+	repoOwnerEnv        = "REPO_OWNER"
+	repoNameEnv         = "REPO_NAME"
+	pullBaseRefEnv      = "PULL_BASE_REF"
+	pullBaseShaEnv      = "PULL_BASE_SHA"
+	pullRefsEnv         = "PULL_REFS"
+	pullNumberEnv       = "PULL_NUMBER"
+	pullPullShaEnv      = "PULL_PULL_SHA"
+	pullChangedFilesEnv = "PULL_CHANGED_FILES"
 )
 
 // EnvForSpec returns a mapping of environment variables
@@ -135,27 +138,30 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env[pullBaseShaEnv] = spec.Refs.BaseSHA
 	env[pullRefsEnv] = spec.Refs.String()
 
-	if spec.Type == prowapi.PostsubmitJob || spec.Type == prowapi.BatchJob {
-		return env, nil
+	// TODO: populate Postsubmit and Batch jobs Refs.Pulls
+	numbersRef, shaRef, changesRef := envFromPulls(spec.Refs.Pulls)
+	setEnvIfNotEmpty := func(key, ref string) {
+		if ref != "" {
+			env[key] = ref
+		}
 	}
+	setEnvIfNotEmpty(pullNumberEnv, numbersRef)
+	setEnvIfNotEmpty(pullPullShaEnv, shaRef)
+	setEnvIfNotEmpty(pullChangedFilesEnv, changesRef)
 
-	env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
-	env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
 	return env, nil
 }
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType prowapi.ProwJobType) []string {
 	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
-	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
+	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv, pullChangedFilesEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 
 	switch jobType {
 	case prowapi.PeriodicJob:
 		return baseEnv
-	case prowapi.PostsubmitJob, prowapi.BatchJob:
-		return append(baseEnv, refsEnv...)
-	case prowapi.PresubmitJob:
+	case prowapi.PostsubmitJob, prowapi.BatchJob, prowapi.PresubmitJob:
 		return append(append(baseEnv, refsEnv...), pullEnv...)
 	default:
 		return []string{}
@@ -194,4 +200,16 @@ func (s *JobSpec) MainRefs() *prowapi.Refs {
 		return &s.ExtraRefs[0]
 	}
 	return nil
+}
+
+func envFromPulls(pulls []prowapi.Pull) (string, string, string) {
+	var numbers, shas []string
+	changes := sets.String{}
+
+	for _, pull := range pulls {
+		numbers = append(numbers, strconv.Itoa(pull.Number))
+		shas = append(shas, pull.SHA)
+		changes.Insert(pull.ChangedFiles...)
+	}
+	return strings.Join(numbers, ","), strings.Join(shas, ","), strings.Join(changes.List(), ",")
 }

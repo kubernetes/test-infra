@@ -777,7 +777,7 @@ func TestValidatePodSpec(t *testing.T) {
 			jobType: prowapi.PresubmitJob,
 			spec: func(s *v1.PodSpec) {
 				// find a presubmit value
-				for n := range preEnv.Difference(postEnv).Difference(periodEnv) {
+				for n := range preEnv.Difference(periodEnv) {
 
 					s.Containers[0].Env = append(s.Containers[0].Env, v1.EnvVar{Name: n, Value: "whatever"})
 				}

@@ -894,6 +894,7 @@ func TestMakeResources(t *testing.T) {
 					Pulls: []prowjobv1.Pull{
 						{
 							Number: 1,
+							SHA:    "pull-sha",
 						},
 					},
 				}
@@ -936,14 +937,14 @@ func TestMakeResources(t *testing.T) {
 						Name: "PULL_PULL_SHA",
 						Value: pipelinev1alpha1.ArrayOrString{
 							Type:      pipelinev1alpha1.ParamTypeString,
-							StringVal: "",
+							StringVal: "pull-sha",
 						},
 					},
 					pipelinev1alpha1.Param{
 						Name: "PULL_REFS",
 						Value: pipelinev1alpha1.ArrayOrString{
 							Type:      pipelinev1alpha1.ParamTypeString,
-							StringVal: "feature-branch,1:",
+							StringVal: "feature-branch,1:pull-sha",
 						},
 					},
 					pipelinev1alpha1.Param{
@@ -968,7 +969,7 @@ func TestMakeResources(t *testing.T) {
 							Type: "git",
 							Params: []pipelinev1alpha1.ResourceParam{
 								{Name: "url", Value: "https://source.host/test/test.git"},
-								{Name: "revision", Value: "pull/1/head"},
+								{Name: "revision", Value: "pull-sha"},
 							},
 						},
 					},
