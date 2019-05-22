@@ -98,6 +98,7 @@ type IssueClient interface {
 	CloseIssue(org, repo string, number int) error
 	ReopenIssue(org, repo string, number int) error
 	FindIssues(query, sort string, asc bool) ([]Issue, error)
+	ListOpenIssues(org, repo string) ([]Issue, error)
 	GetIssue(org, repo string, number int) (*Issue, error)
 	EditIssue(org, repo string, number int, issue *Issue) (*Issue, error)
 }
@@ -1219,6 +1220,34 @@ func (c *client) ListIssueComments(org, repo string, number int) ([]IssueComment
 		return nil, err
 	}
 	return comments, nil
+}
+
+// ListOpenIssues returns all open issues, including pull requests
+//
+// Each page of results consumes one API token.
+//
+// See https://developer.github.com/v3/issues/#list-issues-for-a-repository
+func (c *client) ListOpenIssues(org, repo string) ([]Issue, error) {
+	c.log("ListOpenIssues", org, repo)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/issues", org, repo)
+	var issues []Issue
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]Issue{}
+		},
+		func(obj interface{}) {
+			issues = append(issues, *(obj.(*[]Issue))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return issues, nil
 }
 
 // GetPullRequests get all open pull requests for a repo.
