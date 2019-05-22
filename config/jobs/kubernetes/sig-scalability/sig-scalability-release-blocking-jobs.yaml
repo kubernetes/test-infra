@@ -57,11 +57,6 @@ periodics:
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-      # TODO(wojtek-t): Remove once we confirm the impact.
-      # That etcd image has an experimental support for concurrent reads
-      # and should visibly help with issues we observer in density test.
-      - --env=TEST_ETCD_DOCKER_REPOSITORY=gcr.io/jingyih-gke-dev/etcd-amd64
-      - --env=TEST_ETCD_IMAGE=v3.3.10-experimental.2
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
