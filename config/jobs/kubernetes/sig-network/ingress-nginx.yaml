@@ -10,7 +10,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05132019-4a7d93287
+      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
         command:
         - ./hack/verify-boilerplate.sh
 
@@ -23,7 +23,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05132019-4a7d93287
+      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
         command:
         - ./hack/verify-codegen.sh
 
@@ -36,7 +36,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05132019-4a7d93287
+      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
         command:
         - ./hack/verify-gofmt.sh
 
@@ -49,7 +49,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05132019-4a7d93287
+      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
         command:
         - ./hack/verify-golint.sh
 
@@ -62,7 +62,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05132019-4a7d93287
+      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
         command:
         - make
         - lua-test
@@ -76,7 +76,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05132019-4a7d93287
+      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
         command:
         - /bin/bash
         - -c
@@ -95,7 +95,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05152019-a4eaa09a5
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -125,7 +125,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05152019-a4eaa09a5
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -155,7 +155,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05152019-a4eaa09a5
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -187,7 +187,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05152019-a4eaa09a5
+    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
       command:
       - /usr/local/bin/runner.sh
       args:
