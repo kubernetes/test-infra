@@ -495,6 +495,24 @@ func (r requestError) ErrorMessages() []string {
 	return []string{}
 }
 
+func IsNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	requestErr, ok := err.(*requestError)
+	if !ok {
+		return false
+	}
+
+	for _, errorMsg := range requestErr.ErrorMessages() {
+		if strings.Contains(errorMsg, "status code 404") {
+			return true
+		}
+	}
+	return false
+}
+
 // Make a request with retries. If ret is not nil, unmarshal the response body
 // into it. Returns an error if the exit code is not one of the provided codes.
 func (c *client) request(r *request, ret interface{}) (int, error) {

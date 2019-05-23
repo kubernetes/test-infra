@@ -440,6 +440,11 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		om, err := client.UpdateOrgMembership(orgName, user, super)
 		if err != nil {
 			logrus.WithError(err).Warnf("UpdateOrgMembership(%s, %s, %t) failed", orgName, user, super)
+			if github.IsNotFound(err) {
+				// this could be caused by someone removing their account
+				// or a typo in the configuration but should not crash the sync
+				err = nil
+			}
 		} else if om.State == github.StatePending {
 			logrus.Infof("Invited %s to %s as a %s", user, orgName, role)
 		} else {
