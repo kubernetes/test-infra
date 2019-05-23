@@ -1061,7 +1061,7 @@ jobs:
   ci-kubernetes-e2e-gke-cos-k8sbeta-default:
     interval: 1h
     args:
-    - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
+    - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
     sigOwners: [sig-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-serial:
     interval: 1h
