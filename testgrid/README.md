@@ -40,9 +40,12 @@ Add something like this to your prowjob:
 
 ```yaml
 annotations:
-  testgrid-dashboards: dashboard-name  # a dashboard defined in config.yaml
-  tab-name: some-short-name            # optionally, a shorter name for the tab. If omitted, just uses the job name.
+  testgrid-dashboards: dashboard-name  # a dashboard defined in config.yaml.
+  testgrid-tab-name: some-short-name   # optionally, a shorter name for the tab. If omitted, just uses the job name.
+  testgrid-alert-email: me@me.com      # optionally, an alert email that will be applied to the tab created in the
+                                       # first dashboard specified in testgrid-dashboards. 
   description: Words about your job.   # optionally, a description of your job. If omitted, just uses the job name.
+  
 ```
 
 If you need to create a new dashboard, or do anything more advanced, read on.
@@ -273,6 +276,18 @@ test_groups:
   num_columns_recent: 3
 ```
 
+### Long-Running Tests
+If your tests run for a very long time (more than 24 hours), set
+`max_test_runtime_hours`.
+
+```
+# This test group has tests that run for 48 hours; set a high max runtime.
+test_groups:
+- name: some-tests
+  gcs_prefix: path/to/test/logs/some-tests
+  max_test_runtime_hours: 50  # Leave a small buffer just in case.
+```
+
 ### Ignore Pending Results
 `ignore_pending` is false by default, which means that in-progress results will
 be shown if we have data for them. If you want to have these not show up, add:
@@ -393,6 +408,13 @@ every job in our CI system appears somewhere in testgrid, etc.
 
 All PRs updating the configuration must pass prior to merging
 
+## Changing a .proto file
+
+If you modify a .proto file, you'll also need to generate and check in the
+.pb.go files.
+
+Run `bazel run //hack:update-protos` to generate, and `bazel run //hack:verify-protos.sh`
+to verify.
 
 ## Merging changes
 

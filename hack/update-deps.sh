@@ -14,12 +14,10 @@
 # limitations under the License.
 
 
-# Run dep ensure and generate bazel rules.
+# Update vendor and bazel rules to match go.mod
 #
 # Usage:
-#   update-deps.sh <ARGS>
-#
-# The args are sent to dep ensure -v <ARGS>
+#   update-deps.sh [--patch|--minor] [packages]
 
 set -o nounset
 set -o errexit
@@ -40,12 +38,13 @@ elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazell
 else
   (
     set -o xtrace
-    bazel run @io_k8s_test_infra//hack:update-deps
+    bazel run @io_k8s_test_infra//hack:update-deps -- "$@"
   )
   exit 0
 fi
 
 go=$(realpath "$1")
+export PATH=$(dirname "$go"):$PATH
 gazelle=$(realpath "$2")
 kazel=$(realpath "$3")
 update_bazel=(
@@ -79,10 +78,10 @@ mode="${1:-}"
 shift || true
 case "$mode" in
 --minor)
-    "$go" get -u
+    "$go" get -u "$@"
     ;;
 --patch)
-    "$go" get -u=patch
+    "$go" get -u=patch "$@"
     ;;
 "")
     # Just validate, or maybe manual go.mod edit

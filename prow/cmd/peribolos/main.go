@@ -440,6 +440,11 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		om, err := client.UpdateOrgMembership(orgName, user, super)
 		if err != nil {
 			logrus.WithError(err).Warnf("UpdateOrgMembership(%s, %s, %t) failed", orgName, user, super)
+			if github.IsNotFound(err) {
+				// this could be caused by someone removing their account
+				// or a typo in the configuration but should not crash the sync
+				err = nil
+			}
 		} else if om.State == github.StatePending {
 			logrus.Infof("Invited %s to %s as a %s", user, orgName, role)
 		} else {
@@ -600,7 +605,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 			names[n] = t
 			older[n] = append(older[n], val)
 		default: // t does not have smallest id, add it to older set
-			logger.Debugf("Adding team to older set as a smaller ID is already recoded for it.", val.ID)
+			logger.Debugf("Adding team (%d) to older set as a smaller ID is already recoded for it.", val.ID)
 			older[n] = append(older[n], val)
 		}
 	}
@@ -765,7 +770,7 @@ func orgInvitations(opt options, client inviteClient, orgName string) (sets.Stri
 	return invitees, nil
 }
 
-func configureOrg(opt options, client *github.Client, orgName string, orgConfig org.Config) error {
+func configureOrg(opt options, client github.Client, orgName string, orgConfig org.Config) error {
 	// Ensure that metadata is configured correctly.
 	if !opt.fixOrg {
 		logrus.Infof("Skipping org metadata configuration")
@@ -813,7 +818,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	return nil
 }
 
-func configureTeamAndMembers(opt options, client *github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
+func configureTeamAndMembers(opt options, client github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)

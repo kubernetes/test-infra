@@ -16,7 +16,6 @@ presubmits:
         args:
         - test
         - --config=ci
-        - --config=unit
         - --nobuild_tests_only
         - //...
 

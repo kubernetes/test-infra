@@ -4,12 +4,17 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 1h 2h 6h 24h
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-master-blocking, sig-node-kubelet
+    testgrid-tab-name: node-kubelet-master
+    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
+    description: "Uses kubetest to run a subset of node-e2e tests (+NodeConformance, -Flaky|Serial)"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -36,7 +41,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -63,7 +68,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -91,7 +96,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -119,9 +124,12 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-generic-suffix: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -148,7 +156,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -175,7 +183,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=400
@@ -202,7 +210,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=265
@@ -229,7 +237,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240

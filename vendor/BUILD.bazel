@@ -98,6 +98,7 @@ filegroup(
         "//vendor/github.com/golang/protobuf/proto:all-srcs",
         "//vendor/github.com/golang/protobuf/protoc-gen-go/descriptor:all-srcs",
         "//vendor/github.com/golang/protobuf/ptypes:all-srcs",
+        "//vendor/github.com/gomodule/redigo/redis:all-srcs",
         "//vendor/github.com/google/btree:all-srcs",
         "//vendor/github.com/google/go-cmp/cmp:all-srcs",
         "//vendor/github.com/google/go-github/github:all-srcs",

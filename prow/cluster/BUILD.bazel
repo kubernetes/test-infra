@@ -9,6 +9,8 @@ release(
     "production",
     component("build", "deployment"),
     component("build_rbac", MULTI_KIND),
+    component("cert-manager", MULTI_KIND),
+    component("cluster-issuer", MULTI_KIND),
     component("crier", "deployment"),
     component("crier_rbac", MULTI_KIND),
     component("deck", "service", "deployment"),
@@ -21,13 +23,13 @@ release(
     ),
     component("hook", "service", "deployment"),
     component("horologium", "deployment"),
-    component("cert-manager", MULTI_KIND),
-    component("cluster-issuer", MULTI_KIND),
     component(
         "mem-limit-range",
         "limitrange",
         cluster = BUILD_CLUSTER,
     ),
+    component("needs-rebase", "deployment"),
+    component("pipeline", "deployment"),
     component("plank", "deployment"),
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
@@ -36,7 +38,6 @@ release(
     component("tide", "service", "deployment"),
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),
-    component("needs-rebase", "deployment"),
 )
 
 component("starter", MULTI_KIND)

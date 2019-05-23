@@ -4,13 +4,13 @@ plank:
   job_url_prefix: https://prow.k8s.io/view/gcs/
   pod_pending_timeout: 60m
   default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15000000000 # 15s
+    timeout: 2h
+    grace_period: 15s
     utility_images:
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190509-e4185298e"
-      initupload: "gcr.io/k8s-prow/initupload:v20190509-e4185298e"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190509-e4185298e"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20190509-e4185298e"
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190521-7198f5921"
+      initupload: "gcr.io/k8s-prow/initupload:v20190521-7198f5921"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190521-7198f5921"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20190521-7198f5921"
     gcs_configuration:
       bucket: "kubernetes-jenkins"
       path_strategy: "legacy"
@@ -416,7 +416,10 @@ tide:
     - needs-rebase
     - needs-sig
   - repos:
-    -  GoogleCloudPlatform/netd
+    - GoogleCloudPlatform/netd
+    - bazelbuild/bazel-toolchains
+    - bazelbuild/rules_docker
+    - bazelbuild/rules_k8s
     labels:
     - lgtm
     - approved
@@ -426,8 +429,21 @@ tide:
     - do-not-merge/hold
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
+  # Auto-merge PRs generated for automatic configs release by robot.
+  - repos:
+    - bazelbuild/bazel-toolchains
+    labels:
+    - automerge
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/work-in-progress
 
   merge_method:
+    bazelbuild/bazel-toolchains: squash
+    bazelbuild/rules_docker: squash
+    bazelbuild/rules_k8s: squash
     helm/charts: squash
     kubeflow: squash
     kubernetes-client/csharp: squash
@@ -454,8 +470,6 @@ tide:
   rebase_label: tide/merge-method-rebase
   merge_label: tide/merge-method-merge
   context_options:
-    optional-contexts:
-    - "Submit Queue"
     orgs:
      kubernetes:
       repos:

@@ -916,6 +916,8 @@ type ProjectColumn struct {
 
 // ProjectCard is a github project card
 type ProjectCard struct {
+	ID          int    `json:"id"`
 	ContentID   int    `json:"content_id"`
 	ContentType string `json:"content_type"`
+	ContentURL  string `json:"content_url"`
 }

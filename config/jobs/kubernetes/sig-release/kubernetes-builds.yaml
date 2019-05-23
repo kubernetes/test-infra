@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
+      - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -35,7 +35,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
+    - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -60,7 +60,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
+    - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
       args:
       - --repo=k8s.io/release
       - --root=/go/src
@@ -82,13 +82,16 @@ periodics:
     preset-dind-enabled: "true"
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-{{.Version}}"
-    testgrid-dashboards: sig-release-master-informing
+    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-master-blocking
+    testgrid-tab-name: build-master
+    testgrid-alert-email: "kubernetes-release-team@googlegroups.com"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
+      - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
         args:
-          - --repo=k8s.io/kubernetes=release
+          - --repo=k8s.io/kubernetes
           - --repo=k8s.io/release
           - --root=/go/src
           - --timeout=180
@@ -112,7 +115,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
+    - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release

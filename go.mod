@@ -27,7 +27,7 @@ require (
 	github.com/docker/go-connections v0.3.0 // indirect
 	github.com/docker/go-units v0.3.3 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
-	github.com/evanphx/json-patch v4.1.0+incompatible
+	github.com/evanphx/json-patch v4.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
 	github.com/go-openapi/jsonpointer v0.0.0-20170102174223-779f45308c19 // indirect
@@ -41,6 +41,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.1
+	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-containerregistry v0.0.0-20190401215819-f1df91a4a813 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -49,7 +50,7 @@ require (
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
-	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
@@ -76,12 +77,12 @@ require (
 	github.com/pelletier/go-toml v1.3.0
 	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
+	github.com/prometheus/client_golang v0.9.3
 	github.com/qor/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
-	github.com/sirupsen/logrus v1.4.1
-	github.com/spf13/cobra v0.0.3
+	github.com/sirupsen/logrus v1.4.2
+	github.com/spf13/cobra v0.0.4
 	github.com/spf13/pflag v1.0.3
 	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
@@ -107,7 +108,7 @@ require (
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
 	k8s.io/klog v0.1.0
 	k8s.io/kube-openapi v0.0.0-20180711000925-0cf8f7e6ed1d // indirect
-	k8s.io/kubernetes v1.14.1 // indirect
+	k8s.io/kubernetes v1.14.2 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/yaml v1.1.0

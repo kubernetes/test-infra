@@ -8,7 +8,7 @@ presubmits:
     preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
         command:
         - "./hack/ci/build-all.sh"
   - name: pull-kind-verify
@@ -18,9 +18,58 @@ presubmits:
     preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-experimental
         command:
         - "./hack/verify-all.sh"
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # IPv6 enabled variant
+  - name: pull-kind-conformance-parallel-ipv6
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    optional: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes=master"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        # the script must run from kubernetes, but we're checking out kind
+        - "bash"
+        - "--"
+        - "-c"
+        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel
@@ -33,7 +82,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -74,7 +123,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-1.14
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -115,7 +164,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-1.13
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -156,7 +205,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-1.12
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"

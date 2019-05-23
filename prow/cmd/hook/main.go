@@ -176,7 +176,7 @@ func main() {
 
 	// Expose prometheus metrics
 	pushGateway := configAgent.Config().PushGateway
-	metrics.ExposeMetrics("hook", pushGateway.Endpoint, pushGateway.Interval)
+	metrics.ExposeMetrics("hook", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,

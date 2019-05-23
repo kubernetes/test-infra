@@ -152,7 +152,7 @@ func main() {
 	// The sync loop should have a much lower burst allowance than the status
 	// loop which may need to update many statuses upon restarting Tide after
 	// changing the context format or starting Tide on a new repo.
-	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod))
+	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
 	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
 	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
@@ -177,7 +177,7 @@ func main() {
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	pushGateway := cfg().PushGateway
-	metrics.ExposeMetrics("tide", pushGateway.Endpoint, pushGateway.Interval)
+	metrics.ExposeMetrics("tide", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	start := time.Now()
 	sync(c)
@@ -189,7 +189,7 @@ func main() {
 		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		for {
 			select {
-			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod))):
+			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration))):
 				start = time.Now()
 				sync(c)
 			case <-sig:

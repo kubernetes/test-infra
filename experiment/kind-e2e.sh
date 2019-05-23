@@ -48,7 +48,9 @@ install_kind() {
     mkdir -p "${TMP_DIR}/bin"
     # if we have a kind checkout, install that to the tmpdir, otherwise go get it
     if [[ $(go list sigs.k8s.io/kind) = "sigs.k8s.io/kind" ]]; then
-        env "GOBIN=${TMP_DIR}/bin" go install sigs.k8s.io/kind
+        pushd $GOPATH/src/sigs.k8s.io/kind
+        make install
+        popd
     else
         env "GOPATH=${TMP_DIR}" go get -u sigs.k8s.io/kind
     fi

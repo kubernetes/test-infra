@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -31,7 +31,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.4.0"
       - "--root=/go/src"
@@ -58,13 +58,13 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=60" # Minutes
+      - "--timeout=180" # Minutes
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration-migration.sh"

@@ -54,6 +54,23 @@ cleanup_dind() {
     (set -x; cleanup_binfmt_misc || true)
 }
 
+# optionally enable ipv6 docker
+export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
+if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
+    echo "Enabling IPV6 for Docker."
+    # configure the daemon with ipv6
+    mkdir -p /etc/docker/
+    cat <<EOF >/etc/docker/daemon.json
+{
+  "ipv6": true,
+  "fixed-cidr-v6": "fc00:db8:1::/64"
+}
+EOF
+    # enable ipv6
+    sysctl net.ipv6.conf.all.disable_ipv6=0
+    sysctl net.ipv6.conf.all.forwarding=1
+fi
+
 # Check if the job has opted-in to docker-in-docker availability.
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then

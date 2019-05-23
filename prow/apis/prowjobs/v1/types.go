@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mime"
 	"strings"
 	"time"
 
@@ -375,6 +376,10 @@ type GCSConfiguration struct {
 	// DefaultRepo is omitted from GCS paths when using the
 	// legacy or simple strategy
 	DefaultRepo string `json:"default_repo,omitempty"`
+	// MediaTypes holds additional extension media types to add to Go's
+	// builtin's and the local system's defaults.  This maps extensions
+	// to media types, for example: MediaTypes["log"] = "text/plain"
+	MediaTypes map[string]string `json:"mediaTypes,omitempty"`
 }
 
 // ApplyDefault applies the defaults for GCSConfiguration decorations. If a field has a zero value,
@@ -408,11 +413,24 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 	if merged.DefaultRepo == "" {
 		merged.DefaultRepo = def.DefaultRepo
 	}
+
+	for extension, mediaType := range def.MediaTypes {
+		merged.MediaTypes[extension] = mediaType
+	}
+	for extension, mediaType := range g.MediaTypes {
+		merged.MediaTypes[extension] = mediaType
+	}
+
 	return &merged
 }
 
 // Validate ensures all the values set in the GCSConfiguration are valid.
 func (g *GCSConfiguration) Validate() error {
+	for _, mediaType := range g.MediaTypes {
+		if _, _, err := mime.ParseMediaType(mediaType); err != nil {
+			return fmt.Errorf("invalid extension media type %q: %v", mediaType, err)
+		}
+	}
 	if g.PathStrategy != PathStrategyLegacy && g.PathStrategy != PathStrategyExplicit && g.PathStrategy != PathStrategySingle {
 		return fmt.Errorf("gcs_path_strategy must be one of %q, %q, or %q", PathStrategyLegacy, PathStrategyExplicit, PathStrategySingle)
 	}

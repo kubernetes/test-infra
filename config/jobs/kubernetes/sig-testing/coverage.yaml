@@ -20,10 +20,10 @@ periodics:
     base_ref: master
     path_alias: k8s.io/release
   decoration_config:
-    timeout: 10800000000000 # 3 hours
+    timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       command:
       - runner.sh
       - bash
@@ -79,10 +79,10 @@ periodics:
     base_ref: master
     path_alias: k8s.io/release
   decoration_config:
-    timeout: 10800000000000 # 3 hours
+    timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       command:
       - runner.sh
       - bash

@@ -49,6 +49,9 @@ type ReportMessage struct {
 	Status  prowapi.ProwJobState `json:"status"`
 	URL     string               `json:"url"`
 	GCSPath string               `json:"gcs_path"`
+	Refs    []prowapi.Refs       `json:"refs,omitempty"`
+	JobType prowapi.ProwJobType  `json:"job_type"`
+	JobName string               `json:"job_name"`
 }
 
 // Client is a reporter client fed to crier controller
@@ -121,6 +124,12 @@ func (c *Client) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 
 func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel, PubSubRunIDLabel)
+	var refs []prowapi.Refs
+	if pj.Spec.Refs != nil {
+		refs = append(refs, *pj.Spec.Refs)
+	}
+	refs = append(refs, pj.Spec.ExtraRefs...)
+
 	return &ReportMessage{
 		Project: pubSubMap[PubSubProjectLabel],
 		Topic:   pubSubMap[PubSubTopicLabel],
@@ -128,5 +137,8 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
 		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
+		Refs:    refs,
+		JobType: pj.Spec.Type,
+		JobName: pj.Spec.Job,
 	}
 }

@@ -1,0 +1,13 @@
+#cloud-config
+
+runcmd:
+  - mount /tmp /tmp -o remount,exec,suid
+  - mkdir -p /home/containerd
+  - mount --bind /home/containerd /home/containerd
+  - mount -o remount,exec /home/containerd
+  - mkdir -p /etc/containerd
+  - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -H "X-Google-Metadata-Request: True" -o /home/containerd/cni.template http://metadata.google.internal/computeMetadata/v1/instance/attributes/cni-template'
+  - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -H "X-Google-Metadata-Request: True" -o /etc/containerd/config.toml http://metadata.google.internal/computeMetadata/v1/instance/attributes/containerd-config'
+  - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -o /home/containerd/cni.tgz https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz'
+  - tar xzf /home/containerd/cni.tgz -C /home/containerd --overwrite
+  - systemctl restart containerd

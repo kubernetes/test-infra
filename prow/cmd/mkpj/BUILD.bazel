@@ -6,6 +6,12 @@ load(
     "go_library",
     "go_test",
 )
+load("//prow:def.bzl", "prow_image")
+
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
+)
 
 go_library(
     name = "go_default_library",

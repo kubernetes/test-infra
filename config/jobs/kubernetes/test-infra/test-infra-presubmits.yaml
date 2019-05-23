@@ -14,6 +14,7 @@ presubmits:
       - name: third
         image: busybox
         args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
+
   - name: pull-test-infra-build-smoke-fail
     agent: knative-build
     decorate: true
@@ -39,13 +40,12 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - hack/bazel.sh
         args:
         - test
         - --config=ci
-        - --config=unit
         - --nobuild_tests_only
         - //...
 
@@ -65,100 +65,6 @@ presubmits:
         - name: WORKSPACE
           value: "/workspace"
 
-  - name: pull-test-infra-lint
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
-        command:
-        - hack/bazel.sh
-        args:
-        - test
-        - --config=ci
-        - --config=lint
-        - //...
-
-  - name: pull-test-infra-verify-config
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-config.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-config-canary
-    branches:
-    - master
-    path_alias: "k8s.io/test-infra"
-    decorate: true
-    spec:
-      containers:
-      - name: test
-        command:
-        - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
-        env:
-        - name: TEST_TMPDIR
-          value: /bazel-scratch/.cache/bazel
-        resources:
-          requests:
-            memory: "2Gi"
-        volumeMounts:
-        - name: bazel-scratch
-          mountPath: /bazel-scratch/.cache
-      volumes:
-      - name: bazel-scratch
-        emptyDir: {}
-
-  - name: pull-test-infra-verify-deps
-    branches:
-    - master
-    run_if_changed: '^(go\.mod|go\.sum|WORKSPACE|BUILD\.bazel|hack/verify-deps\.sh|hack/update-deps\.sh|vendor/.*)$'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-deps.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-codegen
-    branches:
-    - master
-    always_run: true
-    path_alias: "k8s.io/test-infra"
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
-        command:
-        - ./hack/verify-codegen.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
   - name: pull-test-infra-verify-file-perms
     branches:
     - master
@@ -168,7 +74,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-experimental
         command:
         - ./hack/verify-file-perms.sh
 

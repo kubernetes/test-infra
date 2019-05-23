@@ -16,7 +16,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - bash
         args:
@@ -39,7 +39,7 @@ presubmits:
       repo: test-infra
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -59,13 +59,17 @@ postsubmits:
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
+      testgrid-dashboards: sig-release-master-blocking, google-unit
+      testgrid-tab-name: bazel-build-master
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+      description: "Builds kubernetes using bazel"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -95,7 +99,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
         command:
         - bash
         args:
@@ -116,6 +120,11 @@ postsubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
+    annotations:
+      testgrid-dashboards: sig-release-master-blocking, google-unit
+      testgrid-tab-name: bazel-test-master
+      testgrid-alert-email: kubernetes-sig-testing-alert@googlegroups.com
+      description: "OWNER: sig-testing. Tests kubernetes using bazel."
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -124,7 +133,7 @@ postsubmits:
     - release-\d+.\d+ # per-release job
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -153,7 +162,7 @@ postsubmits:
     - release-\d+.\d+ # per-release job
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
         - ../test-infra/hack/bazel.sh
         args:
@@ -188,7 +197,40 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
+      command:
+      - bash
+      args:
+      - -c
+      - |
+              set -o errexit
+              gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+              ../test-infra/scenarios/kubernetes_bazel.py \
+                  --config=ci \
+                  "--build=//... -//vendor/..." \
+                  --release=//build/release-tars \
+                  --gcs=gs://kubernetes-release-dev/ci \
+                  --version-suffix=-bazel \
+                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+
+- name: periodic-kubernetes-bazel-build-canary
+  interval: 1h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  # do not fork
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel
+      imagePullPolicy: Always
       command:
       - bash
       args:
@@ -223,7 +265,35 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.24.1
+    - image: launcher.gcr.io/google/bazel:0.25.2
+      command:
+      - ../test-infra/hack/bazel.sh
+      args:
+      - test
+      - --config=unit
+      - --config=remote
+      - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+      - //...
+      - //hack:verify-all
+      - --
+      - -//build/...
+      - -//vendor/...
+- interval: 1h
+  name: periodic-kubernetes-bazel-test-canary
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+  extra_refs:
+  - base_ref: master
+    org: kubernetes
+    repo: kubernetes
+  - base_ref: master
+    org: kubernetes
+    repo: test-infra
+  spec:
+    containers:
+    - image: launcher.gcr.io/google/bazel
       command:
       - ../test-infra/hack/bazel.sh
       args:

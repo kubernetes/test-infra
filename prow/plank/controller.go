@@ -135,25 +135,6 @@ func (c *Controller) canExecuteConcurrently(pj *prowapi.ProwJob) bool {
 		c.log.WithFields(pjutil.ProwJobFields(pj)).Debugf("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
 		return false
 	}
-
-	var olderMatchingPJs []prowapi.ProwJob
-	for _, foundPJ := range c.pjs {
-		if foundPJ.Status.State != prowapi.PendingState {
-			continue
-		}
-		if foundPJ.Spec.Job != pj.Spec.Job {
-			continue
-		}
-		if foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
-			olderMatchingPJs = append(olderMatchingPJs, foundPJ)
-		}
-	}
-	if numPending+len(olderMatchingPJs) >= pj.Spec.MaxConcurrency {
-		c.log.WithFields(pjutil.ProwJobFields(pj)).Debugf("Not starting another instance of %s, already %d running and %d older instances waiting",
-			pj.Spec.Job, numPending, numPending+len(olderMatchingPJs))
-		return false
-	}
-
 	c.pendingJobs[pj.Spec.Job]++
 	return true
 }
@@ -282,7 +263,7 @@ func (c *Controller) SyncMetrics() {
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.
 func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi.Pod) error {
 	log := c.log.WithField("aborter", "pod")
-	return pjutil.TerminateOlderPresubmitJobs(c.kc, log, pjs, func(toCancel prowapi.ProwJob) error {
+	return pjutil.TerminateOlderJobs(c.kc, log, pjs, func(toCancel prowapi.ProwJob) error {
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in GitHub pull requests.
 		if c.config().Plank.AllowCancellations {
@@ -396,7 +377,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			pj.Status.Description = "Job failed."
 
 		case coreapi.PodPending:
-			maxPodPending := c.config().Plank.PodPendingTimeout
+			maxPodPending := c.config().Plank.PodPendingTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
 				// Pod is running. Do nothing.
 				c.incrementNumPendingJobs(pj.Spec.Job)
@@ -417,8 +398,29 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			}
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale pending pod.")
 
+		case coreapi.PodRunning:
+			maxPodRunning := c.config().Plank.PodRunningTimeout.Duration
+			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
+				// Pod is still running. Do nothing.
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
+
+			// Pod is stuck in running state longer than maxPodRunning
+			// abort the job, and talk to GitHub
+			pj.SetComplete()
+			pj.Status.State = prowapi.AbortedState
+			pj.Status.Description = "Pod running timeout."
+			client, ok := c.pkcs[pj.ClusterAlias()]
+			if !ok {
+				return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+			}
+			if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
+				return fmt.Errorf("failed to delete pod %s that was in running timeout: %v", pod.Name, err)
+			}
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Deleted stale running pod.")
 		default:
-			// Pod is running. Do nothing.
+			// other states, ignore
 			c.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
 		}

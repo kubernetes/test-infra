@@ -303,11 +303,12 @@ func TestProjectCommand(t *testing.T) {
 		fakeClient.Column = tc.previousColumn
 
 		e := &github.GenericCommentEvent{
-			Action: tc.action,
-			Body:   tc.body,
-			Number: 1,
-			Repo:   github.Repo{Owner: github.User{Login: tc.org}, Name: tc.repo},
-			User:   github.User{Login: tc.commenter},
+			Action:       tc.action,
+			Body:         tc.body,
+			Number:       1,
+			IssueHTMLURL: "1",
+			Repo:         github.Repo{Owner: github.User{Login: tc.org}, Name: tc.repo},
+			User:         github.User{Login: tc.commenter},
 		}
 		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, projectConfig); err != nil {
 			t.Errorf("(%s): Unexpected error from handle: %v.", tc.name, err)

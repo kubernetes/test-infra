@@ -8,7 +8,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 40m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -39,7 +39,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 40m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -51,7 +51,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -70,7 +70,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 40m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -82,7 +82,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -101,7 +101,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decoration_config:
-    timeout: 2400000000000 #40m
+    timeout: 40m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -113,7 +113,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

@@ -5,20 +5,6 @@ py_binary(
 )
 
 py_binary(
-    name = "manage_release_versions",
-    srcs = ["manage_release_versions.py"],
-    data = [
-        "//:test-infra-README",
-        "//config:prowjobs",
-        "//experiment:fix_testgrid_config.py",
-        "//images/kubekins-e2e:all-srcs",
-        "//scenarios:kubernetes_verify.py",
-        "//testgrid:config-yaml",
-    ],
-    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
-)
-
-py_binary(
     name = "generate_tests",
     srcs = ["generate_tests.py"],
     data = [
@@ -40,6 +26,15 @@ py_binary(
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
 
+py_binary(
+    name = "prepare_release_branch",
+    srcs = ["prepare_release_branch.py"],
+    deps = [
+        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
+        "@sh",
+    ],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -56,6 +51,7 @@ filegroup(
         "//experiment/aws-stockout:all-srcs",
         "//experiment/ci-janitor:all-srcs",
         "//experiment/config-forker:all-srcs",
+        "//experiment/config-rotator:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/dummybenchmarks:all-srcs",
         "//experiment/image-bumper:all-srcs",

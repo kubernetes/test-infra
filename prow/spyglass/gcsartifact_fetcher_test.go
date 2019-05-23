@@ -80,7 +80,7 @@ func TestNewGCSJobSource(t *testing.T) {
 // Tests listing objects associated with the current job in GCS
 func TestArtifacts_ListGCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewGCSArtifactFetcher(fakeGCSClient)
+	testAf := NewGCSArtifactFetcher(fakeGCSClient, "")
 	testCases := []struct {
 		name              string
 		handle            artifactHandle
@@ -132,7 +132,7 @@ func TestArtifacts_ListGCS(t *testing.T) {
 // Tests getting handles to objects associated with the current job in GCS
 func TestFetchArtifacts_GCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewGCSArtifactFetcher(fakeGCSClient)
+	testAf := NewGCSArtifactFetcher(fakeGCSClient, "")
 	maxSize := int64(500e6)
 	testCases := []struct {
 		name         string

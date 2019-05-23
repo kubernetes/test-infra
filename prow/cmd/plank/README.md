@@ -21,8 +21,8 @@ plank:
   job_url_template: 'https://<domain>/view/gcs/<bucket-name>/pr-logs/pull/{{.Spec.Refs.Repo}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}'
   report_template: '[Full PR test history](https://<domain>/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}})'
   default_decoration_config:
-    timeout: 14400000000000 # 4h in nano seconds
-    grace_period: 15000000000 # 15s in nano seconds
+    timeout: 4h
+    grace_period: 15s
     utility_images: # pull specs for container images used to construct job pods
       clonerefs: gcr.io/k8s-prow/clonerefs:v20190221-d14461a
       initupload: gcr.io/k8s-prow/initupload:v20190221-d14461a

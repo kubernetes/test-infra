@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
+      - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -67,9 +67,14 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 2h 2h 6h 24h
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: integration-master
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190509-ce5fe7e
+    - image: gcr.io/k8s-testimages/bootstrap:v20190517-c1df555
       args:
       - --repo=k8s.io/kubernetes
       - --timeout=100

@@ -57,7 +57,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
@@ -767,7 +767,7 @@ periodics:
     app: branchprotector
   decorate: true
   decoration_config:
-    timeout: 18000000000000 # 5 hours
+    timeout: 5h
   extra_refs:
   - org: kubernetes
     repo: test-infra
@@ -775,7 +775,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20190509-e4185298e
+      image: gcr.io/k8s-prow/branchprotector:v20190521-7198f5921
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -802,7 +802,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20190509-e4185298e
+      image: gcr.io/k8s-prow/label_sync:v20190521-7198f5921
       command:
       - /app/label_sync/app.binary
       args:

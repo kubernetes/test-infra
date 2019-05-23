@@ -1,6 +1,8 @@
 # Announcements
 
 New features added to each component:
+ - *May 13, 2019* New `plank` config `pod_running_timeout` is added and
+   defaulted to two days to allow plank abort pods stuck in running state.
  - *April 25, 2019* `--job-config` in `peribolos` has never been used; it is
    deprecated and will be removed in July 2019. Remove the flag from any calls
    to the tool.

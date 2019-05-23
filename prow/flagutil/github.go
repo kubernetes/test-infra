@@ -89,7 +89,7 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 }
 
 // GitHubClientWithLogFields returns a GitHub client with extra logging fields
-func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (client *github.Client, err error) {
+func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (client github.Client, err error) {
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		generatorFunc := func() []byte {
@@ -111,7 +111,7 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 }
 
 // GitHubClient returns a GitHub client.
-func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client *github.Client, err error) {
+func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client github.Client, err error) {
 	return o.GitHubClientWithLogFields(secretAgent, dryRun, logrus.Fields{})
 }
 

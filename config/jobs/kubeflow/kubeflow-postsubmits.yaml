@@ -179,12 +179,12 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190509-e418529-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
         - --workflow_file
-        - sample_test.yaml
+        - component_test.yaml
         - --test_result_folder
         - sample_test
         - --timeout

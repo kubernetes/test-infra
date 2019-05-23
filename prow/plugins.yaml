@@ -160,6 +160,7 @@ blockades:
 
 blunderbuss:
   max_request_count: 2
+  use_status_availability: true
 
 cat:
   key_path: /etc/cat-api/api-key
@@ -193,10 +194,6 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.10:
-            - maciekpytel # 1.10 patch release manager
-        release-1.11:
-            - foxish # 1.11 patch release manager
         release-1.12:
             - feiskyer # 1.12 patch release manager
         release-1.13:
@@ -205,7 +202,10 @@ slack:
         release-1.14:
             - aleksandra-malinowska # 1.14 patch release team
             - tpepper # 1.14 patch release team
-            - hoegaarden # 1.14 branch manager
+            - hoegaarden # 1.14 patch release team
+        release-1.15:
+            - bubblemelon # 1.15 branch manager
+            - idealhack # 1.15 branch manager shadow
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -413,6 +413,7 @@ plugins:
   - slackevents
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -421,14 +422,12 @@ plugins:
   - milestonestatus
   - release-note
   - require-matching-label
-  - welcome
 
   kubernetes/cloud-provider-azure:
   - milestone
   - milestonestatus
   - release-note
   - require-matching-label
-  - welcome
 
   kubernetes/cloud-provider-openstack:
   - override
@@ -437,7 +436,6 @@ plugins:
   - blockade
   - milestone
   - require-sig
-  - welcome
 
   kubernetes/enhancements:
   - blockade
@@ -463,18 +461,15 @@ plugins:
   kubernetes/release:
   - milestone
   - override
-  - welcome
 
   kubernetes/sig-release:
   - milestone
   - override
-  - welcome
 
   kubernetes/test-infra:
   - config-updater
   - milestone
   - override
-  - welcome
   - project
 
   kubernetes/utils:
@@ -504,6 +499,7 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -529,6 +525,7 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -553,6 +550,7 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
@@ -580,12 +578,12 @@ plugins:
   - skip
   - trigger
   - verify-owners
+  - welcome
   - wip
   - yuks
 
   kubernetes-sigs/kind:
   - override
-  - welcome
 
   kubernetes-sigs/cluster-api:
   - milestone
@@ -598,14 +596,12 @@ plugins:
   - milestonestatus
   - release-note
   - require-matching-label
-  - welcome
-  
+
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - milestone
 
   kubernetes-sigs/contributor-playground:
   - require-sig
-  - welcome
 
   containerd/cri:
   - assign

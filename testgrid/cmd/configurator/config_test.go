@@ -476,16 +476,20 @@ func TestReleaseBlockingJobsMustHaveTestgridDescriptions(t *testing.T) {
 				t.Errorf("%v: - Must have a description", intro)
 			}
 			// TODO(spiffxp): enforce for informing as well
-			if suffix == "blocking" {
-				// TODO(spiffxp): remove this check when alert_options are populated
+			if suffix == "informing" {
 				if !strings.HasPrefix(dashboardtab.Description, "OWNER: ") {
-					t.Errorf("%v: - Must have a description that starts with OWNER: ", intro)
+					t.Logf("NOTICE: %v: - Must have a description that starts with OWNER: ", intro)
 				}
-				// TODO(spiffxp): convert these from a warn to failure once alert_options are populated
 				if dashboardtab.AlertOptions == nil {
 					t.Logf("NOTICE: %v: - Must have alert_options", intro)
 				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
 					t.Logf("NOTICE: %v: - Must have alert_options.alert_mail_to_addresses", intro)
+				}
+			} else {
+				if dashboardtab.AlertOptions == nil {
+					t.Errorf("%v: - Must have alert_options", intro)
+				} else if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
+					t.Errorf("%v: - Must have alert_options.alert_mail_to_addresses", intro)
 				}
 			}
 		}

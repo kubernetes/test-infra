@@ -49,7 +49,7 @@ func (mh *MockQueryHandler) GetHeadContexts(ghc githubClient, pr PullRequest) ([
 	return mh.contextMap[int(pr.Number)], nil
 }
 
-func (mh *MockQueryHandler) BotName(*github.Client) (*github.User, error) {
+func (mh *MockQueryHandler) BotName(github.Client) (*github.User, error) {
 	login := "random_user"
 	return &github.User{
 		Login: login,

@@ -21,7 +21,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"mime"
 	"strings"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -52,10 +51,11 @@ type Options struct {
 	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
 	DryRun             bool   `json:"dry_run"`
 
-	// Extensions holds additional extensions to add to Go's builtin's
-	// and the local system's defaults.  Values are colon-delimited
-	// {extension}:{media-type}, for example: log:text/plain.
-	Extensions flagutil.Strings `json:"extensions,omitempty"`
+	// mediaTypes holds additional extension media types to add to Go's
+	// builtin's and the local system's defaults.  Values are
+	// colon-delimited {extension}:{media-type}, for example:
+	// log:text/plain.
+	mediaTypes flagutil.Strings
 
 	// gcsPath is used to store human-provided GCS
 	// paths that are parsed to get more granular
@@ -66,19 +66,6 @@ type Options struct {
 // Validate ensures that the set of options are
 // self-consistent and valid.
 func (o *Options) Validate() error {
-	for _, extension := range o.Extensions.Strings() {
-		parts := strings.SplitN(extension, ":", 2)
-		if len(parts) != 2 {
-			return fmt.Errorf("invalid extension %q: missing colon delimiter", extension)
-		}
-
-		_, mediaType := parts[0], parts[1]
-		_, _, err := mime.ParseMediaType(mediaType)
-		if err != nil {
-			return fmt.Errorf("invalid media type %q in extension %q: %v", mediaType, extension, err)
-		}
-	}
-
 	if o.gcsPath.String() != "" {
 		o.Bucket = o.gcsPath.Bucket()
 		o.PathPrefix = o.gcsPath.Object()
@@ -111,6 +98,19 @@ func (o *Options) LoadConfig(config string) error {
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
 	o.Items = args
+
+	for _, extensionMediaType := range o.mediaTypes.Strings() {
+		parts := strings.SplitN(extensionMediaType, ":", 2)
+		if len(parts) != 2 {
+			panic(fmt.Sprintf("invalid extension media type %q: missing colon delimiter", extensionMediaType))
+		}
+		extension, mediaType := parts[0], parts[1]
+		if o.GCSConfiguration.MediaTypes == nil {
+			o.GCSConfiguration.MediaTypes = map[string]string{}
+		}
+		o.GCSConfiguration.MediaTypes[extension] = mediaType
+	}
+	o.mediaTypes = flagutil.NewStrings()
 }
 
 // AddFlags adds flags to the FlagSet that populate
@@ -126,7 +126,7 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.GcsCredentialsFile, "gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
 	fs.BoolVar(&o.DryRun, "dry-run", true, "do not interact with GCS")
 
-	fs.Var(&o.Extensions, "extensions", "Optional comma-delimited set of extensions.  Each extension is colon-delimited {extension}:{media-type}, for example, log:text/plain.")
+	fs.Var(&o.mediaTypes, "media-type", "Optional comma-delimited set of extension media types.  Each entry is colon-delimited {extension}:{media-type}, for example, log:text/plain.")
 }
 
 const (

@@ -200,7 +200,7 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}

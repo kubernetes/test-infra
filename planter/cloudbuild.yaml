@@ -11,7 +11,7 @@ steps:
             '.' ]
     dir: planter/
 substitutions:
-  _BAZEL_VERSION: '0.20'
+  _BAZEL_VERSION: '0.25.2'
 options:
   substitution_option: ALLOW_LOOSE  # because _GIT_TAG is provided but not used.
 images:
