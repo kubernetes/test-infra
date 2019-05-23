@@ -1081,6 +1081,7 @@ periodics:
     containers:
     - args:
       - --timeout=70
+      - --bare
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
@@ -1093,7 +1094,7 @@ periodics:
       - --image-family=cos-73-lts
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
 
@@ -1108,6 +1109,7 @@ periodics:
     containers:
     - args:
       - --timeout=70
+      - --bare
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
@@ -1118,7 +1120,7 @@ periodics:
       - --image-family=pipeline-2
       - --image-project=ubuntu-os-gke-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190521-76ded06-master
 
