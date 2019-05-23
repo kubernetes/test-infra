@@ -73,11 +73,15 @@ type Controller struct {
 	// selector that will be applied on prowjobs and pods.
 	selector string
 
+	// If both this and pjLock are acquired, this must be acquired first
 	lock sync.RWMutex
+
 	// pendingJobs is a short-lived cache that helps in limiting
 	// the maximum concurrency of jobs.
 	pendingJobs map[string]int
 
+	// If `lock` is acquired as well, `lock` must be acquired before locking
+	// pjLock
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
 	pjs []prowapi.ProwJob
