@@ -11,6 +11,7 @@ go_test(
     srcs = [
         "client_test.go",
         "config_test.go",
+        "metrics_test.go",
         "prowjob_test.go",
     ],
     embed = [":go_default_library"],
