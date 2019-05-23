@@ -1177,7 +1177,7 @@ func (c *client) readPaginatedResultsWithValues(path string, values url.Values, 
 
 		accumulate(obj)
 
-		link := parseLinks(resp.Header.Get("Link"))["next"]
+		link := ParseLinks(resp.Header.Get("Link"))["next"]
 		if link == "" {
 			break
 		}

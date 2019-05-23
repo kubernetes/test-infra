@@ -2096,13 +2096,6 @@ go_repository(
 )
 
 go_repository(
-    name = "com_github_tomnomnom_linkheader",
-    importpath = "github.com/tomnomnom/linkheader",
-    sum = "h1:nrZ3ySNYwJbSpD6ce9duiP+QkD3JuLCcWkdaehUS/3Y=",
-    version = "v0.0.0-20180905144013-02ca5825eb80",
-)
-
-go_repository(
     name = "com_github_armon_consul_api",
     importpath = "github.com/armon/consul-api",
     sum = "h1:G1bPvciwNyF7IUmKXNt9Ak3m6u9DE1rF+RmtIkBpVdA=",

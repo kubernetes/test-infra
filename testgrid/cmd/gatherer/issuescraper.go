@@ -19,9 +19,9 @@ package gatherer
 import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
-	"github.com/tomnomnom/linkheader"
 	"io"
 	"k8s.io/test-infra/ghproxy/ghcache"
+	"k8s.io/test-infra/prow/github"
 	"net/http"
 )
 
@@ -53,26 +53,16 @@ type GitHubIssue struct {
 func (g *GitHubIssueScraper) GetIssues() []GitHubIssue {
 
 	thisPage := "https://api.github.com/repos/" + g.RepoInfix + "/issues"
+	var nextPage string
 	issues := make([]GitHubIssue, 0)
 
-	for {
+	for isNextPage := true; isNextPage; thisPage = nextPage {
 		resp := g.askGitHub(thisPage)
-
-		links := linkheader.Parse(resp.Header.Get("Link"))
 		issues = append(issues, g.parseIssuePage(resp.Body)...)
 
-		var nextPage string
-		for _, link := range links {
-			if link.Rel == "next" {
-				nextPage = link.URL
-			}
-		}
-
+		links := github.ParseLinks(resp.Header.Get("Link"))
+		nextPage, isNextPage = links["next"]
 		logrus.Infof("This Page: %s, Next Page: %s", thisPage, nextPage)
-		if nextPage == "" {
-			break
-		}
-		thisPage = nextPage
 	}
 
 	return issues

@@ -51,7 +51,7 @@ func TestParseLinks(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		actual := parseLinks(tc.data)
+		actual := ParseLinks(tc.data)
 		if len(actual) != len(tc.expected) {
 			t.Errorf("lengths mismatch: %v and %v", actual, tc.expected)
 		}
