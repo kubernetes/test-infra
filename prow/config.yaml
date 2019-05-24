@@ -247,31 +247,6 @@ branch-protection:
       required_status_checks:
         contexts:
         - cla/linuxfoundation
-      repos:
-        csi-test:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        drivers:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        external-attacher:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        external-provisioner:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        external-snapshotter:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
-        livenessprobe:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
     kubernetes-incubator:
       protect: true
       required_status_checks:
