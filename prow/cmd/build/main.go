@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -25,22 +26,23 @@ import (
 	"syscall"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
+	ctrlruntimecache "sigs.k8s.io/controller-runtime/pkg/cache"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	buildset "github.com/knative/build/pkg/client/clientset/versioned"
-	buildinfo "github.com/knative/build/pkg/client/informers/externalversions"
-	buildinfov1alpha1 "github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1"
+	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	"github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 	"k8s.io/client-go/rest"
+	toolscache "k8s.io/client-go/tools/cache"
 )
 
 type options struct {
@@ -101,30 +103,40 @@ func stopper() chan struct{} {
 }
 
 type buildConfig struct {
-	client   buildset.Interface
-	informer buildinfov1alpha1.BuildInformer
+	client   ctrlruntimeclient.Client
+	informer toolscache.SharedIndexInformer
 }
 
 // newBuildConfig returns a client and informer capable of mutating and monitoring the specified config.
 func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
-	bc, err := buildset.NewForConfig(&cfg)
+	client, err := ctrlruntimeclient.New(&cfg, ctrlruntimeclient.Options{})
 	if err != nil {
 		return nil, err
 	}
 
 	// Ensure the knative-build CRD is deployed
 	// TODO(fejta): probably a better way to do this
-	_, err = bc.BuildV1alpha1().Builds("").List(metav1.ListOptions{Limit: 1})
-	if err != nil {
+	buildList := &buildv1alpha1.BuildList{}
+	if err := client.List(context.TODO(), &ctrlruntimeclient.ListOptions{}, buildList); err != nil {
 		return nil, err
 	}
 	// Assume watches receive updates, but resync every 30m in case something wonky happens
-	bif := buildinfo.NewSharedInformerFactory(bc, 30*time.Minute)
-	bif.Build().V1alpha1().Builds().Lister()
-	go bif.Start(stop)
+	resyncInterval := 30 * time.Minute
+	cache, err := ctrlruntimecache.New(&cfg, ctrlruntimecache.Options{Resync: &resyncInterval})
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct cache: %v", err)
+	}
+	informer, err := cache.GetInformer(&buildv1alpha1.Build{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cache for buildv1alpha1.Build: %v", err)
+	}
+	go cache.Start(stop)
+	if !cache.WaitForCacheSync(stop) {
+		return nil, errors.New("failed to wait for cache to sync")
+	}
 	return &buildConfig{
-		client:   bc,
-		informer: bif.Build().V1alpha1().Builds(),
+		client:   client,
+		informer: informer,
 	}, nil
 }
 
@@ -133,6 +145,10 @@ func main() {
 	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "build"})
 
 	pjutil.ServePProf()
+
+	if err := buildv1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		logrus.WithError(err).Fatal("failed to add buildv1alpha1 to scheme")
+	}
 
 	configAgent := &config.Agent{}
 	if o.config != "" {
