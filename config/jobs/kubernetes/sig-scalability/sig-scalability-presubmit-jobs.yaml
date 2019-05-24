@@ -43,7 +43,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190522-9bf3ab0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190523-0ebbc9b-master
         resources:
           requests:
             memory: "6Gi"
@@ -90,7 +90,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190522-9bf3ab0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190523-0ebbc9b-master
         resources:
           requests:
             memory: "6Gi"
@@ -137,7 +137,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190522-9bf3ab0-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190523-0ebbc9b-master
         resources:
           requests:
             memory: "6Gi"
@@ -159,7 +159,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190522-9bf3ab0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190523-0ebbc9b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -219,7 +219,7 @@ presubmits:
       preset-e2e-kubemark-gce-scale: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190522-9bf3ab0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190523-0ebbc9b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -304,7 +304,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190523-0ebbc9b-master
         resources:
           requests:
             memory: "6Gi"
