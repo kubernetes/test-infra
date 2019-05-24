@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -24,7 +25,6 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	fake_buildset "github.com/knative/build/pkg/client/clientset/versioned/fake"
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	fake_prowjobclient "k8s.io/test-infra/prow/client/clientset/versioned/fake"
@@ -42,6 +43,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 const (
@@ -229,6 +231,9 @@ func TestEnqueueKey(t *testing.T) {
 }
 
 func TestTerminateDupProwJobs(t *testing.T) {
+	if err := buildv1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		t.Fatalf("failed to add buildv1alpha1 to scheme: %v", err)
+	}
 	now := time.Now()
 	nowFn := func() *metav1.Time {
 		reallyNow := metav1.NewTime(now)
@@ -617,7 +622,7 @@ func TestTerminateDupProwJobs(t *testing.T) {
 			for i := range tc.builds {
 				builds = append(builds, &tc.builds[i])
 			}
-			buildClient := fake_buildset.NewSimpleClientset(builds...)
+			buildClient := fakectrlruntimeclient.NewFakeClient(builds...)
 
 			agent := &config.Agent{}
 			config := &config.Config{
@@ -675,8 +680,8 @@ func TestTerminateDupProwJobs(t *testing.T) {
 			}
 
 			foundBuilds := sets.NewString()
-			buildList, err := buildClient.Build().Builds(fakePJNS).List(metav1.ListOptions{})
-			if err != nil {
+			buildList := &buildv1alpha1.BuildList{}
+			if err := buildClient.List(context.Background(), buildList); err != nil {
 				t.Fatalf("%s: error list the builds: %v", tc.name, err)
 			}
 			for _, b := range buildList.Items {

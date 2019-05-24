@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -25,6 +26,7 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
@@ -126,7 +128,7 @@ func (c *controller) hasSynced() bool {
 		c.buildsDone = map[string]bool{}
 	}
 	for n, cfg := range c.builds {
-		if !cfg.informer.Informer().HasSynced() {
+		if !cfg.informer.HasSynced() {
 			if c.wait != n {
 				c.wait = n
 				logrus.Infof("Waiting on %s builds...", n)
@@ -196,7 +198,7 @@ func newController(opts controllerOptions) (*controller, error) {
 	for ctx, cfg := range opts.buildConfigs {
 		// Reconcile whenever a build changes.
 		ctx := ctx // otherwise it will change
-		cfg.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		cfg.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				c.enqueueKey(ctx, obj)
 			},
@@ -315,29 +317,38 @@ func (c *controller) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, e
 	return c.pjc.ProwV1().ProwJobs(c.pjNamespace()).Update(pj)
 }
 
-func (c *controller) getBuild(context, namespace, name string) (*buildv1alpha1.Build, error) {
-	b, ok := c.builds[context]
+func (c *controller) getBuild(contextName, namespace, name string) (*buildv1alpha1.Build, error) {
+	b, ok := c.builds[contextName]
 	if !ok {
 		return nil, errors.New("context not found")
 	}
-	return b.informer.Lister().Builds(namespace).Get(name)
+	build := &buildv1alpha1.Build{}
+	nn := types.NamespacedName{Namespace: namespace, Name: name}
+	return build, b.client.Get(context.TODO(), nn, build)
 }
-func (c *controller) deleteBuild(context, namespace, name string) error {
-	logrus.Debugf("deleteBuild(%s,%s,%s)", context, namespace, name)
-	b, ok := c.builds[context]
+func (c *controller) deleteBuild(contextName, namespace, name string) error {
+	logrus.Debugf("deleteBuild(%s,%s,%s)", contextName, namespace, name)
+	b, ok := c.builds[contextName]
 	if !ok {
 		return errors.New("context not found")
 	}
-	return b.client.BuildV1alpha1().Builds(namespace).Delete(name, &metav1.DeleteOptions{})
+	buildObj := &buildv1alpha1.Build{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+	return b.client.Delete(context.TODO(), buildObj)
 }
-func (c *controller) createBuild(context, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
-	logrus.Debugf("createBuild(%s,%s,%s)", context, namespace, b.Name)
-	bc, ok := c.builds[context]
+func (c *controller) createBuild(contextName, namespace string, b *buildv1alpha1.Build) (*buildv1alpha1.Build, error) {
+	logrus.Debugf("createBuild(%s,%s,%s)", contextName, namespace, b.Name)
+	bc, ok := c.builds[contextName]
 	if !ok {
 		return nil, errors.New("context not found")
 	}
-	return bc.client.BuildV1alpha1().Builds(namespace).Create(b)
+	return b, bc.client.Create(context.TODO(), b)
 }
+
 func (c *controller) now() metav1.Time {
 	return metav1.Now()
 }

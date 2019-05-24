@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -33,14 +34,16 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 
-	buildset "github.com/knative/build/pkg/client/clientset/versioned"
-	buildinfo "github.com/knative/build/pkg/client/informers/externalversions"
-	buildinfov1alpha1 "github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1"
+	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	"github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type options struct {
@@ -101,30 +104,40 @@ func stopper() chan struct{} {
 }
 
 type buildConfig struct {
-	client   buildset.Interface
-	informer buildinfov1alpha1.BuildInformer
+	client ctrlruntimeclient.Client
+	// Only use the informer to add EventHandlers, for getting
+	// objects use the client instead, its Reader interface is
+	// backed by the cache
+	informer cache.Informer
 }
 
 // newBuildConfig returns a client and informer capable of mutating and monitoring the specified config.
 func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
-	bc, err := buildset.NewForConfig(&cfg)
+	// Assume watches receive updates, but resync every 30m in case something wonky happens
+	resyncInterval := 30 * time.Minute
+	// We construct a manager because it has a client whose Reader interface is backed by its cache, which
+	// is really nice to use, but the corresponding code is not exported.
+	mgr, err := manager.New(&cfg, manager.Options{SyncPeriod: &resyncInterval})
 	if err != nil {
 		return nil, err
 	}
 
 	// Ensure the knative-build CRD is deployed
 	// TODO(fejta): probably a better way to do this
-	_, err = bc.BuildV1alpha1().Builds("").List(metav1.ListOptions{Limit: 1})
-	if err != nil {
+	buildList := &buildv1alpha1.BuildList{}
+	opts := &ctrlruntimeclient.ListOptions{Raw: &metav1.ListOptions{Limit: 1}}
+	if err := mgr.GetClient().List(context.TODO(), buildList, ctrlruntimeclient.UseListOptions(opts)); err != nil {
 		return nil, err
 	}
-	// Assume watches receive updates, but resync every 30m in case something wonky happens
-	bif := buildinfo.NewSharedInformerFactory(bc, 30*time.Minute)
-	bif.Build().V1alpha1().Builds().Lister()
-	go bif.Start(stop)
+	cache := mgr.GetCache()
+	informer, err := cache.GetInformer(&buildv1alpha1.Build{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cache for buildv1alpha1.Build: %v", err)
+	}
+	go cache.Start(stop)
 	return &buildConfig{
-		client:   bc,
-		informer: bif.Build().V1alpha1().Builds(),
+		client:   mgr.GetClient(),
+		informer: informer,
 	}, nil
 }
 
@@ -134,6 +147,10 @@ func main() {
 	o := parseOptions()
 
 	pjutil.ServePProf()
+
+	if err := buildv1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		logrus.WithError(err).Fatal("failed to add buildv1alpha1 to scheme")
+	}
 
 	configAgent := &config.Agent{}
 	if o.config != "" {
