@@ -41,7 +41,7 @@ URL example:
 * Pick a job and click the rerun icon on the left
 * Copy the URL (something like https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281)
 * Paste it as a phaino arg
-  - `bazel run //prow/cmd/phaino -- https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281
+  - `bazel run //prow/cmd/phaino -- https://prow.k8s.io/rerun?prowjob=d08f1ca5-5d63-11e9-ab62-0a580a6c1281`
   - Alternatively `bazel run //prow/cmd/phaino -- <(curl $URL)`
 
 
