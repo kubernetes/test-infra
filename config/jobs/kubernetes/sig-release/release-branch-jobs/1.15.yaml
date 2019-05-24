@@ -29,7 +29,7 @@ periodics:
     fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
-    testgrid-dashboards: sig-release-1.15-blocking, sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.15-blocking
     testgrid-tab-name: gce-device-plugin-gpu-1.15
   cron: 0 0-23/2 * * *
   labels:
@@ -59,7 +59,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
-    testgrid-dashboards: sig-release-1.15-blocking, sig-node-kubelet, sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.15-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.15
   interval: 1h
   labels:
@@ -123,7 +123,7 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kuberentes-release-team@googlegroups.com
-    testgrid-dashboards: sig-release-1.15-blocking, sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.15-blocking
     testgrid-tab-name: build-1.15
   interval: 1h
   labels:
@@ -155,8 +155,7 @@ periodics:
     fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com
-    testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce, google-gce,
-      sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-cos-1.15-scalability-100
   cron: 0 */6 * * *
   labels:
@@ -270,7 +269,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
-    testgrid-dashboards: sig-release-1.15-blocking, google-unit, sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: integration-1.15
   interval: 2h
   labels:
@@ -298,7 +297,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
-    testgrid-dashboards: sig-release-1.15-blocking, google-unit, sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: verify-1.15
   decorate: true
   extra_refs:
@@ -338,7 +337,7 @@ postsubmits:
   kubernetes/kubernetes:
   - annotations:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
-      testgrid-dashboards: sig-release-1.15-blocking, google-unit, sig-release-1.15-all
+      testgrid-dashboards: sig-release-1.15-blocking, google-unit
       testgrid-tab-name: bazel-build-1.15
     branches:
     - release-1.15
