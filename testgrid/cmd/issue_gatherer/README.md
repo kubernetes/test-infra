@@ -8,7 +8,7 @@ The Issue Scraper uses the GitHub v3 API to collect every issue in a repository,
 
 GitHub calls Pull Requests "Issues", but this scraper doesn't.
 
-This scraper uses a caching layer, [ghCache](https://github.com/kubernetes/issues.json/tree/master/ghproxy/ghcache), to minimize repetitive API calls.
+This scraper uses a caching layer, [ghCache](https://github.com/kubernetes/test-infra/tree/master/ghproxy/ghcache), to minimize repetitive API calls.
 
 The scraper will automatically [depaginate](https://developer.github.com/v3/guides/traversing-with-pagination/) results and store them in a slice of GitHubIssues. That type definition can be found in the code.
 

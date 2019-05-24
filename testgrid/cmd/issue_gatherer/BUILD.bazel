@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["issuescraper.go"],
-    importpath = "k8s.io/test-infra/testgrid/cmd/gatherer",
+    importpath = "k8s.io/test-infra/testgrid/cmd/issue_gatherer",
     visibility = ["//visibility:public"],
     deps = [
         "//ghproxy/ghcache:go_default_library",

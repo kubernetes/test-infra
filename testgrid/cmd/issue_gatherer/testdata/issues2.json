@@ -1,0 +1,13 @@
+[
+  {
+    "url": "https://api.github.com/repos/kubernetes/example/issues/20000",
+    "repository_url": "https://api.github.com/repos/kubernetes/example",
+    "comments_url": "https://api.github.com/repos/kubernetes/example/issues/20000/comments",
+    "html_url": "https://github.com/kubernetes/example/issues/20000",
+    "number": 20000,
+    "title": "Issue with GitHub API",
+    "state": "open",
+    "comments": 10,
+    "body": "I got the API to say there are 10 comments here, when there actually aren't any"
+  }
+]

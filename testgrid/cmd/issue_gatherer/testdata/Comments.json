@@ -1,0 +1,10 @@
+[
+  {
+    "url": "https://api.github.com/repos/kubernetes/example/issues/comments/999999999",
+    "body": "This is a human-readable message"
+  },
+  {
+    "url": "https://api.github.com/repos/kubernetes/test-infra/issues/comments/494877875",
+    "body": "Here's how some characters are escaped:\r\n\r\n jsonPayload: \"{}\"\r\n"
+  }
+]

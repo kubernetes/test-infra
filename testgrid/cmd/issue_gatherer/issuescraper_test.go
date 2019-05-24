@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gatherer
+package issue_gatherer
 
 import (
 	"fmt"
@@ -44,15 +44,15 @@ func (fakeGitHub) RoundTrip(req *http.Request) (*http.Response, error) {
 			"./testdata/issues2.json",
 			`<https://api.github.com/repos/kubernetes/paged/issues?page=1>; rel="prev", <https://api.github.com/repos/kubernetes/paged/issues?page=1>; rel="first"`,
 		},
-		"/repos/kubernetes/example/issues/12740/comments": {
+		"/repos/kubernetes/example/issues/11111/comments": {
 			"./testdata/Comments.json",
 			"",
 		},
-		"/repos/kubernetes/example/issues/12731/comments": {
+		"/repos/kubernetes/example/issues/11115/comments": {
 			"./testdata/NoComments.json",
 			"",
 		},
-		"/repos/kubernetes/example/issues/12527/comments": {
+		"/repos/kubernetes/example/issues/20000/comments": {
 			"./testdata/NoComments.json",
 			"",
 		},
@@ -105,8 +105,8 @@ func TestGitHubIssueScraper_GetIssues(t *testing.T) {
 
 func TestGitHubIssueScraper_GetIssues_AssertComments(t *testing.T) {
 	testCases := map[string][]int{
-		"kubernetes/pageless": {8, 0},
-		"kubernetes/paged":    {8, 0, 0},
+		"kubernetes/pageless": {2, 0},
+		"kubernetes/paged":    {2, 0, 0},
 	}
 
 	for repo, expected := range testCases {
@@ -139,7 +139,7 @@ func TestGitHubIssueScraper_NewIssueScraper(t *testing.T) {
 
 // Examples
 
-func ExampleGetIssues() {
+func ExampleGitHubIssueScraper_GetIssues() {
 	g := NewIssueScraper("kubernetes/test-infra")
 	result := g.GetIssues()
 

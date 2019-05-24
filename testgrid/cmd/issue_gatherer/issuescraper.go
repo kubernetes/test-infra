@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gatherer
+package issue_gatherer
 
 import (
 	"encoding/json"
@@ -58,7 +58,7 @@ func (g *GitHubIssueScraper) GetIssues() []GitHubIssue {
 
 	for isNextPage := true; isNextPage; thisPage = nextPage {
 		resp := g.askGitHub(thisPage)
-		issues = append(issues, g.parseIssuePage(resp.Body)...)
+		issues = append(issues, g.parseIssueResponse(resp.Body)...)
 
 		links := github.ParseLinks(resp.Header.Get("Link"))
 		nextPage, isNextPage = links["next"]
@@ -79,7 +79,7 @@ func (g *GitHubIssueScraper) initializeCache() {
 	g.githubRoundTripper = ghcache.NewMemCache(rt, 3)
 }
 
-func (g *GitHubIssueScraper) parseCommentsPage(body io.Reader) []string {
+func (g *GitHubIssueScraper) parseCommentsResponse(body io.Reader) []string {
 	dec := json.NewDecoder(body)
 
 	comments := make([]string, 0)
@@ -101,7 +101,7 @@ func (g *GitHubIssueScraper) parseCommentsPage(body io.Reader) []string {
 	return comments
 }
 
-func (g *GitHubIssueScraper) parseIssuePage(body io.Reader) []GitHubIssue {
+func (g *GitHubIssueScraper) parseIssueResponse(body io.Reader) []GitHubIssue {
 	dec := json.NewDecoder(body)
 
 	// read open bracket
@@ -121,7 +121,7 @@ func (g *GitHubIssueScraper) parseIssuePage(body io.Reader) []GitHubIssue {
 			// get & populate comments, if any
 			if m.NumComments != 0 {
 				comRP := g.askGitHub(m.CommentsUrl)
-				comments := g.parseCommentsPage(comRP.Body)
+				comments := g.parseCommentsResponse(comRP.Body)
 				m.Comments = comments
 			}
 			issues = append(issues, m)
