@@ -260,3 +260,51 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+  kubernetes/perf-tests:
+  - name: pull-perf-tests-clusterloader2
+    always_run: true
+    skip_report: false
+    max_concurrency: 2
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=master
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=120
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-nodes=100
+        - --gcp-project=k8s-presubmit-scale
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-perf-tests-clusterloader2
+        - --tear-down-previous
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--nodes=100
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=/workspace/_artifacts
+        - --test-cmd-args=--testconfig=testing/density/config.yaml
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=100m
+        - --use-logexporter
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190514-d37ef86-master
+        resources:
+          requests:
+            memory: "6Gi"
