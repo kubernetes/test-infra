@@ -1318,6 +1318,10 @@ func DefaultRerunCommandFor(name string) string {
 
 // defaultJobBase configures common parameters, currently Agent and Namespace.
 func (c *ProwConfig) defaultJobBase(base *JobBase) {
+	defaultJobBase(c, base)
+}
+
+func defaultJobBase(c *ProwConfig, base *JobBase) {
 	if base.Agent == "" { // Use kubernetes by default
 		base.Agent = string(prowapi.KubernetesAgent)
 	}
@@ -1332,17 +1336,21 @@ func (c *ProwConfig) defaultJobBase(base *JobBase) {
 
 func (c *ProwConfig) defaultPresubmitFields(js []Presubmit) {
 	for i := range js {
-		c.defaultJobBase(&js[i].JobBase)
-		if js[i].Context == "" {
-			js[i].Context = js[i].Name
-		}
-		// Default the values of Trigger and RerunCommand if both fields are
-		// specified. Otherwise let validation fail as both or neither should have
-		// been specified.
-		if js[i].Trigger == "" && js[i].RerunCommand == "" {
-			js[i].Trigger = DefaultTriggerFor(js[i].Name)
-			js[i].RerunCommand = DefaultRerunCommandFor(js[i].Name)
-		}
+		DefaultPresubmitFields(c, &js[i])
+	}
+}
+
+func DefaultPresubmitFields(c *ProwConfig, presubmit *Presubmit) {
+	defaultJobBase(c, &presubmit.JobBase)
+	if presubmit.Context == "" {
+		presubmit.Context = presubmit.Name
+	}
+	// Default the values of Trigger and RerunCommand if both fields are
+	// specified. Otherwise let validation fail as both or neither should have
+	// been specified.
+	if presubmit.Trigger == "" && presubmit.RerunCommand == "" {
+		presubmit.Trigger = DefaultTriggerFor(presubmit.Name)
+		presubmit.RerunCommand = DefaultRerunCommandFor(presubmit.Name)
 	}
 }
 
