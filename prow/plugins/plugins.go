@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/test-infra/prow/bugzilla"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"sigs.k8s.io/yaml"
 
@@ -137,6 +138,7 @@ type Agent struct {
 	KubernetesClient kubernetes.Interface
 	GitClient        *git.Client
 	SlackClient      *slack.Client
+	BugzillaClient   bugzilla.Client
 
 	OwnersClient *repoowners.Client
 
@@ -163,6 +165,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		GitClient:        clientAgent.GitClient,
 		SlackClient:      clientAgent.SlackClient,
 		OwnersClient:     clientAgent.OwnersClient,
+		BugzillaClient:   clientAgent.BugzillaClient,
 		Config:           prowConfig,
 		PluginConfig:     pluginConfig,
 		Logger:           logger,
@@ -195,6 +198,7 @@ type ClientAgent struct {
 	GitClient        *git.Client
 	SlackClient      *slack.Client
 	OwnersClient     *repoowners.Client
+	BugzillaClient   bugzilla.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.

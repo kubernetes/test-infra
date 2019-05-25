@@ -30,6 +30,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/plugins",
     deps = [
+        "//prow/bugzilla:go_default_library",
         "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/commentpruner:go_default_library",
         "//prow/config:go_default_library",
@@ -62,6 +63,7 @@ filegroup(
         "//prow/plugins/blockade:all-srcs",
         "//prow/plugins/blunderbuss:all-srcs",
         "//prow/plugins/branchcleaner:all-srcs",
+        "//prow/plugins/bugzilla:all-srcs",
         "//prow/plugins/buildifier:all-srcs",
         "//prow/plugins/cat:all-srcs",
         "//prow/plugins/cherrypickunapproved:all-srcs",

@@ -39,6 +39,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/hook",
     deps = [
         "//pkg/flagutil:go_default_library",
+        "//prow/bugzilla:go_default_library",
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
@@ -48,6 +49,7 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//prow/pluginhelp/hook:go_default_library",
         "//prow/plugins:go_default_library",
+        "//prow/plugins/bugzilla:go_default_library",
         "//prow/repoowners:go_default_library",
         "//prow/slack:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

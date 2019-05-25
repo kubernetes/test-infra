@@ -65,6 +65,7 @@ filegroup(
         ":package-srcs",
         "//prow/apis/prowjobs:all-srcs",
         "//prow/artifact-uploader:all-srcs",
+        "//prow/bugzilla:all-srcs",
         "//prow/client/clientset/versioned:all-srcs",
         "//prow/client/informers/externalversions:all-srcs",
         "//prow/client/listers/prowjobs/v1:all-srcs",

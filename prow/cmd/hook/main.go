@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/bugzilla"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -38,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
+	bzplugin "k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
@@ -53,13 +55,14 @@ type options struct {
 	gracePeriod time.Duration
 	kubernetes  prowflagutil.ExperimentalKubernetesOptions
 	github      prowflagutil.GitHubOptions
+	bugzilla    prowflagutil.BugzillaOptions
 
 	webhookSecretFile string
 	slackTokenFile    string
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -78,7 +81,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
 		group.AddFlags(fs)
 	}
 
@@ -112,9 +115,18 @@ func main() {
 		tokens = append(tokens, o.slackTokenFile)
 	}
 
+	if o.bugzilla.ApiKeyPath != "" {
+		tokens = append(tokens, o.bugzilla.ApiKeyPath)
+	}
+
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start(tokens); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	pluginAgent := &plugins.ConfigAgent{}
+	if err := pluginAgent.Start(o.pluginConfig); err != nil {
+		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
 	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
@@ -126,6 +138,15 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
 	defer gitClient.Clean()
+
+	var bugzillaClient bugzilla.Client
+	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
+		client, err := o.bugzilla.BugzillaClient(secretAgent)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
+		}
+		bugzillaClient = client
+	}
 
 	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
@@ -147,11 +168,6 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
-	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
-		logrus.WithError(err).Fatal("Error starting plugins.")
-	}
-
 	mdYAMLEnabled := func(org, repo string) bool {
 		return pluginAgent.Config().MDYAMLEnabled(org, repo)
 	}
@@ -170,6 +186,7 @@ func main() {
 		GitClient:        gitClient,
 		SlackClient:      slackClient,
 		OwnersClient:     ownersClient,
+		BugzillaClient:   bugzillaClient,
 	}
 
 	promMetrics := hook.NewMetrics()
