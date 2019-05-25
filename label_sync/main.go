@@ -84,8 +84,9 @@ type Label struct {
 // Configuration is a list of Repos defining Required Labels to sync into them
 // There is also a Default list of labels applied to every Repo
 type Configuration struct {
-	Repos   map[string]RepoConfig `json:"repos,omitempty"`
-	Default RepoConfig            `json:"default"`
+	Repos     map[string]RepoConfig `json:"repos,omitempty"`
+	Default   RepoConfig            `json:"default"`
+	OnlyRepos []string              `json:"only,omitempty"`
 }
 
 // RepoConfig contains only labels for the moment
@@ -255,6 +256,10 @@ func (c Configuration) validate(orgs string) error {
 		return fmt.Errorf("invalid config: %v", err)
 	}
 
+	// Will complain if both 'Only' field is set and orgs are specified
+	if len(c.OnlyRepos) > 0 && orgs != "" {
+		return fmt.Errorf("invalid config: 'only' field and --orgs cannot both be set.")
+	}
 	// Generate list of orgs
 	sortedOrgs := strings.Split(orgs, ",")
 	sort.Strings(sortedOrgs)
@@ -697,6 +702,10 @@ func main() {
 		logrus.Fatalf("--only and --orgs cannot both be set")
 	}
 
+	if *onlyRepos != "" && len(config.OnlyRepos) > 0 {
+		logrus.Fatalf("--only and 'only' field in configuration yaml cannot both be set")
+	}
+
 	switch {
 	case *action == "docs":
 		if err := writeDocs(*docsTemplate, *docsOutput, *config); err != nil {
@@ -713,25 +722,19 @@ func main() {
 		}
 
 		// there are three ways to configure which repos to sync:
-		//  - a whitelist of org/repo values
+		//  - a whitelist of org/repo values specified as either:
+		//		- the --only flag
+		//		- the 'only' field in labels file
 		//  - a list of orgs for which we sync all repos
 		//  - a list of orgs with a blacklist of org/repo values
-		if *onlyRepos != "" {
-			reposToSync, parseError := parseCommaDelimitedList(*onlyRepos)
-			if parseError != nil {
-				logrus.WithError(err).Fatal("invalid value for --only")
-			}
-			for org := range reposToSync {
-				if err = syncOrg(org, githubClient, *config, reposToSync[org]); err != nil {
-					logrus.WithError(err).Fatalf("failed to update %s", org)
-				}
-			}
+		if *onlyRepos != "" || len(config.OnlyRepos) > 0 {
+			syncWhiteListRepos(*config, *onlyRepos, githubClient)
 			return
 		}
 
 		skippedRepos := map[string][]string{}
 		if *skipRepos != "" {
-			reposToSkip, parseError := parseCommaDelimitedList(*skipRepos)
+			reposToSkip, parseError := parseRepoList(strings.Split(*skipRepos, ","))
 			if parseError != nil {
 				logrus.WithError(err).Fatal("invalid value for --skip")
 			}
@@ -758,14 +761,34 @@ func main() {
 	}
 }
 
-// parseCommaDelimitedList parses values in the format:
-//   org/repo,org2/repo2,org/repo3
+func syncWhiteListRepos(config Configuration, onlyRepos string, gc client) {
+	whiteList := config.OnlyRepos
+	if onlyRepos != "" {
+		whiteList = strings.Split(onlyRepos, ",")
+	}
+	reposToSync, parseErr := parseRepoList(whiteList)
+	if parseErr != nil {
+		source := "'only' field"
+		if onlyRepos != "" {
+			source = "'--only'"
+		}
+		logrus.WithError(parseErr).Fatalf("invalid value for %s", source)
+	}
+	for org := range reposToSync {
+		if err := syncOrg(org, gc, config, reposToSync[org]); err != nil {
+			logrus.WithError(err).Fatalf("failed to update %s", org)
+		}
+	}
+}
+
+// parseRepoList parses values in the format:
+//   {"org/repo", "org2/repo2", "org/repo3"}
 // into a mapping of org to repos, i.e.:
 //   org:  repo, repo3
 //   org2: repo2
-func parseCommaDelimitedList(list string) (map[string][]string, error) {
+func parseRepoList(repoList []string) (map[string][]string, error) {
 	mapping := map[string][]string{}
-	for _, r := range strings.Split(list, ",") {
+	for _, r := range repoList {
 		value := strings.TrimSpace(r)
 		if strings.Count(value, "/") != 1 {
 			return nil, fmt.Errorf("invalid org/repo value %q", value)

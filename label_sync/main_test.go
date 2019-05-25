@@ -82,6 +82,18 @@ func TestValidate(t *testing.T) {
 			},
 			expectedError: false,
 		},
+		{
+			name: "only yaml config field and orgs option both set",
+			config: Configuration{
+				Default: RepoConfig{Labels: []Label{
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				}},
+				OnlyRepos: []string{
+					"org1/repo1",
+				},
+			},
+			expectedError: true,
+		},
 	}
 	// Do tests
 	for _, tc := range testcases {
