@@ -44,6 +44,7 @@ import (
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	inrepoconfigapi "k8s.io/test-infra/prow/inrepoconfig/api"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
@@ -1150,7 +1151,21 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 		}
 	}
 
-	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
+	unfilteredPresubmits := c.config().Presubmits[sp.org+"/"+sp.repo]
+	if c.config().InRepoConfigFor(sp.org, sp.repo).Enabled {
+		var headRefs []string
+		for _, pr := range sp.prs {
+			headRefs = append(headRefs, string(pr.HeadRefOID))
+		}
+
+		inRepoConfig, err := inrepoconfigapi.New(c.logger, c.config(), c.gc, sp.org, sp.repo, sp.sha, headRefs)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get get jobs from %q: %v", inrepoconfigapi.ConfigFileName, err)
+		}
+		unfilteredPresubmits = append(unfilteredPresubmits, inRepoConfig.Presubmits...)
+	}
+
+	for _, ps := range unfilteredPresubmits {
 		if !ps.ContextRequired() {
 			continue
 		}

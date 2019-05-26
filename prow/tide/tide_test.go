@@ -30,16 +30,21 @@ import (
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	clienttesting "k8s.io/client-go/testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	inrepoconfigapi "k8s.io/test-infra/prow/inrepoconfig/api"
 	"k8s.io/test-infra/prow/tide/history"
 )
 
@@ -2056,18 +2061,17 @@ func TestIsPassing(t *testing.T) {
 }
 
 func TestPresubmitsByPull(t *testing.T) {
-	samplePR := PullRequest{
-		Number:     githubql.Int(100),
-		HeadRefOID: githubql.String("sha"),
-	}
 	testcases := []struct {
 		name string
 
-		initialChangeCache map[changeCacheKey][]string
-		presubmits         []config.Presubmit
+		initialChangeCache  map[changeCacheKey][]string
+		presubmits          []config.Presubmit
+		presubmitsInRepo    []config.Presubmit
+		inRepoConfigEnabled bool
 
-		expectedPresubmits  map[int][]config.Presubmit
-		expectedChangeCache map[changeCacheKey][]string
+		expectedPresubmits     map[int][]config.Presubmit
+		expectedPresubmitNames sets.String
+		expectedChangeCache    map[changeCacheKey][]string
 	}{
 		{
 			name: "no matching presubmits",
@@ -2260,16 +2264,119 @@ func TestPresubmitsByPull(t *testing.T) {
 			}}},
 			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 		},
+		{
+			name: "inrepoconfig without prow.yaml",
+			presubmits: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "always"},
+				JobBase: config.JobBase{
+					Name:      "my-pj",
+					Namespace: strPtr("my-pod-ns"),
+					Agent:     "kubernetes",
+					Spec:      &corev1.PodSpec{Containers: []corev1.Container{{}}}},
+			}},
+			expectedPresubmitNames: sets.NewString("my-pj"),
+			inRepoConfigEnabled:    true,
+		},
+		{
+			name: "inrepoconfig with jobs from prow.yaml only",
+			presubmitsInRepo: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "always-2"},
+				JobBase: config.JobBase{
+					Name:      "my-pj-2",
+					Namespace: strPtr("my-pod-ns"),
+					Agent:     "kubernetes",
+					Spec:      &corev1.PodSpec{Containers: []corev1.Container{{}}}},
+			}},
+			expectedPresubmitNames: sets.NewString("my-pj-2"),
+			inRepoConfigEnabled:    true,
+		},
+		{
+			name: "Inrepoconfig with jobs from config and prow.yaml",
+			presubmits: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "always"},
+				JobBase: config.JobBase{
+					Name:      "my-pj",
+					Namespace: strPtr("my-pod-ns"),
+					Agent:     "kubernetes",
+					Spec:      &corev1.PodSpec{Containers: []corev1.Container{{}}}},
+			}},
+			presubmitsInRepo: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "always-2"},
+				JobBase: config.JobBase{
+					Name:      "my-pj-2",
+					Namespace: strPtr("my-pod-ns"),
+					Agent:     "kubernetes",
+					Spec:      &corev1.PodSpec{Containers: []corev1.Container{{}}}},
+			}},
+			expectedPresubmitNames: sets.NewString("my-pj", "my-pj-2"),
+			inRepoConfigEnabled:    true,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Logf("Starting test case: %q", tc.name)
+		samplePR := PullRequest{
+			Number:     githubql.Int(100),
+			HeadRefOID: githubql.String("sha"),
+		}
 
 		if tc.initialChangeCache == nil {
 			tc.initialChangeCache = map[changeCacheKey][]string{}
 		}
 		if tc.expectedChangeCache == nil {
 			tc.expectedChangeCache = map[changeCacheKey][]string{}
+		}
+		var masterHeadSHA string
+		var gitClient *git.Client
+		if tc.inRepoConfigEnabled {
+			lg, gC, err := localgit.New()
+			if err != nil {
+				t.Fatalf("Making local git repo: %v", err)
+			}
+			defer func() {
+				if err := lg.Clean(); err != nil {
+					t.Errorf("Error cleaning LocalGit: %v", err)
+				}
+				if err := gitClient.Clean(); err != nil {
+					t.Errorf("Error cleaning Client: %v", err)
+				}
+			}()
+			gitClient = gC
+			inRepoConfig := inrepoconfigapi.InRepoConfig{
+				Presubmits: tc.presubmitsInRepo,
+			}
+			marshalledInRepoConfig, err := json.Marshal(inRepoConfig)
+			if err != nil {
+				t.Fatalf("failed to marshal inrepoconfig: %v", err)
+			}
+			logrus.Errorf("Marshalled inrepoconfig: %s", string(marshalledInRepoConfig))
+			if err := lg.MakeFakeRepo("org", "repo"); err != nil {
+				t.Fatalf("Making fake repo: %v", err)
+			}
+			if err := lg.CheckoutNewBranch("org", "repo", "my-pull"); err != nil {
+				t.Fatalf("failed to check out new branch: %v", err)
+			}
+			if err := lg.AddCommit("org", "repo", map[string][]byte{
+				inrepoconfigapi.ConfigFileName: marshalledInRepoConfig,
+			}); err != nil {
+				t.Fatalf("Failed to add commit: %v", err)
+			}
+
+			masterHeadSHA, err = lg.RevParse("org", "repo", "master")
+			if err != nil {
+				t.Fatalf("failed to run git rev-parse master: %v", err)
+			}
+			fakegithub.TestRef = masterHeadSHA
+
+			prHeadSHA, err := lg.RevParse("org", "repo", "HEAD")
+			if err != nil {
+				t.Fatalf("failed to run git rev-parse HEAD: %v", err)
+			}
+			samplePR.HeadRefOID = githubql.String(prHeadSHA)
 		}
 
 		for i := range tc.presubmits {
@@ -2286,10 +2393,20 @@ func TestPresubmitsByPull(t *testing.T) {
 				}
 			}
 		}
-		cfg := &config.Config{}
+		cfg := &config.Config{
+			ProwConfig: config.ProwConfig{
+				PodNamespace: "my-pod-ns",
+			},
+		}
 		if err := cfg.SetPresubmits(map[string][]config.Presubmit{
-			"/": tc.presubmits,
+			"org/repo": tc.presubmits,
 			"foo/bar": {{
+				JobBase: config.JobBase{
+					Name:      "my-other-job",
+					Namespace: strPtr("my-pod-ns"),
+					Agent:     "kubernetes",
+					Spec:      &corev1.PodSpec{Containers: []corev1.Container{{}}},
+				},
 				Trigger:      "/pony",
 				RerunCommand: "/pony",
 				Reporter:     config.Reporter{Context: "wrong-repo"},
@@ -2297,11 +2414,17 @@ func TestPresubmitsByPull(t *testing.T) {
 		}); err != nil {
 			t.Fatalf("error calling SetPresubmits: %v", err)
 		}
+		if tc.inRepoConfigEnabled {
+			cfg.InRepoConfig = map[string]config.InRepoConfig{"*": {Enabled: true}}
+		}
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{
+			org:    "org",
+			repo:   "repo",
 			branch: "master",
 			prs:    []PullRequest{samplePR},
+			sha:    masterHeadSHA,
 		}
 		c := &Controller{
 			config: cfgAgent.Config,
@@ -2311,6 +2434,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				changeCache:     tc.initialChangeCache,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
+			gc: gitClient,
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
@@ -2321,8 +2445,19 @@ func TestPresubmitsByPull(t *testing.T) {
 		for _, jobs := range presubmits {
 			config.ClearCompiledRegexes(jobs)
 		}
-		if !equality.Semantic.DeepEqual(presubmits, tc.expectedPresubmits) {
-			t.Errorf("got incorrect presubmit mapping: %v\n", diff.ObjectReflectDiff(tc.expectedPresubmits, presubmits))
+		if tc.expectedPresubmits != nil {
+			if !equality.Semantic.DeepEqual(presubmits, tc.expectedPresubmits) {
+				t.Errorf("got incorrect presubmit mapping: %v\n", diff.ObjectReflectDiff(tc.expectedPresubmits, presubmits))
+			}
+		}
+		if tc.expectedPresubmitNames != nil {
+			actualPresumits := sets.NewString()
+			for _, presubmit := range presubmits[100] {
+				actualPresumits.Insert(presubmit.Name)
+				if diff := actualPresumits.Difference(tc.expectedPresubmitNames); len(diff) > 0 {
+					t.Errorf("Got unexpected presubmits: %v", diff)
+				}
+			}
 		}
 		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
 			t.Errorf("got incorrect file change cache: %v", diff.ObjectReflectDiff(tc.expectedChangeCache, got))
@@ -2429,4 +2564,8 @@ func TestPrepareMergeDetails(t *testing.T) {
 			t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
 		}
 	}
+}
+
+func strPtr(s string) *string {
+	return &s
 }
