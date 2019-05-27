@@ -120,12 +120,6 @@ presets:
   # Keep all logrotated files (not just 5 latest which is a default)
   - name: LOGROTATE_FILES_MAX_COUNT
     value: 1000
-  # TODO(mborsz): Remove overrides when we understand if new cos
-  # causes performance regression.
-  - name: KUBE_GCE_MASTER_IMAGE
-    value: cos-69-10895-138-0
-  - name: KUBE_GCE_NODE_IMAGE
-    value: cos-69-10895-138-0
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
 
