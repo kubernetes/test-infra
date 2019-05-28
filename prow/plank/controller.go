@@ -73,11 +73,15 @@ type Controller struct {
 	// selector that will be applied on prowjobs and pods.
 	selector string
 
+	// If both this and pjLock are acquired, this must be acquired first
 	lock sync.RWMutex
+
 	// pendingJobs is a short-lived cache that helps in limiting
 	// the maximum concurrency of jobs.
 	pendingJobs map[string]int
 
+	// If `lock` is acquired as well, `lock` must be acquired before locking
+	// pjLock
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
 	pjs []prowapi.ProwJob
@@ -135,6 +139,29 @@ func (c *Controller) canExecuteConcurrently(pj *prowapi.ProwJob) bool {
 		c.log.WithFields(pjutil.ProwJobFields(pj)).Debugf("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
 		return false
 	}
+
+	var olderMatchingPJs int
+	c.pjLock.RLock()
+	for _, foundPJ := range c.pjs {
+		if foundPJ.Status.State != prowapi.TriggeredState {
+			continue
+		}
+		if foundPJ.Spec.Job != pj.Spec.Job {
+			continue
+		}
+		if foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
+			olderMatchingPJs++
+		}
+	}
+	c.pjLock.RUnlock()
+
+	if numPending+olderMatchingPJs >= pj.Spec.MaxConcurrency {
+		c.log.WithFields(pjutil.ProwJobFields(pj)).
+			Debugf("Not starting another instance of %s, already %d running and %d older instances waiting, together they equal or exceed the total limit of %d",
+				pj.Spec.Job, numPending, olderMatchingPJs, pj.Spec.MaxConcurrency)
+		return false
+	}
+
 	c.pendingJobs[pj.Spec.Job]++
 	return true
 }
