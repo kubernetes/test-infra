@@ -1939,6 +1939,29 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-ingress-nginx-e2e
   num_columns_recent: 20
 
+# kubernetes-sigs/release-notes
+- name: pull-release-notes-build-dev
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-build-dev
+  num_columns_recent: 30
+- name: pull-release-notes-build-prod
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-build-prod
+  num_columns_recent: 30
+- name: pull-release-notes-check-prettier
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-check-prettier
+  num_columns_recent: 30
+- name: pull-release-notes-doc
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-doc
+  num_columns_recent: 30
+- name: pull-release-notes-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-e2e
+  num_columns_recent: 30
+- name: pull-release-notes-lint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-lint
+  num_columns_recent: 30
+- name: pull-release-notes-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-test
+  num_columns_recent: 30
+
 #
 # Start dashboards
 #
@@ -6165,6 +6188,30 @@ dashboards:
     description: k8s1.14.x node conformance test results for ee-19.03 on ubuntu16.04
 #
 
+- name: presubmits-release-notes-master
+  dashboard_tab:
+  - name: build-dev
+    test_group_name: pull-release-notes-build-dev
+    base_options: width=10
+  - name: build-prod
+    test_group_name: pull-release-notes-build-prod
+    base_options: width=10
+  - name: check-prettier
+    test_group_name: pull-release-notes-check-prettier
+    base_options: width=10
+  - name: doc
+    test_group_name: pull-release-notes-doc
+    base_options: width=10
+  - name: e2e
+    test_group_name: pull-release-notes-e2e
+    base_options: width=10
+  - name: lint
+    test_group_name: pull-release-notes-lint
+    base_options: width=10
+  - name: test
+    test_group_name: pull-release-notes-test
+    base_options: width=10
+
 #
 # Start dashboard groups
 #
@@ -6394,3 +6441,7 @@ dashboard_groups:
 - name: presubmits-cloud-provider
   dashboard_names:
   - presubmits-cloud-provider-alibaba
+
+- name: presubmits-release-notes
+  dashboard_names:
+  - presubmits-release-notes-master

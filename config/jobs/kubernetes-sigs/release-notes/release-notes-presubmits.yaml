@@ -1,0 +1,93 @@
+---
+presubmits:
+  kubernetes-sigs/release-notes:
+    - name: pull-release-notes-build-dev
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: node:11
+            command:
+              - /bin/bash
+              - -c
+              - >
+                npm ci &&
+                npm run build-dev
+
+    - name: pull-release-notes-build-prod
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: node:11
+            command:
+              - /bin/bash
+              - -c
+              - >
+                npm ci &&
+                npm run build-prod
+
+    - name: pull-release-notes-check-prettier
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: node:11
+            command:
+              - /bin/bash
+              - -c
+              - >
+                npm ci &&
+                npm run check-prettier
+
+    - name: pull-release-notes-doc
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: node:11
+            command:
+              - /bin/bash
+              - -c
+              - >
+                npm ci &&
+                npm run doc
+
+    - name: pull-release-notes-e2e
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: cypress/base:11
+            command:
+              - /bin/bash
+              - -c
+              - >
+                npm ci &&
+                npm run e2e-cy-ci
+
+    - name: pull-release-notes-lint
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: node:11
+            command:
+              - /bin/bash
+              - -c
+              - >
+                npm ci &&
+                npm run lint
+
+    - name: pull-release-notes-test
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: node:11
+            command:
+              - /bin/bash
+              - -c
+              - >
+                npm ci &&
+                npm run test
