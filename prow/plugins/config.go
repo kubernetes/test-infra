@@ -335,6 +335,9 @@ type Trigger struct {
 	// ElideSkippedContexts makes trigger not post "Skipped" contexts for jobs
 	// that could run but do not run.
 	ElideSkippedContexts bool `json:"elide_skipped_contexts,omitempty"`
+	// EnableInRepoConfig makes trigger read a `prow.yaml` file at the
+	// root of the repository for additional presubmits
+	EnableInRepoConfig bool `json:"enable_inrepo_config,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.

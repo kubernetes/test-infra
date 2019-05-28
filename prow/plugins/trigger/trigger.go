@@ -99,6 +99,8 @@ type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
+	EditComment(org, repo string, exitingCommentID int, comment string) error
+	DeleteComment(org, repo string, issueCommentToDelete int) error
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 	CreateStatus(owner, repo, ref string, status github.Status) error
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)

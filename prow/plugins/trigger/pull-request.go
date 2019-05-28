@@ -27,6 +27,7 @@ import (
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger/inrepoconfig"
 )
 
 func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
@@ -48,7 +49,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
@@ -69,7 +70,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				}
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
 		}
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
@@ -103,7 +104,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
 			}
 		}
 	}
@@ -138,7 +139,7 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
 	}
 	return nil
 }
@@ -223,9 +224,19 @@ func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, 
 }
 
 // buildAll ensures that all builds that should run and will be required are built
-func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
+func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts, enableInRepoConfig bool) error {
 	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number)
+
+	presubmits := c.Config.Presubmits[pr.Base.Repo.FullName]
+	if enableInRepoConfig {
+		inRepoPresubmits, err := inrepoconfig.HandlePullRequest(c.Logger, c.Config.ProwConfig, c.GitHubClient, *pr)
+		if err != nil {
+			return fmt.Errorf("failed to get inrepoconfig: %v", err)
+		}
+		presubmits = append(presubmits, inRepoPresubmits...)
+	}
+
 	toTest, toSkip, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
 	if err != nil {
 		return err
