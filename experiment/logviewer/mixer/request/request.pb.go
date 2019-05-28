@@ -12,7 +12,7 @@ import (
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	math "math"
-	work "test-infra/experiment/logviewer/worker/work"
+	work "k8s.io/test-infra/experiment/logviewer/worker/work"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

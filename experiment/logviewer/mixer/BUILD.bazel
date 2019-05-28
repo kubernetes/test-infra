@@ -28,8 +28,8 @@ go_test(
     srcs = ["mixer_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//experiment/logviewer/worker/work:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
-        "//vendor/k8s.io/test-infra/experiment/logviewer:go_default_library",
     ],
 )
 

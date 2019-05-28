@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
-	"k8s.io/test-infra/experiment/logviewer/"
+	"k8s.io/test-infra/experiment/logviewer/worker/work"
 )
 
 const line1 = `{"kind":"Event","apiVersion":"audit.k8s.io/v1","level":"Metadata","auditID":"0286b87c-b86c-443f-bb1e-807844b35307","stage":"ResponseComplete","requestURI":"/apis/coordination.k8s.io/v1beta1/namespaces/kube-node-lease/leases/gce-scale-cluster-minion-group-4-zr07?timeout=10s","verb":"update","user":{"username":"system:node:gce-scale-cluster-minion-group-4-zr07","groups":["system:nodes","system:authenticated"]},"sourceIPs":["35.227.76.61"],"userAgent":"kubelet/v1.14.0 (linux/amd64) kubernetes/aef1179","objectRef":{"resource":"leases","namespace":"kube-node-lease","name":"gce-scale-cluster-minion-group-4-zr07","uid":"411615ce-0e66-11e9-a584-42010a280002","apiGroup":"coordination.k8s.io","apiVersion":"v1beta1","resourceVersion":"17652814"},"responseStatus":{"metadata":{},"code":200},"requestReceivedTimestamp":"2019-01-02T15:01:16.105964Z","stageTimestamp":"2019-01-02T15:01:16.108038Z","annotations":{"authorization.k8s.io/decision":"allow","authorization.k8s.io/reason":""}}`
