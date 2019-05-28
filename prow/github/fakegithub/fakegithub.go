@@ -148,6 +148,21 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 	return nil
 }
 
+// EditComment edits a comment
+func (f *FakeClient) EditComment(_, _ string, exitingCommentID int, comment string) error {
+	for num, issueComments := range f.IssueComments {
+		for idx, issueComment := range issueComments {
+			if issueComment.ID == exitingCommentID {
+				issueComment.Body = comment
+				f.IssueComments[num][idx] = issueComment
+				return nil
+			}
+		}
+	}
+
+	return fmt.Errorf("no comment with id %d found", exitingCommentID)
+}
+
 // CreateReview adds a review to a PR
 func (f *FakeClient) CreateReview(org, repo string, number int, r github.DraftReview) error {
 	f.Reviews[number] = append(f.Reviews[number], github.Review{
