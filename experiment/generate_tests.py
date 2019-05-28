@@ -268,6 +268,14 @@ class E2ETest(object):
         tg_config['gcs_prefix'] = GCS_LOG_PREFIX + self.job_name
         return tg_config
 
+    def initialize_dashboards_with_release_blocking_info(self, version):
+        dashboards = []
+        if self.job.get('releaseBlocking'):
+            dashboards.append('sig-release-%s-blocking' % version)
+        else:
+            dashboards.append('sig-release-%s-all' % version)
+        return dashboards
+
     def generate(self):
         '''Returns the job and the Prow configurations for this test.'''
         fields = self.job_name.split('-')
@@ -294,12 +302,9 @@ class E2ETest(object):
         tg_config = self.__get_testgrid_config()
 
         annotations = prow_config.setdefault('annotations', {})
-        dashboards = ['sig-release-%s-all' % k8s_version['version']]
         tab_name = '%s-%s-%s-%s' % (fields[3], fields[4], fields[5], fields[6])
         annotations['testgrid-tab-name'] = tab_name
-        if self.job.get('releaseBlocking'):
-            dashboards.insert(
-                0, 'sig-release-%s-blocking' % k8s_version['version'])
+        dashboards = self.initialize_dashboards_with_release_blocking_info(k8s_version['version'])
         if image.get('testgrid_prefix') is not None:
             dashboard = '%s-%s-%s' % (image['testgrid_prefix'], fields[4],
                                       fields[5])
