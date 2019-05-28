@@ -925,7 +925,7 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-containerd-gce,?($|\s.*)
   - agent: kubernetes
-    always_run: false
+    always_run: true
     branches:
     - master
     cluster: security

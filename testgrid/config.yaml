@@ -2447,6 +2447,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
   - name: gci-gce-single-flake-attempt
     test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+  - name: gci-gce-containerd
+    test_group_name: ci-kubernetes-e2e-gci-gce-containerd
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gce-multizone
@@ -3228,6 +3230,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
     base_options: include-filter-by-regex=sig-api-machinery
     description: apimachinery gce e2e tests for master branch with reduced flake attempt
+  - name: gce-containerd
+    test_group_name: ci-kubernetes-e2e-gci-gce-containerd
+    base_options: include-filter-by-regex=sig-node
+    description: node gce e2e tests for master branch using containerd
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
     base_options: include-filter-by-regex=sig-api-machinery
@@ -4519,6 +4525,9 @@ dashboards:
     description: storage gce e2e tests for master branch with reduced flake attempt
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+  - name: gce-containerd
+    test_group_name: ci-kubernetes-e2e-gci-gce-containerd
+    description: node gce e2e tests for master branch using containerd
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
     base_options: include-filter-by-regex=Volume%7Cstorage

@@ -78,7 +78,7 @@ presubmits:
   - name: pull-kubernetes-node-e2e-containerd
     branches:
     - master
-    always_run: false
+    always_run: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"
