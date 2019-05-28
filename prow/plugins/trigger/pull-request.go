@@ -24,10 +24,10 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/inrepoconfig"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/trigger/inrepoconfig"
 )
 
 func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
@@ -49,7 +49,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, c.Config.InRepoConfigFor(org, repo).Enabled)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
@@ -70,7 +70,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				}
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, c.Config.InRepoConfigFor(org, repo).Enabled)
 		}
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
@@ -104,7 +104,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
+				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, c.Config.InRepoConfigFor(org, repo).Enabled)
 			}
 		}
 	}
@@ -139,7 +139,7 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, trigger.EnableInRepoConfig)
+		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, c.Config.InRepoConfigFor(org, repo).Enabled)
 	}
 	return nil
 }

@@ -3,13 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["inrepoconfig.go"],
-    importpath = "k8s.io/test-infra/prow/plugins/trigger/inrepoconfig",
+    importpath = "k8s.io/test-infra/prow/inrepoconfig",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/plugins/trigger/inrepoconfig/api:go_default_library",
+        "//prow/inrepoconfig/api:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -25,7 +25,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//prow/plugins/trigger/inrepoconfig/api:all-srcs",
+        "//prow/inrepoconfig/api:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

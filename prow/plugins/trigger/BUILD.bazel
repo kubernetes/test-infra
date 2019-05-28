@@ -48,11 +48,11 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/errorutil:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/inrepoconfig:go_default_library",
         "//prow/labels:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
-        "//prow/plugins/trigger/inrepoconfig:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
@@ -67,9 +67,6 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//prow/plugins/trigger/inrepoconfig:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
 )

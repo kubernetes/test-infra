@@ -73,14 +73,15 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
-	Tide             Tide             `json:"tide,omitempty"`
-	Plank            Plank            `json:"plank,omitempty"`
-	Sinker           Sinker           `json:"sinker,omitempty"`
-	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
-	Gerrit           Gerrit           `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
-	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
+	Tide             Tide                    `json:"tide,omitempty"`
+	Plank            Plank                   `json:"plank,omitempty"`
+	Sinker           Sinker                  `json:"sinker,omitempty"`
+	Deck             Deck                    `json:"deck,omitempty"`
+	BranchProtection BranchProtection        `json:"branch-protection,omitempty"`
+	Gerrit           Gerrit                  `json:"gerrit,omitempty"`
+	GitHubReporter   GitHubReporter          `json:"github_reporter,omitempty"`
+	SlackReporter    *SlackReporter          `json:"slack_reporter,omitempty"`
+	InRepoConfig     map[string]InRepoConfig `json:"in_repo_config,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -369,6 +370,13 @@ type GitHubOptions struct {
 	// LinkURL is the url representation of LinkURLFromConfig. This variable should be used
 	// in all places internally.
 	LinkURL *url.URL
+}
+
+// InRepoConfig is the config for the InRepoConfig extension
+// which allows to configure jobs inside the repo via a `prow.yaml`
+// file
+type InRepoConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // SlackReporter represents the config for the Slack reporter
@@ -1314,6 +1322,20 @@ func DefaultTriggerFor(name string) string {
 // this name.
 func DefaultRerunCommandFor(name string) string {
 	return fmt.Sprintf("/test %s", name)
+}
+
+// InRepoConfig returns the InRepoConfig for a given repository
+func (pc *ProwConfig) InRepoConfigFor(org, repo string) InRepoConfig {
+	if irc, exists := pc.InRepoConfig[org+"/"+repo]; exists {
+		return irc
+	}
+	if irc, exists := pc.InRepoConfig[org]; exists {
+		return irc
+	}
+	if irc, exists := pc.InRepoConfig["*"]; exists {
+		return irc
+	}
+	return InRepoConfig{}
 }
 
 // defaultJobBase configures common parameters, currently Agent and Namespace.

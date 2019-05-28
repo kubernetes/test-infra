@@ -2219,3 +2219,40 @@ func TestSlackReporterValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestInRepoConfigFor(t *testing.T) {
+	const org, repo = "org", "repo"
+	testCases := []struct {
+		name            string
+		config          map[string]InRepoConfig
+		enabledExpected bool
+	}{
+		{
+			name:            "Inrepoconfig from org+repo",
+			config:          map[string]InRepoConfig{org + "/" + repo: InRepoConfig{Enabled: true}},
+			enabledExpected: true,
+		},
+		{
+			name:            "Inrepoconfig from org",
+			config:          map[string]InRepoConfig{org: InRepoConfig{Enabled: true}},
+			enabledExpected: true,
+		},
+		{
+			name:            "Global inrepoconfig",
+			config:          map[string]InRepoConfig{"*": InRepoConfig{Enabled: true}},
+			enabledExpected: true,
+		},
+		{
+			name: "No inrepoconfig",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pc := &ProwConfig{InRepoConfig: tc.config}
+			if result := pc.InRepoConfigFor(org, repo); result.Enabled != tc.enabledExpected {
+				t.Errorf("Expected to be enabled: %t but was %t", tc.enabledExpected, result.Enabled)
+			}
+		})
+	}
+}
