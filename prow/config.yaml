@@ -138,10 +138,6 @@ branch-protection:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
-        kubectl:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
         kubelet:
           restrictions:
             users: []
@@ -167,6 +163,11 @@ branch-protection:
             teams:
             - stage-bots
         kube-scheduler:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kubectl:
           restrictions:
             users: []
             teams:
@@ -352,6 +353,7 @@ tide:
     - kubernetes/kube-controller-manager
     - kubernetes/kube-proxy
     - kubernetes/kube-scheduler
+    - kubernetes/kubectl
     - kubernetes/kubelet
     - kubernetes/legacy-cloud-providers
     - kubernetes/metrics
