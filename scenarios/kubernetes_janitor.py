@@ -63,6 +63,8 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None):
         cmd.append('--dryrun')
     if ratelimit:
         cmd.append('--ratelimit=%d' % ratelimit)
+    if VERBOSE:
+        cmd.append('--verbose')
 
     try:
         check(*cmd)
@@ -160,6 +162,7 @@ if __name__ == '__main__':
     # keep some metric
     CHECKED = set()
     FAILED = []
+    VERBOSE = False
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
         '--mode', default='ci', choices=['ci', 'pr', 'scale', 'custom'],
@@ -174,5 +177,9 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--age', type=int,
         help='Expiry age for projects, in hours. Only applicable in custom mode.')
+    PARSER.add_argument(
+        '--verbose', type=bool,
+        help='If want more detailed logs from the janitor script.')
     ARGS = PARSER.parse_args()
+    VERBOSE = ARGS.verbose
     main(ARGS.mode, ARGS.ratelimit, ARGS.projects, ARGS.age)
