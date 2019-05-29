@@ -269,6 +269,13 @@ project_config:
               To do
             Workloads:
               Backlog
+        website:
+          repo_maintainers_team_id: 3175912 # website-milestone-maintainers
+          repo_default_column_map:
+            component-base:
+              To do
+            Doc Writing and Editing:
+              To do
     kubeflow:
       org_maintainers_team_id: 3198542 # kubeflow-project-maintainers
 
@@ -477,6 +484,7 @@ plugins:
 
   kubernetes/website:
   - milestone
+  - project
 
   kubernetes-client:
   - approve
