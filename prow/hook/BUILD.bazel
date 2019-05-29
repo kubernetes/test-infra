@@ -54,6 +54,7 @@ go_library(
         "//prow/plugins/label:go_default_library",
         "//prow/plugins/lgtm:go_default_library",
         "//prow/plugins/lifecycle:go_default_library",
+        "//prow/plugins/mergecommitblocker:go_default_library",
         "//prow/plugins/milestone:go_default_library",
         "//prow/plugins/milestonestatus:go_default_library",
         "//prow/plugins/override:go_default_library",
