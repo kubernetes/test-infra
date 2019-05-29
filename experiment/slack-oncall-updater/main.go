@@ -66,6 +66,7 @@ func mapGitHubToSlack(github string) (string, error) {
 		"katharine":      "UBTBNJ6GL",
 		"krzyzacy":       "U22Q65CTG",
 		"michelle192837": "U3TRY5WV7",
+		"tony-yang":      "UK3MVSP3J",
 	}
 	id, ok := mapping[strings.ToLower(github)]
 	if !ok {
