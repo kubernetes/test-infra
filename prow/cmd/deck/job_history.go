@@ -108,7 +108,7 @@ func readLatestBuild(bucket storageBucket, root string) (int64, error) {
 	if err != nil {
 		return -1, fmt.Errorf("failed to read %s: %v", key, err)
 	}
-	n, err := strconv.ParseInt(string(data), 10, 64)
+	n, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
 		return -1, fmt.Errorf("failed to parse %s: %v", key, err)
 	}
