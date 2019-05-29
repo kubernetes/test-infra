@@ -935,6 +935,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e-containerd
+    optional: true
     rerun_command: /test pull-security-kubernetes-node-e2e-containerd
     spec:
       containers:

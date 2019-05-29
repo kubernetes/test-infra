@@ -79,6 +79,7 @@ presubmits:
     branches:
     - master
     always_run: true
+    optional: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"
