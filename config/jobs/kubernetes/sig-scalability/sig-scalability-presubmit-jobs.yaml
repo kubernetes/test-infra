@@ -332,8 +332,9 @@ presubmits:
             - --repo=k8s.io/kubernetes=master
             - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
             - --repo=k8s.io/release
+            - --service-account=/etc/service-account/service-account.json
             - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=270
+            - --timeout=120
             - --scenario=kubernetes_e2e
             - --
             - --build=bazel
@@ -360,9 +361,11 @@ presubmits:
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
             - --test-cmd-name=ClusterLoaderV2
-            - --timeout=240m
+            - --timeout=100m
             - --use-logexporter
           image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-b03896b-master
           resources:
             requests:
               memory: "6Gi"
+          securityContext:
+            privileged: true
