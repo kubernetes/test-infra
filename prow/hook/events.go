@@ -189,6 +189,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			ID:           pr.PullRequest.ID,
 			GUID:         pr.GUID,
 			IsPR:         true,
 			Action:       action,
@@ -262,6 +263,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			ID:           i.Issue.ID,
 			GUID:         i.GUID,
 			IsPR:         i.Issue.IsPullRequest(),
 			Action:       action,
@@ -312,6 +314,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	s.handleGenericComment(
 		l,
 		&github.GenericCommentEvent{
+			ID:           ic.Issue.ID,
 			GUID:         ic.GUID,
 			IsPR:         ic.Issue.IsPullRequest(),
 			Action:       action,

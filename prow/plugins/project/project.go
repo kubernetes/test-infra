@@ -325,7 +325,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	projectCard := github.ProjectCard{}
-	projectCard.ContentID = e.Number
+	projectCard.ContentID = e.ID
 	if e.IsPR {
 		projectCard.ContentType = "PullRequest"
 	} else {
