@@ -178,7 +178,7 @@ if __name__ == '__main__':
         '--age', type=int,
         help='Expiry age for projects, in hours. Only applicable in custom mode.')
     PARSER.add_argument(
-        '--verbose', type=bool,
+        '--verbose', action='store_true',
         help='If want more detailed logs from the janitor script.')
     ARGS = PARSER.parse_args()
     VERBOSE = ARGS.verbose
