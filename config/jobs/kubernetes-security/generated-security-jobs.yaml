@@ -3252,6 +3252,119 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-csi-serial,?($|\s.*)
   - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-e2e-gce-iscsi
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-gce-iscsi
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-gce-iscsi
+    run_if_changed: (pkg\/volume\/iscsi)
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=150
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=ubuntu
+        - --image-family=ubuntu-gke-1804-lts-1
+        - --image-project=ubuntu-os-gke-cloud
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --ginkgo-parallel=30
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi
+        - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]
+          --minStartupPods=8
+        - --timeout=120m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-iscsi
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-b03896b-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-iscsi,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-e2e-gce-iscsi-serial
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-gce-iscsi-serial
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-gce-iscsi-serial
+    run_if_changed: (pkg\/volume\/iscsi)
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=150
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=ubuntu
+        - --image-family=ubuntu-gke-1804-lts-1
+        - --image-project=ubuntu-os-gke-cloud
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi-serial
+        - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]
+          --minStartupPods=8
+        - --timeout=120m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-iscsi-serial
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-b03896b-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-iscsi-serial,?($|\s.*)
+  - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-bazel-build
