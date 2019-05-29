@@ -804,6 +804,12 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: e11d21
+        description: Indicates a PR which contains merge commits.
+        name: do-not-merge/contains-merge-commits
+        target: prs
+        prowPlugin: mergecommitblocker
+        addedBy: prow
       - color: ededed
         description: Indicates a PR lacks a `priority/foo` label and requires one.
         name: needs-priority
