@@ -247,6 +247,12 @@ default:
       target: both
       prowPlugin: lifecycle
       addedBy: anyone
+    - color: 5dfc7d
+      description: Indicates that an issue or PR is triaged and ready to be worked by a contributor.
+      name: lifecycle/ready
+      target: both
+      prowPlugin: lifecycle
+      addedBy: anyone
     - color: "604460"
       description: Denotes an issue or PR that has aged beyond stale and will be auto-closed.
       name: lifecycle/rotten
@@ -283,6 +289,12 @@ default:
       description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
       name: needs-sig
       target: both
+      prowPlugin: require-matching-label
+      addedBy: prow
+    - color: ededed
+      description: Indicates an issue needs to be triaged and lacks a `lifecycle/foo` label.
+      name: needs-triage
+      target: issues
       prowPlugin: require-matching-label
       addedBy: prow
     - color: 15dd18

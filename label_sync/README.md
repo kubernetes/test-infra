@@ -1,6 +1,6 @@
 # label_sync
 
-Update or migrate github labels on repos in a github org based on a YAML file
+Update or migrate github labels on repos in a github org based on a YAML file.
 
 ## Configuration
 
