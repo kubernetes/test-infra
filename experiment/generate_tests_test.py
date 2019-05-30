@@ -43,8 +43,8 @@ class TestGenerateTests(unittest.TestCase):
         generator = E2ETest(self.temp_directory, self.job_name, self.job, self.config)
         _, prow_config, _ = generator.generate()
         dashboards = prow_config["annotations"]["testgrid-dashboards"]
-        assert "sig-release-2.4-blocking" not in dashboards
-        assert "sig-release-2.4-all" in dashboards
+        self.assertFalse("sig-release-2.4-blocking" in dashboards)
+        self.assertTrue("sig-release-2.4-all" in dashboards)
 
     def test_e2etests_testgrid_annotations_blocking_job(self):
         self.job = {
@@ -55,8 +55,8 @@ class TestGenerateTests(unittest.TestCase):
         generator = E2ETest(self.temp_directory, self.job_name, self.job, self.config)
         _, prow_config, _ = generator.generate()
         dashboards = prow_config["annotations"]["testgrid-dashboards"]
-        assert "sig-release-2.4-blocking" in dashboards
-        assert "sig-release-2.4-all" not in dashboards
+        self.assertTrue("sig-release-2.4-blocking" in dashboards)
+        self.assertFalse("sig-release-2.4-all" in dashboards)
 
 
 if __name__ == '__main__':
