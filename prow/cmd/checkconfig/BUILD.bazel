@@ -9,6 +9,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/cmd/checkconfig/api:go_default_library",
         "//prow/config:go_default_library",
         "//prow/errorutil:go_default_library",
         "//prow/external-plugins/needs-rebase/plugin:go_default_library",
@@ -44,7 +45,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/cmd/checkconfig/api:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

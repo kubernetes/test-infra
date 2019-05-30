@@ -276,7 +276,7 @@ func getPresubmitsForPR(c Client, pr *github.PullRequest) (string, []config.Pres
 	presubmits := c.Config.Presubmits[pr.Base.Repo.FullName]
 	var baseSHA string
 	if c.Config.InRepoConfigFor(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name).Enabled {
-		returnedBaseSHA, inRepoPresubmits, err := inrepoconfig.HandlePullRequest(c.Logger, c.Config.ProwConfig, c.GitHubClient, c.GitClient, *pr)
+		returnedBaseSHA, inRepoPresubmits, err := inrepoconfig.HandlePullRequest(c.Logger, c.Config, c.GitHubClient, c.GitClient, *pr)
 		if err != nil {
 			c.Logger.WithError(err).Error("failed to get inrepoconfig")
 			return "", nil, fmt.Errorf("failed to get inrepoconfig: %v", err)

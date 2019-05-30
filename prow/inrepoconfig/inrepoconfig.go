@@ -40,7 +40,7 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 }
 
-func HandlePullRequest(log *logrus.Entry, pc config.ProwConfig, ghc githubClient, gc *git.Client, pr github.PullRequest) (
+func HandlePullRequest(log *logrus.Entry, c *config.Config, ghc githubClient, gc *git.Client, pr github.PullRequest) (
 	string, []config.Presubmit, error) {
 	org, repo, author, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.User.Login, pr.Head.SHA
 
@@ -57,7 +57,7 @@ func HandlePullRequest(log *logrus.Entry, pc config.ProwConfig, ghc githubClient
 		return "", nil, fmt.Errorf("failed to get latest SHA for base ref %q: %v", pr.Base.Ref, err)
 	}
 
-	irc, err := api.New(log, &pc, gc, org, repo, baseSHA, []string{pr.Head.SHA})
+	irc, err := api.New(log, c, gc, org, repo, baseSHA, []string{pr.Head.SHA})
 	if err != nil {
 		log.WithError(err).Error("failed to read JobConfig from repo")
 		status.State = "failure"

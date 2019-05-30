@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	checkconfigapi "k8s.io/test-infra/prow/cmd/checkconfig/api"
 	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
@@ -425,7 +426,7 @@ func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
 	for repo, jobs := range c.Presubmits {
 		for _, job := range jobs {
-			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
+			validationErrs = append(validationErrs, checkconfigapi.ValidatePresubmitJob(repo, job))
 		}
 	}
 	for repo, jobs := range c.Postsubmits {
@@ -437,15 +438,6 @@ func validateJobRequirements(c config.JobConfig) error {
 		validationErrs = append(validationErrs, validatePeriodicJob(job))
 	}
 
-	return errorutil.NewAggregate(validationErrs...)
-}
-
-func validatePresubmitJob(repo string, job config.Presubmit) error {
-	var validationErrs []error
-	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
-	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("name of Presubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
-	}
 	return errorutil.NewAggregate(validationErrs...)
 }
 

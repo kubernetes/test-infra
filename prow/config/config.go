@@ -732,19 +732,19 @@ func (c *Config) finalizeJobConfig() error {
 	c.defaultPeriodicFields(c.Periodics)
 
 	for _, v := range c.AllPresubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
+		if err := ResolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPostsubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
+		if err := ResolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
 
 	for _, v := range c.AllPeriodics() {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
+		if err := ResolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
 			return err
 		}
 	}
@@ -1211,7 +1211,7 @@ func validateDecoration(container v1.Container, config *prowapi.DecorationConfig
 	return nil
 }
 
-func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, buildSpec *buildapi.BuildSpec, presets []Preset) error {
+func ResolvePresets(name string, labels map[string]string, spec *v1.PodSpec, buildSpec *buildapi.BuildSpec, presets []Preset) error {
 	for _, preset := range presets {
 		if spec != nil {
 			if err := mergePreset(preset, labels, spec.Containers, &spec.Volumes); err != nil {

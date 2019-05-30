@@ -686,7 +686,7 @@ func TestMergePreset(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			if err := resolvePresets("foo", tc.jobLabels, tc.pod, tc.buildSpec, tc.presets); err == nil && tc.shouldError {
+			if err := ResolvePresets("foo", tc.jobLabels, tc.pod, tc.buildSpec, tc.presets); err == nil && tc.shouldError {
 				t.Errorf("expected error but got none.")
 			} else if err != nil && !tc.shouldError {
 				t.Errorf("expected no error but got %v.", err)

@@ -6,6 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/inrepoconfig/api",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/cmd/checkconfig/api:go_default_library",
         "//prow/config:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",

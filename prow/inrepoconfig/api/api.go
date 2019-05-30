@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	checkconfigapi "k8s.io/test-infra/prow/cmd/checkconfig/api"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -46,16 +47,33 @@ type InRepoConfig struct {
 	Presubmits []config.Presubmit `json:"presubmits,omitempty"`
 }
 
-// defaultJobConfig defaults the JobConfig. This must be called before accessing any data in it
-func (irc *InRepoConfig) defaultJobConfig(c *config.ProwConfig) {
-	for i := range irc.Presubmits {
-		config.DefaultPresubmitFields(c, &irc.Presubmits[i])
-		irc.Presubmits[i].DecorationConfig = irc.Presubmits[i].DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+// defaultAndValidateInRepoConfig defaults and validates the InRepoConfig. This must be called before
+// accessing any data in it
+func (irc *InRepoConfig) defaultAndValidateInRepoConfig(c *config.Config, orgRepo string) error {
+	if err := config.SetPresubmitRegexes(irc.Presubmits); err != nil {
+		return fmt.Errorf("failed to set Presubmit regexes: %v", err)
 	}
+
+	for i := range irc.Presubmits {
+		ps := &irc.Presubmits[i]
+
+		config.DefaultPresubmitFields(&c.ProwConfig, ps)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		if err := config.ResolvePresets(
+			ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
+			return err
+		}
+
+		if err := checkconfigapi.ValidatePresubmitJob(orgRepo, irc.Presubmits[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // New returns an InRepoConfig for the passed in refs
-func New(log *logrus.Entry, c *config.ProwConfig, gc *git.Client, org, repo, baseRef string, headRefs []string) (*InRepoConfig, error) {
+func New(log *logrus.Entry, c *config.Config, gc *git.Client, org, repo, baseRef string, headRefs []string) (*InRepoConfig, error) {
 	mergeStrategyRaw := ""
 	githubMergeMethod := c.Tide.MergeMethod(org, repo)
 	switch githubMergeMethod {
@@ -99,9 +117,8 @@ func New(log *logrus.Entry, c *config.ProwConfig, gc *git.Client, org, repo, bas
 		return nil, fmt.Errorf("failed to parse %q: %v", ConfigFileName, err)
 	}
 
-	irc.defaultJobConfig(c)
-	if err := config.SetPresubmitRegexes(irc.Presubmits); err != nil {
-		return nil, fmt.Errorf("failed to set Presubmit regexes: %v", err)
+	if err := irc.defaultAndValidateInRepoConfig(c, org+"/"+repo); err != nil {
+		return nil, err
 	}
 
 	return irc, nil
