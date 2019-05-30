@@ -144,12 +144,10 @@ git_repository(
     shallow_since = "1517262872 -0800",
 )
 
-git_repository(
+http_archive(
     name = "build_bazel_rules_nodejs",
-    commit = "0eb4a19507211ab3863f4d82e9412a33f759abcd",
-    remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    shallow_since = "1548802468 -0800",
-    #tag = "0.16.6",
+    sha256 = "395b7568f20822c13fc5abc65b1eced637446389181fda3a108fdd6ff2cac1e9",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.29.2/rules_nodejs-0.29.2.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
@@ -163,20 +161,10 @@ yarn_install(
     yarn_lock = "//:yarn.lock",
 )
 
-http_archive(
-    name = "build_bazel_rules_typescript",
-    sha256 = "136ba6be39b4ff934cc0f41f043912305e98cb62254d9e6af467e247daafcd34",
-    strip_prefix = "rules_typescript-0.22.0",
-    url = "https://github.com/bazelbuild/rules_typescript/archive/0.22.0.zip",
-)
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
 
-# Fetch our Bazel dependencies that aren't distributed on npm
-load("@build_bazel_rules_typescript//:package.bzl", "rules_typescript_dependencies")
+install_bazel_dependencies()
 
-rules_typescript_dependencies()
-
-# Setup TypeScript toolchain
-load("@build_bazel_rules_typescript//:defs.bzl", "ts_setup_workspace")
 load("//def:test_infra.bzl", "http_archive_with_pkg_path")
 
 http_archive_with_pkg_path(
