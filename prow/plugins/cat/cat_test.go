@@ -142,8 +142,61 @@ func TestUrl(t *testing.T) {
 	}
 }
 
+func TestGrumpy(t *testing.T) {
+	cases := []struct {
+		name     string
+		url      string
+		category string
+		key      string
+		movie    bool
+		require  []string
+		deny     []string
+	}{
+		{
+			name:     "category",
+			url:      "http://foo",
+			category: "bar",
+			movie:    false,
+			deny:     []string{grumpyURL},
+		},
+		{
+			name:     "category and movie",
+			url:      "http://foo",
+			category: "this",
+			movie:    true,
+			deny:     []string{grumpyURL},
+		},
+		{
+			name:     "grumpy cat",
+			url:      "http://foo",
+			category: "no",
+			key:      "that",
+			movie:    false,
+			require:  []string{grumpyURL},
+		},
+	}
+
+	for _, tc := range cases {
+		rc := realClowder{
+			url: tc.url,
+			key: tc.key,
+		}
+		url, _ := rc.readCat(tc.category, tc.movie)
+		for _, r := range tc.require {
+			if !strings.Contains(url, r) {
+				t.Errorf("%s: %s does not contain %s", tc.name, url, r)
+			}
+		}
+		for _, d := range tc.deny {
+			if strings.Contains(url, d) {
+				t.Errorf("%s: %s contained unexpected %s", tc.name, url, d)
+			}
+		}
+	}
+}
+
 func TestFormat(t *testing.T) {
-	re := regexp.MustCompile(`\[!\[.+\]\(.+\)\]`)
+	re := regexp.MustCompile(`!\[.+\]\(.+\)`)
 	basicURL := "http://example.com"
 	testcases := []struct {
 		name string
