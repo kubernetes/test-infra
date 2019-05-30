@@ -2,10 +2,14 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["adapter.go"],
+    srcs = [
+        "adapter.go",
+        "trigger.go",
+    ],
     importpath = "k8s.io/test-infra/prow/gerrit/adapter",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/gerrit/client:go_default_library",
         "//prow/kube:go_default_library",
@@ -19,9 +23,12 @@ go_test(
     srcs = ["adapter_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/gerrit/client:go_default_library",
-        "//prow/kube:go_default_library",
+        "//vendor/github.com/andygrunwald/go-gerrit:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
     ],
 )
 

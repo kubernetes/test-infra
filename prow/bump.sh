@@ -44,7 +44,7 @@ SED=sed
 if which gsed &>/dev/null; then
   SED=gsed
 fi
-if ! ($SED --version 2>&1 | grep -q GNU); then
+if ! (${SED} --version 2>&1 | grep -q GNU); then
   echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
   exit 1
 fi
@@ -53,7 +53,7 @@ TAC=tac
 if which gtac &>/dev/null; then
   TAC=gtac
 fi
-if ! which "$TAC" &>/dev/null; then
+if ! which "${TAC}" &>/dev/null; then
   echo "tac (reverse cat) required. If on OS X then 'brew install coreutils'." >&2
   exit 1
 fi
@@ -67,7 +67,7 @@ usage() {
 
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   echo "Detected GOOGLE_APPLICATION_CREDENTIALS, activating..." >&2
-  gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
   gcloud auth configure-docker
 fi
 
@@ -80,8 +80,8 @@ fi
 # List the $1 most recently pushed prow versions
 list-options() {
   count="$1"
-  gcloud container images list-tags gcr.io/k8s-prow/plank --limit="$count" --format='value(tags)' \
-      | grep -o -E 'v[^,]+' | "$TAC"
+  gcloud container images list-tags gcr.io/k8s-prow/plank --limit="${count}" --format='value(tags)' \
+      | grep -o -E 'v[^,]+' | "${TAC}"
 }
 
 # Print 10 most recent prow versions, ask user to select one, which becomes new_version
@@ -97,59 +97,69 @@ list() {
   fi
   new_version=
   for o in "${options[@]}"; do
-    def_opt="$o"
-    echo -e "  $(color-version "$o")"
+    def_opt="${o}"
+    echo -e "  $(color-version "${o}")"
   done
-  read -p "Select version [$(color-version "$def_opt")]: " new_version
+  read -p "Select version [$(color-version "${def_opt}")]: " new_version
   if [[ -z "${new_version:-}" ]]; then
-    new_version="$def_opt"
+    new_version="${def_opt}"
   else
     found=
     for o in "${options[@]}"; do
-      if [[ "$o" == "$new_version" ]]; then
+      if [[ "${o}" == "${new_version}" ]]; then
         found=yes
         break
       fi
     done
-    if [[ -z "$found" ]]; then
-      echo "Invalid version: $new_version" >&2
+    if [[ -z "${found}" ]]; then
+      echo "Invalid version: ${new_version}" >&2
       exit 1
     fi
   fi
 }
 
-if [[ "$cmd" == "--push" ]]; then
-  echo "WARNING: --push is depreacated please use push.sh instead"
+if [[ "${cmd}" == "--push" ]]; then
+  echo "WARNING: --push is deprecated please use push.sh instead"
   "$(dirname "$0")/push.sh"
   exit 0
 fi
 
-if [[ -z "$cmd" || "$cmd" == "--list" ]]; then
+if [[ -z "${cmd}" || "${cmd}" == "--list" ]]; then
   list
-elif [[ "$cmd" =~ v[0-9]{8}-[a-f0-9]{6,9} ]]; then
-  new_version="$cmd"
-elif [[ "$cmd" == "--latest" ]]; then
+elif [[ "${cmd}" =~ v[0-9]{8}-[a-f0-9]{6,9} ]]; then
+  new_version="${cmd}"
+elif [[ "${cmd}" == "--latest" ]]; then
   new_version="$(list-options 1)"
 else
   usage
 fi
 
-# Determine what deployment images we need to update
-echo -n "images: " >&2
+# Determine what deployment images we need to update.
+imagedirs="//prow/... + //label_sync/... + //ghproxy/... + //robots/commenter/..."
 images=("$@")
 if [[ "${#images[@]}" == 0 ]]; then
-  echo -e "querying bazel for $(color-target :image) targets under $(color-target //prow/...) ..." >&2
-  images=($(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename))
+  echo -e "querying bazel for $(color-target :image) targets under $(color-target ${imagedirs}) ..." >&2
+  images=($(bazel query "filter(\".*:image\", ${imagedirs})" | cut -d : -f 1 | xargs -n 1 basename))
   echo -n "images: " >&2
 fi
 echo -e "$(color-image ${images[@]})" >&2
 
 echo -e "Bumping: $(color-image ${images[@]}) to $(color-version ${new_version}) ..." >&2
 
+# Determine which files we need to update.
+configfiles=($(grep -rl -e "gcr.io/k8s-prow/" ../config/jobs))
+configfiles+=(cluster/*.yaml)
+configfiles+=(../label_sync/cluster/*.yaml)
+configfiles+=(cmd/branchprotector/*.yaml)
+configfiles+=("config.yaml")
+
+# Update image tags for the identified images in the identified files.
 for i in "${images[@]}"; do
-  echo -e "  $(color-image $i): $(color-version $new_version)" >&2
-  $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1${new_version}/I" cluster/*.yaml
-  $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1${new_version}/I" config.yaml
+  echo -e "  $(color-image ${i}): $(color-version ${new_version})" >&2
+  filter="s/gcr.io\/k8s-prow\/\(${i}:\)v[a-f0-9-]\+/gcr.io\/k8s-prow\/\1${new_version}/I"
+  for cfg in "${configfiles[@]}"; do
+    ${SED} -i "${filter}" ${cfg}
+  done
 done
 
 echo "Deploy with:" >&2

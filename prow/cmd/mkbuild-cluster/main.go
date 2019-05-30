@@ -26,9 +26,10 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
+	coreapi "k8s.io/api/core/v1"
 
 	"k8s.io/test-infra/prow/kube"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -236,10 +237,11 @@ func do(o options) error {
 	if !o.skipCheck {
 		c, err := kube.NewClient(&newCluster, "kube-system")
 		if err != nil {
-			return err
+			return fmt.Errorf("create client: %v", err)
 		}
 		if _, err = c.ListPods("k8s-app=kube-dns"); err != nil {
-			return fmt.Errorf("authenticated client could not list pods: %v", err)
+			logrus.WithError(err).Errorf("Failed to validate credentials (consider --get-client-cert)")
+			return fmt.Errorf("list all pods to check new credentials: %v", err)
 		}
 	}
 
@@ -260,7 +262,7 @@ func do(o options) error {
 	if err != nil {
 		return fmt.Errorf("read stdin: %v", err)
 	}
-	var s kube.Secret
+	var s coreapi.Secret
 	if err := yaml.Unmarshal(b, &s); err != nil {
 		return fmt.Errorf("unmarshal stdin: %v", err)
 	}

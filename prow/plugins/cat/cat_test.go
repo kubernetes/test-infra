@@ -143,50 +143,34 @@ func TestUrl(t *testing.T) {
 }
 
 func TestFormat(t *testing.T) {
-	re := regexp.MustCompile(`\[!\[.+\]\(.+\)\]\(.+\)`)
+	re := regexp.MustCompile(`\[!\[.+\]\(.+\)\]`)
 	basicURL := "http://example.com"
 	testcases := []struct {
 		name string
-		src  string
 		img  string
 		err  bool
 	}{
 		{
 			name: "basically works",
-			src:  basicURL,
 			img:  basicURL,
 			err:  false,
 		},
 		{
-			name: "empty source",
-			src:  "",
-			img:  basicURL,
-			err:  true,
-		},
-		{
 			name: "empty image",
-			src:  basicURL,
 			img:  "",
 			err:  true,
 		},
 		{
-			name: "bad source",
-			src:  "http://this is not a url",
-			img:  basicURL,
-			err:  true,
-		},
-		{
 			name: "bad image",
-			src:  basicURL,
 			img:  "http://still a bad url",
 			err:  true,
 		},
 	}
 	for _, tc := range testcases {
 		ret, err := catResult{
-			Source: tc.src,
-			Image:  tc.img,
+			Image: tc.img,
 		}.Format()
+
 		switch {
 		case tc.err:
 			if err == nil {
@@ -222,8 +206,7 @@ func TestHttpResponse(t *testing.T) {
 	// create test cases for handling http responses
 	img := ts2.URL + "/cat.jpg"
 	bigimg := ts2.URL + "/bigcat.jpg"
-	src := "http://localhost?kind=source_url"
-	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s","source_url":"%s"}]`, img, src)
+	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s"}]`, img)
 	var testcases = []struct {
 		name     string
 		path     string
@@ -240,7 +223,7 @@ func TestHttpResponse(t *testing.T) {
 		{
 			name:     "image too big",
 			path:     "/too-big",
-			response: fmt.Sprintf(`[{"id":"toobig","url":"%s","source_url":"%s"}]`, bigimg, src),
+			response: fmt.Sprintf(`[{"id":"toobig","url":"%s"}]`, bigimg),
 		},
 		{
 			name: "return-406",
@@ -330,8 +313,6 @@ Available variants:
 	}
 	if c := fc.IssueComments[5][0]; !strings.Contains(c.Body, img) {
 		t.Errorf("missing image url: %s from comment: %v", img, c)
-	} else if !strings.Contains(c.Body, src) {
-		t.Errorf("missing source url: %s from comment: %v", src, c)
 	}
 
 }

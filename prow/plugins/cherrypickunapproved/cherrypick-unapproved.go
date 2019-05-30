@@ -113,7 +113,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 	if hasCherryPickApprovedLabel {
 		if hasCherryPickUnapprovedLabel {
 			if err := gc.RemoveLabel(org, repo, pr.Number, labels.CpUnapproved); err != nil {
-				log.WithError(err).Errorf("Github failed to remove the following label: %s", labels.CpUnapproved)
+				log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labels.CpUnapproved)
 			}
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
@@ -129,7 +129,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 
 	// only add the label and comment if none of the approved and unapproved labels are present
 	if err := gc.AddLabel(org, repo, pr.Number, labels.CpUnapproved); err != nil {
-		log.WithError(err).Errorf("Github failed to add the following label: %s", labels.CpUnapproved)
+		log.WithError(err).Errorf("GitHub failed to add the following label: %s", labels.CpUnapproved)
 	}
 
 	formattedComment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, commentBody)

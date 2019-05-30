@@ -96,7 +96,7 @@ The `--up` flag will tell `kubetest` to turn up a new cluster for you.
 It will first attempt to tear down an old instance of the same cluster.
 
 Currently requires a complicated set of flags and environment variables
-such as `--gcp-project`, `--federation`, etc.
+such as `--gcp-project`, etc.
 
 We are in the process of converting all environment variables into flags. See
 the current set of flag options with `kubetest -h`.
@@ -167,9 +167,9 @@ from the `kubernetes/kubernetes` repo.
 Typically jobs also include a `--test_args=--ginkgo.focus=FOO --ginkgo.skip=BAR`
 flag to filter down to a particular set of interesting tests.
 
-### Upgrade, skew, kubemark, federation
+### Upgrade, skew, kubemark
 
-You can also run `--kubemark` or `--federation` tests instead of the standard
+You can also run `--kubemark` tests instead of the standard
 tests.
 
 Tests can use `--skew` and `--upgrade_args` if they provided multiple

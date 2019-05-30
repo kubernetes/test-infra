@@ -9,10 +9,9 @@ periodics:
     repo: kind
     base_ref: master
     path_alias: sigs.k8s.io/kind
-  always_run: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       command:
       - "./hack/ci/build-all.sh"
 # conformance test against kubernetes master branch with `kind`
@@ -23,9 +22,10 @@ periodics:
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -39,13 +39,6 @@ periodics:
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
-      # kind needs /lib/modules and cgroups from the host
-      volumeMounts:
-      - mountPath: /lib/modules
-        name: modules
-        readOnly: true
-      - mountPath: /sys/fs/cgroup
-        name: cgroup
       resources:
         requests:
           # these are both a bit below peak usage during build
@@ -53,22 +46,6 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-    volumes:
-    - name: modules
-      hostPath:
-        path: /lib/modules
-        type: Directory
-    - name: cgroup
-      hostPath:
-        path: /sys/fs/cgroup
-        type: Directory
-    # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-    # so use ndots 1 to improve dns performance
-    # TODO(bentheelder): consider setting this at the cluster level instead
-    dnsConfig:
-      options:
-        - name: ndots
-          value: "1"
 # conformance test against kubernetes master branch with `kind`, skipping
 # serial tests so it runs in ~20m
 - interval: 20m
@@ -78,9 +55,10 @@ periodics:
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -98,13 +76,6 @@ periodics:
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
-      # kind needs /lib/modules and cgroups from the host
-      volumeMounts:
-      - mountPath: /lib/modules
-        name: modules
-        readOnly: true
-      - mountPath: /sys/fs/cgroup
-        name: cgroup
       resources:
         requests:
           # these are both a bit below peak usage during build
@@ -112,76 +83,6 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-    volumes:
-    - name: modules
-      hostPath:
-        path: /lib/modules
-        type: Directory
-    - name: cgroup
-      hostPath:
-        path: /sys/fs/cgroup
-        type: Directory
-    # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-    # so use ndots 1 to improve dns performance
-    # TODO(bentheelder): consider setting this at the cluster level instead
-    dnsConfig:
-      options:
-        - name: ndots
-          value: "1"
-# conformance test against kubernetes release-1.11 branch with `kind`
-- interval: 1h
-  name: ci-kubernetes-kind-conformance-latest-1-11
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubernetes=release-1.11"
-      - "--repo=sigs.k8s.io/kind=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      # kind needs /lib/modules and cgroups from the host
-      volumeMounts:
-      - mountPath: /lib/modules
-        name: modules
-        readOnly: true
-      - mountPath: /sys/fs/cgroup
-        name: cgroup
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-    volumes:
-    - name: modules
-      hostPath:
-        path: /lib/modules
-        type: Directory
-    - name: cgroup
-      hostPath:
-        path: /sys/fs/cgroup
-        type: Directory
-    # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-    # so use ndots 1 to improve dns performance
-    # TODO(bentheelder): consider setting this at the cluster level instead
-    dnsConfig:
-      options:
-        - name: ndots
-          value: "1"
 # conformance test against kubernetes release-1.12 branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance-latest-1-12
@@ -190,9 +91,10 @@ periodics:
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.12
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -206,13 +108,6 @@ periodics:
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
-      # kind needs /lib/modules and cgroups from the host
-      volumeMounts:
-      - mountPath: /lib/modules
-        name: modules
-        readOnly: true
-      - mountPath: /sys/fs/cgroup
-        name: cgroup
       resources:
         requests:
           # these are both a bit below peak usage during build
@@ -220,19 +115,67 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-    volumes:
-    - name: modules
-      hostPath:
-        path: /lib/modules
-        type: Directory
-    - name: cgroup
-      hostPath:
-        path: /sys/fs/cgroup
-        type: Directory
-    # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-    # so use ndots 1 to improve dns performance
-    # TODO(bentheelder): consider setting this at the cluster level instead
-    dnsConfig:
-      options:
-        - name: ndots
-          value: "1"
+# conformance test against kubernetes release-1.13 branch with `kind`
+- interval: 1h
+  name: ci-kubernetes-kind-conformance-latest-1-13
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.13
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=release-1.13"
+      - "--repo=sigs.k8s.io/kind=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=execute"
+      - "--"
+      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+# conformance test against kubernetes release-1.14 branch with `kind`
+- interval: 1h
+  name: ci-kubernetes-kind-conformance-latest-1-14
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.14
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=release-1.14"
+      - "--repo=sigs.k8s.io/kind=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=execute"
+      - "--"
+      - "./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m

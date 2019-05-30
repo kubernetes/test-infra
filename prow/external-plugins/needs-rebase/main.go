@@ -130,7 +130,7 @@ func main() {
 // then dispatches them to the appropriate plugins.
 type Server struct {
 	tokenGenerator func() []byte
-	ghc            *github.Client
+	ghc            github.Client
 	log            *logrus.Entry
 }
 
@@ -173,7 +173,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func periodicUpdate(log *logrus.Entry, pa *plugins.ConfigAgent, ghc *github.Client, period time.Duration) {
+func periodicUpdate(log *logrus.Entry, pa *plugins.ConfigAgent, ghc github.Client, period time.Duration) {
 	update := func() {
 		start := time.Now()
 		if err := plugin.HandleAll(log, ghc, pa.Config()); err != nil {

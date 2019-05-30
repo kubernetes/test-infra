@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -37,6 +38,7 @@ import (
 
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
+	"k8s.io/test-infra/kubetest/kind"
 	"k8s.io/test-infra/kubetest/kubeadmdind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
@@ -56,87 +58,83 @@ var (
 )
 
 type options struct {
-	build               buildStrategy
-	buildFederation     buildFederationStrategy
-	charts              bool
-	checkLeaks          bool
-	checkSkew           bool
-	cluster             string
-	clusterIPRange      string
-	deployment          string
-	down                bool
-	dump                string
-	dumpPreTestLogs     string
-	extract             extractStrategies
-	extractFederation   extractFederationStrategies
-	extractSource       bool
-	federation          bool
-	flushMemAfterBuild  bool
-	focusRegex          string
-	gcpCloudSdk         string
-	gcpMasterImage      string
-	gcpMasterSize       string
-	gcpNetwork          string
-	gcpNodeImage        string
-	gcpImageFamily      string
-	gcpImageProject     string
-	gcpNodes            string
-	gcpNodeSize         string
-	gcpProject          string
-	gcpProjectType      string
-	gcpServiceAccount   string
-	gcpRegion           string
-	gcpZone             string
-	ginkgoParallel      ginkgoParallelValue
-	kubecfg             string
-	kubemark            bool
-	kubemarkMasterSize  string
-	kubemarkNodes       string // TODO(fejta): switch to int after migration
-	logexporterGCSPath  string
-	metadataSources     string
-	multiClusters       multiClusterDeployment
-	multipleFederations bool
-	noAllowDup          bool
-	nodeArgs            string
-	nodeTestArgs        string
-	nodeTests           bool
-	provider            string
-	publish             string
-	runtimeConfig       string
-	save                string
-	skew                bool
-	skipRegex           string
-	soak                bool
-	soakDuration        time.Duration
-	sshUser             string
-	stage               stageStrategy
-	stageFederation     stageFederationStrategy
-	test                bool
-	testArgs            string
-	testCmd             string
-	testCmdName         string
-	testCmdArgs         []string
-	up                  bool
-	upgradeArgs         string
+	build              buildStrategy
+	charts             bool
+	checkLeaks         bool
+	checkSkew          bool
+	cluster            string
+	clusterIPRange     string
+	deployment         string
+	down               bool
+	dump               string
+	dumpPreTestLogs    string
+	extract            extractStrategies
+	extractSource      bool
+	flushMemAfterBuild bool
+	focusRegex         string
+	gcpCloudSdk        string
+	gcpMasterImage     string
+	gcpMasterSize      string
+	gcpNetwork         string
+	gcpNodeImage       string
+	gcpImageFamily     string
+	gcpImageProject    string
+	gcpNodes           string
+	gcpNodeSize        string
+	gcpProject         string
+	gcpProjectType     string
+	gcpServiceAccount  string
+	// gcpSSHProxyInstanceName is the name of the vm instance which ip address will be used to set the
+	// KUBE_SSH_BASTION env. If set, it will result in proxying ssh connections in tests through the
+	// "bastion". It's useful for clusters with nodes without public ssh access, e.g. nodes without
+	// public ip addresses. Works only for gcp providers (gce, gke).
+	gcpSSHProxyInstanceName string
+	gcpRegion               string
+	gcpZone                 string
+	ginkgoParallel          ginkgoParallelValue
+	kubecfg                 string
+	kubemark                bool
+	kubemarkMasterSize      string
+	kubemarkNodes           string // TODO(fejta): switch to int after migration
+	logexporterGCSPath      string
+	metadataSources         string
+	noAllowDup              bool
+	nodeArgs                string
+	nodeTestArgs            string
+	nodeTests               bool
+	provider                string
+	publish                 string
+	runtimeConfig           string
+	save                    string
+	skew                    bool
+	skipRegex               string
+	soak                    bool
+	soakDuration            time.Duration
+	sshUser                 string
+	stage                   stageStrategy
+	test                    bool
+	testArgs                string
+	testCmd                 string
+	testCmdName             string
+	testCmdArgs             []string
+	up                      bool
+	upgradeArgs             string
 }
 
 func defineFlags() *options {
 	o := options{}
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
-	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/eks/kops/kubernetes-anywhere/node/local")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/gke/eks/kind/kops/kubernetes-anywhere/node/local")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
-	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
-	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deployment=none")
 	flag.BoolVar(&o.flushMemAfterBuild, "flush-mem-after-build", false, "If true, try to flush container memory after building")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
 	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
@@ -153,6 +151,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpImageProject, "image-project", "", "Project containing node image family, required when --gcp-node-image=CUSTOM")
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
 	flag.StringVar(&o.gcpNodeSize, "gcp-node-size", "", "(--provider=gce only) Size of nodes to create (e.g n1-standard-1).")
+	flag.StringVar(&o.gcpSSHProxyInstanceName, "gcp-ssh-proxy-instance-name", "", "(--provider=gce|gke only) If set, will result in proxing the ssh connections via the provided instance name while running tests")
 	flag.StringVar(&o.kubecfg, "kubeconfig", "", "The location of a kubeconfig file.")
 	flag.StringVar(&o.focusRegex, "ginkgo-focus", "", "The ginkgo regex to focus. Currently only respected for (dind).")
 	flag.StringVar(&o.skipRegex, "ginkgo-skip", "", "The ginkgo regex to skip. Currently only respected for (dind).")
@@ -161,8 +160,6 @@ func defineFlags() *options {
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "5", "Number of kubemark nodes to start (only relevant if --kubemark=true).")
 	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
 	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
-	flag.Var(&o.multiClusters, "multi-clusters", "If set, bring up/down multiple clusters specified. Format is [Zone1:]Cluster1[,[ZoneN:]ClusterN]]*. Zone is optional and default zone is used if zone is not specified")
-	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
 	flag.StringVar(&o.nodeArgs, "node-args", "", "Args for node e2e tests.")
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
@@ -176,7 +173,6 @@ func defineFlags() *options {
 	flag.BoolVar(&o.soak, "soak", false, "If true, job runs in soak mode")
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
-	flag.Var(&o.stageFederation, "stage-federation", "Upload federation binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
@@ -237,21 +233,20 @@ type publisher interface {
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":
-		return newBash(&o.clusterIPRange), nil
+		return newBash(&o.clusterIPRange, o.gcpProject, o.gcpZone, o.gcpSSHProxyInstanceName, o.provider), nil
 	case "conformance":
 		return conformance.NewDeployer(o.kubecfg)
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, o.gcpSSHProxyInstanceName, &o.testArgs, &o.upgradeArgs)
 	case "eks":
 		return newEKS(timeout, verbose)
+	case "kind":
+		return kind.NewDeployer(control, string(o.build))
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "kubeadm-dind":
 		return kubeadmdind.NewDeployer(control)
 	case "kubernetes-anywhere":
-		if o.multiClusters.Enabled() {
-			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
-		}
 		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
 	case "node":
 		return nodeDeploy{}, nil
@@ -267,9 +262,6 @@ func getDeployer(o *options) (deployer, error) {
 }
 
 func validateFlags(o *options) error {
-	if o.multiClusters.Enabled() && o.deployment != "kubernetes-anywhere" {
-		return errors.New("--multi-clusters flag cannot be passed with deployments other than 'kubernetes-anywhere'")
-	}
 	if !o.extract.Enabled() && o.extractSource {
 		return errors.New("--extract-source flag cannot be passed without --extract")
 	}
@@ -298,6 +290,16 @@ func main() {
 	// do things when we know we are running in the kubetest image
 	if os.Getenv("KUBETEST_IN_DOCKER") == "true" {
 		o.flushMemAfterBuild = true
+	}
+	// sanity fix for kind deployer, not set for other deployers to avoid
+	// breaking changes...
+	if o.deployment == "kind" {
+		// always default --dump for kind, in CI use $ARTIFACTS
+		artifacts := os.Getenv("ARTIFACTS")
+		if artifacts == "" {
+			artifacts = "./_artifacts"
+		}
+		o.dump = artifacts
 	}
 
 	err := complete(o)
@@ -336,9 +338,6 @@ func complete(o *options) error {
 	if err := prepare(o); err != nil {
 		return fmt.Errorf("failed to prepare test environment: %v", err)
 	}
-	if err := prepareFederation(o); err != nil {
-		return fmt.Errorf("failed to prepare federation test environment: %v", err)
-	}
 	// Get the deployer before we acquire k8s so any additional flag
 	// verifications happen early.
 	deploy, err := getDeployer(o)
@@ -360,11 +359,8 @@ func complete(o *options) error {
 		}
 	}
 
-	if err := acquireKubernetes(o); err != nil {
+	if err := acquireKubernetes(o, deploy); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
-	}
-	if err := acquireFederation(o); err != nil {
-		return fmt.Errorf("failed to acquire federation binaries: %v", err)
 	}
 	if o.extract.Enabled() {
 		// If we specified `--extract-source` we will already be in the correct directory
@@ -385,16 +381,10 @@ func complete(o *options) error {
 		go func() {
 			for range c {
 				log.Print("Captured ^C, gracefully attempting to cleanup resources..")
-				var fedErr, err error
-				if o.federation {
-					if fedErr = fedDown(); fedErr != nil {
-						log.Printf("Tearing down federation failed: %v", fedErr)
-					}
-				}
 				if err = deploy.Down(); err != nil {
 					log.Printf("Tearing down deployment failed: %v", err)
 				}
-				if fedErr != nil || err != nil {
+				if err != nil {
 					os.Exit(1)
 				}
 
@@ -416,10 +406,16 @@ func complete(o *options) error {
 	return nil
 }
 
-func acquireKubernetes(o *options) error {
+func acquireKubernetes(o *options, d deployer) error {
 	// Potentially build kubernetes
 	if o.build.Enabled() {
-		err := control.XMLWrap(&suite, "Build", o.build.Build)
+		var err error
+		// kind deployer manages build
+		if k, ok := d.(*kind.Deployer); ok {
+			err = control.XMLWrap(&suite, "Build", k.Build)
+		} else {
+			err = control.XMLWrap(&suite, "Build", o.build.Build)
+		}
 		if o.flushMemAfterBuild {
 			util.FlushMem()
 		}
@@ -431,7 +427,7 @@ func acquireKubernetes(o *options) error {
 	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
 		if err := control.XMLWrap(&suite, "Stage", func() error {
-			return o.stage.Stage(o.federation, o.noAllowDup)
+			return o.stage.Stage(o.noAllowDup)
 		}); err != nil {
 			return err
 		}
@@ -441,8 +437,7 @@ func acquireKubernetes(o *options) error {
 	if o.extract.Enabled() {
 		err := control.XMLWrap(&suite, "Extract", func() error {
 			// Should we restore a previous state?
-			// Restore if we are not upping the cluster or we are bringing up
-			// a federation control plane without the federated clusters.
+			// Restore if we are not upping the cluster
 			if o.save != "" {
 				if !o.up {
 					// Restore version and .kube/config from --up
@@ -453,11 +448,6 @@ func acquireKubernetes(o *options) error {
 							option: o.save,
 						},
 					}
-				} else if o.federation && o.up && o.deployment == "none" {
-					// Only restore .kube/config from previous --up, use the regular
-					// extraction strategy to restore version.
-					log.Printf("Load kubeconfig from %s", o.save)
-					loadKubeconfig(o.save)
 				}
 			}
 
@@ -467,37 +457,6 @@ func acquireKubernetes(o *options) error {
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func acquireFederation(o *options) error {
-	// Potentially build federation
-	if o.buildFederation.Enabled() {
-		err := control.XMLWrap(&suite, "BuildFederation", o.buildFederation.Build)
-		if o.flushMemAfterBuild {
-			util.FlushMem()
-		}
-		if err != nil {
-			return err
-		}
-	}
-
-	// Potentially stage federation binaries somewhere on GCS
-	if o.stageFederation.Enabled() {
-		if err := control.XMLWrap(&suite, "StageFederation", func() error {
-			return o.stageFederation.Stage()
-		}); err != nil {
-			return err
-		}
-	}
-
-	// Potentially download existing federation binaries and extract them.
-	if o.extractFederation.Enabled() {
-		err := control.XMLWrap(&suite, "ExtractFederation", func() error {
-			return o.extractFederation.Extract(o.gcpProject, o.gcpZone)
-		})
-		return err
 	}
 	return nil
 }
@@ -772,7 +731,10 @@ func prepareGcp(o *options) error {
 
 		log.Printf("provider %v, will acquire project type %v from boskos", o.provider, resType)
 
-		p, err := boskos.Acquire(resType, "free", "busy")
+		// let's retry 5min to get next available resource
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+		defer cancel()
+		p, err := boskos.AcquireWait(ctx, resType, "free", "busy")
 		if err != nil {
 			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
 		}
@@ -971,28 +933,6 @@ func prepare(o *options) error {
 		return err
 	}
 
-	return nil
-}
-
-func prepareFederation(o *options) error {
-	if o.multipleFederations {
-		// TODO(fejta): use boskos to grab a federation cluster
-		// Note: EXECUTOR_NUMBER and NODE_NAME are Jenkins
-		// specific environment variables. So this doesn't work
-		// when we move away from Jenkins.
-		execNum := os.Getenv("EXECUTOR_NUMBER")
-		if execNum == "" {
-			execNum = "0"
-		}
-		suffix := fmt.Sprintf("%s-%s", os.Getenv("NODE_NAME"), execNum)
-		federationName := fmt.Sprintf("e2e-f8n-%s", suffix)
-		federationSystemNamespace := fmt.Sprintf("f8n-system-%s", suffix)
-		err := os.Setenv("FEDERATION_NAME", federationName)
-		if err != nil {
-			return err
-		}
-		return os.Setenv("FEDERATION_NAMESPACE", federationSystemNamespace)
-	}
 	return nil
 }
 

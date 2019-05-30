@@ -17,28 +17,36 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# https://github.com/kubernetes/test-infra/issues/5699#issuecomment-348350792
-cd $(git rev-parse --show-toplevel)
-
-# Old way of running gazelle and kazel by first go installing them
-deprecated-update() {
-  OUTPUT_GOBIN="./_output/bin"
-  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/k8s.io/repo-infra/kazel
-
-  "${OUTPUT_GOBIN}/gazelle" fix --external=vendored --mode=fix
-  "${OUTPUT_GOBIN}/kazel" --cfg-path=./hack/.kazelcfg.json
-}
-
-# Ensure ./vendor/BUILD.bazel exists
-mkdir -p ./vendor
-touch "./vendor/BUILD.bazel"
-
-if ! which bazel &> /dev/null; then
-  echo "Bazel is the preferred way to build and test the test-infra repo." >&2
-  echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
-  deprecated-update
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating bazel rules..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
+    bazel run @io_k8s_test_infra//hack:update-bazel
+  )
+  exit 0
+else
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:update-bazel
+  )
   exit 0
 fi
-bazel run //:gazelle
-bazel run //:kazel
+
+gazelle=$(realpath "$1")
+kazel=$(realpath "$2")
+
+cd "$BUILD_WORKSPACE_DIRECTORY"
+
+if [[ ! -f go.mod ]]; then
+    echo "No module defined, see https://github.com/golang/go/wiki/Modules#how-to-define-a-module" >&2
+    exit 1
+fi
+
+"$gazelle" fix --external=vendored
+"$kazel" --cfg-path=./hack/.kazelcfg.json
+"$gazelle" fix --external=vendored # TODO(fejta): remove this

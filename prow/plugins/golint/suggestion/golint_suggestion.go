@@ -18,8 +18,8 @@ package suggestion
 
 import (
 	"fmt"
-	"github.com/golang/lint"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/lint"
 	"regexp"
 	"strings"
 )

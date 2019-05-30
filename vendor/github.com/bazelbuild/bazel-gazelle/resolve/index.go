@@ -64,16 +64,17 @@ type Resolver interface {
 // RuleIndex is a table of rules in a workspace, indexed by label and by
 // import path. Used by Resolver to map import paths to labels.
 type RuleIndex struct {
-	rules          []*ruleRecord
-	labelMap       map[label.Label]*ruleRecord
-	importMap      map[ImportSpec][]*ruleRecord
-	kindToResolver map[string]Resolver
+	rules     []*ruleRecord
+	labelMap  map[label.Label]*ruleRecord
+	importMap map[ImportSpec][]*ruleRecord
+	mrslv     func(r *rule.Rule, pkgRel string) Resolver
 }
 
 // ruleRecord contains information about a rule relevant to import indexing.
 type ruleRecord struct {
 	rule  *rule.Rule
 	label label.Label
+	file  *rule.File
 
 	// importedAs is a list of ImportSpecs by which this rule may be imported.
 	// Used to build a map from ImportSpecs to ruleRecords.
@@ -96,10 +97,10 @@ type ruleRecord struct {
 //
 // kindToResolver is a map from rule kinds (for example, "go_library") to
 // Resolvers that support those kinds.
-func NewRuleIndex(kindToResolver map[string]Resolver) *RuleIndex {
+func NewRuleIndex(mrslv func(r *rule.Rule, pkgRel string) Resolver) *RuleIndex {
 	return &RuleIndex{
-		labelMap:       make(map[label.Label]*ruleRecord),
-		kindToResolver: kindToResolver,
+		labelMap: make(map[label.Label]*ruleRecord),
+		mrslv:    mrslv,
 	}
 }
 
@@ -110,7 +111,7 @@ func NewRuleIndex(kindToResolver map[string]Resolver) *RuleIndex {
 // AddRule may only be called before Finish.
 func (ix *RuleIndex) AddRule(c *config.Config, r *rule.Rule, f *rule.File) {
 	var imps []ImportSpec
-	if rslv, ok := ix.kindToResolver[r.Kind()]; ok {
+	if rslv := ix.mrslv(r, f.Pkg); rslv != nil {
 		imps = rslv.Imports(c, r, f)
 	}
 	// If imps == nil, the rule is not importable. If imps is the empty slice,
@@ -122,6 +123,7 @@ func (ix *RuleIndex) AddRule(c *config.Config, r *rule.Rule, f *rule.File) {
 	record := &ruleRecord{
 		rule:       r,
 		label:      label.New(c.RepoName, f.Pkg, r.Name()),
+		file:       f,
 		importedAs: imps,
 	}
 	if _, ok := ix.labelMap[record.label]; ok {
@@ -149,8 +151,9 @@ func (ix *RuleIndex) collectEmbeds(r *ruleRecord) {
 	if r.didCollectEmbeds {
 		return
 	}
+	resolver := ix.mrslv(r.rule, r.file.Pkg)
 	r.didCollectEmbeds = true
-	embedLabels := ix.kindToResolver[r.rule.Kind()].Embeds(r.rule, r.label)
+	embedLabels := resolver.Embeds(r.rule, r.label)
 	r.embeds = embedLabels
 	for _, e := range embedLabels {
 		er, ok := ix.findRuleByLabel(e, r.label)
@@ -158,7 +161,7 @@ func (ix *RuleIndex) collectEmbeds(r *ruleRecord) {
 			continue
 		}
 		ix.collectEmbeds(er)
-		if ix.kindToResolver[r.rule.Kind()] == ix.kindToResolver[er.rule.Kind()] {
+		if resolver == ix.mrslv(er.rule, er.file.Pkg) {
 			er.embedded = true
 			r.embeds = append(r.embeds, er.embeds...)
 		}
@@ -215,7 +218,7 @@ func (ix *RuleIndex) FindRulesByImport(imp ImportSpec, lang string) []FindResult
 	matches := ix.importMap[imp]
 	results := make([]FindResult, 0, len(matches))
 	for _, m := range matches {
-		if ix.kindToResolver[m.rule.Kind()].Name() != lang {
+		if ix.mrslv(m.rule, "").Name() != lang {
 			continue
 		}
 		results = append(results, FindResult{

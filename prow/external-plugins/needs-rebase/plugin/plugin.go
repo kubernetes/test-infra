@@ -65,8 +65,8 @@ The plugin reacts to commit changes on PRs in addition to periodically scanning 
 		nil
 }
 
-// HandleEvent handles a Github PR event to determine if the "needs-rebase"
-// label needs to be added or removed. It depends on Github mergeability check
+// HandleEvent handles a GitHub PR event to determine if the "needs-rebase"
+// label needs to be added or removed. It depends on GitHub mergeability check
 // to decide the need for a rebase.
 func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
@@ -97,7 +97,7 @@ func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEve
 
 // HandleAll checks all orgs and repos that enabled this plugin for open PRs to
 // determine if the "needs-rebase" label needs to be added or removed. It
-// depends on Github's mergeability check to decide the need for a rebase.
+// depends on GitHub's mergeability check to decide the need for a rebase.
 func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration) error {
 	log.Info("Checking all PRs.")
 	orgs, repos := config.EnabledReposForExternalPlugin(PluginName)
@@ -158,7 +158,7 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 
 // takeAction adds or removes the "needs-rebase" label based on the current
 // state of the PR (hasLabel and mergeable). It also handles adding and
-// removing Github comments notifying the PR author that a rebase is needed.
+// removing GitHub comments notifying the PR author that a rebase is needed.
 func takeAction(log *logrus.Entry, ghc githubClient, org, repo string, num int, author string, hasLabel, mergeable bool) error {
 	if !mergeable && !hasLabel {
 		if err := ghc.AddLabel(org, repo, num, labels.NeedsRebase); err != nil {

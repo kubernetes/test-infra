@@ -33,9 +33,9 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-type fakeGithubClient map[string][]string
+type fakeGitHubClient map[string][]string
 
-func (fghc fakeGithubClient) GetRepos(org string, _ bool) ([]github.Repo, error) {
+func (fghc fakeGitHubClient) GetRepos(org string, _ bool) ([]github.Repo, error) {
 	var repos []github.Repo
 	for _, repo := range fghc[org] {
 		repos = append(repos, github.Repo{FullName: fmt.Sprintf("%s/%s", org, repo)})
@@ -52,7 +52,7 @@ func (fpa fakePluginAgent) Config() *plugins.Configuration {
 
 func TestGeneratePluginHelp(t *testing.T) {
 	orgToRepos := map[string][]string{"org1": {"repo1", "repo2", "repo3"}, "org2": {"repo1"}}
-	fghc := fakeGithubClient(orgToRepos)
+	fghc := fakeGitHubClient(orgToRepos)
 
 	normalHelp := map[string]pluginhelp.PluginHelp{
 		"org-plugin": {Description: "org-plugin", Config: map[string]string{"": "overall config"}},

@@ -80,7 +80,7 @@ func MapExprStrings(e bzl.Expr, f func(string) string) bzl.Expr {
 		return &ret
 
 	case *bzl.CallExpr:
-		if x, ok := expr.X.(*bzl.LiteralExpr); !ok || x.Token != "select" || len(expr.List) != 1 {
+		if x, ok := expr.X.(*bzl.Ident); !ok || x.Name != "select" || len(expr.List) != 1 {
 			log.Panicf("unexpected call expression in generated imports: %#v", e)
 		}
 		arg := MapExprStrings(expr.List[0], f)
@@ -170,7 +170,7 @@ func FlattenExpr(e bzl.Expr) bzl.Expr {
 
 func isScalar(e bzl.Expr) bool {
 	switch e.(type) {
-	case *bzl.StringExpr, *bzl.LiteralExpr:
+	case *bzl.StringExpr, *bzl.LiteralExpr, *bzl.Ident:
 		return true
 	default:
 		return false
@@ -250,8 +250,8 @@ func extractPlatformStringsExprs(expr bzl.Expr) (platformStringsExprs, error) {
 			ps.generic = part
 
 		case *bzl.CallExpr:
-			x, ok := part.X.(*bzl.LiteralExpr)
-			if !ok || x.Token != "select" || len(part.List) != 1 {
+			x, ok := part.X.(*bzl.Ident)
+			if !ok || x.Name != "select" || len(part.List) != 1 {
 				return platformStringsExprs{}, fmt.Errorf("expression could not be matched: callee other than select or wrong number of args")
 			}
 			arg, ok := part.List[0].(*bzl.DictExpr)
@@ -307,7 +307,7 @@ func extractPlatformStringsExprs(expr bzl.Expr) (platformStringsExprs, error) {
 func makePlatformStringsExpr(ps platformStringsExprs) bzl.Expr {
 	makeSelect := func(dict *bzl.DictExpr) bzl.Expr {
 		return &bzl.CallExpr{
-			X:    &bzl.LiteralExpr{Token: "select"},
+			X:    &bzl.Ident{Name: "select"},
 			List: []bzl.Expr{dict},
 		}
 	}

@@ -44,14 +44,14 @@ SED=sed
 if which gsed &>/dev/null; then
   SED=gsed
 fi
-if ! ($SED --version 2>&1 | grep -q GNU); then
+if ! (${SED} --version 2>&1 | grep -q GNU); then
   echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
   exit 1
 fi
 
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   echo "Detected GOOGLE_APPLICATION_CREDENTIALS, activating..." >&2
-  gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
   gcloud auth configure-docker
 fi
 
@@ -64,4 +64,14 @@ if [[ "${new_version}" == *-dirty ]]; then
   exit 1
 fi
 echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
-bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+# Remove retries after https://github.com/bazelbuild/rules_docker/issues/673
+for i in {1..3}; do
+  if bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64; then
+    exit 0
+  elif [[ "$i" == 3 ]]; then
+    echo "Failed"
+    exit 1
+  fi
+  echo "Failed attempt $i, retrying..."
+  sleep 5
+done

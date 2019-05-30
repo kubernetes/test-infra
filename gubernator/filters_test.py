@@ -150,10 +150,10 @@ class HelperTest(unittest.TestCase):
     def test_gcs_browse_url(self):
         self.assertEqual(
             filters.do_gcs_browse_url('/k8s/foo'),
-            'http://gcsweb.k8s.io/gcs/k8s/foo/')
+            'https://gcsweb.k8s.io/gcs/k8s/foo/')
         self.assertEqual(
             filters.do_gcs_browse_url('/k8s/bar/'),
-            'http://gcsweb.k8s.io/gcs/k8s/bar/')
+            'https://gcsweb.k8s.io/gcs/k8s/bar/')
 
     def test_pod_name(self):
         self.assertEqual(filters.do_parse_pod_name("start pod 'client-c6671' to"), 'client-c6671')

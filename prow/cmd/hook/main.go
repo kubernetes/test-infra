@@ -26,7 +26,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -36,8 +35,10 @@ import (
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
 
@@ -50,7 +51,7 @@ type options struct {
 
 	dryRun      bool
 	gracePeriod time.Duration
-	kubernetes  prowflagutil.KubernetesOptions
+	kubernetes  prowflagutil.ExperimentalKubernetesOptions
 	github      prowflagutil.GitHubOptions
 
 	webhookSecretFile string
@@ -67,12 +68,11 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
-	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 
@@ -84,14 +84,15 @@ func gatherOptions() options {
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func main() {
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+		logrus.WithError(err).Fatal("Invalid options")
 	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
@@ -126,9 +127,14 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		logrus.WithError(err).Fatal("Error getting Kubernetes client for infrastructure cluster.")
+	}
+
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
 	}
 
 	var slackClient *slack.Client
@@ -141,25 +147,36 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
-	clientAgent := &plugins.ClientAgent{
-		GitHubClient: githubClient,
-		KubeClient:   kubeClient,
-		GitClient:    gitClient,
-		SlackClient:  slackClient,
-	}
-
 	pluginAgent := &plugins.ConfigAgent{}
 	if err := pluginAgent.Start(o.pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
+	mdYAMLEnabled := func(org, repo string) bool {
+		return pluginAgent.Config().MDYAMLEnabled(org, repo)
+	}
+	skipCollaborators := func(org, repo string) bool {
+		return pluginAgent.Config().SkipCollaborators(org, repo)
+	}
+	ownersDirBlacklist := func() config.OwnersDirBlacklist {
+		return configAgent.Config().OwnersDirBlacklist
+	}
+	ownersClient := repoowners.NewClient(gitClient, githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
+
+	clientAgent := &plugins.ClientAgent{
+		GitHubClient:     githubClient,
+		ProwJobClient:    prowJobClient,
+		KubernetesClient: infrastructureClient,
+		GitClient:        gitClient,
+		SlackClient:      slackClient,
+		OwnersClient:     ownersClient,
+	}
+
 	promMetrics := hook.NewMetrics()
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Expose prometheus metrics
 	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("hook", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	metrics.ExposeMetrics("hook", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,
@@ -170,15 +187,20 @@ func main() {
 	}
 	defer server.GracefulShutdown()
 
+	health := pjutil.NewHealth()
+
+	// TODO remove this health endpoint when the migration to health endpoint is done
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-	http.Handle("/metrics", promhttp.Handler())
+
 	// For /hook, handle a webhook normally.
 	http.Handle("/hook", server)
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
 	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
+
+	health.ServeReady()
 
 	// Shutdown gracefully on SIGTERM or SIGINT
 	sig := make(chan os.Signal, 1)

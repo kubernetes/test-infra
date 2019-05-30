@@ -1,0 +1,66 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image", "prow_push")
+
+prow_image(name = "image")
+
+prow_push(
+    name = "push",
+    images = {
+        "{STABLE_DOCKER_REPO}/resultstore:{DOCKER_TAG}": ":image",
+        "{STABLE_DOCKER_REPO}/resultstore:latest": ":image",
+        "{STABLE_DOCKER_REPO}/resultstore:latest-{BUILD_USER}": ":image",
+    },
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "convert.go",
+        "download.go",
+        "main.go",
+        "upload.go",
+    ],
+    importpath = "k8s.io/test-infra/experiment/resultstore",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//prow/flagutil:go_default_library",
+        "//prow/logrusutil:go_default_library",
+        "//testgrid/config:go_default_library",
+        "//testgrid/metadata:go_default_library",
+        "//testgrid/resultstore:go_default_library",
+        "//testgrid/util/gcs:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "resultstore",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["main_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//testgrid/metadata:go_default_library",
+        "//testgrid/util/gcs:go_default_library",
+    ],
+)

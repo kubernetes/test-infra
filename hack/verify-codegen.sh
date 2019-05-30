@@ -17,32 +17,36 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(git rev-parse --show-toplevel)
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Validating codegen files..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-codegen
+  )
+  exit 0
+fi
+
+SCRIPT_ROOT=$PWD
 
 DIFFROOT="${SCRIPT_ROOT}/prow"
-TMP_DIFFROOT="${SCRIPT_ROOT}/_tmp/prow"
-_tmp="${SCRIPT_ROOT}/_tmp"
-
-cleanup() {
-  rm -rf "${_tmp}"
-}
-trap "cleanup" EXIT SIGINT
-
-cleanup
+TMP_DIFFROOT="${TEST_TMPDIR}/prow"
 
 mkdir -p "${TMP_DIFFROOT}"
 cp -a "${DIFFROOT}"/{apis,client} "${TMP_DIFFROOT}"
 
-"${SCRIPT_ROOT}/hack/update-codegen.sh"
+BUILD_WORKSPACE_DIRECTORY="$SCRIPT_ROOT" "$@"
 echo "diffing ${DIFFROOT} against freshly generated codegen"
 ret=0
 diff -Naupr "${DIFFROOT}/apis" "${TMP_DIFFROOT}/apis" || ret=$?
 diff -Naupr "${DIFFROOT}/client" "${TMP_DIFFROOT}/client" || ret=$?
 cp -a "${TMP_DIFFROOT}"/{apis,client} "${DIFFROOT}"
-if [[ $ret -eq 0 ]]
-then
+if [[ ${ret} -eq 0 ]]; then
   echo "${DIFFROOT} up to date."
-else
-  echo "${DIFFROOT} is out of date. Please run hack/update-codegen.sh"
-  exit 1
+  exit 0
 fi
+echo "ERROR: out of date codegen files. Fix with hack/update-codegen.sh" >&2
+exit 1

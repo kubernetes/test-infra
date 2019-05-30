@@ -31,12 +31,16 @@ spec:
       # serviceAccountName: "tide" # Uncomment for use with RBAC
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190111-2435ec2
+        image: gcr.io/k8s-prow/tide:v20190528-0d7c4b53a
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --gcs-credentials-file=/etc/service-account/service-account.json
+        - --history-uri=gs://k8s-prow/tide-history.json
+        - --status-path=gs://k8s-prow/tide-status-checkpoint.yaml
         ports:
           - name: http
             containerPort: 8888
@@ -50,6 +54,9 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        - name: service-account
+          mountPath: /etc/service-account
+          readOnly: true
       volumes:
       - name: oauth
         secret:
@@ -60,3 +67,6 @@ spec:
       - name: job-config
         configMap:
           name: job-config
+      - name: service-account
+        secret:
+          secretName: tide-history-service-account

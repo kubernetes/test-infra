@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // SecurityGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSecurityGroups
@@ -60,40 +62,82 @@ func (SecurityGroups) MarkAndSweep(sess *session.Session, acct string, region st
 			// TODO(zmerlynn): Is there really no better way to detect this?
 			continue
 		}
+
 		s := &securityGroup{Account: acct, Region: region, ID: *sg.GroupId}
 		addRefs(ingress, *sg.GroupId, acct, sg.IpPermissions)
 		addRefs(egress, *sg.GroupId, acct, sg.IpPermissionsEgress)
 		if set.Mark(s) {
-			glog.Warningf("%s: deleting %T: %v", s.ARN(), sg, sg)
+			klog.Warningf("%s: deleting %T: %v", s.ARN(), sg, sg)
 			toDelete = append(toDelete, s)
 		}
 	}
+
 	for _, sg := range toDelete {
+
+		// Revoke all ingress rules.
 		for _, ref := range ingress[sg.ID] {
-			glog.Infof("%v: revoking reference from %v", sg.ARN(), ref.id)
-			_, err := svc.RevokeSecurityGroupIngress(&ec2.RevokeSecurityGroupIngressInput{
+			klog.Infof("%v: revoking reference from %v", sg.ARN(), ref.id)
+
+			revokeReq := &ec2.RevokeSecurityGroupIngressInput{
 				GroupId:       aws.String(ref.id),
 				IpPermissions: []*ec2.IpPermission{ref.perm},
-			})
-			if err != nil {
-				glog.Warningf("%v: failed to revoke ingress reference from %v: %v", sg.ARN(), ref.id, err)
+			}
+
+			if _, err := svc.RevokeSecurityGroupIngress(revokeReq); err != nil {
+				klog.Warningf("%v: failed to revoke ingress reference from %v: %v", sg.ARN(), ref.id, err)
 			}
 		}
+
+		// Revoke all egress rules.
 		for _, ref := range egress[sg.ID] {
-			_, err := svc.RevokeSecurityGroupEgress(&ec2.RevokeSecurityGroupEgressInput{
+			klog.Infof("%v: revoking reference from %v", sg.ARN(), ref.id)
+
+			revokeReq := &ec2.RevokeSecurityGroupEgressInput{
 				GroupId:       aws.String(ref.id),
 				IpPermissions: []*ec2.IpPermission{ref.perm},
-			})
-			if err != nil {
-				glog.Warningf("%v: failed to revoke egress reference from %v: %v", sg.ARN(), ref.id, err)
+			}
+
+			if _, err := svc.RevokeSecurityGroupEgress(revokeReq); err != nil {
+				klog.Warningf("%v: failed to revoke egress reference from %v: %v", sg.ARN(), ref.id, err)
 			}
 		}
-		_, err := svc.DeleteSecurityGroup(&ec2.DeleteSecurityGroupInput{GroupId: aws.String(sg.ID)})
-		if err != nil {
-			glog.Warningf("%v: delete failed: %v", sg.ARN(), err)
+
+		// Delete security group.
+		deleteReq := &ec2.DeleteSecurityGroupInput{
+			GroupId: aws.String(sg.ID),
+		}
+
+		if _, err := svc.DeleteSecurityGroup(deleteReq); err != nil {
+			klog.Warningf("%v: delete failed: %v", sg.ARN(), err)
 		}
 	}
+
 	return nil
+}
+
+func (SecurityGroups) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	set := NewSet(0)
+	input := &ec2.DescribeSecurityGroupsInput{}
+
+	err := svc.DescribeSecurityGroupsPages(input, func(groups *ec2.DescribeSecurityGroupsOutput, _ bool) bool {
+		now := time.Now()
+		for _, sg := range groups.SecurityGroups {
+			arn := securityGroup{
+				Account: acct,
+				Region:  region,
+				ID:      *sg.GroupId,
+			}.ARN()
+
+			set.firstSeen[arn] = now
+		}
+
+		return true
+
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe security groups for %q in %q", acct, region)
+
 }
 
 type securityGroup struct {

@@ -18,81 +18,133 @@ package repo
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/label"
 )
 
-type module struct {
-	Path, Version string
-	Main          bool
-}
-
-var regexMixedVersioning = regexp.MustCompile(`^(.*?)-([0-9]{14})-([a-fA-F0-9]{12})$`)
-
-func toRepoRule(mod module) Repo {
-	var tag, commit string
-
-	if gr := regexMixedVersioning.FindStringSubmatch(mod.Version); gr != nil {
-		commit = gr[3]
-	} else {
-		tag = strings.TrimSuffix(mod.Version, "+incompatible")
-	}
-
-	return Repo{
-		Name:     label.ImportPathToBazelRepoName(mod.Path),
-		GoPrefix: mod.Path,
-		Commit:   commit,
-		Tag:      tag,
-	}
-}
-
-func importRepoRulesModules(filename string) (repos []Repo, err error) {
+func importRepoRulesModules(filename string, _ *RemoteCache) (repos []Repo, err error) {
+	// Copy go.mod to temporary directory. We may run commands that modify it,
+	// and we want to leave the original alone.
 	tempDir, err := copyGoModToTemp(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(tempDir)
 
-	data, err := goListModulesFn(tempDir)
+	// List all modules except for the main module, including implicit indirect
+	// dependencies.
+	type module struct {
+		Path, Version, Sum string
+		Main               bool
+	}
+	pathToModule := map[string]*module{}
+	data, err := goListModules(tempDir)
 	if err != nil {
 		return nil, err
 	}
-
 	dec := json.NewDecoder(bytes.NewReader(data))
 	for dec.More() {
-		var mod module
-		if err := dec.Decode(&mod); err != nil {
+		mod := new(module)
+		if err := dec.Decode(mod); err != nil {
 			return nil, err
 		}
 		if mod.Main {
 			continue
 		}
-
-		repos = append(repos, toRepoRule(mod))
+		pathToModule[mod.Path] = mod
 	}
 
+	// Load sums from go.sum. Ideally, they're all there.
+	goSumPath := filepath.Join(filepath.Dir(filename), "go.sum")
+	data, _ = ioutil.ReadFile(goSumPath)
+	lines := bytes.Split(data, []byte("\n"))
+	for _, line := range lines {
+		line = bytes.TrimSpace(line)
+		fields := bytes.Fields(line)
+		if len(fields) != 3 {
+			continue
+		}
+		path, version, sum := string(fields[0]), string(fields[1]), string(fields[2])
+		if strings.HasSuffix(version, "/go.mod") {
+			continue
+		}
+		if mod, ok := pathToModule[path]; ok {
+			mod.Sum = sum
+		}
+	}
+
+	// If sums are missing, run go mod download to get them.
+	var missingSumArgs []string
+	for _, mod := range pathToModule {
+		if mod.Sum == "" {
+			missingSumArgs = append(missingSumArgs, fmt.Sprintf("%s@%s", mod.Path, mod.Version))
+		}
+	}
+	if len(missingSumArgs) > 0 {
+		data, err := goModDownload(tempDir, missingSumArgs)
+		if err != nil {
+			return nil, err
+		}
+		dec = json.NewDecoder(bytes.NewReader(data))
+		for dec.More() {
+			var dl module
+			if err := dec.Decode(&dl); err != nil {
+				return nil, err
+			}
+			mod := pathToModule[dl.Path]
+			if mod == nil {
+				continue
+			}
+			mod.Sum = dl.Sum
+		}
+	}
+
+	// Translate to repo metadata.
+	repos = make([]Repo, 0, len(pathToModule))
+	for _, mod := range pathToModule {
+		if mod.Sum == "" {
+			log.Printf("could not determine sum for module %s", mod.Path)
+			continue
+		}
+		repos = append(repos, Repo{
+			Name:     label.ImportPathToBazelRepoName(mod.Path),
+			GoPrefix: mod.Path,
+			Version:  mod.Version,
+			Sum:      mod.Sum,
+		})
+	}
+	sort.Slice(repos, func(i, j int) bool { return repos[i].Name < repos[j].Name })
 	return repos, nil
 }
 
-// goListModulesFn may be overridden by tests.
-var goListModulesFn = goListModules
-
 // goListModules invokes "go list" in a directory containing a go.mod file.
-func goListModules(dir string) ([]byte, error) {
+var goListModules = func(dir string) ([]byte, error) {
 	goTool := findGoTool()
 	cmd := exec.Command(goTool, "list", "-m", "-json", "all")
 	cmd.Stderr = os.Stderr
 	cmd.Dir = dir
-	data, err := cmd.Output()
-	return data, err
+	return cmd.Output()
+}
+
+// goModDownload invokes "go mod download" in a directory containing a
+// go.mod file.
+var goModDownload = func(dir string, args []string) ([]byte, error) {
+	goTool := findGoTool()
+	cmd := exec.Command(goTool, "mod", "download", "-json")
+	cmd.Args = append(cmd.Args, args...)
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	return cmd.Output()
 }
 
 // copyGoModToTemp copies to given go.mod file to a temporary directory.

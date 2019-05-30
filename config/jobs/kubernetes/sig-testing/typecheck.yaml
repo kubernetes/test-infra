@@ -1,78 +1,21 @@
 presubmits:
   kubernetes/kubernetes:
-  # manual-release-bump-required
   - name: pull-kubernetes-typecheck
     path_alias: "k8s.io/kubernetes"
     decorate: true
     always_run: true
     skip_report: false
+    # branched per release (older go versions)
     skip_branches:
-    - release-1.11 # older go
-    - release-1.12 # older go
-    - release-1.13 # per-release job
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
     spec:
       containers:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
-        args:
-        - verify
-        env:
-        # Space separated list of the checks to run
-        - name: WHAT
-          value: typecheck
-  - name: pull-kubernetes-typecheck
-    path_alias: "k8s.io/kubernetes"
-    decorate: true
-    always_run: true
-    skip_report: false
-    branches:
-    - release-1.13 # per-release job
-    spec:
-      containers:
-      - name: main
-        command:
-        - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.13
-        args:
-        - verify
-        env:
-        # Space separated list of the checks to run
-        - name: WHAT
-          value: typecheck
-  - name: pull-kubernetes-typecheck
-    path_alias: "k8s.io/kubernetes"
-    decorate: true
-    always_run: true
-    skip_report: false
-    branches:
-    - release-1.12
-    spec:
-      containers:
-      - name: main
-        command:
-        - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.12
-        args:
-        - verify
-        env:
-        # Space separated list of the checks to run
-        - name: WHAT
-          value: typecheck
-  - name: pull-kubernetes-typecheck
-    path_alias: "k8s.io/kubernetes"
-    decorate: true
-    always_run: true
-    skip_report: false
-    branches:
-    - release-1.11
-    spec:
-      containers:
-      - name: main
-        command:
-        - make
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.11
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         args:
         - verify
         env:

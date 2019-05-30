@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/pod-utils/decorate",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/clonerefs:go_default_library",
         "//prow/entrypoint:go_default_library",
         "//prow/gcsupload:go_default_library",
@@ -44,8 +45,12 @@ go_test(
     srcs = ["podspec_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/clonerefs:go_default_library",
+        "//prow/entrypoint:go_default_library",
+        "//prow/initupload:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/sidecar:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

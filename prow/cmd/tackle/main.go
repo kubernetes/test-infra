@@ -435,6 +435,7 @@ func addFlags(fs *flag.FlagSet) *options {
 
 func githubToken(choice string) (string, error) {
 	if choice == "" {
+		fmt.Print("Store your GitHub token in a file e.g. echo $TOKEN > /path/to/github/token\n")
 		fmt.Print("Input /path/to/github/token to upload into cluster: ")
 		fmt.Scanln(&choice)
 	}
@@ -445,7 +446,7 @@ func githubToken(choice string) (string, error) {
 	return path, nil
 }
 
-func githubClient(tokenPath string, dry bool) (*github.Client, error) {
+func githubClient(tokenPath string, dry bool) (github.Client, error) {
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{tokenPath}); err != nil {
 		return nil, fmt.Errorf("start agent: %v", err)
@@ -453,16 +454,21 @@ func githubClient(tokenPath string, dry bool) (*github.Client, error) {
 
 	gen := secretAgent.GetTokenGenerator(tokenPath)
 	if dry {
-		return github.NewDryRunClient(gen, "https://api.github.com"), nil
+		return github.NewDryRunClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 	}
-	return github.NewClient(gen, "https://api.github.com"), nil
+	return github.NewClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 }
 
-func applySecret(ctx, name, key, path string) error {
-	return applyCreate(ctx, "secret", "generic", name, "--from-file="+key+"="+path)
+func applySecret(ctx, ns, name, key, path string) error {
+	return applyCreate(ctx, "secret", "generic", name, "--from-file="+key+"="+path, "--namespace="+ns)
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
+	if !strings.HasPrefix(ctx, "gke_") {
+		// TODO(fejta): maybe do this for us
+		fmt.Printf("Warning: if %s is not on GKE, you may need to change\n", ctx)
+		fmt.Println("the Ingress path to deck from /* to /")
+	}
 	if choice == "" {
 		fmt.Print("Apply starter.yaml from [github upstream]: ")
 		fmt.Scanln(&choice)
@@ -492,6 +498,15 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 	apply.Stderr = os.Stderr
 	apply.Stdout = os.Stdout
 	return apply.Run()
+}
+
+func clientConfigNamespace(context string) (string, bool, error) {
+	loader, cfg, err := contextConfig()
+	if err != nil {
+		return "", false, fmt.Errorf("load contexts: %v", err)
+	}
+
+	return clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).Namespace()
 }
 
 func clientConfig(context string) (*rest.Config, error) {
@@ -581,7 +596,7 @@ func hmacSecret() string {
 	return fmt.Sprintf("%x", buf)
 }
 
-func findHook(client *github.Client, org, repo string, loc url.URL) (*github.Hook, error) {
+func findHook(client github.Client, org, repo string, loc url.URL) (*github.Hook, error) {
 	loc.Scheme = ""
 	goal := loc.String()
 	var hooks []github.Hook
@@ -650,7 +665,7 @@ func ensureHmac(kc *kubernetes.Clientset, ns string) (string, error) {
 	return hmac, nil
 }
 
-func enableHooks(client *github.Client, loc url.URL, secret string, repos ...string) ([]string, error) {
+func enableHooks(client github.Client, loc url.URL, secret string, repos ...string) ([]string, error) {
 	var enabled []string
 	locStr := loc.String()
 	hasFlagValues := len(repos) > 0
@@ -748,13 +763,24 @@ func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
 
 func main() {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	skipGithub := fs.Bool("skip-github", false, "Do not add github webhooks if set")
+	skipGitHub := fs.Bool("skip-github", false, "Do not add github webhooks if set")
 	opt := addFlags(fs)
 	fs.Parse(os.Args[1:])
+
+	const ns = "default"
 
 	ctx, err := selectContext(opt.contextOptions)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to select context")
+	}
+
+	ctxNamespace, _, err := clientConfigNamespace(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to reload ~/.kube/config from any obvious location")
+	}
+
+	if ctxNamespace != ns {
+		logrus.Warnf("Context %s specifies namespace %s, but Prow resources will be installed in namespace %s.", ctx, ctxNamespace, ns)
 	}
 
 	// get kubernetes client
@@ -762,6 +788,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to reload ~/.kube/config from any obvious location")
 	}
+
 	kc, err := kubernetes.NewForConfig(clientCfg)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create kubernetes client")
@@ -772,7 +799,6 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed to apply cluster role binding to %s", ctx)
 	}
 
-	const ns = "default"
 	// configure plugins.yaml and config.yaml
 	// TODO(fejta): throw up an editor
 	if err = ensureConfigMap(kc, ns, "config", "config.yaml"); err != nil {
@@ -787,7 +813,7 @@ func main() {
 		logrus.WithError(err).Fatal("Could not deploy prow")
 	}
 
-	if !*skipGithub {
+	if !*skipGitHub {
 		fmt.Println("Checking github credentials...")
 		// create github client
 		token, err := githubToken(opt.githubTokenPath)
@@ -806,7 +832,7 @@ func main() {
 
 		// create github secrets
 		fmt.Print("Applying github token into oauth-token secret...")
-		if err := applySecret(ctx, "oauth-token", "oauth", token); err != nil {
+		if err := applySecret(ctx, ns, "oauth-token", "oauth", token); err != nil {
 			logrus.WithError(err).Fatal("Could not apply github oauth token secret")
 		}
 

@@ -371,9 +371,10 @@ class GSUtil(object):
                 'cp', fp.name, path]
             self.call(cmd)
 
-    def copy_file(self, dest, orig):
+    def copy_file(self, dest, orig, compress):
         """Copy the file to the specified path using compressed encoding."""
-        cmd = [self.gsutil, '-q', 'cp', '-Z', orig, dest]
+        compress = ['-Z'] if compress else []
+        cmd = [self.gsutil, '-q', 'cp'] + compress + [orig, dest]
         self.call(cmd)
 
     def upload_text(self, path, txt, additional_headers=None, cached=True):
@@ -828,11 +829,11 @@ def setup_magic_environment(job, call):
         os.path.join(home, '.ssh/google_compute_engine.pub'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PRIVATE_KEY_FILE',
+        'AWS_SSH_PRIVATE_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa'),
     )
     os.environ.setdefault(
-        'JENKINS_AWS_SSH_PUBLIC_KEY_FILE',
+        'AWS_SSH_PUBLIC_KEY_FILE',
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
 
@@ -951,18 +952,6 @@ def configure_ssh_key(ssh):
         os.unlink(fp.name)
 
 
-def maybe_upload_podspec(call, artifacts, gsutil, getenv):
-    """ Attempt to read our own podspec and upload it to the artifacts dir. """
-    if not getenv(K8S_ENV):
-        return  # we don't appear to be a pod
-    hostname = getenv('HOSTNAME')
-    if not hostname:
-        return
-    spec = call(['kubectl', 'get', '-oyaml', 'pods/' + hostname], output=True)
-    gsutil.upload_text(
-        os.path.join(artifacts, 'prow_podspec.yaml'), spec)
-
-
 def setup_root(call, root, repos, ssh, git_cache, clean):
     """Create root dir, checkout repo and cd into resulting dir."""
     if not os.path.exists(root):
@@ -979,7 +968,7 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
     for repo, (branch, pull) in repos.items():
         os.chdir(root_dir)
         # for k-s/k these are different, for the rest they are the same
-        # TODO(bentheelder,cjwagner,stevekuznetsov): in the integrated
+        # TODO(cjwagner,stevekuznetsov): in the integrated
         # prow checkout support remapping checkouts and kill this monstrosity
         repo_path = repo
         if repo == "github.com/kubernetes-security/kubernetes":
@@ -1068,7 +1057,7 @@ def bootstrap(args):
     logging.warning('bootstrap.py is deprecated!\n'
                     'Please migrate your job to podutils!\n'
                     'https://github.com/kubernetes/test-infra/blob/master/prow/pod-utilities.md'
-    )
+                    )
 
     if len(sys.argv) > 1:
         logging.info('Args: %s', ' '.join(pipes.quote(a)
@@ -1080,7 +1069,7 @@ def bootstrap(args):
     build = build_name(started)
 
     if upload:
-        # TODO(bentheelder, cjwager, stevekuznetsov): support the workspace
+        # TODO(cjwager, stevekuznetsov): support the workspace
         # repo not matching the upload repo in the shiny new init container
         pull_ref_repos = [repo for repo in repos if repos[repo][1]]
         if pull_ref_repos:
@@ -1099,12 +1088,6 @@ def bootstrap(args):
     try:
         with configure_ssh_key(args.ssh):
             setup_credentials(call, args.service_account, upload)
-            if upload:
-                try:
-                    maybe_upload_podspec(
-                        call, paths.artifacts, gsutil, os.getenv)
-                except (OSError, subprocess.CalledProcessError), exc:
-                    logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh,
                        args.git_cache, args.clean)
             logging.info('Configure environment...')
@@ -1141,7 +1124,7 @@ def bootstrap(args):
     logging.getLogger('').removeHandler(build_log)
     build_log.close()
     if upload:
-        gsutil.copy_file(paths.build_log, build_log_path)
+        gsutil.copy_file(paths.build_log, build_log_path, args.compress)
     if exc_type:
         raise exc_type, exc_value, exc_traceback  # pylint: disable=raising-bad-type
     if not success:
@@ -1158,6 +1141,11 @@ def parse_args(arguments=None):
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')
+    parser.add_argument(
+        '--compress',
+        action='store_true',
+        help='Compress build-log.txt when set',
+    )
     parser.add_argument(
         '--repo',
         action='append',

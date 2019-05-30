@@ -1,13 +1,26 @@
-.loglines {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    line-height:1.2;
-    color: #e8e8e8;
-    background-color: #212121;
+body {
+    padding-left: 15px;
+    padding-bottom: 10px;
 }
-.loglines td {
-    padding-left: 0;
+
+html {
+    overflow-x: hidden;
+}
+
+.linetext button {
+    font-size: 1em;
+    text-align: left;
+    background: none;
+    color: #ccc;
+    margin: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+}
+
+.loglines {
+    color: #fff;
+    width: calc(100% - 30px);
 }
 .line-highlighted {
     color: rgba(255, 224, 0, 1.0);
@@ -18,17 +31,21 @@
 .skipped {
     display: none;
 }
-td {
-    padding: 2px;
-}
-tr {
-    border: none;
-}
+
 .linenum {
     user-select: none;
     color: rgba(255,255,2552,0.6);
     text-align: right;
     vertical-align: top;
+    width: 50px;
+    text-overflow: ellipsis;
+    position: absolute;
+}
+
+.linetext {
+    width: calc(100% - 55px);
+    margin-left: 55px;
+    min-height: 20px;
 }
 
 /* ansi colors from https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */

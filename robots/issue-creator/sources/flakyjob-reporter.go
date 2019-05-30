@@ -221,6 +221,9 @@ func (fj *FlakyJob) Body(closedIssues []*githubapi.Issue) string {
 	fmt.Fprintf(&buf, "\n%s", fj.reporter.creator.ExplainTestAssignments(testsSorted))
 
 	fmt.Fprintf(&buf, "\n[Flakiest Jobs](%s)\n", fj.reporter.flakyJobDataURL)
+
+	fmt.Fprintf(&buf, "\n/kind flake\n")
+
 	return buf.String()
 }
 

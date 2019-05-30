@@ -27,8 +27,9 @@ import (
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/testgrid/metadata"
 )
 
 const (
@@ -44,19 +45,14 @@ func init() {
 	lenses.RegisterLens(Lens{})
 }
 
-// Title returns the title.
-func (lens Lens) Title() string {
-	return title
-}
-
-// Name returns the name.
-func (lens Lens) Name() string {
-	return name
-}
-
-// Priority returns the priority.
-func (lens Lens) Priority() int {
-	return priority
+// Config returns the lens's configuration.
+func (lens Lens) Config() lenses.LensConfig {
+	return lenses.LensConfig{
+		Title:     title,
+		Name:      name,
+		Priority:  priority,
+		HideTitle: true,
+	}
 }
 
 // Header renders the <head> from template.html.
@@ -86,11 +82,10 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		FinishedTime time.Time
 		Elapsed      time.Duration
 		Metadata     map[string]string
-		MetadataLen  int
 	}
 	metadataViewData := MetadataViewData{Status: "Pending"}
-	started := jobs.Started{}
-	finished := jobs.Finished{}
+	started := gcs.Started{}
+	finished := gcs.Finished{}
 	for _, a := range artifacts {
 		read, err := a.ReadAll()
 		if err != nil {
@@ -105,7 +100,9 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
-			metadataViewData.FinishedTime = time.Unix(finished.Timestamp, 0)
+			if finished.Timestamp != nil {
+				metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
+			}
 			metadataViewData.Status = finished.Result
 		}
 	}
@@ -117,21 +114,17 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			metadataViewData.Elapsed =
 				metadataViewData.FinishedTime.Sub(metadataViewData.StartTime)
 		}
+		metadataViewData.Elapsed = metadataViewData.Elapsed.Round(time.Second)
 	}
 
-	metadataViewData.Metadata = map[string]string{
-		"Node":         started.Node,
-		"Repo":         finished.Metadata.Repo,
-		"Repo Commit":  finished.Metadata.RepoCommit,
-		"Infra Commit": finished.Metadata.InfraCommit,
-		"Pod":          finished.Metadata.Pod,
-	}
-	for pkg, version := range finished.Metadata.Repos {
-		metadataViewData.Metadata[pkg] = version
-	}
-	for _, v := range metadataViewData.Metadata {
-		if v != "" {
-			metadataViewData.MetadataLen++
+	metadataViewData.Metadata = map[string]string{"node": started.Node}
+
+	metadatas := []metadata.Metadata{started.Metadata, finished.Metadata}
+	for _, m := range metadatas {
+		for k, v := range m {
+			if s, ok := v.(string); ok && v != "" {
+				metadataViewData.Metadata[k] = s
+			}
 		}
 	}
 

@@ -135,7 +135,7 @@ func (f *fakeRepoService) GetCombinedStatus(ctx context.Context, org, repo, ref 
 }
 
 // ListCollaborators returns 2 collaborators per page of results (served in order).
-func (f *fakeRepoService) ListCollaborators(ctx context.Context, owner, repo string, opt *github.ListOptions) ([]*github.User, *github.Response, error) {
+func (f *fakeRepoService) ListCollaborators(ctx context.Context, owner, repo string, opt *github.ListCollaboratorsOptions) ([]*github.User, *github.Response, error) {
 	resp := &github.Response{
 		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},
 		LastPage: (len(f.collaborators) + 1) / 2,

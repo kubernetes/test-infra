@@ -15,6 +15,10 @@ body {
     font-size: small;
 }
 
+.mdl-navigation__link .material-icons {
+    font-size: 14px;
+}
+
 code {
     background-color: #EEEEEE;
     border-radius: 3px;
@@ -40,7 +44,6 @@ a:visited {
 
 .logo {
     height: 48px;
-    width: 48px;
 }
 
 h1 {
@@ -174,6 +177,71 @@ i.state {
 
 #filter-list li:last-child {
     margin-left: auto;
+}
+
+#job-histogram-content tr {
+    border: 0;
+}
+
+#job-histogram-content td {
+    padding: 0;
+    height: 12px;
+    width: 12px;
+}
+
+#job-histogram-content td.success-10 { background-color: #43A047; }
+#job-histogram-content td.success-9 { background-image: linear-gradient(#43A047 90%, #EF5350 90%); }
+#job-histogram-content td.success-8 { background-image: linear-gradient(#43A047 80%, #EF5350 80%); }
+#job-histogram-content td.success-7 { background-image: linear-gradient(#43A047 70%, #EF5350 70%); }
+#job-histogram-content td.success-6 { background-image: linear-gradient(#43A047 60%, #EF5350 60%); }
+#job-histogram-content td.success-5 { background-image: linear-gradient(#43A047 50%, #EF5350 50%); }
+#job-histogram-content td.success-4 { background-image: linear-gradient(#43A047 40%, #EF5350 40%); }
+#job-histogram-content td.success-3 { background-image: linear-gradient(#43A047 30%, #EF5350 30%); }
+#job-histogram-content td.success-2 { background-image: linear-gradient(#43A047 20%, #EF5350 20%); }
+#job-histogram-content td.success-1 { background-image: linear-gradient(#43A047 10%, #EF5350 10%); }
+#job-histogram-content td.success-0 { background-color: #EF5350; }
+
+#job-histogram-content td.active:hover {
+    opacity: 1 !important;
+    cursor: pointer;
+}
+
+#job-histogram-labels {
+    text-align: center;
+}
+
+#job-histogram-labels > span {
+    padding: 0 6px;
+    font-size: 12px;
+    color: #777;
+}
+
+#job-histogram-start {
+    float: right;
+}
+
+#job-histogram-end {
+    float: left;
+}
+
+#job-histogram-container {
+    position: relative;
+}
+
+#job-histogram-labels-y-max {
+    position: absolute;
+    top: 0;
+    left: 6px;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+#job-histogram-labels-y-mid {
+    position: absolute;
+    top: 42%;
+    left: 6px;
+    font-size: 0.75rem;
+    color: #666;
 }
 
 #job-count {
@@ -454,33 +522,6 @@ Plugin Help style
     font-weight: bold;
     margin: 0 8px;
     padding: 8px 16px;
-}
-/*
- * SpyGlass style sheet
- */
-
-#lens-container {
-  flex-direction: column;
-  flex-wrap: nowrap;
-}
-
-#lens-container .lens-title {
-  text-decoration: underline;
-  padding-bottom: 0;
-}
-
-.lens-card.mdl-card {
-  width: 100%;
-  align-content: center;
-}
-
-#lens-container .lens-view-content {
-  width: calc(100% - 16px);
-  padding: 8px;
-}
-
-.lens-card-loading {
-  left: 50%;
 }
 
 /*
@@ -893,4 +934,25 @@ Plugin Help style
     float: right;
     font-size: 24px;
     cursor: pointer;
+}
+
+
+@-moz-keyframes spin {
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    to {transform:rotate(360deg);}
+}
+
+
+.loading-spinner {
+    animation: spin 1800ms linear infinite;
+    margin: 0 auto;
+    margin-top: 2px;
+    padding: 0;
+    max-width: 50px;
+    display: block;
 }

@@ -162,6 +162,9 @@ func (eg *encoderGRPC) bytes() []byte {
 // Encode encodes the tag map into a []byte. It is useful to propagate
 // the tag maps on wire in binary format.
 func Encode(m *Map) []byte {
+	if m == nil {
+		return nil
+	}
 	eg := &encoderGRPC{
 		buf: make([]byte, len(m.m)),
 	}
@@ -177,45 +180,58 @@ func Encode(m *Map) []byte {
 // Decode decodes the given []byte into a tag map.
 func Decode(bytes []byte) (*Map, error) {
 	ts := newMap()
+	err := DecodeEach(bytes, ts.upsert)
+	if err != nil {
+		// no partial failures
+		return nil, err
+	}
+	return ts, nil
+}
 
+// DecodeEach decodes the given serialized tag map, calling handler for each
+// tag key and value decoded.
+func DecodeEach(bytes []byte, fn func(key Key, val string)) error {
 	eg := &encoderGRPC{
 		buf: bytes,
 	}
 	if len(eg.buf) == 0 {
-		return ts, nil
+		return nil
 	}
 
 	version := eg.readByte()
 	if version > tagsVersionID {
-		return nil, fmt.Errorf("cannot decode: unsupported version: %q; supports only up to: %q", version, tagsVersionID)
+		return fmt.Errorf("cannot decode: unsupported version: %q; supports only up to: %q", version, tagsVersionID)
 	}
 
 	for !eg.readEnded() {
 		typ := keyType(eg.readByte())
 
 		if typ != keyTypeString {
-			return nil, fmt.Errorf("cannot decode: invalid key type: %q", typ)
+			return fmt.Errorf("cannot decode: invalid key type: %q", typ)
 		}
 
 		k, err := eg.readBytesWithVarintLen()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		v, err := eg.readBytesWithVarintLen()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		key, err := NewKey(string(k))
 		if err != nil {
-			return nil, err // no partial failures
+			return err
 		}
 		val := string(v)
 		if !checkValue(val) {
-			return nil, errInvalidValue // no partial failures
+			return errInvalidValue
 		}
-		ts.upsert(key, val)
+		fn(key, val)
+		if err != nil {
+			return err
+		}
 	}
-	return ts, nil
+	return nil
 }

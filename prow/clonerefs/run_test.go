@@ -24,8 +24,8 @@ import (
 	"sync"
 	"testing"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
@@ -38,7 +38,7 @@ func TestRun(t *testing.T) {
 	defer os.RemoveAll(srcRoot)
 
 	type cloneRec struct {
-		refs        kube.Refs
+		refs        prowapi.Refs
 		root        string
 		user, email string
 		cookiePath  string
@@ -48,7 +48,7 @@ func TestRun(t *testing.T) {
 	var recordedClones []cloneRec
 	var lock sync.Mutex
 	cloneFuncOld := cloneFunc
-	cloneFunc = func(refs kube.Refs, root, user, email, cookiePath string, env []string) clone.Record {
+	cloneFunc = func(refs prowapi.Refs, root, user, email, cookiePath string, env []string) clone.Record {
 		lock.Lock()
 		defer lock.Unlock()
 		recordedClones = append(recordedClones, cloneRec{
@@ -76,7 +76,7 @@ func TestRun(t *testing.T) {
 				GitUserName:  "me",
 				GitUserEmail: "me@domain.com",
 				CookiePath:   "cookies/path",
-				GitRefs: []kube.Refs{
+				GitRefs: []prowapi.Refs{
 					{
 						Org:       "kubernetes",
 						Repo:      "test-infra",
@@ -93,7 +93,7 @@ func TestRun(t *testing.T) {
 			},
 			expectedClones: []cloneRec{
 				{
-					refs: kube.Refs{
+					refs: prowapi.Refs{
 						Org:       "kubernetes",
 						Repo:      "test-infra",
 						BaseRef:   "master",
@@ -116,7 +116,7 @@ func TestRun(t *testing.T) {
 			name: "multi repo clone",
 			opts: Options{
 				Log: path.Join(srcRoot, "log.txt"),
-				GitRefs: []kube.Refs{
+				GitRefs: []prowapi.Refs{
 					{
 						Org:       "kubernetes",
 						Repo:      "test-infra",
@@ -139,7 +139,7 @@ func TestRun(t *testing.T) {
 			},
 			expectedClones: []cloneRec{
 				{
-					refs: kube.Refs{
+					refs: prowapi.Refs{
 						Org:       "kubernetes",
 						Repo:      "test-infra",
 						BaseRef:   "master",
@@ -153,7 +153,7 @@ func TestRun(t *testing.T) {
 					},
 				},
 				{
-					refs: kube.Refs{
+					refs: prowapi.Refs{
 						Org:       "kubernetes",
 						Repo:      "release",
 						BaseRef:   "master",

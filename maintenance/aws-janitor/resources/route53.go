@@ -18,11 +18,13 @@ package resources
 
 import (
 	"regexp"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Route53
@@ -37,7 +39,7 @@ func zoneIsManaged(z *route53.HostedZone) bool {
 		return true
 	}
 
-	glog.Infof("unknown zone %q; ignoring", name)
+	klog.Infof("unknown zone %q; ignoring", name)
 	return false
 }
 
@@ -69,7 +71,7 @@ func resourceRecordSetIsManaged(rrs *route53.ResourceRecordSet) bool {
 		}
 	}
 
-	glog.Infof("ignoring unmanaged name %q", name)
+	klog.Infof("Ignoring unmanaged name %q", name)
 	return false
 }
 
@@ -78,7 +80,7 @@ func (Route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string
 
 	var listError error
 
-	err := svc.ListHostedZonesPages(&route53.ListHostedZonesInput{}, func(zones *route53.ListHostedZonesOutput, _ bool) bool {
+	pageFunc := func(zones *route53.ListHostedZonesOutput, _ bool) bool {
 		for _, z := range zones.HostedZones {
 			if !zoneIsManaged(z) {
 				continue
@@ -88,7 +90,7 @@ func (Route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string
 
 			var toDelete []*route53ResourceRecordSet
 
-			err := svc.ListResourceRecordSetsPages(&route53.ListResourceRecordSetsInput{HostedZoneId: z.Id}, func(records *route53.ListResourceRecordSetsOutput, _ bool) bool {
+			recordsPageFunc := func(records *route53.ListResourceRecordSetsOutput, _ bool) bool {
 				for _, rrs := range records.ResourceRecordSets {
 					if !resourceRecordSetIsManaged(rrs) {
 						continue
@@ -96,12 +98,14 @@ func (Route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string
 
 					o := &route53ResourceRecordSet{zone: z, obj: rrs}
 					if set.Mark(o) {
-						glog.Warningf("%s: deleting %T: %v", o.ARN(), rrs, rrs)
+						klog.Warningf("%s: deleting %T: %v", o.ARN(), rrs, rrs)
 						toDelete = append(toDelete, o)
 					}
 				}
 				return true
-			})
+			}
+
+			err := svc.ListResourceRecordSetsPages(&route53.ListResourceRecordSetsInput{HostedZoneId: z.Id}, recordsPageFunc)
 			if err != nil {
 				listError = err
 				return false
@@ -126,28 +130,66 @@ func (Route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string
 				} else {
 					changes = nil
 				}
-				glog.Infof("deleting %d route53 resource records", len(chunk))
-				deleteRequest := &route53.ChangeResourceRecordSetsInput{
+
+				klog.Infof("Deleting %d route53 resource records", len(chunk))
+				deleteReq := &route53.ChangeResourceRecordSetsInput{
 					HostedZoneId: z.Id,
 					ChangeBatch:  &route53.ChangeBatch{Changes: chunk},
 				}
 
-				if _, err := svc.ChangeResourceRecordSets(deleteRequest); err != nil {
-					glog.Warningf("unable to delete DNS records: %v", err)
+				if _, err := svc.ChangeResourceRecordSets(deleteReq); err != nil {
+					klog.Warningf("unable to delete DNS records: %v", err)
 				}
 			}
 		}
+
 		return true
-	})
+	}
+
+	err := svc.ListHostedZonesPages(&route53.ListHostedZonesInput{}, pageFunc)
 
 	if listError != nil {
 		return listError
 	}
+
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (Route53ResourceRecordSets) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := route53.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+
+	err := svc.ListHostedZonesPages(&route53.ListHostedZonesInput{}, func(zones *route53.ListHostedZonesOutput, _ bool) bool {
+		for _, z := range zones.HostedZones {
+			if !zoneIsManaged(z) {
+				continue
+			}
+			inp := &route53.ListResourceRecordSetsInput{HostedZoneId: z.Id}
+			err := svc.ListResourceRecordSetsPages(inp, func(recordSets *route53.ListResourceRecordSetsOutput, _ bool) bool {
+				now := time.Now()
+				for _, recordSet := range recordSets.ResourceRecordSets {
+					arn := route53ResourceRecordSet{
+						zone: z,
+						obj:  recordSet,
+					}.ARN()
+					set.firstSeen[arn] = now
+				}
+				return true
+			})
+			if err != nil {
+				klog.Errorf("couldn't describe route53 resources for %q in %q zone %q: %v", acct, region, *z.Id, err)
+			}
+
+		}
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe route53 instance profiles for %q in %q", acct, region)
+
 }
 
 type route53ResourceRecordSet struct {

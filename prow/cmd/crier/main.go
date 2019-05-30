@@ -26,9 +26,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/time/rate"
-	"k8s.io/client-go/util/workqueue"
+	"k8s.io/test-infra/prow/pjutil"
 
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -37,40 +37,49 @@ import (
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	gerritreporter "k8s.io/test-infra/prow/gerrit/reporter"
 	githubreporter "k8s.io/test-infra/prow/github/reporter"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	pubsubreporter "k8s.io/test-infra/prow/pubsub/reporter"
+	slackreporter "k8s.io/test-infra/prow/slack/reporter"
 )
 
 const (
-	resync = 0 * time.Minute
+	resync         = 0 * time.Minute
+	controllerName = "prow-crier"
 )
 
 type options struct {
-	client         prowflagutil.KubernetesClientOptions
+	client         prowflagutil.ExperimentalKubernetesOptions
 	cookiefilePath string
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
 
-	// TODO(krzyzacy): drop config agent!
 	configPath    string
 	jobConfigPath string
 
 	gerritWorkers int
 	pubsubWorkers int
 	githubWorkers int
+	slackWorkers  int
+
+	slackTokenFile string
 
 	dryrun      bool
 	reportAgent string
 }
 
 func (o *options) validate() error {
+	if o.configPath == "" {
+		return errors.New("required flag --config-path was unset")
+	}
+
 	if o.gerritWorkers > 1 {
 		// TODO(krzyzacy): try to see how to handle racy better for gerrit aggregate report.
 		logrus.Warn("gerrit reporter only supports one worker")
 		o.gerritWorkers = 1
 	}
 
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -90,22 +99,37 @@ func (o *options) validate() error {
 		}
 	}
 
+	if o.slackWorkers > 0 {
+		if o.slackTokenFile == "" {
+			return errors.New("--slack-token-file must be set")
+		}
+	}
+
+	if err := o.client.Validate(o.dryrun); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
+
+	o.gerritProjects = gerritclient.ProjectsFlag{}
+
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.gerritProjects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
 	fs.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
-	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github only)")
+	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
+	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
+	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
-	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github only)")
+	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
 
 	o.github.AddFlags(fs)
 	o.client.AddFlags(fs)
@@ -116,9 +140,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 }
 
 func parseOptions() options {
-	o := options{
-		gerritProjects: gerritclient.ProjectsFlag{},
-	}
+	var o options
 
 	if err := o.parseArgs(flag.CommandLine, os.Args[1:]); err != nil {
 		logrus.WithError(err).Fatal("Invalid flag options")
@@ -134,24 +156,44 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "crier"}),
 	)
 
-	prowjobClient, err := o.client.ProwJobClient()
+	pjutil.ServePProf()
+
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+	cfg := configAgent.Config
+
+	prowjobClientset, err := o.client.ProwJobClientset(cfg().ProwJobNamespace, o.dryrun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
 
-	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClient, resync)
-
-	queue := workqueue.NewRateLimitingQueue(
-		workqueue.NewMaxOfRateLimiter(
-			workqueue.NewItemExponentialFailureRateLimiter(1*time.Second, 60*time.Second),
-			// 10 qps, 100 bucket size.  This is only for retry speed and its only the overall factor (not per item)
-			&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
-		))
+	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClientset, resync)
 
 	var controllers []*crier.Controller
 
 	// track all worker status before shutdown
 	wg := &sync.WaitGroup{}
+
+	if o.slackWorkers > 0 {
+		if cfg().SlackReporter == nil {
+			logrus.Fatal("slackreporter is enabled but has no config")
+		}
+		slackReporter, err := slackreporter.New(*cfg().SlackReporter, o.dryrun, o.slackTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to create slackreporter")
+		}
+		controllers = append(
+			controllers,
+			crier.NewController(
+				prowjobClientset,
+				kube.RateLimiter(slackReporter.GetName()),
+				prowjobInformerFactory.Prow().V1().ProwJobs(),
+				slackReporter,
+				o.slackWorkers,
+				wg))
+	}
 
 	if o.gerritWorkers > 0 {
 		informer := prowjobInformerFactory.Prow().V1().ProwJobs()
@@ -163,8 +205,8 @@ func main() {
 		controllers = append(
 			controllers,
 			crier.NewController(
-				prowjobClient,
-				queue,
+				prowjobClientset,
+				kube.RateLimiter(gerritReporter.GetName()),
 				informer,
 				gerritReporter,
 				o.gerritWorkers,
@@ -172,13 +214,14 @@ func main() {
 	}
 
 	if o.pubsubWorkers > 0 {
+		pubsubReporter := pubsubreporter.NewReporter(cfg)
 		controllers = append(
 			controllers,
 			crier.NewController(
-				prowjobClient,
-				queue,
+				prowjobClientset,
+				kube.RateLimiter(pubsubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				pubsubreporter.NewReporter(),
+				pubsubReporter,
 				o.pubsubWorkers,
 				wg))
 	}
@@ -196,18 +239,14 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
-		configAgent := &config.Agent{}
-		if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-			logrus.WithError(err).Fatal("Error starting config agent.")
-		}
-
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, v1.ProwJobAgent(o.reportAgent))
 		controllers = append(
 			controllers,
 			crier.NewController(
-				prowjobClient,
-				queue,
+				prowjobClientset,
+				kube.RateLimiter(githubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
-				githubreporter.NewReporter(githubClient, configAgent, o.reportAgent),
+				githubReporter,
 				o.githubWorkers,
 				wg))
 	}

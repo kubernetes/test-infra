@@ -577,35 +577,6 @@ class GubernatorUriTest(unittest.TestCase):
             bootstrap.gubernator_uri(self.create_path(uri)))
 
 
-class UploadPodspecTest(unittest.TestCase):
-    """ Tests for maybe_upload_podspec() """
-
-    def test_missing_env(self):
-        """ Missing env vars return without doing anything. """
-        # pylint: disable=no-self-use
-        bootstrap.maybe_upload_podspec(None, '', None, {}.get)
-        bootstrap.maybe_upload_podspec(None, '', None, {bootstrap.K8S_ENV: 'foo'}.get)
-        bootstrap.maybe_upload_podspec(None, '', None, {'HOSTNAME': 'blah'}.get)
-
-    def test_upload(self):
-        gsutil = FakeGSUtil()
-        call = FakeSubprocess()
-
-        output = 'type: gamma/example\n'
-        call.output['kubectl'] = [output]
-        artifacts = 'gs://bucket/logs/123/artifacts'
-        bootstrap.maybe_upload_podspec(
-            call, artifacts, gsutil,
-            {bootstrap.K8S_ENV: 'exists', 'HOSTNAME': 'abcd'}.get)
-
-        self.assertEqual(
-            call.calls,
-            [(['kubectl', 'get', '-oyaml', 'pods/abcd'], (), {'output': True})])
-        self.assertEqual(
-            gsutil.texts,
-            [(('%s/prow_podspec.yaml' % artifacts, output), {})])
-
-
 class AppendResultTest(unittest.TestCase):
     """Tests for append_result()."""
 
@@ -1111,6 +1082,7 @@ class FakeArgs(object):
     upload = UPLOAD
     json = False
     scenario = ''
+    compress = False
 
     def __init__(self, **kw):
         self.branch = BRANCH
@@ -1149,6 +1121,18 @@ class BootstrapTest(unittest.TestCase):
         for stub in self.boiler:
             with stub:  # Leaving with restores things
                 pass
+
+
+    def test_compress(self):
+        compressed = lambda s, d, o, c: self.assertTrue(c, 'failed to find compression')
+        uncompressed = lambda s, d, o, c: self.assertFalse(c, 'failed to find uncompression')
+        with Stub(bootstrap.GSUtil, 'copy_file', uncompressed):
+            test_bootstrap()
+        with Stub(bootstrap.GSUtil, 'copy_file', compressed):
+            test_bootstrap(compress=True)
+        with Stub(bootstrap.GSUtil, 'copy_file', uncompressed):
+            test_bootstrap(compress=False)
+
 
     def test_setcreds_setroot_fails(self):
         """We should still call setup_credentials even if setup_root blows up."""

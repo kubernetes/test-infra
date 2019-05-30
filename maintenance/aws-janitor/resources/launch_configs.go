@@ -17,10 +17,13 @@ limitations under the License.
 package resources
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // LaunchConfigurations: http://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeLaunchConfigurations
@@ -30,28 +33,54 @@ func (LaunchConfigurations) MarkAndSweep(sess *session.Session, acct string, reg
 	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*launchConfiguration // Paged call, defer deletion until we have the whole list.
-	if err := svc.DescribeLaunchConfigurationsPages(nil, func(page *autoscaling.DescribeLaunchConfigurationsOutput, _ bool) bool {
+
+	pageFunc := func(page *autoscaling.DescribeLaunchConfigurationsOutput, _ bool) bool {
 		for _, lc := range page.LaunchConfigurations {
 			l := &launchConfiguration{ID: *lc.LaunchConfigurationARN, Name: *lc.LaunchConfigurationName}
 			if set.Mark(l) {
-				glog.Warningf("%s: deleting %T: %v", l.ARN(), lc, lc)
+				klog.Warningf("%s: deleting %T: %v", l.ARN(), lc, lc)
 				toDelete = append(toDelete, l)
 			}
 		}
 		return true
-	}); err != nil {
+	}
+
+	if err := svc.DescribeLaunchConfigurationsPages(&autoscaling.DescribeLaunchConfigurationsInput{}, pageFunc); err != nil {
 		return err
 	}
+
 	for _, lc := range toDelete {
-		_, err := svc.DeleteLaunchConfiguration(
-			&autoscaling.DeleteLaunchConfigurationInput{
-				LaunchConfigurationName: aws.String(lc.Name),
-			})
-		if err != nil {
-			glog.Warningf("%v: delete failed: %v", lc.ARN(), err)
+		deleteReq := &autoscaling.DeleteLaunchConfigurationInput{
+			LaunchConfigurationName: aws.String(lc.Name),
+		}
+
+		if _, err := svc.DeleteLaunchConfiguration(deleteReq); err != nil {
+			klog.Warningf("%v: delete failed: %v", lc.ARN(), err)
 		}
 	}
+
 	return nil
+}
+
+func (LaunchConfigurations) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	c := autoscaling.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	input := &autoscaling.DescribeLaunchConfigurationsInput{}
+
+	err := c.DescribeLaunchConfigurationsPages(input, func(lcs *autoscaling.DescribeLaunchConfigurationsOutput, isLast bool) bool {
+		now := time.Now()
+		for _, lc := range lcs.LaunchConfigurations {
+			arn := launchConfiguration{
+				ID:   *lc.LaunchConfigurationARN,
+				Name: *lc.LaunchConfigurationName,
+			}.ARN()
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't list launch configurations for %q in %q", acct, region)
 }
 
 type launchConfiguration struct {

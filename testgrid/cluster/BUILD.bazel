@@ -36,7 +36,7 @@ k8s_object(
     cluster = CLUSTER,
     image_chroot = ROOT,
     images = {
-        ROOT + "/updater:latest": "//testgrid/images:updater",
+        ROOT + "/updater:latest": "//testgrid/cmd/updater:image",
     },
     kind = "Deployment",
     namespace = "testgrid",
@@ -48,7 +48,7 @@ k8s_object(
     cluster = CLUSTER,
     image_chroot = ROOT,
     images = {
-        ROOT + "/configurator:latest": "//testgrid/images:configurator",
+        ROOT + "/configurator:latest": "//testgrid/cmd/configurator:image",
     },
     kind = "Deployment",
     namespace = "testgrid",

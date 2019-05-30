@@ -39,8 +39,9 @@ const (
 type Configuration struct {
 	// Plugins is a map of repositories (eg "k/k") to lists of
 	// plugin names.
-	// TODO: Link to the list of supported plugins.
-	// https://github.com/kubernetes/test-infra/issues/3476
+	// You can find a comprehensive list of the default avaulable plugins here
+	// https://github.com/kubernetes/test-infra/tree/master/prow/plugins
+	// note that you're also able to add external plugins.
 	Plugins map[string][]string `json:"plugins,omitempty"`
 
 	// ExternalPlugins is a map of repositories (eg "k/k") to lists of
@@ -51,24 +52,27 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Approve              []Approve              `json:"approve,omitempty"`
-	Blockades            []Blockade             `json:"blockades,omitempty"`
-	Blunderbuss          Blunderbuss            `json:"blunderbuss,omitempty"`
-	Cat                  Cat                    `json:"cat,omitempty"`
-	CherryPickUnapproved CherryPickUnapproved   `json:"cherry_pick_unapproved,omitempty"`
-	ConfigUpdater        ConfigUpdater          `json:"config_updater,omitempty"`
-	Golint               *Golint                `json:"golint,omitempty"`
-	Heart                Heart                  `json:"heart,omitempty"`
-	Label                *Label                 `json:"label,omitempty"`
-	Lgtm                 []Lgtm                 `json:"lgtm,omitempty"`
-	RepoMilestone        map[string]Milestone   `json:"repo_milestone,omitempty"`
-	RequireMatchingLabel []RequireMatchingLabel `json:"require_matching_label,omitempty"`
-	RequireSIG           RequireSIG             `json:"requiresig,omitempty"`
-	Slack                Slack                  `json:"slack,omitempty"`
-	SigMention           SigMention             `json:"sigmention,omitempty"`
-	Size                 *Size                  `json:"size,omitempty"`
-	Triggers             []Trigger              `json:"triggers,omitempty"`
-	Welcome              []Welcome              `json:"welcome,omitempty"`
+	Approve                    []Approve              `json:"approve,omitempty"`
+	UseDeprecatedSelfApprove   bool                   `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`
+	UseDeprecatedReviewApprove bool                   `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
+	Blockades                  []Blockade             `json:"blockades,omitempty"`
+	Blunderbuss                Blunderbuss            `json:"blunderbuss,omitempty"`
+	Cat                        Cat                    `json:"cat,omitempty"`
+	CherryPickUnapproved       CherryPickUnapproved   `json:"cherry_pick_unapproved,omitempty"`
+	ConfigUpdater              ConfigUpdater          `json:"config_updater,omitempty"`
+	Golint                     Golint                 `json:"golint"`
+	Heart                      Heart                  `json:"heart,omitempty"`
+	Label                      Label                  `json:"label"`
+	Lgtm                       []Lgtm                 `json:"lgtm,omitempty"`
+	RepoMilestone              map[string]Milestone   `json:"repo_milestone,omitempty"`
+	Project                    ProjectConfig          `json:"project_config,omitempty"`
+	RequireMatchingLabel       []RequireMatchingLabel `json:"require_matching_label,omitempty"`
+	RequireSIG                 RequireSIG             `json:"requiresig,omitempty"`
+	Slack                      Slack                  `json:"slack,omitempty"`
+	SigMention                 SigMention             `json:"sigmention,omitempty"`
+	Size                       Size                   `json:"size"`
+	Triggers                   []Trigger              `json:"triggers,omitempty"`
+	Welcome                    []Welcome              `json:"welcome,omitempty"`
 }
 
 // Golint holds configuration for the golint plugin
@@ -111,6 +115,11 @@ type Blunderbuss struct {
 	// insufficient reviewers are available. If ExcludeApprovers is true,
 	// approvers will never be considered as reviewers.
 	ExcludeApprovers bool `json:"exclude_approvers,omitempty"`
+	// UseStatusAvailability controls whether blunderbuss will consider GitHub's
+	// status availability when requesting reviews for users. This will use at one
+	// additional token per successful reviewer (and potentially more depending on
+	// how many busy reviewers it had to pass over).
+	UseStatusAvailability bool `json:"use_status_availability,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -232,7 +241,7 @@ type Approve struct {
 	DeprecatedImplicitSelfApprove *bool `json:"implicit_self_approve,omitempty"`
 	// RequireSelfApproval requires PR authors to explicitly approve their PRs.
 	// Otherwise the plugin assumes the author of the PR approves the changes in the PR.
-	RequireSelfApproval bool `json:"require_self_approval,omitempty"`
+	RequireSelfApproval *bool `json:"require_self_approval,omitempty"`
 
 	// LgtmActsAsApprove indicates that the lgtm command should be used to
 	// indicate approval
@@ -244,48 +253,32 @@ type Approve struct {
 	// IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
 	// * an APPROVE github review is equivalent to leaving an "/approve" message.
 	// * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
-	IgnoreReviewState bool `json:"ignore_review_state,omitempty"`
+	IgnoreReviewState *bool `json:"ignore_review_state,omitempty"`
 }
 
 var (
 	warnImplicitSelfApprove time.Time
 	warnReviewActsAsApprove time.Time
-	warnLock                sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
 )
-
-func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
-	// have we warned within the last freq?
-	warnLock.RLock()
-	fresh := time.Now().Sub(*last) <= freq
-	warnLock.RUnlock()
-	if fresh { // we've warned recently
-		return
-	}
-	// Warning is stale, will we win the race to warn?
-	warnLock.Lock()
-	defer warnLock.Unlock()
-	now := time.Now()           // Recalculate now, we might wait awhile for the lock
-	if now.Sub(*last) <= freq { // Nope, we lost
-		return
-	}
-	*last = now
-	logrus.Warn(msg)
-}
 
 func (a Approve) HasSelfApproval() bool {
 	if a.DeprecatedImplicitSelfApprove != nil {
 		warnDeprecated(&warnImplicitSelfApprove, 5*time.Minute, "Please update plugins.yaml to use require_self_approval instead of the deprecated implicit_self_approve before June 2019")
 		return *a.DeprecatedImplicitSelfApprove
+	} else if a.RequireSelfApproval != nil {
+		return !*a.RequireSelfApproval
 	}
-	return !a.RequireSelfApproval
+	return true
 }
 
 func (a Approve) ConsiderReviewState() bool {
 	if a.DeprecatedReviewActsAsApprove != nil {
 		warnDeprecated(&warnReviewActsAsApprove, 5*time.Minute, "Please update plugins.yaml to use ignore_review_state instead of the deprecated review_acts_as_approve before June 2019")
 		return *a.DeprecatedReviewActsAsApprove
+	} else if a.IgnoreReviewState != nil {
+		return !*a.IgnoreReviewState
 	}
-	return !a.IgnoreReviewState
+	return true
 }
 
 // Lgtm specifies a configuration for a single lgtm.
@@ -293,7 +286,7 @@ func (a Approve) ConsiderReviewState() bool {
 type Lgtm struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
+	// ReviewActsAsLgtm indicates that a GitHub review of "approve" or "request changes"
 	// acts as adding or removing the lgtm label
 	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
 	// StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
@@ -302,7 +295,7 @@ type Lgtm struct {
 	// WARNING: This disables the security mechanism that prevents a malicious member (or
 	// compromised GitHub account) from merging arbitrary code. Use with caution.
 	//
-	// StickyLgtmTeam specifies the Github team whose members are trusted with sticky LGTM,
+	// StickyLgtmTeam specifies the GitHub team whose members are trusted with sticky LGTM,
 	// which eliminates the need to re-lgtm minor fixes/updates.
 	StickyLgtmTeam string `json:"trusted_team_for_sticky_lgtm,omitempty"`
 }
@@ -331,7 +324,7 @@ type Trigger struct {
 	TrustedOrg string `json:"trusted_org,omitempty"`
 	// JoinOrgURL is a link that redirects users to a location where they
 	// should be able to read more about joining the organization in order
-	// to become trusted members. Defaults to the Github link of TrustedOrg.
+	// to become trusted members. Defaults to the GitHub link of TrustedOrg.
 	JoinOrgURL string `json:"join_org_url,omitempty"`
 	// OnlyOrgMembers requires PRs and/or /ok-to-test comments to come from org members.
 	// By default, trigger also include repo collaborators.
@@ -339,6 +332,9 @@ type Trigger struct {
 	// IgnoreOkToTest makes trigger ignore /ok-to-test comments.
 	// This is a security mitigation to only allow testing from trusted users.
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
+	// ElideSkippedContexts makes trigger not post "Skipped" contexts for jobs
+	// that could run but do not run.
+	ElideSkippedContexts bool `json:"elide_skipped_contexts,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.
@@ -362,8 +358,9 @@ type Milestone struct {
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-	MaintainersID   int    `json:"maintainers_id,omitempty"`
-	MaintainersTeam string `json:"maintainers_team,omitempty"`
+	MaintainersID           int    `json:"maintainers_id,omitempty"`
+	MaintainersTeam         string `json:"maintainers_team,omitempty"`
+	MaintainersFriendlyName string `json:"maintainers_friendly_name,omitempty"`
 }
 
 // Slack contains the configuration for the slack plugin.
@@ -386,7 +383,10 @@ type ConfigMapSpec struct {
 	// Namespaces in which the configMap needs to be deployed, in addition to the above
 	// namespace provided, or the default if it is not set.
 	AdditionalNamespaces []string `json:"additional_namespaces,omitempty"`
-
+	// GZIP toggles whether the key's data should be GZIP'd before being stored
+	// If set to false and the global GZIP option is enabled, this file will
+	// will not be GZIP'd.
+	GZIP *bool `json:"gzip,omitempty"`
 	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
 	Namespaces []string `json:"-"`
 }
@@ -410,6 +410,36 @@ type ConfigUpdater struct {
 	// github.com/kubernetes/test-infra/prow/plugins.yaml assuming the config-updater
 	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/plugins.yaml".
 	PluginFile string `json:"plugin_file,omitempty"`
+	// If GZIP is true then files will be gzipped before insertion into
+	// their corresponding configmap
+	GZIP bool `json:"gzip"`
+}
+
+// ProjectConfig contains the configuration options for the project plugin
+type ProjectConfig struct {
+	// Org level configs for github projects; key is org name
+	Orgs map[string]ProjectOrgConfig `json:"project_org_configs,omitempty"`
+}
+
+// ProjectOrgConfig holds the github project config for an entire org.
+// This can be overridden by ProjectRepoConfig.
+type ProjectOrgConfig struct {
+	// ID of the github project maintainer team for a give project or org
+	MaintainerTeamID int `json:"org_maintainers_team_id,omitempty"`
+	// A map of project name to default column; an issue/PR will be added
+	// to the default column if column name is not provided in the command
+	ProjectColumnMap map[string]string `json:"org_default_column_map,omitempty"`
+	// Repo level configs for github projects; key is repo name
+	Repos map[string]ProjectRepoConfig `json:"project_repo_configs,omitempty"`
+}
+
+// ProjectRepoConfig holds the github project config for a github project.
+type ProjectRepoConfig struct {
+	// ID of the github project maintainer team for a give project or org
+	MaintainerTeamID int `json:"repo_maintainers_team_id,omitempty"`
+	// A map of project name to default column; an issue/PR will be added
+	// to the default column if column name is not provided in the command
+	ProjectColumnMap map[string]string `json:"repo_default_column_map,omitempty"`
 }
 
 // MergeWarning is a config for the slackevents plugin's manual merge warnings.
@@ -520,6 +550,29 @@ func (r RequireMatchingLabel) validate() error {
 	return nil
 }
 
+var warnLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
+
+// warnDeprecated prints a deprecation warning for a particular configuration
+// option.
+func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
+	// have we warned within the last freq?
+	warnLock.RLock()
+	fresh := time.Now().Sub(*last) <= freq
+	warnLock.RUnlock()
+	if fresh { // we've warned recently
+		return
+	}
+	// Warning is stale, will we win the race to warn?
+	warnLock.Lock()
+	defer warnLock.Unlock()
+	now := time.Now()           // Recalculate now, we might wait awhile for the lock
+	if now.Sub(*last) <= freq { // Nope, we lost
+		return
+	}
+	*last = now
+	logrus.Warn(msg)
+}
+
 // Describe generates a human readable description of the behavior that this
 // configuration specifies.
 func (r RequireMatchingLabel) Describe() string {
@@ -556,15 +609,15 @@ func (r RequireMatchingLabel) Describe() string {
 // TriggerFor finds the Trigger for a repo, if one exists
 // a trigger can be listed for the repo itself or for the
 // owning organization
-func (c *Configuration) TriggerFor(org, repo string) *Trigger {
+func (c *Configuration) TriggerFor(org, repo string) Trigger {
 	for _, tr := range c.Triggers {
 		for _, r := range tr.Repos {
 			if r == org || r == fmt.Sprintf("%s/%s", org, repo) {
-				return &tr
+				return tr
 			}
 		}
 	}
-	return nil
+	return Trigger{}
 }
 
 // EnabledReposForPlugin returns the orgs and repos that have enabled the passed plugin.
@@ -668,6 +721,11 @@ func (c *Configuration) setDefaults() {
 	if c.Owners.LabelsBlackList == nil {
 		c.Owners.LabelsBlackList = []string{labels.Approved, labels.LGTM}
 	}
+	for _, milestone := range c.RepoMilestone {
+		if milestone.MaintainersFriendlyName == "" {
+			milestone.MaintainersFriendlyName = "SIG Chairs/TLs"
+		}
+	}
 	if c.CherryPickUnapproved.BranchRegexp == "" {
 		c.CherryPickUnapproved.BranchRegexp = `^release-.*$`
 	}
@@ -712,11 +770,7 @@ func validatePlugins(plugins map[string][]string) error {
 	return nil
 }
 
-func validateSizes(size *Size) error {
-	if size == nil {
-		return nil
-	}
-
+func validateSizes(size Size) error {
 	if size.S > size.M || size.M > size.L || size.L > size.Xl || size.Xl > size.Xxl {
 		return errors.New("invalid size plugin configuration - one of the smaller sizes is bigger than a larger one")
 	}
@@ -767,6 +821,8 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 	return nil
 }
 
+var warnBlunderbussFileWeightCount time.Time
+
 func validateBlunderbuss(b *Blunderbuss) error {
 	if b.ReviewerCount != nil && b.FileWeightCount != nil {
 		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
@@ -776,6 +832,9 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	}
 	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
 		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
+	}
+	if b.FileWeightCount != nil {
+		warnDeprecated(&warnBlunderbussFileWeightCount, 5*time.Minute, "file_weight_count is being deprecated in favour of max_request_count. Please ensure your configuration is updated before the end of May 2019.")
 	}
 	return nil
 }
@@ -883,5 +942,43 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 
+	return nil
+}
+
+func (pluginConfig *ProjectConfig) GetMaintainerTeam(org string, repo string) int {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			// look for repo level configs first because repo level config overrides org level configs
+			for repoName, repoConfig := range orgConfig.Repos {
+				if repo == repoName {
+					return repoConfig.MaintainerTeamID
+				}
+			}
+			return orgConfig.MaintainerTeamID
+		}
+	}
+	return -1
+}
+
+func (pluginConfig *ProjectConfig) GetColumnMap(org string, repo string) map[string]string {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			for repoName, repoConfig := range orgConfig.Repos {
+				if repo == repoName {
+					return repoConfig.ProjectColumnMap
+				}
+			}
+			return orgConfig.ProjectColumnMap
+		}
+	}
+	return nil
+}
+
+func (pluginConfig *ProjectConfig) GetOrgColumnMap(org string) map[string]string {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			return orgConfig.ProjectColumnMap
+		}
+	}
 	return nil
 }

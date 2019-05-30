@@ -28,6 +28,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//vendor/github.com/knative/build/pkg/client/clientset/versioned/fake:all-srcs",
         "//vendor/github.com/knative/build/pkg/client/clientset/versioned/scheme:all-srcs",
         "//vendor/github.com/knative/build/pkg/client/clientset/versioned/typed/build/v1alpha1:all-srcs",
     ],

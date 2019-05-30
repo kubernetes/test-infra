@@ -8,9 +8,22 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - go
         args:
         - test
         - ./...
+  - name: pull-structured-merge-diff-gofmt
+    labels:
+      preset-service-account: "true"
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        command:
+        - bash
+        - -c
+        - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"

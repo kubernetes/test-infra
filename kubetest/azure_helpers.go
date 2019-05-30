@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	resources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -65,14 +66,50 @@ type PublicKey struct {
 }
 
 type WindowsProfile struct {
-	AdminUsername string `json:"adminUsername,omitempty"`
-	AdminPassword string `json:"adminPassword,omitempty"`
+	AdminUsername         string `json:"adminUsername,omitempty"`
+	AdminPassword         string `json:"adminPassword,omitempty"`
+	ImageVersion          string `json:"imageVersion,omitempty"`
+	WindowsImageSourceURL string `json:"WindowsImageSourceUrl"`
+	WindowsPublisher      string `json:"WindowsPublisher"`
+	WindowsOffer          string `json:"WindowsOffer"`
+	WindowsSku            string `json:"WindowsSku"`
+	WindowsDockerVersion  string `json:"windowsDockerVersion"`
+	SSHEnabled            bool   `json:"sshEnabled,omitempty"`
+}
+
+// KubernetesContainerSpec defines configuration for a container spec
+type KubernetesContainerSpec struct {
+	Name           string `json:"name,omitempty"`
+	Image          string `json:"image,omitempty"`
+	CPURequests    string `json:"cpuRequests,omitempty"`
+	MemoryRequests string `json:"memoryRequests,omitempty"`
+	CPULimits      string `json:"cpuLimits,omitempty"`
+	MemoryLimits   string `json:"memoryLimits,omitempty"`
+}
+
+// KubernetesAddon defines a list of addons w/ configuration to include with the cluster deployment
+type KubernetesAddon struct {
+	Name       string                    `json:"name,omitempty"`
+	Enabled    *bool                     `json:"enabled,omitempty"`
+	Containers []KubernetesContainerSpec `json:"containers,omitempty"`
+	Config     map[string]string         `json:"config,omitempty"`
+	Data       string                    `json:"data,omitempty"`
 }
 
 type KubernetesConfig struct {
-	CustomWindowsPackageURL string `json:"customWindowsPackageURL,omitempty"`
-	CustomHyperkubeImage    string `json:"customHyperkubeImage,omitempty"`
-	NetworkPlugin           string `json:"networkPlugin,omitempty"`
+	CustomWindowsPackageURL      string            `json:"customWindowsPackageURL,omitempty"`
+	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
+	CustomCcmImage               string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
+	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
+	NetworkPlugin                string            `json:"networkPlugin,omitempty"`
+	PrivateAzureRegistryServer   string            `json:"privateAzureRegistryServer,omitempty"`
+	AzureCNIURLLinux             string            `json:"azureCNIURLLinux,omitempty"`
+	AzureCNIURLWindows           string            `json:"azureCNIURLWindows,omitempty"`
+	Addons                       []KubernetesAddon `json:"addons,omitempty"`
+	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
+	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
 }
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
@@ -82,21 +119,25 @@ type OrchestratorProfile struct {
 
 type MasterProfile struct {
 	Count          int                 `json:"count"`
+	Distro         string              `json:"distro"`
 	DNSPrefix      string              `json:"dnsPrefix"`
 	VMSize         string              `json:"vmSize" validate:"required"`
 	IPAddressCount int                 `json:"ipAddressCount,omitempty"`
 	Extensions     []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB   int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 }
 
 type AgentPoolProfile struct {
 	Name                  string              `json:"name"`
 	Count                 int                 `json:"count"`
+	Distro                string              `json:"distro"`
 	VMSize                string              `json:"vmSize"`
 	OSType                string              `json:"osType,omitempty"`
 	AvailabilityProfile   string              `json:"availabilityProfile"`
 	IPAddressCount        int                 `json:"ipAddressCount,omitempty"`
 	PreProvisionExtension map[string]string   `json:"preProvisionExtension,omitempty"`
 	Extensions            []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB          int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
 }
 
 type AzureClient struct {
@@ -135,7 +176,7 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 		return de, fmt.Errorf("cannot create deployment: %v", err)
 	}
 
-	err = future.WaitForCompletion(ctx, az.deploymentsClient.Client)
+	err = future.WaitForCompletionRef(ctx, az.deploymentsClient.Client)
 	if err != nil {
 		return de, fmt.Errorf("cannot get the create deployment future response: %v", err)
 	}
@@ -170,9 +211,11 @@ func (az *AzureClient) DeleteResourceGroup(ctx context.Context, groupName string
 		if err != nil {
 			return fmt.Errorf("cannot delete resource group %v: %v", groupName, err)
 		}
-		err = future.WaitForCompletion(ctx, az.groupsClient.Client)
+		err = future.WaitForCompletionRef(ctx, az.groupsClient.Client)
 		if err != nil {
-			return fmt.Errorf("cannot get the delete resource group future response: %v", err)
+			// Skip the teardown errors because of https://github.com/Azure/go-autorest/issues/357
+			// TODO(feiskyer): fix the issue by upgrading go-autorest version >= v11.3.2.
+			log.Printf("Warning: failed to delete resource group %q with error %v", groupName, err)
 		}
 	}
 	return nil

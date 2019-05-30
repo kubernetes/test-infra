@@ -27,17 +27,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
-	"k8s.io/test-infra/prow/client/clientset/versioned"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pubsub/reporter"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
 
@@ -46,7 +46,7 @@ var (
 )
 
 type options struct {
-	client         flagutil.KubernetesClientOptions
+	client         flagutil.ExperimentalKubernetesOptions
 	port           int
 	pushSecretFile string
 
@@ -59,16 +59,15 @@ type options struct {
 }
 
 type kubeClient struct {
-	client    versioned.Interface
-	namespace string
-	dryRun    bool
+	client prowv1.ProwJobInterface
+	dryRun bool
 }
 
-func (c *kubeClient) CreateProwJob(job *kube.ProwJob) (*kube.ProwJob, error) {
+func (c *kubeClient) Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	if c.dryRun {
 		return job, nil
 	}
-	return c.client.ProwV1().ProwJobs(c.namespace).Create(job)
+	return c.client.Create(job)
 }
 
 func init() {
@@ -110,33 +109,30 @@ func main() {
 		tokenGenerator = secretAgent.GetTokenGenerator(flagOptions.pushSecretFile)
 	}
 
-	prowjobClient, err := flagOptions.client.ProwJobClient()
+	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
 	kubeClient := &kubeClient{
-		client:    prowjobClient,
-		namespace: configAgent.Config().ProwJobNamespace,
-		dryRun:    flagOptions.dryRun,
+		client: prowjobClient,
+		dryRun: flagOptions.dryRun,
 	}
 
 	promMetrics := subscriber.NewMetrics()
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Expose prometheus metrics
 	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("sub", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	metrics.ExposeMetrics("sub", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	s := &subscriber.Subscriber{
-		ConfigAgent: configAgent,
-		Metrics:     promMetrics,
-		KubeClient:  kubeClient,
+		ConfigAgent:   configAgent,
+		Metrics:       promMetrics,
+		ProwJobClient: kubeClient,
+		Reporter:      reporter.NewReporter(configAgent.Config),
 	}
 
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-	http.Handle("/metrics", promhttp.Handler())
 
 	// Will call shutdown which will stop the errGroup
 	shutdownCtx, shutdown := context.WithCancel(context.Background())

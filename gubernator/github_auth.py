@@ -37,7 +37,7 @@ class Endpoint(view_base.BaseHandler):
                 self.abort(500,
                            body_template=(
                            'An admin must <a href="/config">'
-                           'configure Github secrets</a> for %r first.'
+                           'configure GitHub secrets</a> for %r first.'
                            % self.request.host))
         client = self.app.config[client_key]
         return client['id'], client['secret']

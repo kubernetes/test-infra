@@ -98,7 +98,7 @@ func ExprFromValue(val interface{}) bzl.Expr {
 			Value: &bzl.ListExpr{},
 		})
 		sel := &bzl.CallExpr{
-			X:    &bzl.LiteralExpr{Token: "select"},
+			X:    &bzl.Ident{Name: "select"},
 			List: []bzl.Expr{&bzl.DictExpr{List: args, ForceMultiLine: true}},
 		}
 		return sel

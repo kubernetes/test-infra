@@ -4,15 +4,17 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
+        "metadata.go",
         "target.go",
         "upload.go",
     ],
     importpath = "k8s.io/test-infra/prow/pod-utils/gcs",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/errorutil:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
+        "//testgrid/metadata:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
@@ -35,12 +37,13 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "metadata_test.go",
         "target_test.go",
         "upload_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
-        "//prow/kube:go_default_library",
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",

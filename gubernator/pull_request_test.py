@@ -25,6 +25,10 @@ def make(number, version, result, start_time=1000):
     finished = result and {'result': result}
     return (number, started, finished)
 
+def makePodutil(number, revision, result, start_time=1000):
+    started = {'timestamp': start_time}
+    finished = result and {'result': result, 'revision': revision}
+    return (number, started, finished)
 
 class TableTest(unittest.TestCase):
 
@@ -48,3 +52,13 @@ class TableTest(unittest.TestCase):
         jobs['J1'][0][1]['pull'] = 'master:1234,35:abcd'
         _, headings, _ = pull_request.builds_to_table(jobs)
         self.assertEqual(headings, [('abcd', 1, 9)])
+
+    def test_builds_to_table_podutils(self):
+        jobs = {'J1': [makePodutil(4, 'v2', 'A', 9), makePodutil(3, 'v2', 'B', 10)],
+                'J2': [makePodutil(5, 'v1', 'C', 7), makePodutil(4, 'v1', 'D', 6)]}
+        max_builds, headings, rows = pull_request.builds_to_table(jobs)
+
+        self.assertEqual(max_builds, 4)
+        self.assertEqual(headings, [('v2', 2, 9), ('v1', 2, 6)])
+        self.assertEqual(rows, [('J1', [(4, 'A'), (3, 'B')]),
+                                ('J2', [None, None, (5, 'C'), (4, 'D')])])

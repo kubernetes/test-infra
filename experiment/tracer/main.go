@@ -20,40 +20,75 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"k8s.io/test-infra/prow/kube"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
-var (
-	selector  = flag.String("label-selector", "", "Label selector to select prow pods for log tracing. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	namespace = flag.String("namespace", "", "Namespace where prow runs")
-	headless  = flag.Bool("headless", false, "Run on headless mode")
-)
+type options struct {
+	selector  string
+	namespace string
 
-func main() {
-	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "tracer")
+	dryRun   bool
+	headless bool
 
-	if err := validateOptions(); err != nil {
-		logrus.Fatal(err)
+	kubernetes prowflagutil.ExperimentalKubernetesOptions
+}
+
+func (o *options) Validate() error {
+	if err := o.kubernetes.Validate(o.dryRun); err != nil {
+		return err
 	}
 
-	kc, err := kube.NewClientInCluster(*namespace)
+	if o.selector == "" {
+		return fmt.Errorf("you need to specify a label selector")
+	}
+	if _, err := labels.Parse(o.selector); err != nil {
+		return err
+	}
+	if o.namespace == "" {
+		return fmt.Errorf("you need to specify a namespace")
+	}
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.selector, "label-selector", "", "Label selector to select prow pods for log tracing. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	fs.StringVar(&o.namespace, "namespace", "", "Namespace where prow runs")
+
+	fs.BoolVar(&o.headless, "headless", false, "Run on headless mode")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	o.kubernetes.AddFlags(fs)
+
+	fs.Parse(os.Args[1:])
+	return o
+}
+
+func main() {
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
+	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tracer"}))
+
+	client, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
-		logger.WithError(err).Fatal("Error getting k8s client.")
+		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
 
 	mux := http.NewServeMux()
-	if !*headless {
+	if !o.headless {
 		mux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
 	}
-	mux.Handle("/trace", gziphandler.GzipHandler(handleTrace(*selector, kc)))
+	mux.Handle("/trace", gziphandler.GzipHandler(handleTrace(o.selector, client.CoreV1().Pods(o.namespace))))
 
 	server := &http.Server{
 		Addr:         ":8080",
@@ -62,17 +97,4 @@ func main() {
 		WriteTimeout: 2 * time.Minute,
 	}
 	logrus.Fatal(server.ListenAndServe())
-}
-
-func validateOptions() error {
-	if *selector == "" {
-		return fmt.Errorf("you need to specify a label selector")
-	}
-	if _, err := labels.Parse(*selector); err != nil {
-		return err
-	}
-	if *namespace == "" {
-		return fmt.Errorf("you need to specify a namespace")
-	}
-	return nil
 }

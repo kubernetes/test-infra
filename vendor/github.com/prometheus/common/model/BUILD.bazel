@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "alert.go",
         "fingerprinting.go",
+        "fnv.go",
         "labels.go",
         "labelset.go",
         "metric.go",

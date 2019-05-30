@@ -8,6 +8,13 @@
 <link rel="icon" type="image/png" href="{{'favicon-green.png'|static}}" />
 % endif
 % endblock
+% block banner
+% if spyglass_link
+<div id="page-top-banner">
+	This job view page is being replaced by Spyglass soon. <a href="{{spyglass_link}}">Check out the new job view</a>.
+</div>
+% endif
+% endblock
 % block header
 <h1>{% if pr and pr != "batch"  %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes"%}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
 	% if testgrid_query

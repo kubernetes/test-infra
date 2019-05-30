@@ -17,14 +17,20 @@ limitations under the License.
 package updateconfig
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
 	"path"
+	"unicode/utf8"
 
-	"github.com/mattn/go-zglob"
+	zglob "github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
+	coreapi "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -62,19 +68,8 @@ type githubClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
-// KubeClient knows how to interact with ConfigMaps on a cluster
-type KubeClient interface {
-	GetConfigMap(name, namespace string) (kube.ConfigMap, error)
-	ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error)
-	CreateConfigMap(content kube.ConfigMap) (kube.ConfigMap, error)
-}
-
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.KubeClient, pc.Logger, pre, maps(pc))
-}
-
-func maps(pc plugins.Agent) map[string]plugins.ConfigMapSpec {
-	return pc.PluginConfig.ConfigUpdater.Maps
+	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater)
 }
 
 // FileGetter knows how to get the contents of a file by name
@@ -92,49 +87,78 @@ func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
 }
 
 // Update updates the configmap with the data from the identified files
-func Update(fg FileGetter, kc KubeClient, name, namespace string, updates map[string]string, logger *logrus.Entry) error {
-	currentContent, getErr := kc.GetConfigMap(name, namespace)
-	_, isNotFound := getErr.(kube.NotFoundError)
+func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, logger *logrus.Entry) error {
+	cm, getErr := kc.Get(name, metav1.GetOptions{})
+	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
 		return fmt.Errorf("failed to fetch current state of configmap: %v", getErr)
 	}
 
-	data := map[string]string{}
-	if currentContent.Data != nil {
-		data = currentContent.Data
+	if cm == nil || isNotFound {
+		cm = &coreapi.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+	}
+	if cm.Data == nil {
+		cm.Data = map[string]string{}
+	}
+	if cm.BinaryData == nil {
+		cm.BinaryData = map[string][]byte{}
 	}
 
-	for key, filename := range updates {
-		if filename == "" {
-			logger.WithField("key", key).Debug("Deleting key.")
-			delete(data, key)
+	for _, upd := range updates {
+		if upd.Filename == "" {
+			logger.WithField("key", upd.Key).Debug("Deleting key.")
+			delete(cm.Data, upd.Key)
+			delete(cm.BinaryData, upd.Key)
 			continue
 		}
 
-		content, err := fg.GetFile(filename)
+		content, err := fg.GetFile(upd.Filename)
 		if err != nil {
 			return fmt.Errorf("get file err: %v", err)
 		}
-		logger.WithFields(logrus.Fields{"key": key, "filename": filename}).Debug("Populating key.")
-		data[key] = string(content)
-	}
-
-	cm := kube.ConfigMap{
-		ObjectMeta: kube.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Data: data,
+		logger.WithFields(logrus.Fields{"key": upd.Key, "filename": upd.Filename}).Debug("Populating key.")
+		value := content
+		if upd.GZIP {
+			buff := bytes.NewBuffer([]byte{})
+			// TODO: this error is wildly unlikely for anything that
+			// would actually fit in a configmap, we could just as well return
+			// the error instead of falling back to the raw content
+			z := gzip.NewWriter(buff)
+			if _, err := z.Write(content); err != nil {
+				logger.WithError(err).Error("failed to gzip content, falling back to raw")
+			} else {
+				if err := z.Close(); err != nil {
+					logger.WithError(err).Error("failed to flush gzipped content (!?), falling back to raw")
+				} else {
+					value = buff.Bytes()
+				}
+			}
+		}
+		if utf8.ValidString(string(value)) {
+			delete(cm.BinaryData, upd.Key)
+			cm.Data[upd.Key] = string(value)
+		} else {
+			delete(cm.Data, upd.Key)
+			cm.BinaryData[upd.Key] = value
+		}
 	}
 
 	var updateErr error
+	var verb string
 	if getErr != nil && isNotFound {
-		_, updateErr = kc.CreateConfigMap(cm)
+		verb = "create"
+		_, updateErr = kc.Create(cm)
 	} else {
-		_, updateErr = kc.ReplaceConfigMap(name, cm)
+		verb = "update"
+		_, updateErr = kc.Update(cm)
 	}
 	if updateErr != nil {
-		return fmt.Errorf("replace config map err: %v", updateErr)
+		return fmt.Errorf("%s config map err: %v", verb, updateErr)
 	}
 	return nil
 }
@@ -144,15 +168,22 @@ type ConfigMapID struct {
 	Name, Namespace string
 }
 
+// ConfigMapUpdate is populated with information about a config map that should
+// be updated.
+type ConfigMapUpdate struct {
+	Key, Filename string
+	GZIP          bool
+}
+
 // FilterChanges determines which of the changes are relevant for config updating, returning mapping of
 // config map to key to filename to update that key from.
-func FilterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github.PullRequestChange, log *logrus.Entry) map[ConfigMapID]map[string]string {
-	toUpdate := map[ConfigMapID]map[string]string{}
+func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, log *logrus.Entry) map[ConfigMapID][]ConfigMapUpdate {
+	toUpdate := map[ConfigMapID][]ConfigMapUpdate{}
 	for _, change := range changes {
 		var cm plugins.ConfigMapSpec
 		found := false
 
-		for key, configMap := range configMaps {
+		for key, configMap := range cfg.Maps {
 			var matchErr error
 			found, matchErr = zglob.Match(key, change.Filename)
 			if matchErr != nil {
@@ -174,35 +205,38 @@ func FilterChanges(configMaps map[string]plugins.ConfigMapSpec, changes []github
 		// Yes, update the configmap with the contents of this file
 		for _, ns := range append(cm.Namespaces) {
 			id := ConfigMapID{Name: cm.Name, Namespace: ns}
-			if _, ok := toUpdate[id]; !ok {
-				toUpdate[id] = map[string]string{}
-			}
 			key := cm.Key
 			if key == "" {
 				key = path.Base(change.Filename)
 				// if the key changed, we need to remove the old key
 				if change.Status == github.PullRequestFileRenamed {
 					oldKey := path.Base(change.PreviousFilename)
-					toUpdate[id][oldKey] = ""
+					// not setting the filename field will cause the key to be
+					// deleted
+					toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: oldKey})
 				}
 			}
 			if change.Status == github.PullRequestFileRemoved {
-				toUpdate[id][key] = ""
+				toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key})
 			} else {
-				toUpdate[id][key] = change.Filename
+				gzip := cfg.GZIP
+				if cm.GZIP != nil {
+					gzip = *cm.GZIP
+				}
+				toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key, Filename: change.Filename, GZIP: gzip})
 			}
 		}
 	}
 	return toUpdate
 }
 
-func handle(gc githubClient, kc KubeClient, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]plugins.ConfigMapSpec) error {
+func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
 	}
 
-	if len(configMaps) == 0 { // Nothing to update
+	if len(config.Maps) == 0 { // Nothing to update
 		return nil
 	}
 
@@ -221,20 +255,20 @@ func handle(gc githubClient, kc KubeClient, log *logrus.Entry, pre github.PullRe
 		return err
 	}
 
-	message := func(name, namespace string, data map[string]string, indent string) string {
+	message := func(name, namespace string, updates []ConfigMapUpdate, indent string) string {
 		identifier := fmt.Sprintf("`%s` configmap", name)
 		if namespace != "" {
 			identifier = fmt.Sprintf("%s in namespace `%s`", identifier, namespace)
 		}
 		msg := fmt.Sprintf("%s using the following files:", identifier)
-		for key, file := range data {
-			msg = fmt.Sprintf("%s\n%s- key `%s` using file `%s`", msg, indent, key, file)
+		for _, u := range updates {
+			msg = fmt.Sprintf("%s\n%s- key `%s` using file `%s`", msg, indent, u.Key, u.Filename)
 		}
 		return msg
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
-	toUpdate := FilterChanges(configMaps, changes, log)
+	toUpdate := FilterChanges(config, changes, log)
 
 	var updated []string
 	indent := " " // one space
@@ -242,8 +276,11 @@ func handle(gc githubClient, kc KubeClient, log *logrus.Entry, pre github.PullRe
 		indent = "   " // three spaces for sub bullets
 	}
 	for cm, data := range toUpdate {
+		if cm.Namespace == "" {
+			cm.Namespace = defaultNamespace
+		}
 		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc, cm.Name, cm.Namespace, data, logger); err != nil {
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc.ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))

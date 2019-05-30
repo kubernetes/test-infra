@@ -12,6 +12,7 @@ type TagInfo struct {
 	Object   string        `json:"object"`
 	Message  string        `json:"message"`
 	Tagger   GitPersonInfo `json:"tagger"`
+	Created  *Timestamp    `json:"created,omitempty"`
 }
 
 // ListTags list the tags of a project.

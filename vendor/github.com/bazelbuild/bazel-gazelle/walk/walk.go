@@ -136,11 +136,15 @@ func Walk(c *config.Config, cexts []config.Configurer, dirs []string, mode Mode,
 		c = configure(cexts, knownDirectives, c, rel, f)
 		wc := getWalkConfig(c)
 
+		if wc.isExcluded(rel, ".") {
+			return
+		}
+
 		var subdirs, regularFiles []string
 		for _, fi := range files {
 			base := fi.Name()
 			switch {
-			case base == "" || base[0] == '.' || wc.isExcluded(rel, base):
+			case base == "" || wc.isExcluded(rel, base):
 				continue
 
 			case fi.IsDir() || fi.Mode()&os.ModeSymlink != 0 && symlinks.follow(c, dir, rel, base):

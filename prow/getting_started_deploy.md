@@ -8,19 +8,23 @@ Both of these are focused on [Kubernetes Engine](https://cloud.google.com/kubern
 
 ## Tackle deployment
 
-Prow's tackle utility walks you through deploying a new instance of prow in a couple minutes, try it out!
+Prow's `tackle` utility walks you through deploying a new instance of prow in a couple minutes, try it out!
 
-You need three things:
-1) The prow tackle command.
-2) a [personal access token][1] for the github bot user you want to act as prow
+You need a few things:
 
+1. [`bazel`](https://bazel.build/) build tool installed and working
+1. The prow `tackle` utility. It is recommended to use it by running `bazel run //prow/cmd/tackle` from `test-infra` directory, alternatively you can install it by running `go get -u k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go installed and working).
+1. A [personal access token][1] for the GitHub bot user you want to act as prow. If you're setting up prow for personal repo (not organization) then bot user == you (your GitHub account).
+
+   - Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
    - Prow uploads this token into a secret in your cluster
+   - Bot user must have write access to the repo
 
-3) Optionally, credentials to a kubernetes cluster
+1. Optionally, credentials to a Kubernetes cluster
 
    - Otherwise the tackle command can help you create one
 
-Then run the following and follow on-screen instructions:
+To install prow run the following from the `test-infra` directory and follow the on-screen instructions:
 
 ```bash
 # Ideally use https://bazel.build, alternatively try:
@@ -32,7 +36,7 @@ The will help you through the following steps:
 
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
-* Configuring github to send prow webhooks for your repos
+* Configuring GitHub to send prow webhooks for your repos. Please note that the absolute path to a personal access token should be specified.
 
 See the Next Steps section after running this utility.
 
@@ -107,23 +111,32 @@ There are [relevant docs on Kubernetes Authentication](https://kubernetes.io/doc
 
 You will need two secrets to talk to GitHub. The `hmac-token` is the token that
 you give to GitHub for validating webhooks. Generate it using any reasonable
-randomness-generator, eg `openssl rand -hex 20`. The `oauth-token` is an OAuth2 token
-that has read and write access to the bot account. Generate it from the
-[account's settings -> Personal access tokens -> Generate new token][1].
+randomness-generator, eg `openssl rand -hex 20`.
 
 ```sh
 # openssl rand -hex 20 > /path/to/hook/secret
 kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
+```
+
+The `oauth-token` is an OAuth2 token that has read and write access to the bot account:
+
+- Bot user must have write access to the repo
+- Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
+
+Generate it from the
+[account's Settings -> Developer settings -> Personal access tokens -> Generate new token][1].
+
+```sh
 # https://github.com/settings/tokens
 kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
 ```
 
 #### Bot account
 
-The bot account used by prow must be granted owner level access to the Github
+The bot account used by prow must be granted owner level access to the GitHub
 orgs that prow will operate on. Note that events triggered by this account are
 ignored by some prow plugins. It is prudent to use a different bot account for
-other Github automation that prow should interact with to prevent events from
+other GitHub automation that prow should interact with to prevent events from
 being ignored unjustly.
 
 ### Add the prow components to the cluster
@@ -248,6 +261,68 @@ label. When you make a change to the plugin config and push it with `make
 update-plugins`, you do not need to redeploy any of your cluster components.
 They will pick up the change within a few minutes.
 
+### Set namespaces for prowjobs and test pods
+
+Add the following to `config.yaml`:
+
+```yaml
+prowjob_namespace: default
+pod_namespace: test-pods
+```
+
+By doing so, we keep prowjobs in the `default` namespace and test pods in the
+`test_pods` namespace.
+
+You can also choose other names. Remember to update the RBAC roles and
+rolebindings afterwards.
+
+**Note**: If you set or update the `prowjob_namespace` or `pod_namespace`
+fields after deploying the prow components, you will need to redeploy them
+so that they pick up the change.
+
+### Configure Cloud Storage
+
+When configuring Prow jobs to use the [Pod utilities](./pod-utilities.md)
+with `decorate: true`, job metdata, logs, and artifacts will be uploaded
+to a GCS bucket in order to persist results from tests and allow for the
+job overview page to load those results at a later point. In order to run
+these jobs, it is required to set up a GCS bucket for job outputs. If your
+Prow deployment is targeted at an open source community, it is strongly
+suggested to make this bucket world-readable.
+
+In order to configure the bucket, follow the following steps:
+
+1. [provision](https://cloud.google.com/iam/docs/creating-managing-service-accounts) a new service account for interaction with the bucket
+1. [create](https://cloud.google.com/storage/docs/creating-buckets) the bucket
+1. (optionally) [expose](https://cloud.google.com/storage/docs/access-control/making-data-public) the bucket contents to the world
+1. [grant access](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) to write to the bucket for the service account
+1. [serialize](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) a key for the service account
+1. upload the key to a `Secret` under the `service-account.json` key
+1. edit the `plank` configuration for `default_decoration_config.gcs_credentials_secret` to point to the `Secret` above
+
+After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating, 
+the following script will execute the above steps for you:
+
+```sh
+gcloud iam service-accounts create prow-gcs-publisher # step 1
+identifier="$(  gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)' )"
+gsutil mb gs://prow-artifacts/ # step 2
+gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
+gsutil iam ch "serviceAccount:${identifier}:objectCreator" gs://prow-artifacts # step 4
+gcloud iam service-accounts keys create --iam-account "${identifier}" service-account.json # step 5
+kubectl create secret generic gcs-credentials --from-file=service-account.json # step 6
+```
+
+Then, set the field in your `config.yaml`:
+
+```yaml
+plank:
+  # other config ...
+  default_decoration_config:
+    # other config ...
+    gcs_credentials_secret: gcs-credentials
+```
+
 ### Add more jobs by modifying `config.yaml`
 
 Add the following to `config.yaml`:
@@ -314,26 +389,6 @@ the change within a few minutes.
 When you push or merge a new change to the git repo, the postsubmit job will run.
 
 For more information on the job environment, see [`jobs.md`](/prow/jobs.md)
-
-### Run test pods in a different namespace
-
-You may choose to keep prowjobs or run tests in a different namespace. First
-create the namespace by `kubectl create -f`ing this:
-
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: prow
-```
-
-Now, in `config.yaml`, set `prowjob_namespace` or `pod_namespace` to the
-name from the YAML file. You can then use RBAC roles to limit what test pods
-can do.
-
-**Note**: If you set or update the `prowjob_namespace` or `pod_namespace`
-fields after deploying the prow components, you will need to redeploy them
-so that they pick up the change.
 
 ### Run test pods in different clusters
 
@@ -463,3 +518,4 @@ a separate namespace.
 [5]: /prow/cmd/mkbuild-cluster/
 [6]: /prow/cmd/tide/README.md
 [7]: /prow/cmd/tide/config.md
+[8]: https://github.com/kubernetes/test-infra/blob/master/prow/scaling.md#working-around-githubs-limited-acls

@@ -21,10 +21,23 @@ import (
 	"testing"
 	"time"
 
+	"github.com/andygrunwald/go-gerrit"
+
 	"k8s.io/test-infra/prow/gerrit/client"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/diff"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
+)
+
+func makeStamp(t time.Time) gerrit.Timestamp {
+	return gerrit.Timestamp{Time: t}
+}
+
+var (
+	timeNow  = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
+	stampNow = makeStamp(timeNow)
 )
 
 type fca struct {
@@ -40,10 +53,10 @@ func (f *fca) Config() *config.Config {
 
 type fkc struct {
 	sync.Mutex
-	prowjobs []kube.ProwJob
+	prowjobs []prowapi.ProwJob
 }
 
-func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+func (f *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
 	f.Lock()
 	defer f.Unlock()
 	f.prowjobs = append(f.prowjobs, pj)
@@ -115,6 +128,58 @@ func TestMakeCloneURI(t *testing.T) {
 	}
 }
 
+func TestCreateRefs(t *testing.T) {
+	reviewHost := "https://cat-review.example.com"
+	change := client.ChangeInfo{
+		Number:          42,
+		Project:         "meow/purr",
+		CurrentRevision: "123456",
+		Branch:          "master",
+		Revisions: map[string]client.RevisionInfo{
+			"123456": {
+				Ref: "refs/changes/00/1/1",
+				Commit: gerrit.CommitInfo{
+					Author: gerrit.GitPersonInfo{
+						Name:  "Some Cat",
+						Email: "nyan@example.com",
+					},
+				},
+			},
+		},
+	}
+	expected := prowapi.Refs{
+		Org:      "cat-review.example.com",
+		Repo:     "meow/purr",
+		BaseRef:  "master",
+		BaseSHA:  "abcdef",
+		CloneURI: "https://cat-review.example.com/meow/purr",
+		RepoLink: "https://cat.example.com/meow/purr",
+		BaseLink: "https://cat.example.com/meow/purr/+/abcdef",
+		Pulls: []prowapi.Pull{
+			{
+				Number:     42,
+				Author:     "Some Cat",
+				SHA:        "123456",
+				Ref:        "refs/changes/00/1/1",
+				Link:       "https://cat-review.example.com/c/meow/purr/+/42",
+				CommitLink: "https://cat.example.com/meow/purr/+/123456",
+				AuthorLink: "https://cat-review.example.com/q/nyan@example.com",
+			},
+		},
+	}
+	cloneURI, err := makeCloneURI(reviewHost, change.Project)
+	if err != nil {
+		t.Errorf("failed to make clone URI: %v", err)
+	}
+	actual, err := createRefs(reviewHost, change, cloneURI, "abcdef")
+	if err != nil {
+		t.Errorf("unexpected error creating refs: %v", err)
+	}
+	if !equality.Semantic.DeepEqual(expected, actual) {
+		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
+	}
+}
+
 func TestProcessChange(t *testing.T) {
 	var testcases = []struct {
 		name        string
@@ -124,7 +189,7 @@ func TestProcessChange(t *testing.T) {
 		shouldError bool
 	}{
 		{
-			name: "no revisions",
+			name: "no revisions errors out",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
@@ -133,29 +198,32 @@ func TestProcessChange(t *testing.T) {
 			shouldError: true,
 		},
 		{
-			name: "wrong project",
+			name: "wrong project triggers no jobs",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "woof",
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
-					"1": {},
+					"1": {
+						Created: stampNow,
+					},
 				},
 			},
 		},
 		{
-			name: "normal",
+			name: "normal changes should trigger matching branch jobs",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
 					},
 				},
 			},
-			numPJ: 1,
+			numPJ: 2,
 			pjRef: "refs/changes/00/1/1",
 		},
 		{
@@ -166,14 +234,16 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/2/1",
+						Ref:     "refs/changes/00/2/1",
+						Created: stampNow,
 					},
 					"2": {
-						Ref: "refs/changes/00/2/2",
+						Ref:     "refs/changes/00/2/2",
+						Created: stampNow,
 					},
 				},
 			},
-			numPJ: 1,
+			numPJ: 2,
 			pjRef: "refs/changes/00/2/2",
 		},
 		{
@@ -184,7 +254,8 @@ func TestProcessChange(t *testing.T) {
 				Status:          "NEW",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
 					},
 				},
 			},
@@ -199,7 +270,8 @@ func TestProcessChange(t *testing.T) {
 				Status:          "MERGED",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
 					},
 				},
 			},
@@ -214,7 +286,8 @@ func TestProcessChange(t *testing.T) {
 				Status:          "MERGED",
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
-						Ref: "refs/changes/00/1/1",
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
 					},
 				},
 			},
@@ -232,10 +305,11 @@ func TestProcessChange(t *testing.T) {
 							"africa-lyrics.txt":    {},
 							"important-code.go":    {},
 						},
+						Created: stampNow,
 					},
 				},
 			},
-			numPJ: 2,
+			numPJ: 3,
 		},
 		{
 			name: "presubmit doesn't run when no files match run_if_changed",
@@ -250,6 +324,106 @@ func TestProcessChange(t *testing.T) {
 							"README.md":     {},
 							"let-it-go.txt": {},
 						},
+						Created: stampNow,
+					},
+				},
+			},
+			numPJ: 2,
+		},
+		{
+			name: "presubmit run when change against matched branch",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "pony",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Created: stampNow,
+					},
+				},
+			},
+			numPJ: 3,
+		},
+		{
+			name: "presubmit doesn't run when not against target branch",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Created: stampNow,
+					},
+				},
+			},
+			numPJ: 1,
+		},
+		{
+			name: "old presubmits don't run on old revision but trigger job does because new message",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test troll",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+				},
+			},
+			numPJ: 1,
+		},
+		{
+			name: "unrelated comment shouldn't trigger anything",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test diasghdgasudhkashdk",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+				},
+			},
+			numPJ: 0,
+		},
+		{
+			name: "trigger always run job on test all even if revision is old",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test all",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
 					},
 				},
 			},
@@ -261,16 +435,42 @@ func TestProcessChange(t *testing.T) {
 		testInfraPresubmits := []config.Presubmit{
 			{
 				JobBase: config.JobBase{
-					Name: "test-foo",
+					Name: "always-runs-all-branches",
 				},
+				AlwaysRun: true,
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "test-go",
+					Name: "run-if-changed-all-branches",
 				},
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "\\.go",
 				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "runs-on-pony-branch",
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"pony"},
+				},
+				AlwaysRun: true,
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "runs-on-all-but-baz-branch",
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{"baz"},
+				},
+				AlwaysRun: true,
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "trigger-regex-all-branches",
+				},
+				Trigger:      `.*/test\s*troll.*`,
+				RerunCommand: "/test troll",
 			},
 		}
 		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
@@ -287,6 +487,7 @@ func TestProcessChange(t *testing.T) {
 								JobBase: config.JobBase{
 									Name: "other-test",
 								},
+								AlwaysRun: true,
 							},
 						},
 					},
@@ -306,9 +507,10 @@ func TestProcessChange(t *testing.T) {
 		fkc := &fkc{}
 
 		c := &Controller{
-			ca: fca,
-			kc: fkc,
-			gc: &fgc{},
+			config:     fca.Config,
+			kc:         fkc,
+			gc:         &fgc{},
+			lastUpdate: timeNow.Add(-time.Minute),
 		}
 
 		err := c.ProcessChange("https://gerrit", tc.change)

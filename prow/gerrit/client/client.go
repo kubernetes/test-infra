@@ -21,7 +21,6 @@ package client
 import (
 	"fmt"
 	"io/ioutil"
-	"net/url"
 	"strings"
 	"time"
 
@@ -229,7 +228,7 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 		return "", fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	res, _, err := h.projectService.GetBranch(project, url.QueryEscape(branch))
+	res, _, err := h.projectService.GetBranch(project, branch)
 	if err != nil {
 		return "", err
 	}
@@ -254,12 +253,16 @@ func (h *gerritInstanceHandler) queryAllChanges(lastUpdate time.Time, rateLimit 
 	return result
 }
 
+func parseStamp(value gerrit.Timestamp) time.Time {
+	return value.Time
+}
+
 func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdate time.Time, rateLimit int) ([]gerrit.ChangeInfo, error) {
 	pending := []gerrit.ChangeInfo{}
 
 	opt := &gerrit.QueryChangeOptions{}
 	opt.Query = append(opt.Query, "project:"+project)
-	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES"}
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
 	start := 0
 
@@ -286,26 +289,17 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 		for _, change := range *changes {
 			// if we already processed this change, then we stop the current sync loop
-			const layout = "2006-01-02 15:04:05"
-			updated, err := time.Parse(layout, change.Updated)
-			if err != nil {
-				logrus.WithError(err).Errorf("Parse time %v failed", change.Updated)
-				continue
-			}
+			updated := parseStamp(change.Updated)
 
 			logrus.Infof("Change %d, last updated %s, status %s", change.Number, change.Updated, change.Status)
 
 			// process if updated later than last updated
 			// stop if update was stale
-			if !updated.Before(lastUpdate) {
+			if updated.After(lastUpdate) {
 				switch change.Status {
 				case Merged:
-					submitted, err := time.Parse(layout, change.Submitted)
-					if err != nil {
-						logrus.WithError(err).Errorf("Parse time %v failed", change.Submitted)
-						continue
-					}
-					if submitted.Before(lastUpdate) {
+					submitted := parseStamp(*change.Submitted)
+					if !submitted.After(lastUpdate) {
 						logrus.Infof("Change %d, submitted %s before lastUpdate %s, skipping this patchset", change.Number, submitted, lastUpdate)
 						continue
 					}
@@ -318,13 +312,22 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 						continue
 					}
 
-					created, err := time.Parse(layout, rev.Created)
-					if err != nil {
-						logrus.WithError(err).Errorf("Parse time %v failed", rev.Created)
-						continue
+					created := parseStamp(rev.Created)
+					changeMessages := change.Messages
+					newMessages := false
+
+					for _, message := range changeMessages {
+						if message.RevisionNumber == rev.Number {
+							messageTime := parseStamp(message.Date)
+							if messageTime.After(lastUpdate) {
+								logrus.Infof("Change %d: Found a new message %s at time %v after lastSync at %v", change.Number, message.Message, messageTime, lastUpdate)
+								newMessages = true
+								break
+							}
+						}
 					}
 
-					if created.Before(lastUpdate) {
+					if !newMessages && !created.After(lastUpdate) {
 						// stale commit
 						logrus.Infof("Change %d, latest revision updated %s before lastUpdate %s, skipping this patchset", change.Number, created, lastUpdate)
 						continue

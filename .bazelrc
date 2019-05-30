@@ -15,3 +15,42 @@ test:lint --test_tag_filters=lint
 # you can run non-lint tests with:
 # bazel test //... --config=unit
 test:unit --test_tag_filters=-lint
+
+# --config=remote-cache enables a remote bazel cache
+# Note needs an instance name
+# See --config=remote-fejta-cache for a concrete example
+build:remote-cache --remote_cache=remotebuildexecution.googleapis.com
+build:remote-cache --tls_enabled=true
+build:remote-cache --remote_timeout=3600
+build:remote-cache --auth_enabled=true
+
+# --config=remote adds remote execution to the --config=remote-cache
+# Note needs an instance name
+# See --config=remote-fejta for a concrete example
+build:remote --config=remote-cache
+build:remote --remote_executor=remotebuildexecution.googleapis.com
+build:remote --jobs=500
+build:remote --host_javabase=@rbe_default//java:jdk
+build:remote --javabase=@rbe_default//java:jdk
+build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build:remote --crosstool_top=@rbe_default//cc:toolchain
+build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:remote --extra_toolchains=@rbe_default//config:cc-toolchain
+build:remote --extra_execution_platforms=:rbe_with_network
+build:remote --host_platform=:rbe_with_network
+build:remote --platforms=:rbe_with_network
+build:remote --spawn_strategy=remote
+build:remote --strategy=Javac=remote
+build:remote --strategy=Closure=remote
+build:remote --strategy=Genrule=remote
+build:remote --define=EXECUTOR=remote
+
+# Compose the remote configs with an instance name
+# A couple examples below:
+
+# --config=ci-instance adds the instance name
+build:ci-instance --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+
+# Config we want to use in ci
+build:ci --config=remote --config=ci-instance

@@ -31,24 +31,49 @@ import (
 // GitHubOptions holds options for interacting with GitHub.
 type GitHubOptions struct {
 	endpoint            Strings
+	graphqlEndpoint     string
 	TokenPath           string
 	deprecatedTokenFile string
 }
 
 // AddFlags injects GitHub options into the given FlagSet.
 func (o *GitHubOptions) AddFlags(fs *flag.FlagSet) {
-	o.endpoint = NewStrings("https://api.github.com")
+	o.addFlags(true, fs)
+}
+
+// AddFlagsWithoutDefaultGitHubTokenPath injects GitHub options into the given
+// Flagset without setting a default for for the githubTokenPath, allowing to
+// use an anonymous GitHub client
+func (o *GitHubOptions) AddFlagsWithoutDefaultGitHubTokenPath(fs *flag.FlagSet) {
+	o.addFlags(false, fs)
+}
+
+func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagSet) {
+	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
-	fs.StringVar(&o.TokenPath, "github-token-path", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
+	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
+	defaultGitHubTokenPath := ""
+	if wantDefaultGitHubTokenPath {
+		defaultGitHubTokenPath = "/etc/github/oauth"
+	}
+	fs.StringVar(&o.TokenPath, "github-token-path", defaultGitHubTokenPath, "Path to the file containing the GitHub OAuth secret.")
 	fs.StringVar(&o.deprecatedTokenFile, "github-token-file", "", "DEPRECATED: use -github-token-path instead.  -github-token-file may be removed anytime after 2019-01-01.")
 }
 
 // Validate validates GitHub options.
 func (o *GitHubOptions) Validate(dryRun bool) error {
 	for _, uri := range o.endpoint.Strings() {
-		if _, err := url.ParseRequestURI(uri); err != nil {
+		if uri == "" {
+			uri = github.DefaultAPIEndpoint
+		} else if _, err := url.ParseRequestURI(uri); err != nil {
 			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
+	}
+
+	if o.graphqlEndpoint == "" {
+		o.graphqlEndpoint = github.DefaultGraphQLEndpoint
+	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
+		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.graphqlEndpoint)
 	}
 
 	if o.deprecatedTokenFile != "" {
@@ -63,8 +88,8 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 	return nil
 }
 
-// GitHubClient returns a GitHub client.
-func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client *github.Client, err error) {
+// GitHubClientWithLogFields returns a GitHub client with extra logging fields
+func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (client github.Client, err error) {
 	var generator *func() []byte
 	if o.TokenPath == "" {
 		generatorFunc := func() []byte {
@@ -80,9 +105,14 @@ func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (cl
 	}
 
 	if dryRun {
-		return github.NewDryRunClient(*generator, o.endpoint.Strings()...), nil
+		return github.NewDryRunClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 	}
-	return github.NewClient(*generator, o.endpoint.Strings()...), nil
+	return github.NewClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+}
+
+// GitHubClient returns a GitHub client.
+func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (client github.Client, err error) {
+	return o.GitHubClientWithLogFields(secretAgent, dryRun, logrus.Fields{})
 }
 
 // GitClient returns a Git client.

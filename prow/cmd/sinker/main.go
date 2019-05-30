@@ -19,82 +19,117 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 )
-
-type kubeClient interface {
-	ListPods(selector string) ([]kube.Pod, error)
-	DeletePod(name string) error
-
-	ListProwJobs(selector string) ([]kube.ProwJob, error)
-	DeleteProwJob(name string) error
-}
-
-type configAgent interface {
-	Config() *config.Config
-}
 
 type options struct {
 	runOnce       bool
 	configPath    string
 	jobConfigPath string
-	buildCluster  string
+	dryRun        flagutil.Bool
+	kubernetes    flagutil.ExperimentalKubernetesOptions
 }
 
-func gatherOptions() options {
+const (
+	reasonPodAged     = "aged"
+	reasonPodOrphaned = "orphaned"
+
+	reasonProwJobAged         = "aged"
+	reasonProwJobAgedPeriodic = "aged-periodic"
+)
+
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
-	flag.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	flag.Parse()
+	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+
+	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
+	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
+
+	o.kubernetes.AddFlags(fs)
+	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
+
+func (o *options) Validate() error {
+	if err := o.kubernetes.Validate(o.dryRun.Value); err != nil {
+		return err
+	}
+
+	if o.configPath == "" {
+		return errors.New("--config-path is required")
+	}
+
+	return nil
+}
+
 func main() {
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	if err := o.Validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
+	}
+
+	pjutil.ServePProf()
+
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
 	)
+
+	if !o.dryRun.Explicit {
+		logrus.Warning("Sinker requires --dry-run=false to function correctly in production.")
+		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
+	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
-	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
+	pushGateway := cfg().PushGateway
+	metrics.ExposeMetrics("sinker", pushGateway.Endpoint, pushGateway.Interval.Duration)
+
+	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun.Value)
 	if err != nil {
-		logrus.WithError(err).Error("Error getting client.")
-		return
+		logrus.WithError(err).Fatal("Error creating ProwJob client.")
 	}
 
-	var pkcs map[string]*kube.Client
-	if o.buildCluster == "" {
-		pkcs = map[string]*kube.Client{
-			kube.DefaultClusterAlias: kc.Namespace(configAgent.Config().PodNamespace),
-		}
-	} else {
-		pkcs, err = kube.ClientMapFromFile(o.buildCluster, configAgent.Config().PodNamespace)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client(s).")
-		}
+	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
 
-	kubeClients := map[string]kubeClient{}
-	for alias, client := range pkcs {
-		kubeClients[alias] = kubeClient(client)
+	var podClients []corev1.PodInterface
+	for _, client := range buildClusterClients {
+		// sinker doesn't care about build cluster aliases
+		podClients = append(podClients, client)
 	}
+
 	c := controller{
-		logger:      logrus.NewEntry(logrus.StandardLogger()),
-		kc:          kc,
-		pkcs:        kubeClients,
-		configAgent: configAgent,
+		logger:        logrus.NewEntry(logrus.StandardLogger()),
+		prowJobClient: prowJobClient,
+		podClients:    podClients,
+		config:        cfg,
 	}
 
 	// Clean now and regularly from now on.
@@ -105,60 +140,156 @@ func main() {
 		if o.runOnce {
 			break
 		}
-		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
+		time.Sleep(cfg().Sinker.ResyncPeriod.Duration)
 	}
 }
 
 type controller struct {
-	logger      *logrus.Entry
-	kc          kubeClient
-	pkcs        map[string]kubeClient
-	configAgent configAgent
+	logger        *logrus.Entry
+	prowJobClient prowv1.ProwJobInterface
+	podClients    []corev1.PodInterface
+	config        config.Getter
+}
+
+type sinkerReconciliationMetrics struct {
+	podsCreated            int
+	startAt                time.Time
+	finishedAt             time.Time
+	podsRemoved            map[string]int
+	podRemovalErrors       map[string]int
+	prowJobsCreated        int
+	prowJobsCleaned        map[string]int
+	prowJobsCleaningErrors map[string]int
+}
+
+// Prometheus Metrics
+var (
+	sinkerMetrics = struct {
+		podsCreated            prometheus.Gauge
+		timeUsed               prometheus.Gauge
+		podsRemoved            *prometheus.GaugeVec
+		podRemovalErrors       *prometheus.GaugeVec
+		prowJobsCreated        prometheus.Gauge
+		prowJobsCleaned        *prometheus.GaugeVec
+		prowJobsCleaningErrors *prometheus.GaugeVec
+	}{
+		podsCreated: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "sinker_pods_existing",
+			Help: "Number of the existing pods in each sinker cleaning.",
+		}),
+		timeUsed: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "sinker_loop_duration_seconds",
+			Help: "Time used in each sinker cleaning.",
+		}),
+		podsRemoved: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "sinker_pods_removed",
+			Help: "Number of pods removed in each sinker cleaning.",
+		}, []string{
+			"reason",
+		}),
+		podRemovalErrors: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "sinker_pod_removal_errors",
+			Help: "Number of errors which occurred in each sinker pod cleaning.",
+		}, []string{
+			"reason",
+		}),
+		prowJobsCreated: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "sinker_prow_jobs_existing",
+			Help: "Number of the existing prow jobs in each sinker cleaning.",
+		}),
+		prowJobsCleaned: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "sinker_prow_jobs_cleaned",
+			Help: "Number of prow jobs cleaned in each sinker cleaning.",
+		}, []string{
+			"reason",
+		}),
+		prowJobsCleaningErrors: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "sinker_prow_jobs_cleaning_errors",
+			Help: "Number of errors which occurred in each sinker prow job cleaning.",
+		}, []string{
+			"reason",
+		}),
+	}
+)
+
+func init() {
+	prometheus.MustRegister(sinkerMetrics.podsCreated)
+	prometheus.MustRegister(sinkerMetrics.timeUsed)
+	prometheus.MustRegister(sinkerMetrics.podsRemoved)
+	prometheus.MustRegister(sinkerMetrics.podRemovalErrors)
+	prometheus.MustRegister(sinkerMetrics.prowJobsCreated)
+	prometheus.MustRegister(sinkerMetrics.prowJobsCleaned)
+	prometheus.MustRegister(sinkerMetrics.prowJobsCleaningErrors)
+}
+
+func (m *sinkerReconciliationMetrics) getPodsTotalRemoved() int {
+	result := 0
+	for _, v := range m.podsRemoved {
+		result += v
+	}
+	return result
+}
+
+func (m *sinkerReconciliationMetrics) getTimeUsed() time.Duration {
+	return m.finishedAt.Sub(m.startAt)
 }
 
 func (c *controller) clean() {
+
+	metrics := sinkerReconciliationMetrics{
+		startAt:                time.Now(),
+		podsRemoved:            map[string]int{},
+		podRemovalErrors:       map[string]int{},
+		prowJobsCleaned:        map[string]int{},
+		prowJobsCleaningErrors: map[string]int{}}
+
 	// Clean up old prow jobs first.
-	prowJobs, err := c.kc.ListProwJobs(kube.EmptySelector)
+	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
 	if err != nil {
 		c.logger.WithError(err).Error("Error listing prow jobs.")
 		return
 	}
+	metrics.prowJobsCreated = len(prowJobs.Items)
 
 	// Only delete pod if its prowjob is marked as finished
-	isFinished := make(map[string]bool)
+	isExist := sets.NewString()
+	isFinished := sets.NewString()
 
-	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
-	for _, prowJob := range prowJobs {
+	maxProwJobAge := c.config().Sinker.MaxProwJobAge.Duration
+	for _, prowJob := range prowJobs.Items {
+		isExist.Insert(prowJob.ObjectMeta.Name)
 		// Handle periodics separately.
-		if prowJob.Spec.Type == kube.PeriodicJob {
+		if prowJob.Spec.Type == prowapi.PeriodicJob {
 			continue
 		}
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
+		isFinished.Insert(prowJob.ObjectMeta.Name)
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
-		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
+		if err := c.prowJobClient.Delete(prowJob.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
+			metrics.prowJobsCleaned[reasonProwJobAged]++
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
+			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
 		}
 	}
 
 	// Keep track of what periodic jobs are in the config so we will
 	// not clean up their last prowjob.
 	isActivePeriodic := make(map[string]bool)
-	for _, p := range c.configAgent.Config().Periodics {
+	for _, p := range c.config().Periodics {
 		isActivePeriodic[p.Name] = true
 	}
 
 	// Get the jobs that we need to retain so horologium can continue working
 	// as intended.
-	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs, kube.PeriodicJob)
-	for _, prowJob := range prowJobs {
-		if prowJob.Spec.Type != kube.PeriodicJob {
+	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, prowapi.PeriodicJob)
+	for _, prowJob := range prowJobs.Items {
+		if prowJob.Spec.Type != prowapi.PeriodicJob {
 			continue
 		}
 
@@ -170,40 +301,73 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
+		isFinished.Insert(prowJob.ObjectMeta.Name)
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
-		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
+		if err := c.prowJobClient.Delete(prowJob.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
+			metrics.prowJobsCleaned[reasonProwJobAgedPeriodic]++
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
+			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
 		}
 	}
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	for _, client := range c.pkcs {
-		pods, err := client.ListPods(selector)
+	for _, client := range c.podClients {
+		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
 			c.logger.WithError(err).Error("Error listing pods.")
 			return
 		}
-		maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
-		for _, pod := range pods {
-			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
-				// prowjob is not marked as completed yet
+		metrics.podsCreated += len(pods.Items)
+		maxPodAge := c.config().Sinker.MaxPodAge.Duration
+		for _, pod := range pods.Items {
+			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
+			reason := reasonPodAged
+			if !isFinished.Has(pod.ObjectMeta.Name) {
+				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
+				clean = false
+			}
+			if !isExist.Has(pod.ObjectMeta.Name) {
+				// prowjob has gone, we want to clean orphan pods regardless of the state
+				reason = reasonPodOrphaned
+				clean = true
+			}
+
+			if !clean {
 				continue
 			}
-			if !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge {
-				// Delete old completed pods. Don't quit if we fail to delete one.
-				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				} else {
-					c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
-				}
+
+			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
+			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+				metrics.podsRemoved[reason]++
+			} else {
+				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
+				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 			}
 		}
 	}
+
+	metrics.finishedAt = time.Now()
+	sinkerMetrics.podsCreated.Set(float64(metrics.podsCreated))
+	sinkerMetrics.timeUsed.Set(float64(metrics.getTimeUsed().Seconds()))
+	for k, v := range metrics.podsRemoved {
+		sinkerMetrics.podsRemoved.WithLabelValues(k).Set(float64(v))
+	}
+	for k, v := range metrics.podRemovalErrors {
+		sinkerMetrics.podRemovalErrors.WithLabelValues(k).Set(float64(v))
+	}
+	sinkerMetrics.prowJobsCreated.Set(float64(metrics.prowJobsCreated))
+	for k, v := range metrics.prowJobsCleaned {
+		sinkerMetrics.prowJobsCleaned.WithLabelValues(k).Set(float64(v))
+	}
+	for k, v := range metrics.prowJobsCleaningErrors {
+		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
+	}
+	c.logger.Info("Sinker reconciliation complete.")
 }

@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // VPCs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVpcs
@@ -47,23 +49,49 @@ func (VPCs) MarkAndSweep(sess *session.Session, acct string, region string, set 
 	for _, vp := range resp.Vpcs {
 		v := &vpc{Account: acct, Region: region, ID: *vp.VpcId}
 		if set.Mark(v) {
-			glog.Warningf("%s: deleting %T: %v", v.ARN(), vp, vp)
+			klog.Warningf("%s: deleting %T: %v", v.ARN(), vp, vp)
+
 			if vp.DhcpOptionsId != nil && *vp.DhcpOptionsId != "default" {
-				_, err := svc.AssociateDhcpOptions(&ec2.AssociateDhcpOptionsInput{
+				disReq := &ec2.AssociateDhcpOptionsInput{
 					VpcId:         vp.VpcId,
 					DhcpOptionsId: aws.String("default"),
-				})
-				if err != nil {
-					glog.Warningf("%v: disassociating DHCP option set %v failed: %v", v.ARN(), vp.DhcpOptionsId, err)
+				}
+
+				if _, err := svc.AssociateDhcpOptions(disReq); err != nil {
+					klog.Warningf("%v: disassociating DHCP option set %v failed: %v", v.ARN(), vp.DhcpOptionsId, err)
 				}
 			}
-			_, err := svc.DeleteVpc(&ec2.DeleteVpcInput{VpcId: vp.VpcId})
-			if err != nil {
-				glog.Warningf("%v: delete failed: %v", v.ARN(), err)
+
+			if _, err := svc.DeleteVpc(&ec2.DeleteVpcInput{VpcId: vp.VpcId}); err != nil {
+				klog.Warningf("%v: delete failed: %v", v.ARN(), err)
 			}
 		}
 	}
+
 	return nil
+}
+
+func (VPCs) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &ec2.DescribeVpcsInput{}
+
+	vpcs, err := svc.DescribeVpcs(inp)
+	if err != nil {
+		return nil, errors.Wrapf(err, "couldn't describe VPCs for %q in %q", acct, region)
+	}
+
+	now := time.Now()
+	for _, v := range vpcs.Vpcs {
+		arn := vpc{
+			Account: acct,
+			Region:  region,
+			ID:      *v.VpcId,
+		}.ARN()
+		set.firstSeen[arn] = now
+	}
+
+	return set, nil
 }
 
 type vpc struct {

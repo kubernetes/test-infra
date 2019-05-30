@@ -31,16 +31,15 @@ import (
 	"time"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/jenkins"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	m "k8s.io/test-infra/prow/metrics"
 )
@@ -61,7 +60,7 @@ type options struct {
 	csrfProtect            bool
 
 	dryRun     bool
-	kubernetes prowflagutil.KubernetesOptions
+	kubernetes prowflagutil.ExperimentalKubernetesOptions
 	github     prowflagutil.GitHubOptions
 }
 
@@ -103,7 +102,7 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	fs.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 
 	fs.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
@@ -132,6 +131,8 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "jenkins-operator"}),
 	)
 
+	pjutil.ServePProf()
+
 	if _, err := labels.Parse(o.selector); err != nil {
 		logrus.WithError(err).Fatal("Error parsing label selector.")
 	}
@@ -140,10 +141,11 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+		logrus.WithError(err).Fatal("Error getting ProwJob client for the infrastructure cluster.")
 	}
 
 	ac := &jenkins.AuthConfig{
@@ -196,19 +198,17 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	c, err := jenkins.NewController(kubeClient, jc, githubClient, nil, configAgent, o.totURL, o.selector)
+	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go m.PushMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	// Expose prometheus metrics
+	pushGateway := cfg().PushGateway
+	m.ExposeMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval.Duration)
+
 	// Serve Jenkins logs here and proxy deck to use this endpoint
-	// instead of baking agent-specific logic in deck. This func also
-	// serves prometheus metrics.
+	// instead of baking agent-specific logic in deck
 	go serve(jc)
 	// gather metrics for the jobs handled by the jenkins controller.
 	go gather(c)
@@ -259,11 +259,9 @@ func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
 }
 
 // serve starts a http server and serves Jenkins logs
-// and prometheus metrics. Meant to be called inside
-// a goroutine.
+// and. Meant to be called inside a goroutine.
 func serve(jc *jenkins.Client) {
 	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
-	http.Handle("/metrics", promhttp.Handler())
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 

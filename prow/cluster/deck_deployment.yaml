@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190111-2435ec2
+        image: gcr.io/k8s-prow/deck:v20190528-0d7c4b53a
         imagePullPolicy: Always
         ports:
           - name: http
@@ -46,6 +46,7 @@ spec:
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
         - --oauth-url=/github-login
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --spyglass=true
         volumeMounts:
@@ -64,6 +65,19 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 600
       volumes:
       - name: oauth-config
         secret:

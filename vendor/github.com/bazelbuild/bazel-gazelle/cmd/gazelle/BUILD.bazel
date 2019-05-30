@@ -8,6 +8,7 @@ go_library(
         "fix-update.go",
         "gazelle.go",
         "langs.go",
+        "metaresolver.go",
         "print.go",
         "update-repos.go",
         "version.go",

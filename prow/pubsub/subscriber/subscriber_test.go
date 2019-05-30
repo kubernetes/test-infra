@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -30,14 +31,14 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime"
+	clienttesting "k8s.io/client-go/testing"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pubsub/reporter"
 )
-
-type kubeTestClient struct {
-	pj *kube.ProwJob
-}
 
 type pubSubTestClient struct {
 	messageChan chan fakeMessage
@@ -94,9 +95,17 @@ func (c *pubSubTestClient) subscription(id string) subscriptionInterface {
 	return &fakeSubscription{name: id, messageChan: c.messageChan}
 }
 
-func (c *kubeTestClient) CreateProwJob(job *kube.ProwJob) (*kube.ProwJob, error) {
-	c.pj = job
-	return job, nil
+type fakeReporter struct {
+	reported bool
+}
+
+func (r *fakeReporter) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
+	r.reported = true
+	return nil, nil
+}
+
+func (r *fakeReporter) ShouldReport(pj *prowapi.ProwJob) bool {
+	return pj.Annotations[reporter.PubSubProjectLabel] != "" && pj.Annotations[reporter.PubSubTopicLabel] != ""
 }
 
 func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
@@ -111,7 +120,6 @@ func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
 			"ENV2": "test2",
 		},
 		Name: "ProwJobName",
-		Type: periodicProwJobEvent,
 	}
 	m, err := pe.ToMessage()
 	if err != nil {
@@ -175,18 +183,19 @@ func TestHandleMessage(t *testing.T) {
 				Message: pubsub.Message{},
 			},
 			config: &config.Config{},
-			err:    "unable to find prow.k8s.io/pubsub.EventType from the attributes",
+			err:    "unable to find \"prow.k8s.io/pubsub.EventType\" from the attributes",
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
-			kc := &kubeTestClient{}
+			fakeProwJobClient := fake.NewSimpleClientset()
 			ca := &config.Agent{}
+			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
 			s := Subscriber{
-				Metrics:     NewMetrics(),
-				KubeClient:  kc,
-				ConfigAgent: ca,
+				Metrics:       NewMetrics(),
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
+				ConfigAgent:   ca,
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessage()
@@ -200,11 +209,20 @@ func TestHandleMessage(t *testing.T) {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
 				} else if tc.err == "" {
-					if kc.pj == nil {
-						t.Errorf("Prow job not created")
+					var created []*prowapi.ProwJob
+					for _, action := range fakeProwJobClient.Fake.Actions() {
+						switch action := action.(type) {
+						case clienttesting.CreateActionImpl:
+							if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
+								created = append(created, prowjob)
+							}
+						}
+					}
+					if len(created) != 1 {
+						t.Errorf("Expected to create 1 ProwJobs, got %d", len(created))
 					}
 					for _, k := range tc.labels {
-						if _, ok := kc.pj.Labels[k]; !ok {
+						if _, ok := created[0].Labels[k]; !ok {
 							t.Errorf("label %s is missing", k)
 						}
 					}
@@ -216,11 +234,13 @@ func TestHandleMessage(t *testing.T) {
 
 func TestHandlePeriodicJob(t *testing.T) {
 	for _, tc := range []struct {
-		name   string
-		pe     *PeriodicProwJobEvent
-		s      string
-		config *config.Config
-		err    string
+		name        string
+		pe          *PeriodicProwJobEvent
+		s           string
+		config      *config.Config
+		err         string
+		reported    bool
+		clientFails bool
 	}{
 		{
 			name: "PeriodicJobNoPubsub",
@@ -262,22 +282,69 @@ func TestHandlePeriodicJob(t *testing.T) {
 			},
 		},
 		{
+			name: "PeriodicJobPubsubSetCreationError",
+			pe: &PeriodicProwJobEvent{
+				Name: "test",
+				Annotations: map[string]string{
+					reporter.PubSubProjectLabel: "project",
+					reporter.PubSubRunIDLabel:   "runid",
+					reporter.PubSubTopicLabel:   "topic",
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					Periodics: []config.Periodic{
+						{
+							JobBase: config.JobBase{
+								Name: "test",
+							},
+						},
+					},
+				},
+			},
+			err:         "failed to create prowjob",
+			clientFails: true,
+			reported:    true,
+		},
+		{
 			name: "JobNotFound",
 			pe: &PeriodicProwJobEvent{
 				Name: "test",
 			},
 			config: &config.Config{},
-			err:    "failed to find associated periodic job test",
+			err:    "failed to find associated periodic job \"test\"",
+		},
+		{
+			name: "JobNotFoundReportNeeded",
+			pe: &PeriodicProwJobEvent{
+				Name: "test",
+				Annotations: map[string]string{
+					reporter.PubSubProjectLabel: "project",
+					reporter.PubSubRunIDLabel:   "runid",
+					reporter.PubSubTopicLabel:   "topic",
+				},
+			},
+			config:   &config.Config{},
+			err:      "failed to find associated periodic job \"test\"",
+			reported: true,
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
-			kc := &kubeTestClient{}
+			fakeProwJobClient := fake.NewSimpleClientset()
+			if tc.clientFails {
+				fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
+					return true, nil, errors.New("failed to create prowjob")
+				})
+			}
 			ca := &config.Agent{}
+			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
+			fr := fakeReporter{}
 			s := Subscriber{
-				Metrics:     NewMetrics(),
-				KubeClient:  kc,
-				ConfigAgent: ca,
+				Metrics:       NewMetrics(),
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(ca.Config().ProwJobNamespace),
+				ConfigAgent:   ca,
+				Reporter:      &fr,
 			}
 			m, err := tc.pe.ToMessage()
 			if err != nil {
@@ -288,24 +355,28 @@ func TestHandlePeriodicJob(t *testing.T) {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
 				} else if tc.err == "" {
-					if kc.pj == nil {
-						t.Errorf("Prow job not created")
+					var created []*prowapi.ProwJob
+					for _, action := range fakeProwJobClient.Fake.Actions() {
+						switch action := action.(type) {
+						case clienttesting.CreateActionImpl:
+							if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
+								created = append(created, prowjob)
+							}
+						}
+					}
+					if len(created) != 1 {
+						t.Errorf("Expected to create 1 ProwJobs, got %d", len(created))
 					}
 				}
+			}
+			if fr.reported != tc.reported {
+				t1.Errorf("Expected Reporting: %t, found: %t", tc.reported, fr.reported)
 			}
 		})
 	}
 }
 
 func TestPushServer_ServeHTTP(t *testing.T) {
-	kc := &kubeTestClient{}
-	pushServer := PushServer{
-		Subscriber: &Subscriber{
-			ConfigAgent: &config.Agent{},
-			Metrics:     NewMetrics(),
-			KubeClient:  kc,
-		},
-	}
 	for _, tc := range []struct {
 		name         string
 		url          string
@@ -375,6 +446,9 @@ func TestPushServer_ServeHTTP(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
 			c := &config.Config{
+				ProwConfig: config.ProwConfig{
+					ProwJobNamespace: "prowjobs",
+				},
 				JobConfig: config.JobConfig{
 					Periodics: []config.Periodic{
 						{
@@ -385,9 +459,17 @@ func TestPushServer_ServeHTTP(t *testing.T) {
 					},
 				},
 			}
+			fakeProwJobClient := fake.NewSimpleClientset()
+			pushServer := PushServer{
+				Subscriber: &Subscriber{
+					ConfigAgent:   &config.Agent{},
+					Metrics:       NewMetrics(),
+					ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(c.ProwJobNamespace),
+					Reporter:      &fakeReporter{},
+				},
+			}
 			pushServer.Subscriber.ConfigAgent.Set(c)
 			pushServer.TokenGenerator = func() []byte { return []byte(tc.secret) }
-			kc.pj = nil
 
 			body := new(bytes.Buffer)
 
@@ -420,11 +502,10 @@ func TestPushServer_ServeHTTP(t *testing.T) {
 }
 
 func TestPullServer_RunShutdown(t *testing.T) {
-	kc := &kubeTestClient{}
 	s := &Subscriber{
-		ConfigAgent: &config.Agent{},
-		KubeClient:  kc,
-		Metrics:     NewMetrics(),
+		ConfigAgent:   &config.Agent{},
+		ProwJobClient: fake.NewSimpleClientset().ProwV1().ProwJobs("prowjobs"),
+		Metrics:       NewMetrics(),
 	}
 	c := &config.Config{}
 	s.ConfigAgent.Set(c)
@@ -448,11 +529,10 @@ func TestPullServer_RunShutdown(t *testing.T) {
 }
 
 func TestPullServer_RunHandlePullFail(t *testing.T) {
-	kc := &kubeTestClient{}
 	s := &Subscriber{
-		ConfigAgent: &config.Agent{},
-		KubeClient:  kc,
-		Metrics:     NewMetrics(),
+		ConfigAgent:   &config.Agent{},
+		ProwJobClient: fake.NewSimpleClientset().ProwV1().ProwJobs("prowjobs"),
+		Metrics:       NewMetrics(),
 	}
 	c := &config.Config{
 		ProwConfig: config.ProwConfig{
@@ -485,11 +565,10 @@ func TestPullServer_RunHandlePullFail(t *testing.T) {
 }
 
 func TestPullServer_RunConfigChange(t *testing.T) {
-	kc := &kubeTestClient{}
 	s := &Subscriber{
-		ConfigAgent: &config.Agent{},
-		KubeClient:  kc,
-		Metrics:     NewMetrics(),
+		ConfigAgent:   &config.Agent{},
+		ProwJobClient: fake.NewSimpleClientset().ProwV1().ProwJobs("prowjobs"),
+		Metrics:       NewMetrics(),
 	}
 	c := &config.Config{}
 	messageChan := make(chan fakeMessage, 1)

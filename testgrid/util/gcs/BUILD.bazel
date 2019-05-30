@@ -2,22 +2,35 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["gcs.go"],
+    srcs = [
+        "gcs.go",
+        "read.go",
+    ],
     importpath = "k8s.io/test-infra/testgrid/util/gcs",
     visibility = [
+        "//experiment/resultstore:__subpackages__",
+        "//pkg/io:__subpackages__",
+        "//prow/cmd/tide:__subpackages__",
         "//prow/gcsupload:__subpackages__",
         "//prow/spyglass:__subpackages__",
         "//testgrid:__subpackages__",
     ],
     deps = [
+        "//testgrid/metadata:go_default_library",
+        "//testgrid/metadata/junit:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
+        "//vendor/vbom.ml/util/sortorder:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_test",
-    srcs = ["gcs_test.go"],
+    srcs = [
+        "gcs_test.go",
+        "read_test.go",
+    ],
     embed = [":go_default_library"],
 )
 

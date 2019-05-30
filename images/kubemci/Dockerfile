@@ -13,11 +13,10 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-testimages/kubekins-e2e:latest-master
-LABEL maintainer "nikhiljindal@google.com"
 
 RUN apt-get update && apt-get install -y \
     git && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
 # Build latest kubemci from HEAD.
 RUN cd /${GOPATH}/src && \

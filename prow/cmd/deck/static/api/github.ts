@@ -16,11 +16,10 @@ export interface Context {
   State: StatusState;
 }
 
-
 export interface Commit {
   Status: {
     Contexts: Context[];
-  }
+  };
   OID: string;
 }
 

@@ -13,7 +13,7 @@ This is a central place for Kubernetes-project specific configs for other tools 
 
 1. Create an OWNERS file and add appropriate approver/reviewer for your job.
 
-1. Add a *.yaml file (the base name has to be unique), and follow https://github.com/kubernetes/test-infra/tree/master/prow#how-to-add-new-jobs for adding new prowjobs.
+1. Add a *.yaml file (the base name has to be unique), and follow [how-to-configure-new-jobs](/prow/jobs.md#how-to-configure-new-jobs) for adding new prowjobs.
 
 Also please read [`create-a-new-job`]
 

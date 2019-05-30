@@ -42,7 +42,7 @@ func TestDecorationDefaulting(t *testing.T) {
 		{
 			name: "timeout provided",
 			provided: &DecorationConfig{
-				Timeout: 10 * time.Minute,
+				Timeout: &Duration{Duration: 10 * time.Minute},
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.Timeout = orig.Timeout
@@ -52,7 +52,7 @@ func TestDecorationDefaulting(t *testing.T) {
 		{
 			name: "grace period provided",
 			provided: &DecorationConfig{
-				GracePeriod: 10 * time.Hour,
+				GracePeriod: &Duration{Duration: 10 * time.Hour},
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GracePeriod = orig.GracePeriod
@@ -163,8 +163,8 @@ func TestDecorationDefaulting(t *testing.T) {
 		tc := testCase
 		t.Run(tc.name, func(t *testing.T) {
 			defaults := &DecorationConfig{
-				Timeout:     1 * time.Minute,
-				GracePeriod: 10 * time.Second,
+				Timeout:     &Duration{Duration: 1 * time.Minute},
+				GracePeriod: &Duration{Duration: 10 * time.Second},
 				UtilityImages: &UtilityImages{
 					CloneRefs:  "clonerefs",
 					InitUpload: "initupload",
@@ -190,5 +190,68 @@ func TestDecorationDefaulting(t *testing.T) {
 				t.Errorf("expected defaulted config %v but got %v", expected, actual)
 			}
 		})
+	}
+}
+
+func TestRefsToString(t *testing.T) {
+	var tests = []struct {
+		name     string
+		ref      Refs
+		expected string
+	}{
+		{
+			name: "Refs with Pull",
+			ref: Refs{
+				BaseRef: "master",
+				BaseSHA: "deadbeef",
+				Pulls: []Pull{
+					{
+						Number: 123,
+						SHA:    "abcd1234",
+					},
+				},
+			},
+			expected: "master:deadbeef,123:abcd1234",
+		},
+		{
+			name: "Refs with multiple Pulls",
+			ref: Refs{
+				BaseRef: "master",
+				BaseSHA: "deadbeef",
+				Pulls: []Pull{
+					{
+						Number: 123,
+						SHA:    "abcd1234",
+					},
+					{
+						Number: 456,
+						SHA:    "dcba4321",
+					},
+				},
+			},
+			expected: "master:deadbeef,123:abcd1234,456:dcba4321",
+		},
+		{
+			name: "Refs with BaseRef only",
+			ref: Refs{
+				BaseRef: "master",
+			},
+			expected: "master",
+		},
+		{
+			name: "Refs with BaseRef and BaseSHA",
+			ref: Refs{
+				BaseRef: "master",
+				BaseSHA: "deadbeef",
+			},
+			expected: "master:deadbeef",
+		},
+	}
+
+	for _, test := range tests {
+		actual, expected := test.ref.String(), test.expected
+		if actual != expected {
+			t.Errorf("%s: got ref string: %s, but expected: %s", test.name, actual, expected)
+		}
 	}
 }

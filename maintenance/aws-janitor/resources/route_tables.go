@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // RouteTables: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeRouteTables
@@ -50,24 +52,56 @@ func (RouteTables) MarkAndSweep(sess *session.Session, acct string, region strin
 		if main {
 			continue
 		}
+
 		r := &routeTable{Account: acct, Region: region, ID: *rt.RouteTableId}
 		if set.Mark(r) {
 			for _, assoc := range rt.Associations {
-				glog.Infof("%v: disassociating from %v", r.ARN(), *assoc.SubnetId)
-				_, err := svc.DisassociateRouteTable(&ec2.DisassociateRouteTableInput{
-					AssociationId: assoc.RouteTableAssociationId})
-				if err != nil {
-					glog.Warningf("%v: disassociation from subnet %v failed: %v", r.ARN(), *assoc.SubnetId, err)
+				klog.Infof("%v: disassociating from %v", r.ARN(), *assoc.SubnetId)
+
+				disReq := &ec2.DisassociateRouteTableInput{
+					AssociationId: assoc.RouteTableAssociationId,
+				}
+
+				if _, err := svc.DisassociateRouteTable(disReq); err != nil {
+					klog.Warningf("%v: disassociation from subnet %v failed: %v", r.ARN(), *assoc.SubnetId, err)
 				}
 			}
-			glog.Warningf("%s: deleting %T: %v", r.ARN(), rt, rt)
-			_, err := svc.DeleteRouteTable(&ec2.DeleteRouteTableInput{RouteTableId: rt.RouteTableId})
-			if err != nil {
-				glog.Warningf("%v: delete failed: %v", r.ARN(), err)
+
+			klog.Warningf("%s: deleting %T: %v", r.ARN(), rt, rt)
+
+			deleteReq := &ec2.DeleteRouteTableInput{
+				RouteTableId: rt.RouteTableId,
+			}
+
+			if _, err := svc.DeleteRouteTable(deleteReq); err != nil {
+				klog.Warningf("%v: delete failed: %v", r.ARN(), err)
 			}
 		}
 	}
+
 	return nil
+}
+
+func (RouteTables) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	input := &ec2.DescribeRouteTablesInput{}
+
+	err := svc.DescribeRouteTablesPages(input, func(tables *ec2.DescribeRouteTablesOutput, _ bool) bool {
+		now := time.Now()
+		for _, table := range tables.RouteTables {
+			arn := routeTable{
+				Account: acct,
+				Region:  region,
+				ID:      *table.RouteTableId,
+			}.ARN()
+			set.firstSeen[arn] = now
+		}
+
+		return true
+	})
+
+	return set, errors.Wrapf(err, "couldn't describe route tables for %q in %q", acct, region)
 }
 
 type routeTable struct {

@@ -82,16 +82,11 @@ func (fa *FakeArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 type dumpLens struct{}
 
-func (dumpLens) Name() string {
-	return "dump"
-}
-
-func (dumpLens) Title() string {
-	return "Dump View"
-}
-
-func (dumpLens) Priority() int {
-	return 1
+func (dumpLens) Config() LensConfig {
+	return LensConfig{
+		Name:  "dump",
+		Title: "Dump Lens",
+	}
 }
 
 func (dumpLens) Header(artifacts []Artifact, resourceDir string) string {

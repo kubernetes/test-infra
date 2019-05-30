@@ -123,13 +123,13 @@ func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEv
 		for _, label := range lifecycleLabels {
 			if label != lbl && github.HasLabel(label, labels) {
 				if err := gc.RemoveLabel(org, repo, number, label); err != nil {
-					log.WithError(err).Errorf("Github failed to remove the following label: %s", label)
+					log.WithError(err).Errorf("GitHub failed to remove the following label: %s", label)
 				}
 			}
 		}
 
 		if err := gc.AddLabel(org, repo, number, lbl); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", lbl)
+			log.WithError(err).Errorf("GitHub failed to add the following label: %s", lbl)
 		}
 	}
 

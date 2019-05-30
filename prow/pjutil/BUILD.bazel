@@ -11,12 +11,18 @@ load(
 go_library(
     name = "go_default_library",
     srcs = [
+        "abort.go",
+        "filter.go",
+        "health.go",
         "pjutil.go",
+        "pprof.go",
         "tot.go",
     ],
     importpath = "k8s.io/test-infra/prow/pjutil",
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/gcsupload:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
@@ -25,6 +31,7 @@ go_library(
         "//vendor/github.com/satori/go.uuid:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -44,15 +51,21 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "abort_test.go",
+        "filter_test.go",
         "pjutil_test.go",
         "tot_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )

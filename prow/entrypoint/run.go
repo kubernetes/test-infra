@@ -80,7 +80,10 @@ func (o Options) Run() int {
 	}
 	if err := o.mark(code); err != nil {
 		logrus.WithError(err).Error("Error writing exit code to marker file")
-		return InternalErrorCode
+		return InternalErrorCode // we need to mark the real error code to safely return AlwaysZero
+	}
+	if o.AlwaysZero {
+		return 0
 	}
 	return code
 }

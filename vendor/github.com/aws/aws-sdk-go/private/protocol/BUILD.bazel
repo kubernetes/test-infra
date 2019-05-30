@@ -3,8 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "host.go",
+        "host_prefix.go",
         "idempotency.go",
         "jsonvalue.go",
+        "payload.go",
+        "timestamp.go",
         "unmarshal.go",
     ],
     importmap = "k8s.io/test-infra/vendor/github.com/aws/aws-sdk-go/private/protocol",
@@ -12,6 +16,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/client/metadata:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
     ],
 )
@@ -28,6 +33,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/ec2query:all-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/private/protocol/eventstream:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/query:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/rest:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/restxml:all-srcs",

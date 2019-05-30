@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
@@ -144,6 +145,80 @@ func TestMergeMethod(t *testing.T) {
 	for _, test := range testcases {
 		if ti.MergeMethod(test.org, test.repo) != test.expected {
 			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, ti.MergeMethod(test.org, test.repo), test.org, test.repo)
+		}
+	}
+}
+func TestMergeTemplate(t *testing.T) {
+	ti := &Tide{
+		MergeTemplate: map[string]TideMergeCommitTemplate{
+			"kubernetes/kops": {
+				TitleTemplate: "",
+				BodyTemplate:  "",
+			},
+			"kubernetes/charts": {
+				TitleTemplate: "{{ .Number }}",
+				BodyTemplate:  "",
+			},
+			"helm/charts": {
+				TitleTemplate: "",
+				BodyTemplate:  "{{ .Body }}",
+			},
+			"kubernetes-helm": {
+				TitleTemplate: "{{ .Title }}",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+	}
+
+	var testcases = []struct {
+		org      string
+		repo     string
+		expected TideMergeCommitTemplate
+	}{
+		{
+			org:      "kubernetes",
+			repo:     "kubernetes",
+			expected: TideMergeCommitTemplate{},
+		},
+		{
+			org:  "kubernetes",
+			repo: "kops",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "",
+				BodyTemplate:  "",
+			},
+		},
+		{
+			org:  "kubernetes",
+			repo: "charts",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "{{ .Number }}",
+				BodyTemplate:  "",
+			},
+		},
+		{
+			org:  "helm",
+			repo: "charts",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+		{
+			org:  "kubernetes-helm",
+			repo: "monocular",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "{{ .Title }}",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+	}
+
+	for _, test := range testcases {
+		actual := ti.MergeCommitTemplate(test.org, test.repo)
+
+		if actual.TitleTemplate != test.expected.TitleTemplate || actual.BodyTemplate != test.expected.BodyTemplate {
+			t.Errorf("Expected title \"%v\", body \"%v\", but got title \"%v\", body \"%v\" for %v/%v", test.expected.TitleTemplate, test.expected.BodyTemplate, actual.TitleTemplate, actual.BodyTemplate, test.org, test.repo)
 		}
 	}
 }
@@ -278,7 +353,7 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 	for _, tc := range testCases {
 		policy := parseTideContextPolicyOptions(org, repo, branch, tc.config)
 		if !reflect.DeepEqual(policy, tc.expected) {
-			t.Errorf("%s - expected %v got %v", tc.name, tc.expected, policy)
+			t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(tc.expected, policy))
 		}
 	}
 }
@@ -310,11 +385,15 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							Presubmit{
-								Context:   "pr1",
+								Reporter: Reporter{
+									Context: "pr1",
+								},
 								AlwaysRun: true,
 							},
 							Presubmit{
-								Context:   "po1",
+								Reporter: Reporter{
+									Context: "po1",
+								},
 								AlwaysRun: true,
 								Optional:  true,
 							},
@@ -323,8 +402,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{"pr1"},
-				OptionalContexts: []string{"po1"},
+				RequiredContexts:          []string{"pr1"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"po1"},
 			},
 		},
 		{
@@ -342,8 +422,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{},
-				OptionalContexts: []string{},
+				RequiredContexts:          []string{},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{},
 			},
 		},
 		{
@@ -360,8 +441,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{},
-				OptionalContexts: []string{},
+				RequiredContexts:          []string{},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{},
 			},
 		},
 		{
@@ -387,8 +469,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{},
-				OptionalContexts: []string{},
+				RequiredContexts:          []string{},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{},
 			},
 		},
 		{
@@ -398,18 +481,20 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					Tide: Tide{
 						ContextOptions: TideContextPolicyOptions{
 							TideContextPolicy: TideContextPolicy{
-								RequiredContexts:    []string{"r1"},
-								OptionalContexts:    []string{"o1"},
-								SkipUnknownContexts: &yes,
+								RequiredContexts:          []string{"r1"},
+								RequiredIfPresentContexts: []string{},
+								OptionalContexts:          []string{"o1"},
+								SkipUnknownContexts:       &yes,
 							},
 						},
 					},
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts:    []string{"r1"},
-				OptionalContexts:    []string{"o1"},
-				SkipUnknownContexts: &yes,
+				RequiredContexts:          []string{"r1"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"o1"},
+				SkipUnknownContexts:       &yes,
 			},
 		},
 	}
@@ -417,7 +502,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 	for _, tc := range testCases {
 		p, err := tc.config.GetTideContextPolicy(org, repo, branch)
 		if !reflect.DeepEqual(p, &tc.expected) {
-			t.Errorf("%s - expected contexts %v got %v", tc.name, &tc.expected, p)
+			t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
 		}
 		if err != nil {
 			if err.Error() != tc.error {

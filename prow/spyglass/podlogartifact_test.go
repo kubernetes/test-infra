@@ -22,7 +22,7 @@ import (
 	"io"
 	"testing"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
 
@@ -30,8 +30,8 @@ import (
 type fakePodLogJAgent struct {
 }
 
-func (j *fakePodLogJAgent) GetProwJob(job, id string) (kube.ProwJob, error) {
-	return kube.ProwJob{}, nil
+func (j *fakePodLogJAgent) GetProwJob(job, id string) (prowapi.ProwJob, error) {
+	return prowapi.ProwJob{}, nil
 }
 
 func (j *fakePodLogJAgent) GetJobLog(job, id string) ([]byte, error) {

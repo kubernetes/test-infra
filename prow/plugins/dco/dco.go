@@ -87,10 +87,10 @@ type gitHubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	ListStatuses(org, repo, ref string) ([]github.Status, error)
 	CreateStatus(owner, repo, ref string, status github.Status) error
 	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
 type commentPruner interface {
@@ -123,13 +123,13 @@ func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, num
 // checkExistingStatus will retrieve the current status of the DCO context for
 // the provided SHA.
 func checkExistingStatus(gc gitHubClient, l *logrus.Entry, org, repo, sha string) (string, error) {
-	statuses, err := gc.ListStatuses(org, repo, sha)
+	combinedStatus, err := gc.GetCombinedStatus(org, repo, sha)
 	if err != nil {
-		return "", fmt.Errorf("error listing pull request statuses: %v", err)
+		return "", fmt.Errorf("error listing pull request combined statuses: %v", err)
 	}
 
 	existingStatus := ""
-	for _, status := range statuses {
+	for _, status := range combinedStatus.Statuses {
 		if status.Context != dcoContextName {
 			continue
 		}
@@ -232,7 +232,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		// failing commits
 		cp.PruneComments(shouldPrune(l))
 		l.Debugf("Commenting on PR to advise users of DCO check")
-		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, markdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
+		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, MarkdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
 			l.WithError(err).Warning("Could not create DCO not found comment.")
 		}
 	}
@@ -269,7 +269,8 @@ func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo stri
 	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment)
 }
 
-func markdownSHAList(org, repo string, list []github.GitCommit) string {
+// MardkownSHAList prints the list of commits in a markdown-friendly way.
+func MarkdownSHAList(org, repo string, list []github.GitCommit) string {
 	lines := make([]string, len(list))
 	lineFmt := "- [%s](https://github.com/%s/%s/commits/%s) %s"
 	for i, commit := range list {

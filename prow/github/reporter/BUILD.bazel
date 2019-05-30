@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/report:go_default_library",
+        "//prow/github/report:go_default_library",
     ],
 )
 

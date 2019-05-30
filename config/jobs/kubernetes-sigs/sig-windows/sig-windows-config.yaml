@@ -7,15 +7,17 @@ presets:
   - name: AZURE_SSH_PUBLIC_KEY_FILE
     value: /etc/azure-ssh/azure-ssh-pub
   - name: CLOUD_CONFIG
-    value: random 
+    value: random
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
   - name: REGISTRY
-    value: gcr.io/win-e2e-test/win-e2e-hyperkube
+    value: k8se2eimages.azurecr.io
   - name: WIN_BUILD
-    value: https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
-    value: https://raw.githubusercontent.com/e2e-win/e2e-win-prow-deployment/master/repo-list
+    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
+  - name: KUBE_VERBOSE
+    value: 0
   volumes:
   - name: azure-cred
     secret:
@@ -31,23 +33,115 @@ presets:
     mountPath: /etc/azure-ssh
     readOnly: true
 
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-aks-engine-azure-windows
+    always_run: false
+    optional: true
+    trigger: (?m)^/test( | .* )pull-kubernetes-e2e-aks-engine-azure-windows,?($|\s.*)
+    rerun_command: /test pull-kubernetes-e2e-aks-engine-azure-windows
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-acsengine: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--upload=gs://kubernetes-jenkins/pr-logs/"
+        - "--timeout=480"
+        - "--scenario=kubernetes_e2e"
+        - --
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine"
+        - "--provider=skeleton"
+        - "--build=bazel"
+        - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure-windows"
+        - "--ginkgo-parallel=4"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-admin-password=AdminPassw0rd"
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
+        - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-winZipBuildScript=$WIN_BUILD"
+        - "--acsengine-orchestratorRelease=1.14"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+        - "--acsengine-win-binaries"
+        - "--acsengine-hyperkube"
+        - "--acsengine-agentpoolcount=2"
+        - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]"
+        - "--timeout=450m"
+        securityContext:
+          privileged: true
+
 
 periodics:
-- interval: 8h
-  name: ci-kubernetes-e2e-win-1-13
+- interval: 6h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-windows
   labels:
     preset-service-account: "true"
     preset-azure-acsengine: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
       - "--repo=k8s.io/kubernetes=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=360"
+      - "--timeout=650"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--provider=skeleton"
+      - "--build=bazel"
+      - "--acsengine-location=eastus2"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-admin-password=AdminPassw0rd"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-download-url=https://k8swin.blob.core.windows.net/k8s-windows/aks-engine-dirty-22-05-2019.tar.gz"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-winZipBuildScript=$WIN_BUILD"
+      - "--acsengine-orchestratorRelease=1.14"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
+      - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
+      - "--acsengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+
+- interval: 6h
+  name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
+  labels:
+    preset-service-account: "true"
+    preset-azure-acsengine: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=release-1.14"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=650"
       - "--scenario=kubernetes_e2e"
       - --
       - "--test=true"
@@ -59,12 +153,56 @@ periodics:
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://k8stestinfrabinaries.blob.core.windows.net/acsengine/acs-engine-dirty.tar.gz"
+      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-orchestratorRelease=1.13"
-      - "--acsengine-win-binaries-url=https://k8stestinfrabinaries.blob.core.windows.net/k8swin/v1.13.0-beta.0-1int.zip"
-      - "--acsengine-hyperkube-url=k8s.gcr.io/hyperkube-amd64:v1.13.0-beta.0"
-      - "--acsengine-agentpoolcount=3"
-      - "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\] --ginkgo.skip=\\[k8s.io\\].Container.Runtime.blackbox.test.when.running.a.container.with.a.new.image.should.be.able.to.pull.from.private.registry.with.secret.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.running.a.container.with.a.new.image.should.be.able.to.pull.image.from.docker.hub.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.running.a.container.with.a.new.image.should.be.able.to.pull.image.from.gcr.io.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.running.a.container.with.a.new.image.should.not.be.able.to.pull.from.private.registry.without.secret.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.running.a.container.with.a.new.image.should.not.be.able.to.pull.image.from.invalid.registry.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.running.a.container.with.a.new.image.should.not.be.able.to.pull.non-existing.image.from.gcr.io.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.starting.a.container.that.exits.should.report.termination.message.as.empty.when.pod.succeeds.and.TerminationMessagePolicy.FallbackToLogOnError.is.set.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.starting.a.container.that.exits.should.report.termination.message.from.file.when.pod.succeeds.and.TerminationMessagePolicy.FallbackToLogOnError.is.set.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.starting.a.container.that.exits.should.report.termination.message.from.log.output.if.TerminationMessagePolicy.FallbackToLogOnError.is.set.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.starting.a.container.that.exits.should.report.termination.message.if.TerminationMessagePath.is.set.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.starting.a.container.that.exits.should.report.termination.message.if.TerminationMessagePath.is.set.as.non-root.user.and.at.a.non-default.path.\\[NodeConformance\\]|\\[k8s.io\\].Container.Runtime.blackbox.test.when.starting.a.container.that.exits.should.run.with.the.expected.status.\\[NodeConformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.Pod.with.hostAliases.should.write.entries.to./etc/hosts.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.read.only.busybox.container.should.not.write.to.root.filesystem.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].KubeletManagedEtcHosts.should.test.kubelet.managed./etc/hosts.file.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].PrivilegedPod.\\[NodeConformance\\].should.enable.privileged.commands|\\[k8s.io\\].Security.Context.When.creating.a.container.with.runAsUser.should.run.the.container.with.uid.0.\\[NodeConformance\\]|\\[k8s.io\\].Security.Context.When.creating.a.container.with.runAsUser.should.run.the.container.with.uid.65534.\\[NodeConformance\\]|\\[k8s.io\\].Security.Context.When.creating.a.pod.with.privileged.should.run.the.container.as.unprivileged.when.false.\\[NodeConformance\\]|\\[k8s.io\\].Security.Context.When.creating.a.pod.with.readOnlyRootFilesystem.should.run.the.container.with.readonly.rootfs.when.readOnlyRootFilesystem=true.\\[NodeConformance\\]|\\[k8s.io\\].Security.Context.when.creating.containers.with.AllowPrivilegeEscalation.should.allow.privilege.escalation.when.not.explicitly.set.and.uid.!=.0.\\[NodeConformance\\]|\\[k8s.io\\].Security.Context.when.creating.containers.with.AllowPrivilegeEscalation.should.allow.privilege.escalation.when.true.\\[NodeConformance\\]|\\[k8s.io\\].Security.Context.when.creating.containers.with.AllowPrivilegeEscalation.should.not.allow.privilege.escalation.when.false.\\[NodeConformance\\]|\\[sig-network\\].DNS.should.provide.DNS.for.services..\\[Conformance\\]|\\[sig-network\\].DNS.should.provide.DNS.for.the.cluster..\\[Conformance\\]|\\[sig-network\\].Networking.Granular.Checks:.Pods.should.function.for.intra-pod.communication:.http.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-network\\].Networking.Granular.Checks:.Pods.should.function.for.intra-pod.communication:.udp.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-network\\].Networking.Granular.Checks:.Pods.should.function.for.node-pod.communication:.http.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-network\\].Networking.Granular.Checks:.Pods.should.function.for.node-pod.communication:.udp.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].ConfigMap.should.be.consumable.from.pods.in.volume.as.non-root.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].ConfigMap.should.be.consumable.from.pods.in.volume.with.defaultMode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].ConfigMap.should.be.consumable.from.pods.in.volume.with.mappings.and.Item.mode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].ConfigMap.should.be.consumable.from.pods.in.volume.with.mappings.as.non-root.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Downward.API.volume.should.set.DefaultMode.on.files.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Downward.API.volume.should.set.mode.on.item.file.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].EmptyDir.volumes.*\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].HostPath.should.give.a.volume.the.correct.mode.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.configMap.should.be.consumable.from.pods.in.volume.as.non-root.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.configMap.should.be.consumable.from.pods.in.volume.with.defaultMode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.configMap.should.be.consumable.from.pods.in.volume.with.mappings.and.Item.mode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.configMap.should.be.consumable.from.pods.in.volume.with.mappings.as.non-root.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.secret.should.be.consumable.from.pods.in.volume.as.non-root.with.defaultMode.and.fsGroup.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.secret.should.be.consumable.from.pods.in.volume.with.defaultMode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.secret.should.be.consumable.from.pods.in.volume.with.mappings.and.Item.Mode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Secrets.should.be.consumable.from.pods.in.volume.as.non-root.with.defaultMode.and.fsGroup.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Secrets.should.be.consumable.from.pods.in.volume.with.defaultMode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Secrets.should.be.consumable.from.pods.in.volume.with.mappings.and.Item.Mode.set.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Subpath.Atomic.writer.volumes.should.support.subpaths.with.configmap.pod.\\[Conformance\\]|\\[sig-storage\\].Subpath.Atomic.writer.volumes.should.support.subpaths.with.configmap.pod.with.mountPath.of.existing.file.\\[Conformance\\]|\\[sig-storage\\].Subpath.Atomic.writer.volumes.should.support.subpaths.with.downward.pod.\\[Conformance\\]|\\[sig-storage\\].Subpath.Atomic.writer.volumes.should.support.subpaths.with.projected.pod.\\[Conformance\\]|\\[sig-storage\\].Subpath.Atomic.writer.volumes.should.support.subpaths.with.secret.pod.\\[Conformance\\]|\\[sig-storage\\].Projected.downwardAPI.should.set.DefaultMode.on.files.\\[NodeConformance\\].\\[Conformance\\]|\\[sig-storage\\].Projected.downwardAPI.should.set.mode.on.item.file.\\[NodeConformance\\].\\[Conformance\\]"
-      - "--timeout=340m"
+      - "--acsengine-orchestratorRelease=1.14"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
+      - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
+      - "--acsengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+
+- interval: 3h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
+  labels:
+    preset-service-account: "true"
+    preset-azure-acsengine: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=480"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--provider=skeleton"
+      - "--build=bazel"
+      - "--ginkgo-parallel=4"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-admin-password=AdminPassw0rd"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-download-url=https://k8swin.blob.core.windows.net/k8s-windows/aks-engine-dirty-22-05-2019.tar.gz"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-winZipBuildScript=$WIN_BUILD"
+      - "--acsengine-orchestratorRelease=1.14"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+      - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
+      - "--acsengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]"
+      - "--timeout=450m"
+      securityContext:
+        privileged: true

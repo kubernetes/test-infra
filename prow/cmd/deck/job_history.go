@@ -33,7 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 const (
@@ -43,8 +43,7 @@ const (
 
 	// ** Job history assumes the GCS layout specified here:
 	// https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout
-	logsPrefix     = "logs"
-	symLinkPrefix  = "pr-logs/directory"
+	logsPrefix     = gcs.NonPRLogs
 	spyglassPrefix = "/view/gcs"
 	emptyID        = int64(-1) // indicates no build id was specified
 )
@@ -109,7 +108,7 @@ func readLatestBuild(bucket storageBucket, root string) (int64, error) {
 	if err != nil {
 		return -1, fmt.Errorf("failed to read %s: %v", key, err)
 	}
-	n, err := strconv.ParseInt(string(data), 10, 64)
+	n, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
 		return -1, fmt.Errorf("failed to parse %s: %v", key, err)
 	}
@@ -291,18 +290,16 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 		Result:     "Unknown",
 		commitHash: "Unknown",
 	}
-	started := jobs.Started{}
+	started := gcs.Started{}
 	err := readJSON(bucket, path.Join(dir, "started.json"), &started)
 	if err != nil {
 		return b, fmt.Errorf("failed to read started.json: %v", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
-	if started.Revision != "" {
-		b.commitHash = started.Revision
-	} else if commitHash, err := getPullCommitHash(started.Pull); err == nil {
+	if commitHash, err := getPullCommitHash(started.Pull); err == nil {
 		b.commitHash = commitHash
 	}
-	finished := jobs.Finished{}
+	finished := gcs.Finished{}
 	err = readJSON(bucket, path.Join(dir, "finished.json"), &finished)
 	if err != nil {
 		logrus.Infof("failed to read finished.json (job might be unfinished): %v", err)
@@ -310,8 +307,8 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 	if finished.Revision != "" {
 		b.commitHash = finished.Revision
 	}
-	if finished.Timestamp != 0 {
-		b.Duration = time.Unix(finished.Timestamp, 0).Sub(b.Started)
+	if finished.Timestamp != nil {
+		b.Duration = time.Unix(*finished.Timestamp, 0).Sub(b.Started)
 	}
 	if finished.Result != "" {
 		b.Result = finished.Result

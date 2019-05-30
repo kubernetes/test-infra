@@ -1,0 +1,38 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "commandinfo.go",
+        "conn.go",
+        "doc.go",
+        "go16.go",
+        "go17.go",
+        "go18.go",
+        "log.go",
+        "pool.go",
+        "pool17.go",
+        "pubsub.go",
+        "redis.go",
+        "reply.go",
+        "scan.go",
+        "script.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/github.com/gomodule/redigo/redis",
+    importpath = "github.com/gomodule/redigo/redis",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

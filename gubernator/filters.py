@@ -244,7 +244,7 @@ def do_tg_url(testgrid_query, test_name=''):
 def do_gcs_browse_url(gcs_path):
     if not gcs_path.endswith('/'):
         gcs_path += '/'
-    return 'http://gcsweb.k8s.io/gcs' + gcs_path
+    return 'https://gcsweb.k8s.io/gcs' + gcs_path
 
 
 static_hashes = {}

@@ -17,28 +17,21 @@ limitations under the License.
 package main
 
 import (
+	"flag"
+	"reflect"
 	"testing"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/sets"
+	clienttesting "k8s.io/client-go/testing"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/flagutil"
 )
-
-type fakeKube struct {
-	jobs    []kube.ProwJob
-	created bool
-}
-
-func (fk *fakeKube) ListProwJobs(s string) ([]kube.ProwJob, error) {
-	return fk.jobs, nil
-}
-
-func (fk *fakeKube) CreateProwJob(j kube.ProwJob) (kube.ProwJob, error) {
-	fk.created = true
-	return j, nil
-}
 
 type fakeCron struct {
 	jobs []string
@@ -116,35 +109,51 @@ func TestSync(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		cfg := config.Config{
+			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "prowjobs",
+			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}}},
 			},
 		}
 		cfg.Periodics[0].SetInterval(time.Minute)
 
-		var jobs []kube.ProwJob
+		var jobs []runtime.Object
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []kube.ProwJob{{
-				Spec: kube.ProwJobSpec{
-					Type: kube.PeriodicJob,
+			job := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "with-interval",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
 					Job:  tc.jobName,
 				},
-				Status: kube.ProwJobStatus{
+				Status: prowapi.ProwJobStatus{
 					StartTime: metav1.NewTime(now.Add(-tc.jobStartTimeAgo)),
 				},
-			}}
+			}
 			complete := metav1.NewTime(now.Add(-time.Millisecond))
 			if tc.jobComplete {
-				jobs[0].Status.CompletionTime = &complete
+				job.Status.CompletionTime = &complete
 			}
+			jobs = append(jobs, job)
 		}
-		kc := &fakeKube{jobs: jobs}
+		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
 		fc := &fakeCron{}
-		if err := sync(kc, &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
-		if tc.shouldStart != kc.created {
+
+		sawCreation := false
+		for _, action := range fakeProwJobClient.Fake.Actions() {
+			switch action.(type) {
+			case clienttesting.CreateActionImpl:
+				sawCreation = true
+			}
+		}
+		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
 	}
@@ -183,35 +192,165 @@ func TestSyncCron(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		cfg := config.Config{
+			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "prowjobs",
+			},
 			JobConfig: config.JobConfig{
 				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}, Cron: "@every 1m"}},
 			},
 		}
 
-		var jobs []kube.ProwJob
+		var jobs []runtime.Object
 		now := time.Now()
 		if tc.jobName != "" {
-			jobs = []kube.ProwJob{{
-				Spec: kube.ProwJobSpec{
-					Type: kube.PeriodicJob,
+			job := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "with-cron",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
 					Job:  tc.jobName,
 				},
-				Status: kube.ProwJobStatus{
+				Status: prowapi.ProwJobStatus{
 					StartTime: metav1.NewTime(now.Add(-time.Hour)),
 				},
-			}}
+			}
 			complete := metav1.NewTime(now.Add(-time.Millisecond))
 			if tc.jobComplete {
-				jobs[0].Status.CompletionTime = &complete
+				job.Status.CompletionTime = &complete
 			}
+			jobs = append(jobs, job)
 		}
-		kc := &fakeKube{jobs: jobs}
+		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
 		fc := &fakeCron{}
-		if err := sync(kc, &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
-		if tc.shouldStart != kc.created {
+
+		sawCreation := false
+		for _, action := range fakeProwJobClient.Fake.Actions() {
+			switch action.(type) {
+			case clienttesting.CreateActionImpl:
+				sawCreation = true
+			}
+		}
+		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
+	}
+}
+
+func TestFlags(t *testing.T) {
+	cases := []struct {
+		name     string
+		args     map[string]string
+		del      sets.String
+		expected func(*options)
+		err      bool
+	}{
+		{
+			name: "minimal flags work",
+		},
+		{
+			name: "explicitly set --config-path",
+			args: map[string]string{
+				"--config-path": "/random/value",
+			},
+			expected: func(o *options) {
+				o.configPath = "/random/value"
+			},
+		},
+		{
+			name: "empty config-path defaults to old value",
+			args: map[string]string{
+				"--config-path": "",
+			},
+			expected: func(o *options) {
+				o.configPath = config.DefaultConfigPath
+			},
+		},
+		{
+			name: "expicitly set --dry-run=false",
+			args: map[string]string{
+				"--dry-run": "false",
+			},
+			expected: func(o *options) {
+				o.dryRun = flagutil.Bool{
+					Explicit: true,
+				}
+			},
+		},
+		{
+			name: "--dry-run=true requires --deck-url",
+			args: map[string]string{
+				"--dry-run":  "true",
+				"--deck-url": "",
+			},
+			err: true,
+		},
+		{
+			name: "explicitly set --dry-run=true",
+			args: map[string]string{
+				"--dry-run":  "true",
+				"--deck-url": "http://whatever",
+			},
+			expected: func(o *options) {
+				o.dryRun = flagutil.Bool{
+					Value:    true,
+					Explicit: true,
+				}
+				o.kubernetes.DeckURI = "http://whatever"
+			},
+		},
+		{
+			name: "dry run defaults to false", // TODO(fejta): change to true in April
+			del:  sets.NewString("--dry-run"),
+			expected: func(o *options) {
+				o.dryRun = flagutil.Bool{}
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			expected := &options{
+				configPath: "yo",
+				dryRun: flagutil.Bool{
+					Explicit: true,
+				},
+			}
+			if tc.expected != nil {
+				tc.expected(expected)
+			}
+
+			argMap := map[string]string{
+				"--config-path": "yo",
+				"--dry-run":     "false",
+			}
+			for k, v := range tc.args {
+				argMap[k] = v
+			}
+			for k := range tc.del {
+				delete(argMap, k)
+			}
+
+			var args []string
+			for k, v := range argMap {
+				args = append(args, k+"="+v)
+			}
+			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
+			actual := gatherOptions(fs, args...)
+			switch err := actual.Validate(); {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive expected error")
+			case !reflect.DeepEqual(*expected, actual):
+				t.Errorf("%#v != expected %#v", actual, *expected)
+			}
+		})
 	}
 }

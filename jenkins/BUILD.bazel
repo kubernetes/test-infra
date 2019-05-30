@@ -7,7 +7,8 @@ py_test(
     data = [
         "//jobs",
         "//prow:config.yaml",
-    ],
+    ] + glob(["fake/**"]),
+    tags = ["local"],  # TODO(fejta): https://github.com/kubernetes/test-infra/issues/12195
     deps = ["@yaml"],
 )
 

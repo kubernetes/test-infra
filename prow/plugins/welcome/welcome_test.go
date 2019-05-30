@@ -32,9 +32,6 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-// TODO(bentheelder): these tests are a bit lame.
-// There has to be a better way to write tests like this.
-
 const (
 	testWelcomeTemplate = "Welcome human! 🤖 {{.AuthorName}} {{.AuthorLogin}} {{.Repo}} {{.Org}}}"
 )
@@ -326,5 +323,51 @@ func TestPluginConfig(t *testing.T) {
 		if orgs[org] {
 			t.Errorf("The repo %q is duplicated with %q in the 'welcome' plugin configuration.", repo, org)
 		}
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name         string
+		config       *plugins.Configuration
+		enabledRepos []string
+		err          bool
+	}{
+		{
+			name:         "Empty config",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name:         "Overlapping org and org/repo",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org2", "org2/repo"},
+		},
+		{
+			name:         "Invalid enabledRepos",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo/extra"},
+			err:          true,
+		},
+		{
+			name: "All configs enabled",
+			config: &plugins.Configuration{
+				Welcome: []plugins.Welcome{
+					{
+						Repos:           []string{"org2"},
+						MessageTemplate: "Hello, welcome!",
+					},
+				},
+			},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
+			}
+		})
 	}
 }

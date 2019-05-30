@@ -1,5 +1,6 @@
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -24,11 +25,13 @@ go_library(
         "//prow/plugins/lgtm:go_default_library",
         "//prow/plugins/owners-label:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
+        "//prow/plugins/trigger:go_default_library",
         "//prow/plugins/verify-owners:go_default_library",
         "//prow/plugins/wip:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
@@ -46,7 +49,7 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-container_image(
+prow_image(
     name = "image",
     base = "@git-base//image",
     directory = "/",
@@ -66,7 +69,11 @@ go_test(
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
+        "//prow/plugins:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

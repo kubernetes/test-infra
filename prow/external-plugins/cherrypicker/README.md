@@ -2,7 +2,7 @@
 
 Cherrypicker is an external prow plugin that can also run as a standalone bot.
 It automates cherry-picking merged PRs into different branches. Cherrypicks are
-triggered from comments in Github PRs that need to be cherrypicked.
+triggered from comments in GitHub PRs that need to be cherrypicked.
 
 ```
 /cherrypick release-1.10

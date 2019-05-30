@@ -27,22 +27,7 @@ func TestOptions(t *testing.T) {
 		name     string
 		args     []string
 		expected *options
-	}{{
-		name: "forgot cert",
-		args: []string{"--tls-private-key-file=k"},
-	},
-		{
-			name: "forgot private key",
-			args: []string{"--tls-cert-file=c"},
-		},
-		{
-			name: "works with both private/pub",
-			args: []string{"--tls-cert-file=c", "--tls-private-key-file=k"},
-			expected: &options{
-				cert:       "c",
-				privateKey: "k",
-			},
-		},
+	}{
 		{
 			name:     "defaults work",
 			expected: &options{},

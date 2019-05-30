@@ -22,18 +22,17 @@ import (
 
 // A Client manages communication with the Gerrit API.
 type Client struct {
-	// HTTP client used to communicate with the API.
+	// client is the HTTP client used to communicate with the API.
 	client *http.Client
 
-	// Base URL for API requests.
-	// BaseURL should always be specified with a trailing slash.
+	// baseURL is the base URL of the Gerrit instance for API requests.
+	// It must have a trailing slash.
 	baseURL *url.URL
 
-	// Gerrit service for authentication
+	// Gerrit service for authentication.
 	Authentication *AuthenticationService
 
-	// Services used for talking to different parts of the standard
-	// Gerrit API.
+	// Services used for talking to different parts of the standard Gerrit API.
 	Access   *AccessService
 	Accounts *AccountsService
 	Changes  *ChangesService
@@ -42,8 +41,7 @@ type Client struct {
 	Plugins  *PluginsService
 	Projects *ProjectsService
 
-	// Additional services used for talking to non-standard Gerrit
-	// APIs.
+	// Additional services used for talking to non-standard Gerrit APIs.
 	EventsLog *EventsLogService
 }
 
@@ -58,11 +56,11 @@ var (
 	// gerritURL argument was blank.
 	ErrNoInstanceGiven = errors.New("no Gerrit instance given")
 
-	// ErrUserProvidedWithoutPassword is returned by NewClientFromURL
+	// ErrUserProvidedWithoutPassword is returned by NewClient
 	// if a user name is provided without a password.
 	ErrUserProvidedWithoutPassword = errors.New("a username was provided without a password")
 
-	// ErrAuthenticationFailed is returned by NewClientFromURL in the event the provided
+	// ErrAuthenticationFailed is returned by NewClient in the event the provided
 	// credentials didn't allow us to query account information using digest, basic or cookie
 	// auth.
 	ErrAuthenticationFailed = errors.New("failed to authenticate using the provided credentials")
@@ -74,23 +72,25 @@ var (
 	ReParseURL = regexp.MustCompile(`^(http|https)://(.+):(.+)@(.+):(\d+)(.*)$`)
 )
 
-// NewClient returns a new Gerrit API client. The gerritURL argument has to be the
-// HTTP endpoint of the Gerrit instance, http://localhost:8080/ for example. If a nil
-// httpClient is provided, http.DefaultClient will be used.
+// NewClient returns a new Gerrit API client. gerritURL specifies the
+// HTTP endpoint of the Gerrit instance. For example, "http://localhost:8080/".
+// If gerritURL does not have a trailing slash, one is added automatically.
+// If a nil httpClient is provided, http.DefaultClient will be used.
 //
 // The url may contain credentials, http://admin:secret@localhost:8081/ for
 // example. These credentials may either be a user name and password or
 // name and value as in the case of cookie based authentication. If the url contains
 // credentials then this function will attempt to validate the credentials before
-// returning the client. `ErrAuthenticationFailed` will be returned if the credentials
+// returning the client. ErrAuthenticationFailed will be returned if the credentials
 // cannot be validated. The process of validating the credentials is relatively simple and
 // only requires that the provided user have permission to GET /a/accounts/self.
-func NewClient(endpoint string, httpClient *http.Client) (*Client, error) {
+func NewClient(gerritURL string, httpClient *http.Client) (*Client, error) {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 
-	if len(endpoint) == 0 {
+	endpoint := gerritURL
+	if endpoint == "" {
 		return nil, ErrNoInstanceGiven
 	}
 
@@ -119,6 +119,9 @@ func NewClient(endpoint string, httpClient *http.Client) (*Client, error) {
 	baseURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
+	}
+	if !strings.HasSuffix(baseURL.Path, "/") {
+		baseURL.Path += "/"
 	}
 
 	// Note, if we retrieved the URL and password using the regular
@@ -185,7 +188,7 @@ func NewClient(endpoint string, httpClient *http.Client) (*Client, error) {
 	return c, nil
 }
 
-// checkAuth is used by NewClientFromURL to check if the current credentials are
+// checkAuth is used by NewClient to check if the current credentials are
 // valid. If the response is 401 Unauthorized then the error will be discarded.
 func checkAuth(client *Client) (bool, error) {
 	_, response, err := client.Accounts.GetAccount("self")
@@ -316,21 +319,15 @@ func (c *Client) Call(method, u string, body interface{}, v interface{}) (*Respo
 // there has to be "projects/plugin%25Fdelete-project" instead of "projects/plugin/delete-project".
 // The second url will return nothing.
 func (c *Client) buildURLForRequest(urlStr string) (string, error) {
-	u := c.baseURL.String()
+	// If there is a "/" at the start, remove it.
+	// TODO: It can be arranged for all callers of buildURLForRequest to never have a "/" prefix,
+	//       which can be ensured via tests. This is how it's done in go-github.
+	//       Then, this run-time check becomes unnecessary and can be removed.
+	urlStr = strings.TrimPrefix(urlStr, "/")
 
-	// If there is no / at the end, add one
-	if strings.HasSuffix(u, "/") == false {
-		u += "/"
-	}
-
-	// If there is a "/" at the start, remove it
-	if strings.HasPrefix(urlStr, "/") == true {
-		urlStr = urlStr[1:]
-	}
-
-	// If we are authenticated, lets apply the a/ prefix but only if it has
-	// not already been applied.
-	if c.Authentication.HasAuth() == true && !strings.HasPrefix(urlStr, "a/") {
+	// If we are authenticated, let's apply the "a/" prefix,
+	// but only if it has not already been applied.
+	if c.Authentication.HasAuth() && !strings.HasPrefix(urlStr, "a/") {
 		urlStr = "a/" + urlStr
 	}
 
@@ -338,9 +335,8 @@ func (c *Client) buildURLForRequest(urlStr string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	u += rel.String()
 
-	return u, nil
+	return c.baseURL.String() + rel.String(), nil
 }
 
 // Do sends an API request and returns the API response.
@@ -425,7 +421,6 @@ func (c *Client) addAuthentication(req *http.Request) error {
 		response, err := c.client.Do(digestRequest)
 		if err != nil {
 			return err
-
 		}
 
 		// When the function exits discard the rest of the
@@ -436,7 +431,6 @@ func (c *Client) addAuthentication(req *http.Request) error {
 
 		if response.StatusCode == http.StatusUnauthorized {
 			authorization, err := c.Authentication.digestAuthHeader(response)
-
 			if err != nil {
 				return err
 			}
@@ -459,6 +453,11 @@ func (c *Client) DeleteRequest(urlStr string, body interface{}) (*Response, erro
 	}
 
 	return c.Do(req, nil)
+}
+
+// BaseURL returns the client's Gerrit instance HTTP endpoint.
+func (c *Client) BaseURL() url.URL {
+	return *c.baseURL
 }
 
 // RemoveMagicPrefixLine removes the "magic prefix line" of Gerris JSON

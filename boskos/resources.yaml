@@ -320,7 +320,6 @@ resources:
   - k8s-boskos-gce-project-20
   - k8s-docker-validation-gci
   - k8s-e2e-gce-alpha1-5
-  - k8s-e2e-gce-f8n-1-5
   - k8s-e2e-gce-scalability
   - k8s-e2e-gci-gce-alpha1-5
   - k8s-gce-1-5
@@ -362,7 +361,6 @@ resources:
   - k8s-jkns-e2e-gce-ci-reboot
   - k8s-jkns-e2e-gce-flaky
   - k8s-jkns-e2e-gce-gci
-  - k8s-jkns-e2e-gce-gci-federatio
   - k8s-jkns-e2e-gce-gci-serial
   - k8s-jkns-e2e-gce-gci-slow
   - k8s-jkns-e2e-gce-kubenet
@@ -386,7 +384,6 @@ resources:
   - k8s-jkns-e2e-protobuf
   - k8s-jkns-e2e-prow-canary
   - k8s-jkns-e2e-ubuntu-gce-1-6
-  - k8s-jkns-f8n-gce-upg
   - k8s-jkns-gce-1-3
   - k8s-jkns-gce-1-4
   - k8s-jkns-gce-alpha-1-6
@@ -438,7 +435,6 @@ resources:
   - k8s-jkns-gci-gke-reboot-1-4
   - k8s-jkns-gke-reboot-1-4
   - k8s-jkns-gke-slow-1-4
-  - k8s-jkns-pr-cnry-e2e-gce-fdrtn
   - k8s-jkns-pr-gci-bld-e2e-gce-fd
   - k8s-jkns-pr-kubeadm
   - k8s-jnks-gci-autoscaling
@@ -523,3 +519,16 @@ resources:
   - k8s-jenkins-scalability-5
   state: dirty
   type: scalability-project
+- names:
+  - capa-user-01
+  - capa-user-02
+  - capa-user-03
+  - capa-user-04
+  - capa-user-05
+  - capa-user-06
+  - capa-user-07
+  - capa-user-08
+  - capa-user-09
+  - capa-user-00
+  state: dirty
+  type: aws-account

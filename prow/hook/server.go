@@ -53,7 +53,7 @@ type Server struct {
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.TokenGenerator())
-	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
+	if counter, err := s.Metrics.ResponseCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"status-code": resp,
 		}).WithError(err).Error("Failed to get metric for reporting webhook status code")
@@ -149,6 +149,8 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		srcRepo = se.Repo.FullName
 		s.wg.Add(1)
 		go s.handleStatusEvent(l, se)
+	default:
+		l.Debug("Ignoring unhandled event type. (Might still be handled by external plugins.)")
 	}
 	// Demux events only to external plugins that require this event.
 	if external := s.needDemux(eventType, srcRepo); len(external) > 0 {
@@ -165,16 +167,7 @@ func (s *Server) needDemux(eventType, srcRepo string) []plugins.ExternalPlugin {
 
 	for repo, plugins := range s.Plugins.Config().ExternalPlugins {
 		// Make sure the repositories match
-		var matchesRepo bool
-		if repo == srcRepo {
-			matchesRepo = true
-		}
-		// If repo is an org, we need to compare orgs.
-		if !matchesRepo && !strings.Contains(repo, "/") && repo == srcOrg {
-			matchesRepo = true
-		}
-		// No need to continue if the repos don't match.
-		if !matchesRepo {
+		if repo != srcRepo && repo != srcOrg {
 			continue
 		}
 

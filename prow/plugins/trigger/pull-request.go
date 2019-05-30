@@ -25,10 +25,15 @@ import (
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
-func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
+	if len(c.Config.Presubmits[pr.PullRequest.Base.Repo.FullName]) == 0 {
+		return nil
+	}
+
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
@@ -43,7 +48,7 @@ func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 		}
 		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
@@ -64,7 +69,7 @@ func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 				}
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 		}
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
@@ -98,7 +103,7 @@ func handlePR(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID)
+				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 			}
 		}
 	}
@@ -114,7 +119,7 @@ func orgRepoAuthor(pr github.PullRequest) (string, string, login) {
 	return org, repo, login(author)
 }
 
-func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
+func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
 	// When a PR is updated, check that the user is in the org or that an org
 	// member has said "/ok-to-test" before building. There's no need to ask
 	// for "/ok-to-test" because we do that once when the PR is created.
@@ -133,23 +138,23 @@ func buildAllIfTrusted(c Client, trigger *plugins.Trigger, pr github.PullRequest
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID)
+		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
 	}
 	return nil
 }
 
-func welcomeMsg(ghc githubClient, trigger *plugins.Trigger, pr github.PullRequest) error {
+func welcomeMsg(ghc githubClient, trigger plugins.Trigger, pr github.PullRequest) error {
 	var errors []error
 	org, repo, a := orgRepoAuthor(pr)
 	author := string(a)
 	encodedRepoFullName := url.QueryEscape(pr.Base.Repo.FullName)
 	var more string
-	if trigger != nil && trigger.TrustedOrg != "" && trigger.TrustedOrg != org {
+	if trigger.TrustedOrg != "" && trigger.TrustedOrg != org {
 		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", trigger.TrustedOrg, trigger.TrustedOrg)
 	}
 
 	var joinOrgURL string
-	if trigger != nil && trigger.JoinOrgURL != "" {
+	if trigger.JoinOrgURL != "" {
 		joinOrgURL = trigger.JoinOrgURL
 	} else {
 		joinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", org)
@@ -199,7 +204,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 
 // TrustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
-func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
+func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
 	if orgMember, err := TrustedUser(ghc, trigger, author, org, repo); err != nil {
 		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
@@ -214,40 +219,16 @@ func TrustedPullRequest(ghc githubClient, trigger *plugins.Trigger, author, org,
 			return l, false, err
 		}
 	}
-	if github.HasLabel(labels.OkToTest, l) {
-		return l, true, nil
-	}
-	botName, err := ghc.BotName()
-	if err != nil {
-		return l, false, fmt.Errorf("error finding bot name: %v", err)
-	}
-	// Next look for "/ok-to-test" comments on the PR.
-	comments, err := ghc.ListIssueComments(org, repo, num)
-	if err != nil {
-		return l, false, err
-	}
-	for _, comment := range comments {
-		commentAuthor := comment.User.Login
-		// Skip comments: by the PR author, or by bot, or not matching "/ok-to-test".
-		if commentAuthor == author || commentAuthor == botName || !okToTestRe.MatchString(comment.Body) {
-			continue
-		}
-		// Ensure that the commenter is in the org.
-		if commentAuthorMember, err := TrustedUser(ghc, trigger, commentAuthor, org, repo); err != nil {
-			return l, false, fmt.Errorf("error checking %s for trust: %v", commentAuthor, err)
-		} else if commentAuthorMember {
-			return l, true, nil
-		}
-	}
-	return l, false, nil
+	return l, github.HasLabel(labels.OkToTest, l), nil
 }
 
-func buildAll(c Client, pr *github.PullRequest, eventGUID string) error {
-	var matchingJobs []config.Presubmit
-	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
-		if job.AlwaysRun || job.RunIfChanged != "" {
-			matchingJobs = append(matchingJobs, job)
-		}
+// buildAll ensures that all builds that should run and will be required are built
+func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
+	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
+	changes := config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number)
+	toTest, toSkip, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
+	if err != nil {
+		return err
 	}
-	return RunOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
+	return RunAndSkipJobs(c, pr, toTest, toSkip, eventGUID, elideSkippedContexts)
 }

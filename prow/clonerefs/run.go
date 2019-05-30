@@ -27,7 +27,7 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
@@ -63,7 +63,7 @@ func (o Options) Run() error {
 	wg := &sync.WaitGroup{}
 	wg.Add(numWorkers)
 
-	input := make(chan kube.Refs)
+	input := make(chan prowapi.Refs)
 	output := make(chan clone.Record, len(o.GitRefs))
 	for i := 0; i < numWorkers; i++ {
 		go func() {

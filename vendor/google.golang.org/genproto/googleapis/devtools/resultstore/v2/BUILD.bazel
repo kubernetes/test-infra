@@ -1,0 +1,48 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "action.pb.go",
+        "common.pb.go",
+        "configuration.pb.go",
+        "configured_target.pb.go",
+        "coverage.pb.go",
+        "coverage_summary.pb.go",
+        "file.pb.go",
+        "file_set.pb.go",
+        "invocation.pb.go",
+        "resultstore_download.pb.go",
+        "resultstore_file_download.pb.go",
+        "resultstore_upload.pb.go",
+        "target.pb.go",
+        "test_suite.pb.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/genproto/googleapis/devtools/resultstore/v2",
+    importpath = "google.golang.org/genproto/googleapis/devtools/resultstore/v2",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/duration:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/timestamp:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/wrappers:go_default_library",
+        "//vendor/golang.org/x/net/context:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/api/annotations:go_default_library",
+        "//vendor/google.golang.org/genproto/protobuf/field_mask:go_default_library",
+        "//vendor/google.golang.org/grpc:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

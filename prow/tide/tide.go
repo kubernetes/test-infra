@@ -20,6 +20,7 @@ limitations under the License.
 package tide
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -32,20 +33,28 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/pkg/io"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
 )
 
-type kubeClient interface {
-	ListProwJobs(string) ([]kube.ProwJob, error)
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+// For mocking out sleep during unit tests.
+var sleep = time.Sleep
+
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
 }
 
 type githubClient interface {
@@ -66,11 +75,11 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	logger *logrus.Entry
-	ca     *config.Agent
-	ghc    githubClient
-	kc     kubeClient
-	gc     *git.Client
+	logger        *logrus.Entry
+	config        config.Getter
+	ghc           githubClient
+	prowJobClient prowJobClient
+	gc            *git.Client
 
 	sc *statusController
 
@@ -191,40 +200,44 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
+func NewController(ghcSync, ghcStatus github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
+	}
+	hist, err := history.New(maxRecordsPerPool, opener, historyURI)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing history client from %q: %v", historyURI, err)
 	}
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
 		ghc:            ghcStatus,
-		ca:             ca,
+		config:         cfg,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
-
-		trackedOrgs:  sets.NewString(),
-		trackedRepos: sets.NewString(),
+		opener:         opener,
+		path:           statusURI,
 	}
 	go sc.run()
 	return &Controller{
-		logger: logger.WithField("controller", "sync"),
-		ghc:    ghcSync,
-		kc:     kc,
-		ca:     ca,
-		gc:     gc,
-		sc:     sc,
+		logger:        logger.WithField("controller", "sync"),
+		ghc:           ghcSync,
+		prowJobClient: prowJobClient,
+		config:        cfg,
+		gc:            gc,
+		sc:            sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
 		},
-		History: history.New(1000),
-	}
+		History: hist,
+	}, nil
 }
 
 // Shutdown signals the statusController to stop working and waits for it to
 // finish its last update loop before terminating.
 // Controller.Sync() should not be used after this function is called.
 func (c *Controller) Shutdown() {
+	c.History.Flush()
 	c.sc.shutdown()
 }
 
@@ -270,31 +283,41 @@ func (c *Controller) Sync() error {
 	}()
 	defer c.changedFiles.prune()
 
-	ctx := context.Background()
 	c.logger.Debug("Building tide pool.")
 	prs := make(map[string]PullRequest)
-	for _, q := range c.ca.Config().Tide.Queries {
-		results, err := newSearchExecutor(ctx, c.ghc, c.logger, q.Query()).search()
+	for _, query := range c.config().Tide.Queries {
+		q := query.Query()
+		results, err := search(c.ghc.Query, c.logger, q, time.Time{}, time.Now())
+		if err != nil && len(results) == 0 {
+			return fmt.Errorf("query %q, err: %v", q, err)
+		}
 		if err != nil {
-			return err
+			c.logger.WithError(err).WithField("query", q).Warning("found partial results")
 		}
 		for _, pr := range results {
 			prs[prKey(&pr)] = pr
 		}
 	}
+	c.logger.WithField(
+		"duration", time.Since(start).String(),
+	).Debugf("Found %d (unfiltered) pool PRs.", len(prs))
 
-	var pjs []kube.ProwJob
+	var pjs []prowapi.ProwJob
 	var blocks blockers.Blockers
 	var err error
 	if len(prs) > 0 {
-		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
+		start := time.Now()
+		pjList, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 		if err != nil {
+			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
 		}
+		c.logger.WithField("duration", time.Since(start).String()).Debug("Listed ProwJobs from the cluster.")
+		pjs = pjList.Items
 
-		if label := c.ca.Config().Tide.BlockerLabel; label != "" {
+		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
-			orgExcepts, repos := c.ca.Config().Tide.Queries.OrgExceptionsAndRepos()
+			orgExcepts, repos := c.config().Tide.Queries.OrgExceptionsAndRepos()
 			orgs := make([]string, 0, len(orgExcepts))
 			for org := range orgExcepts {
 				orgs = append(orgs, org)
@@ -311,7 +334,7 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return err
 	}
-	filteredPools := c.filterSubpools(c.ca.Config().Tide.MaxGoroutines, rawPools)
+	filteredPools := c.filterSubpools(c.config().Tide.MaxGoroutines, rawPools)
 
 	// Notify statusController about the new pool.
 	c.sc.Lock()
@@ -325,7 +348,7 @@ func (c *Controller) Sync() error {
 	// Sync subpools in parallel.
 	poolChan := make(chan Pool, len(filteredPools))
 	subpoolsInParallel(
-		c.ca.Config().Tide.MaxGoroutines,
+		c.config().Tide.MaxGoroutines,
 		filteredPools,
 		func(sp *subpool) {
 			pool, err := c.syncSubpool(*sp, blocks.GetApplicable(sp.org, sp.repo, sp.branch))
@@ -343,8 +366,10 @@ func (c *Controller) Sync() error {
 	}
 	sortPools(pools)
 	c.m.Lock()
-	defer c.m.Unlock()
 	c.pools = pools
+	c.m.Unlock()
+
+	c.History.Flush()
 	return nil
 }
 
@@ -417,11 +442,11 @@ func (c *Controller) filterSubpools(goroutines int, raw map[string]*subpool) map
 
 func (c *Controller) initSubpoolData(sp *subpool) error {
 	var err error
-	sp.presubmitContexts, err = c.presubmitsByPull(sp)
+	sp.presubmits, err = c.presubmitsByPull(sp)
 	if err != nil {
 		return fmt.Errorf("error determining required presubmit prowjobs: %v", err)
 	}
-	sp.cc, err = c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
+	sp.cc, err = c.config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
 	if err != nil {
 		return fmt.Errorf("error setting up context checker: %v", err)
 	}
@@ -469,10 +494,21 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 		log.WithError(err).Error("Getting head contexts.")
 		return true
 	}
-	pjContexts := sp.presubmitContexts[int(pr.Number)]
+	presubmitsHaveContext := func(context string) bool {
+		for _, job := range sp.presubmits[int(pr.Number)] {
+			if job.Context == context {
+				return true
+			}
+		}
+		return false
+	}
 	for _, ctx := range unsuccessfulContexts(contexts, sp.cc, log) {
-		if ctx.State != githubql.StatusStatePending || !pjContexts.Has(string(ctx.Context)) {
-			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not a pending Prow-controlled context")
+		if ctx.State != githubql.StatusStatePending {
+			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not pending")
+			return true
+		}
+		if !presubmitsHaveContext(string(ctx.Context)) {
+			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not Prow-controlled")
 			return true
 		}
 	}
@@ -494,18 +530,18 @@ func poolPRMap(subpoolMap map[string]*subpool) map[string]PullRequest {
 type simpleState string
 
 const (
-	noneState    simpleState = "none"
+	failureState simpleState = "failure"
 	pendingState simpleState = "pending"
 	successState simpleState = "success"
 )
 
-func toSimpleState(s kube.ProwJobState) simpleState {
-	if s == kube.TriggeredState || s == kube.PendingState {
+func toSimpleState(s prowapi.ProwJobState) simpleState {
+	if s == prowapi.TriggeredState || s == prowapi.PendingState {
 		return pendingState
-	} else if s == kube.SuccessState {
+	} else if s == prowapi.SuccessState {
 		return successState
 	}
-	return noneState
+	return failureState
 }
 
 // isPassingTests returns whether or not all contexts set on the PR except for
@@ -570,7 +606,7 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 // accumulateBatch returns a list of PRs that can be merged after passing batch
 // testing, if any exist. It also returns a list of PRs currently being batch
 // tested.
-func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
+func accumulateBatch(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []prowapi.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
 	log.Debug("accumulating PRs for batch testing")
 	if len(presubmits) == 0 {
 		log.Debug("no presubmits configured, no batch can be triggered")
@@ -589,7 +625,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 	}
 	states := make(map[string]*accState)
 	for _, pj := range pjs {
-		if pj.Spec.Type != kube.BatchJob {
+		if pj.Spec.Type != prowapi.BatchJob {
 			continue
 		}
 		// First validate the batch job's refs.
@@ -623,7 +659,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		context := pj.Spec.Context
 		jobState := toSimpleState(pj.Status.State)
 		// Store the best result for this ref+context.
-		if s, ok := states[ref].jobStates[context]; !ok || s == noneState || jobState == successState {
+		if s, ok := states[ref].jobStates[context]; !ok || s == failureState || jobState == successState {
 			states[ref].jobStates[context] = jobState
 		}
 	}
@@ -634,12 +670,14 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		}
 		requiredPresubmits := sets.NewString()
 		for _, pr := range state.prs {
-			requiredPresubmits = requiredPresubmits.Union(presubmits[int(pr.Number)])
+			for _, job := range presubmits[int(pr.Number)] {
+				requiredPresubmits.Insert(job.Context)
+			}
 		}
 		overallState := successState
 		for _, p := range requiredPresubmits.List() {
-			if s, ok := state.jobStates[p]; !ok || s == noneState {
-				overallState = noneState
+			if s, ok := state.jobStates[p]; !ok || s == failureState {
+				overallState = failureState
 				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s is not passing", p)
 				break
 			} else if s == pendingState && overallState == successState {
@@ -660,12 +698,12 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
+func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []prowapi.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
 	for _, pr := range prs {
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
 		for _, pj := range pjs {
-			if pj.Spec.Type != kube.PresubmitJob {
+			if pj.Spec.Type != prowapi.PresubmitJob {
 				continue
 			}
 			if pj.Spec.Refs.Pulls[0].Number != int(pr.Number) {
@@ -678,7 +716,7 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 			name := pj.Spec.Context
 			oldState := psStates[name]
 			newState := toSimpleState(pj.Status.State)
-			if oldState == noneState || oldState == "" {
+			if oldState == failureState || oldState == "" {
 				psStates[name] = newState
 			} else if oldState == pendingState && newState == successState {
 				psStates[name] = successState
@@ -686,17 +724,17 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 		}
 		// The overall result is the worst of the best.
 		overallState := successState
-		for _, ps := range presubmits[int(pr.Number)].List() {
-			if s, ok := psStates[ps]; !ok {
-				overallState = noneState
-				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps)
+		for _, ps := range presubmits[int(pr.Number)] {
+			if s, ok := psStates[ps.Context]; !ok {
+				overallState = failureState
+				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps.Context)
 				break
-			} else if s == noneState {
-				overallState = noneState
-				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps)
+			} else if s == failureState {
+				overallState = failureState
+				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps.Context)
 				break
 			} else if s == pendingState {
-				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps)
+				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps.Context)
 				overallState = pendingState
 			}
 		}
@@ -771,8 +809,58 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 	return res, nil
 }
 
+func checkMergeLabels(pr PullRequest, squash, rebase, merge string, method github.PullRequestMergeType) (github.PullRequestMergeType, error) {
+	labelCount := 0
+	for _, prlabel := range pr.Labels.Nodes {
+		switch string(prlabel.Name) {
+		case squash:
+			method = github.MergeSquash
+			labelCount++
+		case rebase:
+			method = github.MergeRebase
+			labelCount++
+		case merge:
+			method = github.MergeMerge
+			labelCount++
+		}
+		if labelCount > 1 {
+			return "", fmt.Errorf("conflicting merge method override labels")
+		}
+	}
+	return method, nil
+}
+
+func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr PullRequest, mergeMethod github.PullRequestMergeType) github.MergeDetails {
+	ghMergeDetails := github.MergeDetails{
+		SHA:         string(pr.HeadRefOID),
+		MergeMethod: string(mergeMethod),
+	}
+
+	if commitTemplates.Title != nil {
+		var b bytes.Buffer
+
+		if err := commitTemplates.Title.Execute(&b, pr); err != nil {
+			c.logger.Errorf("error executing commit title template: %v", err)
+		} else {
+			ghMergeDetails.CommitTitle = b.String()
+		}
+	}
+
+	if commitTemplates.Body != nil {
+		var b bytes.Buffer
+
+		if err := commitTemplates.Body.Execute(&b, pr); err != nil {
+			c.logger.Errorf("error executing commit body template: %v", err)
+		} else {
+			ghMergeDetails.CommitMessage = b.String()
+		}
+	}
+
+	return ghMergeDetails
+}
+
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
-	var merged []int
+	var merged, failed []int
 	defer func() {
 		if len(merged) == 0 {
 			return
@@ -780,139 +868,166 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(len(merged)))
 	}()
 
-	augmentError := func(e error, pr PullRequest) error {
-		var batch string
-		if len(prs) > 1 {
-			batch = fmt.Sprintf(" from batch %v", prNumbers(prs))
-			if len(merged) > 0 {
-				batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
+	var errs []error
+	log := sp.log.WithField("merge-targets", prNumbers(prs))
+	for i, pr := range prs {
+		log := log.WithFields(pr.logFields())
+		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
+		commitTemplates := c.config().Tide.MergeCommitTemplate(sp.org, sp.repo)
+		squashLabel := c.config().Tide.SquashLabel
+		rebaseLabel := c.config().Tide.RebaseLabel
+		mergeLabel := c.config().Tide.MergeLabel
+		if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
+			var err error
+			mergeMethod, err = checkMergeLabels(pr, squashLabel, rebaseLabel, mergeLabel, mergeMethod)
+			if err != nil {
+				log.WithError(err).Error("Merge failed.")
+				errs = append(errs, err)
+				failed = append(failed, int(pr.Number))
+				continue
 			}
 		}
-		return fmt.Errorf("failed merging #%d%s: %v", int(pr.Number), batch, e)
+
+		keepTrying, err := tryMerge(func() error {
+			ghMergeDetails := c.prepareMergeDetails(commitTemplates, pr, mergeMethod)
+			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
+		})
+		if err != nil {
+			log.WithError(err).Error("Merge failed.")
+			errs = append(errs, err)
+			failed = append(failed, int(pr.Number))
+		} else {
+			log.Info("Merged.")
+			merged = append(merged, int(pr.Number))
+		}
+		if !keepTrying {
+			break
+		}
+		// If we successfully merged this PR and have more to merge, sleep to give
+		// GitHub time to recalculate mergeability.
+		if err == nil && i+1 < len(prs) {
+			sleep(time.Second * 5)
+		}
 	}
 
-	log := sp.log.WithField("merge-targets", prNumbers(prs))
-	maxRetries := 3
-	for i, pr := range prs {
-		backoff := time.Second * 4
-		log := log.WithFields(pr.logFields())
-		mergeMethod := c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)
-		if squashLabel := c.ca.Config().Tide.SquashLabel; squashLabel != "" {
-			for _, prlabel := range pr.Labels.Nodes {
-				if string(prlabel.Name) == squashLabel {
-					mergeMethod = github.MergeSquash
-					break
-				}
-			}
-		}
-		for retry := 0; retry < maxRetries; retry++ {
-			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-				SHA:         string(pr.HeadRefOID),
-				MergeMethod: string(mergeMethod),
-			}); err != nil {
-				// TODO: Add a config option to abort batches if a PR in the batch
-				// cannot be merged for any reason. This would skip merging
-				// not just the changed PR, but also the other PRs in the batch.
-				// This shouldn't be the default behavior as merging batches is high
-				// priority and this is unlikely to be problematic.
-				// Note: We would also need to be able to roll back any merges for the
-				// batch that were already successfully completed before the failure.
-				// Ref: https://github.com/kubernetes/test-infra/issues/10621
-				if _, ok := err.(github.ModifiedHeadError); ok {
-					// This is a possible source of incorrect behavior. If someone
-					// modifies their PR as we try to merge it in a batch then we
-					// end up in an untested state. This is unlikely to cause any
-					// real problems.
-					log.WithError(err).Warning("Merge failed: PR was modified.")
-					break
-				} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
-					// Github complained that the base branch was modified. This is a
-					// strange error because the API doesn't even allow the request to
-					// specify the base branch sha, only the head sha.
-					// We suspect that github is complaining because we are making the
-					// merge requests too rapidly and it cannot recompute mergability
-					// in time. https://github.com/kubernetes/test-infra/issues/5171
-					// We handle this by sleeping for a few seconds before trying to
-					// merge again.
-					log.WithError(err).Warning("Merge failed: Base branch was modified.")
-					if retry+1 < maxRetries {
-						time.Sleep(backoff)
-						backoff *= 2
-					}
-				} else if _, ok = err.(github.UnauthorizedToPushError); ok {
-					// Github let us know that the token used cannot push to the branch.
-					// Even if the robot is set up to have write access to the repo, an
-					// overzealous branch protection setting will not allow the robot to
-					// push to a specific branch.
-					log.WithError(err).Error("Merge failed: Branch needs to be configured to allow this robot to push.")
-					// We won't be able to merge the other PRs.
-					return augmentError(err, pr)
-				} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
-					// Github let us know that the merge method configured for this repo
-					// is not allowed by other repo settings, so we should let the admins
-					// know that the configuration needs to be updated.
-					log.WithError(err).Error("Merge failed: Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits.")
-					// We won't be able to merge the other PRs.
-					return augmentError(err, pr)
-				} else if _, ok = err.(github.UnmergablePRError); ok {
-					log.WithError(err).Error("Merge failed: PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo?")
-					break
-				} else {
-					log.WithError(err).Error("Merge failed.")
-					return augmentError(err, pr)
-				}
-			} else {
-				log.Info("Merged.")
-				merged = append(merged, int(pr.Number))
-				// If we have more PRs to merge, sleep to give Github time to recalculate
-				// mergeability.
-				if i+1 < len(prs) {
-					time.Sleep(time.Second * 3)
-				}
-				break
-			}
+	if len(errs) == 0 {
+		return nil
+	}
+
+	// Construct a more informative error.
+	var batch string
+	if len(prs) > 1 {
+		batch = fmt.Sprintf(" from batch %v", prNumbers(prs))
+		if len(merged) > 0 {
+			batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
 		}
 	}
-	return nil
+	return fmt.Errorf("failed merging %v%s: %v", failed, batch, errorutil.NewAggregate(errs...))
 }
 
-func (c *Controller) trigger(sp subpool, presubmitContexts map[int]sets.String, prs []PullRequest) error {
-	requiredContexts := sets.NewString()
+// tryMerge attempts 1 merge and returns a bool indicating if we should try
+// to merge the remaining PRs and possibly an error.
+func tryMerge(mergeFunc func() error) (bool, error) {
+	var err error
+	const maxRetries = 3
+	backoff := time.Second * 4
+	for retry := 0; retry < maxRetries; retry++ {
+		if err = mergeFunc(); err == nil {
+			// Successful merge!
+			return true, nil
+		}
+		// TODO: Add a config option to abort batches if a PR in the batch
+		// cannot be merged for any reason. This would skip merging
+		// not just the changed PR, but also the other PRs in the batch.
+		// This shouldn't be the default behavior as merging batches is high
+		// priority and this is unlikely to be problematic.
+		// Note: We would also need to be able to roll back any merges for the
+		// batch that were already successfully completed before the failure.
+		// Ref: https://github.com/kubernetes/test-infra/issues/10621
+		if _, ok := err.(github.ModifiedHeadError); ok {
+			// This is a possible source of incorrect behavior. If someone
+			// modifies their PR as we try to merge it in a batch then we
+			// end up in an untested state. This is unlikely to cause any
+			// real problems.
+			return true, fmt.Errorf("PR was modified: %v", err)
+		} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
+			//  complained that the base branch was modified. This is a
+			// strange error because the API doesn't even allow the request to
+			// specify the base branch sha, only the head sha.
+			// We suspect that github is complaining because we are making the
+			// merge requests too rapidly and it cannot recompute mergability
+			// in time. https://github.com/kubernetes/test-infra/issues/5171
+			// We handle this by sleeping for a few seconds before trying to
+			// merge again.
+			err = fmt.Errorf("base branch was modified: %v", err)
+			if retry+1 < maxRetries {
+				sleep(backoff)
+				backoff *= 2
+			}
+		} else if _, ok = err.(github.UnauthorizedToPushError); ok {
+			// GitHub let us know that the token used cannot push to the branch.
+			// Even if the robot is set up to have write access to the repo, an
+			// overzealous branch protection setting will not allow the robot to
+			// push to a specific branch.
+			// We won't be able to merge the other PRs.
+			return false, fmt.Errorf("branch needs to be configured to allow this robot to push: %v", err)
+		} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
+			// GitHub let us know that the merge method configured for this repo
+			// is not allowed by other repo settings, so we should let the admins
+			// know that the configuration needs to be updated.
+			// We won't be able to merge the other PRs.
+			return false, fmt.Errorf("Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits: %v", err)
+		} else if _, ok = err.(github.UnmergablePRError); ok {
+			return true, fmt.Errorf("PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo? %v", err)
+		} else {
+			return true, err
+		}
+	}
+	// We ran out of retries. Return the last transient error.
+	return true, err
+}
+
+func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, prs []PullRequest) error {
+	refs := prowapi.Refs{
+		Org:     sp.org,
+		Repo:    sp.repo,
+		BaseRef: sp.branch,
+		BaseSHA: sp.sha,
+	}
 	for _, pr := range prs {
-		requiredContexts = requiredContexts.Union(presubmitContexts[int(pr.Number)])
+		refs.Pulls = append(
+			refs.Pulls,
+			prowapi.Pull{
+				Number: int(pr.Number),
+				Author: string(pr.Author.Login),
+				SHA:    string(pr.HeadRefOID),
+			},
+		)
 	}
 
-	// TODO(cjwagner): DRY this out when generalizing triggering code (and code to determine required and to-run jobs).
-	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredContexts.Has(ps.Context) {
-			continue
-		}
-
-		refs := kube.Refs{
-			Org:     sp.org,
-			Repo:    sp.repo,
-			BaseRef: sp.branch,
-			BaseSHA: sp.sha,
-		}
-		for _, pr := range prs {
-			refs.Pulls = append(
-				refs.Pulls,
-				kube.Pull{
-					Number: int(pr.Number),
-					Author: string(pr.Author.Login),
-					SHA:    string(pr.HeadRefOID),
-				},
-			)
-		}
-		var spec kube.ProwJobSpec
-		if len(prs) == 1 {
-			spec = pjutil.PresubmitSpec(ps, refs)
-		} else {
-			spec = pjutil.BatchSpec(ps, refs)
-		}
-		pj := pjutil.NewProwJob(spec, ps.Labels)
-		if _, err := c.kc.CreateProwJob(pj); err != nil {
-			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
+	// If PRs require the same job, we only want to trigger it once.
+	// If multiple required jobs have the same context, we assume the
+	// same shard will be run to provide those contexts
+	triggeredContexts := sets.NewString()
+	for _, pr := range prs {
+		for _, ps := range presubmits[int(pr.Number)] {
+			if triggeredContexts.Has(string(ps.Context)) {
+				continue
+			}
+			triggeredContexts.Insert(string(ps.Context))
+			var spec prowapi.ProwJobSpec
+			if len(prs) == 1 {
+				spec = pjutil.PresubmitSpec(ps, refs)
+			} else {
+				spec = pjutil.BatchSpec(ps, refs)
+			}
+			pj := pjutil.NewProwJob(spec, ps.Labels)
+			start := time.Now()
+			if _, err := c.prowJobClient.Create(&pj); err != nil {
+				c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
+				return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
+			}
+			c.logger.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 		}
 	}
 	return nil
@@ -931,14 +1046,8 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 		}
 	}
 	// If no presubmits are configured, just wait.
-	if len(sp.presubmitContexts) == 0 {
+	if len(sp.presubmits) == 0 {
 		return Wait, nil, nil
-	}
-	// If we have no serial jobs pending or successful, trigger one.
-	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmitContexts, []PullRequest{pr})
-		}
 	}
 	// If we have no batch, trigger one.
 	if len(sp.prs) > 1 && len(batchPending) == 0 {
@@ -947,7 +1056,13 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			return TriggerBatch, batch, c.trigger(sp, sp.presubmitContexts, batch)
+			return TriggerBatch, batch, c.trigger(sp, sp.presubmits, batch)
+		}
+	}
+	// If we have no serial jobs pending or successful, trigger one.
+	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
+			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmits, []PullRequest{pr})
 		}
 	}
 	return Wait, nil, nil
@@ -972,47 +1087,49 @@ type changeCacheKey struct {
 
 // prChanges gets the files changed by the PR, either from the cache or by
 // querying GitHub.
-func (c *changedFilesAgent) prChanges(pr *PullRequest) ([]string, error) {
-	cacheKey := changeCacheKey{
-		org:    string(pr.Repository.Owner.Login),
-		repo:   string(pr.Repository.Name),
-		number: int(pr.Number),
-		sha:    string(pr.HeadRefOID),
-	}
+func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		cacheKey := changeCacheKey{
+			org:    string(pr.Repository.Owner.Login),
+			repo:   string(pr.Repository.Name),
+			number: int(pr.Number),
+			sha:    string(pr.HeadRefOID),
+		}
 
-	c.RLock()
-	changedFiles, ok := c.changeCache[cacheKey]
-	if ok {
+		c.RLock()
+		changedFiles, ok := c.changeCache[cacheKey]
+		if ok {
+			c.RUnlock()
+			c.Lock()
+			c.nextChangeCache[cacheKey] = changedFiles
+			c.Unlock()
+			return changedFiles, nil
+		}
+		if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
+			c.RUnlock()
+			return changedFiles, nil
+		}
 		c.RUnlock()
+
+		// We need to query the changes from GitHub.
+		changes, err := c.ghc.GetPullRequestChanges(
+			string(pr.Repository.Owner.Login),
+			string(pr.Repository.Name),
+			int(pr.Number),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
+		}
+		changedFiles = make([]string, 0, len(changes))
+		for _, change := range changes {
+			changedFiles = append(changedFiles, change.Filename)
+		}
+
 		c.Lock()
 		c.nextChangeCache[cacheKey] = changedFiles
 		c.Unlock()
 		return changedFiles, nil
 	}
-	if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
-		c.RUnlock()
-		return changedFiles, nil
-	}
-	c.RUnlock()
-
-	// We need to query the changes from GitHub.
-	changes, err := c.ghc.GetPullRequestChanges(
-		string(pr.Repository.Owner.Login),
-		string(pr.Repository.Name),
-		int(pr.Number),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
-	}
-	changedFiles = make([]string, 0, len(changes))
-	for _, change := range changes {
-		changedFiles = append(changedFiles, change.Filename)
-	}
-
-	c.Lock()
-	c.nextChangeCache[cacheKey] = changedFiles
-	c.Unlock()
-	return changedFiles, nil
 }
 
 // prune removes any cached file changes that were not used since the last prune.
@@ -1023,36 +1140,26 @@ func (c *changedFilesAgent) prune() {
 	c.nextChangeCache = make(map[changeCacheKey][]string)
 }
 
-func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) {
-	presubmits := make(map[int]sets.String, len(sp.prs))
-	record := func(num int, context string) {
+func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, error) {
+	presubmits := make(map[int][]config.Presubmit, len(sp.prs))
+	record := func(num int, job config.Presubmit) {
 		if jobs, ok := presubmits[num]; ok {
-			jobs.Insert(context)
+			presubmits[num] = append(jobs, job)
 		} else {
-			presubmits[num] = sets.NewString(context)
+			presubmits[num] = []config.Presubmit{job}
 		}
 	}
 
-	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if !ps.ContextRequired() || !ps.RunsAgainstBranch(sp.branch) {
+	for _, ps := range c.config().Presubmits[sp.org+"/"+sp.repo] {
+		if !ps.ContextRequired() {
 			continue
 		}
 
-		if ps.AlwaysRun {
-			// Every PR requires this job.
-			for _, pr := range sp.prs {
-				record(int(pr.Number), ps.Context)
-			}
-		} else if ps.RunIfChanged != "" {
-			// This is a run if changed job so we need to check if each PR requires it.
-			for _, pr := range sp.prs {
-				changedFiles, err := c.changedFiles.prChanges(&pr)
-				if err != nil {
-					return nil, err
-				}
-				if ps.RunsAgainstChanges(changedFiles) {
-					record(int(pr.Number), ps.Context)
-				}
+		for _, pr := range sp.prs {
+			if shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false); err != nil {
+				return nil, err
+			} else if shouldRun {
+				record(int(pr.Number), ps)
 			}
 		}
 	}
@@ -1061,8 +1168,8 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, nones := accumulate(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
-	batchMerge, batchPending := accumulateBatch(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
+	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
+	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs, sp.log)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
@@ -1118,11 +1225,11 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 		err
 }
 
-func prMeta(prs ...PullRequest) []history.PRMeta {
-	var res []history.PRMeta
+func prMeta(prs ...PullRequest) []prowapi.Pull {
+	var res []prowapi.Pull
 	for _, pr := range prs {
-		res = append(res, history.PRMeta{
-			Num:    int(pr.Number),
+		res = append(res, prowapi.Pull{
+			Number: int(pr.Number),
 			Author: string(pr.Author.Login),
 			Title:  string(pr.Title),
 			SHA:    string(pr.HeadRefOID),
@@ -1160,11 +1267,11 @@ type subpool struct {
 	branch string
 	sha    string
 
-	pjs []kube.ProwJob
+	pjs []prowapi.ProwJob
 	prs []PullRequest
 
-	cc                contextChecker
-	presubmitContexts map[int]sets.String
+	cc         contextChecker
+	presubmits map[int][]config.Presubmit
 }
 
 func poolKey(org, repo, branch string) string {
@@ -1173,7 +1280,7 @@ func poolKey(org, repo, branch string) string {
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob) (map[string]*subpool, error) {
+func (c *Controller) dividePool(pool map[string]PullRequest, pjs []prowapi.ProwJob) (map[string]*subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
 		org := string(pr.Repository.Owner.Login)
@@ -1202,7 +1309,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob)
 		sps[fn].prs = append(sps[fn].prs, pr)
 	}
 	for _, pj := range pjs {
-		if pj.Spec.Type != kube.PresubmitJob && pj.Spec.Type != kube.BatchJob {
+		if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {
 			continue
 		}
 		fn := poolKey(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseRef)
@@ -1252,7 +1359,9 @@ type PullRequest struct {
 	Milestone *struct {
 		Title githubql.String
 	}
-	Title githubql.String
+	Body      githubql.String
+	Title     githubql.String
+	UpdatedAt githubql.DateTime
 }
 
 // Commit holds graphql data about commits and which contexts they have
@@ -1270,6 +1379,10 @@ type Context struct {
 	State       githubql.StatusState
 }
 
+type PRNode struct {
+	PullRequest PullRequest `graphql:"... on PullRequest"`
+}
+
 type searchQuery struct {
 	RateLimit struct {
 		Cost      githubql.Int
@@ -1280,10 +1393,7 @@ type searchQuery struct {
 			HasNextPage githubql.Boolean
 			EndCursor   githubql.String
 		}
-		IssueCount githubql.Int
-		Nodes      []struct {
-			PullRequest PullRequest `graphql:"... on PullRequest"`
-		}
+		Nodes []PRNode
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
 
@@ -1303,7 +1413,7 @@ func (pr *PullRequest) logFields() logrus.Fields {
 // not commit date so if commits are reordered non-chronologically on the PR
 // branch the 'last' commit isn't necessarily the logically last commit.
 // We list multiple commits with the query to increase our chance of success,
-// but if we don't find the head commit we have to ask Github for it
+// but if we don't find the head commit we have to ask GitHub for it
 // specifically (this costs an API token).
 func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
 	for _, node := range pr.Commits.Nodes {
@@ -1312,12 +1422,12 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 		}
 	}
 	// We didn't get the head commit from the query (the commits must not be
-	// logically ordered) so we need to specifically ask Github for the status
+	// logically ordered) so we need to specifically ask GitHub for the status
 	// and coerce it to a graphql type.
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
 	// Log this event so we can tune the number of commits we list to minimize this.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying Github...", len(pr.Commits.Nodes))
+	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(pr.Commits.Nodes))
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
@@ -1350,7 +1460,7 @@ func orgRepoQueryString(orgs, repos []string, orgExceptions map[string]sets.Stri
 	for _, o := range orgs {
 		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
 
-		for _, e := range orgExceptions[o].UnsortedList() {
+		for _, e := range orgExceptions[o].List() {
 			toks = append(toks, fmt.Sprintf("-repo:\"%s\"", e))
 		}
 	}

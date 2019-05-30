@@ -13,8 +13,7 @@
 # limitations under the License.
 
 # Includes go and gcloud
-FROM golang:1.10.7
-LABEL maintainer="senlu@google.com"
+FROM golang:1.11.5
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -24,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     python \
     rsync \
     wget && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
 # Install gcloud
 

@@ -18,11 +18,13 @@ package resources
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // DHCPOptions: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeDhcpOptions
@@ -46,6 +48,7 @@ func (DHCPOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 		if err != nil {
 			return err
 		}
+
 		for _, vpc := range resp.Vpcs {
 			defaultRefs[*vpc.DhcpOptionsId] = true
 		}
@@ -61,24 +64,51 @@ func (DHCPOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 		if defaultRefs[*dhcp.DhcpOptionsId] {
 			continue
 		}
+
 		// Separately, skip any "default looking" DHCP Option Sets. See comment below.
 		if defaultLookingDHCPOptions(dhcp, region) {
 			defaults = append(defaults, *dhcp.DhcpOptionsId)
 			continue
 		}
+
 		dh := &dhcpOption{Account: acct, Region: region, ID: *dhcp.DhcpOptionsId}
 		if set.Mark(dh) {
-			glog.Warningf("%s: deleting %T: %v", dh.ARN(), dhcp, dhcp)
-			_, err := svc.DeleteDhcpOptions(&ec2.DeleteDhcpOptionsInput{DhcpOptionsId: dhcp.DhcpOptionsId})
-			if err != nil {
-				glog.Warningf("%v: delete failed: %v", dh.ARN(), err)
+			klog.Warningf("%s: deleting %T: %v", dh.ARN(), dhcp, dhcp)
+
+			if _, err := svc.DeleteDhcpOptions(&ec2.DeleteDhcpOptionsInput{DhcpOptionsId: dhcp.DhcpOptionsId}); err != nil {
+				klog.Warningf("%v: delete failed: %v", dh.ARN(), err)
 			}
 		}
 	}
+
 	if len(defaults) > 1 {
-		glog.Errorf("Found more than one default-looking DHCP option set: %v", defaults)
+		klog.Errorf("Found more than one default-looking DHCP option set: %v", defaults)
 	}
+
 	return nil
+}
+
+func (DHCPOptions) ListAll(sess *session.Session, acct, region string) (*Set, error) {
+	svc := ec2.New(sess, aws.NewConfig().WithRegion(region))
+	set := NewSet(0)
+	inp := &ec2.DescribeDhcpOptionsInput{}
+
+	optsList, err := svc.DescribeDhcpOptions(inp)
+	if err != nil {
+		return nil, errors.Wrapf(err, "couldn't describe DHCP Options for %q in %q", acct, region)
+	}
+
+	now := time.Now()
+	for _, opts := range optsList.DhcpOptions {
+		arn := dhcpOption{
+			Account: acct,
+			Region:  region,
+			ID:      *opts.DhcpOptionsId,
+		}.ARN()
+		set.firstSeen[arn] = now
+	}
+
+	return set, nil
 }
 
 // defaultLookingDHCPOptions: This part is a little annoying. If
@@ -96,25 +126,35 @@ func defaultLookingDHCPOptions(dhcp *ec2.DhcpOptions, region string) bool {
 	if len(dhcp.Tags) != 0 {
 		return false
 	}
+
 	for _, conf := range dhcp.DhcpConfigurations {
-		if *conf.Key == "domain-name" {
+		switch *conf.Key {
+		case "domain-name":
 			var domain string
+			// TODO(akutz): Should this be updated to regions.Default, or is
+			// this relying on the default region for EC2 for North America?
+			// Because EC2's default region changed from us-east-1 to us-east-2
+			// depending on when the account was created.
 			if region == "us-east-1" {
 				domain = "ec2.internal"
 			} else {
 				domain = region + ".compute.internal"
 			}
+
+			// TODO(vincepri): Investigate this line, seems it might segfault if conf.Values is 0?
 			if len(conf.Values) != 1 || *conf.Values[0].Value != domain {
 				return false
 			}
-		} else if *conf.Key == "domain-name-servers" {
+		case "domain-name-servers":
+			// TODO(vincepri): Same as above.
 			if len(conf.Values) != 1 || *conf.Values[0].Value != "AmazonProvidedDNS" {
 				return false
 			}
-		} else {
+		default:
 			return false
 		}
 	}
+
 	return true
 }
 

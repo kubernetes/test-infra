@@ -26,10 +26,12 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
@@ -37,7 +39,7 @@ import (
 )
 
 type kubeClient interface {
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
 }
 
 type gerritClient interface {
@@ -52,9 +54,9 @@ type configAgent interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	ca configAgent
-	kc kubeClient
-	gc gerritClient
+	config config.Getter
+	kc     kubeClient
+	gc     gerritClient
 
 	lastSyncFallback string
 
@@ -62,7 +64,7 @@ type Controller struct {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncFallback, cookiefilePath string, projects map[string][]string, kc *kube.Client, ca *config.Agent) (*Controller, error) {
+func NewController(lastSyncFallback, cookiefilePath string, projects map[string][]string, kc *kube.Client, cfg config.Getter) (*Controller, error) {
 	if lastSyncFallback == "" {
 		return nil, errors.New("empty lastSyncFallback")
 	}
@@ -89,7 +91,7 @@ func NewController(lastSyncFallback, cookiefilePath string, projects map[string]
 
 	return &Controller{
 		kc:               kc,
-		ca:               ca,
+		config:           cfg,
 		gc:               c,
 		lastUpdate:       lastUpdate,
 		lastSyncFallback: lastSyncFallback,
@@ -147,13 +149,15 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() error {
-	// gerrit timestamp only has second precision
-	syncTime := time.Now().Truncate(time.Second)
+	syncTime := c.lastUpdate
 
-	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.ca.Config().Gerrit.RateLimit) {
+	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.config().Gerrit.RateLimit) {
 		for _, change := range changes {
 			if err := c.ProcessChange(instance, change); err != nil {
 				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
+			}
+			if syncTime.Before(change.Updated.Time) {
+				syncTime = change.Updated.Time
 			}
 		}
 
@@ -184,22 +188,53 @@ func makeCloneURI(instance, project string) (*url.URL, error) {
 }
 
 // listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
-func listChangedFiles(changeInfo client.ChangeInfo) []string {
-	changed := []string{}
-	revision := changeInfo.Revisions[changeInfo.CurrentRevision]
-	for file := range revision.Files {
-		changed = append(changed, file)
+func listChangedFiles(changeInfo client.ChangeInfo) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		var changed []string
+		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
+		for file := range revision.Files {
+			changed = append(changed, file)
+		}
+		return changed, nil
 	}
-	return changed
+}
+
+func createRefs(reviewHost string, change client.ChangeInfo, cloneURI *url.URL, baseSHA string) (prowapi.Refs, error) {
+	rev, ok := change.Revisions[change.CurrentRevision]
+	if !ok {
+		return prowapi.Refs{}, fmt.Errorf("cannot find current revision for change %v", change.ID)
+	}
+	var codeHost string // Something like https://android.googlesource.com
+	parts := strings.SplitN(reviewHost, ".", 2)
+	codeHost = strings.TrimSuffix(parts[0], "-review")
+	if len(parts) > 1 {
+		codeHost += "." + parts[1]
+	}
+	refs := prowapi.Refs{
+		Org:      cloneURI.Host,  // Something like android-review.googlesource.com
+		Repo:     change.Project, // Something like platform/build
+		BaseRef:  change.Branch,
+		BaseSHA:  baseSHA,
+		CloneURI: cloneURI.String(), // Something like https://android-review.googlesource.com/platform/build
+		RepoLink: fmt.Sprintf("%s/%s", codeHost, change.Project),
+		BaseLink: fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, baseSHA),
+		Pulls: []prowapi.Pull{
+			{
+				Number:     change.Number,
+				Author:     rev.Commit.Author.Name,
+				SHA:        change.CurrentRevision,
+				Ref:        rev.Ref,
+				Link:       fmt.Sprintf("%s/c/%s/+/%d", reviewHost, change.Project, change.Number),
+				CommitLink: fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, change.CurrentRevision),
+				AuthorLink: fmt.Sprintf("%s/q/%s", reviewHost, rev.Commit.Author.Email),
+			},
+		},
+	}
+	return refs, nil
 }
 
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
 func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) error {
-	rev, ok := change.Revisions[change.CurrentRevision]
-	if !ok {
-		return fmt.Errorf("cannot find current revision for change %v", change.ID)
-	}
-
 	logger := logrus.WithField("gerrit change", change.Number)
 
 	cloneURI, err := makeCloneURI(instance, change.Project)
@@ -214,24 +249,13 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	triggeredJobs := []string{}
 
-	kr := kube.Refs{
-		Org:      cloneURI.Host,  // Something like android.googlesource.com
-		Repo:     change.Project, // Something like platform/build
-		BaseRef:  change.Branch,
-		BaseSHA:  baseSHA,
-		CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
-		Pulls: []kube.Pull{
-			{
-				Number: change.Number,
-				Author: rev.Commit.Author.Name,
-				SHA:    change.CurrentRevision,
-				Ref:    rev.Ref,
-			},
-		},
+	refs, err := createRefs(instance, change, cloneURI, baseSHA)
+	if err != nil {
+		return fmt.Errorf("failed to get refs: %v", err)
 	}
 
 	type jobSpec struct {
-		spec   kube.ProwJobSpec
+		spec   prowapi.ProwJobSpec
 		labels map[string]string
 	}
 
@@ -241,26 +265,40 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 	switch change.Status {
 	case client.Merged:
-		postsubmits := c.ca.Config().Postsubmits[cloneURI.String()]
-		postsubmits = append(postsubmits, c.ca.Config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		postsubmits := c.config().Postsubmits[cloneURI.String()]
+		postsubmits = append(postsubmits, c.config().Postsubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
-			if postsubmit.RunsAgainstChanges(changedFiles) {
+			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
+				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
+			} else if shouldRun {
 				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PostsubmitSpec(postsubmit, kr),
+					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
 					labels: postsubmit.Labels,
 				})
 			}
 		}
 	case client.New:
-		presubmits := c.ca.Config().Presubmits[cloneURI.String()]
-		presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
-		for _, presubmit := range presubmits {
-			if presubmit.RunsAgainstChanges(changedFiles) {
-				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PresubmitSpec(presubmit, kr),
-					labels: presubmit.Labels,
-				})
-			}
+		presubmits := c.config().Presubmits[cloneURI.String()]
+		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		var filters []pjutil.Filter
+		filter, err := messageFilter(c.lastUpdate, change, presubmits)
+		if err != nil {
+			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
+		} else {
+			filters = append(filters, filter)
+		}
+		if change.Revisions[change.CurrentRevision].Created.Time.After(c.lastUpdate) {
+			filters = append(filters, pjutil.TestAllFilter())
+		}
+		toTrigger, _, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
+		if err != nil {
+			return fmt.Errorf("failed to filter presubmits: %v", err)
+		}
+		for _, presubmit := range toTrigger {
+			jobSpecs = append(jobSpecs, jobSpec{
+				spec:   pjutil.PresubmitSpec(presubmit, refs),
+				labels: presubmit.Labels,
+			})
 		}
 	}
 
@@ -276,10 +314,15 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
 
+		if gerritLabel, ok := labels[client.GerritReportLabel]; !ok || gerritLabel == "" {
+			labels[client.GerritReportLabel] = client.CodeReview
+		}
+
 		pj := pjutil.NewProwJobWithAnnotation(jSpec.spec, labels, annotations)
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
+			logger.Infof("Triggered Prowjob %s", jSpec.spec.Job)
 			triggeredJobs = append(triggeredJobs, jSpec.spec.Job)
 		}
 	}

@@ -48,6 +48,13 @@ type Repo struct {
 	// VCS is the version control system used to check out the repository.
 	// May also be "http" for HTTP archives.
 	VCS string
+
+	// Version is the semantic version of the module to download. Exactly one
+	// of Version, Commit, and Tag must be set.
+	Version string
+
+	// Sum is the hash of the module to be verified after download.
+	Sum string
 }
 
 type byName []Repo
@@ -62,24 +69,25 @@ const (
 	unknownFormat lockFileFormat = iota
 	depFormat
 	moduleFormat
+	godepFormat
 )
 
-var lockFileParsers = map[lockFileFormat]func(string) ([]Repo, error){
+var lockFileParsers = map[lockFileFormat]func(string, *RemoteCache) ([]Repo, error){
 	depFormat:    importRepoRulesDep,
 	moduleFormat: importRepoRulesModules,
+	godepFormat:  importRepoRulesGoDep,
 }
 
 // ImportRepoRules reads the lock file of a vendoring tool and returns
 // a list of equivalent repository rules that can be merged into a WORKSPACE
-// file. The format of the file is inferred from its basename. Currently,
-// only Gopkg.lock is supported.
-func ImportRepoRules(filename string) ([]*rule.Rule, error) {
+// file. The format of the file is inferred from its basename.
+func ImportRepoRules(filename string, repoCache *RemoteCache) ([]*rule.Rule, error) {
 	format := getLockFileFormat(filename)
 	if format == unknownFormat {
-		return nil, fmt.Errorf(`%s: unrecognized lock file format. Expected "Gopkg.lock"`, filename)
+		return nil, fmt.Errorf(`%s: unrecognized lock file format. Expected "Gopkg.lock", "go.mod", or "Godeps.json"`, filename)
 	}
 	parser := lockFileParsers[format]
-	repos, err := parser(filename)
+	repos, err := parser(filename, repoCache)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing %q: %v", filename, err)
 	}
@@ -98,6 +106,8 @@ func getLockFileFormat(filename string) lockFileFormat {
 		return depFormat
 	case "go.mod":
 		return moduleFormat
+	case "Godeps.json":
+		return godepFormat
 	default:
 		return unknownFormat
 	}
@@ -119,6 +129,12 @@ func GenerateRule(repo Repo) *rule.Rule {
 	}
 	if repo.VCS != "" {
 		r.SetAttr("vcs", repo.VCS)
+	}
+	if repo.Version != "" {
+		r.SetAttr("version", repo.Version)
+	}
+	if repo.Sum != "" {
+		r.SetAttr("sum", repo.Sum)
 	}
 	return r
 }

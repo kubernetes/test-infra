@@ -55,7 +55,7 @@ hash_toolchains () {
     local rpmbuild_version
     rpmbuild_version=$(command_to_version rpmbuild)
     # combine all tool versions into a hash
-    # NOTE(bentheelder): if we change the set of tools considered we should
+    # NOTE: if we change the set of tools considered we should
     # consider prepending the hash with a """schema version""" for completeness
     local tool_versions
     tool_versions="CC:${cc_version},PY:${python_version},RPM:${rpmbuild_version}"

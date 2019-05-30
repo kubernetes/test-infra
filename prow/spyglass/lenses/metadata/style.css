@@ -2,33 +2,31 @@
     font-weight: bold;
     font-size: 1.1em;
 }
-.mdl-data-table .metadata-header th {
-    font-size: 1.2em;
-    color: black;
-}
-.metadata-table {
-    height: unset;
-    padding: 0;
+
+.test-summary {
+    color: #e8e8e8;
+    padding-left: 17px;
+    padding-bottom: 15px;
     margin: 0;
 }
 
-.mdl-data-table {
-    background: #fff;
-    border-radius: 2px;
-    box-shadow: 0 0 4px #e0e0e0;
-    border-collapse: collapse;
+body {
+    padding-top: 15px;
 }
 
-.hidden {
-    visibility: collapse;
+.failed {
+    color: #ff4040;
 }
 
-.mdl-data-table__cell--non-numeric {
-    font-family: monospace;
-    background-color: #212121;
-    color: #e8e8e8;
+.passed {
+    color: #61ff61;
 }
 
-.mdl-data-table__cell--non-numeric.expander {
-    background-color: #333333;
+.passed, .failed {
+    font-weight: bold;
+}
+
+.mdl-data-table .metadata-header th {
+    font-size: 1.2em;
+    color: black;
 }

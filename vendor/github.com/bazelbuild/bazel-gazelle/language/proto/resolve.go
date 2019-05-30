@@ -34,8 +34,19 @@ func (_ *protoLang) Imports(c *config.Config, r *rule.Rule, f *rule.File) []reso
 	rel := f.Pkg
 	srcs := r.AttrStrings("srcs")
 	imports := make([]resolve.ImportSpec, len(srcs))
+	pc := GetProtoConfig(c)
+	prefix := rel
+	if pc.stripImportPrefix != "" {
+		prefix = strings.TrimPrefix(rel, pc.stripImportPrefix[1:])
+		if rel == prefix {
+			return nil
+		}
+	}
+	if pc.importPrefix != "" {
+		prefix = path.Join(pc.importPrefix, prefix)
+	}
 	for i, src := range srcs {
-		imports[i] = resolve.ImportSpec{Lang: "proto", Imp: path.Join(rel, src)}
+		imports[i] = resolve.ImportSpec{Lang: "proto", Imp: path.Join(prefix, src)}
 	}
 	return imports
 }

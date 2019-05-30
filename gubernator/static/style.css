@@ -4,6 +4,15 @@ body {
     margin: 0;
     scroll-behavior: smooth;
 }
+#page-top-banner {
+    text-align: center;
+    padding: 15px;
+    background-color: #ffeb00;
+    font-weight: bold;
+}
+#page-top-banner a {
+    color: #0027ff;
+}
 #header {
     background-color: #3f51b5;
     color: white;

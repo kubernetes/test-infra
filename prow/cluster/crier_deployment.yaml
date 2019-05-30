@@ -25,16 +25,18 @@ spec:
       labels:
         app: crier
     spec:
-      serviceAccountName: crier
+      # serviceAccountName: crier
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20190111-2435ec2
+        image: gcr.io/k8s-prow/crier:v20190528-0d7c4b53a
         args:
         - --github-workers=1
-        - --dry-run=true
+        - --report-agent=knative-build
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
         volumeMounts:
         - name: config
           mountPath: /etc/config

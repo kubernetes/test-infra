@@ -20,12 +20,14 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
@@ -478,5 +480,58 @@ func TestLabel(t *testing.T) {
 		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
 			t.Error("expected a bot comment but got none")
 		}
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name               string
+		config             *plugins.Configuration
+		enabledRepos       []string
+		err                bool
+		configInfoIncludes []string
+	}{
+		{
+			name:               "Empty config",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{configString(defaultLabels)},
+		},
+		{
+			name:               "Overlapping org and org/repo",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org2", "org2/repo"},
+			configInfoIncludes: []string{configString(defaultLabels)},
+		},
+		{
+			name:               "Invalid enabledRepos",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org1", "org2/repo/extra"},
+			err:                true,
+			configInfoIncludes: []string{configString(defaultLabels)},
+		},
+		{
+			name: "With AdditionalLabels",
+			config: &plugins.Configuration{
+				Label: plugins.Label{
+					AdditionalLabels: []string{"sig", "triage", "wg"},
+				},
+			},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{configString(append(defaultLabels, "sig", "triage", "wg"))},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			pluginHelp, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
+			}
+			for _, msg := range c.configInfoIncludes {
+				if !strings.Contains(pluginHelp.Config[""], msg) {
+					t.Fatalf("helpProvider.Config error mismatch: didn't get %v, but wanted it", msg)
+				}
+			}
+		})
 	}
 }

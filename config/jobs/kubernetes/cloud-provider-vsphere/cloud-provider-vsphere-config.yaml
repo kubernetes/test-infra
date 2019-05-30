@@ -1,0 +1,351 @@
+presets:
+# Attaches the secrets to a job required to execute the e2e conformance
+# suite against a cluster turned up with the cloud provider.
+- labels:
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  env:
+  - name: CONFIG_ENV
+    value: /root/.cloud-provider-vsphere/config.env
+  - name: GCR_KEY_FILE
+    value: /root/.cloud-provider-vsphere/keyfile.json
+  volumes:
+  - name: cloud-provider-vsphere-e2e-config
+    secret:
+      secretName: cloud-provider-vsphere-e2e-config
+      items:
+      - key: config.env
+        path: config.env
+        mode: 288
+      - key: keyfile.json
+        path: keyfile.json
+        mode: 288
+  volumeMounts:
+  - name: cloud-provider-vsphere-e2e-config
+    mountPath: /root/.cloud-provider-vsphere
+    readOnly: true
+
+presubmits:
+  kubernetes/cloud-provider-vsphere:
+
+  # Runs "gofmt", "go vet", and "golint" on the sources.
+  - name: pull-cloud-provider-vsphere-check
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "check"
+
+  # Builds the CCM and CSI binaries.
+  - name: pull-cloud-provider-vsphere-build
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "build"
+
+  # Executes the unit tests.
+  - name: pull-cloud-provider-vsphere-unit-test
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "unit-test"
+
+  # Executes the integration tests.
+  - name: pull-cloud-provider-vsphere-integration-test
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "integration-test"
+        securityContext:
+          privileged: true
+
+postsubmits:
+  kubernetes/cloud-provider-vsphere:
+
+  # Deploys the CCM and CSI images if both the unit and integration tests succeed.
+  - name: post-cloud-provider-vsphere-deploy
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    max_concurrency: 1
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+        command:
+        - "make"
+        args:
+        - "deploy"
+        securityContext:
+          privileged: true
+
+periodics:
+
+# Runs the e2e conformance suite against a cluster turned up with the
+# latest cloud provider image deployed from master. This job is duplicated
+# for multiple versions of Kubernetes.
+- name: ci-cloud-provider-vsphere-conformance-latest
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: ci/latest.txt
+- name: ci-cloud-provider-vsphere-conformance-stable-1-14
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.14.txt
+- name: ci-cloud-provider-vsphere-conformance-stable-1-13
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.13.txt
+- name: ci-cloud-provider-vsphere-conformance-stable-1-12
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.12.txt
+
+# Runs the e2e conformance suite against a cluster turned up with the
+# in-tree vSphere cloud provider. This job is duplicated for multiple versions
+# of Kubernetes.
+- name: ci-vsphere-conformance-latest
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: ci/latest.txt
+- name: ci-vsphere-conformance-stable-1-14
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.14.txt
+- name: ci-vsphere-conformance-stable-1-13
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.13.txt
+- name: ci-vsphere-conformance-stable-1-12
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.12.txt

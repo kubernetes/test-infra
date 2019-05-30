@@ -1,0 +1,10 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/gubernator:$_GIT_TAG',
+           '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/gubernator:$_GIT_TAG',
+           '.']
+    dir: images/pull-test-infra-gubernator
+substitutions:
+  _GIT_TAG: '12345'
+images:
+  - 'gcr.io/$PROJECT_ID/gubernator:$_GIT_TAG'

@@ -21,10 +21,11 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
+	"text/template"
 
 	"github.com/sirupsen/logrus"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
@@ -35,9 +36,10 @@ type TideQueries []TideQuery
 // TideContextPolicy configures options about how to handle various contexts.
 type TideContextPolicy struct {
 	// whether to consider unknown contexts optional (skip) or required.
-	SkipUnknownContexts *bool    `json:"skip-unknown-contexts,omitempty"`
-	RequiredContexts    []string `json:"required-contexts,omitempty"`
-	OptionalContexts    []string `json:"optional-contexts,omitempty"`
+	SkipUnknownContexts       *bool    `json:"skip-unknown-contexts,omitempty"`
+	RequiredContexts          []string `json:"required-contexts,omitempty"`
+	RequiredIfPresentContexts []string `json:"required-if-present-contexts"`
+	OptionalContexts          []string `json:"optional-contexts,omitempty"`
 	// Infer required and optional jobs from Branch Protection configuration
 	FromBranchProtection *bool `json:"from-branch-protection,omitempty"`
 }
@@ -57,21 +59,26 @@ type TideRepoContextPolicy struct {
 // TideContextPolicyOptions holds the default policy, and any org overrides.
 type TideContextPolicyOptions struct {
 	TideContextPolicy
-	// Github Orgs
+	// GitHub Orgs
 	Orgs map[string]TideOrgContextPolicy `json:"orgs,omitempty"`
+}
+
+// TideMergeCommitTemplate holds templates to use for merge commits.
+type TideMergeCommitTemplate struct {
+	TitleTemplate string `json:"title,omitempty"`
+	BodyTemplate  string `json:"body,omitempty"`
+
+	Title *template.Template `json:"-"`
+	Body  *template.Template `json:"-"`
 }
 
 // Tide is config for the tide pool.
 type Tide struct {
-	// SyncPeriodString compiles into SyncPeriod at load time.
-	SyncPeriodString string `json:"sync_period,omitempty"`
-	// SyncPeriod specifies how often Tide will sync jobs with Github. Defaults to 1m.
-	SyncPeriod time.Duration `json:"-"`
-	// StatusUpdatePeriodString compiles into StatusUpdatePeriod at load time.
-	StatusUpdatePeriodString string `json:"status_update_period,omitempty"`
-	// StatusUpdatePeriod specifies how often Tide will update Github status contexts.
+	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
+	SyncPeriod *metav1.Duration `json:"sync_period,omitempty"`
+	// StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
 	// Defaults to the value of SyncPeriod.
-	StatusUpdatePeriod time.Duration `json:"-"`
+	StatusUpdatePeriod *metav1.Duration `json:"status_update_period,omitempty"`
 	// Queries represents a list of GitHub search queries that collectively
 	// specify the set of PRs that meet merge requirements.
 	Queries TideQueries `json:"queries,omitempty"`
@@ -79,6 +86,11 @@ type Tide struct {
 	// A key/value pair of an org/repo as the key and merge method to override
 	// the default method of merge. Valid options are squash, rebase, and merge.
 	MergeType map[string]github.PullRequestMergeType `json:"merge_method,omitempty"`
+
+	// A key/value pair of an org/repo as the key and Go template to override
+	// the default merge commit title and/or message. Template is passed the
+	// PullRequest struct (prow/github/types.go#PullRequest)
+	MergeTemplate map[string]TideMergeCommitTemplate `json:"merge_commit_template,omitempty"`
 
 	// URL for tide status contexts.
 	// We can consider allowing this to be set separately for separate repos, or
@@ -91,7 +103,7 @@ type Tide struct {
 	PRStatusBaseURL string `json:"pr_status_base_url,omitempty"`
 
 	// BlockerLabel is an optional label that is used to identify merge blocking
-	// Github issues.
+	// GitHub issues.
 	// Leave this blank to disable this feature and save 1 API token per sync loop.
 	BlockerLabel string `json:"blocker_label,omitempty"`
 
@@ -99,6 +111,16 @@ type Tide struct {
 	// always be squash merged.
 	// Leave this blank to disable this feature.
 	SquashLabel string `json:"squash_label,omitempty"`
+
+	// RebaseLabel is an optional label that is used to identify PRs that should
+	// always be rebased and merged.
+	// Leave this blank to disable this feature.
+	RebaseLabel string `json:"rebase_label,omitempty"`
+
+	// MergeLabel is an optional label that is used to identify PRs that should
+	// always be merged with all individual commits from the PR.
+	// Leave this blank to disable this feature.
+	MergeLabel string `json:"merge_label,omitempty"`
 
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
@@ -124,6 +146,18 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 		}
 
 		return github.MergeMerge
+	}
+
+	return v
+}
+
+// MergeCommitTemplate returns a struct with Go template string(s) or nil
+func (t *Tide) MergeCommitTemplate(org, repo string) TideMergeCommitTemplate {
+	name := org + "/" + repo
+
+	v, ok := t.MergeTemplate[name]
+	if !ok {
+		return t.MergeTemplate[org]
 	}
 
 	return v
@@ -377,11 +411,16 @@ func (tq *TideQuery) Validate() error {
 	return nil
 }
 
-// Validate returns an error if any contexts are both required and optional.
+// Validate returns an error if any contexts are listed more than once in the config.
 func (cp *TideContextPolicy) Validate() error {
-	inter := sets.NewString(cp.RequiredContexts...).Intersection(sets.NewString(cp.OptionalContexts...))
-	if inter.Len() > 0 {
-		return fmt.Errorf("contexts %s are defined has required and optional", strings.Join(inter.List(), ", "))
+	if inter := sets.NewString(cp.RequiredContexts...).Intersection(sets.NewString(cp.OptionalContexts...)); inter.Len() > 0 {
+		return fmt.Errorf("contexts %s are defined as required and optional", strings.Join(inter.List(), ", "))
+	}
+	if inter := sets.NewString(cp.RequiredContexts...).Intersection(sets.NewString(cp.RequiredIfPresentContexts...)); inter.Len() > 0 {
+		return fmt.Errorf("contexts %s are defined as required and required if present", strings.Join(inter.List(), ", "))
+	}
+	if inter := sets.NewString(cp.OptionalContexts...).Intersection(sets.NewString(cp.RequiredIfPresentContexts...)); inter.Len() > 0 {
+		return fmt.Errorf("contexts %s are defined as optional and required if present", strings.Join(inter.List(), ", "))
 	}
 	return nil
 }
@@ -397,11 +436,16 @@ func mergeTideContextPolicy(a, b TideContextPolicy) TideContextPolicy {
 	c.FromBranchProtection = mergeBool(a.FromBranchProtection, b.FromBranchProtection)
 	c.SkipUnknownContexts = mergeBool(a.SkipUnknownContexts, b.SkipUnknownContexts)
 	required := sets.NewString(a.RequiredContexts...)
+	requiredIfPresent := sets.NewString(a.RequiredIfPresentContexts...)
 	optional := sets.NewString(a.OptionalContexts...)
 	required.Insert(b.RequiredContexts...)
+	requiredIfPresent.Insert(b.RequiredIfPresentContexts...)
 	optional.Insert(b.OptionalContexts...)
 	if required.Len() > 0 {
 		c.RequiredContexts = required.List()
+	}
+	if requiredIfPresent.Len() > 0 {
+		c.RequiredIfPresentContexts = requiredIfPresent.List()
 	}
 	if optional.Len() > 0 {
 		c.OptionalContexts = optional.List()
@@ -430,11 +474,13 @@ func (c Config) GetTideContextPolicy(org, repo, branch string) (*TideContextPoli
 	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.NewString(options.RequiredContexts...)
+	requiredIfPresent := sets.NewString(options.RequiredIfPresentContexts...)
 	optional := sets.NewString(options.OptionalContexts...)
 
 	// automatically generate required and optional entries for Prow Jobs
-	prowRequired, prowOptional := BranchRequirements(org, repo, branch, c.Presubmits)
+	prowRequired, prowRequiredIfPresent, prowOptional := BranchRequirements(org, repo, branch, c.Presubmits)
 	required.Insert(prowRequired...)
+	requiredIfPresent.Insert(prowRequiredIfPresent...)
 	optional.Insert(prowOptional...)
 
 	// Using Branch protection configuration
@@ -442,17 +488,16 @@ func (c Config) GetTideContextPolicy(org, repo, branch string) (*TideContextPoli
 		bp, err := c.GetBranchProtection(org, repo, branch)
 		if err != nil {
 			logrus.WithError(err).Warningf("Error getting branch protection for %s/%s+%s", org, repo, branch)
-		} else if bp == nil {
-			logrus.Warningf("branch protection not set for %s/%s+%s", org, repo, branch)
-		} else if bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {
+		} else if bp != nil && bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {
 			required.Insert(bp.RequiredStatusChecks.Contexts...)
 		}
 	}
 
 	t := &TideContextPolicy{
-		RequiredContexts:    required.List(),
-		OptionalContexts:    optional.List(),
-		SkipUnknownContexts: options.SkipUnknownContexts,
+		RequiredContexts:          required.List(),
+		RequiredIfPresentContexts: requiredIfPresent.List(),
+		OptionalContexts:          optional.List(),
+		SkipUnknownContexts:       options.SkipUnknownContexts,
 	}
 	if err := t.Validate(); err != nil {
 		return t, err
@@ -470,6 +515,10 @@ func (cp *TideContextPolicy) IsOptional(c string) bool {
 		return true
 	}
 	if sets.NewString(cp.RequiredContexts...).Has(c) {
+		return false
+	}
+	// assume if we're asking that the context is present on the PR
+	if sets.NewString(cp.RequiredIfPresentContexts...).Has(c) {
 		return false
 	}
 	if cp.SkipUnknownContexts != nil && *cp.SkipUnknownContexts {

@@ -40,12 +40,18 @@ const (
 var (
 	addLGTMLabelNotification   = "LGTM label has been added.  <details>Git tree hash: %s</details>"
 	addLGTMLabelNotificationRe = regexp.MustCompile(fmt.Sprintf(addLGTMLabelNotification, "(.*)"))
+	configInfoReviewActsAsLgtm = `Reviews of "approve" or "request changes" act as adding or removing LGTM.`
+	configInfoStoreTreeHash    = `Squashing commits does not remove LGTM.`
 	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
 	LGTMLabel           = labels.LGTM
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
 )
+
+func configInfoStickyLgtmTeam(team string) string {
+	return fmt.Sprintf(`Commits from "%s" do not remove LGTM.`, team)
+}
 
 type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
@@ -60,12 +66,44 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
+	configInfo := map[string]string{}
+	for _, orgRepo := range enabledRepos {
+		parts := strings.Split(orgRepo, "/")
+		var opts *plugins.Lgtm
+		switch len(parts) {
+		case 1:
+			opts = optionsForRepo(config, orgRepo, "")
+		case 2:
+			opts = optionsForRepo(config, parts[0], parts[1])
+		default:
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
+		}
+		var isConfigured bool
+		var configInfoStrings []string
+		configInfoStrings = append(configInfoStrings, "The plugin has the following configuration:<ul>")
+		if opts.ReviewActsAsLgtm {
+			configInfoStrings = append(configInfoStrings, "<li>"+configInfoReviewActsAsLgtm+"</li>")
+			isConfigured = true
+		}
+		if opts.StoreTreeHash {
+			configInfoStrings = append(configInfoStrings, "<li>"+configInfoStoreTreeHash+"</li>")
+			isConfigured = true
+		}
+		if opts.StickyLgtmTeam != "" {
+			configInfoStrings = append(configInfoStrings, "<li>"+configInfoStickyLgtmTeam(opts.StickyLgtmTeam)+"</li>")
+			isConfigured = true
+		}
+		configInfoStrings = append(configInfoStrings, fmt.Sprintf("</ul>"))
+		if isConfigured {
+			configInfo[orgRepo] = strings.Join(configInfoStrings, "\n")
+		}
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
+		Config:      configInfo,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/lgtm [cancel] or Github Review action",
+		Usage:       "/lgtm [cancel] or GitHub Review action",
 		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging.",
 		Featured:    true,
 		WhoCanUse:   "Collaborators on the repository. '/lgtm cancel' can be used additionally by the PR author.",
@@ -192,6 +230,11 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 		number:      e.PullRequest.Number,
 		body:        e.Review.Body,
 		htmlURL:     e.Review.HTMLURL,
+	}
+
+	// Only react to reviews that are being submitted (not editted or dismissed).
+	if e.Action != github.ReviewActionSubmitted {
+		return nil
 	}
 
 	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
@@ -404,7 +447,10 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		if err != nil {
 			log.WithError(err).Error("Failed to get issue comments.")
 		}
-		for _, comment := range comments {
+		// older comments are still present
+		// iterate backwards to find the last LGTM tree-hash
+		for i := len(comments) - 1; i >= 0; i-- {
+			comment := comments[i]
 			m := addLGTMLabelNotificationRe.FindStringSubmatch(comment.Body)
 			if comment.User.Login == botname && m != nil && comment.UpdatedAt.Equal(comment.CreatedAt) {
 				lastLgtmTreeHash = m[1]

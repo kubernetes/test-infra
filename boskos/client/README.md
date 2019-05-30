@@ -12,13 +12,22 @@ The client object looks like:
 
 ```
 type Client struct {
+	// RetryCount is the number of times an HTTP request issued by this client
+	// is retried when the initial request fails due an inaccessible endpoint.
+	RetryCount uint
+
+	// RetryDuration is the interval to wait before retrying an HTTP operation
+	// that failed due to an inaccessible endpoint.
+	RetryWait time.Duration
+
 	url       string
 	resources []string
 	owner     string
 }
 ```
 
-To create a boskos client, use NewClient func, specify boskos server url, and owner of the client:
+To create a boskos client, use `NewClient` and specify the Boskos endpoint URL and resource owner.
+The `NewClient` function also sets the client's `RetryCount` to `3` and `RetryWait` interval to `10s`.
 ```
 func NewClient(url string, owner string) *Client
 ```
@@ -29,6 +38,18 @@ func NewClient(url string, owner string) *Client
 ```
 // Acquire asks boskos for a resource of certain type in certain state, and set the resource to dest state.
 func (c *Client) Acquire(rtype string, state string, dest string) (string, error)
+
+// AcquireWait blocks until Acquire returns the specified resource or the
+// provided context is cancelled or its deadline exceeded.
+func (c *Client) AcquireWait(rtype string, state string, dest string) (string, error)
+
+// AcquireByState asks boskos for a resources of certain type, and set the resource to dest state.
+// Returns a list of resources on success.
+func (c *Client) AcquireByState(state, dest string, names []string) ([]common.Resource, error)
+
+// AcquireByStateWait blocks until AcquireByState returns the specified
+// resource(s) or the provided context is cancelled or its deadline exceeded.
+func (c *Client) AcquireByStateWait(ctx context.Context, state, dest string, names []string) ([]common.Resource, error)
 
 // ReleaseAll returns all resources hold by the client back to boskos and set them to dest state.
 func (c *Client) ReleaseAll(dest string) error

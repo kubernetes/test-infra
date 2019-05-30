@@ -24,9 +24,10 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	coreapi "k8s.io/api/core/v1"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -38,8 +39,8 @@ const (
 // PeriodicProwJobEvent contains the minimum information required to start a ProwJob.
 type PeriodicProwJobEvent struct {
 	Name        string            `json:"name"`
-	Type        string            `json:"type"`
 	Envs        map[string]string `json:"envs,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
@@ -66,18 +67,19 @@ func (pe *PeriodicProwJobEvent) ToMessage() (*pubsub.Message, error) {
 	return &message, nil
 }
 
-// KubeClientInterface mostly for testing.
-type KubeClientInterface interface {
-	CreateProwJob(job *kube.ProwJob) (*kube.ProwJob, error)
+// ProwJobClient mostly for testing.
+type ProwJobClient interface {
+	Create(job *prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 // Subscriber handles Pub/Sub subscriptions, update metrics,
 // validates them using Prow Configuration and
-// use a KubeClientInterface to create Prow Jobs.
+// use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
-	ConfigAgent *config.Agent
-	Metrics     *Metrics
-	KubeClient  KubeClientInterface
+	ConfigAgent   *config.Agent
+	Metrics       *Metrics
+	ProwJobClient ProwJobClient
+	Reporter      reportClient
 }
 
 type messageInterface interface {
@@ -86,6 +88,11 @@ type messageInterface interface {
 	getID() string
 	ack()
 	nack()
+}
+
+type reportClient interface {
+	Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error)
+	ShouldReport(pj *prowapi.ProwJob) bool
 }
 
 type pubSubMessage struct {
@@ -114,7 +121,7 @@ func (m *pubSubMessage) nack() {
 func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 	value, ok := attrs[key]
 	if !ok {
-		return "", fmt.Errorf("unable to find %s from the attributes", key)
+		return "", fmt.Errorf("unable to find %q from the attributes", key)
 	}
 	return value, nil
 }
@@ -147,8 +154,20 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string) er
 }
 
 func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, subscription string) error {
-	l.Info("looking for periodic job")
+
 	var pe PeriodicProwJobEvent
+	var prowJob prowapi.ProwJob
+
+	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
+		pj.Status.State = prowapi.ErrorState
+		pj.Status.Description = err.Error()
+		if s.Reporter.ShouldReport(&prowJob) {
+			if _, err := s.Reporter.Report(&prowJob); err != nil {
+				l.Warningf("failed to report status. %v", err)
+			}
+		}
+	}
+
 	if err := pe.FromPayload(msg.getPayload()); err != nil {
 		return err
 	}
@@ -160,27 +179,34 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		}
 	}
 	if periodicJob == nil {
-		err := fmt.Errorf("failed to find associated periodic job %s", pe.Name)
-		l.WithError(err).Errorf("failed to create job %s", pe.Name)
+		err := fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+		l.WithError(err).Errorf("failed to create job %q", pe.Name)
+		prowJob = pjutil.NewProwJobWithAnnotation(prowapi.ProwJobSpec{}, nil, pe.Annotations)
+		reportProwJobFailure(&prowJob, err)
 		return err
 	}
 	prowJobSpec := pjutil.PeriodicSpec(*periodicJob)
-	var prowJob kube.ProwJob
-	// Add annotations
+	// Adds / Updates Labels from prow job event
+	for k, v := range pe.Labels {
+		periodicJob.Labels[k] = v
+	}
+
+	// Adds annotations
 	prowJob = pjutil.NewProwJobWithAnnotation(prowJobSpec, periodicJob.Labels, pe.Annotations)
-	// Add Environments to containers
+	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
 		for _, c := range prowJob.Spec.PodSpec.Containers {
 			for k, v := range pe.Envs {
-				c.Env = append(c.Env, kube.EnvVar{Name: k, Value: v})
+				c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: v})
 			}
 		}
 	}
-	_, err := s.KubeClient.CreateProwJob(&prowJob)
-	if err != nil {
-		l.WithError(err).Errorf("failed to create job %s", prowJob.Name)
-	} else {
-		l.Infof("periodic job %s created", prowJob.Name)
+
+	if _, err := s.ProwJobClient.Create(&prowJob); err != nil {
+		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
+		reportProwJobFailure(&prowJob, err)
+		return err
 	}
-	return err
+	l.Infof("periodic job %q created as %q", pe.Name, prowJob.Name)
+	return nil
 }

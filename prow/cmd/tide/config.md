@@ -4,7 +4,7 @@ Configuration of Tide is located under the [prow/config.yaml](/prow/config.yaml)
 
 This document will describe the fields of the `tide` configuration and how to populate them, but you can also check out the [GoDocs](https://godoc.org/github.com/kubernetes/test-infra/prow/config#Tide) for the most up to date configuration specification.
 
-To deploy Tide for your organization or repository, please see [how to get started with prow](/prow/getting_started.md).
+To deploy Tide for your organization or repository, please see [how to get started with prow](/prow/getting_started_deploy.md).
 
 ### General configuration
 
@@ -17,11 +17,25 @@ The following configuration fields are available:
 * `merge_method`: A key/value pair of an `org/repo` as the key and merge method to override
    the default method of merge as value. Valid options are `squash`, `rebase`, and `merge`.
    Defaults to `merge`.
+* `merge_commit_template`: A mapping from `org/repo` or `org` to a set of Go templates to use when creating the title and body of merge commits. Go templates are evaluated with a `PullRequest`  (see [`PullRequest`](https://godoc.org/k8s.io/test-infra/prow/tide#PullRequest) type). This field and map keys are optional.
 * `target_url`: URL for tide status contexts.
 * `pr_status_base_url`: The base URL for the PR status page. If specified, this URL is used to construct
    a link that will be used for the tide status context. It is mutually exclusive with the `target_url` field.
 * `max_goroutines`: The maximum number of goroutines spawned inside the component to
    handle org/repo:branch pools. Defaults to 20. Needs to be a positive number.
+* `blocker_label`: The label used to identify issues which block merges to repository branches.
+* `squash_label`: The label used to ask Tide to use the squash method when merging the labeled PR.
+* `rebase_label`: The label used to ask Tide to use the rebase method when merging the labeled PR.
+* `merge_label`: The label used to ask Tide to use the merge method when merging the labeled PR.
+
+### Merge Blocker Issues
+
+Tide supports temporary holds on merging into branches via the `blocker_label` configuration option.
+In order to use this option, set the `blocker_label` configuration option for the Tide deployment.
+Then, when blocking merges is required, if an issue is found with the label it will block merges to
+all branches for the repo. In order to scope the branches which are blocked, add a `branch:name` token
+to the issue title. These tokens can be repeated to select multiple branches and the tokens also support
+quoting, so `branch:"name"` will block the `name` branch just as `branch:name` would.
 
 ### Queries
 
@@ -133,8 +147,25 @@ All PRs that conform to the criteria are processed and merged.
 The processing itself can include running jobs (e.g. tests) to verify the PRs are good to go.
 All commits in PRs from `github.com/kubeflow/community` repository are squashed before merging.
 
+### Persistent Storage of Action History
+
+Tide records a history of the actions it takes (namely triggering tests and merging).
+This history is stored in memory, but can be loaded from GCS and periodically flushed
+in order to persist across pod restarts. Persisting action history to GCS is strictly
+optional, but is nice to have if the Tide instance is restarted frequently or if
+users want to view older history.
+
+Both the `--history-uri` and `--gcs-credentials-file` flags must be specified to Tide
+to persist history to GCS. The GCS credentials file should be a [GCP service account
+key](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) file
+for a service account that has permission to read and write the history GCS object.
+The history URI is the GCS object path at which the history data is stored. It should
+not be publicly readable if any repos are sensitive and must be a GCS URI like `gs://bucket/path/to/object`.
+
+[Example](https://github.com/kubernetes/test-infra/blob/b4089633afbe608271a6630bb66c6d74f29f78ef/prow/cluster/tide_deployment.yaml#L40-L41)
+
 # Configuring Presubmit Jobs
 
 Before a PR is merged, Tide ensures that all jobs configured as required in the `presubmits` part of the `config.yaml` file are passing against the latest base branch commit, rerunning the jobs if necessary. **No job is required to be configured** in which case it's enough if a PR meets all GitHub search criteria.
 
-Semantic of individual fields of the `presubmits` is described in [prow/README.md#how-to-add-new-jobs](/prow/README.md#how-to-add-new-jobs).
+Semantic of individual fields of the `presubmits` is described in [prow/jobs.md](/prow/jobs.md).

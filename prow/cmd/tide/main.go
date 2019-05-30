@@ -29,11 +29,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide"
 )
 
@@ -48,8 +50,25 @@ type options struct {
 
 	dryRun     bool
 	runOnce    bool
-	kubernetes prowflagutil.KubernetesOptions
+	kubernetes prowflagutil.ExperimentalKubernetesOptions
 	github     prowflagutil.GitHubOptions
+
+	maxRecordsPerPool int
+	// The following are used for reading/writing to GCS.
+	gcsCredentialsFile string
+	// historyURI where Tide should store its action history.
+	// Can be a /local/path or gs://path/to/object.
+	// GCS writes will use the bucket's default acl for new objects. Ensure both that
+	// a) the gcs credentials can write to this bucket
+	// b) the default acls do not expose any private info
+	historyURI string
+
+	// statusURI where Tide store status update state.
+	// Can be a /local/path or gs://path/to/object.
+	// GCS writes will use the bucket's default acl for new objects. Ensure both that
+	// a) the gcs credentials can write to this bucket
+	// b) the default acls do not expose any private info
+	statusURI string
 }
 
 func (o *options) Validate() error {
@@ -62,11 +81,10 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
-	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
@@ -76,38 +94,56 @@ func gatherOptions() options {
 	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
 	fs.IntVar(&o.statusThrottle, "status-hourly-tokens", 400, "The maximum number of tokens per hour to be used by the status controller.")
 
-	fs.Parse(os.Args[1:])
+	fs.IntVar(&o.maxRecordsPerPool, "max-records-per-pool", 1000, "The maximum number of history records stored for an individual Tide pool.")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "File where Google Cloud authentication credentials are stored. Required for GCS writes.")
+	fs.StringVar(&o.historyURI, "history-uri", "", "The /local/path or gs://path/to/object to store tide action history. GCS writes will use the default object ACL for the bucket")
+	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path or gs://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
+
+	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func main() {
-	o := gatherOptions()
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
-	}
-
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
 	)
+
+	pjutil.ServePProf()
+
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	if err := o.Validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
+	}
+
+	opener, err := io.NewOpener(context.Background(), o.gcsCredentialsFile)
+	if err != nil {
+		entry := logrus.WithError(err)
+		if p := o.gcsCredentialsFile; p != "" {
+			entry = entry.WithField("gcs-credentials-file", p)
+		}
+		entry.Fatal("Cannot create opener")
+	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	githubSync, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubSync, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "sync"})
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting GitHub client.")
+		logrus.WithError(err).Fatal("Error getting GitHub client for sync.")
 	}
 
-	githubStatus, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubStatus, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "status-update"})
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting GitHub client.")
+		logrus.WithError(err).Fatal("Error getting GitHub client for status.")
 	}
 
 	// The sync loop should be allowed more tokens than the status loop because
@@ -116,7 +152,7 @@ func main() {
 	// The sync loop should have a much lower burst allowance than the status
 	// loop which may need to update many statuses upon restarting Tide after
 	// changing the context format or starting Tide on a new repo.
-	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, configAgent.Config().Tide.SyncPeriod))
+	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
 	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
 	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
@@ -125,22 +161,23 @@ func main() {
 	}
 	defer gitClient.Clean()
 
-	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	kubeClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
 
-	c := tide.NewController(githubSync, githubStatus, kubeClient, configAgent, gitClient, nil)
+	c, err := tide.NewController(githubSync, githubStatus, kubeClient, cfg, gitClient, o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating Tide controller.")
+	}
 	defer c.Shutdown()
 	http.Handle("/", c)
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("tide", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	// Push metrics to the configured prometheus pushgateway endpoint or serve them
+	pushGateway := cfg().PushGateway
+	metrics.ExposeMetrics("tide", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	start := time.Now()
 	sync(c)
@@ -152,7 +189,7 @@ func main() {
 		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		for {
 			select {
-			case <-time.After(time.Until(start.Add(configAgent.Config().Tide.SyncPeriod))):
+			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration))):
 				start = time.Now()
 				sync(c)
 			case <-sig:

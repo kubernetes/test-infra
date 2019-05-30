@@ -27,7 +27,7 @@ Example test container script:
 pwd # my repo root
 ls path/to/file/in/my/repo.txt # access repo file
 ls ../other-repo # access repo file in another repo
-echo success > $ARTIFACTS/results.txt # result info that will be uploaded to GCS.
+echo success > ${ARTIFACTS}/results.txt # result info that will be uploaded to GCS.
 # logs, and job metadata are automatically uploaded.
 ```
 
@@ -47,6 +47,9 @@ to be specified. It indicates an existent directory where job artifacts can be
 dumped for automatic upload to GCS upon job completion.
 
 ### How to configure
+
+In order to use the pod utilities, you will need to configure plank with some settings first.
+See plank's [README](/prow/cmd/plank) for reference.
 
 ProwJobs may request Pod Utility decoration by setting `decorate: true` in their config.
 Example ProwJob configuration:
@@ -79,6 +82,7 @@ to clone the repo to different go import path than the default of `/home/prow/go
 - Jobs that require additional repos to be checked out can arrange for that with
 the `exta_refs` field.
 - Jobs that do not want submodules to be cloned should set `skip_submodules` to `true`
+- Jobs that want to perform shallow cloning can use `clone_depth` field. It can be set to desired clone depth. By default, clone_depth get set to 0 which results in full clone of repo.
 
 ```yaml
 - name: post-job
@@ -92,6 +96,7 @@ the `exta_refs` field.
     repo: other-repo
     base_ref: master
   skip_submodules: true
+  clone_depth: 0
   spec:
     containers:
     - image: alpine

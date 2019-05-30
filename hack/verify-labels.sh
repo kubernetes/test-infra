@@ -17,26 +17,29 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-
-TMP_LABELS_DOCS=$(mktemp)
-TMP_LABELS_CSS=$(mktemp)
-trap 'rm -f "${TMP_LABELS_DOCS}" & rm -f "${TMP_LABELS_CSS}"' EXIT
-LABELS_DOCS_OUTPUT="${TMP_LABELS_DOCS}" LABELS_CSS_OUTPUT="${TMP_LABELS_CSS}" ${TESTINFRA_ROOT}/hack/update-labels.sh
-
-
-DIFF=$(diff "${TMP_LABELS_DOCS}" "${TESTINFRA_ROOT}/label_sync/labels.md" || true)
-if [ ! -z "$DIFF" ]; then
-    echo "${DIFF}"
-    echo ""
-    echo "FAILED: labels.yaml was updated without updating labels.md, please run 'hack/update-labels.sh'"
-    exit 1
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Validating labels..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-labels
+  )
+  exit 0
 fi
 
-DIFF=$(diff "${TMP_LABELS_CSS}" "${TESTINFRA_ROOT}/prow/cmd/deck/static/labels.css" || true)
-if [ ! -z "$DIFF" ]; then
-    echo "${DIFF}"
-    echo ""
-    echo "FAILED: labels.yaml was updated without updating labels.css, please run 'hack/update-labels.sh'"
+out=$TEST_TMPDIR/labels.md.expected
+BUILD_WORKSPACE_DIRECTORY="$PWD" "$@" "$out"
+
+
+DIFF=$(diff label_sync/labels.md "$out" || true)
+if [[ -n "$DIFF" ]]; then
+    echo "< unexpected" >&2
+    echo "> missing" >&2
+    echo "${DIFF}" >&2
+    echo "" >&2
+    echo "ERROR: labels.md out of date. Fix with hack/update-labels.sh" >&2
     exit 1
 fi

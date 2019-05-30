@@ -20,7 +20,7 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/golang/lint"
+	"golang.org/x/lint"
 )
 
 func TestLintNamesUnderscore(t *testing.T) {

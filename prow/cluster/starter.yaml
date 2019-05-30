@@ -17,6 +17,8 @@ metadata:
   name: config
 data:
   config.yaml: |
+    prowjob_namespace: default
+    pod_namespace: test-pods
     periodics:
     - interval: 10m
       agent: kubernetes
@@ -76,6 +78,43 @@ spec:
                   - "aborted"
           - required:
             - completionTime
+  additionalPrinterColumns:
+  - name: Job
+    type: string
+    description: The name of the job being run.
+    JSONPath: .spec.job
+  - name: BuildId
+    type: string
+    description: The ID of the job being run.
+    JSONPath: .status.build_id
+  - name: Type
+    type: string
+    description: The type of job being run.
+    JSONPath: .spec.type
+  - name: Org
+    type: string
+    description: The org for which the job is running.
+    JSONPath: .spec.refs.org
+  - name: Repo
+    type: string
+    description: The repo for which the job is running.
+    JSONPath: .spec.refs.repo
+  - name: Pulls
+    type: string
+    description: The pulls for which the job is running.
+    JSONPath: ".spec.refs.pulls[*].number"
+  - name: StartTime
+    type: date
+    description: When the job started running.
+    JSONPath: .status.startTime
+  - name: CompletionTime
+    type: date
+    description: When the job finished running.
+    JSONPath: .status.completionTime
+  - name: State
+    description: The state of the job.
+    type: string
+    JSONPath: .status.state
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -100,10 +139,11 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190111-2435ec2
+        image: gcr.io/k8s-prow/hook:v20190528-0d7c4b53a
         imagePullPolicy: Always
         args:
         - --dry-run=false
+        - --config-path=/etc/config/config.yaml
         ports:
           - name: http
             containerPort: 8888
@@ -120,6 +160,19 @@ spec:
         - name: plugins
           mountPath: /etc/plugins
           readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 600
       volumes:
       - name: hmac
         secret:
@@ -165,9 +218,10 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190111-2435ec2
+        image: gcr.io/k8s-prow/plank:v20190528-0d7c4b53a
         args:
         - --dry-run=false
+        - --config-path=/etc/config/config.yaml
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
@@ -200,7 +254,9 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20190111-2435ec2
+        image: gcr.io/k8s-prow/sinker:v20190528-0d7c4b53a
+        args:
+        - --config-path=/etc/config/config.yaml
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -233,8 +289,9 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190111-2435ec2
+        image: gcr.io/k8s-prow/deck:v20190528-0d7c4b53a
         args:
+        - --config-path=/etc/config/config.yaml
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         ports:
@@ -244,6 +301,19 @@ spec:
         - name: config
           mountPath: /etc/config
           readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 600
       volumes:
       - name: config
         configMap:
@@ -282,7 +352,9 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20190111-2435ec2
+        image: gcr.io/k8s-prow/horologium:v20190528-0d7c4b53a
+        args:
+        - --config-path=/etc/config/config.yaml
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -311,9 +383,10 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190111-2435ec2
+        image: gcr.io/k8s-prow/tide:v20190528-0d7c4b53a
         args:
         - --dry-run=false
+        - --config-path=/etc/config/config.yaml
         ports:
           - name: http
             containerPort: 8888
@@ -354,7 +427,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /
+      - path: /* # Correct for GKE, need / on many other distros
         backend:
           serviceName: deck
           servicePort: 80
@@ -363,6 +436,57 @@ spec:
           serviceName: hook
           servicePort: 8888
 ---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: statusreconciler
+  namespace: default
+  labels:
+    app: statusreconciler
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: statusreconciler
+    spec:
+      serviceAccountName: statusreconciler
+      terminationGracePeriodSeconds: 180
+      containers:
+      - name: statusreconciler
+        image: gcr.io/k8s-prow/status-reconciler:v20190528-0d7c4b53a
+        args:
+        - --dry-run=false
+        - --continue-on-error=true
+        - --plugin-config=/etc/plugins/plugins.yaml
+        - --config-path=/etc/config/config.yaml
+        - --github-token-path=/etc/github/oauth
+        volumeMounts:
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: plugins
+          mountPath: /etc/plugins
+          readOnly: true
+      volumes:
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: config
+        configMap:
+          name: config
+      - name: plugins
+        configMap:
+          name: plugins
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-pods
+---
 kind: ServiceAccount
 apiVersion: v1
 metadata:
@@ -382,10 +506,38 @@ subjects:
 - kind: ServiceAccount
   name: "deck"
 ---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "deck"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "deck"
+subjects:
+- kind: ServiceAccount
+  name: "deck"
+  namespace: default
+---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   namespace: default
+  name: "deck"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - get
+      - list
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
   name: "deck"
 rules:
   - apiGroups:
@@ -394,76 +546,77 @@ rules:
       - pods/log
     verbs:
       - get
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  namespace: default
+  name: "horologium"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "horologium"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "horologium"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "horologium"
+subjects:
+- kind: ServiceAccount
+  name: "horologium"
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  namespace: default
+  name: "plank"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "plank"
+rules:
   - apiGroups:
       - "prow.k8s.io"
     resources:
       - prowjobs
     verbs:
       - get
-      - list
----
-kind: ServiceAccount
-apiVersion: v1
-metadata:
-  namespace: default
-  name: "horologium"
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: default
-  name: "horologium"
-rules:
-  - apiGroups:
-      - "prow.k8s.io"
-    resources:
-      - prowjobs
-    verbs:
-      - create
-      - list
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: default
-  name: "horologium"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: "horologium"
-subjects:
-- kind: ServiceAccount
-  name: "horologium"
----
-kind: ServiceAccount
-apiVersion: v1
-metadata:
-  namespace: default
-  name: "plank"
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  namespace: default
-  name: "plank"
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - create
-      - delete
-      - list
-  - apiGroups:
-      - "prow.k8s.io"
-    resources:
-      - prowjobs
-    verbs:
       - create
       - list
       - update
 ---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "plank"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - list
+---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -476,6 +629,20 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "plank"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "plank"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "plank"
+subjects:
+- kind: ServiceAccount
+  name: "plank"
+  namespace: default
 ---
 kind: ServiceAccount
 apiVersion: v1
@@ -490,16 +657,23 @@ metadata:
   name: "sinker"
 rules:
   - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - delete
-      - list
-  - apiGroups:
       - "prow.k8s.io"
     resources:
       - prowjobs
+    verbs:
+      - delete
+      - list
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "sinker"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
     verbs:
       - delete
       - list
@@ -516,6 +690,20 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "sinker"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "sinker"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "sinker"
+subjects:
+- kind: ServiceAccount
+  name: "sinker"
+  namespace: default
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -541,6 +729,8 @@ rules:
     resources:
       - configmaps
     verbs:
+      - create
+      - get
       - update
 ---
 kind: RoleBinding
@@ -588,3 +778,35 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "tide"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "statusreconciler"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "statusreconciler"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: default
+  name: "statusreconciler"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "statusreconciler"
+subjects:
+- kind: ServiceAccount
+  name: "statusreconciler"

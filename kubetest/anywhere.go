@@ -18,17 +18,22 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 const defaultKubeadmCNI = "weave"
@@ -189,9 +194,9 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		return nil, err
 	}
 
-	// Set KUBERNETES_CONFORMANCE_PROVIDER since KUBERNETES_CONFORMANCE_TEST is set
-	// to ensure the right provider is passed onto the test.
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "kubernetes-anywhere"); err != nil {
+	// Set NUM_NODES based on the kubernetes-anywhere-num-nodes flag.
+	// This env variable is then read by hack/ginkgo-e2e.sh.
+	if err := os.Setenv("NUM_NODES", strconv.Itoa(k.NumNodes)); err != nil {
 		return nil, err
 	}
 
@@ -241,7 +246,11 @@ func (k *kubernetesAnywhere) writeConfig(configTemplate string) error {
 }
 
 func (k *kubernetesAnywhere) Up() error {
-	cmd := exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
+	cmd := exec.Command("make", "-C", k.path, "setup")
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	cmd = exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -262,7 +271,80 @@ func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
 		log.Printf("Cluster log dumping disabled for Kubernetes Anywhere.")
 		return nil
 	}
-	return defaultDumpClusterLogs(localPath, gcsPath)
+
+	privateKeyPath := os.Getenv("JENKINS_GCE_SSH_PRIVATE_KEY_FILE")
+	if privateKeyPath == "" {
+		return fmt.Errorf("JENKINS_GCE_SSH_PRIVATE_KEY_FILE is empty")
+	}
+
+	key, err := ioutil.ReadFile(privateKeyPath)
+	if err != nil {
+		return fmt.Errorf("error reading private key %q: %v", privateKeyPath, err)
+	}
+
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		return fmt.Errorf("error parsing private key %q: %v", privateKeyPath, err)
+	}
+
+	sshConfig := &ssh.ClientConfig{
+		User: os.Getenv("USER"),
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	sshClientFactory := &sshClientFactoryImplementation{
+		sshConfig: sshConfig,
+	}
+	logDumper, err := newLogDumper(sshClientFactory, localPath)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
+	finished := make(chan error)
+	go func() {
+		finished <- k.dumpAllNodes(ctx, logDumper)
+	}()
+
+	for {
+		select {
+		case <-interrupt.C:
+			cancel()
+		case err := <-finished:
+			return err
+		}
+	}
+}
+
+// dumpAllNodes connects to every node and dumps the logs
+func (k *kubernetesAnywhere) dumpAllNodes(ctx context.Context, d *logDumper) error {
+	// Make sure kubeconfig is set, in particular before calling DumpAllNodes, which calls kubectlGetNodes
+	if err := k.TestSetup(); err != nil {
+		return fmt.Errorf("error setting up kubeconfig: %v", err)
+	}
+	// try to grab the address of the master from $KUBECONFIG (yikes)
+	cmd := exec.Command("sh", "-c", "cat ${KUBECONFIG} | grep server")
+	oBytes, err := control.Output(cmd)
+	if err != nil {
+		return fmt.Errorf("failed calling 'cat $KUBECONFIG | grep server': %v", err)
+	}
+	o := strings.TrimSpace(string(oBytes))
+	o = strings.Replace(o, "server: https://", "", -1)
+	host, _, err := net.SplitHostPort(o)
+	if err != nil {
+		return fmt.Errorf("could not extract host from kubeconfig: %v", err)
+	}
+	// the rest of the nodes are doable but tricky
+	additionalIPs := []string{host}
+	if err := d.DumpAllNodes(ctx, additionalIPs); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (k *kubernetesAnywhere) TestSetup() error {
@@ -291,145 +373,4 @@ func (k *kubernetesAnywhere) GetClusterCreated(gcpProject string) (time.Time, er
 	return time.Time{}, errors.New("not implemented")
 }
 
-func (_ *kubernetesAnywhere) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
-
-const defaultConfigFile = ".config"
-
-type kubernetesAnywhereMultiCluster struct {
-	*kubernetesAnywhere
-	multiClusters  multiClusterDeployment
-	configFile     map[string]string
-	kubeContextMap map[string]string
-}
-
-// newKubernetesAnywhereMultiCluster returns the deployer based on kubernetes-anywhere
-// which can be used to deploy multiple clusters simultaneously.
-func newKubernetesAnywhereMultiCluster(project, zone string, multiClusters multiClusterDeployment) (deployer, error) {
-	if len(multiClusters.clusters) < 1 {
-		return nil, fmt.Errorf("invalid --multi-clusters flag passed")
-	}
-	k, err := initializeKubernetesAnywhere(project, zone)
-	if err != nil {
-		return nil, err
-	}
-	mk := &kubernetesAnywhereMultiCluster{k, multiClusters, make(map[string]string), make(map[string]string)}
-
-	for _, cluster := range mk.multiClusters.clusters {
-		specificZone, specified := mk.multiClusters.zones[cluster]
-		if specified {
-			mk.Zone = specificZone
-		}
-		mk.Cluster = cluster
-		// TODO: revisit the naming of kubecontexts. Currently the federation CI jobs require that the
-		// cluster contexts be prefixed with `federation-` and with particular pattern.
-		mk.KubeContext = "federation-e2e-gce-" + mk.Zone
-		mk.kubeContextMap[cluster] = mk.KubeContext
-		mk.configFile[cluster] = defaultConfigFile + "-" + mk.Cluster
-		if err := mk.writeConfig(kubernetesAnywhereMultiClusterConfigTemplate); err != nil {
-			return nil, err
-		}
-	}
-	return mk, nil
-}
-
-// writeConfig writes the kubernetes-anywhere config file to file system after
-// rendering the template file with configuration in deployer.
-func (k *kubernetesAnywhereMultiCluster) writeConfig(configTemplate string) error {
-	config, err := k.getConfig(configTemplate)
-	if err != nil {
-		return fmt.Errorf("could not generate config: %v", err)
-	}
-
-	return ioutil.WriteFile(k.path+"/"+k.configFile[k.Cluster], config, 0644)
-}
-
-// Up brings up multiple k8s clusters in parallel.
-func (k *kubernetesAnywhereMultiCluster) Up() error {
-	var cmds []*exec.Cmd
-	for _, cluster := range k.multiClusters.clusters {
-		cmd := exec.Command("make", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "deploy")
-		cmds = append(cmds, cmd)
-	}
-
-	if err := control.FinishRunningParallel(cmds...); err != nil {
-		return err
-	}
-
-	return k.TestSetup()
-}
-
-// TestSetup sets up test environment by merging kubeconfig of multiple deployments.
-func (k *kubernetesAnywhereMultiCluster) TestSetup() error {
-	mergedKubeconfigPath := k.path + "/kubeconfig.json"
-	var kubecfg string
-	for _, cluster := range k.multiClusters.clusters {
-		o, err := control.Output(exec.Command("make", "--silent", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "kubeconfig-path"))
-		if err != nil {
-			return fmt.Errorf("could not get kubeconfig-path: %v", err)
-		}
-		if len(kubecfg) != 0 {
-			kubecfg += ":"
-		}
-		kubecfg += strings.TrimSuffix(string(o), "\n")
-	}
-	if len(kubecfg) != 0 {
-		kubecfg += ":" + mergedKubeconfigPath
-	}
-
-	if err := os.Setenv("KUBECONFIG", kubecfg); err != nil {
-		return err
-	}
-
-	o, err := control.Output(exec.Command("kubectl", "config", "view", "--flatten=true", "--raw=true"))
-	if err != nil {
-		return fmt.Errorf("could not get kubeconfig-path: %v", err)
-	}
-
-	err = ioutil.WriteFile(mergedKubeconfigPath, o, 0644)
-	if err != nil {
-		return err
-	}
-
-	return os.Setenv("KUBECONFIG", mergedKubeconfigPath)
-}
-
-// IsUp checks if all the clusters in the deployer are up.
-func (k *kubernetesAnywhereMultiCluster) IsUp() error {
-	if err := k.TestSetup(); err != nil {
-		return err
-	}
-
-	for _, cluster := range k.multiClusters.clusters {
-		kubeContext := k.kubeContextMap[cluster]
-		o, err := control.Output(exec.Command("kubectl", "--context="+kubeContext, "get", "nodes", "--no-headers"))
-		if err != nil {
-			log.Printf("kubectl get nodes failed for cluster %s: %s\n%s", cluster, wrapError(err).Error(), string(o))
-			return err
-		}
-		stdout := strings.TrimSpace(string(o))
-		log.Printf("Cluster nodes of cluster %s:\n%s", cluster, stdout)
-
-		n := len(strings.Split(stdout, "\n"))
-		if n < k.NumNodes {
-			return fmt.Errorf("cluster %s found, but %d nodes reported", cluster, n)
-		}
-	}
-	return nil
-}
-
-// Down brings down multiple k8s clusters in parallel.
-func (k *kubernetesAnywhereMultiCluster) Down() error {
-	if err := k.TestSetup(); err != nil {
-		// This is expected if the clusters doesn't exist.
-		return nil
-	}
-
-	var cmds []*exec.Cmd
-	for _, cluster := range k.multiClusters.clusters {
-		cmd := exec.Command("make", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "FORCE_DESTROY=y", "destroy")
-		cmds = append(cmds, cmd)
-	}
-	return control.FinishRunningParallel(cmds...)
-}
-
-func (_ *kubernetesAnywhereMultiCluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (*kubernetesAnywhere) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

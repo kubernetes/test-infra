@@ -20,9 +20,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -47,9 +44,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -74,9 +68,6 @@ presubmits:
         - "--test=//test/integration/..."
         - "--test-args=--config=integration"
         - "--timeout=60"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "6Gi"
@@ -99,7 +90,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=canary-e2e-prow
       - --extract=ci/latest
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -125,7 +116,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-nodes=4
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=40m
@@ -140,7 +131,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   decorate: true
   decoration_config:
-    timeout: 14000000000000 # 140m
+    timeout: 140m
   spec:
     containers:
     - command:
@@ -193,7 +184,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 14000000000000 # 140m
+    timeout: 140m
   spec:
     containers:
     - command:
@@ -222,7 +213,7 @@ periodics:
     preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
-    timeout: 14000000000000 # 140m
+    timeout: 140m
   spec:
     containers:
     - command:
@@ -261,12 +252,12 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --deployment=node
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud
-      - --node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"
+      - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus=\"\[NodeConformance\]\" --skip=\"\[Flaky\]|\[Serial\]\"
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=90m
       env:
       - name: GOPATH
@@ -281,7 +272,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   decorate: true
   decoration_config:
-    timeout: 26000000000000 # 260m
+    timeout: 260m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -295,7 +286,7 @@ periodics:
       - --gcp-master-size=n1-standard-2
       - --gcp-node-size=n1-standard-4
       - --gcp-nodes=3
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce

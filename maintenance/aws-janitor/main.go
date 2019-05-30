@@ -18,89 +18,31 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
+	"k8s.io/test-infra/maintenance/aws-janitor/account"
+	"k8s.io/test-infra/maintenance/aws-janitor/regions"
 	"k8s.io/test-infra/maintenance/aws-janitor/resources"
 	s3path "k8s.io/test-infra/maintenance/aws-janitor/s3"
 )
 
-const defaultRegion = "us-east-1"
-
-var maxTTL = flag.Duration("ttl", 24*time.Hour, "Maximum time before we attempt deletion of a resource. Set to 0s to nuke all non-default resources.")
-var path = flag.String("path", "", "S3 path to store mark data in (required)")
-
-// ARNs (used for uniquifying within our previous mark file)
-
-type arn struct {
-	partition    string
-	service      string
-	region       string
-	account      string
-	resourceType string
-	resource     string
-}
-
-func parseARN(s string) (*arn, error) {
-	pieces := strings.Split(s, ":")
-	if len(pieces) != 6 || pieces[0] != "arn" || pieces[1] != "aws" {
-		return nil, fmt.Errorf("Invalid AWS ARN: %v", s)
-	}
-	var resourceType string
-	var resource string
-	res := strings.SplitN(pieces[5], "/", 2)
-	if len(res) == 1 {
-		resource = res[0]
-	} else {
-		resourceType = res[0]
-		resource = res[1]
-	}
-	return &arn{
-		partition:    pieces[1],
-		service:      pieces[2],
-		region:       pieces[3],
-		account:      pieces[4],
-		resourceType: resourceType,
-		resource:     resource,
-	}, nil
-}
-
-func getAccount(sess *session.Session, region string) (string, error) {
-	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
-	resp, err := svc.GetUser(nil)
-	if err != nil {
-		return "", err
-	}
-	arn, err := parseARN(*resp.User.Arn)
-	if err != nil {
-		return "", err
-	}
-	return arn.account, nil
-}
-
-func getRegions(sess *session.Session) ([]string, error) {
-	var regions []string
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
-	resp, err := svc.DescribeRegions(nil)
-	if err != nil {
-		return nil, err
-	}
-	for _, region := range resp.Regions {
-		regions = append(regions, *region.RegionName)
-	}
-	return regions, nil
-}
+var (
+	maxTTL   = flag.Duration("ttl", 24*time.Hour, "Maximum time before attempting to delete a resource. Set to 0s to nuke all non-default resources.")
+	region   = flag.String("region", "", "The region to clean (otherwise defaults to all regions)")
+	path     = flag.String("path", "", "S3 path for mark data (required when -all=false)")
+	cleanAll = flag.Bool("all", false, "Clean all resources (ignores -path)")
+)
 
 func main() {
+	klog.InitFlags(nil)
 	flag.Lookup("logtostderr").Value.Set("true")
 	flag.Parse()
+	defer klog.Flush()
 
 	// Retry aggressively (with default back-off). If the account is
 	// in a really bad state, we may be contending with API rate
@@ -108,46 +50,63 @@ func main() {
 	// to delete.
 	sess := session.Must(session.NewSessionWithOptions(session.Options{Config: aws.Config{MaxRetries: aws.Int(100)}}))
 
+	if *cleanAll {
+		if err := resources.CleanAll(sess, *region); err != nil {
+			klog.Fatalf("Error cleaning all resources: %v", err)
+		}
+	} else if ok, err := markAndSweep(sess, *region); err != nil {
+		klog.Fatalf("Error marking and sweeping resources: %v", err)
+	} else if !ok {
+		os.Exit(1)
+	}
+}
+
+func markAndSweep(sess *session.Session, region string) (bool, error) {
 	s3p, err := s3path.GetPath(sess, *path)
 	if err != nil {
-		glog.Fatalf("--path %q isn't a valid S3 path: %v", *path, err)
+		return false, errors.Wrapf(err, "-path %q isn't a valid S3 path", *path)
 	}
-	acct, err := getAccount(sess, defaultRegion)
+
+	acct, err := account.GetAccount(sess, regions.Default)
 	if err != nil {
-		glog.Fatalf("error getting current user: %v", err)
+		return false, errors.Wrap(err, "Error getting current user")
 	}
-	glog.V(1).Infof("account: %s", acct)
-	regions, err := getRegions(sess)
-	if err != nil {
-		glog.Fatalf("error getting available regions: %v", err)
+	klog.V(1).Infof("account: %s", acct)
+
+	var regionList []string
+	if region == "" {
+		regionList, err = regions.GetAll(sess)
+		if err != nil {
+			return false, errors.Wrap(err, "Error getting available regions")
+		}
+	} else {
+		regionList = []string{region}
 	}
-	glog.V(1).Infof("regions: %v", regions)
+	klog.Infof("Regions: %+v", regionList)
 
 	res, err := resources.LoadSet(sess, s3p, *maxTTL)
 	if err != nil {
-		glog.Fatalf("error loading %q: %v", *path, err)
+		return false, errors.Wrapf(err, "Error loading %q", *path)
 	}
-	for _, region := range regions {
+
+	for _, region := range regionList {
 		for _, typ := range resources.RegionalTypeList {
 			if err := typ.MarkAndSweep(sess, acct, region, res); err != nil {
-				glog.Errorf("error sweeping %T: %v", typ, err)
-				return
+				return false, errors.Wrapf(err, "Error sweeping %T", typ)
 			}
 		}
 	}
 
 	for _, typ := range resources.GlobalTypeList {
-		if err := typ.MarkAndSweep(sess, acct, "us-east-1", res); err != nil {
-			glog.Errorf("error sweeping %T: %v", typ, err)
-			return
+		if err := typ.MarkAndSweep(sess, acct, regions.Default, res); err != nil {
+			return false, errors.Wrapf(err, "Error sweeping %T", typ)
 		}
 	}
 
 	swept := res.MarkComplete()
 	if err := res.Save(sess, s3p); err != nil {
-		glog.Fatalf("error saving %q: %v", *path, err)
+		return false, errors.Wrapf(err, "Error saving %q", *path)
 	}
-	if swept > 0 {
-		os.Exit(1)
-	}
+
+	return swept == 0, nil
 }

@@ -18,17 +18,23 @@ package flag
 
 import (
 	stdflag "flag"
+	"fmt"
 	"strings"
 )
 
 // MultiFlag collects repeated string flags into a slice.
 type MultiFlag struct {
+	IsSet  *bool
 	Values *[]string
 }
 
 var _ stdflag.Value = (*MultiFlag)(nil)
 
 func (m *MultiFlag) Set(v string) error {
+	if m.IsSet != nil && !*m.IsSet {
+		*m.IsSet = true
+		*m.Values = nil // clear any default values
+	}
 	*m.Values = append(*m.Values, v)
 	return nil
 }
@@ -55,6 +61,30 @@ func (f *ExplicitFlag) Set(value string) error {
 }
 
 func (f *ExplicitFlag) String() string {
+	if f == nil || f.Value == nil {
+		return ""
+	}
+	return *f.Value
+}
+
+var _ stdflag.Value = (*AllowedStringFlag)(nil)
+
+type AllowedStringFlag struct {
+  Allowed []string
+  Value *string
+}
+
+func (f *AllowedStringFlag) Set(v string) error {
+  for _, a := range f.Allowed {
+    if v == a {
+      *f.Value = v
+      return nil
+    }
+  }
+  return fmt.Errorf("Invalid argument %q. Possible values are: %s", v, strings.Join(f.Allowed, ", "))
+}
+
+func (f *AllowedStringFlag) String() string {
 	if f == nil || f.Value == nil {
 		return ""
 	}

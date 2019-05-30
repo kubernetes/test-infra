@@ -18,10 +18,13 @@ package reporter
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/test-infra/prow/kube"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 )
 
 const (
@@ -30,16 +33,27 @@ const (
 	testPubSubRunID       = "test-id"
 )
 
+type fca struct {
+	sync.Mutex
+	c *config.Config
+}
+
+func (f *fca) Config() *config.Config {
+	f.Lock()
+	defer f.Unlock()
+	return f.c
+}
+
 func TestGenerateMessageFromPJ(t *testing.T) {
 	var testcases = []struct {
 		name            string
-		pj              *kube.ProwJob
+		pj              *prowapi.ProwJob
 		expectedMessage *ReportMessage
 		expectedError   error
 	}{
 		{
-			name: "Prowjob with all information should work with no error",
-			pj: &kube.ProwJob{
+			name: "Prowjob with all information for presubmit jobs should work with no error",
+			pj: &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test1",
 					Labels: map[string]string{
@@ -48,22 +62,68 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 						PubSubRunIDLabel:   testPubSubRunID,
 					},
 				},
-				Status: kube.ProwJobStatus{
-					State: kube.SuccessState,
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
 					URL:   "guber/test1",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PresubmitJob,
+					Job:  "test1",
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{Number: 123}},
+					},
 				},
 			},
 			expectedMessage: &ReportMessage{
 				Project: testPubSubProjectName,
 				Topic:   testPubSubTopicName,
 				RunID:   testPubSubRunID,
-				Status:  kube.SuccessState,
+				Status:  prowapi.SuccessState,
 				URL:     "guber/test1",
+				GCSPath: "gs://test1",
+				Refs: []prowapi.Refs{
+					{
+						Pulls: []prowapi.Pull{{Number: 123}},
+					},
+				},
+				JobType: prowapi.PresubmitJob,
+				JobName: "test1",
+			},
+		},
+		{
+			name: "Prowjob with all information for periodic jobs should work with no error",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Labels: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+					URL:   "guber/test1",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
+					Job:  "test1",
+				},
+			},
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   testPubSubRunID,
+				Status:  prowapi.SuccessState,
+				URL:     "guber/test1",
+				GCSPath: "gs://test1",
+				JobType: prowapi.PeriodicJob,
+				JobName: "test1",
 			},
 		},
 		{
 			name: "Prowjob has no pubsub runID label, should return a message with runid empty",
-			pj: &kube.ProwJob{
+			pj: &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test-no-runID",
 					Labels: map[string]string{
@@ -71,21 +131,81 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 						PubSubTopicLabel:   testPubSubTopicName,
 					},
 				},
-				Status: kube.ProwJobStatus{
-					State: kube.SuccessState,
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
 				},
 			},
 			expectedMessage: &ReportMessage{
 				Project: testPubSubProjectName,
 				Topic:   testPubSubTopicName,
 				RunID:   "",
-				Status:  kube.SuccessState,
+				Status:  prowapi.SuccessState,
+			},
+		},
+		{
+			name: "Prowjob with all information annotations should work with no error",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Annotations: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+					URL:   "guber/test1",
+				},
+			},
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   testPubSubRunID,
+				Status:  prowapi.SuccessState,
+				URL:     "guber/test1",
+				GCSPath: "gs://test1",
+			},
+		},
+		{
+			name: "Prowjob has no pubsub runID annotation, should return a message with runid empty",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-no-runID",
+					Annotations: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+				},
+			},
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   "",
+				Status:  prowapi.SuccessState,
 			},
 		},
 	}
 
+	fca := &fca{
+		c: &config.Config{
+			ProwConfig: config.ProwConfig{
+				Plank: config.Plank{
+					JobURLPrefixConfig: map[string]string{"*": "guber/"},
+				},
+			},
+		},
+	}
+
+	c := &Client{
+		config: fca.Config,
+	}
+
 	for _, tc := range testcases {
-		m := generateMessageFromPJ(tc.pj)
+		m := c.generateMessageFromPJ(tc.pj)
 
 		if !reflect.DeepEqual(m, tc.expectedMessage) {
 			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",
@@ -97,12 +217,12 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 func TestShouldReport(t *testing.T) {
 	var testcases = []struct {
 		name           string
-		pj             *kube.ProwJob
+		pj             *prowapi.ProwJob
 		expectedResult bool
 	}{
 		{
-			name: "Prowjob with all pubsub information should return",
-			pj: &kube.ProwJob{
+			name: "Prowjob with all pubsub information labels should return",
+			pj: &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test1",
 					Labels: map[string]string{
@@ -111,15 +231,15 @@ func TestShouldReport(t *testing.T) {
 						PubSubRunIDLabel:   testPubSubRunID,
 					},
 				},
-				Status: kube.ProwJobStatus{
-					State: kube.SuccessState,
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
 				},
 			},
 			expectedResult: true,
 		},
 		{
 			name: "Prowjob has no pubsub project label, should not report",
-			pj: &kube.ProwJob{
+			pj: &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test-no-project",
 					Labels: map[string]string{
@@ -127,15 +247,15 @@ func TestShouldReport(t *testing.T) {
 						PubSubRunIDLabel: testPubSubRunID,
 					},
 				},
-				Status: kube.ProwJobStatus{
-					State: kube.SuccessState,
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
 				},
 			},
 			expectedResult: false,
 		},
 		{
 			name: "Prowjob has no pubsub topic label, should not report",
-			pj: &kube.ProwJob{
+			pj: &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test-no-topic",
 					Labels: map[string]string{
@@ -143,15 +263,65 @@ func TestShouldReport(t *testing.T) {
 						PubSubRunIDLabel:   testPubSubRunID,
 					},
 				},
-				Status: kube.ProwJobStatus{
-					State: kube.SuccessState,
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+				},
+			},
+			expectedResult: false,
+		},
+		{
+			name: "Prowjob with all pubsub information annotations should return",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Annotations: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+				},
+			},
+			expectedResult: true,
+		},
+		{
+			name: "Prowjob has no pubsub project annotation, should not report",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-no-project",
+					Annotations: map[string]string{
+						PubSubTopicLabel: testPubSubTopicName,
+						PubSubRunIDLabel: testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
+				},
+			},
+			expectedResult: false,
+		},
+		{
+			name: "Prowjob has no pubsub topic annotation, should not report",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-no-topic",
+					Annotations: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.SuccessState,
 				},
 			},
 			expectedResult: false,
 		},
 	}
 
-	c := NewReporter()
+	var fakeConfigAgent fca
+	c := NewReporter(fakeConfigAgent.Config)
 
 	for _, tc := range testcases {
 		r := c.ShouldReport(tc.pj)

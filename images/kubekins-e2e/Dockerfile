@@ -15,8 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20190110-c23317e88
-LABEL maintainer "Sen Lu <senlu@google.com>"
+FROM gcr.io/k8s-testimages/bootstrap:v20190516-c6832d9
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -36,11 +35,13 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
 # - graphviz package for graphing profiles
 # - bc for shell to junit
 # - rpm for building RPMs with Bazel
-RUN apt-get install -y bc \
+RUN apt-get update && \
+    apt-get install -y bc \
     graphviz \
-    rpm
+    rpm && \
+    rm -rf /var/lib/apt/lists/*
 # preinstall this for kops tests xref kubetest prepareAws(...)
-# TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
+# TODO(krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
@@ -52,6 +53,13 @@ RUN wget -q -O cfssl "https://pkg.cfssl.org/${CFSSL_VERSION}/cfssl_linux-amd64" 
     chmod +x cfssl cfssljson && \
     mv cfssl cfssljson /usr/local/bin && \
     cfssl version
+
+# replace kubectl with one from K8S_RELEASE
+ARG K8S_RELEASE=latest
+RUN rm -f $(which kubectl) && \
+    export KUBECTL_VERSION=$(curl https://storage.googleapis.com/kubernetes-release/release/${K8S_RELEASE}.txt) && \
+    wget https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl && \
+    chmod +x /usr/local/bin/kubectl
 
 # install go
 ARG GO_VERSION
@@ -68,11 +76,12 @@ RUN bash /install-bazel.sh
 
 # if UPGRADE_DOCKER_ARG, then install the latest docker over whatever we have
 # in the base image.
-# TODO(bentheelder): after code freeze, roll out newer docker in the
+# TODO: after code freeze, roll out newer docker in the
 # base image and possibly remove this ...
 ARG UPGRADE_DOCKER_ARG=false
 RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
     apt-get install -y --no-install-recommends docker-ce && \
+    rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
 
 # add env we can debug with the image name:tag

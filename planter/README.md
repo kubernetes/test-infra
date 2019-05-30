@@ -14,12 +14,13 @@ $GOPATH/src/k8s.io/kubernetes/   # ... <kubernetes/kubernetes checkout>
 $GOPATH/src/k8s.io/test-infra/   # ... <kubernetes/test-infra checkout>
 ```
 Then from `$GOPATH/src/k8s.io/kubernetes/` run:
- `./../planter/planter.sh make bazel-build`.
+ `./../test-infra/planter/planter.sh make bazel-build`.
 
 NOTE: if you previously built Kubernetes by other means, you may need to run
 `make clean` first to clean up some symlink cycles.
 
- For `test-infra` you can run eg `./planter/planter.sh bazel test //...`.
+To run the tests for `test-infra` using Bazel, you can run eg `./planter/planter.sh bazel test //...` from
+the `test-infra` directory.
 
 ## Options
 
@@ -27,8 +28,10 @@ Planter respects the following environment variables:
 
  - `TAG`: The Planter image tag. This will default to the current stable
    version used to build Kubernetes, but you may override it with EG
-   `TAG=0.9.0 ./planter.sh bazel build //...`
-   - These should now match bazel release versions eg `0.8.0rc2`
+   `TAG=0.21.0 ./planter.sh bazel build //...`
+   - These should match bazel release versions eg `0.23.0rc1`
+ - `CROSS`: If set, a larger Planter image which contains the
+   crossbuild-essential packages will be used.
  - `DRY_RUN`: If set, Planter will only echo the Docker command that would have
    been run.
  - `HOME`: Your home directory. This will be mounted in to the container.
@@ -41,7 +44,6 @@ Currently, SELinux is disabled for the container that runs the bazel
 environment, which allows for the rest of the host system to leave SELinux
 enabled. We could relabel the volumes and enable SELinux but this could cause
 major issues on the host if planter was used from say $HOME.
-
 
 Further details can be found in `planter.sh` itself, which is somewhat
 self-documenting.

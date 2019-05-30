@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -20,7 +20,7 @@ set -o pipefail
 
 export CGO_ENABLED=0
 
-TARGETS=$(for d in "$@"; do echo ./$d/...; done)
+TARGETS=$(for d in "$@"; do echo ./${d}/...; done)
 
 echo "Running tests:"
 go test -i -installsuffix "static" ${TARGETS}
@@ -32,7 +32,7 @@ ERRS=$(find "$@" -type f -name \*.go | xargs gofmt -l 2>&1 || true)
 if [ -n "${ERRS}" ]; then
     echo "FAIL - the following files need to be gofmt'ed:"
     for e in ${ERRS}; do
-        echo "    $e"
+        echo "    ${e}"
     done
     echo
     exit 1

@@ -24,9 +24,11 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -57,17 +59,20 @@ const (
 
 func flagOptions() options {
 	o := options{
-		endpoint: flagutil.NewStrings("https://api.github.com"),
+		endpoint: flagutil.NewStrings(github.DefaultAPIEndpoint),
 	}
 	flag.StringVar(&o.query, "query", "", "See https://help.github.com/articles/searching-issues-and-pull-requests/")
 	flag.DurationVar(&o.updated, "updated", 2*time.Hour, "Filter to issues unmodified for at least this long if set")
+	flag.BoolVar(&o.includeArchived, "include-archived", false, "Match archived issues if set")
 	flag.BoolVar(&o.includeClosed, "include-closed", false, "Match closed issues if set")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
+	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
+	flag.BoolVar(&o.random, "random", false, "Choose random issues to comment on from the query")
 	flag.Parse()
 	return o
 }
@@ -80,17 +85,20 @@ type meta struct {
 }
 
 type options struct {
-	asc           bool
-	ceiling       int
-	comment       string
-	includeClosed bool
-	useTemplate   bool
-	query         string
-	sort          string
-	endpoint      flagutil.Strings
-	token         string
-	updated       time.Duration
-	confirm       bool
+	asc             bool
+	ceiling         int
+	comment         string
+	includeArchived bool
+	includeClosed   bool
+	useTemplate     bool
+	query           string
+	sort            string
+	endpoint        flagutil.Strings
+	graphqlEndpoint string
+	token           string
+	updated         time.Duration
+	confirm         bool
+	random          bool
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -107,15 +115,23 @@ func parseHTMLURL(url string) (string, string, int, error) {
 	return mat[1], mat[2], n, nil
 }
 
-func makeQuery(query string, includeClosed bool, minUpdated time.Duration) (string, error) {
+func makeQuery(query string, includeArchived, includeClosed bool, minUpdated time.Duration) (string, error) {
 	parts := []string{query}
+	if !includeArchived {
+		if strings.Contains(query, "archived:true") {
+			return "", errors.New("archived:true requires --include-archived")
+		}
+		parts = append(parts, "archived:false")
+	} else if strings.Contains(query, "archived:false") {
+		return "", errors.New("archived:false conflicts with --include-archived")
+	}
 	if !includeClosed {
 		if strings.Contains(query, "is:closed") {
-			return "", fmt.Errorf("--query='%s' containing is:closed requires --include-closed", query)
+			return "", errors.New("is:closed requires --include-closed")
 		}
 		parts = append(parts, "is:open")
 	} else if strings.Contains(query, "is:open") {
-		return "", fmt.Errorf("--query='%s' should not contain is:open when using --include-closed", query)
+		return "", errors.New("is:open conflicts with --include-closed")
 	}
 	if minUpdated != 0 {
 		latest := time.Now().Add(-minUpdated)
@@ -158,14 +174,14 @@ func main() {
 
 	var c client
 	if o.confirm {
-		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
+		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.graphqlEndpoint, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
+		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.graphqlEndpoint, o.endpoint.Strings()...)
 	}
 
-	query, err := makeQuery(o.query, o.includeClosed, o.updated)
+	query, err := makeQuery(o.query, o.includeArchived, o.includeClosed, o.updated)
 	if err != nil {
-		log.Fatalf("Bad query: %v", err)
+		log.Fatalf("Bad query %q: %v", o.query, err)
 	}
 	sort := ""
 	asc := false
@@ -174,7 +190,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, commenter, o.ceiling); err != nil {
+	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -193,7 +209,7 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
 	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
@@ -201,6 +217,14 @@ func run(c client, query, sort string, asc bool, commenter func(meta) (string, e
 	}
 	problems := []string{}
 	log.Printf("Found %d matches", len(issues))
+	if random {
+		dest := make([]github.Issue, len(issues))
+		perm := rand.Perm(len(issues))
+		for i, v := range perm {
+			dest[v] = issues[i]
+		}
+		issues = dest
+	}
 	for n, i := range issues {
 		if ceiling > 0 && n == ceiling {
 			log.Printf("Stopping at --ceiling=%d of %d results", n, len(issues))

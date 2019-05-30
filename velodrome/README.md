@@ -17,18 +17,18 @@ It is comprised of three components:
   * a Grafana instance to display graphs based on these metrics
   * and an nginx to proxy all of these services in a single URL.
 
-2. A SQL Database containing a copy of the issues, events, and PRs in Github
+2. A SQL Database containing a copy of the issues, events, and PRs in GitHub
 repositories. It is used for calculating statistics about developer
 productivity. It has the following components:
-  * [Fetcher](fetcher/): fetches Github data and stores in a SQL database
+  * [Fetcher](fetcher/): fetches GitHub data and stores in a SQL database
   * [SQL Proxy](mysql/): SQL Proxy deployment to Cloud SQL
-  * [Transform](transform/): Transform SQL (Github db) into valuable metrics
+  * [Transform](transform/): Transform SQL (GitHub db) into valuable metrics
 
 3. Other monitoring tools, only one for the moment:
   * [token-counter](token-counter/): Monitors RateLimit usage of your github
     tokens
 
-Github statistics
+GitHub statistics
 =================
 
 Here is how the github statistics are communicating between each other:
@@ -38,7 +38,7 @@ Here is how the github statistics are communicating between each other:
 -> pushes to
 * External components
 
-Github* <= Fetcher -> Cloud SQL* <= Transform -> InfluxDb
+GitHub* <= Fetcher -> Cloud SQL* <= Transform -> InfluxDb
 ```
 
 Other metrics/monitoring components
@@ -64,7 +64,7 @@ Naming convention
 
 To disambiguate how each word is used, let's give a description of the naming
 convention used by velodrome:
-- Organization: This has the same meaning as the Github Organization. This is
+- Organization: This has the same meaning as the GitHub Organization. This is
   holding multiple repositories. e.g. In `github.com/istio/manager`, the
   organization is `istio`.
 - Repository can be either the last part of the github repository URL (i.e. in

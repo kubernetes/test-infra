@@ -71,7 +71,7 @@ func TestGroupLines(t *testing.T) {
 			name: "Test skip none",
 			lines: []string{
 				"a", "b", "c", "d", "e",
-				"Failed to immanentize the eschaton.",
+				"ERROR: Failed to immanentize the eschaton.",
 				"a", "b", "c", "d", "e",
 			},
 			groups: []LineGroup{
@@ -80,7 +80,7 @@ func TestGroupLines(t *testing.T) {
 					End:        11,
 					Skip:       false,
 					ByteOffset: 0,
-					ByteLength: 55,
+					ByteLength: 62,
 				},
 			},
 		},
@@ -88,7 +88,7 @@ func TestGroupLines(t *testing.T) {
 			name: "Test skip threshold",
 			lines: []string{
 				"a", "b", "c", "d", // skip threshold unmet
-				"a", "b", "c", "d", "e", "Failed to immanentize the eschaton.", "a", "b", "c", "d", "e",
+				"a", "b", "c", "d", "e", "ERROR: Failed to immanentize the eschaton.", "a", "b", "c", "d", "e",
 				"a", "b", "c", "d", "e", // skip threshold met
 			},
 			groups: []LineGroup{
@@ -104,13 +104,13 @@ func TestGroupLines(t *testing.T) {
 					End:        15,
 					Skip:       false,
 					ByteOffset: 8,
-					ByteLength: 55,
+					ByteLength: 62,
 				},
 				{
 					Start:      15,
 					End:        20,
 					Skip:       true,
-					ByteOffset: 64,
+					ByteOffset: 71,
 					ByteLength: 9,
 				},
 			},

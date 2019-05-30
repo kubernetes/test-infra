@@ -3,8 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "cookie.go",
+        "cookie_go111.go",
         "doc.go",
         "lex.go",
+        "options.go",
+        "options_go111.go",
         "sessions.go",
         "store.go",
     ],

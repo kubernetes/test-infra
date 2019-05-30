@@ -15,17 +15,19 @@ limitations under the License.
 */
 
 // Package reporter contains helpers for publishing statues to Pub
-// statuses in Github.
+// statuses in GitHub.
 package reporter
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"cloud.google.com/go/pubsub"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 )
 
 const (
@@ -35,28 +37,33 @@ const (
 	PubSubTopicLabel = "prow.k8s.io/pubsub.topic"
 	// PubSubRunIDLabel annotation
 	PubSubRunIDLabel = "prow.k8s.io/pubsub.runID"
+	// GCSPrefix is the prefix for a gcs path
+	GCSPrefix = "gs://"
 )
 
 // ReportMessage is a message structure used to pass a prowjob status to Pub/Sub topic.s
 type ReportMessage struct {
-	Project string            `json:"project"`
-	Topic   string            `json:"topic"`
-	RunID   string            `json:"runid"`
-	Status  kube.ProwJobState `json:"status"`
-	URL     string            `json:"url"`
+	Project string               `json:"project"`
+	Topic   string               `json:"topic"`
+	RunID   string               `json:"runid"`
+	Status  prowapi.ProwJobState `json:"status"`
+	URL     string               `json:"url"`
+	GCSPath string               `json:"gcs_path"`
+	Refs    []prowapi.Refs       `json:"refs,omitempty"`
+	JobType prowapi.ProwJobType  `json:"job_type"`
+	JobName string               `json:"job_name"`
 }
 
 // Client is a reporter client fed to crier controller
 type Client struct {
-	// Empty structure because unlike github or gerrit client, one GCP Pub/Sub client is tied to one GCP project.
-	// While GCP project name is provided by the label in each prowjob.
-	// Which means we could create a Pub/Sub client only when we actually get a prowjob to do reporting,
-	// instead of creating a Pub/Sub client while initializing the reporter client.
+	config config.Getter
 }
 
 // NewReporter creates a new Pub/Sub reporter
-func NewReporter() *Client {
-	return &Client{}
+func NewReporter(cfg config.Getter) *Client {
+	return &Client{
+		config: cfg,
+	}
 }
 
 // GetName returns the name of the reporter
@@ -64,27 +71,41 @@ func (c *Client) GetName() string {
 	return "pubsub-reporter"
 }
 
+func findLabels(pj *prowapi.ProwJob, labels ...string) map[string]string {
+	// Support checking for both labels(deprecated) and annotations(new) for backward compatibility
+	pubSubMap := map[string]string{}
+	for _, label := range labels {
+		if pj.Annotations[label] != "" {
+			pubSubMap[label] = pj.Annotations[label]
+		} else {
+			pubSubMap[label] = pj.Labels[label]
+		}
+	}
+	return pubSubMap
+}
+
 // ShouldReport tells if a prowjob should be reported by this reporter
-func (c *Client) ShouldReport(pj *kube.ProwJob) bool {
-	return pj.Labels[PubSubProjectLabel] != "" && pj.Labels[PubSubTopicLabel] != ""
+func (c *Client) ShouldReport(pj *prowapi.ProwJob) bool {
+	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel)
+	return pubSubMap[PubSubProjectLabel] != "" && pubSubMap[PubSubTopicLabel] != ""
 }
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(pj *kube.ProwJob) error {
-	message := generateMessageFromPJ(pj)
+func (c *Client) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
+	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, message.Project)
 
 	if err != nil {
-		return fmt.Errorf("could not create pubsub Client: %v", err)
+		return nil, fmt.Errorf("could not create pubsub Client: %v", err)
 	}
 	topic := client.Topic(message.Topic)
 
 	d, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("could not marshal pubsub report: %v", err)
+		return nil, fmt.Errorf("could not marshal pubsub report: %v", err)
 	}
 
 	res := topic.Publish(ctx, &pubsub.Message{
@@ -93,24 +114,31 @@ func (c *Client) Report(pj *kube.ProwJob) error {
 
 	_, err = res.Get(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to publish pubsub message: %v", err)
+		return nil, fmt.Errorf(
+			"failed to publish pubsub message with run ID %q to topic: \"%s/%s\". %v",
+			message.RunID, message.Project, message.Topic, err)
 	}
 
-	return nil
+	return []*prowapi.ProwJob{pj}, nil
 }
 
-func generateMessageFromPJ(pj *kube.ProwJob) *ReportMessage {
-	projectName := pj.Labels[PubSubProjectLabel]
-	topicName := pj.Labels[PubSubTopicLabel]
-	runID := pj.GetLabels()[PubSubRunIDLabel]
+func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
+	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel, PubSubRunIDLabel)
+	var refs []prowapi.Refs
+	if pj.Spec.Refs != nil {
+		refs = append(refs, *pj.Spec.Refs)
+	}
+	refs = append(refs, pj.Spec.ExtraRefs...)
 
-	psReport := &ReportMessage{
-		Project: projectName,
-		Topic:   topicName,
-		RunID:   runID,
+	return &ReportMessage{
+		Project: pubSubMap[PubSubProjectLabel],
+		Topic:   pubSubMap[PubSubTopicLabel],
+		RunID:   pubSubMap[PubSubRunIDLabel],
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
+		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
+		Refs:    refs,
+		JobType: pj.Spec.Type,
+		JobName: pj.Spec.Job,
 	}
-
-	return psReport
 }

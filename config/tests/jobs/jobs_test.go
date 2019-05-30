@@ -27,20 +27,22 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	"k8s.io/api/core/v1"
+	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	cfg "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/kube"
 )
 
 var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
-var gubernatorPath = flag.String("gubernator-path", "https://gubernator.k8s.io", "Path to linked gubernator")
+var deckPath = flag.String("deck-path", "https://prow.k8s.io", "Path to deck")
 var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
 var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster")
 
@@ -75,35 +77,35 @@ func TestReportTemplate(t *testing.T) {
 			org:    "o",
 			repo:   "r",
 			number: 4,
-			suffix: "o_r/4",
+			suffix: "?org=o&repo=r&pr=4",
 		},
 		{
 			org:    "kubernetes",
 			repo:   "test-infra",
 			number: 123,
-			suffix: "test-infra/123",
+			suffix: "?org=kubernetes&repo=test-infra&pr=123",
 		},
 		{
 			org:    "kubernetes",
 			repo:   "kubernetes",
 			number: 123,
-			suffix: "123",
+			suffix: "?org=kubernetes&repo=kubernetes&pr=123",
 		},
 		{
 			org:    "o",
 			repo:   "kubernetes",
 			number: 456,
-			suffix: "o_kubernetes/456",
+			suffix: "?org=o&repo=kubernetes&pr=456",
 		},
 	}
 	for _, tc := range testcases {
 		var b bytes.Buffer
-		if err := c.Plank.ReportTemplate.Execute(&b, &kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Refs: &kube.Refs{
+		if err := c.Plank.ReportTemplate.Execute(&b, &prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{
 					Org:  tc.org,
 					Repo: tc.repo,
-					Pulls: []kube.Pull{
+					Pulls: []prowapi.Pull{
 						{
 							Number: tc.number,
 						},
@@ -114,7 +116,7 @@ func TestReportTemplate(t *testing.T) {
 			t.Errorf("Error executing template: %v", err)
 			continue
 		}
-		expectedPath := *gubernatorPath + "/pr/" + tc.suffix
+		expectedPath := *deckPath + "/pr-history" + tc.suffix
 		if !strings.Contains(b.String(), expectedPath) {
 			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
 		}
@@ -124,7 +126,7 @@ func TestReportTemplate(t *testing.T) {
 func TestURLTemplate(t *testing.T) {
 	testcases := []struct {
 		name    string
-		jobType kube.ProwJobType
+		jobType prowapi.ProwJobType
 		org     string
 		repo    string
 		job     string
@@ -134,17 +136,17 @@ func TestURLTemplate(t *testing.T) {
 	}{
 		{
 			name:    "k8s presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "kubernetes",
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
 			k8sOnly: true,
 		},
 		{
 			name:    "k8s-security presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "kubernetes-security",
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
@@ -154,73 +156,73 @@ func TestURLTemplate(t *testing.T) {
 		},
 		{
 			name:    "k8s/test-infra presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "kubernetes",
 			repo:    "test-infra",
 			job:     "ti-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
 			k8sOnly: true,
 		},
 		{
 			name:    "foo/k8s presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "foo",
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
 		},
 		{
 			name:    "foo-bar presubmit",
-			jobType: kube.PresubmitJob,
+			jobType: prowapi.PresubmitJob,
 			org:     "foo",
 			repo:    "bar",
 			job:     "foo-pre-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
 		},
 		{
 			name:    "k8s postsubmit",
-			jobType: kube.PostsubmitJob,
+			jobType: prowapi.PostsubmitJob,
 			org:     "kubernetes",
 			repo:    "kubernetes",
 			job:     "k8s-post-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-post-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/logs/k8s-post-1/1/",
 		},
 		{
 			name:    "k8s periodic",
-			jobType: kube.PeriodicJob,
+			jobType: prowapi.PeriodicJob,
 			job:     "k8s-peri-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-peri-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/logs/k8s-peri-1/1/",
 		},
 		{
 			name:    "empty periodic",
-			jobType: kube.PeriodicJob,
+			jobType: prowapi.PeriodicJob,
 			job:     "nan-peri-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/nan-peri-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/logs/nan-peri-1/1/",
 		},
 		{
 			name:    "k8s batch",
-			jobType: kube.BatchJob,
+			jobType: prowapi.BatchJob,
 			org:     "kubernetes",
 			repo:    "kubernetes",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
 			k8sOnly: true,
 		},
 		{
 			name:    "foo bar batch",
-			jobType: kube.BatchJob,
+			jobType: prowapi.BatchJob,
 			org:     "foo",
 			repo:    "bar",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
+			expect:  *deckPath + "/view/gcs/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
 		},
 	}
 
@@ -229,19 +231,19 @@ func TestURLTemplate(t *testing.T) {
 			continue
 		}
 
-		var pj = kube.ProwJob{
+		var pj = prowapi.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{Name: tc.name},
-			Spec: kube.ProwJobSpec{
+			Spec: prowapi.ProwJobSpec{
 				Type: tc.jobType,
 				Job:  tc.job,
 			},
-			Status: kube.ProwJobStatus{
+			Status: prowapi.ProwJobStatus{
 				BuildID: tc.build,
 			},
 		}
-		if tc.jobType != kube.PeriodicJob {
-			pj.Spec.Refs = &kube.Refs{
-				Pulls: []kube.Pull{{}},
+		if tc.jobType != prowapi.PeriodicJob {
+			pj.Spec.Refs = &prowapi.Refs{
+				Pulls: []prowapi.Pull{{}},
 				Org:   tc.org,
 				Repo:  tc.repo,
 			}
@@ -262,9 +264,6 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 	if !p.SkipReport && p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
 	}
-	for _, c := range p.RunAfterSuccess {
-		checkContext(t, repo, c)
-	}
 }
 
 func TestContextMatches(t *testing.T) {
@@ -281,7 +280,6 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 		if p.RerunCommand != expected {
 			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
 		}
-		checkRetest(t, repo, p.RunAfterSuccess)
 	}
 }
 
@@ -301,9 +299,6 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	for _, p := range presubmits {
 		if !p.AlwaysRun {
 			continue
-		}
-		for _, r := range findRequired(t, p.RunAfterSuccess) {
-			required = append(required, r)
 		}
 		if p.SkipReport {
 			continue
@@ -347,6 +342,115 @@ func TestTrustedJobs(t *testing.T) {
 	}
 }
 
+// Unit test only postsubmit/periodic jobs in config/jobs/<org>/<project>/<project>-trusted.yaml can use
+// secrets for <org>/<project> in default public cluster.
+func TestTrustedJobSecretsRestricted(t *testing.T) {
+	secretsRestricted := map[string]sets.String{
+		"kubernetes-sigs/sig-storage-local-static-provisioner": sets.NewString("sig-storage-local-static-provisioner-pusher"),
+	}
+	allSecrets := sets.String{}
+	for _, secrets := range secretsRestricted {
+		allSecrets.Insert(secrets.List()...)
+	}
+
+	isSecretUsedByContainer := func(secret string, container coreapi.Container) bool {
+		if container.EnvFrom == nil {
+			return false
+		}
+		for _, envFrom := range container.EnvFrom {
+			if envFrom.SecretRef != nil && envFrom.SecretRef.Name == secret {
+				return true
+			}
+		}
+		return false
+	}
+
+	isSecretUsed := func(secret string, job cfg.JobBase) bool {
+		if job.Spec == nil {
+			return false
+		}
+		if job.Spec.Volumes != nil {
+			for _, v := range job.Spec.Volumes {
+				if v.VolumeSource.Secret != nil {
+					if v.VolumeSource.Secret.SecretName == secret {
+						return true
+					}
+				}
+			}
+		}
+		if job.Spec.Containers != nil {
+			for _, c := range job.Spec.Containers {
+				if isSecretUsedByContainer(secret, c) {
+					return true
+				}
+			}
+		}
+		if job.Spec.InitContainers != nil {
+			for _, c := range job.Spec.InitContainers {
+				if isSecretUsedByContainer(secret, c) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	// All presubmit jobs should not use any restricted secrets.
+	for _, job := range c.AllPresubmits(nil) {
+		if job.Cluster != prowapi.DefaultClusterAlias {
+			// check against default public cluster only
+			continue
+		}
+		for _, secret := range allSecrets.List() {
+			if isSecretUsed(secret, job.JobBase) {
+				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
+			}
+		}
+	}
+
+	secretsCanUseByPath := func(path string) sets.String {
+		cleanPath := strings.Trim(strings.TrimPrefix(path, *jobConfigPath), string(filepath.Separator))
+		seps := strings.Split(cleanPath, string(filepath.Separator))
+		if len(seps) <= 2 {
+			return nil
+		}
+		org := seps[0]
+		project := seps[1]
+		basename := seps[2]
+		if basename != fmt.Sprintf("%s-trusted.yaml", project) {
+			return nil
+		}
+		return secretsRestricted[fmt.Sprintf("%s/%s", org, project)]
+	}
+
+	// Postsubmit/periodic jobs defined in
+	// config/jobs/<org>/<project>/<project>-trusted.yaml can and only can use restricted
+	// secrets for <org>/repo>.
+	jobs := []cfg.JobBase{}
+	for _, job := range c.AllPostsubmits(nil) {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range c.AllPeriodics() {
+		jobs = append(jobs, job.JobBase)
+	}
+	for _, job := range jobs {
+		if job.Cluster != prowapi.DefaultClusterAlias {
+			// check against default public cluster only
+			continue
+		}
+		secretsCanUse := secretsCanUseByPath(job.SourcePath)
+		for _, secret := range allSecrets.List() {
+			if secretsCanUse != nil && secretsCanUse.Has(secret) {
+				t.Logf("allow secret %v for job %s defined in %s", secret, job.Name, job.SourcePath)
+				continue
+			}
+			if isSecretUsed(secret, job) {
+				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
+			}
+		}
+	}
+}
+
 // Unit test jobs outside kubernetes-security do not use the security cluster
 // and that jobs inside kubernetes-security DO
 func TestConfigSecurityClusterRestricted(t *testing.T) {
@@ -380,7 +484,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 			}
 		}
 	}
-	// TODO(bentheelder): this will need to be more complex if we ever add k-s periodic
+	// TODO: this will need to be more complex if we ever add k-s periodic
 	for _, job := range c.AllPeriodics() {
 		if job.Cluster == "security" {
 			t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
@@ -390,7 +494,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 
 // checkDockerSocketVolumes returns an error if any volume uses a hostpath
 // to the docker socket. we do not want to allow this
-func checkDockerSocketVolumes(volumes []v1.Volume) error {
+func checkDockerSocketVolumes(volumes []coreapi.Volume) error {
 	for _, volume := range volumes {
 		if volume.HostPath != nil && volume.HostPath.Path == "/var/run/docker.sock" {
 			return errors.New("job uses HostPath with docker socket")
@@ -428,7 +532,7 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 
 // checkLatestUsesImagePullPolicy returns an error if an image is a `latest-.*` tag,
 // but doesn't have imagePullPolicy: Always
-func checkLatestUsesImagePullPolicy(spec *v1.PodSpec) error {
+func checkLatestUsesImagePullPolicy(spec *coreapi.PodSpec) error {
 	for _, container := range spec.Containers {
 		if strings.Contains(container.Image, ":latest-") {
 			// If the job doesn't specify imagePullPolicy: Always,
@@ -478,7 +582,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 
 // checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
 // but doesn't use service preset or ssh preset
-func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels map[string]string) error {
+func checkKubekinsPresets(jobName string, spec *coreapi.PodSpec, labels map[string]string, validLabels map[string]bool) error {
 	service := true
 	ssh := true
 
@@ -518,10 +622,9 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 	}
 
 	for key, val := range labels {
-		if validVal, ok := validLabels[key]; !ok {
-			return fmt.Errorf("label %s is not a valid preset label", key)
-		} else if validVal != val {
-			return fmt.Errorf("label %s does not have valid value, have %s, expect %s", key, val, validVal)
+		pair := key + ":" + val
+		if validVal, ok := validLabels[pair]; !ok || !validVal {
+			return fmt.Errorf("key-value pair %s is not found in list of valid presets list", pair)
 		}
 	}
 
@@ -531,18 +634,17 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 // TestValidPresets makes sure all presets name starts with 'preset-', all job presets are valid,
 // and jobs that uses kubekins-e2e image has the right service account preset
 func TestValidPresets(t *testing.T) {
-	validLabels := map[string]string{}
+	validLabels := map[string]bool{}
 	for _, preset := range c.Presets {
 		for label, val := range preset.Labels {
 			if !strings.HasPrefix(label, "preset-") {
 				t.Errorf("Preset label %s - label name should start with 'preset-'", label)
-			} else if val != "true" {
-				t.Errorf("Preset label %s - label value should be true", label)
 			}
-			if _, ok := validLabels[label]; ok {
-				t.Errorf("Duplicated preset label : %s", label)
+			pair := label + ":" + val
+			if _, ok := validLabels[pair]; ok {
+				t.Errorf("Duplicated preset 'label:value' pair : %s", pair)
 			} else {
-				validLabels[label] = val
+				validLabels[pair] = true
 			}
 		}
 	}

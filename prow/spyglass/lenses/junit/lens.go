@@ -19,15 +19,16 @@ package junit
 
 import (
 	"bytes"
-
-	junit "github.com/joshdk/go-junit"
-	"github.com/sirupsen/logrus"
-
 	"fmt"
 	"html/template"
 	"path/filepath"
+	"sort"
+	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/testgrid/metadata/junit"
 )
 
 const (
@@ -43,19 +44,13 @@ func init() {
 // Lens is the implementation of a JUnit-rendering Spyglass lens.
 type Lens struct{}
 
-// Name returns the name.
-func (lens Lens) Name() string {
-	return name
-}
-
-// Title returns the title.
-func (lens Lens) Title() string {
-	return title
-}
-
-// Priority returns the priority.
-func (lens Lens) Priority() int {
-	return priority
+// Config returns the lens's configuration.
+func (lens Lens) Config() lenses.LensConfig {
+	return lenses.LensConfig{
+		Name:     name,
+		Title:    title,
+		Priority: priority,
+	}
 }
 
 // Header renders the content of <head> from template.html.
@@ -76,73 +71,94 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 	return ""
 }
 
+type JunitResult struct {
+	junit.Result
+}
+
+func (jr JunitResult) Duration() time.Duration {
+	return time.Duration(jr.Time * float64(time.Second)).Round(time.Second)
+}
+
 // TestResult holds data about a test extracted from junit output
 type TestResult struct {
-	Junit junit.Test
+	Junit JunitResult
 	Link  string
 }
 
 // Body renders the <body> for JUnit tests
 func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
-	type JunitViewData struct {
+	type testResults struct {
+		junit []junit.Result
+		link  string
+		path  string
+		err   error
+	}
+	resultChan := make(chan testResults)
+	for _, artifact := range artifacts {
+		go func(artifact lenses.Artifact) {
+			result := testResults{
+				link: artifact.CanonicalLink(),
+				path: artifact.JobPath(),
+			}
+			var contents []byte
+			contents, result.err = artifact.ReadAll()
+			if result.err != nil {
+				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Warn("Error reading artifact")
+				resultChan <- result
+				return
+			}
+			var suites junit.Suites
+			suites, result.err = junit.Parse(contents)
+			if result.err != nil {
+				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Info("Error parsing junit file.")
+				resultChan <- result
+				return
+			}
+			for _, suite := range suites.Suites {
+				for _, test := range suite.Results {
+					result.junit = append(result.junit, test)
+				}
+			}
+			resultChan <- result
+		}(artifact)
+	}
+	results := make([]testResults, 0, len(artifacts))
+	for range artifacts {
+		results = append(results, <-resultChan)
+	}
+	sort.Slice(results, func(i, j int) bool { return results[i].path < results[j].path })
+
+	jvd := struct {
 		NumTests int
 		Passed   []TestResult
 		Failed   []TestResult
 		Skipped  []TestResult
-	}
-
-	jvd := JunitViewData{
-		Passed:   []TestResult{},
-		Failed:   []TestResult{},
-		Skipped:  []TestResult{},
-		NumTests: 0,
-	}
-
-	var err error
-	for _, a := range artifacts {
-		contents, err := a.ReadAll()
-		if err != nil {
-			logrus.WithError(err).Error("Error reading artifact")
+	}{}
+	for _, result := range results {
+		if result.err != nil {
 			continue
 		}
-		suites, err := junit.Ingest(contents)
-		if err != nil {
-			logrus.WithError(err).Error("Error parsing junit file.")
-			continue
-		}
-		for _, suite := range suites {
-			for _, test := range suite.Tests {
-				if test.Status == "failed" {
-					jvd.Failed = append(jvd.Failed, TestResult{
-						Junit: test,
-						Link:  a.CanonicalLink(),
-					})
-				} else if test.Status == "skipped" {
-					jvd.Skipped = append(jvd.Skipped, TestResult{
-						Junit: test,
-						Link:  a.CanonicalLink(),
-					})
-				} else if test.Status == "passed" {
-					jvd.Passed = append(jvd.Passed, TestResult{
-						Junit: test,
-						Link:  a.CanonicalLink(),
-					})
-				} else {
-					err = fmt.Errorf("Invalid test status string: %s", test.Status)
-					logrus.Error(err)
-				}
+		for _, test := range result.junit {
+			if test.Failure != nil {
+				jvd.Failed = append(jvd.Failed, TestResult{
+					Junit: JunitResult{test},
+					Link:  result.link,
+				})
+			} else if test.Skipped != nil {
+				jvd.Skipped = append(jvd.Skipped, TestResult{
+					Junit: JunitResult{test},
+					Link:  result.link,
+				})
+			} else {
+				jvd.Passed = append(jvd.Passed, TestResult{
+					Junit: JunitResult{test},
+					Link:  result.link,
+				})
 			}
 		}
-		jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
-
 	}
 
-	if jvd.NumTests == 0 {
-		if err != nil {
-			return fmt.Sprintf("Failed to parse JUnit test results: %v", err)
-		}
-		return "Found no JUnit tests"
-	}
+	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
 
 	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {

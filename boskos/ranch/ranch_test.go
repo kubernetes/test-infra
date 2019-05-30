@@ -60,6 +60,13 @@ func AreErrorsEqual(got error, expect error) bool {
 			}
 		}
 		return false
+	case *ResourceTypeNotFound:
+		if o, ok := expect.(*ResourceTypeNotFound); ok {
+			if o.rType == got.(*ResourceTypeNotFound).rType {
+				return true
+			}
+		}
+		return false
 	case *StateNotMatch:
 		if o, ok := expect.(*StateNotMatch); ok {
 			if o.expect == got.(*StateNotMatch).expect && o.current == got.(*StateNotMatch).current {
@@ -90,7 +97,7 @@ func TestAcquire(t *testing.T) {
 			rtype:     "t",
 			state:     "s",
 			dest:      "d",
-			expectErr: &ResourceNotFound{"t"},
+			expectErr: &ResourceTypeNotFound{"t"},
 		},
 		{
 			name: "no match type",
@@ -101,7 +108,7 @@ func TestAcquire(t *testing.T) {
 			rtype:     "t",
 			state:     "s",
 			dest:      "d",
-			expectErr: &ResourceNotFound{"t"},
+			expectErr: &ResourceTypeNotFound{"t"},
 		},
 		{
 			name: "no match state",
@@ -394,7 +401,7 @@ func TestUpdate(t *testing.T) {
 			resName:   "res",
 			owner:     "user",
 			state:     "s",
-			expectErr: &OwnerNotMatch{"user", "merlin"},
+			expectErr: &OwnerNotMatch{"merlin", "user"},
 		},
 		{
 			name: "wrong state",
@@ -428,34 +435,34 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
-		err := c.Update(tc.resName, tc.owner, tc.state, nil)
-		if !AreErrorsEqual(err, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expect error %v", tc.name, err, tc.expectErr)
-			continue
-		}
-
-		resources, err2 := c.Storage.GetResources()
-		if err2 != nil {
-			t.Errorf("failed to get resources")
-			continue
-		}
-
-		if err == nil {
-			if resources[0].Owner != tc.owner {
-				t.Errorf("%s - Wrong owner after release. Got %v, expect %v", tc.name, resources[0].Owner, tc.owner)
-			} else if resources[0].State != tc.state {
-				t.Errorf("%s - Wrong state after release. Got %v, expect %v", tc.name, resources[0].State, tc.state)
-			} else if !resources[0].LastUpdate.After(FakeNow) {
-				t.Errorf("%s - LastUpdate did not update.", tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			c := MakeTestRanch(tc.resources)
+			err := c.Update(tc.resName, tc.owner, tc.state, nil)
+			if !AreErrorsEqual(err, tc.expectErr) {
+				t.Fatalf("Got error %v, expect error %v", err, tc.expectErr)
 			}
-		} else {
-			for _, res := range resources {
-				if res.LastUpdate != FakeNow {
-					t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, FakeNow)
+
+			resources, err2 := c.Storage.GetResources()
+			if err2 != nil {
+				t.Fatalf("failed to get resources")
+			}
+
+			if err == nil {
+				if resources[0].Owner != tc.owner {
+					t.Errorf("%s - Wrong owner after release. Got %v, expect %v", tc.name, resources[0].Owner, tc.owner)
+				} else if resources[0].State != tc.state {
+					t.Errorf("%s - Wrong state after release. Got %v, expect %v", tc.name, resources[0].State, tc.state)
+				} else if !resources[0].LastUpdate.After(FakeNow) {
+					t.Errorf("%s - LastUpdate did not update.", tc.name)
+				}
+			} else {
+				for _, res := range resources {
+					if res.LastUpdate != FakeNow {
+						t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, FakeNow)
+					}
 				}
 			}
-		}
+		})
 	}
 }
 

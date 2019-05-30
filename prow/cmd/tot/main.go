@@ -277,6 +277,9 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tot"}),
 	)
 
+	pjutil.ServePProf()
+	health := pjutil.NewHealth()
+
 	s, err := newStore(o.storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("newStore failed")
@@ -299,6 +302,8 @@ func main() {
 	}
 
 	http.HandleFunc("/vend/", s.handle)
+
+	health.ServeReady()
 
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }

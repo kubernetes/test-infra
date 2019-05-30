@@ -1,0 +1,46 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-azure:
+  - name: pull-cluster-api-provider-azure-bazel-verify
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - "./hack/verify-bazel.sh"
+  - name: pull-cluster-api-provider-azure-bazel-test
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - "./scripts/ci-bazel-test.sh"
+  - name: pull-cluster-api-provider-azure-bazel-build
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - "./scripts/ci-bazel-build.sh"
+  - name: pull-cluster-api-provider-azure-verify-boilerplate
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        command:
+        - "./hack/verify_boilerplate.py"

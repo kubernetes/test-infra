@@ -199,13 +199,14 @@ var NamePriority = map[string]int{
 	"implementation": 5,
 	"implements":     6,
 	"alwayslink":     7,
+	// default condition in a dictionary literal passed to select should be
+	// the last one by convention.
+	"//conditions:default": 50,
 }
 
 var StripLabelLeadingSlashes = false
 
 var ShortenAbsoluteLabelsToRelative = false
-
-var FormatBzlFiles = false
 
 // OverrideTables allows a user of the build package to override the special-case rules. The user-provided tables replace the built-in tables.
 func OverrideTables(labelArg, blacklist, listArg, sortableListArg, sortBlacklist, sortWhitelist map[string]bool, namePriority map[string]int, stripLabelLeadingSlashes, shortenAbsoluteLabelsToRelative bool) {

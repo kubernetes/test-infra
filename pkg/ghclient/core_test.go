@@ -30,15 +30,15 @@ func setForTest(client *Client) {
 	client.tokenReserve = 50
 }
 
-// fakeGithub is a fake go-github client that doubles as a test instance representation. This fake
+// fakeGitHub is a fake go-github client that doubles as a test instance representation. This fake
 // client keeps track of the number of API calls made in order to test retry behavior and also allows
 // the number of pages of results to be configured.
-type fakeGithub struct {
-	// name is a string representation of this fakeGithub instance.
+type fakeGitHub struct {
+	// name is a string representation of this fakeGitHub instance.
 	name string
-	// hits is a count of the number of API calls made to fakeGithub.
+	// hits is a count of the number of API calls made to fakeGitHub.
 	hits int
-	// hitsBeforeResponse is the number of hits that should be received before fakeGithub responds without error.
+	// hitsBeforeResponse is the number of hits that should be received before fakeGitHub responds without error.
 	hitsBeforeResponse int
 	// shouldSucceed indicates if the githubutil client should get a valid response.
 	shouldSucceed bool
@@ -49,14 +49,14 @@ type fakeGithub struct {
 }
 
 // checkHits verifies that the githubutil client made the correct number of retries before returning.
-func (f *fakeGithub) checkHits() bool {
+func (f *fakeGitHub) checkHits() bool {
 	if f.shouldSucceed {
 		return f.hits-f.pages+1 == f.hitsBeforeResponse
 	}
 	return f.hitsBeforeResponse > f.hits
 }
 
-func (f *fakeGithub) call() ([]interface{}, *github.Response, error) {
+func (f *fakeGitHub) call() ([]interface{}, *github.Response, error) {
 	f.hits++
 	if f.hits >= f.hitsBeforeResponse {
 		return []interface{}{f.listOpts.Page},
@@ -67,7 +67,7 @@ func (f *fakeGithub) call() ([]interface{}, *github.Response, error) {
 }
 
 func TestRetryAndPagination(t *testing.T) {
-	tests := []*fakeGithub{
+	tests := []*fakeGitHub{
 		{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
 		{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
 		{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},

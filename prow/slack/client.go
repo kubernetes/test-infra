@@ -104,6 +104,7 @@ func (sl *Client) WriteMessage(text, channel string) error {
 	if sl.fake {
 		return nil
 	}
+
 	var uv = sl.urlValues()
 	uv.Add("channel", channel)
 	uv.Add("text", text)

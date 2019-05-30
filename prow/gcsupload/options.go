@@ -20,15 +20,18 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
+	"strings"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 // NewOptions returns an empty Options with no nil fields.
 func NewOptions() *Options {
 	return &Options{
-		GCSConfiguration: &kube.GCSConfiguration{},
+		GCSConfiguration: &prowapi.GCSConfiguration{},
 	}
 }
 
@@ -41,12 +44,18 @@ type Options struct {
 	// SubDir is appended to the GCS path.
 	SubDir string `json:"sub_dir,omitempty"`
 
-	*kube.GCSConfiguration
+	*prowapi.GCSConfiguration
 
 	// GcsCredentialsFile is the path to the JSON
 	// credentials for pushing to GCS.
 	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
 	DryRun             bool   `json:"dry_run"`
+
+	// mediaTypes holds additional extension media types to add to Go's
+	// builtin's and the local system's defaults.  Values are
+	// colon-delimited {extension}:{media-type}, for example:
+	// log:text/plain.
+	mediaTypes flagutil.Strings
 
 	// gcsPath is used to store human-provided GCS
 	// paths that are parsed to get more granular
@@ -89,6 +98,19 @@ func (o *Options) LoadConfig(config string) error {
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
 	o.Items = args
+
+	for _, extensionMediaType := range o.mediaTypes.Strings() {
+		parts := strings.SplitN(extensionMediaType, ":", 2)
+		if len(parts) != 2 {
+			panic(fmt.Sprintf("invalid extension media type %q: missing colon delimiter", extensionMediaType))
+		}
+		extension, mediaType := parts[0], parts[1]
+		if o.GCSConfiguration.MediaTypes == nil {
+			o.GCSConfiguration.MediaTypes = map[string]string{}
+		}
+		o.GCSConfiguration.MediaTypes[extension] = mediaType
+	}
+	o.mediaTypes = flagutil.NewStrings()
 }
 
 // AddFlags adds flags to the FlagSet that populate
@@ -96,13 +118,15 @@ func (o *Options) Complete(args []string) {
 func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.SubDir, "sub-dir", "", "Optional sub-directory of the job's path to which artifacts are uploaded")
 
-	fs.StringVar(&o.PathStrategy, "path-strategy", kube.PathStrategyExplicit, "how to encode org and repo into GCS paths")
+	fs.StringVar(&o.PathStrategy, "path-strategy", prowapi.PathStrategyExplicit, "how to encode org and repo into GCS paths")
 	fs.StringVar(&o.DefaultOrg, "default-org", "", "optional default org for GCS path encoding")
 	fs.StringVar(&o.DefaultRepo, "default-repo", "", "optional default repo for GCS path encoding")
 
 	fs.Var(&o.gcsPath, "gcs-path", "GCS path to upload into")
 	fs.StringVar(&o.GcsCredentialsFile, "gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
 	fs.BoolVar(&o.DryRun, "dry-run", true, "do not interact with GCS")
+
+	fs.Var(&o.mediaTypes, "media-type", "Optional comma-delimited set of extension media types.  Each entry is colon-delimited {extension}:{media-type}, for example, log:text/plain.")
 }
 
 const (

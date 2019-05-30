@@ -441,8 +441,8 @@ var defaultConfig = Config{
 	WorkerNodePrivateKeyPath: filepath.Join(homedir.HomeDir(), ".ssh", "kube_aws_rsa"),
 
 	// Amazon EKS-optimized AMI, https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-	WorkerNodeAMI:          "ami-094fa4044a2a3cf52",
-	WorkerNodeInstanceType: "m5.large",
+	WorkerNodeAMI:          "ami-0a2abab4107669c1b",
+	WorkerNodeInstanceType: "m3.xlarge",
 	WorkerNodeASGMin:       1,
 	WorkerNodeASGMax:       1,
 	WorkerNodeVolumeSizeGB: 20,
@@ -615,9 +615,6 @@ func (cfg *Config) ValidateAndSetDefaults() error {
 	}
 	if cfg.WorkerNodeAMI == "" {
 		return errors.New("EKS WorkerNodeAMI is not specified")
-	}
-	if !checkAMI(cfg.KubernetesVersion, cfg.AWSRegion, cfg.WorkerNodeAMI) {
-		return fmt.Errorf("EKS WorkerNodeAMI %q is not valid", cfg.WorkerNodeAMI)
 	}
 	if cfg.WorkerNodeInstanceType == "" {
 		return errors.New("EKS WorkerNodeInstanceType is not specified")
@@ -1011,6 +1008,7 @@ func checkKubernetesVersion(s string) (ok bool) {
 
 // supportedKubernetesVersions is a list of EKS supported Kubernets versions.
 var supportedKubernetesVersions = map[string]struct{}{
+	"1.10": {},
 	"1.11": {},
 }
 
@@ -1022,57 +1020,16 @@ func checkRegion(s string) (ok bool) {
 // supportedRegions is a list of currently EKS supported AWS regions.
 // See https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services.
 var supportedRegions = map[string]struct{}{
-	"us-west-2":  {},
-	"us-east-1":  {},
-	"us-east-2":  {},
-	"eu-west-1":  {},
-	"eu-north-1": {},
-}
-
-// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-// https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var amiCPUs = map[string]map[string]string{
-	"1.11": {
-		"us-west-2":  "ami-094fa4044a2a3cf52",
-		"us-east-1":  "ami-0b4eb1d8782fc3aea",
-		"us-east-2":  "ami-053cbe66e0033ebcf",
-		"eu-west-1":  "ami-0a9006fb385703b54",
-		"eu-north-1": "ami-082e6cf1c07e60241",
-	},
-}
-
-// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-// https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
-var amiGPUs = map[string]map[string]string{
-	"1.11": {
-		"us-west-2":  "ami-014f4e495a19d3e4f",
-		"us-east-1":  "ami-08a0bb74d1c9a5e2f",
-		"us-east-2":  "ami-04a758678ae5ebad5",
-		"eu-west-1":  "ami-050db3f5f9dbd4439",
-		"eu-north-1": "ami-69b03e17",
-	},
-}
-
-func checkAMI(ver, region, imageID string) (ok bool) {
-	var cpu map[string]string
-	cpu, ok = amiCPUs[ver]
-	if !ok {
-		return false
-	}
-	var id string
-	id, ok = cpu[region]
-	if !ok {
-		var gpu map[string]string
-		gpu, ok = amiGPUs[ver]
-		if !ok {
-			return false
-		}
-		id, ok = gpu[region]
-		if !ok {
-			return false
-		}
-	}
-	return id == imageID
+	"us-west-2":      {},
+	"us-east-1":      {},
+	"us-east-2":      {},
+	"eu-central-1":   {},
+	"eu-north-1":     {},
+	"eu-west-1":      {},
+	"ap-northeast-1": {},
+	"ap-northeast-2": {},
+	"ap-southeast-1": {},
+	"ap-southeast-2": {},
 }
 
 func checkEC2InstanceType(s string) (ok bool) {

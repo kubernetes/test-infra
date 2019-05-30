@@ -370,7 +370,7 @@ func TestSetStatuses(t *testing.T) {
 			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
 
-		sc := &statusController{ghc: fc, ca: ca, logger: log}
+		sc := &statusController{ghc: fc, config: ca.Config, logger: log}
 		sc.setStatuses([]PullRequest{pr}, pool)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
@@ -435,7 +435,7 @@ func TestTargetUrl(t *testing.T) {
 		ca := &config.Agent{}
 		ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: tc.config}})
 		log := logrus.WithField("controller", "status-update")
-		if actual, expected := targetURL(ca, tc.pr, log), tc.expectedURL; actual != expected {
+		if actual, expected := targetURL(ca.Config, tc.pr, log), tc.expectedURL; actual != expected {
 			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
 		}
 	}

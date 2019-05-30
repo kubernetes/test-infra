@@ -1,6 +1,7 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 approvers:
-- carolynvs
-- duglin
+- jberkhahn
 - jboyd01
-- jeremyrickard
 - MHBauer
+- nilebox

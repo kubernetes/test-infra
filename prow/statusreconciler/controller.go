@@ -23,24 +23,28 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, kubeClient *kube.Client, githubClient *github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitBlacklist sets.String, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, configAgent *config.Agent, pluginAgent *plugins.ConfigAgent) *Controller {
 	return &Controller{
-		continueOnError: continueOnError,
+		continueOnError:         continueOnError,
+		addedPresubmitBlacklist: addedPresubmitBlacklist,
 		prowJobTriggerer: &kubeProwJobTriggerer{
-			kubeClient:   kubeClient,
-			githubClient: githubClient,
-			configAgent:  configAgent,
+			prowJobClient: prowJobClient,
+			githubClient:  githubClient,
+			configAgent:   configAgent,
+			pluginAgent:   pluginAgent,
 		},
 		githubClient: githubClient,
 		statusMigrator: &gitHubMigrator{
@@ -60,7 +64,7 @@ type statusMigrator interface {
 }
 
 type gitHubMigrator struct {
-	githubClient    *github.Client
+	githubClient    github.Client
 	continueOnError bool
 }
 
@@ -79,29 +83,32 @@ func (m *gitHubMigrator) migrate(org, repo, from, to string, targetBranchFilter 
 }
 
 type prowJobTriggerer interface {
-	runOrSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error
+	runAndSkip(pr *github.PullRequest, requestedJobs, skippedJobs []config.Presubmit) error
 }
 
 type kubeProwJobTriggerer struct {
-	kubeClient   *kube.Client
-	githubClient *github.Client
-	configAgent  *config.Agent
+	prowJobClient prowv1.ProwJobInterface
+	githubClient  github.Client
+	configAgent   *config.Agent
+	pluginAgent   *plugins.ConfigAgent
 }
 
-func (t *kubeProwJobTriggerer) runOrSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
-	return trigger.RunOrSkipRequested(
+func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs, skippedJobs []config.Presubmit) error {
+	org, repo := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name
+	return trigger.RunAndSkipJobs(
 		trigger.Client{
-			GitHubClient: t.githubClient,
-			KubeClient:   t.kubeClient,
-			Config:       t.configAgent.Config(),
-			Logger:       logrus.WithField("client", "trigger"),
+			GitHubClient:  t.githubClient,
+			ProwJobClient: t.prowJobClient,
+			Config:        t.configAgent.Config(),
+			Logger:        logrus.WithField("client", "trigger"),
 		},
-		pr, requestedJobs, map[string]bool{}, "", "none",
+		pr, requestedJobs, skippedJobs, "none", t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
 	)
 }
 
 type githubClient interface {
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
 type trustedChecker interface {
@@ -109,7 +116,7 @@ type trustedChecker interface {
 }
 
 type githubTrustedChecker struct {
-	githubClient *github.Client
+	githubClient github.Client
 	pluginAgent  *plugins.ConfigAgent
 }
 
@@ -124,11 +131,12 @@ func (c *githubTrustedChecker) trustedPullRequest(author, org, repo string, num 
 
 // Controller reconciles statuses on PRs when config changes impact blocking presubmits
 type Controller struct {
-	continueOnError  bool
-	prowJobTriggerer prowJobTriggerer
-	githubClient     githubClient
-	statusMigrator   statusMigrator
-	trustedChecker   trustedChecker
+	continueOnError         bool
+	addedPresubmitBlacklist sets.String
+	prowJobTriggerer        prowJobTriggerer
+	githubClient            githubClient
+	statusMigrator          statusMigrator
+	trustedChecker          trustedChecker
 }
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
@@ -183,6 +191,9 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 		}
 		parts := strings.SplitN(orgrepo, "/", 2)
 		org, repo := parts[0], parts[1]
+		if c.addedPresubmitBlacklist.Has(org) || c.addedPresubmitBlacklist.Has(orgrepo) {
+			continue
+		}
 		prs, err := c.githubClient.GetPullRequests(org, repo)
 		if err != nil {
 			triggerErrors = append(triggerErrors, fmt.Errorf("failed to list pull requests for %s: %v", orgrepo, err))
@@ -192,7 +203,27 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			continue
 		}
 		for _, pr := range prs {
-			if err := c.triggerOrSkipIfTrusted(org, repo, pr, presubmits); err != nil {
+			if pr.Mergable != nil && !*pr.Mergable {
+				// the PR cannot be merged as it is, so the user will need to update the PR (and trigger
+				// testing via the PR push event) or re-test if the HEAD of the branch they are targeting
+				// changes (and re-trigger tests anyway) so we do not need to do anything in this case and
+				// launching jobs that instantly fail due to merge conflicts is a waste of time
+				continue
+			}
+			// we want to appropriately trigger and skip from the set of identified presubmits that were
+			// added. we know all of the presubmits we are filtering need to be forced to run, so we can
+			// enforce that with a custom filter
+			filter := func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+				return true, false, true
+			}
+			org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
+			changes := config.NewGitHubDeferredChangedFilesProvider(c.githubClient, org, repo, number)
+			logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "number": number, "branch": branch})
+			toTrigger, toSkip, err := pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
+			if err != nil {
+				return err
+			}
+			if err := c.triggerAndSkipIfTrusted(org, repo, pr, toTrigger, toSkip); err != nil {
 				triggerErrors = append(triggerErrors, fmt.Errorf("failed to trigger jobs for %s#%d: %v", orgrepo, pr.Number, err))
 				if !c.continueOnError {
 					return errorutil.NewAggregate(triggerErrors...)
@@ -204,7 +235,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 	return errorutil.NewAggregate(triggerErrors...)
 }
 
-func (c *Controller) triggerOrSkipIfTrusted(org, repo string, pr github.PullRequest, presubmits []config.Presubmit) error {
+func (c *Controller) triggerAndSkipIfTrusted(org, repo string, pr github.PullRequest, toTrigger, toSkip []config.Presubmit) error {
 	trusted, err := c.trustedChecker.trustedPullRequest(pr.User.Login, org, repo, pr.Number)
 	if err != nil {
 		return fmt.Errorf("failed to determine if %s/%s#%d is trusted: %v", org, repo, pr.Number, err)
@@ -212,17 +243,22 @@ func (c *Controller) triggerOrSkipIfTrusted(org, repo string, pr github.PullRequ
 	if !trusted {
 		return nil
 	}
-	var jobContexts []map[string]string
-	for _, presubmit := range presubmits {
-		jobContexts = append(jobContexts, map[string]string{"job": presubmit.Name, "context": presubmit.Context})
+	var triggeredContexts []map[string]string
+	for _, presubmit := range toTrigger {
+		triggeredContexts = append(triggeredContexts, map[string]string{"job": presubmit.Name, "context": presubmit.Context})
+	}
+	var skippedContexts []map[string]string
+	for _, presubmit := range toTrigger {
+		skippedContexts = append(skippedContexts, map[string]string{"job": presubmit.Name, "context": presubmit.Context})
 	}
 	logrus.WithFields(logrus.Fields{
-		"jobs": jobContexts,
-		"pr":   pr.Number,
-		"org":  org,
-		"repo": repo,
-	}).Info("Triggering new ProwJobs to create newly-required contexts.")
-	return c.prowJobTriggerer.runOrSkip(&pr, presubmits)
+		"to-trigger": triggeredContexts,
+		"to-skip":    skippedContexts,
+		"pr":         pr.Number,
+		"org":        org,
+		"repo":       repo,
+	}).Info("Triggering and skipping new ProwJobs to create newly-required contexts.")
+	return c.prowJobTriggerer.runAndSkip(&pr, toTrigger, toSkip)
 }
 
 func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config.Presubmit) error {
@@ -236,7 +272,7 @@ func (c *Controller) retireRemovedContexts(retiredPresubmits map[string][]config
 				"repo":    repo,
 				"context": presubmit.Context,
 			}).Info("Retiring context.")
-			if err := c.statusMigrator.retire(org, repo, presubmit.Context, presubmit.Brancher.RunsAgainstBranch); err != nil {
+			if err := c.statusMigrator.retire(org, repo, presubmit.Context, presubmit.Brancher.ShouldRun); err != nil {
 				if c.continueOnError {
 					retireErrors = append(retireErrors, err)
 					continue
@@ -260,7 +296,7 @@ func (c *Controller) updateMigratedContexts(migrations map[string][]presubmitMig
 				"from": migration.from.Context,
 				"to":   migration.to.Context,
 			}).Info("Migrating context.")
-			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context, migration.from.Brancher.RunsAgainstBranch); err != nil {
+			if err := c.statusMigrator.migrate(org, repo, migration.from.Context, migration.to.Context, migration.from.Brancher.ShouldRun); err != nil {
 				if c.continueOnError {
 					migrateErrors = append(migrateErrors, err)
 					continue
@@ -283,7 +319,7 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 	for repo, oldPresubmits := range old {
 		added[repo] = []config.Presubmit{}
 		for _, newPresubmit := range new[repo] {
-			if !newPresubmit.ContextRequired() {
+			if !newPresubmit.ContextRequired() || newPresubmit.NeedsExplicitTrigger() {
 				continue
 			}
 			var found bool

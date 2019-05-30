@@ -7,7 +7,8 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
   - name: pull-cluster-api-provider-aws-bazel-test
@@ -17,7 +18,8 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
   - name: pull-cluster-api-provider-aws-bazel-build
@@ -27,10 +29,11 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
-  - name: pull-cluster-api-provider-aws-bazel-e2e
+  - name: pull-cluster-api-provider-aws-bazel-integration
     always_run: true
     optional: true
     decorate: true
@@ -39,10 +42,11 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master # needs bazel 0.18+
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
         command:
         - "runner.sh"
-        - "./scripts/ci-bazel-e2e.sh"
+        - "./scripts/ci-bazel-integration.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -68,6 +72,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190110-49573aea5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"

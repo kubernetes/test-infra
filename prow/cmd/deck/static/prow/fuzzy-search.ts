@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 export class FuzzySearch {
-  dict: string[];
+  public dict: string[];
 
   constructor(dict: string[]) {
     dict.sort();
@@ -25,22 +25,16 @@ export class FuzzySearch {
   /**
    * Returns a list of string from dictionary that matches against the pattern.
    */
-  search(pattern: string): string[] {
+  public search(pattern: string): string[] {
     if (!this.dict || this.dict.length === 0) {
       return [];
     }
     if (!pattern || pattern.length === 0) {
       return this.dict;
     }
-    const dictScr: {str: string, score: number}[] = [];
-    for (let i = 0; i < this.dict.length; i++) {
-      if (this.basicMatch(pattern, this.dict[i])) {
-        dictScr.push({
-          str: this.dict[i],
-          score: this.getMaxScore(pattern, this.dict[i])
-        });
-      }
-    }
+    const dictScr = this.dict
+        .filter((x) => this.basicMatch(pattern, x))
+        .map((x) => ({score: this.getMaxScore(pattern, x), str: x}));
     dictScr.sort((a, b) => {
       if (a.score === b.score) {
         return a.str < b.str ? -1 : (a.str > b.str ? 1 : 0);
@@ -48,29 +42,25 @@ export class FuzzySearch {
       return a.score > b.score ? -1 : 1;
     });
 
-    const result = [];
-    for (let i = 0; i < dictScr.length; i++) {
-      if (dictScr[i].score === 0) continue;
-      result.push(dictScr[i].str);
-    }
-    return result;
-  };
+    return dictScr.filter((x) => x.score !== 0).map((x) => x.str);
+  }
 
   /**
    * Sets the dictionary for the fuzzy search.
    */
-  setDict(dict: string[]) {
+  public setDict(dict: string[]) {
     dict.sort();
     this.dict = dict;
-  };
+  }
 
   /**
    * Returns true if the string contains all the pattern characters.
    */
   private basicMatch(pttn: string, str: string): boolean {
-    let i = 0, j = 0;
+    let i = 0;
+    let j = 0;
     while (i < pttn.length && j < str.length) {
-      if (pttn[i].toLowerCase() === str[j].toLowerCase()) i += 1;
+      if (pttn[i].toLowerCase() === str[j].toLowerCase()) { i += 1; }
       j += 1;
     }
     return i === pttn.length;
@@ -87,7 +77,7 @@ export class FuzzySearch {
    */
   private calcScore(i: number, str: string): number {
     let score = 0;
-    const isAlphabetical = function (c: number): boolean {
+    const isAlphabetical = (c: number): boolean => {
       return (c > 64 && c < 91) || (c > 96 && c < 123);
     };
     // Bonus if the matching is near the start of the string
@@ -110,7 +100,7 @@ export class FuzzySearch {
       score += (str[i].toUpperCase() === str[i] ? 5 : 0);
     }
     return score;
-  };
+  }
 
   /**
    * Get maximum score that a string can get against the pattern.
@@ -135,7 +125,7 @@ export class FuzzySearch {
       }
     }
 
-    for (let i = 0; i < pttn.length; i++) {
+    for (i = 0; i < pttn.length; i++) {
       const t = i % 2;
       for (let j = 0; j < str.length; j++) {
         let scoreVal = pttn[i].toLowerCase() === str[j].toLowerCase() ?
@@ -145,7 +135,7 @@ export class FuzzySearch {
         }
         if (i === 0) {
           score[t][j] = scoreVal;
-          if (j > 0) score[t][j] = Math.max(score[t][j], score[t][j - 1]);
+          if (j > 0) { score[t][j] = Math.max(score[t][j], score[t][j - 1]); }
         } else {
           if (j > 0) {
             score[t][j] = Math.max(score[t][j], score[t][j - 1]);

@@ -29,9 +29,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 )
 
 type lineData struct {
@@ -83,7 +85,7 @@ func (l linesByTimestamp) String() string {
 	return fmt.Sprintf("[%s]", log)
 }
 
-// ic is the prefix of a URL fragment for a Github comment.
+// ic is the prefix of a URL fragment for a GitHub comment.
 // The URL fragment has the following format:
 //
 // issuecomment-#id
@@ -92,7 +94,7 @@ func (l linesByTimestamp) String() string {
 // comment and trace comments across prow.
 const ic = "issuecomment"
 
-func handleTrace(selector string, kc *kube.Client) http.HandlerFunc {
+func handleTrace(selector string, client corev1.PodInterface) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logrus.Info("Started handling request")
 		start := time.Now()
@@ -105,7 +107,7 @@ func handleTrace(selector string, kc *kube.Client) http.HandlerFunc {
 			return
 		}
 
-		targets, err := getPods(selector, kc)
+		targets, err := getPods(selector, client)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
@@ -117,7 +119,7 @@ func handleTrace(selector string, kc *kube.Client) http.HandlerFunc {
 		}
 
 		// Return the logs from the found targets.
-		log := getPodLogs(kc, targets, r)
+		log := getPodLogs(client, targets, r)
 		// Filter further if issuecomment has been provided.
 		fmt.Fprint(w, postFilter(log, r.URL.Query().Get(ic)))
 		logrus.Info("Finished handling request")
@@ -153,16 +155,16 @@ func validateTraceRequest(r *http.Request) error {
 	return nil
 }
 
-func getPods(selector string, kc *kube.Client) ([]kube.Pod, error) {
-	pods, err := kc.ListPods(selector)
+func getPods(selector string, client corev1.PodInterface) ([]coreapi.Pod, error) {
+	pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 	if err != nil {
 		return nil, fmt.Errorf("Cannot list pods with selector %q: %v", selector, err)
 	}
-	var targets []kube.Pod
-	for _, pod := range pods {
-		if pod.Status.Phase != kube.PodRunning {
+	var targets []coreapi.Pod
+	for _, pod := range pods.Items {
+		if pod.Status.Phase != coreapi.PodRunning {
 			logrus.Warnf("Ignoring pod %q: not in %s phase (phase: %s, reason: %s)",
-				pod.ObjectMeta.Name, kube.PodRunning, pod.Status.Phase, pod.Status.Reason)
+				pod.ObjectMeta.Name, coreapi.PodRunning, pod.Status.Phase, pod.Status.Reason)
 			continue
 		}
 		targets = append(targets, pod)
@@ -170,7 +172,7 @@ func getPods(selector string, kc *kube.Client) ([]kube.Pod, error) {
 	return targets, nil
 }
 
-func getPodLogs(kc *kube.Client, targets []kube.Pod, r *http.Request) linesByTimestamp {
+func getPodLogs(client corev1.PodInterface, targets []coreapi.Pod, r *http.Request) linesByTimestamp {
 	var lock sync.Mutex
 	log := make(linesByTimestamp, 0)
 	wg := sync.WaitGroup{}
@@ -178,7 +180,7 @@ func getPodLogs(kc *kube.Client, targets []kube.Pod, r *http.Request) linesByTim
 	for _, pod := range targets {
 		go func(podName string) {
 			defer wg.Done()
-			podLog, err := getPodLog(podName, kc, r)
+			podLog, err := getPodLog(podName, client, r)
 			if err != nil {
 				logrus.Warnf("cannot get logs from %q: %v", podName, err)
 				return
@@ -192,7 +194,7 @@ func getPodLogs(kc *kube.Client, targets []kube.Pod, r *http.Request) linesByTim
 	return log
 }
 
-func getPodLog(podName string, kc *kube.Client, r *http.Request) (linesByTimestamp, error) {
+func getPodLog(podName string, client corev1.PodInterface, r *http.Request) (linesByTimestamp, error) {
 	pr := r.URL.Query().Get(github.PrLogField)
 	// Error already checked in validateTraceRequest
 	prNum, _ := strconv.Atoi(pr)
@@ -200,7 +202,7 @@ func getPodLog(podName string, kc *kube.Client, r *http.Request) (linesByTimesta
 	org := r.URL.Query().Get(github.OrgLogField)
 	eventGUID := r.URL.Query().Get(github.EventGUID)
 
-	podLog, err := kc.GetLog(podName)
+	podLog, err := client.GetLogs(podName, &coreapi.PodLogOptions{}).DoRaw()
 	if err != nil {
 		return nil, err
 	}

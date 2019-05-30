@@ -46,7 +46,7 @@ type ponyRepresentations struct {
 }
 
 const (
-	ponyURL    = realHerd("https://theponyapi.com/api/v1/ponies/random")
+	ponyURL    = realHerd("https://theponyapi.com/api/v1/pony/random")
 	pluginName = "pony"
 )
 

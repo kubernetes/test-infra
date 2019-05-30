@@ -181,17 +181,23 @@ func updateCommitData(commits map[string]*commitData, org, repo, hash string, bu
 	}
 }
 
-func parsePullKey(key string) (org, repo string, pr int, err error) {
-	parts := strings.Split(key, "/")
-	if len(parts) != 3 {
-		err = fmt.Errorf("malformed PR key: %s", key)
-		return
+// parsePullURL parses PR history URLs. Expects this format:
+// .../pr-history?org=<org>&repo=<repo>&pr=<pr number>
+func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
+	var prStr string
+	vals := u.Query()
+	if org = vals.Get("org"); org == "" {
+		return "", "", 0, fmt.Errorf("no value provided for org")
 	}
-	pr, err = strconv.Atoi(parts[2])
+	if repo = vals.Get("repo"); repo == "" {
+		return "", "", 0, fmt.Errorf("no value provided for repo")
+	}
+	prStr = vals.Get("pr")
+	pr, err = strconv.Atoi(prStr)
 	if err != nil {
-		return
+		return "", "", 0, fmt.Errorf("invalid PR number %q: %v", prStr, err)
 	}
-	return parts[0], parts[1], pr, nil
+	return org, repo, pr, nil
 }
 
 // getGCSDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
@@ -236,13 +242,12 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 	start := time.Now()
 	template := prHistoryTemplate{}
 
-	key := strings.TrimPrefix(url.Path, "/pr-history/")
-	org, repo, pr, err := parsePullKey(key)
+	org, repo, pr, err := parsePullURL(url)
 	if err != nil {
-		return template, fmt.Errorf("failed to parse URL: %v", err)
+		return template, fmt.Errorf("failed to parse URL %s: %v", url.String(), err)
 	}
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
-	template.Link = githubPRLink(org, repo, pr)
+	template.Link = githubPRLink(org, repo, pr) // TODO(ibzib) support Gerrit :/
 
 	toSearch, err := getGCSDirsForPR(config, org, repo, pr)
 	if err != nil {

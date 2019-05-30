@@ -21,6 +21,7 @@ import (
 	"go/build"
 	"log"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -132,6 +133,8 @@ func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r 
 		// "go_default_library" versions of these libraries depend on the
 		// pre-generated versions of the proto libraries.
 		switch imp {
+		case "github.com/golang/protobuf/proto":
+			return label.New("com_github_golang_protobuf", "proto", "go_default_library"), nil
 		case "github.com/golang/protobuf/jsonpb":
 			return label.New("com_github_golang_protobuf", "jsonpb", "go_default_library_gen"), nil
 		case "github.com/golang/protobuf/descriptor":
@@ -166,13 +169,17 @@ func resolveGo(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r 
 		return label.New("bazel_gazelle", pkg, "go_default_library"), nil
 	}
 
-	if pathtools.HasPrefix(imp, gc.prefix) {
-		pkg := path.Join(gc.prefixRel, pathtools.TrimPrefix(imp, gc.prefix))
-		return label.New("", pkg, defaultLibName), nil
+	if !c.IndexLibraries {
+		// packages in current repo were not indexed, relying on prefix to decide what may have been in
+		// current repo
+		if pathtools.HasPrefix(imp, gc.prefix) {
+			pkg := path.Join(gc.prefixRel, pathtools.TrimPrefix(imp, gc.prefix))
+			return label.New("", pkg, defaultLibName), nil
+		}
 	}
 
 	if gc.depMode == externalMode {
-		return resolveExternal(rc, imp)
+		return resolveExternal(gc.moduleMode, rc, imp)
 	} else {
 		return resolveVendored(rc, imp)
 	}
@@ -221,7 +228,8 @@ func resolveWithIndexGo(ix *resolve.RuleIndex, imp string, from label.Label) (la
 			// Current match is worse
 		} else {
 			// Match is ambiguous
-			matchError = fmt.Errorf("multiple rules (%s and %s) may be imported with %q from %s", bestMatch.Label, m.Label, imp, from)
+			// TODO: consider listing all the ambiguous rules here.
+			matchError = fmt.Errorf("rule %s imports %q which matches multiple rules: %s and %s. # gazelle:resolve may be used to disambiguate", from, imp, bestMatch.Label, m.Label)
 		}
 	}
 	if matchError != nil {
@@ -236,8 +244,28 @@ func resolveWithIndexGo(ix *resolve.RuleIndex, imp string, from label.Label) (la
 	return bestMatch.Label, nil
 }
 
-func resolveExternal(rc *repo.RemoteCache, imp string) (label.Label, error) {
-	prefix, repo, err := rc.Root(imp)
+var modMajorRex = regexp.MustCompile(`/v\d+(?:/|$)`)
+
+func resolveExternal(moduleMode bool, rc *repo.RemoteCache, imp string) (label.Label, error) {
+	// If we're in module mode, use "go list" to find the module path and
+	// repository name. Otherwise, use special cases (for github.com, golang.org)
+	// or send a GET with ?go-get=1 to find the root. If the path contains
+	// a major version suffix (e.g., /v2), treat it as a module anyway though.
+	//
+	// Eventually module mode will be the only mode. But for now, it's expensive
+	// and not the common case, especially when known repositories aren't
+	// listed in WORKSPACE (which is currently the case within go_repository).
+	if !moduleMode {
+		moduleMode = modMajorRex.FindStringIndex(imp) != nil
+	}
+
+	var prefix, repo string
+	var err error
+	if moduleMode {
+		prefix, repo, err = rc.Mod(imp)
+	} else {
+		prefix, repo, err = rc.Root(imp)
+	}
 	if err != nil {
 		return label.NoLabel, err
 	}
