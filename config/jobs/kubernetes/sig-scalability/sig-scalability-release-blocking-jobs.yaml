@@ -6,6 +6,9 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+  annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com,cloud-kubernetes-scalability-oncall@google.com
+    description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
     - args:
@@ -43,6 +46,9 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+  annotations:
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com,cloud-kubernetes-scalability-oncall@google.com
+    description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
     - args:
@@ -98,7 +104,7 @@ periodics:
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-cos-master-scalability-100
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com,cloud-kubernetes-scalability-oncall@google.com
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
