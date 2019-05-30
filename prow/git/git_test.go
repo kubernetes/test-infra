@@ -254,3 +254,111 @@ func TestMergeCommitsExistBetween(t *testing.T) {
 		}
 	}
 }
+
+func TestCheckoutMergedPullRequests(t *testing.T) {
+	testCases := []struct {
+		name          string
+		setBaseSHA    bool
+		prBranches    []string
+		mergeStrategy string
+		err           string
+	}{
+		{
+			name: "Unset baseSHA, error",
+			err:  "baseSHA must be set",
+		},
+		{
+			name:       "No pullRequestHead, error",
+			setBaseSHA: true,
+			err:        "At least one pullRequestHeadSHA must be provided",
+		},
+		{
+			name:       "Merge succeeds with one PR branch --no-ff",
+			setBaseSHA: true,
+			prBranches: []string{"my-pr-branch"},
+		},
+		{
+			name:       "Merge succeeds with multiple PR branches --no-ff",
+			setBaseSHA: true,
+			prBranches: []string{"my-pr-branch", "my-other-pr-branch"},
+		},
+		{
+			name:          "Merge succeeds with one PR branch --squash",
+			setBaseSHA:    true,
+			prBranches:    []string{"my-pr-branch"},
+			mergeStrategy: "--squash",
+		},
+		{
+			name:          "Merge succeeds with multiple PR branches --squash",
+			setBaseSHA:    true,
+			prBranches:    []string{"my-pr-branch", "my-other-pr-branch"},
+			mergeStrategy: "--squash",
+		},
+	}
+
+	const (
+		org  = "my-org"
+		repo = "my-repo"
+	)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			lg, c, err := localgit.New()
+			if err != nil {
+				t.Fatalf("Making local git repo: %v", err)
+			}
+			defer func() {
+				if err := lg.Clean(); err != nil {
+					t.Errorf("Error cleaning LocalGit: %v", err)
+				}
+				if err := c.Clean(); err != nil {
+					t.Errorf("Error cleaning Client: %v", err)
+				}
+			}()
+			if err := lg.MakeFakeRepo(org, repo); err != nil {
+				t.Fatalf("Making fake repo: %v", err)
+			}
+
+			clonedRepo, err := c.Clone(org + "/" + repo)
+			if err != nil {
+				t.Fatalf("Cloning failed: %v", err)
+			}
+
+			var commitsToMerge []string
+			for _, prBranch := range tc.prBranches {
+				if err := lg.CheckoutNewBranch(org, repo, prBranch); err != nil {
+					t.Fatalf("failed to checkout new branch %q: %v", prBranch, err)
+				}
+				if err := lg.AddCommit(org, repo, map[string][]byte{prBranch: []byte("val")}); err != nil {
+					t.Fatalf("failed to add commit: %v", err)
+				}
+				headRef, err := lg.RevParse(org, repo, "HEAD")
+				if err != nil {
+					t.Fatalf("failed to run git rev-parse: %v", err)
+				}
+				commitsToMerge = append(commitsToMerge, headRef)
+			}
+			if len(tc.prBranches) > 0 {
+				if err := lg.Checkout(org, repo, "master"); err != nil {
+					t.Fatalf("failed to run git checkout master: %v", err)
+				}
+			}
+
+			var baseSHA string
+			if tc.setBaseSHA {
+				baseSHA, err = lg.RevParse(org, repo, "master")
+				if err != nil {
+					t.Fatalf("failed to run git rev-parse master: %v", err)
+				}
+			}
+
+			err = clonedRepo.CheckoutMergedPullRequests(baseSHA, commitsToMerge, tc.mergeStrategy)
+			if err == nil && tc.err == "" {
+				return
+			}
+			if err.Error() != tc.err {
+				t.Errorf("Expected err %q but got %q", tc.err, err.Error())
+			}
+		})
+	}
+
+}

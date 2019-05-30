@@ -309,6 +309,53 @@ func (r *Repo) CheckoutPullRequest(number int) error {
 	return nil
 }
 
+// CheckoutMergedPullRequests fetches both the passsed in baseSHA and pullRequestHeadSHAs, then merges
+// the pull onto baseSHA using the provided mergeStrategy, in the order they are passed in.
+// MergeStrategy defaults to `--no-ff` if unset
+func (r *Repo) CheckoutMergedPullRequests(baseSHA string, pullRequestHeadSHAs []string, mergeStrategy string) error {
+	if baseSHA == "" {
+		return errors.New("baseSHA must be set")
+	}
+	if mergeStrategy == "" {
+		mergeStrategy = "--no-ff"
+	}
+	if len(pullRequestHeadSHAs) == 0 {
+		return errors.New("At least one pullRequestHeadSHA must be provided")
+	}
+	r.logger.Infof("Checking out merged PRs %v using strategy %s and baseSHA %s",
+		pullRequestHeadSHAs, mergeStrategy, baseSHA)
+
+	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base+"/"+r.repo, baseSHA); err != nil {
+		return fmt.Errorf("git fetch failed for revision %q: %v. output: %s", baseSHA, err, string(b))
+	}
+	for _, headSHA := range pullRequestHeadSHAs {
+		if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base+"/"+r.repo, headSHA); err != nil {
+			return fmt.Errorf("git fetch failed for SHA %s: %v. output: %s", headSHA, err, string(b))
+		}
+	}
+	if b, err := r.gitCommand("checkout", baseSHA).CombinedOutput(); err != nil {
+		return fmt.Errorf("git checkout failed for revision %q: %v. output: %s", baseSHA, err, string(b))
+	}
+	if b, err := r.gitCommand("config", "user.email", "denna@protonmail.com").CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to set email prior to merging: %v. output: %s", err, string(b))
+	}
+	for _, headSHA := range pullRequestHeadSHAs {
+		if b, err := r.gitCommand("merge", mergeStrategy, "--no-stat", "-m merge", headSHA).CombinedOutput(); err != nil {
+			if abortB, abortErr := r.gitCommand("merge", "--abort").CombinedOutput(); abortErr != nil {
+				return fmt.Errorf("merge failed with error %v and output %s, aborting merge then failed with error %v and output %q",
+					string(b), err, string(abortB), abortErr)
+			}
+			if checkoutB, checkoutErr := r.gitCommand("checkout", baseSHA).CombinedOutput(); checkoutErr != nil {
+				return fmt.Errorf("failed to go back to revision %s because of error %v(output: %s) after merge failed with error %v and output %q",
+					baseSHA, checkoutErr, string(checkoutB), err, string(b))
+			}
+			return fmt.Errorf("merge failed with error %v. output: %s", err, string(b))
+		}
+	}
+
+	return nil
+}
+
 // Config runs git config.
 func (r *Repo) Config(key, value string) error {
 	r.logger.Infof("Running git config %s %s", key, value)
