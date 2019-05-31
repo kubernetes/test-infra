@@ -122,7 +122,7 @@ func (bucket gcsBucket) resolveSymLink(symLink string) (string, error) {
 		return "", fmt.Errorf("failed to read %s: %v", symLink, err)
 	}
 	// strip gs://<bucket-name> from global address `u`
-	u := string(data)
+	u := strings.TrimSpace(string(data))
 	return prefixRe.ReplaceAllString(u, ""), nil
 }
 
