@@ -265,7 +265,7 @@ presubmits:
             memory: "6Gi"
   kubernetes/perf-tests:
   - name: pull-perf-tests-clusterloader2
-    always_run: true
+    always_run: false
     skip_report: false
     max_concurrency: 2
     branches:
@@ -314,7 +314,7 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-perf-tests-clusterloader2-kubemark
-    always_run: true
+    always_run: false
     skip_report: false
     max_concurrency: 2
     branches:
