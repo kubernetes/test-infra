@@ -1059,6 +1059,12 @@ test_groups:
 - name: integ-galley-k8s-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests-master
   days_of_results: 7
+- name: integ-istioctl-local-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-istioctl-local-presubmit-tests-master
+  days_of_results: 7
+- name: integ-istioctl-k8s-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-istioctl-k8s-presubmit-tests-master
+  days_of_results: 7
 - name: integ-mixer-local-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-local-presubmit-tests-master
   days_of_results: 7
@@ -1076,6 +1082,12 @@ test_groups:
   days_of_results: 7
 - name: integ-security-k8s-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-security-k8s-presubmit-tests-master
+  days_of_results: 7
+- name: integ-telemetry-local-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-telemetry-local-presubmit-tests-master
+  days_of_results: 7
+- name: integ-telemetry-k8s-presubmit-tests-master
+  gcs_prefix: istio-prow/pr-logs/directory/integ-telemetry-k8s-presubmit-tests-master
   days_of_results: 7
 - name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit-master
   gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-e2e-envoyv2-v1alpha3-master
@@ -5247,6 +5259,10 @@ dashboards:
     test_group_name: integ-galley-local-presubmit-tests-master
   - name: integ-galley-k8s-presubmit-tests
     test_group_name: integ-galley-k8s-presubmit-tests-master
+  - name: integ-istioctl-local-presubmit-tests
+    test_group_name: integ-istioctl-local-presubmit-tests-master
+  - name: integ-istioctl-k8s-presubmit-tests
+    test_group_name: integ-istioctl-k8s-presubmit-tests-master
   - name: integ-mixer-local-presubmit-tests
     test_group_name: integ-mixer-local-presubmit-tests-master
   - name: integ-mixer-k8s-presubmit-tests
@@ -5259,6 +5275,10 @@ dashboards:
     test_group_name: integ-security-local-presubmit-tests-master
   - name: integ-security-k8s-presubmit-tests
     test_group_name: integ-security-k8s-presubmit-tests-master
+  - name: integ-telemetry-local-presubmit-tests
+    test_group_name: integ-telemetry-local-presubmit-tests-master
+  - name: integ-telemetry-k8s-presubmit-tests
+    test_group_name: integ-telemetry-k8s-presubmit-tests-master
   - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit-master
   - name: e2e-mixer-no_auth
