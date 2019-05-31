@@ -287,6 +287,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		var filters []pjutil.Filter
 		var latestReport *reporter.JobReport
 		account := c.gc.Account(instance)
+		// Should not happen, since this means auth failed
 		if account == nil {
 			return fmt.Errorf("unable to get gerrit account")
 		}

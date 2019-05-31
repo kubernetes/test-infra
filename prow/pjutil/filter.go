@@ -25,6 +25,8 @@ import (
 )
 
 var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
+
+// RetestRe provides the regex for `/retest`
 var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 // Filter digests a presubmit config to determine if:

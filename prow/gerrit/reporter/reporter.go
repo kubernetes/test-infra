@@ -281,7 +281,7 @@ func ParseReport(message string) *JobReport {
 	}
 	report := &JobReport{}
 	report.header = contents[0]
-	for i := 1; i < len(contents); i += 1 {
+	for i := 1; i < len(contents); i++ {
 		j := deserializeJob(contents[i])
 		if j != nil {
 			report.Jobs = append(report.Jobs, j)
