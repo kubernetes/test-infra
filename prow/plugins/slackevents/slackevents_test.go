@@ -87,7 +87,7 @@ func TestPush(t *testing.T) {
 	pushEvManualBranchWhiteListed := pushEv
 	pushEvManualBranchWhiteListed.Pusher.Name = "Warren Teened"
 	pushEvManualBranchWhiteListed.Pusher.Email = "wteened@users.noreply.github.com"
-	pushEvManualBranchWhiteListed.Sender.Login = "wteened"
+	pushEvManualBranchWhiteListed.Sender.Login = "WTeened"
 	pushEvManualBranchWhiteListed.Ref = "refs/heads/warrens-branch"
 
 	pushEvManualNotBranchWhiteListed := pushEvManualBranchWhiteListed
@@ -146,12 +146,12 @@ func TestPush(t *testing.T) {
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the whitelist but in THIS branch whitelist, we should NOT send a message to sig-contrib-ax and kubernetes-dev.",
+			name:             "If PR merged by a user not in the whitelist but in THIS branch whitelist, we should NOT send a message to sig-contribex and kubernetes-dev.",
 			pushReq:          pushEvManualBranchWhiteListed,
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the whitelist, in a branch whitelist, but not THIS branch whitelist, we should send a message to sig-contrib-ax and kubernetes-dev.",
+			name:             "If PR merged by a user not in the whitelist, in a branch whitelist, but not THIS branch whitelist, we should send a message to sig-contribex and kubernetes-dev.",
 			pushReq:          pushEvManualBranchWhiteListed,
 			expectedMessages: noMessages,
 		},
