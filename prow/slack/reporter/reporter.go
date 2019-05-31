@@ -33,14 +33,15 @@ const reporterName = "slackreporter"
 
 type slackReporter struct {
 	client *slackclient.Client
-	config config.SlackReporter
+	config func() *config.SlackReporter
 	logger *logrus.Entry
 	dryRun bool
 }
 
 func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
+	config := sr.config()
 	b := &bytes.Buffer{}
-	tmpl, err := template.New("").Parse(sr.config.ReportTemplate)
+	tmpl, err := template.New("").Parse(config.ReportTemplate)
 	if err != nil {
 		sr.logger.WithField("prowjob", pj.Name).Errorf("failed to parse template: %v", err)
 		return nil, fmt.Errorf("failed to parse template: %v", err)
@@ -56,7 +57,7 @@ func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 			Debug("Skipping reporting because dry-run is enabled")
 		return []*v1.ProwJob{pj}, nil
 	}
-	if err := sr.client.WriteMessage(b.String(), sr.config.Channel); err != nil {
+	if err := sr.client.WriteMessage(b.String(), config.Channel); err != nil {
 		sr.logger.WithError(err).Error("failed to write Slack message")
 		return nil, fmt.Errorf("failed to write Slack message: %v", err)
 	}
@@ -68,9 +69,10 @@ func (sr *slackReporter) GetName() string {
 }
 
 func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
+	config := sr.config()
 
 	stateShouldReport := false
-	for _, stateToReport := range sr.config.JobStatesToReport {
+	for _, stateToReport := range config.JobStatesToReport {
 		if pj.Status.State == stateToReport {
 			stateShouldReport = true
 			break
@@ -78,7 +80,7 @@ func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
 	}
 
 	typeShouldReport := false
-	for _, typeToReport := range sr.config.JobTypesToReport {
+	for _, typeToReport := range config.JobTypesToReport {
 		if typeToReport == pj.Spec.Type {
 			typeShouldReport = true
 			break
@@ -90,7 +92,7 @@ func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
 	return stateShouldReport && typeShouldReport
 }
 
-func New(cfg config.SlackReporter, dryRun bool, tokenFile string) (*slackReporter, error) {
+func New(cfg func() *config.SlackReporter, dryRun bool, tokenFile string) (*slackReporter, error) {
 	token, err := ioutil.ReadFile(tokenFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read -token-file: %v", err)

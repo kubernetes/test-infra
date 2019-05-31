@@ -98,9 +98,12 @@ func TestShouldReport(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		cfgGetter := func() *config.SlackReporter {
+			return &tc.config
+		}
 		t.Run(tc.name, func(t *testing.T) {
 			reporter := &slackReporter{
-				config: tc.config,
+				config: cfgGetter,
 				logger: logrus.NewEntry(&logrus.Logger{}),
 			}
 
@@ -108,5 +111,37 @@ func TestShouldReport(t *testing.T) {
 				t.Errorf("expected result to be %t but was %t", tc.expected, result)
 			}
 		})
+	}
+}
+
+func TestReloadsConfig(t *testing.T) {
+	cfg := &config.SlackReporter{}
+	cfgGetter := func() *config.SlackReporter {
+		return cfg
+	}
+
+	pj := &v1.ProwJob{
+		Spec: v1.ProwJobSpec{
+			Type: v1.PostsubmitJob,
+		},
+		Status: v1.ProwJobStatus{
+			State: v1.FailureState,
+		},
+	}
+
+	reporter := &slackReporter{
+		config: cfgGetter,
+		logger: logrus.NewEntry(&logrus.Logger{}),
+	}
+
+	if shouldReport := reporter.ShouldReport(pj); shouldReport {
+		t.Error("Did expect shouldReport to be false")
+	}
+
+	cfg.JobStatesToReport = []v1.ProwJobState{v1.FailureState}
+	cfg.JobTypesToReport = []v1.ProwJobType{v1.PostsubmitJob}
+
+	if shouldReport := reporter.ShouldReport(pj); !shouldReport {
+		t.Error("Did expect shouldReport to be true after config change")
 	}
 }
