@@ -21,16 +21,17 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 func TestSpecToStarted(t *testing.T) {
 	var tests = []struct {
-		name       string
-		spec       downwardapi.JobSpec
-		mainRefSHA string
-		expected   gcs.Started
+		name         string
+		spec         downwardapi.JobSpec
+		cloneRecords []clone.Record
+		expected     gcs.Started
 	}{
 		{
 			name: "Refs with Pull",
@@ -98,7 +99,7 @@ func TestSpecToStarted(t *testing.T) {
 			},
 		},
 		{
-			name: "Refs with ExtraRef and mainRefSHA override",
+			name: "Refs with ExtraRef and cloneRecords containing a final SHA",
 			spec: downwardapi.JobSpec{
 				Refs: &prowapi.Refs{
 					Org:     "kubernetes",
@@ -113,7 +114,14 @@ func TestSpecToStarted(t *testing.T) {
 					},
 				},
 			},
-			mainRefSHA: "aaaaaaaa",
+			cloneRecords: []clone.Record{{
+				Refs: prowapi.Refs{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					BaseRef: "master",
+				},
+				FinalSHA: "aaaaaaaa",
+			}},
 			expected: gcs.Started{
 				RepoVersion: "aaaaaaaa",
 				Repos: map[string]string{
@@ -122,10 +130,36 @@ func TestSpecToStarted(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Refs with only ExtraRef and cloneRecords containing a final SHA",
+			spec: downwardapi.JobSpec{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:     "kubernetes",
+						Repo:    "release",
+						BaseRef: "v1.10",
+					},
+				},
+			},
+			cloneRecords: []clone.Record{{
+				Refs: prowapi.Refs{
+					Org:     "kubernetes",
+					Repo:    "release",
+					BaseRef: "v1.10",
+				},
+				FinalSHA: "aaaaaaaa",
+			}},
+			expected: gcs.Started{
+				RepoVersion: "aaaaaaaa",
+				Repos: map[string]string{
+					"kubernetes/release": "v1.10",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
-		actual, expected := specToStarted(&test.spec, test.mainRefSHA), test.expected
+		actual, expected := specToStarted(&test.spec, test.cloneRecords), test.expected
 		expected.Timestamp = actual.Timestamp
 		if !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: got started: %#v, but expected: %#v", test.name, actual, expected)

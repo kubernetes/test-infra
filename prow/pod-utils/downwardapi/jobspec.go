@@ -177,3 +177,14 @@ func GetRevisionFromSpec(spec *JobSpec) string {
 	}
 	return ""
 }
+
+// MainRefs determines the main refs under test, if there are any
+func (s *JobSpec) MainRefs() *prowapi.Refs {
+	if s.Refs != nil {
+		return s.Refs
+	}
+	if len(s.ExtraRefs) > 0 {
+		return &s.ExtraRefs[0]
+	}
+	return nil
+}
