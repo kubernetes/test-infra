@@ -708,8 +708,8 @@ function batchRevisionCell(build: Job): HTMLTableDataCellElement {
     if (!build.refs.pulls) {
         return c;
     }
-    for (let i = 1; i < build.refs.pulls.length; i++) {
-        if (i !== 1) {
+    for (let i = 0; i < build.refs.pulls.length; i++) {
+        if (i !== 0) {
             c.appendChild(document.createTextNode(", "));
         }
         const l = document.createElement("a");
