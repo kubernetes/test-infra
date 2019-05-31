@@ -3750,6 +3750,18 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
     alert_stale_results_hours: 24
     num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
+  - name: kubeadm-kinder-external-etcd-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-external-etcd-master
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    alert_stale_results_hours: 8
+    num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours
+  - name: kubeadm-kinder-external-etcd-1.14
+    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-external-etcd-1-14
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    alert_stale_results_hours: 24
+    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
 
 - name: sig-cluster-lifecycle-multi-platform
   dashboard_tab:
