@@ -256,6 +256,7 @@ func do(o options) error {
 	}
 
 	// Append the new entry to the current secret
+	fmt.Print("--print-entry is not set, waiting for existing cluster map config as input")
 
 	// First read in the secret from stdin
 	b, err := ioutil.ReadAll(os.Stdin)
