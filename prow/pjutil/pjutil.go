@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -111,6 +112,11 @@ func PresubmitSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 	pjs.Context = p.Context
 	pjs.Report = !p.SkipReport
 	pjs.RerunCommand = p.RerunCommand
+	if p.JenkinsSpec != nil {
+		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
+			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
+		}
+	}
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
 
 	return pjs
@@ -123,6 +129,11 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 	pjs.Context = p.Context
 	pjs.Report = !p.SkipReport
 	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	if p.JenkinsSpec != nil {
+		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
+			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
+		}
+	}
 
 	return pjs
 }
@@ -161,8 +172,9 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		ExtraRefs:        jb.ExtraRefs,
 		DecorationConfig: jb.DecorationConfig,
 
-		PodSpec:   jb.Spec,
-		BuildSpec: jb.BuildSpec,
+		PodSpec:         jb.Spec,
+		BuildSpec:       jb.BuildSpec,
+		PipelineRunSpec: jb.PipelineRunSpec,
 	}
 }
 
@@ -174,6 +186,7 @@ func completePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 		refs.CloneURI = jb.CloneURI
 	}
 	refs.SkipSubmodules = jb.SkipSubmodules
+	refs.CloneDepth = jb.CloneDepth
 	return &refs
 }
 
@@ -240,6 +253,10 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 		fields[github.RepoLogField] = pj.Spec.Refs.Repo
 		fields[github.OrgLogField] = pj.Spec.Refs.Org
 	}
+	if pj.Spec.JenkinsSpec != nil {
+		fields["github_based_job"] = pj.Spec.JenkinsSpec.GitHubBranchSourceJob
+	}
+
 	return fields
 }
 
@@ -263,4 +280,12 @@ func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) string {
 		return b.String()
 	}
 	return ""
+}
+
+// ClusterToCtx converts the prow job's cluster to a cluster context
+func ClusterToCtx(cluster string) string {
+	if cluster == kube.InClusterContext {
+		return kube.DefaultClusterAlias
+	}
+	return cluster
 }

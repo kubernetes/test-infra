@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/github:go_default_library",
+        "//robots/pr-creator/updater:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -28,7 +28,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//robots/pr-creator/updater:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

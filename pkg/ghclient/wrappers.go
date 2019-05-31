@@ -43,7 +43,7 @@ type pullRequestService interface {
 type repositoryService interface {
 	CreateStatus(ctx context.Context, org, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error)
 	GetCombinedStatus(ctx context.Context, org, repo, ref string, opt *github.ListOptions) (*github.CombinedStatus, *github.Response, error)
-	ListCollaborators(ctx context.Context, owner, repo string, opt *github.ListOptions) ([]*github.User, *github.Response, error)
+	ListCollaborators(ctx context.Context, owner, repo string, opt *github.ListCollaboratorsOptions) ([]*github.User, *github.Response, error)
 }
 
 type usersService interface {
@@ -143,10 +143,10 @@ func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptio
 
 // GetCollaborators returns all github users who are members or outside collaborators of the repo.
 func (c *Client) GetCollaborators(org, repo string) ([]*github.User, error) {
-	opts := &github.ListOptions{}
+	opts := &github.ListCollaboratorsOptions{}
 	collaborators, err := c.depaginate(
 		fmt.Sprintf("getting collaborators for '%s/%s'", org, repo),
-		opts,
+		&opts.ListOptions,
 		func() ([]interface{}, *github.Response, error) {
 			page, resp, err := c.repoService.ListCollaborators(context.Background(), org, repo, opts)
 

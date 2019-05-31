@@ -35,13 +35,14 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190314-e8134a3
+        image: gcr.io/k8s-prow/hook:v20190528-0d7c4b53a
         imagePullPolicy: Always
         args:
         - --dry-run=false
         - --slack-token-file=/etc/slack/token
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         ports:
           - name: http
@@ -67,6 +68,19 @@ spec:
         - name: cat-api
           mountPath: /etc/cat-api
           readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 600
       volumes:
       - name: slack
         secret:

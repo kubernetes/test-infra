@@ -78,7 +78,7 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "Couldn't read the HTML template: %v.", err)
 		os.Exit(1)
 	}
-	script, err := ioutil.ReadFile(filepath.Join(resourceDir, "browser_bundle.es6.js"))
+	script, err := ioutil.ReadFile(filepath.Join(resourceDir, "browser_bundle.es2015.js"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't read JavaScript: %v.", err)
 		os.Exit(1)

@@ -5,19 +5,6 @@ py_binary(
 )
 
 py_binary(
-    name = "manage_release_versions",
-    srcs = ["manage_release_versions.py"],
-    data = [
-        "//:test-infra-README",
-        "//config:prowjobs",
-        "//experiment:fix_testgrid_config.py",
-        "//images/kubekins-e2e:all-srcs",
-        "//scenarios:kubernetes_verify.py",
-        "//testgrid:config-yaml",
-    ],
-)
-
-py_binary(
     name = "generate_tests",
     srcs = ["generate_tests.py"],
     data = [
@@ -25,6 +12,7 @@ py_binary(
         "//config:prowjobs",
         "//jobs",
         "//prow:configs",
+        "//testgrid:config-yaml",
     ],
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
 )
@@ -36,6 +24,15 @@ py_binary(
         "//testgrid:config-yaml",
     ],
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
+)
+
+py_binary(
+    name = "prepare_release_branch",
+    srcs = ["prepare_release_branch.py"],
+    deps = [
+        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
+        "@sh",
+    ],
 )
 
 filegroup(
@@ -50,15 +47,18 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//experiment/add-hook:all-srcs",
+        "//experiment/autobumper:all-srcs",
         "//experiment/aws-stockout:all-srcs",
-        "//experiment/bootstrap:all-srcs",
         "//experiment/ci-janitor:all-srcs",
+        "//experiment/config-forker:all-srcs",
+        "//experiment/config-rotator:all-srcs",
         "//experiment/coverage:all-srcs",
+        "//experiment/dummybenchmarks:all-srcs",
+        "//experiment/image-bumper:all-srcs",
+        "//experiment/logviewer/gcsreader:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/resultstore:all-srcs",
-        "//experiment/slack-event-log:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
-        "//experiment/slack-report-message:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],

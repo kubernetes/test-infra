@@ -371,9 +371,10 @@ class GSUtil(object):
                 'cp', fp.name, path]
             self.call(cmd)
 
-    def copy_file(self, dest, orig):
+    def copy_file(self, dest, orig, compress):
         """Copy the file to the specified path using compressed encoding."""
-        cmd = [self.gsutil, '-q', 'cp', '-Z', orig, dest]
+        compress = ['-Z'] if compress else []
+        cmd = [self.gsutil, '-q', 'cp'] + compress + [orig, dest]
         self.call(cmd)
 
     def upload_text(self, path, txt, additional_headers=None, cached=True):
@@ -967,7 +968,7 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
     for repo, (branch, pull) in repos.items():
         os.chdir(root_dir)
         # for k-s/k these are different, for the rest they are the same
-        # TODO(bentheelder,cjwagner,stevekuznetsov): in the integrated
+        # TODO(cjwagner,stevekuznetsov): in the integrated
         # prow checkout support remapping checkouts and kill this monstrosity
         repo_path = repo
         if repo == "github.com/kubernetes-security/kubernetes":
@@ -1068,7 +1069,7 @@ def bootstrap(args):
     build = build_name(started)
 
     if upload:
-        # TODO(bentheelder, cjwager, stevekuznetsov): support the workspace
+        # TODO(cjwager, stevekuznetsov): support the workspace
         # repo not matching the upload repo in the shiny new init container
         pull_ref_repos = [repo for repo in repos if repos[repo][1]]
         if pull_ref_repos:
@@ -1123,7 +1124,7 @@ def bootstrap(args):
     logging.getLogger('').removeHandler(build_log)
     build_log.close()
     if upload:
-        gsutil.copy_file(paths.build_log, build_log_path)
+        gsutil.copy_file(paths.build_log, build_log_path, args.compress)
     if exc_type:
         raise exc_type, exc_value, exc_traceback  # pylint: disable=raising-bad-type
     if not success:
@@ -1140,6 +1141,11 @@ def parse_args(arguments=None):
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')
+    parser.add_argument(
+        '--compress',
+        action='store_true',
+        help='Compress build-log.txt when set',
+    )
     parser.add_argument(
         '--repo',
         action='append',

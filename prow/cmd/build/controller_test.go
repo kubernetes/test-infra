@@ -24,14 +24,20 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	fake_buildset "github.com/knative/build/pkg/client/clientset/versioned/fake"
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
-
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/tools/cache"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	fake_prowjobclient "k8s.io/test-infra/prow/client/clientset/versioned/fake"
+	prowjoblistv1 "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -70,6 +76,10 @@ func (r *fakeReconciler) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), name)
 	}
 	return &pj, nil
+}
+
+func (r *fakeReconciler) terminateDupProwJobs(ctx string, namespace string) error {
+	return nil
 }
 
 func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
@@ -130,6 +140,10 @@ const randomBuildURL = "random://url"
 
 func (r *fakeReconciler) buildID(pj prowjobv1.ProwJob) (string, string, error) {
 	return randomBuildID, randomBuildURL, nil
+}
+
+func (r *fakeReconciler) defaultBuildTimeout() time.Duration {
+	return time.Hour
 }
 
 type fakeLimiter struct {
@@ -214,6 +228,470 @@ func TestEnqueueKey(t *testing.T) {
 	}
 }
 
+func TestTerminateDupProwJobs(t *testing.T) {
+	now := time.Now()
+	nowFn := func() *metav1.Time {
+		reallyNow := metav1.NewTime(now)
+		return &reallyNow
+	}
+	cases := []struct {
+		name string
+
+		useAllowCancellations bool
+		allowCancellations    bool
+		pjs                   []prowjobv1.ProwJob
+		builds                []buildv1alpha1.Build
+
+		abortedPJs     sets.String
+		expectedBuilds sets.String
+	}{
+		{
+			name:                  "terminates all duplicated jobs and all builds",
+			useAllowCancellations: true,
+			allowCancellations:    true,
+			pjs: []prowjobv1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KubernetesAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
+						CompletionTime: nowFn(),
+					},
+				},
+			},
+			builds: []buildv1alpha1.Build{
+				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS}},
+			},
+			abortedPJs:     sets.NewString("old", "older"),
+			expectedBuilds: sets.NewString("newest"),
+		},
+		{
+			name:                  "terminates all duplicated jobs and available builds",
+			useAllowCancellations: true,
+			allowCancellations:    true,
+			pjs: []prowjobv1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KubernetesAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
+						CompletionTime: nowFn(),
+					},
+				},
+			},
+			builds: []buildv1alpha1.Build{
+				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
+			},
+			abortedPJs:     sets.NewString("old", "older"),
+			expectedBuilds: sets.NewString("newest"),
+		},
+		{
+			name:                  "terminates all duplicated jobs without deleting the builds (allowCancellations set)",
+			useAllowCancellations: true,
+			allowCancellations:    false,
+			pjs: []prowjobv1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KubernetesAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
+						CompletionTime: nowFn(),
+					},
+				},
+			},
+			builds: []buildv1alpha1.Build{
+				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS}},
+			},
+			abortedPJs:     sets.NewString("old", "older"),
+			expectedBuilds: sets.NewString("newest", "old", "older"),
+		},
+		{
+			name:                  "terminates all duplicated jobs without deleting the builds (allowCancellations feature disabled)",
+			useAllowCancellations: false,
+			allowCancellations:    true,
+			pjs: []prowjobv1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "older-k8s-agent", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KubernetesAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "completed", Namespace: fakePJNS},
+					Spec: prowjobv1.ProwJobSpec{
+						Agent: prowjobv1.KnativeBuildAgent,
+						Type:  prowjobv1.PresubmitJob,
+						Job:   "j1",
+						Refs: &prowjobv1.Refs{
+							Repo:  "test",
+							Pulls: []prowjobv1.Pull{{Number: 1}},
+						},
+					},
+					Status: prowjobv1.ProwJobStatus{
+						StartTime:      metav1.NewTime(now.Add(-2 * time.Hour)),
+						CompletionTime: nowFn(),
+					},
+				},
+			},
+			builds: []buildv1alpha1.Build{
+				{ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: fakePJNS}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: fakePJNS}},
+				{ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: fakePJNS}},
+			},
+			abortedPJs:     sets.NewString("old", "older"),
+			expectedBuilds: sets.NewString("newest", "old", "older"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var prowJobs []runtime.Object
+			for i := range tc.pjs {
+				prowJobs = append(prowJobs, &tc.pjs[i])
+			}
+			pjc := fake_prowjobclient.NewSimpleClientset(prowJobs...)
+			var builds []runtime.Object
+			for i := range tc.builds {
+				builds = append(builds, &tc.builds[i])
+			}
+			buildClient := fake_buildset.NewSimpleClientset(builds...)
+
+			agent := &config.Agent{}
+			config := &config.Config{
+				ProwConfig: config.ProwConfig{
+					ProwJobNamespace: fakePJNS,
+					Plank: config.Plank{
+						Controller: config.Controller{
+							AllowCancellations: tc.allowCancellations,
+						},
+					},
+				},
+			}
+			agent.Set(config)
+
+			indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+			for _, pj := range tc.pjs {
+				err := indexer.Add(pj.DeepCopy())
+				if err != nil {
+					t.Fatalf("%s: error updating the lister index with prow job %q", err, pj.GetName())
+				}
+			}
+			pjl := prowjoblistv1.NewProwJobLister(indexer)
+
+			c := controller{
+				config: agent.Config,
+				builds: map[string]buildConfig{
+					fakePJCtx: {
+						client: buildClient,
+					},
+				},
+				pjc:                   pjc,
+				pjLister:              pjl,
+				useAllowCancellations: tc.useAllowCancellations,
+			}
+
+			if err := c.terminateDupProwJobs(fakePJCtx, fakePJNS); err != nil {
+				t.Fatalf("%s: error terminating duplicated prow jobs: %v", tc.name, err)
+			}
+
+			abortedPJs := sets.NewString()
+			pjs, err := pjc.ProwV1().ProwJobs(fakePJNS).List(metav1.ListOptions{})
+			if err != nil {
+				t.Fatalf("%s: error listing the prow jobs: %v", tc.name, err)
+			}
+			for _, j := range pjs.Items {
+				if j.Status.State == prowjobv1.AbortedState {
+					abortedPJs.Insert(j.GetName())
+				}
+			}
+			if missing := tc.abortedPJs.Difference(abortedPJs); missing.Len() > 0 {
+				t.Errorf("%s: did not aborted expected prow jobs: %v", tc.name, missing.List())
+			}
+			if extra := abortedPJs.Difference(tc.abortedPJs); extra.Len() > 0 {
+				t.Errorf("%s: found unexpectedly aborted prow jobs: %v", tc.name, extra.List())
+			}
+
+			foundBuilds := sets.NewString()
+			buildList, err := buildClient.Build().Builds(fakePJNS).List(metav1.ListOptions{})
+			if err != nil {
+				t.Fatalf("%s: error list the builds: %v", tc.name, err)
+			}
+			for _, b := range buildList.Items {
+				foundBuilds.Insert(b.GetName())
+			}
+			if missing := tc.expectedBuilds.Difference(foundBuilds); missing.Len() > 0 {
+				t.Errorf("%s: did not deleted the expected builds: %v", tc.name, missing.List())
+			}
+			if extra := foundBuilds.Difference(tc.expectedBuilds); extra.Len() > 0 {
+				t.Errorf("%s: found unexpectedly deleted builds: %v", tc.name, extra.List())
+			}
+		})
+	}
+}
+
 func TestReconcile(t *testing.T) {
 	now := metav1.Now()
 	buildSpec := buildv1alpha1.BuildSpec{}
@@ -223,6 +701,7 @@ func TestReconcile(t *testing.T) {
 	noBuildChange := func(_ prowjobv1.ProwJob, b buildv1alpha1.Build) buildv1alpha1.Build {
 		return b
 	}
+	defaultTimeout := 1 * time.Hour
 	cases := []struct {
 		name          string
 		namespace     string
@@ -254,7 +733,7 @@ func TestReconcile(t *testing.T) {
 			expectedBuild: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) buildv1alpha1.Build {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -307,7 +786,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -321,7 +800,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				b.DeletionTimestamp = &now
 				if err != nil {
 					panic(err)
@@ -337,7 +816,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -369,7 +848,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -400,7 +879,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -431,7 +910,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -462,7 +941,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -470,7 +949,7 @@ func TestReconcile(t *testing.T) {
 					Type:    buildv1alpha1.BuildSucceeded,
 					Message: "hello",
 				})
-				b.Status.StartTime = now
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 			expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
@@ -501,7 +980,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -510,8 +989,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
-				b.Status.CompletionTime = now
-				b.Status.StartTime = now
+				b.Status.CompletionTime = now.DeepCopy()
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 			expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
@@ -543,7 +1022,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -552,8 +1031,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionFalse,
 					Message: "hello",
 				})
-				b.Status.StartTime = now
-				b.Status.CompletionTime = now
+				b.Status.StartTime = now.DeepCopy()
+				b.Status.CompletionTime = now.DeepCopy()
 				return b
 			}(),
 			expectedJob: func(pj prowjobv1.ProwJob, _ buildv1alpha1.Build) prowjobv1.ProwJob {
@@ -592,7 +1071,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -601,8 +1080,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
-				b.Status.CompletionTime = now
-				b.Status.StartTime = now
+				b.Status.CompletionTime = now.DeepCopy()
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 		},
@@ -615,7 +1094,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -674,7 +1153,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Agent = prowjobv1.KnativeBuildAgent
 				pj.Spec.BuildSpec = &buildSpec
 				pj.Status.BuildID = randomBuildID
-				b, err := makeBuild(pj)
+				b, err := makeBuild(pj, defaultTimeout)
 				if err != nil {
 					panic(err)
 				}
@@ -683,8 +1162,8 @@ func TestReconcile(t *testing.T) {
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
-				b.Status.CompletionTime = now
-				b.Status.StartTime = now
+				b.Status.CompletionTime = now.DeepCopy()
+				b.Status.StartTime = now.DeepCopy()
 				return b
 			}(),
 		},
@@ -698,6 +1177,9 @@ func TestReconcile(t *testing.T) {
 				name = errorGetProwJob
 			} else if tc.namespace == errorUpdateProwJob {
 				name = errorUpdateProwJob
+			}
+			if tc.context == "" {
+				tc.context = kube.DefaultClusterAlias
 			}
 			bk := toKey(tc.context, tc.namespace, name)
 			jk := toKey(fakePJCtx, fakePJNS, name)
@@ -987,6 +1469,8 @@ func TestMakeBuild(t *testing.T) {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
+					Timeout:       &prowjobv1.Duration{Duration: 0},
+					GracePeriod:   &prowjobv1.Duration{Duration: 0},
 				}
 				return pj
 			},
@@ -997,6 +1481,8 @@ func TestMakeBuild(t *testing.T) {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "bonus"}}
 				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
 					UtilityImages: &prowjobv1.UtilityImages{},
+					Timeout:       &prowjobv1.Duration{Duration: 0},
+					GracePeriod:   &prowjobv1.Duration{Duration: 0},
 				}
 				pj.Spec.BuildSpec.Source = &buildv1alpha1.SourceSpec{}
 				return pj
@@ -1006,6 +1492,7 @@ func TestMakeBuild(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			defaultTimeout := 1 * time.Hour
 			pj := prowjobv1.ProwJob{}
 			pj.Name = "world"
 			pj.Namespace = "hello"
@@ -1018,7 +1505,7 @@ func TestMakeBuild(t *testing.T) {
 				pj = tc.job(pj)
 			}
 			originalSpec := pj.Spec.DeepCopy()
-			actual, err := makeBuild(pj)
+			actual, err := makeBuild(pj, defaultTimeout)
 			if err != nil {
 				if !tc.err {
 					t.Errorf("unexpected error: %v", err)
@@ -1044,6 +1531,7 @@ func TestMakeBuild(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to inject expected source: %v", err)
 			}
+			injectTimeout(&expected.Spec, pj.Spec.DecorationConfig, defaultTimeout)
 			if pj.Spec.DecorationConfig != nil {
 				if err = decorateBuild(&expected.Spec, env[downwardapi.JobSpecEnv], *pj.Spec.DecorationConfig, injected); err != nil {
 					t.Fatalf("failed to decorate: %v", err)
@@ -1058,8 +1546,8 @@ func TestMakeBuild(t *testing.T) {
 
 func TestDecorateSteps(t *testing.T) {
 	var dc prowjobv1.DecorationConfig
-	dc.Timeout = 10 * time.Minute
-	dc.GracePeriod = 5 * time.Minute
+	dc.Timeout = &prowjobv1.Duration{Duration: 10 * time.Minute}
+	dc.GracePeriod = &prowjobv1.Duration{Duration: 5 * time.Minute}
 	_, tm := tools()
 	tm.Name += "not-static"
 	tm.MountPath += "fancy"
@@ -1073,6 +1561,9 @@ func TestDecorateSteps(t *testing.T) {
 		},
 	}
 	entries, err := decorateSteps(actual, dc, tm)
+	if err != nil {
+		t.Errorf("decorate steps: %v", err)
+	}
 	expected := []corev1.Container{
 		{
 			Name: "leave-name-alone",
@@ -1083,15 +1574,15 @@ func TestDecorateSteps(t *testing.T) {
 		},
 	}
 	expected[1].Name = "step-1"
-	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout, dc.GracePeriod, expected[0].Name, "", true, logMount, tm)
+	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[0].Name, "", true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 0: %v", err)
 	}
-	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout, dc.GracePeriod, expected[1].Name, o1.MarkerFile, true, logMount, tm)
+	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[1].Name, o1.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 1: %v", err)
 	}
-	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout, dc.GracePeriod, expected[2].Name, o2.MarkerFile, true, logMount, tm)
+	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[2].Name, o2.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 2: %v", err)
 	}
@@ -1201,7 +1692,9 @@ func TestInjectedSteps(t *testing.T) {
 	}
 }
 
-func TestDecorateBuild_Timeout(t *testing.T) {
+func TestInjectTimeout(t *testing.T) {
+	defaultTimeout := config.DefaultJobTimeout
+	var infiniteTimeout time.Duration
 	a := 5 * time.Minute
 	b := 10 * time.Hour
 
@@ -1212,7 +1705,8 @@ func TestDecorateBuild_Timeout(t *testing.T) {
 		expected         *time.Duration
 	}{
 		{
-			name: "do not change timeout when decorated unset",
+			name:     "set the default timeout when decoration is unset",
+			expected: &defaultTimeout,
 		},
 		{
 			name:         "do not change set timeout (decoration unset)",
@@ -1230,6 +1724,11 @@ func TestDecorateBuild_Timeout(t *testing.T) {
 			decoratedTimeout: &b,
 			expected:         &b,
 		},
+		{
+			name:             "set the default timeout when unset and decorated timeout is zero",
+			decoratedTimeout: &infiniteTimeout,
+			expected:         &defaultTimeout,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1244,15 +1743,15 @@ func TestDecorateBuild_Timeout(t *testing.T) {
 
 			dc := prowjobv1.DecorationConfig{
 				UtilityImages: &prowjobv1.UtilityImages{},
+				Timeout: &prowjobv1.Duration{
+					Duration: defaultTimeout,
+				},
 			}
 			if tc.decoratedTimeout != nil {
-				dc.Timeout = *tc.decoratedTimeout
+				dc.Timeout.Duration = *tc.decoratedTimeout
 			}
 			actual := buildv1alpha1.BuildSpec{Timeout: dur}
-			err := decorateBuild(&actual, "whatever", dc, true)
-			if err != nil {
-				t.Fatal(err)
-			}
+			injectTimeout(&actual, &dc, defaultTimeout)
 			if (actual.Timeout == nil) != (tc.expected == nil) {
 				t.Errorf("%v != expected %v", actual.Timeout, tc.expected)
 			} else if actual.Timeout != nil && actual.Timeout.Duration != *tc.expected {
@@ -1319,11 +1818,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "truly succeeded state returns success",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionTrue,
-						Message: "fancy",
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionTrue,
+							Message: "fancy",
+						},
 					},
 				},
 			},
@@ -1334,11 +1835,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "falsely succeeded state returns failure",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionFalse,
-						Message: "weird",
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionFalse,
+							Message: "weird",
+						},
 					},
 				},
 			},
@@ -1349,11 +1852,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unstarted job returns triggered/initializing",
 			input: buildv1alpha1.BuildStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1364,12 +1869,14 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unfinished job returns running",
 			input: buildv1alpha1.BuildStatus{
-				StartTime: now,
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				StartTime: now.DeepCopy(),
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1380,13 +1887,15 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "builds with unknown success status are still running",
 			input: buildv1alpha1.BuildStatus{
-				StartTime:      now,
-				CompletionTime: later,
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    buildv1alpha1.BuildSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				StartTime:      now.DeepCopy(),
+				CompletionTime: later.DeepCopy(),
+				Status: duckv1alpha1.Status{
+					Conditions: []duckv1alpha1.Condition{
+						{
+							Type:    buildv1alpha1.BuildSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1397,8 +1906,8 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "completed builds without a succeeded condition end in error",
 			input: buildv1alpha1.BuildStatus{
-				StartTime:      now,
-				CompletionTime: later,
+				StartTime:      now.DeepCopy(),
+				CompletionTime: later.DeepCopy(),
 			},
 			state: prowjobv1.ErrorState,
 			desc:  descMissingCondition,

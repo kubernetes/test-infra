@@ -15,13 +15,12 @@ spec:
       labels:
         app: prow-build
     spec:
-      serviceAccount: prow-build # build_rbac.yaml
+      # serviceAccountName: prow-build # build_rbac.yaml
       containers:
       - name: build
-        image: gcr.io/k8s-prow/build:v20190314-e8134a3
+        image: gcr.io/k8s-prow/build:v20190528-0d7c4b53a
         args:
         - --all-contexts
-        - --tot-url=http://tot
         - --config=/etc/prow-config/config.yaml
         - --build-cluster=/etc/build-cluster/cluster
         volumeMounts:

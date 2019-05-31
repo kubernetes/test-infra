@@ -16,6 +16,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/github:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
@@ -72,9 +73,11 @@ filegroup(
         "//prow/plugins/heart:all-srcs",
         "//prow/plugins/help:all-srcs",
         "//prow/plugins/hold:all-srcs",
+        "//prow/plugins/invalidcommitmsg:all-srcs",
         "//prow/plugins/label:all-srcs",
         "//prow/plugins/lgtm:all-srcs",
         "//prow/plugins/lifecycle:all-srcs",
+        "//prow/plugins/mergecommitblocker:all-srcs",
         "//prow/plugins/milestone:all-srcs",
         "//prow/plugins/milestonestatus:all-srcs",
         "//prow/plugins/override:all-srcs",

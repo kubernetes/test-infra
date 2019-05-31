@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=fixme,locally-disabled,locally-enabled,relative-import,too-few-public-methods,missing-docstring,ungrouped-imports,too-many-lines
+disable=fixme,locally-disabled,locally-enabled,relative-import,too-few-public-methods,missing-docstring,ungrouped-imports,too-many-lines,too-many-locals,invalid-name,superfluous-parens
 
 [REPORTS]
 reports=no

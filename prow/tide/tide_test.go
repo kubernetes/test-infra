@@ -25,10 +25,13 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"text/template"
+	"time"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	clienttesting "k8s.io/client-go/testing"
 
@@ -819,7 +822,82 @@ func TestPickBatch(t *testing.T) {
 	}
 }
 
+func TestCheckMergeLabels(t *testing.T) {
+	squashLabel := "tide/squash"
+	mergeLabel := "tide/merge"
+	rebaseLabel := "tide/rebase"
+
+	testcases := []struct {
+		name string
+
+		pr        PullRequest
+		method    github.PullRequestMergeType
+		expected  github.PullRequestMergeType
+		expectErr bool
+	}{
+		{
+			name:      "default method without PR label override",
+			pr:        PullRequest{},
+			method:    github.MergeMerge,
+			expected:  github.MergeMerge,
+			expectErr: false,
+		},
+		{
+			name: "irrelevant PR labels ignored",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String("sig/testing")}}},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeMerge,
+			expectErr: false,
+		},
+		{
+			name: "default method overridden by a PR label",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String(squashLabel)}}},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeSquash,
+			expectErr: false,
+		},
+		{
+			name: "multiple merge method PR labels should not merge",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{
+					{Name: githubql.String(squashLabel)},
+					{Name: githubql.String(rebaseLabel)}},
+				},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeSquash,
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := checkMergeLabels(tc.pr, squashLabel, rebaseLabel, mergeLabel, tc.method)
+			if err != nil && !tc.expectErr {
+				t.Errorf("unexpected error: %v", err)
+			} else if err == nil && tc.expectErr {
+				t.Errorf("missing expected error from checkMargeLabels")
+			} else if err == nil && tc.expected != actual {
+				t.Errorf("wanted: %q, got: %q", tc.expected, actual)
+			}
+		})
+	}
+}
+
 func TestTakeAction(t *testing.T) {
+	sleep = func(time.Duration) {}
+	defer func() { sleep = time.Sleep }()
+
 	// PRs 0-9 exist. All are mergable, and all are passing tests.
 	testcases := []struct {
 		name string
@@ -1382,6 +1460,9 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 }
 
 func TestSync(t *testing.T) {
+	sleep = func(time.Duration) {}
+	defer func() { sleep = time.Sleep }()
+
 	mergeableA := testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
 	unmergeableA := testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
 	unmergeableB := testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
@@ -1473,8 +1554,9 @@ func TestSync(t *testing.T) {
 		ca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Tide: config.Tide{
-					Queries:       []config.TideQuery{{}},
-					MaxGoroutines: 4,
+					Queries:            []config.TideQuery{{}},
+					MaxGoroutines:      4,
+					StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
 				},
 			},
 		})
@@ -2224,6 +2306,107 @@ func TestPresubmitsByPull(t *testing.T) {
 		}
 		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
 			t.Errorf("got incorrect file change cache: %v", diff.ObjectReflectDiff(tc.expectedChangeCache, got))
+		}
+	}
+}
+
+func getTemplate(name, tplStr string) *template.Template {
+	tpl, _ := template.New(name).Parse(tplStr)
+	return tpl
+}
+
+func TestPrepareMergeDetails(t *testing.T) {
+	pr := PullRequest{
+		Number:     githubql.Int(1),
+		Mergeable:  githubql.MergeableStateMergeable,
+		HeadRefOID: githubql.String("SHA"),
+		Title:      "my commit title",
+		Body:       "my commit body",
+	}
+
+	testCases := []struct {
+		name        string
+		tpl         config.TideMergeCommitTemplate
+		pr          PullRequest
+		mergeMethod github.PullRequestMergeType
+		expected    github.MergeDetails
+	}{{
+		name:        "No commit template",
+		tpl:         config.TideMergeCommitTemplate{},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}, {
+		name: "No commit template fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: nil,
+			Body:  nil,
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}, {
+		name: "Static commit template",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "static title"),
+			Body:  getTemplate("CommitBody", "static body"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "static title",
+			CommitMessage: "static body",
+		},
+	}, {
+		name: "Commit template uses PullRequest fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Number }}: {{ .Title }}"),
+			Body:  getTemplate("CommitBody", "{{ .HeadRefOID }} - {{ .Body }}"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "1: my commit title",
+			CommitMessage: "SHA - my commit body",
+		},
+	}, {
+		name: "Commit template uses nonexistent fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Hello }}"),
+			Body:  getTemplate("CommitBody", "{{ .World }}"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}}
+
+	for _, test := range testCases {
+		cfg := &config.Config{}
+		cfgAgent := &config.Agent{}
+		cfgAgent.Set(cfg)
+		c := &Controller{
+			config: cfgAgent.Config,
+			ghc:    &fgc{},
+			logger: logrus.WithField("component", "tide"),
+		}
+
+		actual := c.prepareMergeDetails(test.tpl, test.pr, test.mergeMethod)
+
+		if !reflect.DeepEqual(actual, test.expected) {
+			t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
 		}
 	}
 }

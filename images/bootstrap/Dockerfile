@@ -92,15 +92,13 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
     $(lsb_release -cs) stable"
 
 # Install Docker
-# TODO(bentheelder): the `sed` is a bit of a hack, look into alternatives.
+# TODO: the `sed` is a bit of a hack, look into alternatives.
 # Why this exists: `docker service start` on debian runs a `cgroupfs_mount` method,
 # We're already inside docker though so we can be sure these are already mounted.
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
-# TODO(benthelder): update docker version. This is pinned because of
-# https://github.com/kubernetes/test-infra/issues/6187
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce=18.06.* && \
+    apt-get install -y --no-install-recommends docker-ce=5:18.09.* && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
 

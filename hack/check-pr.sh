@@ -42,29 +42,33 @@ if [[ ${#dirs[@]} == 0 ]]; then
 fi
 echo
 
+failing=()
 # step <name> <command ...> runs command and prints the output if it fails.
+# if no <command> is specified, <name> is used as the command.
 step() {
-    echo -n "Running $1... "
+    name="$1"
     shift
+    cmd="$@"
+
+    echo -n "Running ${name}... "
     tmp="$(mktemp)"
-    if ! "$@" &> "$tmp"; then
+    if [[ -z "${cmd}" ]]; then
+        cmd="${name}"
+    fi
+    if ! ${cmd} &> "$tmp"; then
         echo FAIL:
         cat "$tmp"
         rm -f "$tmp"
-        return 1
+        failing+=("${name}")
+        return 0
     fi
     rm -f "$tmp"
     echo PASS
     return 0
 }
 
-failing=()
-step hack/verify-bazel.sh hack/verify-bazel.sh || failing+=("bazel")
-step hack/verify-gofmt.sh hack/verify-gofmt.sh || failing+=("gofmt")
-step hack/verify-tslint.sh hack/verify-tslint.sh || failing+=("tslint")
-step //:golint bazel run //:golint -- "${dirs[@]}" || failing+=("golint")
-step "bazel test" bazel test --build_tests_only "${tests[@]}" || failing+=("bazel test")
-step hack/verify_boilerplate.py hack/verify_boilerplate.py || failing+=("boilerplate")
+step "//hack:verify-all" bazel test //hack:verify-all
+step "bazel test" bazel test --build_tests_only "${tests[@]}"
 
 if [[ "${#failing[@]}" != 0 ]]; then
     echo "FAILURE: ${#failing[@]} steps failed: ${failing[@]}"

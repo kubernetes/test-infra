@@ -14,6 +14,7 @@ presubmits:
       - name: third
         image: busybox
         args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
+
   - name: pull-test-infra-build-smoke-fail
     agent: knative-build
     decorate: true
@@ -37,21 +38,16 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
+      - image: launcher.gcr.io/google/bazel:0.25.2
         command:
-        - runner.sh
-        - ./scenarios/kubernetes_execute_bazel.py
+        - hack/bazel.sh
         args:
-        - hack/build-then-unit.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
+        - test
+        - --config=ci
+        - --nobuild_tests_only
+        - //...
 
   - name: pull-test-infra-gubernator
     branches:
@@ -69,194 +65,6 @@ presubmits:
         - name: WORKSPACE
           value: "/workspace"
 
-  - name: pull-test-infra-lint
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - runner.sh
-        - ./scenarios/kubernetes_bazel.py
-        args:
-        - "--install=gubernator/test_requirements.txt"
-        - "--test=//..."
-        - "--test-args=--config=lint"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-tslint
-    branches:
-      - master
-    run_if_changed: '\.ts$'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-          command:
-            - ./hack/verify-tslint.sh
-
-  - name: pull-test-infra-verify-bazel
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - ./hack/verify-bazel.sh
-
-  - name: pull-test-infra-verify-config
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-config.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-config-canary
-    branches:
-    - master
-    path_alias: "k8s.io/test-infra"
-    decorate: true
-    spec:
-      containers:
-      - name: test
-        command:
-        - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        env:
-        - name: TEST_TMPDIR
-          value: /bazel-scratch/.cache/bazel
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-        volumeMounts:
-        - name: bazel-scratch
-          mountPath: /bazel-scratch/.cache
-      volumes:
-      - name: bazel-scratch
-        emptyDir: {}
-
-  - name: pull-test-infra-verify-deps
-    branches:
-    - master
-    run_if_changed: '^(go\.mod|go\.sum|WORKSPACE|BUILD\.bazel|hack/verify-deps\.sh|hack/update-deps\.sh|vendor/.*)$'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-deps.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-codegen
-    branches:
-    - master
-    always_run: true
-    path_alias: "k8s.io/test-infra"
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - ./hack/verify-codegen.sh
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-test-infra-verify-gofmt
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - ./hack/verify-gofmt.sh
-
-  - name: pull-test-infra-verify-govet
-    branches:
-    - master
-    always_run: true
-    optional: true
-    decorate: true
-    path_alias: k8s.io/test-infra
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-govet.sh
-
-  - name: pull-test-infra-verify-labels
-    branches:
-    - master
-    run_if_changed: '^label_sync/labels.yaml'
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
-        command:
-        - runner.sh
-        args:
-        - ./hack/verify-labels.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-
   - name: pull-test-infra-verify-file-perms
     branches:
     - master
@@ -266,19 +74,18 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-experimental
         command:
         - ./hack/verify-file-perms.sh
 
-  - name: pull-test-infra-verify-github-spelling
-    branches:
-    - master
+  - name: pull-test-infra-yamllint
     always_run: true
     decorate: true
-    labels:
-      preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-experimental
+      - image: quay.io/kubermatic/yamllint:0.1
         command:
-        - ./hack/verify-github-spelling.sh
+        - yamllint
+        - -c
+        - config/jobs/.yamllint.conf
+        - config/jobs

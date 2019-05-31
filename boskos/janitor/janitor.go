@@ -17,23 +17,24 @@ limitations under the License.
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	flag "github.com/spf13/pflag"
+
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
 )
 
 var (
-	bufferSize     = 1 // Maximum holding resources
-	serviceAccount = flag.String("service-account", "", "Path to projects service account")
-	rTypes         common.CommaSeparatedStrings
-	poolSize       int
-	janitorPath    = flag.String("janitor-path", "/bin/janitor.py", "Path to janitor binary path")
-	boskosURL      = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	bufferSize  = 1 // Maximum holding resources
+	rTypes      common.CommaSeparatedStrings
+	poolSize    int
+	janitorPath = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
+	boskosURL   = flag.String("boskos-url", "http://boskos", "Boskos URL")
 )
 
 func init() {
@@ -44,25 +45,17 @@ func init() {
 func main() {
 	// Activate service account
 	flag.Parse()
+	extraJanitorFlags := flag.CommandLine.Args()
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Janitor", *boskosURL)
 	logrus.Info("Initialized boskos client!")
 
-	if *serviceAccount == "" {
-		logrus.Fatal("--service-account cannot be empty!")
-	}
-
 	if len(rTypes) == 0 {
 		logrus.Fatal("--resource-type must not be empty!")
 	}
 
-	cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*serviceAccount)
-	if b, err := cmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Fatalf("fail to activate service account from %s :%s", *serviceAccount, string(b))
-	}
-
-	buffer := setup(boskos, poolSize, bufferSize, janitorClean)
+	buffer := setup(boskos, poolSize, bufferSize, janitorClean, extraJanitorFlags)
 
 	for {
 		run(boskos, buffer, rTypes)
@@ -70,16 +63,26 @@ func main() {
 	}
 }
 
-type clean func(string) error
+type clean func(resource *common.Resource, extraFlags []string) error
+
+// TODO(amwat): remove this logic when we get rid of --project.
+
+func format(rtype string) string {
+	splits := strings.Split(rtype, "-")
+	return splits[len(splits)-1]
+}
 
 // Clean by janitor script
-func janitorClean(proj string) error {
-	cmd := exec.Command(*janitorPath, fmt.Sprintf("--project=%s", proj), "--hour=0")
+func janitorClean(resource *common.Resource, flags []string) error {
+	args := append([]string{fmt.Sprintf("--%s=%s", format(resource.Type), resource.Name)}, flags...)
+	logrus.Infof("executing janitor: %s %s", *janitorPath, strings.Join(args, " "))
+	cmd := exec.Command(*janitorPath, args...)
 	b, err := cmd.CombinedOutput()
 	if err != nil {
-		logrus.WithError(err).Errorf("failed to clean up project %s, error info: %s", proj, string(b))
+		logrus.WithError(err).Errorf("failed to clean up project %s, error info: %s", resource.Name, string(b))
 	} else {
-		logrus.Infof("successfully cleaned up project %s", proj)
+		logrus.Tracef("output from janitor: %s", string(b))
+		logrus.Infof("successfully cleaned up resource %s", resource.Name)
 	}
 	return err
 }
@@ -89,15 +92,15 @@ type boskosClient interface {
 	ReleaseOne(name string, dest string) error
 }
 
-func setup(c boskosClient, janitorCount int, bufferSize int, cleanFunc clean) chan string {
-	buffer := make(chan string, 1)
+func setup(c boskosClient, janitorCount int, bufferSize int, cleanFunc clean, flags []string) chan *common.Resource {
+	buffer := make(chan *common.Resource, bufferSize)
 	for i := 0; i < janitorCount; i++ {
-		go janitor(c, buffer, cleanFunc)
+		go janitor(c, buffer, cleanFunc, flags)
 	}
 	return buffer
 }
 
-func run(c boskosClient, buffer chan string, rtypes []string) int {
+func run(c boskosClient, buffer chan<- *common.Resource, rtypes []string) int {
 	totalAcquire := 0
 	res := make(map[string]int)
 	for _, s := range rtypes {
@@ -106,18 +109,18 @@ func run(c boskosClient, buffer chan string, rtypes []string) int {
 
 	for {
 		for r := range res {
-			if projRes, err := c.Acquire(r, common.Dirty, common.Cleaning); err != nil {
+			if resource, err := c.Acquire(r, common.Dirty, common.Cleaning); err != nil {
 				logrus.WithError(err).Error("boskos acquire failed!")
 				totalAcquire += res[r]
 				delete(res, r)
-			} else if projRes == nil {
+			} else if resource == nil {
 				// To Sen: I don t understand why this would happen
 				logrus.Warning("received nil resource")
 				totalAcquire += res[r]
 				delete(res, r)
 			} else {
-				logrus.Infof("Acquired resources %s of type %s", projRes.Name, projRes.Type)
-				buffer <- projRes.Name // will block until buffer has a free slot
+				logrus.Infof("Acquired resources %s of type %s", resource.Name, resource.Type)
+				buffer <- resource // will block until buffer has a free slot
 				res[r]++
 			}
 		}
@@ -131,17 +134,17 @@ func run(c boskosClient, buffer chan string, rtypes []string) int {
 }
 
 // async janitor goroutine
-func janitor(c boskosClient, buffer chan string, fn clean) {
+func janitor(c boskosClient, buffer <-chan *common.Resource, fn clean, flags []string) {
 	for {
-		proj := <-buffer
+		resource := <-buffer
 
 		dest := common.Free
-		if err := fn(proj); err != nil {
-			logrus.WithError(err).Error("janitor.py failed!")
+		if err := fn(resource, flags); err != nil {
+			logrus.WithError(err).Errorf("%s failed!", *janitorPath)
 			dest = common.Dirty
 		}
 
-		if err := c.ReleaseOne(proj, dest); err != nil {
+		if err := c.ReleaseOne(resource.Name, dest); err != nil {
 			logrus.WithError(err).Error("boskos release failed!")
 		}
 	}

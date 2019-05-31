@@ -11,18 +11,25 @@ metadata:
   name: "deck"
 rules:
   - apiGroups:
-      - ""
-    resources:
-      - pods/log
-    verbs:
-      - get
-  - apiGroups:
       - "prow.k8s.io"
     resources:
       - prowjobs
     verbs:
       - get
       - list
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "deck"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods/log
+    verbs:
+      - get
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -36,6 +43,20 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "deck"
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: test-pods
+  name: "deck"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "deck"
+subjects:
+- kind: ServiceAccount
+  name: "deck"
+  namespace: default
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1

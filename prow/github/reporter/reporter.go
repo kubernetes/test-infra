@@ -72,7 +72,7 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 }
 
 // Report will report via reportlib
-func (c *Client) Report(pj *v1.ProwJob) error {
+func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	return report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GitHubReporter.JobTypesToReport)
+	return []*v1.ProwJob{pj}, report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GitHubReporter.JobTypesToReport)
 }

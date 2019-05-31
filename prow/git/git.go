@@ -251,7 +251,7 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 	if err == nil {
 		return true, nil
 	}
-	r.logger.WithError(err).Warningf("Merge failed with output: %s", string(b))
+	r.logger.WithError(err).Infof("Merge failed with output: %s", string(b))
 
 	if b, err := r.gitCommand("merge", "--abort").CombinedOutput(); err != nil {
 		return false, fmt.Errorf("error aborting merge for commitlike %s: %v. output: %s", commitlike, err, string(b))
@@ -271,7 +271,7 @@ func (r *Repo) Am(path string) error {
 		return nil
 	}
 	output := string(b)
-	r.logger.WithError(err).Warningf("Patch apply failed with output: %s", output)
+	r.logger.WithError(err).Infof("Patch apply failed with output: %s", output)
 	if b, abortErr := r.gitCommand("am", "--abort").CombinedOutput(); err != nil {
 		r.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(b))
 	}
@@ -351,4 +351,15 @@ func (r *Repo) Diff(head, sha string) (changes []string, err error) {
 		changes = append(changes, scan.Text())
 	}
 	return
+}
+
+// MergeCommitsExistBetween runs 'git log <target>..<head> --merged' to verify
+// if merge commits exist between "target" and "head".
+func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
+	r.logger.Infof("Verifying if merge commits exist between %s and %s.", target, head)
+	b, err := r.gitCommand("log", fmt.Sprintf("%s..%s", target, head), "--oneline", "--merges").CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("error verifying if merge commits exist between %s and %s: %v. output: %s", target, head, err, string(b))
+	}
+	return len(b) != 0, nil
 }

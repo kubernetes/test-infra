@@ -14,19 +14,48 @@
 # limitations under the License.
 
 
-# Run dep ensure and generate bazel rules.
+# Update vendor and bazel rules to match go.mod
 #
 # Usage:
-#   update-deps.sh <ARGS>
-#
-# The args are sent to dep ensure -v <ARGS>
+#   update-deps.sh [--patch|--minor] [packages]
 
 set -o nounset
 set -o errexit
 set -o pipefail
-set -o xtrace
 
-cd "$(git rev-parse --show-toplevel)"
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating modules..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
+    bazel run @io_k8s_test_infra//hack:update-bazel
+  )
+  exit 0
+else
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:update-deps -- "$@"
+  )
+  exit 0
+fi
+
+go=$(realpath "$1")
+export PATH=$(dirname "$go"):$PATH
+gazelle=$(realpath "$2")
+kazel=$(realpath "$3")
+update_bazel=(
+  $(realpath "$4")
+  "$gazelle"
+  "$kazel"
+)
+
+shift 4
+
+cd "$BUILD_WORKSPACE_DIRECTORY"
 trap 'echo "FAILED" >&2' ERR
 
 prune-vendor() {
@@ -44,21 +73,33 @@ prune-vendor() {
     -delete
 }
 
-case "${1:-}" in
+export GO111MODULE=on
+mode="${1:-}"
+shift || true
+case "$mode" in
 --minor)
-    bazel run //:update-minor
+    "$go" get -u "$@"
     ;;
 --patch)
-    bazel run //:update-patch
+    "$go" get -u=patch "$@"
+    ;;
+"")
+    # Just validate, or maybe manual go.mod edit
+    ;;
+*)
+    echo "Usage: $(basename "$0") [--patch|--minor] [packages]" >&2
+    exit 1
     ;;
 esac
 
-
 rm -rf vendor
-export GO111MODULE=on
-bazel run //:go -- mod tidy
-bazel run //:go -- mod vendor
+export GOPROXY=https://proxy.golang.org
+export GOSUMDB=sum.golang.org
+"$go" mod tidy
+"$go" mod vendor
 prune-vendor
-hack/update-bazel.sh
-bazel run //:gazelle -- update-repos --from_file=go.mod
-echo SUCCESS
+touch ./vendor/BUILD.bazel
+"$gazelle" update-repos --from_file=go.mod
+"${update_bazel[@]}"
+"${update_bazel[@]}"
+echo "SUCCESS: updated modules"

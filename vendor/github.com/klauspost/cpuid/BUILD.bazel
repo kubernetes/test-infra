@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cpuid.go",
+        "cpuid_386.s",
+        "cpuid_amd64.s",
+        "detect_intel.go",
+        "detect_ref.go",
+        "generate.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/github.com/klauspost/cpuid",
+    importpath = "github.com/klauspost/cpuid",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

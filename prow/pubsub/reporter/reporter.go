@@ -49,6 +49,9 @@ type ReportMessage struct {
 	Status  prowapi.ProwJobState `json:"status"`
 	URL     string               `json:"url"`
 	GCSPath string               `json:"gcs_path"`
+	Refs    []prowapi.Refs       `json:"refs,omitempty"`
+	JobType prowapi.ProwJobType  `json:"job_type"`
+	JobName string               `json:"job_name"`
 }
 
 // Client is a reporter client fed to crier controller
@@ -89,20 +92,20 @@ func (c *Client) ShouldReport(pj *prowapi.ProwJob) bool {
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(pj *prowapi.ProwJob) error {
+func (c *Client) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 	message := c.generateMessageFromPJ(pj)
 
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, message.Project)
 
 	if err != nil {
-		return fmt.Errorf("could not create pubsub Client: %v", err)
+		return nil, fmt.Errorf("could not create pubsub Client: %v", err)
 	}
 	topic := client.Topic(message.Topic)
 
 	d, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("could not marshal pubsub report: %v", err)
+		return nil, fmt.Errorf("could not marshal pubsub report: %v", err)
 	}
 
 	res := topic.Publish(ctx, &pubsub.Message{
@@ -111,14 +114,22 @@ func (c *Client) Report(pj *prowapi.ProwJob) error {
 
 	_, err = res.Get(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to publish pubsub message: %v", err)
+		return nil, fmt.Errorf(
+			"failed to publish pubsub message with run ID %q to topic: \"%s/%s\". %v",
+			message.RunID, message.Project, message.Topic, err)
 	}
 
-	return nil
+	return []*prowapi.ProwJob{pj}, nil
 }
 
 func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 	pubSubMap := findLabels(pj, PubSubProjectLabel, PubSubTopicLabel, PubSubRunIDLabel)
+	var refs []prowapi.Refs
+	if pj.Spec.Refs != nil {
+		refs = append(refs, *pj.Spec.Refs)
+	}
+	refs = append(refs, pj.Spec.ExtraRefs...)
+
 	return &ReportMessage{
 		Project: pubSubMap[PubSubProjectLabel],
 		Topic:   pubSubMap[PubSubTopicLabel],
@@ -126,5 +137,8 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		Status:  pj.Status.State,
 		URL:     pj.Status.URL,
 		GCSPath: strings.Replace(pj.Status.URL, c.config().Plank.GetJobURLPrefix(pj.Spec.Refs), GCSPrefix, 1),
+		Refs:    refs,
+		JobType: pj.Spec.Type,
+		JobName: pj.Spec.Job,
 	}
 }

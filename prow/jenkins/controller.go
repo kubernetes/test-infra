@@ -43,7 +43,7 @@ type prowJobClient interface {
 
 type jenkinsClient interface {
 	Build(*prowapi.ProwJob, string) error
-	ListBuilds(jobs []string) (map[string]Build, error)
+	ListBuilds(jobs []BuildQueryParams) (map[string]Build, error)
 	Abort(job string, build *Build) error
 }
 
@@ -82,7 +82,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc *github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
+func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -238,19 +238,21 @@ func (c *Controller) SyncMetrics() {
 
 // getJenkinsJobs returns all the Jenkins jobs for all active
 // prowjobs from the provided list. It handles deduplication.
-func getJenkinsJobs(pjs []prowapi.ProwJob) []string {
-	jenkinsJobs := make(map[string]struct{})
+func getJenkinsJobs(pjs []prowapi.ProwJob) []BuildQueryParams {
+	jenkinsJobs := []BuildQueryParams{}
+
 	for _, pj := range pjs {
 		if pj.Complete() {
 			continue
 		}
-		jenkinsJobs[pj.Spec.Job] = struct{}{}
+
+		jenkinsJobs = append(jenkinsJobs, BuildQueryParams{
+			JobName:   getJobName(&pj.Spec),
+			ProwJobID: pj.Name,
+		})
 	}
-	var jobs []string
-	for job := range jenkinsJobs {
-		jobs = append(jobs, job)
-	}
-	return jobs
+
+	return jenkinsJobs
 }
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
@@ -284,7 +286,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 			}
 			// Otherwise, abort it.
 			if buildExists {
-				if err := c.jc.Abort(toCancel.Spec.Job, &build); err != nil {
+				if err := c.jc.Abort(getJobName(&toCancel.Spec), &build); err != nil {
 					c.log.WithError(err).WithFields(pjutil.ProwJobFields(&toCancel)).Warn("Cannot cancel Jenkins build")
 				}
 			}

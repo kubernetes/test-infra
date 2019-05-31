@@ -44,3 +44,7 @@ external_plugins:
   - name: cherrypick
     # No events specified implies all event types.
 ```
+
+## How to test a plugin
+
+See [`build_test_update.md`](/prow/build_test_update.md#How-to-test-a-plugin).

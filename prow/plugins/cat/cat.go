@@ -39,7 +39,7 @@ import (
 var (
 	match = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
 	meow  = &realClowder{
-		url: "https://api.thecatapi.com/api/images/get?format=json&results_per_page=1",
+		url: "https://api.thecatapi.com/v1/images/search?format=json&results_per_page=1",
 	}
 )
 
@@ -105,27 +105,19 @@ func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
 }
 
 type catResult struct {
-	Source string `json:"source_url"`
-	Image  string `json:"url"`
+	Image string `json:"url"`
 }
 
 func (cr catResult) Format() (string, error) {
-	if cr.Source == "" {
-		return "", errors.New("empty source_url")
-	}
 	if cr.Image == "" {
 		return "", errors.New("empty image url")
-	}
-	src, err := url.Parse(cr.Source)
-	if err != nil {
-		return "", fmt.Errorf("invalid source_url %s: %v", cr.Source, err)
 	}
 	img, err := url.Parse(cr.Image)
 	if err != nil {
 		return "", fmt.Errorf("invalid image url %s: %v", cr.Image, err)
 	}
 
-	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
+	return fmt.Sprintf("[![cat image](%s)]", img), nil
 }
 
 func (c *realClowder) URL(category string, movieCat bool) string {

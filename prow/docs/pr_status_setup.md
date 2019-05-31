@@ -20,6 +20,13 @@ steps will show you how to setup an oauth app that works with PR Status.
     redirect_url: <PROW_BASE_URL>/github-login/redirect
     final_redirect_url: <PROW_BASE_URL>/pr
     ```
+    
+    If Prow is expected to work with private repositories, add
+    ```
+    scopes:
+    - repo
+    ```
+    
 3. Create another secret file for the cookie store. The file should contain a random 64-byte length base64 key. For example, you can use `openssl` to generate the key
     
     ```

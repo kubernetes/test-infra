@@ -1,4 +1,4 @@
-presubmits:  
+presubmits:
   kubernetes-sigs/poseidon:
   - name: ci-poseidon-e2e-gce
     always_run: true
@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -35,7 +35,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -49,9 +49,6 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e
         - --test-args=--test_tag_filters=-e2e
         - --test-args=--flaky_test_attempts=3
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -63,7 +60,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
         args:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

@@ -82,6 +82,7 @@ to clone the repo to different go import path than the default of `/home/prow/go
 - Jobs that require additional repos to be checked out can arrange for that with
 the `exta_refs` field.
 - Jobs that do not want submodules to be cloned should set `skip_submodules` to `true`
+- Jobs that want to perform shallow cloning can use `clone_depth` field. It can be set to desired clone depth. By default, clone_depth get set to 0 which results in full clone of repo.
 
 ```yaml
 - name: post-job
@@ -95,6 +96,7 @@ the `exta_refs` field.
     repo: other-repo
     base_ref: master
   skip_submodules: true
+  clone_depth: 0
   spec:
     containers:
     - image: alpine

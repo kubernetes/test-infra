@@ -17,7 +17,21 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export PYLINTHOME=$(mktemp -d)
+
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Linting python..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed //hack:verify-pylint
+  )
+  exit 0
+fi
+
+export PYLINTHOME=$TEST_TMPDIR
 pylint="$(dirname $0)/pylint_bin"
 
 shopt -s extglob globstar

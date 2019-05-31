@@ -162,8 +162,9 @@ func registerResource(config *rest.Config, t Type) error {
 			Name: fmt.Sprintf("%s.%s", t.Plural, group),
 		},
 		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
-			Group: group,
-			Scope: apiextensionsv1beta1.NamespaceScoped,
+			Group:   group,
+			Version: version,
+			Scope:   apiextensionsv1beta1.NamespaceScoped,
 			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
 				Singular: t.Singular,
 				Plural:   t.Plural,

@@ -100,8 +100,8 @@ conditions are met.
 
 #### Triggering Jobs With Comments
 
-A developer may trigger jobs by posting a comment to a pull request that contains
-one or more of the following phrases:
+A developer may trigger presubmits by posting a comment to a pull request that
+contains one or more of the following phrases:
  - `/test job-name` : When posting `/test job-name`, any jobs with matching triggers
    will be triggered unconditionally.
  - `/retest` : When posting `/retest`, two types of jobs will be triggered:
@@ -118,9 +118,8 @@ to Prow in some other context, like `/close`. It is similarly not suggested to d
 
 #### Posting GitHub Status Contexts
 
-Jobs that run will always post a status context to the commit under test in GitHub.
-Jobs that run conditionally but do not match the content of the pull request will
-_not_ post "Skipped" status contexts to the pull request.
+Presubmit and postsubmit jobs that always run will always post a status context on GitHub to the commit under test, unless the job is configured with `skip_report: true`.
+Jobs that run conditionally but do not match the content of the pull request will _not_ post "Skipped" status contexts to the pull request.
 <!--- TODO(skuznets|fejta): remove mention of negative behavior by July --->
 
 If a conditional job matched a pull request at some point in the past, ran and failed
@@ -139,8 +138,7 @@ Tide will treat jobs in the following manner for merging:
  - unconditionally run jobs with required status contexts are always required to have
    passed on a pull request to merge
  - conditionally run jobs with required status contexts are required to have passed on
-   a pull request to merge if they have been triggered against the pull request during
-   its lifetime
+   a pull request to merge if the job currently matches the pull request.
  - jobs with optional status contexts are ignored when merging
  
 In order to set a job's context to be optional, set `optional: true` on the job. If it

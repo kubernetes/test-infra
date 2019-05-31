@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/robots/pr-creator/updater"
 )
 
 type options struct {
@@ -98,7 +98,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}
 
-	n, err := updatePR(o, gc)
+	n, err := updater.UpdatePR(o.org, o.repo, o.title, o.body, o.matchTitle, gc)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to update %d", n)
 	}
@@ -114,40 +114,4 @@ func main() {
 	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", o.org, o.repo, *n, o.source, o.branch, o.title)
 
 	fmt.Println(*n)
-}
-
-type updateClient interface {
-	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
-	BotName() (string, error)
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
-}
-
-func updatePR(o options, gc updateClient) (*int, error) {
-	if o.matchTitle == "" {
-		return nil, nil
-	}
-
-	logrus.Info("Looking for a PR to reuse...")
-	me, err := gc.BotName()
-	if err != nil {
-		return nil, fmt.Errorf("bot name: %v", err)
-	}
-
-	issues, err := gc.FindIssues("is:open is:pr archived:false in:title author:"+me+" "+o.matchTitle, "updated", true)
-	if err != nil {
-		return nil, fmt.Errorf("find issues: %v", err)
-	} else if len(issues) == 0 {
-		logrus.Info("No reusable issues found")
-		return nil, nil
-	}
-	n := issues[0].Number
-	logrus.Infof("Found %d", n)
-	var ignoreOpen *bool
-	var ignoreBranch *string
-	var ignoreModify *bool
-	if err := gc.UpdatePullRequest(o.org, o.repo, n, &o.title, &o.body, ignoreOpen, ignoreBranch, ignoreModify); err != nil {
-		return nil, fmt.Errorf("update %d: %v", n, err)
-	}
-
-	return &n, nil
 }

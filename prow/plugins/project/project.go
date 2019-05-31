@@ -52,6 +52,7 @@ var (
 )
 
 type githubClient interface {
+	BotName() (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
@@ -59,7 +60,7 @@ type githubClient interface {
 	GetOrgProjects(org string) ([]github.Project, error)
 	GetProjectColumns(projectID int) ([]github.ProjectColumn, error)
 	CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
-	GetColumnProjectCard(columnID int, cardNumber int) (*github.ProjectCard, error)
+	GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error)
 	MoveProjectCard(projectCardID int, newColumnID int) error
 	DeleteProjectCard(projectCardID int) error
 	TeamHasMember(teamID int, memberLogin string) (bool, error)
@@ -112,18 +113,11 @@ func updateProjectNameToIDMap(projects []github.Project) {
 	}
 }
 
-// parseCommand parses the user command and returns the proposed project name,
+// processRegexMatches processes the user command regex matches and returns the proposed project name,
 // proposed column name, whether the command is to remove issue/PR from project,
 // and the error message
-func parseCommand(command string) (string, string, bool, string) {
+func processRegexMatches(matches []string) (string, string, bool, string) {
 	var shouldClear = false
-	matches := projectRegex.FindStringSubmatch(command)
-
-	// No project is provided
-	if len(matches) == 0 {
-		msg := invalidNumArgs
-		return "", "", false, msg
-	}
 	proposedProject := matches[1]
 	proposedColumnName := ""
 	if len(matches) > 1 && proposedProject != clearKeyword {
@@ -144,13 +138,29 @@ func parseCommand(command string) (string, string, bool, string) {
 }
 
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, projectConfig plugins.ProjectConfig) error {
+	// Only handle new comments
 	if e.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+
+	// Only handle comments that don't come from the bot
+	botName, err := gc.BotName()
+	if err != nil {
+		return err
+	}
+	if e.User.Login == botName {
+		return nil
+	}
+
+	// Only handle comments that match the regex
+	matches := projectRegex.FindStringSubmatch(e.Body)
+	if len(matches) == 0 {
 		return nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
-	proposedProject, proposedColumnName, shouldClear, msg := parseCommand(e.Body)
+	proposedProject, proposedColumnName, shouldClear, msg := processRegexMatches(matches)
 	if proposedProject == "" {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
@@ -169,24 +179,34 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
-	repos, err := gc.GetRepos(org, false)
-	if err != nil {
-		return err
-	}
-	// Get all projects for all repos
 	var projects []github.Project
-	for _, repo := range repos {
-		repoProjects, err := gc.GetRepoProjects(org, repo.Name)
+
+	// see if the project in the same repo as the issue/pr
+	repoProjects, err := gc.GetRepoProjects(org, repo)
+	if err == nil {
+		projects = append(projects, repoProjects...)
+	}
+	updateProjectNameToIDMap(projects)
+
+	var projectID int
+	var ok bool
+	// Only fetch the other repos in the org if we did not find the project in the same repo as the issue/pr
+	if projectID, ok = projectNameToIDMap[proposedProject]; !ok {
+		repos, err := gc.GetRepos(org, false)
 		if err != nil {
 			return err
 		}
-		projects = append(projects, repoProjects...)
+		// Get all projects for all repos
+		for _, repo := range repos {
+			repoProjects, err := gc.GetRepoProjects(org, repo.Name)
+			if err != nil {
+				return err
+			}
+			projects = append(projects, repoProjects...)
+		}
 	}
-
 	// Only fetch org projects if we can't find the proposed project / project to clear in the repo projects
 	updateProjectNameToIDMap(projects)
-	var projectID int
-	var ok bool
 	if projectID, ok = projectNameToIDMap[proposedProject]; !ok {
 		// Get all projects for this org
 		orgProjects, err := gc.GetOrgProjects(org)
@@ -274,12 +294,30 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 
 	// Move this issue/PR to the new column if there's already a project card for
 	// this issue/PR in this project
-	existingProjectCard, err := gc.GetColumnProjectCard(proposedColumnID, e.Number)
-	if err != nil {
-		return err
+	var existingProjectCard *github.ProjectCard
+	var foundColumnID int
+	for _, colID := range projectColumns {
+		// make issue URL in the form of card content URL
+		issueURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%v", org, repo, e.Number)
+		existingProjectCard, err = gc.GetColumnProjectCard(colID.ID, issueURL)
+		if err != nil {
+			return err
+		}
+
+		if existingProjectCard != nil {
+			foundColumnID = colID.ID
+			break
+		}
 	}
+
+	// no need to move the card if it is in the same column
+	if (existingProjectCard != nil) && (proposedColumnID == foundColumnID) {
+		return nil
+	}
+
 	if existingProjectCard != nil {
-		if err := gc.MoveProjectCard(existingProjectCard.ContentID, proposedColumnID); err != nil {
+		log.Infof("Move card to column proposedColumnID: %v with issue: %v ", proposedColumnID, e.Number)
+		if err := gc.MoveProjectCard(existingProjectCard.ID, proposedColumnID); err != nil {
 			return err
 		}
 		msg = fmt.Sprintf(successMovingCardMsg, proposedColumnName, proposedColumnID)
@@ -287,7 +325,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	projectCard := github.ProjectCard{}
-	projectCard.ContentID = e.Number
+	projectCard.ContentID = e.ID
 	if e.IsPR {
 		projectCard.ContentType = "PullRequest"
 	} else {

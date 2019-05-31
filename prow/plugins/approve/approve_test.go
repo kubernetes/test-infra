@@ -72,12 +72,6 @@ func TestPluginConfig(t *testing.T) {
 			}
 		}
 	}
-	for repo := range repos {
-		org := strings.Split(repo, "/")[0]
-		if orgs[org] {
-			t.Errorf("The repo %q is duplicated with %q in the 'approve' plugin configuration.", repo, org)
-		}
-	}
 }
 
 func newTestComment(user, body string) github.IssueComment {

@@ -43,7 +43,8 @@ It may take a couple minutes for the CLA signature to be fully registered; after
 
 - If you've already signed a CLA, it's possible we don't have your GitHub username or you're using a different email address.  Check your existing CLA data and verify that your [email is set on your git commits](https://help.github.com/articles/setting-your-email-in-git/).
 - If you signed the CLA as a corporation, please sign in with your organization's credentials at <https://identity.linuxfoundation.org/projects/cncf> to be authorized.
-- If you have done the above and are still having issues with the CLA being reported as unsigned, please email the CNCF helpdesk: helpdesk@rt.linuxfoundation.org
+- If you have done the above and are still having issues with the CLA being reported as unsigned, please log a ticket with the Linux Foundation Helpdesk: <https://support.linuxfoundation.org/>
+- Should you encounter any issues with the Linux Foundation Helpdesk, send a message to the backup e-mail support address at: login-issues@jira.linuxfoundation.org
 
 <!-- need_sender_cla -->
 
@@ -87,7 +88,7 @@ type gitHubClient interface {
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	ListStatuses(org, repo, ref string) ([]github.Status, error)
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
 func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
@@ -232,12 +233,12 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 
 	// Check for the cla in past commit statuses, and add/remove corresponding cla label if necessary.
 	ref := pr.Head.SHA
-	statuses, err := gc.ListStatuses(org, repo, ref)
+	combined, err := gc.GetCombinedStatus(org, repo, ref)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get statuses on %s/%s#%d", org, repo, number)
 	}
 
-	for _, status := range statuses {
+	for _, status := range combined.Statuses {
 
 		// Only consider "cla/linuxfoundation" status.
 		if status.Context == claContextName {
@@ -277,7 +278,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 				}
 			}
 
-			// Only consider the latest relevant status.
+			// No need to consider other contexts once you find the one you need.
 			break
 		}
 	}

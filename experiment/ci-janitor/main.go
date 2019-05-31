@@ -78,7 +78,7 @@ func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.janitorPath, "janitor-path", "", "Path to janitor.py.")
+	flag.StringVar(&o.janitorPath, "janitor-path", "", "Path to gcp_janitor.py.")
 	flag.Parse()
 	return o
 }

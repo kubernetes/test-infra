@@ -12,7 +12,7 @@ postsubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - runner.sh
         args:
@@ -40,7 +40,8 @@ postsubmits:
   # A postsubmit job to build release image on release tags.
   - name: post-sig-storage-local-static-provisioner-build-release
     branches:
-    - ^v\d+\.\d+\.\d+$
+    - ^v\d+\.\d+\.\d+$ # stable
+    - ^v\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ # pre-release
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -50,20 +51,17 @@ postsubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - runner.sh
         args:
         - make
-        - e2e
         - release
         env:
-        - name: PROVIDER
-          value: gce
-        - name: EXTRACT_STRATEGY
-          value: ci/latest
         - name: CONFIRM
           value: "yes"
+        - name: ALLOW_UNSTABLE
+          value: "true"
         - name: DOCKER_CONFIG
           value: /etc/pusher-docker-config
         # docker-in-docker needs privileged mode

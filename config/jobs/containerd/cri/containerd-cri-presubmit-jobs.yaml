@@ -9,7 +9,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - runner.sh
         args:
@@ -24,7 +24,7 @@ presubmits:
     - release/1.0
     - release/1.2
     decoration_config:
-      timeout: 6000000000000 # 100m
+      timeout: 100m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -40,7 +40,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - sh
         - -c
@@ -68,7 +68,7 @@ presubmits:
     branches:
     - release/1.2
     decoration_config:
-      timeout: 6000000000000 # 100m
+      timeout: 100m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -84,7 +84,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - sh
         - -c
@@ -112,7 +112,7 @@ presubmits:
     branches:
     - release/1.0
     decoration_config:
-      timeout: 6000000000000 # 100m
+      timeout: 100m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -128,7 +128,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - sh
         - -c
@@ -159,7 +159,7 @@ presubmits:
     spec:
       containers:
       # Use go 1.10 for old branches, because gofmt result changed in go 1.11.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.12
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -176,7 +176,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

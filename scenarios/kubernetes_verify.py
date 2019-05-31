@@ -27,12 +27,12 @@ import sys
 
 # This is deprecated from 1.14 onwards.
 VERSION_TAG = {
-    '1.11': '1.11-v20190315-a2a5ddb38',
-    '1.12': '1.12-v20190315-a2a5ddb38',
-    '1.13': '1.13-v20190315-a2a5ddb38',
-    '1.14': '1.14-v20190315-a2a5ddb38',
+    '1.11': '1.11-v20190318-2ac98e338',
+    '1.12': '1.12-v20190318-2ac98e338',
+    '1.13': '1.13-v20190318-2ac98e338',
+    '1.14': '1.14-v20190318-2ac98e338',
     # this is master, feature branches...
-    'default': '1.14-v20190315-a2a5ddb38',
+    'default': '1.14-v20190318-2ac98e338',
 }
 
 
@@ -114,7 +114,7 @@ def main(branch, script, force, on_prow, exclude_typecheck, exclude_godep):
         os.makedirs(artifacts)
 
     if on_prow:
-        # TODO(bentheelder): on prow REPO_DIR should be /go/src/k8s.io/kubernetes
+        # TODO: on prow REPO_DIR should be /go/src/k8s.io/kubernetes
         # however these paths are brittle enough as is...
         git_cache = get_git_cache(k8s)
         cmd = [

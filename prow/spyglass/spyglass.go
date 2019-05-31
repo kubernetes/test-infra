@@ -76,12 +76,12 @@ type ExtraLink struct {
 }
 
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
-func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, ctx context.Context) *Spyglass {
+func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, gcsCredsFile string, ctx context.Context) *Spyglass {
 	return &Spyglass{
 		JobAgent:              ja,
 		config:                cfg,
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
-		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
+		GCSArtifactFetcher:    NewGCSArtifactFetcher(c, gcsCredsFile),
 		testgrid: &TestGrid{
 			conf:   cfg,
 			client: c,

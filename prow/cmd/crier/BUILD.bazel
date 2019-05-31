@@ -20,6 +20,7 @@ go_library(
         "//prow/logrusutil:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pubsub/reporter:go_default_library",
+        "//prow/slack/reporter:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -54,8 +55,5 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//prow/flagutil:go_default_library",
-        "//prow/gerrit/client:go_default_library",
-    ],
+    deps = ["//prow/flagutil:go_default_library"],
 )

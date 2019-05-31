@@ -84,3 +84,12 @@ func (cfg Configuration) FindTestGroup(name string) *TestGroup {
 	}
 	return nil
 }
+
+func (cfg Configuration) FindDashboard(name string) *Dashboard {
+	for _, d := range cfg.Dashboards {
+		if d.Name == name {
+			return d
+		}
+	}
+	return nil
+}

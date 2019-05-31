@@ -10,12 +10,16 @@ go_test(
     name = "go_default_test",
     srcs = [
         "client_test.go",
+        "helpers_test.go",
         "hmac_test.go",
         "links_test.go",
         "types_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library"],
+    deps = [
+        "//ghproxy/ghcache:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
 )
 
 go_library(

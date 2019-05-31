@@ -1,22 +1,18 @@
 presubmits:
   kubernetes/kubernetes:
-  # TODO(krzyzacy): add branches once this works
   # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
   - name: pull-kubernetes-verify
     always_run: true
     decorate: true
     skip_branches:
-    - release-1.14
-    - release-1.13
-    - release-1.12
-    - release-1.11
+    - release-\d+.\d+ # per-release job
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -50,7 +46,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-1.14
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.14
           imagePullPolicy: Always
           command:
             - runner.sh
@@ -85,13 +81,13 @@ presubmits:
     - release-1.11
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190211-fab6034b4
+      - image: gcr.io/k8s-testimages/bootstrap:v20190529-b281789
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
+        - "--timeout=90"
         - --scenario=kubernetes_verify
         - --
         - "--branch=${PULL_BASE_REF}"
@@ -104,13 +100,20 @@ presubmits:
         resources:
           requests:
             cpu: 4
-
 periodics:
 - interval: 1h
   name: ci-kubernetes-verify-master
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 2h 2h 6h 24h
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: verify-master
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    description: "Ends up running: make verify"
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -119,7 +122,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -134,114 +137,6 @@ periodics:
         value: master
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-
-# manual-release-bump-required
-- interval: 2h
-  name: ci-kubernetes-verify-beta
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.14
-      path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190315-49d62eb51-1.14
-        imagePullPolicy: Always
-        command:
-          - runner.sh
-        args:
-          - ./hack/jenkins/verify-dockerized.sh
-        env:
-          - name: KUBE_FORCE_VERIFY_CHECKS
-            value: "y"
-          - name: EXCLUDE_READONLY_PACKAGE
-            value: "y"
-          - name: KUBE_VERIFY_GIT_BRANCH
-            value: release-1.14
-          - name: REPO_DIR
-            value: /workspace/k8s.io/kubernetes
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
-
-# manual-release-bump-required
-- interval: 2h
-  name: ci-kubernetes-verify-stable1
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
-      args:
-      - --repo=k8s.io/kubernetes=release-1.13
-      - --timeout=75
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.13
-      - --force
-      - --script=./hack/jenkins/verify-dockerized.sh
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-
-# manual-release-bump-required
-- interval: 6h
-  name: ci-kubernetes-verify-stable2
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
-      args:
-      - --repo=k8s.io/kubernetes=release-1.12
-      - --timeout=75
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.12
-      - --force
-      - --script=./hack/jenkins/verify-dockerized.sh
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-
-# manual-release-bump-required
-- interval: 24h
-  name: ci-kubernetes-verify-stable3
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190213-2f4f06285
-      args:
-      - --repo=k8s.io/kubernetes=release-1.11
-      - --timeout=75
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.11
-      - --force
-      - --script=./hack/jenkins/verify-dockerized.sh
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true

@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -17,3 +17,25 @@ presubmits:
         - --
         - make
         - verify
+  - name: pull-community-tempelis-check
+    decorate: true
+    branches:
+    - ^master$
+    run_if_changed: '^communication/slack-config'
+    spec:
+      containers:
+        - image: gcr.io/k8s-tempelis/tempelis:v20190412-7c9b6e51
+          command:
+          - /tempelis
+          args:
+          - --config=communication/slack-config/
+          - --restrictions=communication/slack-config/restrictions.yaml
+          - --auth=/etc/slack-auth/auth.json
+          volumeMounts:
+            - name: tempelis-readonly-creds
+              mountPath: /etc/slack-auth
+              readOnly: true
+      volumes:
+        - name: tempelis-readonly-creds
+          secret:
+            secretName: slack-tempelis-auth

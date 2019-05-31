@@ -42,7 +42,7 @@ func TestDecorationDefaulting(t *testing.T) {
 		{
 			name: "timeout provided",
 			provided: &DecorationConfig{
-				Timeout: 10 * time.Minute,
+				Timeout: &Duration{Duration: 10 * time.Minute},
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.Timeout = orig.Timeout
@@ -52,7 +52,7 @@ func TestDecorationDefaulting(t *testing.T) {
 		{
 			name: "grace period provided",
 			provided: &DecorationConfig{
-				GracePeriod: 10 * time.Hour,
+				GracePeriod: &Duration{Duration: 10 * time.Hour},
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GracePeriod = orig.GracePeriod
@@ -163,8 +163,8 @@ func TestDecorationDefaulting(t *testing.T) {
 		tc := testCase
 		t.Run(tc.name, func(t *testing.T) {
 			defaults := &DecorationConfig{
-				Timeout:     1 * time.Minute,
-				GracePeriod: 10 * time.Second,
+				Timeout:     &Duration{Duration: 1 * time.Minute},
+				GracePeriod: &Duration{Duration: 10 * time.Second},
 				UtilityImages: &UtilityImages{
 					CloneRefs:  "clonerefs",
 					InitUpload: "initupload",

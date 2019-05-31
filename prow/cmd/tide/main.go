@@ -81,11 +81,10 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
-	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
@@ -100,7 +99,8 @@ func gatherOptions() options {
 	fs.StringVar(&o.historyURI, "history-uri", "", "The /local/path or gs://path/to/object to store tide action history. GCS writes will use the default object ACL for the bucket")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path or gs://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -111,9 +111,9 @@ func main() {
 
 	pjutil.ServePProf()
 
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+		logrus.WithError(err).Fatal("Invalid options")
 	}
 
 	opener, err := io.NewOpener(context.Background(), o.gcsCredentialsFile)
@@ -152,7 +152,7 @@ func main() {
 	// The sync loop should have a much lower burst allowance than the status
 	// loop which may need to update many statuses upon restarting Tide after
 	// changing the context format or starting Tide on a new repo.
-	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod))
+	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
 	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
 	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
@@ -175,11 +175,9 @@ func main() {
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
+	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	pushGateway := cfg().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("tide", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	metrics.ExposeMetrics("tide", pushGateway.Endpoint, pushGateway.Interval.Duration)
 
 	start := time.Now()
 	sync(c)
@@ -191,7 +189,7 @@ func main() {
 		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		for {
 			select {
-			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod))):
+			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration))):
 				start = time.Now()
 				sync(c)
 			case <-sig:

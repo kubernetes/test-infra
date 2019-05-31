@@ -12,32 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+push-prod:
+  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/kubemci
 
-IMG = "gcr.io/k8s-testimages/e2e-kubemci"
+push:
+	bazel run //images/builder -- --allow-dirty images/kubemci
 
-# Build a versioned image.
-image:
-	docker build --no-cache -t "$(IMG):$(VERSION)" --build-arg "IMAGE_ARG=$(IMG):$(VERSION)" .
-
-# Build both the versioned and latest images.
-image-latest: image
-	docker build --no-cache -t "$(IMG):latest" --build-arg "IMAGE_ARG=$(IMG):latest" .
-
-# Build and push the versioned image.
-push: image
-	# TODO(krzyzacy): https://github.com/GoogleCloudPlatform/docker-credential-gcr/issues/21#issuecomment-365803776
-	# gcloud auth fails in CI, this image build file runs in CI only
-	# so use gcloud docker -- push for now until the above issue resolves.
-
-	# gcloud beta auth configure-docker
-	# docker push "$(IMG):$(VERSION)"
-	gcloud docker -- push "$(IMG):$(VERSION)"
-
-# Build and push both the versioned and latest images.
-push-latest: push image-latest
-	# gcloud beta auth configure-docker
-	# docker push "$(IMG):latest"
-	gcloud docker -- push "$(IMG):latest"
-
-.PHONY: image image-latest push push-latest
+.PHONY: push push-prod

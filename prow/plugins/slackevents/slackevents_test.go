@@ -82,25 +82,25 @@ func TestPush(t *testing.T) {
 	pushEvManual.Pusher.Name = "Jester Tester"
 	pushEvManual.Pusher.Email = "tester@users.noreply.github.com"
 	pushEvManual.Sender.Login = "tester"
-	pushEvManual.Ref = "refs/head/master"
+	pushEvManual.Ref = "refs/heads/master"
 
 	pushEvManualBranchWhiteListed := pushEv
 	pushEvManualBranchWhiteListed.Pusher.Name = "Warren Teened"
 	pushEvManualBranchWhiteListed.Pusher.Email = "wteened@users.noreply.github.com"
 	pushEvManualBranchWhiteListed.Sender.Login = "wteened"
-	pushEvManualBranchWhiteListed.Ref = "refs/head/warrens-branch"
+	pushEvManualBranchWhiteListed.Ref = "refs/heads/warrens-branch"
 
 	pushEvManualNotBranchWhiteListed := pushEvManualBranchWhiteListed
-	pushEvManualNotBranchWhiteListed.Ref = "refs/head/master"
+	pushEvManualNotBranchWhiteListed.Ref = "refs/heads/master"
 
 	pushEvManualCreated := pushEvManual
 	pushEvManualCreated.Created = true
-	pushEvManualCreated.Ref = "refs/head/release-1.99"
+	pushEvManualCreated.Ref = "refs/heads/release-1.99"
 	pushEvManualCreated.Compare = "https://github.com/kubernetes/kubernetes/compare/045a6dca0784"
 
 	pushEvManualDeleted := pushEvManual
 	pushEvManualDeleted.Deleted = true
-	pushEvManualDeleted.Ref = "refs/head/release-1.99"
+	pushEvManualDeleted.Ref = "refs/heads/release-1.99"
 	pushEvManualDeleted.Compare = "https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...000000000000"
 
 	pushEvManualForced := pushEvManual

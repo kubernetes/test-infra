@@ -23,8 +23,8 @@ spec:
       default_repo: kubernetes
       path_strategy: legacy
     gcs_credentials_secret: default-service-account
-    grace_period: 15000000000
-    timeout: 7200000000000
+    grace_period: 15s
+    timeout: 2h0m0s
     utility_images:
       clonerefs: clonerefs:default
       entrypoint: entrypoint:default

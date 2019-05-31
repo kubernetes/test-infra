@@ -117,21 +117,22 @@ const (
 
 // TODO(fejta): rewrite this to use an option struct which we can unit test, like everything else.
 var (
-	debug        = flag.Bool("debug", false, "Turn on debug to be more verbose")
-	confirm      = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
-	endpoint     = flagutil.NewStrings("https://api.github.com")
-	labelsPath   = flag.String("config", "", "Path to labels.yaml")
-	onlyRepos    = flag.String("only", "", "Only look at the following comma separated org/repos")
-	orgs         = flag.String("orgs", "", "Comma separated list of orgs to sync")
-	skipRepos    = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
-	token        = flag.String("token", "", "Path to github oauth secret")
-	action       = flag.String("action", "sync", "One of: sync, docs")
-	cssTemplate  = flag.String("css-template", "", "Path to template file for label css")
-	cssOutput    = flag.String("css-output", "", "Path to output file for css")
-	docsTemplate = flag.String("docs-template", "", "Path to template file for label docs")
-	docsOutput   = flag.String("docs-output", "", "Path to output file for docs")
-	tokens       = flag.Int("tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
-	tokenBurst   = flag.Int("token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
+	debug           = flag.Bool("debug", false, "Turn on debug to be more verbose")
+	confirm         = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
+	endpoint        = flagutil.NewStrings(github.DefaultAPIEndpoint)
+	graphqlEndpoint = flag.String("graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint")
+	labelsPath      = flag.String("config", "", "Path to labels.yaml")
+	onlyRepos       = flag.String("only", "", "Only look at the following comma separated org/repos")
+	orgs            = flag.String("orgs", "", "Comma separated list of orgs to sync")
+	skipRepos       = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
+	token           = flag.String("token", "", "Path to github oauth secret")
+	action          = flag.String("action", "sync", "One of: sync, docs")
+	cssTemplate     = flag.String("css-template", "", "Path to template file for label css")
+	cssOutput       = flag.String("css-output", "", "Path to output file for css")
+	docsTemplate    = flag.String("docs-template", "", "Path to template file for label docs")
+	docsOutput      = flag.String("docs-output", "", "Path to output file for docs")
+	tokens          = flag.Int("tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
+	tokenBurst      = flag.Int("token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 )
 
 func init() {
@@ -642,7 +643,7 @@ type client interface {
 	GetRepoLabels(string, string) ([]github.Label, error)
 }
 
-func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...string) (client, error) {
+func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEndpoint string, hosts ...string) (client, error) {
 	if tokenPath == "" {
 		return nil, errors.New("--token unset")
 	}
@@ -653,9 +654,9 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 	}
 
 	if dryRun {
-		return github.NewDryRunClient(secretAgent.GetTokenGenerator(tokenPath), hosts...), nil
+		return github.NewDryRunClient(secretAgent.GetTokenGenerator(tokenPath), graphqlEndpoint, hosts...), nil
 	}
-	c := github.NewClient(secretAgent.GetTokenGenerator(tokenPath), hosts...)
+	c := github.NewClient(secretAgent.GetTokenGenerator(tokenPath), graphqlEndpoint, hosts...)
 	if tokens > 0 && tokenBurst >= tokens {
 		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
 	}
@@ -706,7 +707,7 @@ func main() {
 			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", *cssTemplate, *cssOutput)
 		}
 	case *action == "sync":
-		githubClient, err := newClient(*token, *tokens, *tokenBurst, !*confirm, endpoint.Strings()...)
+		githubClient, err := newClient(*token, *tokens, *tokenBurst, !*confirm, *graphqlEndpoint, endpoint.Strings()...)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
 		}

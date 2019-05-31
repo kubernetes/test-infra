@@ -152,3 +152,15 @@ func (lg *LocalGit) RevParse(org, repo, commitlike string) (string, error) {
 	rdir := filepath.Join(lg.Dir, org, repo)
 	return runCmdOutput(lg.Git, rdir, "rev-parse", commitlike)
 }
+
+// Merge does git merge.
+func (lg *LocalGit) Merge(org, repo, commitlike string) (string, error) {
+	rdir := filepath.Join(lg.Dir, org, repo)
+	return runCmdOutput(lg.Git, rdir, "merge", "--no-ff", "--no-stat", "-m merge", commitlike)
+}
+
+// Rebase does git rebase.
+func (lg *LocalGit) Rebase(org, repo, commitlike string) (string, error) {
+	rdir := filepath.Join(lg.Dir, org, repo)
+	return runCmdOutput(lg.Git, rdir, "rebase", commitlike)
+}

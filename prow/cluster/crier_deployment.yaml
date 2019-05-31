@@ -25,11 +25,11 @@ spec:
       labels:
         app: crier
     spec:
-      serviceAccountName: crier
+      # serviceAccountName: crier
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20190314-e8134a3
+        image: gcr.io/k8s-prow/crier:v20190528-0d7c4b53a
         args:
         - --github-workers=1
         - --report-agent=knative-build

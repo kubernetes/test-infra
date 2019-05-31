@@ -99,9 +99,9 @@ type fakeReporter struct {
 	reported bool
 }
 
-func (r *fakeReporter) Report(pj *prowapi.ProwJob) error {
+func (r *fakeReporter) Report(pj *prowapi.ProwJob) ([]*prowapi.ProwJob, error) {
 	r.reported = true
-	return nil
+	return nil, nil
 }
 
 func (r *fakeReporter) ShouldReport(pj *prowapi.ProwJob) bool {
@@ -183,7 +183,7 @@ func TestHandleMessage(t *testing.T) {
 				Message: pubsub.Message{},
 			},
 			config: &config.Config{},
-			err:    "unable to find prow.k8s.io/pubsub.EventType from the attributes",
+			err:    "unable to find \"prow.k8s.io/pubsub.EventType\" from the attributes",
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
 		},
 	} {
@@ -312,7 +312,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				Name: "test",
 			},
 			config: &config.Config{},
-			err:    "failed to find associated periodic job test",
+			err:    "failed to find associated periodic job \"test\"",
 		},
 		{
 			name: "JobNotFoundReportNeeded",
@@ -325,7 +325,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				},
 			},
 			config:   &config.Config{},
-			err:      "failed to find associated periodic job test",
+			err:      "failed to find associated periodic job \"test\"",
 			reported: true,
 		},
 	} {

@@ -1,8 +1,9 @@
-# gazelle:proto package
-
 filegroup(
     name = "config-yaml",
-    srcs = ["config.yaml"],
+    srcs = [
+        "config.yaml",
+        "generated-test-config.yaml",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -26,6 +27,7 @@ filegroup(
         "//testgrid/metadata:all-srcs",
         "//testgrid/resultstore:all-srcs",
         "//testgrid/state:all-srcs",
+        "//testgrid/summary:all-srcs",
         "//testgrid/util/gcs:all-srcs",
     ],
     tags = ["automanaged"],

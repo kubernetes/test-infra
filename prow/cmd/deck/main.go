@@ -37,11 +37,13 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/sessions"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -55,6 +57,7 @@ import (
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/prstatus"
@@ -83,6 +86,7 @@ type options struct {
 	pregeneratedData      string
 	staticFilesLocation   string
 	templateFilesLocation string
+	showHidden            bool
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
@@ -104,13 +108,16 @@ func (o *options) Validate() error {
 			return errors.New("an OAuth URL was provided but required flag --cookie-secret was unset")
 		}
 	}
+
+	if o.hiddenOnly && o.showHidden {
+		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
+	}
 	return nil
 }
 
-func gatherOptions() options {
-	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
@@ -122,13 +129,15 @@ func gatherOptions() options {
 	// use when behind an oauth proxy
 	fs.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
 	fs.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
+	fs.BoolVar(&o.showHidden, "show-hidden", false, "Show all jobs, including hidden ones")
 	fs.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
 	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
 	o.kubernetes.AddFlags(fs)
-	fs.Parse(os.Args[1:])
+	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
@@ -136,10 +145,52 @@ func staticHandlerFromDir(dir string) http.Handler {
 	return gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir))))
 }
 
+var (
+	deckMetrics = struct {
+		httpRequestDuration *prometheus.HistogramVec
+	}{
+		httpRequestDuration: prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Name:    "deck_http_request_duration_seconds",
+				Help:    "http request duration seconds for deck server",
+				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+			},
+			[]string{"path", "method", "status"},
+		),
+	}
+)
+
+type traceResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (trw *traceResponseWriter) WriteHeader(code int) {
+	trw.statusCode = code
+	trw.ResponseWriter.WriteHeader(code)
+}
+
+func init() {
+	prometheus.MustRegister(deckMetrics.httpRequestDuration)
+}
+
+func traceHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t := time.Now()
+		// Initialize the status to 200 in case WriteHeader is not called
+		trw := &traceResponseWriter{w, http.StatusOK}
+		h.ServeHTTP(trw, r)
+		latency := time.Since(t)
+		deckMetrics.httpRequestDuration.With(
+			prometheus.Labels{"path": r.URL.Path, "method": r.Method, "status": strconv.Itoa(trw.statusCode)}).
+			Observe(latency.Seconds())
+	})
+}
+
 func main() {
-	o := gatherOptions()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+		logrus.WithError(err).Fatal("Invalid options")
 	}
 
 	logrus.SetFormatter(
@@ -155,12 +206,13 @@ func main() {
 	}
 	cfg := configAgent.Config
 
+	pushGateway := cfg().PushGateway
+	metrics.ExposeMetrics("deck", pushGateway.Endpoint, pushGateway.Interval.Duration)
+
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the
 	// main server with the main mux until we're ready
-	healthMux := http.NewServeMux()
-	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
-	go func() { logrus.WithError(http.ListenAndServe(":8081", healthMux)).Fatal("ListenAndServe returned.") }()
+	health := pjutil.NewHealth()
 
 	mux := http.NewServeMux()
 	// setup common handlers for local and deployed runs
@@ -203,9 +255,10 @@ func main() {
 	}
 
 	// signal to the world that we're ready
-	healthMux.HandleFunc("/healthz/ready", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
+	health.ServeReady()
+
 	// setup done, actually start the server
-	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
+	logrus.WithError(http.ListenAndServe(":8080", traceHandler(mux))).Fatal("ListenAndServe returned.")
 }
 
 // localOnlyMain contains logic used only when running locally, and is mutually exclusive with
@@ -237,6 +290,7 @@ type filteringProwJobLister struct {
 	client      prowv1.ProwJobInterface
 	hiddenRepos sets.String
 	hiddenOnly  bool
+	showHidden  bool
 }
 
 func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
@@ -258,7 +312,9 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 			refs = &item.Spec.ExtraRefs[0]
 		}
 		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org)
-		if shouldHide == c.hiddenOnly {
+		if shouldHide && c.showHidden {
+			filtered = append(filtered, item)
+		} else if shouldHide == c.hiddenOnly {
 			// this is a hidden job, show it if we're asked
 			// to only show hidden jobs otherwise hide it
 			filtered = append(filtered, item)
@@ -288,6 +344,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		client:      prowJobClient,
 		hiddenRepos: sets.NewString(cfg().Deck.HiddenRepos...),
 		hiddenOnly:  o.hiddenOnly,
+		showHidden:  o.showHidden,
 	}, podLogClients, cfg)
 	ja.Start()
 
@@ -312,10 +369,11 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			log:  logrus.WithField("agent", "tide"),
 			path: o.tideURL,
 			updatePeriod: func() time.Duration {
-				return cfg().Deck.TideUpdatePeriod
+				return cfg().Deck.TideUpdatePeriod.Duration
 			},
 			hiddenRepos: cfg().Deck.HiddenRepos,
 			hiddenOnly:  o.hiddenOnly,
+			showHidden:  o.showHidden,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta)))
@@ -427,7 +485,7 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, cfg, c, context.Background())
+	sg := spyglass.New(ja, cfg, c, o.gcsCredentialsFile, context.Background())
 	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
@@ -462,7 +520,7 @@ func handleCached(next http.Handler) http.Handler {
 		// revalidation. We also need to set must-revalidate because no-cache
 		// doesn't imply must-revalidate when using the back button
 		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.1
-		// TODO(bentheelder): consider setting a longer max-age
+		// TODO: consider setting a longer max-age
 		// setting it this way means the content is always revalidated
 		w.Header().Set("Cache-Control", "public, max-age=0, no-cache, must-revalidate")
 		next.ServeHTTP(w, r)
@@ -974,10 +1032,13 @@ func handleLog(lc logClient) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logger := logger.WithError(err)
 			msg := "Log not found."
-			if strings.Contains(err.Error(), "PodInitializing") {
+			if strings.Contains(err.Error(), "PodInitializing") || strings.Contains(err.Error(), "not found") {
 				// PodInitializing is really common and not something
 				// that has any actionable items for administrators
-				// monitoring logs, so we should log it as information
+				// monitoring logs, so we should log it as information.
+				// Similarly, if a user asks us to proxy through logs
+				// for a Pod or ProwJob that doesn't exit, it's not
+				// something an administrator wants to see in logs.
 				logger.Info(msg)
 			} else {
 				logger.Warning(msg)
@@ -1013,7 +1074,10 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
-			logrus.WithError(err).Warning("ProwJob not found.")
+			if !kerrors.IsNotFound(err) {
+				// admins only care about errors other than not found
+				logrus.WithError(err).Warning("ProwJob not found.")
+			}
 			return
 		}
 		pjutil := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels)
@@ -1031,7 +1095,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 
 func handleConfig(cfg config.Getter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO(bentheelder): add the ability to query for portions of the config?
+		// TODO: add the ability to query for portions of the config?
 		setHeadersNoCaching(w)
 		config := cfg()
 		b, err := yaml.Marshal(config)

@@ -428,6 +428,15 @@ def get_shared_gcs_path(gcs_shared, use_shared_build):
     build_file += 'build-location.txt'
     return os.path.join(gcs_shared, os.getenv('PULL_REFS', ''), build_file)
 
+def inject_bazelrc(lines):
+    if not lines:
+        return
+    with open('/etc/bazel.bazelrc', 'a') as fp:
+        fp.writelines(lines)
+    path = os.path.join(os.getenv('HOME'), '.bazelrc')
+    with open(path, 'a') as fp:
+        fp.writelines(lines)
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements,too-many-locals
@@ -446,6 +455,8 @@ def main(args):
     artifacts = os.environ.get('ARTIFACTS', os.path.join(workspace, '_artifacts'))
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
+
+    inject_bazelrc(args.inject_bazelrc)
 
     mode = LocalMode(workspace, artifacts)
 
@@ -639,6 +650,9 @@ def create_parser():
     parser.add_argument(
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
+    parser.add_argument(
+        '--inject-bazelrc', default=[], action='append',
+        help='Inject /etc/bazel.bazelrc and ~/.bazelrc lines')
     parser.add_argument(
         '--build-federation', nargs='?', default=None, const='',
         help='Build federation binaries if set, optionally specifying strategy')

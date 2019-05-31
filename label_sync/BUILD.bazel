@@ -12,7 +12,11 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-prow_image(name = "image")
+prow_image(
+    name = "image",
+    base = "@alpine-base//image",
+    visibility = ["//visibility:public"],
+)
 
 prow_push(
     name = "push",

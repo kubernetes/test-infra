@@ -57,12 +57,14 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None):
         return
     CHECKED.add(project)
 
-    cmd = ['python', test_infra('boskos/janitor/janitor.py'), '--project=%s' % project]
+    cmd = ['python', test_infra('boskos/janitor/gcp_janitor.py'), '--project=%s' % project]
     cmd.append('--hour=%d' % hours)
     if dryrun:
         cmd.append('--dryrun')
     if ratelimit:
         cmd.append('--ratelimit=%d' % ratelimit)
+    if VERBOSE:
+        cmd.append('--verbose')
 
     try:
         check(*cmd)
@@ -160,18 +162,24 @@ if __name__ == '__main__':
     # keep some metric
     CHECKED = set()
     FAILED = []
+    VERBOSE = False
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
         '--mode', default='ci', choices=['ci', 'pr', 'scale', 'custom'],
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,
-        help='Max number of resources to clear in one gcloud delete call (passed into janitor.py)')
+        help='Max number of resources to clear in one gcloud delete call '
+             '(passed into gcp_janitor.py)')
     PARSER.add_argument(
         '--projects', type=str,
         help='Comma separated list of projects to clean up. Only applicable in custom mode.')
     PARSER.add_argument(
         '--age', type=int,
         help='Expiry age for projects, in hours. Only applicable in custom mode.')
+    PARSER.add_argument(
+        '--verbose', action='store_true',
+        help='If want more detailed logs from the janitor script.')
     ARGS = PARSER.parse_args()
+    VERBOSE = ARGS.verbose
     main(ARGS.mode, ARGS.ratelimit, ARGS.projects, ARGS.age)

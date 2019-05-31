@@ -19,6 +19,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -49,10 +50,10 @@ type options struct {
 	kubeconfig   string
 	totURL       string
 
-	// Create these values by following:
-	//   https://github.com/kelseyhightower/grafeas-tutorial/blob/master/pki/gen-certs.sh
-	cert       string
-	privateKey string
+	// This is a termporary flag which gates the usage of plank.allow_cancellations config value
+	// for build aborter.
+	// TODO remove this flag and use directly the config flag.
+	useAllowCancellations bool
 }
 
 func parseOptions() options {
@@ -69,11 +70,9 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to kubeconfig. Only required if out of cluster")
 	flags.StringVar(&o.config, "config", "", "Path to prow config.yaml")
 	flags.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	flags.StringVar(&o.cert, "tls-cert-file", "", "Path to x509 certificate for HTTPS")
-	flags.StringVar(&o.privateKey, "tls-private-key-file", "", "Path to matching x509 private key.")
-	flags.Parse(args)
-	if (len(o.cert) == 0) != (len(o.privateKey) == 0) {
-		return errors.New("Both --tls-cert-file and --tls-private-key-file are required for HTTPS")
+	flags.BoolVar(&o.useAllowCancellations, "use-allow-cancellations", false, "Gates the usage of plank.allow_cancellations config flag for build aborter")
+	if err := flags.Parse(args); err != nil {
+		return fmt.Errorf("parse flags: %v", err)
 	}
 	if o.kubeconfig != "" && o.buildCluster != "" {
 		return errors.New("deprecated --build-cluster may not be used with --kubeconfig")
@@ -115,7 +114,7 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 
 	// Ensure the knative-build CRD is deployed
 	// TODO(fejta): probably a better way to do this
-	_, err = bc.Build().Builds("").List(metav1.ListOptions{Limit: 1})
+	_, err = bc.BuildV1alpha1().Builds("").List(metav1.ListOptions{Limit: 1})
 	if err != nil {
 		return nil, err
 	}
@@ -148,14 +147,13 @@ func main() {
 		logrus.WithError(err).Fatal("Error building client configs")
 	}
 
-	if !o.allContexts { // Just the default context please
-		logrus.Warn("Truncating to local and default contexts")
+	local := configs[kube.InClusterContext]
+	if !o.allContexts {
+		logrus.Warn("Truncating to default context")
 		configs = map[string]rest.Config{
-			kube.InClusterContext:    configs[kube.InClusterContext],
 			kube.DefaultClusterAlias: configs[kube.DefaultClusterAlias],
 		}
 	}
-	local := configs[kube.InClusterContext]
 
 	stop := stopper()
 
@@ -185,12 +183,20 @@ func main() {
 		buildConfigs[context] = *bc
 	}
 
-	// TODO(fejta): move to its own binary
-	if len(o.cert) > 0 {
-		go runServer(o.cert, o.privateKey)
+	opts := controllerOptions{
+		kc:                    kc,
+		pjc:                   pjc,
+		pji:                   pjif.Prow().V1().ProwJobs(),
+		buildConfigs:          buildConfigs,
+		totURL:                o.totURL,
+		prowConfig:            configAgent.Config,
+		rl:                    kube.RateLimiter(controllerName),
+		useAllowCancellations: o.useAllowCancellations,
 	}
-
-	controller := newController(kc, pjc, pjif.Prow().V1().ProwJobs(), buildConfigs, o.totURL, configAgent.Config, kube.RateLimiter(controllerName))
+	controller, err := newController(opts)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating controller")
+	}
 	if err := controller.Run(2, stop); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}

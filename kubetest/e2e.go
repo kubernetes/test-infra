@@ -225,11 +225,11 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
-	// TODO(bentheelder): consider remapping charts, etc to testCmd
+	// TODO: consider remapping charts, etc to testCmd
 
 	var kubemarkWg sync.WaitGroup
 	var kubemarkDownErr error
-	if o.kubemark {
+	if o.down && o.kubemark {
 		kubemarkWg.Add(1)
 		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, dump)
 	}
@@ -618,6 +618,20 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 	// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
 	// due to master being unregistered.
 	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+		return err
+	}
+
+	masterInternalIP, err := control.Output(exec.Command(
+		"gcloud", "compute", "instances", "describe",
+		os.Getenv("MASTER_NAME"),
+		"--project="+o.gcpProject,
+		"--zone="+o.gcpZone,
+		"--format=value(networkInterfaces[0].networkIP)"))
+	if err != nil {
+		return fmt.Errorf("failed to get masterInternalIP: %v", err)
+	}
+	// MASTER_INTERNAL_IP variable is needed by the clusterloader2 when running on kubemark clusters.
+	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIP))); err != nil {
 		return err
 	}
 

@@ -163,6 +163,7 @@ export namespace tooltip {
     tip.appendChild(tipElem);
     tip.setAttribute("data-mdl-for", elemID);
     tip.classList.add("mdl-tooltip", "mdl-tooltip--large");
+    tip.style.whiteSpace = "normal";
     return tip;
   }
 }

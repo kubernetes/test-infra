@@ -37,6 +37,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "metadata_test.go",
         "target_test.go",
         "upload_test.go",
     ],

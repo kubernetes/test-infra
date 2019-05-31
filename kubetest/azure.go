@@ -38,7 +38,7 @@ import (
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 
-	"github.com/Azure/azure-storage-blob-go/2016-05-31/azblob"
+	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/satori/go.uuid"
 )
@@ -253,6 +253,11 @@ func (c *Cluster) populateApiModelTemplate() error {
 	if c.agentVMSize != "" {
 		for _, agentPool := range v.Properties.AgentPoolProfiles {
 			agentPool.VMSize = c.agentVMSize
+		}
+	}
+	if c.agentPoolCount != 0 {
+		for _, agentPool := range v.Properties.AgentPoolProfiles {
+			agentPool.Count = c.agentPoolCount
 		}
 	}
 	if c.adminUsername != "" {
@@ -510,7 +515,10 @@ func (c *Cluster) buildHyperKube() error {
 
 func (c *Cluster) uploadZip(zipPath string) error {
 
-	credential := azblob.NewSharedKeyCredential(c.credentials.StorageAccountName, c.credentials.StorageAccountKey)
+	credential, err := azblob.NewSharedKeyCredential(c.credentials.StorageAccountName, c.credentials.StorageAccountKey)
+	if err != nil {
+		return fmt.Errorf("new shared key credential: %v", err)
+	}
 	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
 	var containerName string = os.Getenv("AZ_STORAGE_CONTAINER_NAME")

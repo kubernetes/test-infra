@@ -54,8 +54,8 @@ func newFakeConfigAgent() *fca {
 				ProwJobNamespace: "ns",
 				PodNamespace:     "ns",
 				Sinker: config.Sinker{
-					MaxProwJobAge: maxProwJobAge,
-					MaxPodAge:     maxPodAge,
+					MaxProwJobAge: &metav1.Duration{Duration: maxProwJobAge},
+					MaxPodAge:     &metav1.Duration{Duration: maxPodAge},
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -439,18 +439,22 @@ func TestFlags(t *testing.T) {
 			name: "minimal flags work",
 		},
 		{
-			name: "config-path defaults to something valid",
-			del:  sets.NewString("--config-path"),
+			name: "explicitly set --config-path",
+			args: map[string]string{
+				"--config-path": "/random/path",
+			},
 			expected: func(o *options) {
-				o.configPath = defaultConfigPath
+				o.configPath = "/random/path"
 			},
 		},
 		{
-			name: "require config-path",
+			name: "default config-path when empty",
 			args: map[string]string{
 				"--config-path": "",
 			},
-			err: true,
+			expected: func(o *options) {
+				o.configPath = config.DefaultConfigPath
+			},
 		},
 		{
 			name: "expicitly set --dry-run=false",

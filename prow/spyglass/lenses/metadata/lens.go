@@ -114,6 +114,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			metadataViewData.Elapsed =
 				metadataViewData.FinishedTime.Sub(metadataViewData.StartTime)
 		}
+		metadataViewData.Elapsed = metadataViewData.Elapsed.Round(time.Second)
 	}
 
 	metadataViewData.Metadata = map[string]string{"node": started.Node}

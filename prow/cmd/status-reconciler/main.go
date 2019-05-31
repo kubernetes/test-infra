@@ -23,7 +23,7 @@ import (
 	"syscall"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -31,8 +31,14 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/statusreconciler"
+)
+
+const (
+	defaultTokens = 300
+	defaultBurst  = 100
 )
 
 type options struct {
@@ -40,10 +46,14 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
-	continueOnError bool
-	dryRun          bool
-	kubernetes      prowflagutil.ExperimentalKubernetesOptions
-	github          prowflagutil.GitHubOptions
+	continueOnError         bool
+	addedPresubmitBlacklist prowflagutil.Strings
+	dryRun                  bool
+	kubernetes              prowflagutil.ExperimentalKubernetesOptions
+	github                  prowflagutil.GitHubOptions
+
+	tokenBurst    int
+	tokensPerHour int
 }
 
 func gatherOptions() options {
@@ -55,7 +65,10 @@ func gatherOptions() options {
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
+	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
+	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
 		group.AddFlags(fs)
 	}
@@ -109,6 +122,9 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
+	if o.tokensPerHour > 0 {
+		githubClient.Throttle(o.tokensPerHour, o.tokenBurst)
+	}
 
 	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
@@ -118,6 +134,6 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
-	c := statusreconciler.NewController(o.continueOnError, prowJobClient, githubClient, configAgent, pluginAgent)
+	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), prowJobClient, githubClient, configAgent, pluginAgent)
 	c.Run(sig, changes)
 }
