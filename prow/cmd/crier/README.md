@@ -26,9 +26,9 @@ You need to specify following labels in order for pubsub reporter to report your
 
 | Label                          | Description                                                                                                                               |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------|
-| `"prow.k8s.io/pubsub-project"` | Your gcp project where pubsub channel lives                                                                                               |
-| `"prow.k8s.io/pubsub-topic"`   | The [topic](https://cloud.google.com/pubsub/docs/publisher) of your pubsub message                                                        |
-| `"prow.k8s.io/pubsub-runID"`   | A user assigned job id. It's tied to the prowjob, serves as a name tag and help user to differentiate results in multiple pubsub messages |
+| `"prow.k8s.io/pubsub.project"` | Your gcp project where pubsub channel lives                                                                                               |
+| `"prow.k8s.io/pubsub.topic"`   | The [topic](https://cloud.google.com/pubsub/docs/publisher) of your pubsub message                                                        |
+| `"prow.k8s.io/pubsub.runID"`   | A user assigned job id. It's tied to the prowjob, serves as a name tag and help user to differentiate results in multiple pubsub messages |
 
 Pubsub reporter will report whenever prowjob has a state transition.
 
