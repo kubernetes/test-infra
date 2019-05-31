@@ -275,6 +275,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+    run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
       - args:
@@ -325,6 +326,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-kubemark-gce-big: "true"
+    run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
         - args:
