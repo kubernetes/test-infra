@@ -180,7 +180,10 @@ func main() {
 		if cfg().SlackReporter == nil {
 			logrus.Fatal("slackreporter is enabled but has no config")
 		}
-		slackReporter, err := slackreporter.New(*cfg().SlackReporter, o.dryrun, o.slackTokenFile)
+		slackConfig := func() *config.SlackReporter {
+			return cfg().SlackReporter
+		}
+		slackReporter, err := slackreporter.New(slackConfig, o.dryrun, o.slackTokenFile)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create slackreporter")
 		}
