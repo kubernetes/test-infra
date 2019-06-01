@@ -5,8 +5,11 @@ filters:
     approvers:
       - cjwagner
       - fejta
-      # - spxtr (emeritus)
       - stevekuznetsov
+    emeritus_approvers:
+      - spxtr	# 2018-09-17
+    reviewers:
+      - matthyx
     labels:
       - area/prow
   "(plugins|config)\\.yaml$":
