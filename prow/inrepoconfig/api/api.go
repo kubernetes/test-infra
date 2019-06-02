@@ -34,7 +34,7 @@ const (
 	// PluginName is the name of this plugin
 	PluginName = "inrepoconfig"
 
-	// CotnextName is the name of the context the inrepoconfig plugin creates at GitHub
+	// ContextName is the name of the context the inrepoconfig plugin creates at GitHub
 	ContextName = "prow-config-parsing"
 
 	// ConfigFileName is the name of the configfile the inrepoconfig plugin uses to read its
@@ -42,7 +42,7 @@ const (
 	ConfigFileName = "prow.yaml"
 )
 
-// InRepoConfig is the type `prow.yaml` gets serialized  into
+// InRepoConfig is the type `prow.yaml` gets deserialized into
 type InRepoConfig struct {
 	Presubmits []config.Presubmit `json:"presubmits,omitempty"`
 }
@@ -50,23 +50,40 @@ type InRepoConfig struct {
 // defaultAndValidateInRepoConfig defaults and validates the InRepoConfig. This must be called before
 // accessing any data in it
 func (irc *InRepoConfig) defaultAndValidateInRepoConfig(c *config.Config, orgRepo string) error {
-	if err := config.SetPresubmitRegexes(irc.Presubmits); err != nil {
-		return fmt.Errorf("failed to set Presubmit regexes: %v", err)
-	}
-
 	for i := range irc.Presubmits {
 		ps := &irc.Presubmits[i]
-
 		config.DefaultPresubmitFields(&c.ProwConfig, ps)
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		if ps.Decorate {
+			ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		}
 		if err := config.ResolvePresets(
 			ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
 			return err
 		}
+	}
 
-		if err := checkconfigapi.ValidatePresubmitJob(orgRepo, irc.Presubmits[i]); err != nil {
+	// Has to be done in the end, otherwise the jobs Trigger field is unset
+	if err := config.SetPresubmitRegexes(irc.Presubmits); err != nil {
+		return fmt.Errorf("failed to set Presubmit regexes: %v", err)
+	}
+
+	for _, presubmit := range irc.Presubmits {
+		if err := checkconfigapi.ValidatePresubmitJob(orgRepo, presubmit); err != nil {
 			return err
 		}
+	}
+	ap := &additionalPresubmits{
+		fullRepoName: orgRepo,
+		presubmits:   irc.Presubmits,
+	}
+	// This is not extremely efficient as it validates all Job types on all Repos of this
+	// Prow instance.
+	// Changing that requires a bigger refactoring of config.Config.ValidateJobConfig thought,
+	// in order to keep the change required when introducing `inrepoconfig` optimizing this is
+	// kept as a future task.
+	// TODO @alvaroaleman: Revisit and improve this
+	if err := c.ValidateJobConfig(ap); err != nil {
+		return err
 	}
 
 	return nil
@@ -122,4 +139,13 @@ func New(log *logrus.Entry, c *config.Config, gc *git.Client, org, repo, baseRef
 	}
 
 	return irc, nil
+}
+
+type additionalPresubmits struct {
+	fullRepoName string
+	presubmits   []config.Presubmit
+}
+
+func (ap *additionalPresubmits) Presubmits() (string, []config.Presubmit) {
+	return ap.fullRepoName, ap.presubmits
 }

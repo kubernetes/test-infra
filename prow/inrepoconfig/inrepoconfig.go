@@ -67,9 +67,9 @@ func HandlePullRequest(log *logrus.Entry, c *config.Config, ghc githubClient, gc
 
 		comment := fmt.Sprintf("%s\n@%s: Loading `%s` failed with the following error:\n```\n%v\n```",
 			commentTag, author, api.ConfigFileName, err)
-		_, exitingCommentID, err := getOutdatedIssueComments(ghc, org, repo, pr.Number)
-		if err != nil {
-			log.WithError(err).Error("failed to list comments")
+		_, exitingCommentID, errGetOutdatedICs := getOutdatedIssueComments(ghc, org, repo, pr.Number)
+		if errGetOutdatedICs != nil {
+			log.WithError(errGetOutdatedICs).Error("failed to list comments")
 		}
 		if exitingCommentID == 0 {
 			if err := ghc.CreateComment(org, repo, pr.Number, comment); err != nil {
@@ -81,7 +81,7 @@ func HandlePullRequest(log *logrus.Entry, c *config.Config, ghc githubClient, gc
 			}
 		}
 
-		return "", nil, fmt.Errorf("failed to read %q: %v", api.ConfigFileName, err)
+		return "", nil, fmt.Errorf("failed to get config from %q: %v", api.ConfigFileName, err)
 	}
 
 	status.State = "success"

@@ -27,6 +27,7 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -2229,17 +2230,17 @@ func TestInRepoConfigFor(t *testing.T) {
 	}{
 		{
 			name:            "Inrepoconfig from org+repo",
-			config:          map[string]InRepoConfig{org + "/" + repo: InRepoConfig{Enabled: true}},
+			config:          map[string]InRepoConfig{org + "/" + repo: {Enabled: true}},
 			enabledExpected: true,
 		},
 		{
 			name:            "Inrepoconfig from org",
-			config:          map[string]InRepoConfig{org: InRepoConfig{Enabled: true}},
+			config:          map[string]InRepoConfig{org: {Enabled: true}},
 			enabledExpected: true,
 		},
 		{
 			name:            "Global inrepoconfig",
-			config:          map[string]InRepoConfig{"*": InRepoConfig{Enabled: true}},
+			config:          map[string]InRepoConfig{"*": {Enabled: true}},
 			enabledExpected: true,
 		},
 		{
@@ -2254,5 +2255,49 @@ func TestInRepoConfigFor(t *testing.T) {
 				t.Errorf("Expected to be enabled: %t but was %t", tc.enabledExpected, result.Enabled)
 			}
 		})
+	}
+}
+
+type apImpl struct {
+	orgRepo    string
+	presubmits []Presubmit
+}
+
+func (ap *apImpl) Presubmits() (string, []Presubmit) {
+	return ap.orgRepo, ap.presubmits
+}
+
+func TestValidateJobConfigAdditionalPresubmitsDoesntMutateConfig(t *testing.T) {
+	podNS := "my-pod-ns"
+	orgRepo := "org/repo"
+	cfg := &Config{
+		ProwConfig: ProwConfig{PodNamespace: podNS},
+		JobConfig: JobConfig{
+			Presubmits: map[string][]Presubmit{
+				orgRepo: {{
+					JobBase: JobBase{
+						Name:      "my-ps-2",
+						Agent:     "kubernetes",
+						Namespace: &podNS,
+						Spec:      &corev1.PodSpec{Containers: []corev1.Container{{}}},
+					},
+					Reporter: Reporter{Context: "my-ps-2"},
+				}},
+			},
+		},
+	}
+	ps := Presubmit{
+		JobBase: JobBase{
+			Name: "my-name",
+			Spec: &corev1.PodSpec{Containers: []corev1.Container{{}}},
+		},
+	}
+	DefaultPresubmitFields(&cfg.ProwConfig, &ps)
+	ap := &apImpl{orgRepo, []Presubmit{ps}}
+	if err := cfg.ValidateJobConfig(ap); err != nil {
+		t.Fatalf("Failed to call ValidateJobConfig: %v", err)
+	}
+	if len(cfg.Presubmits[orgRepo]) != 1 {
+		t.Fatal("Validating additional Presubmits mutated original presubmits")
 	}
 }

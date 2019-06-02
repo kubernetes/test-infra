@@ -17,11 +17,13 @@ limitations under the License.
 package trigger
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -31,8 +33,10 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	fakegit "k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	inrepoconfigapi "k8s.io/test-infra/prow/inrepoconfig/api"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -322,7 +326,7 @@ func TestRunAndSkipJobs(t *testing.T) {
 			Logger:        logrus.WithField("testcase", testCase.name),
 		}
 
-		err := RunAndSkipJobs(client, pr, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
+		err := RunAndSkipJobs(client, pr, testCase.requestedJobs, testCase.skippedJobs, "", "event-guid", testCase.elideSkippedContexts)
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
@@ -437,7 +441,7 @@ func TestRunRequested(t *testing.T) {
 			Logger:        logrus.WithField("testcase", testCase.name),
 		}
 
-		err := runRequested(client, pr, testCase.requestedJobs, "event-guid")
+		err := runRequested(client, pr, testCase.requestedJobs, "", "event-guid")
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
@@ -513,5 +517,219 @@ func TestValidateContextOverlap(t *testing.T) {
 		if validateErr != nil && !testCase.expectedErr {
 			t.Errorf("%s: expected no error but got one: %v", testCase.name, validateErr)
 		}
+	}
+}
+
+func TestRunAndSkipJobsFetchesBaseSHAOnlyIfEmpty(t *testing.T) {
+	tcs := []struct {
+		name            string
+		baseSHA         string
+		expectedBaseSHA string
+	}{
+		{
+			name:            "Passed in BaseSHA is used",
+			baseSHA:         "abc",
+			expectedBaseSHA: "abc",
+		},
+		{
+			name:            "BaseSHA is empty and fetched from GitHub",
+			expectedBaseSHA: fakegithub.TestRef,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeGitHubClient := fakegithub.FakeClient{}
+			fakeProwJobClient := fake.NewSimpleClientset()
+			client := Client{
+				GitHubClient:  &fakeGitHubClient,
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				Logger:        logrus.WithField("testcase", tc.name),
+			}
+			requestedJobs := []config.Presubmit{{
+				JobBase: config.JobBase{
+					Name: "first",
+				}}}
+			if err := RunAndSkipJobs(
+				client, &github.PullRequest{}, requestedJobs, nil, tc.baseSHA, "", false); err != nil {
+				t.Fatalf("executing RunAndSkipJobs failed: %v", err)
+			}
+
+			pjs, err := fakeProwJobClient.ProwV1().ProwJobs("").List(metav1.ListOptions{})
+			if err != nil {
+				t.Fatalf("failed to list prowjobs: %v", err)
+			}
+			if len(pjs.Items) != 1 {
+				t.Fatalf("expected exactly one prowjob, got %d", len(pjs.Items))
+			}
+
+			if pjs.Items[0].Spec.Refs.BaseSHA != tc.expectedBaseSHA {
+				t.Errorf("expected baseSHA to be %q, was %q", tc.expectedBaseSHA, pjs.Items[0].Spec.Refs.BaseSHA)
+			}
+		})
+	}
+}
+
+func TestGetPresubmitsForPR(t *testing.T) {
+	baseRepoOwner := "test-org"
+	baseRepoName := "test-repo"
+	baseRepoFullName := baseRepoOwner + "/" + baseRepoName
+
+	tcs := []struct {
+		name                      string
+		presubmitsFromConfig      []config.Presubmit
+		presubmitsInRepo          []config.Presubmit
+		inRepoConfigEnabled       bool
+		expectedPresubmits        sets.String
+		gitHubInteractionExpected bool
+	}{
+		{
+			name:                 "InRepoConfig disabled, only presubmits from config",
+			presubmitsFromConfig: []config.Presubmit{{JobBase: config.JobBase{Name: "my-presubmit"}}},
+			expectedPresubmits:   sets.NewString("my-presubmit"),
+		},
+		{
+			name:                      "InRepoConfig enabled, only config has presubmits",
+			presubmitsFromConfig:      []config.Presubmit{{JobBase: config.JobBase{Name: "my-presubmit"}}},
+			inRepoConfigEnabled:       true,
+			expectedPresubmits:        sets.NewString("my-presubmit"),
+			gitHubInteractionExpected: true,
+		},
+		{
+			name: "InRepoConfig enabled, only prow.yaml has presubmits",
+			presubmitsInRepo: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "my-ir-presubmit",
+						Spec: &corev1.PodSpec{Containers: []corev1.Container{{}}},
+					},
+				},
+			},
+			inRepoConfigEnabled:       true,
+			expectedPresubmits:        sets.NewString("my-ir-presubmit"),
+			gitHubInteractionExpected: true,
+		},
+		{
+			name:                 "InRepoConfig enabled, combined presubmits from config and repo",
+			presubmitsFromConfig: []config.Presubmit{{JobBase: config.JobBase{Name: "my-presubmit"}}},
+			presubmitsInRepo: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "my-ir-presubmit",
+						Spec: &corev1.PodSpec{Containers: []corev1.Container{{}}},
+					},
+				},
+			},
+			inRepoConfigEnabled:       true,
+			expectedPresubmits:        sets.NewString("my-presubmit", "my-ir-presubmit"),
+			gitHubInteractionExpected: true,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			fg, gitClient, err := fakegit.New()
+			if err != nil {
+				t.Fatalf("Making local git repo: %v", err)
+			}
+			defer func() {
+				if err := fg.Clean(); err != nil {
+					t.Errorf("Error cleaning LocalGit: %v", err)
+				}
+				if err := gitClient.Clean(); err != nil {
+					t.Errorf("Error cleaning Client: %v", err)
+				}
+			}()
+
+			fakeGitHubClient := fakegithub.FakeClient{}
+			fakeProwJobClient := fake.NewSimpleClientset()
+			client := Client{
+				Config: &config.Config{
+					JobConfig: config.JobConfig{
+						Presubmits: map[string][]config.Presubmit{
+							baseRepoFullName: tc.presubmitsFromConfig,
+						},
+					},
+					ProwConfig: config.ProwConfig{
+						PodNamespace: "my-pod-ns",
+					},
+				},
+				GitHubClient:  &fakeGitHubClient,
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				Logger:        logrus.WithField("testcase", tc.name),
+				GitClient:     gitClient,
+			}
+			pr := &github.PullRequest{
+				Base: github.PullRequestBranch{
+					Repo: github.Repo{
+						Owner: github.User{
+							Login: baseRepoOwner,
+						},
+						Name:     baseRepoName,
+						FullName: baseRepoFullName},
+				},
+			}
+			for i := range tc.presubmitsFromConfig {
+				config.DefaultPresubmitFields(&client.Config.ProwConfig, &tc.presubmitsFromConfig[i])
+				tc.presubmitsFromConfig[i].Spec = &corev1.PodSpec{
+					Containers: []corev1.Container{{}},
+				}
+			}
+
+			if tc.inRepoConfigEnabled {
+				client.Config.InRepoConfig = map[string]config.InRepoConfig{
+					"*": {Enabled: true}}
+				inRepoConfig := inrepoconfigapi.InRepoConfig{
+					Presubmits: tc.presubmitsInRepo,
+				}
+				marshalledInRepoConfig, err := json.Marshal(inRepoConfig)
+				if err != nil {
+					t.Fatalf("failed to marshal inrepoconfig: %v", err)
+				}
+				if err := fg.MakeFakeRepo(baseRepoOwner, baseRepoName); err != nil {
+					t.Fatalf("Making fake repo: %v", err)
+				}
+				if err := fg.CheckoutNewBranch(baseRepoOwner, baseRepoName, "my-pull"); err != nil {
+					t.Fatalf("failed to check out new branch: %v", err)
+				}
+				if err := fg.AddCommit(baseRepoOwner, baseRepoName, map[string][]byte{
+					inrepoconfigapi.ConfigFileName: marshalledInRepoConfig,
+				}); err != nil {
+					t.Fatalf("Failed to add commit: %v", err)
+				}
+
+				masterHeadHash, err := fg.RevParse(baseRepoOwner, baseRepoName, "master")
+				if err != nil {
+					t.Fatalf("failed to run git rev-parse master: %v", err)
+				}
+				fakegithub.TestRef = masterHeadHash
+				pr.Base.Ref = masterHeadHash
+
+				pr.Head.SHA, err = fg.RevParse(baseRepoOwner, baseRepoName, "HEAD")
+				if err != nil {
+					t.Fatalf("failed to run git rev-parse HEAD: %v", err)
+				}
+			}
+
+			_, presubmits, err := getPresubmitsForPR(client, pr)
+			if err != nil {
+				t.Fatalf("failed to call getPresubmitsForPR: %v", err)
+			}
+
+			actualPresumits := sets.NewString()
+			for _, presubmit := range presubmits {
+				actualPresumits.Insert(presubmit.Name)
+			}
+			if diff := actualPresumits.Difference(tc.expectedPresubmits).List(); len(diff) > 0 {
+				t.Errorf("actual presubmits did not match expected presubmits, diff: %v", diff)
+			}
+
+			hasGitHubInteraction := fakeGitHubClient.CreatedStatuses != nil
+			if tc.gitHubInteractionExpected != hasGitHubInteraction {
+				t.Errorf("Expected GitHub interaction: %t, had GitHub interaction: %t",
+					tc.gitHubInteractionExpected, hasGitHubInteraction)
+			}
+
+		})
 	}
 }

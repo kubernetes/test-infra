@@ -427,7 +427,7 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 	if err := c.validateComponentConfig(); err != nil {
 		return nil, err
 	}
-	if err := c.validateJobConfig(); err != nil {
+	if err := c.ValidateJobConfig(); err != nil {
 		return nil, err
 	}
 	return c, nil
@@ -796,17 +796,32 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
 }
 
-// validateJobConfig validates if all the jobspecs/presets are valid
+type additionalPresubmits interface {
+	Presubmits() (fullRepoName string, presubmits []Presubmit)
+}
+
+// ValidateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
-func (c *Config) validateJobConfig() error {
+func (c *Config) ValidateJobConfig(aps ...additionalPresubmits) error {
 	type orgRepoJobName struct {
 		orgRepo, jobName string
+	}
+
+	// This mechanism is currently used by inrepoconfig only. The main reason
+	// to define additionalPresubmits as variadic argument is to keep api compatibility
+	presubmits := map[string][]Presubmit{}
+	for k, v := range c.Presubmits {
+		presubmits[k] = v
+	}
+	for _, ap := range aps {
+		repo, ap := ap.Presubmits()
+		presubmits[repo] = append(c.Presubmits[repo], ap...)
 	}
 
 	// Validate presubmits.
 	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
 	validPresubmits := map[orgRepoJobName][]Presubmit{}
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range presubmits {
 		for _, job := range jobs {
 			repoJobName := orgRepoJobName{repo, job.Name}
 			for _, existingJob := range validPresubmits[repoJobName] {
@@ -818,12 +833,14 @@ func (c *Config) validateJobConfig() error {
 		}
 	}
 
-	for _, v := range c.AllPresubmits(nil) {
-		if err := validateJobBase(v.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
-		}
-		if err := validateTriggering(v); err != nil {
-			return err
+	for _, presubmits := range presubmits {
+		for _, v := range presubmits {
+			if err := validateJobBase(v.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
+				return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
+			}
+			if err := validateTriggering(v); err != nil {
+				return err
+			}
 		}
 	}
 

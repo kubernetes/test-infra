@@ -119,6 +119,7 @@ func TestHandlePullRequest(t *testing.T) {
 		prLabel       string
 		prChanges     bool
 		prAction      github.PullRequestEventAction
+		presubmits    map[string][]config.Presubmit
 	}{
 		{
 			name: "Trusted user open PR should build",
@@ -126,6 +127,14 @@ func TestHandlePullRequest(t *testing.T) {
 			Author:      "t",
 			ShouldBuild: true,
 			prAction:    github.PullRequestActionOpened,
+		},
+		{
+			name: "Trusted users opens PR with no configured Presubmits should not build",
+
+			Author:      "t",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionOpened,
+			presubmits:  map[string][]config.Presubmit{},
 		},
 		{
 			name: "Untrusted user open PR should not build and should comment",
@@ -296,6 +305,18 @@ func TestHandlePullRequest(t *testing.T) {
 				},
 			},
 		}
+		if tc.presubmits != nil {
+			presubmits = tc.presubmits
+		}
+		for k := range presubmits {
+			for i := range presubmits[k] {
+				if presubmits[k][i].Trigger == "" {
+					presubmits[k][i].Trigger = "sup"
+					presubmits[k][i].RerunCommand = "sup"
+				}
+			}
+		}
+
 		if err := c.Config.SetPresubmits(presubmits); err != nil {
 			t.Fatalf("failed to set presubmits: %v", err)
 		}

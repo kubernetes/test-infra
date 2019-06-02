@@ -789,8 +789,9 @@ func TestHandleGenericComment(t *testing.T) {
 					Base: github.PullRequestBranch{
 						Ref: tc.Branch,
 						Repo: github.Repo{
-							Owner: github.User{Login: "org"},
-							Name:  "repo",
+							Owner:    github.User{Login: "org"},
+							Name:     "repo",
+							FullName: "org/repo",
 						},
 					},
 				},
