@@ -6,6 +6,11 @@ If you want more functionality from your Prow instance this guide is for you. It
 
 Prow has a number of optional cluster components and a suite of plugins for `hook` that provide all sorts of automation. Check out the [README](/prow/cmd/README.md) in the [`prow/cmd`](/prow/cmd) directory for a list of cluster components and the [README](/prow/plugins/README.md) in the [`prow/plugins`](/prow/plugins) directory for information about available plugins.
 
+## Version your Presubmits inside the tested repo
+
+The [`inrepoconfig`](/prow/inrepoconfig/README.md) extenssin can be activated to allow versioning
+your Jobs inside the tested repo as opposed to in one central repo.
+
 ## Consume Prometheus metrics
 
 Some Prow components expose prometheus metrics that can be used for monitoring, alerting, and pretty graphs. You can find details in the [README](/prow/metrics/README.md) in the [`prow/metrics`](/prow/metrics) directory.
