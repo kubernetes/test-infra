@@ -292,6 +292,12 @@ func TestSkipStatus(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		for i := range test.presubmits {
+			if test.presubmits[i].Trigger == "" {
+				test.presubmits[i].Trigger = "sup"
+				test.presubmits[i].RerunCommand = "sup"
+			}
+		}
 		if err := config.SetPresubmitRegexes(test.presubmits); err != nil {
 			t.Fatalf("%s: could not set presubmit regexes: %v", test.name, err)
 		}

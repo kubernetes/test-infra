@@ -267,9 +267,13 @@ func TestConditionalPresubmits(t *testing.T) {
 			RegexpChangeMatcher: RegexpChangeMatcher{
 				RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
 			},
+			Trigger:      "sup",
+			RerunCommand: "sup",
 		},
 	}
-	SetPresubmitRegexes(presubmits)
+	if err := SetPresubmitRegexes(presubmits); err != nil {
+		t.Fatalf("failed to set presubmit regexes: %v", err)
+	}
 	ps := presubmits[0]
 	var testcases = []struct {
 		changes  []string
@@ -287,6 +291,13 @@ func TestConditionalPresubmits(t *testing.T) {
 		if actual != tc.expected {
 			t.Errorf("wrong RunsAgainstChanges(%#v) result. Got %v, expected %v", tc.changes, actual, tc.expected)
 		}
+	}
+}
+
+func TestSetRegexesRefusesEmptyTrigger(t *testing.T) {
+	if err := SetPresubmitRegexes([]Presubmit{{}}); err == nil ||
+		err.Error() != "Trigger is empty for job " {
+		t.Fatal("Expected SetPresubmitRegexes to refuse Job without Trigger")
 	}
 }
 
@@ -493,6 +504,12 @@ func TestRunAgainstBranch(t *testing.T) {
 				Name: "default",
 			},
 		},
+	}
+	for i := range jobs {
+		if jobs[i].Trigger == "" {
+			jobs[i].Trigger = "sup"
+			jobs[i].RerunCommand = "sup"
+		}
 	}
 
 	if err := SetPresubmitRegexes(jobs); err != nil {
@@ -837,6 +854,10 @@ func TestPresubmitShouldRun(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			if testCase.job.Trigger == "" {
+				testCase.job.Trigger = "sup"
+				testCase.job.RerunCommand = "sup"
+			}
 			jobs := []Presubmit{testCase.job}
 			if err := SetPresubmitRegexes(jobs); err != nil {
 				t.Fatalf("%s: failed to set presubmit regexes: %v", testCase.name, err)

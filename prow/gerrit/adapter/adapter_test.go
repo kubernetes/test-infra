@@ -473,6 +473,13 @@ func TestProcessChange(t *testing.T) {
 				RerunCommand: "/test troll",
 			},
 		}
+		for i := range testInfraPresubmits {
+			if testInfraPresubmits[i].Trigger == "" {
+				testInfraPresubmits[i].Trigger = "sup"
+				testInfraPresubmits[i].RerunCommand = "sup"
+			}
+		}
+
 		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {
 			t.Fatalf("could not set regexes: %v", err)
 		}

@@ -2272,11 +2272,31 @@ func TestPresubmitsByPull(t *testing.T) {
 			tc.expectedChangeCache = map[changeCacheKey][]string{}
 		}
 
+		for i := range tc.presubmits {
+			if tc.presubmits[i].Trigger == "" {
+				tc.presubmits[i].Trigger = "/meow"
+				tc.presubmits[i].RerunCommand = "/meow"
+			}
+		}
+		for i := range tc.expectedPresubmits {
+			for j := range tc.expectedPresubmits[i] {
+				if tc.expectedPresubmits[i][j].Trigger == "" {
+					tc.expectedPresubmits[i][j].Trigger = "/meow"
+					tc.expectedPresubmits[i][j].RerunCommand = "/meow"
+				}
+			}
+		}
 		cfg := &config.Config{}
-		cfg.SetPresubmits(map[string][]config.Presubmit{
-			"/":       tc.presubmits,
-			"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
-		})
+		if err := cfg.SetPresubmits(map[string][]config.Presubmit{
+			"/": tc.presubmits,
+			"foo/bar": {{
+				Trigger:      "/pony",
+				RerunCommand: "/pony",
+				Reporter:     config.Reporter{Context: "wrong-repo"},
+				AlwaysRun:    true}},
+		}); err != nil {
+			t.Fatalf("error calling SetPresubmits: %v", err)
+		}
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{

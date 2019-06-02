@@ -1412,6 +1412,9 @@ func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
 // the provided presubmits.
 func SetPresubmitRegexes(js []Presubmit) error {
 	for i, j := range js {
+		if j.Trigger == "" {
+			return fmt.Errorf("Trigger is empty for job %s", j.Name)
+		}
 		if re, err := regexp.Compile(j.Trigger); err == nil {
 			js[i].re = re
 		} else {

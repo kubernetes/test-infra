@@ -1330,6 +1330,12 @@ func TestPresubmitFilter(t *testing.T) {
 			if len(testCase.presubmits) != len(testCase.expected) {
 				t.Fatalf("%s: have %d presubmits but only %d expected filter outputs", testCase.name, len(testCase.presubmits), len(testCase.expected))
 			}
+			for i := range testCase.presubmits {
+				if testCase.presubmits[i].Trigger == "" {
+					testCase.presubmits[i].Trigger = "sup"
+					testCase.presubmits[i].RerunCommand = "sup"
+				}
+			}
 			if err := config.SetPresubmitRegexes(testCase.presubmits); err != nil {
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
 			}
@@ -1430,6 +1436,12 @@ func TestRetestFilter(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			if len(testCase.presubmits) != len(testCase.expected) {
 				t.Fatalf("%s: have %d presubmits but only %d expected filter outputs", testCase.name, len(testCase.presubmits), len(testCase.expected))
+			}
+			for i := range testCase.presubmits {
+				if testCase.presubmits[i].Trigger == "" {
+					testCase.presubmits[i].Trigger = "sup"
+					testCase.presubmits[i].RerunCommand = "sup"
+				}
 			}
 			if err := config.SetPresubmitRegexes(testCase.presubmits); err != nil {
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)

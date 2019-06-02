@@ -78,6 +78,12 @@ func TestTestAllFilter(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			for i := range testCase.presubmits {
+				if testCase.presubmits[i].Trigger == "" {
+					testCase.presubmits[i].Trigger = "/woof"
+					testCase.presubmits[i].RerunCommand = "/woof"
+				}
+			}
 			if len(testCase.presubmits) != len(testCase.expected) {
 				t.Fatalf("%s: have %d presubmits but only %d expected filter outputs", testCase.name, len(testCase.presubmits), len(testCase.expected))
 			}

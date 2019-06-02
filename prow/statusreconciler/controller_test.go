@@ -780,6 +780,12 @@ func TestControllerReconcile(t *testing.T) {
 		t.Fatalf("could not unmarshal old config: %v", err)
 	}
 	for _, presubmits := range oldConfig.Presubmits {
+		for i := range presubmits {
+			if presubmits[i].Trigger == "" {
+				presubmits[i].Trigger = "/pony"
+				presubmits[i].RerunCommand = "/pony"
+			}
+		}
 		if err := config.SetPresubmitRegexes(presubmits); err != nil {
 			t.Fatalf("could not set presubmit regexes for old config: %v", err)
 		}
@@ -788,6 +794,12 @@ func TestControllerReconcile(t *testing.T) {
 		t.Fatalf("could not unmarshal new config: %v", err)
 	}
 	for _, presubmits := range newConfig.Presubmits {
+		for i := range presubmits {
+			if presubmits[i].Trigger == "" {
+				presubmits[i].Trigger = "/pony"
+				presubmits[i].RerunCommand = "/pony"
+			}
+		}
 		if err := config.SetPresubmitRegexes(presubmits); err != nil {
 			t.Fatalf("could not set presubmit regexes for new config: %v", err)
 		}

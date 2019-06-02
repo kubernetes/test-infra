@@ -352,6 +352,12 @@ func TestBranchRequirements(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		for i := range tc.config {
+			if tc.config[i].Trigger == "" {
+				tc.config[i].Trigger = "sup"
+				tc.config[i].RerunCommand = "sup"
+			}
+		}
 		if err := SetPresubmitRegexes(tc.config); err != nil {
 			t.Fatalf("could not set regexes: %v", err)
 		}

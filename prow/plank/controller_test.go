@@ -55,17 +55,23 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 			JobBase: config.JobBase{
 				Name: "test-bazel-build",
 			},
+			Trigger:      "/test-bazel-build",
+			RerunCommand: "/test-bazel-build",
 		},
 		{
 			JobBase: config.JobBase{
 				Name: "test-e2e",
 			},
+			Trigger:      "/test-bazel-build",
+			RerunCommand: "/test-bazel-build",
 		},
 		{
 			AlwaysRun: true,
 			JobBase: config.JobBase{
 				Name: "test-bazel-test",
 			},
+			Trigger:      "/test-bazel-build",
+			RerunCommand: "/test-bazel-build",
 		},
 	}
 	if err := config.SetPresubmitRegexes(presubmits); err != nil {
