@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -147,7 +148,7 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.We
 
 	// First search for repo config
 	for _, c := range config.Welcome {
-		if !strInSlice(fullName, c.Repos) {
+		if !sets.NewString(c.Repos).Has(fullName) {
 			continue
 		}
 		return &c
@@ -155,7 +156,7 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.We
 
 	// If you don't find anything, loop again looking for an org config
 	for _, c := range config.Welcome {
-		if !strInSlice(org, c.Repos) {
+		if !sets.NewString(c.Repos).Has(org) {
 			continue
 		}
 		return &c
@@ -163,13 +164,4 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.We
 
 	// Return an empty config, and default to defaultWelcomeMessage
 	return &plugins.Welcome{}
-}
-
-func strInSlice(str string, slice []string) bool {
-	for _, elem := range slice {
-		if elem == str {
-			return true
-		}
-	}
-	return false
 }
