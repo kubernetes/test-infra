@@ -52,7 +52,7 @@ func TestDefaultAndValidateInRepoConfigPresubmits(t *testing.T) {
 					return fmt.Errorf(`Expected ps.Context to be "test-job", was %q`, ps.Context)
 				}
 				if ps.Agent != "kubernetes" {
-					return fmt.Errorf(`Expected agent to be "Kubernetes, was %q"`, ps.Agent)
+					return fmt.Errorf(`Expected agent to be "kubernetes", was %q`, ps.Agent)
 				}
 				return nil
 			},
