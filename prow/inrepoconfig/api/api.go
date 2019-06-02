@@ -17,7 +17,6 @@ limitations under the License.
 package api
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,9 +24,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/github"
 )
 
 const (
@@ -42,49 +41,50 @@ const (
 	ConfigFileName = "prow.yaml"
 )
 
-// JobConfig is the format used to parse the prow.yaml
-type JobConfig struct {
+// InRepoConfig is the type `prow.yaml` gets serialized  into
+type InRepoConfig struct {
 	Presubmits []config.Presubmit `json:"presubmits,omitempty"`
 }
 
 // defaultJobConfig defaults the JobConfig. This must be called before accessing any data in it
-func (jc *JobConfig) defaultJobConfig(c *config.ProwConfig) {
-	for i := range jc.Presubmits {
-		config.DefaultPresubmitFields(c, &jc.Presubmits[i])
-		jc.Presubmits[i].DecorationConfig = jc.Presubmits[i].DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+func (irc *InRepoConfig) defaultJobConfig(c *config.ProwConfig) {
+	for i := range irc.Presubmits {
+		config.DefaultPresubmitFields(c, &irc.Presubmits[i])
+		irc.Presubmits[i].DecorationConfig = irc.Presubmits[i].DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
 	}
 }
 
-func NewJobConfig(log *logrus.Entry, refs []prowapi.Refs, c *config.ProwConfig) (*JobConfig, error) {
-	if len(refs) < 1 {
-		return nil, errors.New("need at least one ref")
+// New returns an InRepoConfig for the passed in refs
+func New(log *logrus.Entry, c *config.ProwConfig, gc *git.Client, org, repo, baseRef string, headRefs []string) (*InRepoConfig, error) {
+	mergeStrategyRaw := ""
+	githubMergeMethod := c.Tide.MergeMethod(org, repo)
+	switch githubMergeMethod {
+	case github.MergeRebase:
+		return nil, fmt.Errorf("merge strategy %s is currently not supported by %s", githubMergeMethod, PluginName)
+	case github.MergeMerge:
+		mergeStrategyRaw = "--no-ff"
+	case github.MergeSquash:
+		mergeStrategyRaw = "--squash"
 	}
 
-	tempDir, err := ioutil.TempDir("/tmp", fmt.Sprintf("%s-%s-%s", refs[0].Org, refs[0].Repo, refs[0].BaseSHA))
+	clonedRepo, err := gc.Clone(org + "/" + repo)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create tempDir for cloning: %v", err)
+		return nil, fmt.Errorf("failed to clone repo %s/%s: %v", org, repo, err)
 	}
 	defer func() {
-		if err := os.RemoveAll(tempDir); err != nil {
-			log.WithError(err).Errorf("failed to clean up temp directory %s", tempDir)
+		if err := clonedRepo.Clean(); err != nil {
+			log.WithError(err).Errorf("failed to clean up cloned repo %s/%s", org, repo)
 		}
 	}()
 
-	// TODO: Allow using SSH for cloning
-	cloneOpts := clonerefs.Options{
-		GitUserEmail: "denna@protonmail.com",
-		SrcRoot:      tempDir,
-		Log:          "/dev/null",
-		GitRefs:      refs,
-	}
-	if err := cloneOpts.Run(); err != nil {
-		return nil, fmt.Errorf("failed to clone: %v", err)
+	if err := clonedRepo.CheckoutMergedPullRequests(baseRef, headRefs, mergeStrategyRaw); err != nil {
+		return nil, fmt.Errorf("failed to checkout pull request: %v", err)
 	}
 
-	configFile := fmt.Sprintf("%s/src/github.com/%s/%s/%s", tempDir, refs[0].Org, refs[0].Repo, ConfigFileName)
+	configFile := fmt.Sprintf("%s/%s", clonedRepo.Dir, ConfigFileName)
 	if _, err := os.Stat(configFile); err != nil {
 		if os.IsNotExist(err) {
-			return &JobConfig{}, nil
+			return &InRepoConfig{}, nil
 		}
 		return nil, fmt.Errorf("failed to check if %q exists: %v", ConfigFileName, err)
 	}
@@ -94,12 +94,15 @@ func NewJobConfig(log *logrus.Entry, refs []prowapi.Refs, c *config.ProwConfig) 
 		return nil, fmt.Errorf("failed to read %q: %v", ConfigFileName, err)
 	}
 
-	jc := &JobConfig{}
-	if err := yaml.UnmarshalStrict(configRaw, jc); err != nil {
+	irc := &InRepoConfig{}
+	if err := yaml.UnmarshalStrict(configRaw, irc); err != nil {
 		return nil, fmt.Errorf("failed to parse %q: %v", ConfigFileName, err)
 	}
 
-	jc.defaultJobConfig(c)
+	irc.defaultJobConfig(c)
+	if err := config.SetPresubmitRegexes(irc.Presubmits); err != nil {
+		return nil, fmt.Errorf("failed to set Presubmit regexes: %v", err)
+	}
 
-	return jc, nil
+	return irc, nil
 }

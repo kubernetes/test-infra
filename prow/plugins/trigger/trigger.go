@@ -25,7 +25,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/inrepoconfig"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -122,6 +124,7 @@ type Client struct {
 	ProwJobClient prowJobClient
 	Config        *config.Config
 	Logger        *logrus.Entry
+	GitClient     *git.Client
 }
 
 type trustedUserClient interface {
@@ -135,6 +138,7 @@ func getClient(pc plugins.Agent) Client {
 		Config:        pc.Config,
 		ProwJobClient: pc.ProwJobClient,
 		Logger:        pc.Logger,
+		GitClient:     pc.GitClient,
 	}
 }
 
@@ -197,12 +201,14 @@ func skippedStatusFor(context string) github.Status {
 
 // RunAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
 // for the reporting jobs that are skipped
-func RunAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
+// The baseSHA argument may be an empty string in which case the latest sha for the base ref will
+// be fetched
+func RunAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, baseSHA, eventGUID string, elideSkippedContexts bool) error {
 	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
 		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
 		return err
 	}
-	runErr := runRequested(c, pr, requestedJobs, eventGUID)
+	runErr := runRequested(c, pr, requestedJobs, baseSHA, eventGUID)
 	var skipErr error
 	if !elideSkippedContexts {
 		skipErr = skipRequested(c, pr, skippedJobs)
@@ -229,10 +235,13 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 }
 
 // runRequested executes the config.Presubmits that are requested
-func runRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
-	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
-	if err != nil {
-		return err
+func runRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, baseSHA, eventGUID string) error {
+	if baseSHA == "" {
+		var err error
+		baseSHA, err = c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
+		if err != nil {
+			return err
+		}
 	}
 
 	var errors []error
@@ -261,4 +270,20 @@ func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presub
 		}
 	}
 	return errorutil.NewAggregate(errors...)
+}
+
+func getPresubmitsForPR(c Client, pr *github.PullRequest) (string, []config.Presubmit, error) {
+	presubmits := c.Config.Presubmits[pr.Base.Repo.FullName]
+	var baseSHA string
+	if c.Config.InRepoConfigFor(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name).Enabled {
+		returnedBaseSHA, inRepoPresubmits, err := inrepoconfig.HandlePullRequest(c.Logger, c.Config.ProwConfig, c.GitHubClient, c.GitClient, *pr)
+		if err != nil {
+			c.Logger.WithError(err).Error("failed to get inrepoconfig")
+			return "", nil, fmt.Errorf("failed to get inrepoconfig: %v", err)
+		}
+		presubmits = append(presubmits, inRepoPresubmits...)
+		baseSHA = returnedBaseSHA
+	}
+
+	return baseSHA, presubmits, nil
 }

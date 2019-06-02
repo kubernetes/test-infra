@@ -44,20 +44,6 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if gc.Action != github.GenericCommentActionCreated || !gc.IsPR || gc.IssueState != "open" {
 		return nil
 	}
-	// Skip comments not germane to this plugin
-	if !retestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
-		matched := false
-		for _, presubmit := range c.Config.Presubmits[gc.Repo.FullName] {
-			matched = matched || presubmit.TriggerMatches(gc.Body)
-			if matched {
-				break
-			}
-		}
-		if !matched {
-			c.Logger.Debug("Comment doesn't match any triggering regex, skipping.")
-			return nil
-		}
-	}
 
 	// Skip bot comments.
 	botName, err := c.GitHubClient.BotName()
@@ -93,6 +79,25 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		}
 	}
 
+	baseSHA, presubmits, err := getPresubmitsForPR(c, pr)
+	if err != nil {
+		return err
+	}
+
+	// Skip comments not germane to this plugin
+	if !retestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
+		matched := false
+		for _, presubmit := range presubmits {
+			if matched = presubmit.TriggerMatches(gc.Body); matched {
+				break
+			}
+		}
+		if !matched {
+			c.Logger.Debug("Comment doesn't match any triggering regex, skipping.")
+			return nil
+		}
+	}
+
 	// At this point we can trust the PR, so we eventually update labels.
 	// Ensure we have labels before test, because TrustedPullRequest() won't be called
 	// when commentAuthor is trusted.
@@ -114,11 +119,11 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		}
 	}
 
-	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, c.Config.Presubmits[gc.Repo.FullName], c.Logger)
+	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, presubmits, c.Logger)
 	if err != nil {
 		return err
 	}
-	return RunAndSkipJobs(c, pr, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
+	return RunAndSkipJobs(c, pr, toTest, toSkip, baseSHA, gc.GUID, trigger.ElideSkippedContexts)
 }
 
 func HonorOkToTest(trigger plugins.Trigger) bool {

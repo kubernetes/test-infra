@@ -132,8 +132,10 @@ func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help H
 
 // Agent may be used concurrently, so each entry must be thread-safe.
 type Agent struct {
-	GitHubClient     github.Client
-	ProwJobClient    prowv1.ProwJobInterface
+	GitHubClient  github.Client
+	ProwJobClient prowv1.ProwJobInterface
+	// KubernetesClient holds a clientset to interact with the
+	// infrastructure cluster
 	KubernetesClient kubernetes.Interface
 	GitClient        *git.Client
 	SlackClient      *slack.Client

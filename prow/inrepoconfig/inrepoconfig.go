@@ -22,8 +22,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/inrepoconfig/api"
 )
@@ -40,8 +40,8 @@ type githubClient interface {
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
 }
 
-func HandlePullRequest(log *logrus.Entry, pc config.ProwConfig, ghc githubClient, pr github.PullRequest) (
-	[]config.Presubmit, error) {
+func HandlePullRequest(log *logrus.Entry, pc config.ProwConfig, ghc githubClient, gc *git.Client, pr github.PullRequest) (
+	string, []config.Presubmit, error) {
 	org, repo, author, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.User.Login, pr.Head.SHA
 
 	status := github.Status{
@@ -49,30 +49,15 @@ func HandlePullRequest(log *logrus.Entry, pc config.ProwConfig, ghc githubClient
 		Context: api.ContextName,
 	}
 	if err := ghc.CreateStatus(org, repo, sha, status); err != nil {
-		return nil, fmt.Errorf("failed to create status: %v", err)
+		return "", nil, fmt.Errorf("failed to create status: %v", err)
 	}
 
 	baseSHA, err := ghc.GetRef(org, repo, "heads/"+pr.Base.Ref)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get latest SHA for base ref %q: %v", pr.Base.Ref, err)
-	}
-	refs := []prowapi.Refs{
-		prowapi.Refs{
-			Org:     org,
-			Repo:    repo,
-			BaseRef: pr.Base.Ref,
-			BaseSHA: baseSHA,
-			Pulls: []prowapi.Pull{
-				prowapi.Pull{
-					Number: pr.Number,
-					SHA:    pr.Head.SHA,
-					Ref:    pr.Head.Ref,
-				},
-			},
-		},
+		return "", nil, fmt.Errorf("failed to get latest SHA for base ref %q: %v", pr.Base.Ref, err)
 	}
 
-	jc, err := api.NewJobConfig(log, refs, &pc)
+	irc, err := api.New(log, &pc, gc, org, repo, baseSHA, []string{pr.Head.SHA})
 	if err != nil {
 		log.WithError(err).Error("failed to read JobConfig from repo")
 		status.State = "failure"
@@ -96,18 +81,18 @@ func HandlePullRequest(log *logrus.Entry, pc config.ProwConfig, ghc githubClient
 			}
 		}
 
-		return nil, fmt.Errorf("failed to read %q: %v", api.ConfigFileName, err)
+		return "", nil, fmt.Errorf("failed to read %q: %v", api.ConfigFileName, err)
 	}
 
 	status.State = "success"
 	if err := ghc.CreateStatus(org, repo, sha, status); err != nil {
-		return nil, fmt.Errorf("failed to set GitHub context to %q after creating ProwJobs: %v", status.State, err)
+		return "", nil, fmt.Errorf("failed to set GitHub context to %q after creating ProwJobs: %v", status.State, err)
 	}
 	if err := removeOutdatedIssueComments(ghc, org, repo, pr.Number); err != nil {
-		return nil, fmt.Errorf("failed to return outdated issue comments: %v", err)
+		return "", nil, fmt.Errorf("failed to return outdated issue comments: %v", err)
 	}
 
-	return jc.Presubmits, nil
+	return baseSHA, irc.Presubmits, nil
 }
 
 func removeOutdatedIssueComments(ghc githubClient, org, repo string, pr int) error {

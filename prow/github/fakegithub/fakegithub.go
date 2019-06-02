@@ -29,9 +29,10 @@ const botName = "k8s-ci-robot"
 const (
 	// Bot is the exported botName
 	Bot = botName
-	// TestRef is the ref returned when calling GetRef
-	TestRef = "abcde"
 )
+
+// TestRef is the ref returned when calling GetRef
+var TestRef = "abcde"
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
@@ -138,6 +139,9 @@ func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.L
 
 // CreateComment adds a comment to a PR
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
+	if f.IssueComments == nil {
+		f.IssueComments = map[int][]github.IssueComment{}
+	}
 	f.IssueCommentsAdded = append(f.IssueCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, comment))
 	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
 		ID:   f.IssueCommentID,

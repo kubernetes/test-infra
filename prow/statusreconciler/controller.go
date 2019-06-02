@@ -102,7 +102,7 @@ func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs,
 			Config:        t.configAgent.Config(),
 			Logger:        logrus.WithField("client", "trigger"),
 		},
-		pr, requestedJobs, skippedJobs, "none", t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
+		pr, requestedJobs, skippedJobs, "", "none", t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
 	)
 }
 
