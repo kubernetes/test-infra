@@ -181,10 +181,34 @@ func traceHandler(h http.Handler) http.Handler {
 		trw := &traceResponseWriter{w, http.StatusOK}
 		h.ServeHTTP(trw, r)
 		latency := time.Since(t)
+		pathPrefix := getPathPrefix(r.URL.Path)
 		deckMetrics.httpRequestDuration.With(
-			prometheus.Labels{"path": r.URL.Path, "method": r.Method, "status": strconv.Itoa(trw.statusCode)}).
+			prometheus.Labels{"path": pathPrefix, "method": r.Method, "status": strconv.Itoa(trw.statusCode)}).
 			Observe(latency.Seconds())
 	})
+}
+
+func getPathPrefix(path string) string {
+	prefixes := []string{
+		"/tide",
+		"/plugin-help.js",
+		"/data.js",
+		"/prowjobs.js",
+		"/pr-data.js",
+		"/log",
+		"/rerun",
+		"/spyglass/",
+		"/view/",
+		"/job-history/",
+		"/pr-history/"}
+
+	for _, p := range prefixes {
+		if strings.HasPrefix(path, p) {
+			return p
+		}
+	}
+	// for other cases
+	return "others"
 }
 
 func main() {
