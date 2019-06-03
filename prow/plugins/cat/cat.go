@@ -37,9 +37,9 @@ import (
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
+	match          = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
 	grumpyKeywords = regexp.MustCompile(`(?mi)^(no|grumpy)\s*$`)
-	meow  = &realClowder{
+	meow           = &realClowder{
 		url: "https://api.thecatapi.com/v1/images/search?format=json&results_per_page=1",
 	}
 )
