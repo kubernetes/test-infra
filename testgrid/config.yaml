@@ -2804,12 +2804,6 @@ dashboards:
   - name: Conformance - OpenStack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
     description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
-  - name: Conformance - vSphere-cloud-provider
-    test_group_name: ci-cloud-provider-vsphere-conformance-latest
-    description: "OWNER: sig-vmware; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere"
-  - name: Conformance - vSphere
-    test_group_name: ci-vsphere-conformance-latest
-    description: "OWNER: sig-vmware; Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere"
   - name: gce-master-scale-correctness
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
     description: "OWNER: sig-scalability; Runs 1000-node performance test once a week and checks that operational results are still all correct at that scale"
