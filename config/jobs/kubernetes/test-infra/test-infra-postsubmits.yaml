@@ -24,7 +24,7 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.24.1
+      - image: launcher.gcr.io/google/bazel:0.26.0
         command:
         - hack/bazel.sh
         args:
