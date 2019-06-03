@@ -30,7 +30,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190529-49b63a5-master
       resources:
         requests:
           cpu: 6
@@ -82,7 +82,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190529-49b63a5-master
       resources:
         requests:
           cpu: 6
@@ -108,7 +108,7 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190529-49b63a5-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master

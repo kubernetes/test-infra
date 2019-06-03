@@ -45,7 +45,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190529-49b63a5-master
         resources:
           requests:
             memory: "6Gi"
@@ -84,7 +84,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190529-49b63a5-master
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
         args:
@@ -141,7 +141,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|gcePD-external --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190529-49b63a5-master
         resources:
           requests:
             memory: "6Gi"
