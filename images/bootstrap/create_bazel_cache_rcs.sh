@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CACHE_HOST="bazel-cache.default.svc.cluster.local."
-CACHE_PORT="8080"
+CACHE_HOST="${CACHE_HOST:-bazel-cache.default.svc.cluster.local.}"
+CACHE_PORT="${CACHE_PORT:-8080}"
 
 # get the installed version of a debian package
 package_to_version () {
