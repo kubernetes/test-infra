@@ -141,8 +141,7 @@ func (c *realClowder) URL(category string, movieCat bool) string {
 func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
 	cats := make([]catResult, 0)
 	uri := c.URL(category, movieCat)
-	//if strings.TrimSpace(category) == "no" {
-	if grumpyKeywords.FindStringSubmatch(category) != nil {
+	if grumpyKeywords.MatchString(category) {
 		cats = append(cats, catResult{grumpyURL})
 	} else {
 		resp, err := http.Get(uri)
