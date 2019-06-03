@@ -1330,8 +1330,8 @@ go_repository(
 go_repository(
     name = "com_github_prometheus_procfs",
     importpath = "github.com/prometheus/procfs",
-    sum = "h1:sofwID9zm4tzrgykg80hfFph1mryUeLRsUfoocVVmRY=",
-    version = "v0.0.0-20190507164030-5867b95ac084",
+    sum = "h1:Vb1OE5ZDNKF3yhna6/G+5pHqADNm4I8hUoHj7YQhbZk=",
+    version = "v0.0.1",
 )
 
 go_repository(
