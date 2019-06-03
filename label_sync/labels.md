@@ -10,6 +10,7 @@
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/enhancements, for both issues and PRs](#labels-that-apply-to-kubernetesenhancements-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/k8s.io, for both issues and PRs](#labels-that-apply-to-kubernetesk8s.io-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/kubernetes, for both issues and PRs](#labels-that-apply-to-kuberneteskubernetes-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/kubernetes, only for issues](#labels-that-apply-to-kuberneteskubernetes-only-for-issues)
 - [Labels that apply to kubernetes/kubernetes, only for PRs](#labels-that-apply-to-kuberneteskubernetes-only-for-prs)
@@ -187,6 +188,12 @@ larger set of contributors to apply/remove them.
 | <a id="area/code-organization" href="#area/code-organization">`area/code-organization`</a> | Issues or PRs related to kubernetes code organization| label | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
 | <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes KEP tracking issues and PRs modifying the KEP directory| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes/k8s.io, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/dns" href="#area/dns">`area/dns`</a> | Indicates an issue related to DNS records.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/kubernetes, for both issues and PRs
 
