@@ -31,46 +31,41 @@ import (
 )
 
 // messageFilter builds a filter for jobs based on the messageBody matching the trigger regex of the jobs.
-func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []config.Presubmit, latestReport *reporter.JobReport) (pjutil.Filter, error) {
+func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []config.Presubmit, latestReport *reporter.JobReport, logger *logrus.Entry) (pjutil.Filter, error) {
 	var filters []pjutil.Filter
 	currentRevision := change.Revisions[change.CurrentRevision].Number
-	for _, message := range change.Messages {
-		messageTime := message.Date.Time
-		if message.RevisionNumber != currentRevision || !messageTime.After(lastUpdate) {
-			continue
+
+	contextGetter := func() (sets.String, sets.String, error) {
+		allContexts := sets.String{}
+		failedContexts := sets.String{}
+		for _, presubmit := range presubmits {
+			allContexts.Insert(presubmit.Name)
 		}
-
-		if pjutil.TestAllRe.MatchString(message.Message) {
-			filters = append(filters, pjutil.TestAllFilter())
-		} else if pjutil.RetestRe.MatchString(message.Message) {
-			if latestReport == nil {
-				continue
-			}
-			allContexts := sets.String{}
-			failedContexts := sets.String{}
-
+		if latestReport != nil {
 			jobs := map[string]*reporter.Job{}
 			for _, job := range latestReport.Jobs {
 				jobs[job.Name] = job
 			}
 			for _, presubmit := range presubmits {
-				allContexts.Insert(presubmit.Name)
 				j, ok := jobs[presubmit.Name]
 				if ok && strings.ToLower(j.State) == string(v1.FailureState) {
 					failedContexts.Insert(presubmit.Name)
 				}
 			}
-			filters = append(filters, pjutil.RetestFilter(failedContexts, allContexts))
-		} else {
-			for _, presubmit := range presubmits {
-				if presubmit.TriggerMatches(message.Message) {
-					logrus.Infof("Change %d: Comment %s matches triggering regex, for %s.", change.Number, message.Message, presubmit.Name)
-					filters = append(filters, pjutil.CommandFilter(message.Message))
-				}
-			}
-
 		}
-
+		return failedContexts, allContexts, nil
+	}
+	for _, message := range change.Messages {
+		messageTime := message.Date.Time
+		if message.RevisionNumber != currentRevision || !messageTime.After(lastUpdate) {
+			continue
+		}
+		filter, err := pjutil.PresubmitFilter(false, contextGetter, message.Message, logger)
+		if err != nil || filter == nil {
+			logger.Warnf("failed to create filter for %s", message.Message)
+			continue
+		}
+		filters = append(filters, filter)
 	}
 	return pjutil.AggregateFilter(filters), nil
 }

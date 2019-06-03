@@ -18,7 +18,6 @@ package trigger
 
 import (
 	"fmt"
-	"k8s.io/test-infra/prow/pjutil"
 	"log"
 	"reflect"
 	"testing"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -1343,7 +1343,18 @@ func TestPresubmitFilter(t *testing.T) {
 			} else {
 				fsg.status[key] = statuses
 			}
-			filter, err := presubmitFilter(testCase.honorOkToTest, fsg, testCase.body, testCase.org, testCase.repo, testCase.ref, logrus.WithField("test-case", testCase.name))
+
+			fakeContextGetter := func() (sets.String, sets.String, error) {
+				combinedStatus, err := fsg.GetCombinedStatus(testCase.org, testCase.repo, testCase.ref)
+				if err != nil {
+					return nil, nil, err
+				}
+				failedContexts, allContexts := getContexts(combinedStatus)
+				return failedContexts, allContexts, nil
+			}
+
+			filter, err := pjutil.PresubmitFilter(testCase.honorOkToTest, fakeContextGetter, testCase.body, logrus.WithField("test-case", testCase.name))
+
 			if testCase.expectErr && err == nil {
 				t.Errorf("%s: expected an error creating the filter, but got none", testCase.name)
 			}

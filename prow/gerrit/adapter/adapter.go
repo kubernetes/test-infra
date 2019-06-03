@@ -304,7 +304,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 				break
 			}
 		}
-		filter, err := messageFilter(c.lastUpdate, change, presubmits, latestReport)
+		filter, err := messageFilter(c.lastUpdate, change, presubmits, latestReport, logger)
 		if err != nil {
 			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
 		} else {
