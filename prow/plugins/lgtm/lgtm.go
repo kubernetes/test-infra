@@ -115,11 +115,18 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 // optionsForRepo gets the plugins.Lgtm struct that is applicable to the indicated repo.
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Lgtm {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
-	for i := range config.Lgtm {
-		if !sets.NewString(config.Lgtm[i].Repos).Has(org) && !sets.NewString(config.Lgtm[i].Repos).Has(fullName) {
+	for _, c := range config.Lgtm {
+		if !sets.NewString(c.Repos).Has(fullName) {
 			continue
 		}
-		return &config.Lgtm[i]
+		return &c
+	}
+	// If you don't find anything, loop again looking for an org config
+	for _, c := range config.Lgtm {
+		if !sets.NewString(c.Repos).Has(org) {
+			continue
+		}
+		return &c
 	}
 	return &plugins.Lgtm{}
 }
