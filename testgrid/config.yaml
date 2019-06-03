@@ -1847,8 +1847,18 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.2
 - name: release-openshift-ocp-installer-e2e-aws-serial-4.2
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.2
-- name: release-openshift-osd-e2e-4.0
-  gcs_prefix: redhat-openshift-osd-e2e/logs/release-openshift-osd-e2e-4.0
+
+# OpenShift Dedicated staging
+- name: osd-stage-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.1
+- name: osd-stage-4.2
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.2
+
+# OpenShift Dedicated production
+- name: osd-prod-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.1
+- name: osd-prod-4.2
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.2
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
@@ -6190,9 +6200,29 @@ dashboards:
     description: Runs Kubernetes serial e2e tests against an OpenShift 4.2 OCP cluster.
     test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.2
     base_options: width=10
-  - name: redhat-release-openshift-osd-e2e-4.0
-    description: Runs cluster acceptance tests on a OpenShift 4.X cluster created with UHC.
-    test_group_name: release-openshift-osd-e2e-4.0
+
+# OpenShift Dedicated staging dashboard
+- name: redhat-osd-stage
+  dashboard_tab:
+  - name: osd-stage-4.1
+    description: Runs cluster acceptance tests on an OpenShift Dedicated 4.1 staging cluster.
+    test_group_name: osd-stage-4.1
+    base_options: width=10
+  - name: osd-stage-4.2
+    description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 staging cluster.
+    test_group_name: osd-stage-4.2
+    base_options: width=10
+
+# OpenShift Dedicated production dashboard
+- name: redhat-osd-prod
+  dashboard_tab:
+  - name: osd-prod-4.1
+    description: Runs cluster acceptance tests on an OpenShift Dedicated 4.1 production cluster.
+    test_group_name: osd-prod-4.1
+    base_options: width=10
+  - name: osd-prod-4.2
+    description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 production cluster.
+    test_group_name: osd-prod-4.2
     base_options: width=10
 
 #Docker node conformance dashboard
@@ -6470,6 +6500,8 @@ dashboard_groups:
 - name: redhat
   dashboard_names:
   - redhat-openshift-release-blocking
+  - redhat-osd-stage
+  - redhat-osd-prod
 
 - name: presubmits-cloud-provider
   dashboard_names:
