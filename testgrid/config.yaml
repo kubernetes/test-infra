@@ -4091,6 +4091,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-kubedns-performance
   - name: gce-kubedns-performance-nodecache
     test_group_name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
+  - name: gce-lb-finalizer
+    test_group_name: ci-kubernetes-e2e-gce-lb-finalizer
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: load balancer tests with finalizer protection for master branch
 
 - name: sig-network-gke
   dashboard_tab:
