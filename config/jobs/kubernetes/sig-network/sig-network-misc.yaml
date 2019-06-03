@@ -429,8 +429,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
+      - --env=KUBE_FEATURE_GATES=ServiceLoadBalancerFinalizer=true
       - --extract=ci/latest
-      - --feature-gates=ServiceLoadBalancerFinalizer=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
