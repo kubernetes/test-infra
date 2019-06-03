@@ -760,6 +760,14 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes/k8s.io:
+    labels:
+      - color: 0052cc
+        description: Indicates an issue related to DNS records.
+        name: area/dns
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/kubernetes:
     labels:
       - color: 0052cc
