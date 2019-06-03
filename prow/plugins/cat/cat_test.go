@@ -167,9 +167,17 @@ func TestGrumpy(t *testing.T) {
 			deny:     []string{grumpyURL},
 		},
 		{
-			name:     "grumpy cat",
+			name:     "grumpy cat no keyword",
 			url:      "http://foo",
 			category: "no",
+			key:      "that",
+			movie:    false,
+			require:  []string{grumpyURL},
+		},
+		{
+			name:     "grumpy cat grumpy keyword",
+			url:      "http://foo",
+			category: "grumpy",
 			key:      "that",
 			movie:    false,
 			require:  []string{grumpyURL},

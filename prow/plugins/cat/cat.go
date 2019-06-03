@@ -37,8 +37,9 @@ import (
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
-	meow  = &realClowder{
+	match          = regexp.MustCompile(`(?mi)^/meow(vie)?(?: (.+))?\s*$`)
+	grumpyKeywords = regexp.MustCompile(`(?mi)^(no|grumpy)\s*$`)
+	meow           = &realClowder{
 		url: "https://api.thecatapi.com/v1/images/search?format=json&results_per_page=1",
 	}
 )
@@ -140,7 +141,7 @@ func (c *realClowder) URL(category string, movieCat bool) string {
 func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
 	cats := make([]catResult, 0)
 	uri := c.URL(category, movieCat)
-	if strings.TrimSpace(category) == "no" {
+	if grumpyKeywords.MatchString(category) {
 		cats = append(cats, catResult{grumpyURL})
 	} else {
 		resp, err := http.Get(uri)
