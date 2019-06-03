@@ -10,6 +10,8 @@ presets:
     value: "2"
   - name: KUBERNETES_NODE_PLATFORM
     value: "windows"
+  - name: KUBELET_TEST_ARGS
+    value: "--feature-gates=KubeletPodResources=false"
 
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-poc
