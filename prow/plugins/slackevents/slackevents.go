@@ -145,7 +145,7 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *pl
 
 	// First search for repo config
 	for _, mw := range mergeWarnings {
-		if !sets.NewString(mw.Repos).Has(fullName) {
+		if !sets.NewString(mw.Repos...).Has(fullName) {
 			continue
 		}
 		return &mw
@@ -153,7 +153,7 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *pl
 
 	// If you don't find anything, loop again looking for an org config
 	for _, mw := range mergeWarnings {
-		if !sets.NewString(mw.Repos).Has(org) {
+		if !sets.NewString(mw.Repos...).Has(org) {
 			continue
 		}
 		return &mw

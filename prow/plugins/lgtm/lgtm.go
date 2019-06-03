@@ -116,14 +116,14 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Lgtm {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
 	for _, c := range config.Lgtm {
-		if !sets.NewString(c.Repos).Has(fullName) {
+		if !sets.NewString(c.Repos...).Has(fullName) {
 			continue
 		}
 		return &c
 	}
 	// If you don't find anything, loop again looking for an org config
 	for _, c := range config.Lgtm {
-		if !sets.NewString(c.Repos).Has(org) {
+		if !sets.NewString(c.Repos...).Has(org) {
 			continue
 		}
 		return &c
