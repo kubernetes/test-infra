@@ -76,6 +76,7 @@ periodics:
 # gke
 - cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
   name: ci-kubernetes-e2e-gke-large-performance
+  cluster: scalability
   tags:
   - "perfDashPrefix: gke-2000Nodes"
   - "perfDashJobType: performance"
@@ -123,6 +124,7 @@ periodics:
 
 - cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
   name: ci-kubernetes-e2e-gke-large-performance-regional
+  cluster: scalability
   tags:
   - "perfDashPrefix: gke-2000Nodes-regional"
   - "perfDashJobType: performance"
@@ -171,6 +173,7 @@ periodics:
 
 - cron: '1 3 * * 6' # Run at 19:01PST on Friday (03:01 UTC on Saturday)
   name: ci-kubernetes-e2e-gke-scale-correctness
+  cluster: scalability
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -205,6 +208,7 @@ periodics:
 
 - cron: '1 8 * * 6' # Run at 00:01PST (8:01 UTC) on Sat
   name: ci-kubernetes-e2e-gke-scale-performance
+  cluster: scalability
   tags:
   - "perfDashPrefix: gke-5000Nodes"
   - "perfDashJobType: performance"
@@ -256,6 +260,7 @@ periodics:
   - "perfDashPrefix: kubemark-100Nodes"
   - "perfDashJobType: performance"
   interval: 3h
+  cluster: scalability
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
