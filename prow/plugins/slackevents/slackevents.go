@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -146,7 +145,7 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *pl
 
 	// First search for repo config
 	for _, mw := range mergeWarnings {
-		if !strInSlice(fullName, mw.Repos) {
+		if !sets.NewString(mw.Repos...).Has(fullName) {
 			continue
 		}
 		return &mw
@@ -154,22 +153,13 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *pl
 
 	// If you don't find anything, loop again looking for an org config
 	for _, mw := range mergeWarnings {
-		if !strInSlice(org, mw.Repos) {
+		if !sets.NewString(mw.Repos...).Has(org) {
 			continue
 		}
 		return &mw
 	}
 
 	return nil
-}
-
-func strInSlice(str string, slice []string) bool {
-	for _, elem := range slice {
-		if elem == str {
-			return true
-		}
-	}
-	return false
 }
 
 func echoToSlack(pc client, e github.GenericCommentEvent) error {

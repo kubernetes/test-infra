@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -115,23 +115,20 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 // optionsForRepo gets the plugins.Lgtm struct that is applicable to the indicated repo.
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Lgtm {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
-	for i := range config.Lgtm {
-		if !strInSlice(org, config.Lgtm[i].Repos) && !strInSlice(fullName, config.Lgtm[i].Repos) {
+	for _, c := range config.Lgtm {
+		if !sets.NewString(c.Repos...).Has(fullName) {
 			continue
 		}
-		return &config.Lgtm[i]
+		return &c
+	}
+	// If you don't find anything, loop again looking for an org config
+	for _, c := range config.Lgtm {
+		if !sets.NewString(c.Repos...).Has(org) {
+			continue
+		}
+		return &c
 	}
 	return &plugins.Lgtm{}
-}
-
-// strInSlice returns true if any string in slice matches str exactly
-func strInSlice(str string, slice []string) bool {
-	for _, elem := range slice {
-		if elem == str {
-			return true
-		}
-	}
-	return false
 }
 
 type githubClient interface {
