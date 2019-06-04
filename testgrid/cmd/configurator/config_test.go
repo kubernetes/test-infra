@@ -342,9 +342,10 @@ func TestConfig(t *testing.T) {
 // Convince sig leads or subproject owners this is a bad idea and whittle this down
 // to just kubernetes-security/
 var noPresubmitsInTestgridPrefixes = []string{
-	"GoogleCloudPlatform/k8s-multicluster-ingress",
 	"containerd/cri",
+	"GoogleCloudPlatform/k8s-multicluster-ingress",
 	"kubeflow/pipelines",
+	"kubernetes-csi/csi-driver-host-path",
 	"kubernetes-csi/csi-driver-host-path",
 	"kubernetes-csi/csi-lib-utils",
 	"kubernetes-csi/csi-release-tools",
@@ -354,12 +355,12 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-csi/external-snapshotter",
 	"kubernetes-csi/livenessprobe",
 	"kubernetes-csi/node-driver-registrar",
-	"kubernetes-incubator/service-catalog",
 	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
 	"kubernetes-sigs/kube-storage-version-migrator",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",
+	"kubernetes-sigs/service-catalog",
 	"kubernetes-sigs/sig-storage-local-static-provisioner",
 	"kubernetes-sigs/slack-infra",
 	"kubernetes-sigs/testing_frameworks",
@@ -373,7 +374,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes/kubeadm",
 	"kubernetes/minikube",
 	"kubernetes/release",
-	"kubernetes-csi/csi-driver-host-path",
 	// This is the one entry that should be here
 	"kubernetes-security/",
 }

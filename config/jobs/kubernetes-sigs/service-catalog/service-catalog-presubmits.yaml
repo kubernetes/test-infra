@@ -1,5 +1,5 @@
 presubmits:
-  kubernetes-incubator/service-catalog:
+  kubernetes-sigs/service-catalog:
   - name: pull-service-catalog-unit
     always_run: true
     skip_report: false
@@ -24,7 +24,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-3070529-master
         args:
-        - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-sigs/$(REPO_NAME)=$(PULL_REFS)"
         - "--timeout=45"
         - "--scenario=execute"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -44,7 +44,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-3070529-master
         args:
-        - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-sigs/$(REPO_NAME)=$(PULL_REFS)"
         - "--timeout=90"
         - "--scenario=execute"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
