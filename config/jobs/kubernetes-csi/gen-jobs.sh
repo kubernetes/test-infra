@@ -265,6 +265,7 @@ EOF
     always_run: true
     decorate: true
     skip_report: false
+    skip_branches: [$(skip_branches $repo)]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
