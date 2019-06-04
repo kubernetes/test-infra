@@ -448,17 +448,17 @@ tide:
     kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
-    kubernetes-incubator/service-catalog: squash
-    kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-azure: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
-    kubernetes-sigs/krew: squash
+    kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/krew-index: squash
+    kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
+    kubernetes-sigs/service-catalog: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
