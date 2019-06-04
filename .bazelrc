@@ -2,6 +2,9 @@
 build --workspace_status_command=./hack/print-workspace-status.sh
 run --workspace_status_command=./hack/print-workspace-status.sh
 
+# https://github.com/kubernetes/test-infra/issues/12876
+build --incompatible_depset_union=false
+
 # enable data race detection
 test --features=race --test_output=errors
 
