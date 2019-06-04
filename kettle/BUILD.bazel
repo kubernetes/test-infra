@@ -1,3 +1,4 @@
+load("@py_deps//:requirements.bzl", py_requirement = "requirement")
 load("@kettle_deps//:requirements.bzl", "requirement")
 
 py_test(
@@ -12,8 +13,8 @@ py_test(
     # https://github.com/bazelbuild/bazel/issues/2056
     local = True,
     deps = [
-        "@requests",
-        "@yaml",
+        py_requirement("requests"),
+        py_requirement("PyYAML"),
     ],
 )
 
@@ -59,8 +60,8 @@ py_test(
         "schema.json",
     ],
     deps = [
-        "@requests",
-        "@yaml",
+        py_requirement("requests"),
+        py_requirement("PyYAML"),
     ],
 )
 
@@ -75,7 +76,7 @@ py_test(
     data = [":buckets.yaml"],
     # idem
     local = True,
-    deps = ["@yaml"],
+    deps = [py_requirement("PyYAML")],
 )
 
 filegroup(

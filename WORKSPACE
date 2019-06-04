@@ -199,13 +199,13 @@ git_repository(
 load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
 
 pip_import(
-    name = "kettle_deps",
-    requirements = "//kettle:requirements.txt",
+    name = "py_deps",
+    requirements = "//:requirements.txt",
 )
 
 pip_import(
-    name = "pylint_deps",
-    requirements = "//hack:requirements.txt",
+    name = "kettle_deps",
+    requirements = "//kettle:requirements.txt",
 )
 
 load("//:py.bzl", "python_repos")

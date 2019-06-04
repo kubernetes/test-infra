@@ -1,4 +1,4 @@
-load("@pylint_deps//:requirements.bzl", "requirement")
+load("@py_deps//:requirements.bzl", "requirement")
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -280,12 +280,12 @@ py_binary(
     tags = ["lint"],
     # NOTE: this should only contain direct third party imports and pylint
     deps = [
-        "@influxdb",
-        "@pylint",
-        "@pytz",
-        "@requests",  # TODO(fejta): figure out a better solution
+        requirement("influxdb"),
+        requirement("pylint"),
+        requirement("pytz"),
+        requirement("requests"),
         "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
-        "@yaml",
+        requirement("PyYAML"),
         requirement("setuptools"),
     ],
 )

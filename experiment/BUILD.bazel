@@ -1,7 +1,9 @@
+load("@py_deps//:requirements.bzl", "requirement")
+
 py_binary(
     name = "flakedetector",
     srcs = ["flakedetector.py"],
-    deps = ["@requests"],
+    deps = [requirement("requests")],
 )
 
 py_binary(
@@ -31,7 +33,7 @@ py_binary(
     srcs = ["prepare_release_branch.py"],
     deps = [
         "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
-        "@sh",
+        requirement("sh"),
     ],
 )
 
