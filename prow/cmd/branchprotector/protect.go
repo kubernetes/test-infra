@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 
@@ -131,6 +132,7 @@ func main() {
 }
 
 type client interface {
+	GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error)
 	RemoveBranchProtection(org, repo, branch string) error
 	UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error
 	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
@@ -276,11 +278,34 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		logrus.Infof("%s/%s=%s: already unprotected", orgName, repo, branchName)
 		return nil
 	}
+
+	// The github API currently does not support listing protections for all
+	// branches of a repository. We therefore have to make individual requests
+	// for each branch.
+	currentBP, err := p.client.GetBranchProtection(orgName, repo, branchName)
+	if err != nil {
+		return fmt.Errorf("get current branch protection: %v", err)
+	}
+	var policyBP github.BranchProtection
 	var req *github.BranchProtectionRequest
 	if *bp.Protect {
 		r := makeRequest(*bp)
 		req = &r
+		policyBP = github.BranchProtection{
+			EnforceAdmins: github.EnforceAdmins{
+				Enabled: r.EnforceAdmins != nil && *r.EnforceAdmins,
+			},
+			RequiredPullRequestReviews: r.RequiredPullRequestReviews,
+			RequiredStatusChecks:       r.RequiredStatusChecks,
+			Restrictions:               r.Restrictions,
+		}
 	}
+
+	if req != nil && currentBP != nil && equalBranchProtections(*currentBP, policyBP) {
+		logrus.Debugf("%s/%s=%s: current branch protection matches policy, skipping", orgName, repo, branchName)
+		return nil
+	}
+
 	p.updates <- requirements{
 		Org:     orgName,
 		Repo:    repo,
@@ -288,4 +313,69 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		Request: req,
 	}
 	return nil
+}
+
+func equalBranchProtections(bp1, bp2 github.BranchProtection) bool {
+	equalStringSlices := func(s1, s2 *[]string) bool {
+		switch {
+		case s1 == s2:
+			return true
+		case s1 != nil && s2 != nil:
+			if len(*s1) != len(*s2) {
+				return false
+			}
+			sort.Strings(*s1)
+			sort.Strings(*s2)
+			for i, v := range *s1 {
+				if v != (*s2)[i] {
+					return false
+				}
+			}
+			return true
+		default:
+			return false
+		}
+	}
+
+	equalStatusChecks := func(sc1, sc2 *github.RequiredStatusChecks) bool {
+		switch {
+		case sc1 == sc2:
+			return true
+		case sc1 != nil && sc2 != nil:
+			return sc1.Strict == sc2.Strict &&
+				equalStringSlices(&sc1.Contexts, &sc2.Contexts)
+		default:
+			return false
+		}
+	}
+
+	equalRestrictions := func(r1, r2 *github.Restrictions) bool {
+		switch {
+		case r1 == r2:
+			return true
+		case r1 != nil && r2 != nil:
+			return equalStringSlices(r1.Teams, r2.Teams) && equalStringSlices(r1.Users, r2.Users)
+		default:
+			return false
+		}
+	}
+
+	equalReviews := func(r1, r2 *github.RequiredPullRequestReviews) bool {
+		switch {
+		case r1 == r2:
+			return true
+		case r1 != nil && r2 != nil:
+			return r1.DismissStaleReviews == r2.DismissStaleReviews &&
+				r1.RequireCodeOwnerReviews == r2.RequireCodeOwnerReviews &&
+				r1.RequiredApprovingReviewCount == r2.RequiredApprovingReviewCount &&
+				equalRestrictions(&r1.DismissalRestrictions, &r2.DismissalRestrictions)
+		default:
+			return false
+		}
+	}
+
+	return bp1.EnforceAdmins == bp2.EnforceAdmins &&
+		equalStatusChecks(bp1.RequiredStatusChecks, bp2.RequiredStatusChecks) &&
+		equalReviews(bp1.RequiredPullRequestReviews, bp2.RequiredPullRequestReviews) &&
+		equalRestrictions(bp1.Restrictions, bp2.Restrictions)
 }
