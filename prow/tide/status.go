@@ -388,9 +388,13 @@ func (sc *statusController) save(ticker *time.Ticker) {
 
 func (sc *statusController) run() {
 	sc.load()
+	done := make(chan int)
 	ticks := time.NewTicker(time.Hour)
 	defer ticks.Stop()
-	go sc.save(ticks)
+	go func() {
+		sc.save(ticks)
+		done <- 1
+	}()
 	for {
 		// wait for a new pool
 		if !<-sc.newPoolPending {
@@ -399,6 +403,7 @@ func (sc *statusController) run() {
 		}
 		sc.waitSync()
 	}
+	<-done
 	close(sc.shutDown)
 }
 

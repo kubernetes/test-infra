@@ -217,7 +217,7 @@ func NewController(ghcSync, ghcStatus github.Client, prowJobClient prowv1.ProwJo
 		opener:         opener,
 		path:           statusURI,
 	}
-	go sc.run()
+	sc.run()
 	return &Controller{
 		logger:        logger.WithField("controller", "sync"),
 		ghc:           ghcSync,
