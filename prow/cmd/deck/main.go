@@ -188,6 +188,7 @@ func (trw *traceResponseWriter) Write(data []byte) (int, error) {
 
 func init() {
 	prometheus.MustRegister(deckMetrics.httpRequestDuration)
+	prometheus.MustRegister(deckMetrics.httpResponseSize)
 }
 
 func traceHandler(h http.Handler) http.Handler {
