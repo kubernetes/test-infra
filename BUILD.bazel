@@ -142,7 +142,10 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-exports_files(["tsconfig.json"])
+exports_files([
+    "tsconfig.json",
+    ".bazelversion",
+])
 
 platform(
     name = "rbe_with_network",

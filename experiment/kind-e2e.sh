@@ -23,6 +23,8 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+source $(dirname "${BASH_SOURCE}")/../hack/find-bazel.sh
+
 # our exit handler (trap)
 cleanup() {
     # always attempt to dump logs
@@ -72,7 +74,7 @@ build() {
 
     # make sure we have e2e requirements
     #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
-    bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
+    "${BAZEL}" build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
 
     # try to make sure the kubectl we built is in PATH
     local maybe_kubectl

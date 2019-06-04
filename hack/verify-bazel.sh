@@ -19,18 +19,18 @@ set -o pipefail
 
 if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
   echo "Validating bazel rules..." >&2
-elif ! command -v bazel &> /dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
-elif ! bazel query @//:all-srcs union @io_k8s_test_infra//hack:update-bazel &>/dev/null; then
-  echo "ERROR: bazel rules need bootstrapping. Run hack/update-bazel.sh" >&2
-  exit 1
 else
-  (
-    set -o xtrace
-    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-bazel
-  )
-  exit 0
+  source $(dirname "${BASH_SOURCE}")/find-bazel.sh
+  if ! "${BAZEL}" query @//:all-srcs union @io_k8s_test_infra//hack:update-bazel &>/dev/null; then
+    echo "ERROR: bazel rules need bootstrapping. Run hack/update-bazel.sh" >&2
+    exit 1
+  else
+    (
+      set -o xtrace
+      "${BAZEL}" test --test_output=streamed @io_k8s_test_infra//hack:verify-bazel
+    )
+    exit 0
+  fi
 fi
 
 gazelle=$1

@@ -20,11 +20,12 @@ set -o nounset
 set -o pipefail
 
 TREE="$(git rev-parse --show-toplevel)"
+source "${TREE}/hack/find-bazel.sh"
 
-bazel run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/kubekins-e2e "${TREE}/experiment/generate_tests.py" "${TREE}/experiment/test_config.yaml" "${TREE}/prow/config.yaml"
-find "${TREE}/config/jobs/" . -name "*.yaml" | xargs bazel run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/kubekins-e2e
+"${BAZEL}" run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/kubekins-e2e "${TREE}/experiment/generate_tests.py" "${TREE}/experiment/test_config.yaml" "${TREE}/prow/config.yaml"
+find "${TREE}/config/jobs/" . -name "*.yaml" | xargs "${BAZEL}" run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/kubekins-e2e
 
-bazel run //experiment:generate_tests -- \
+"${BAZEL}" run //experiment:generate_tests -- \
   "--yaml-config-path=${TREE}/experiment/test_config.yaml" \
   "--output-dir=${TREE}/config/jobs/kubernetes/generated/"
 

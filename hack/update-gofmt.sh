@@ -20,13 +20,11 @@ set -o pipefail
 
 if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
   echo "Updating gofmt..." >&2
-elif ! command -v bazel &>/dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
 else
+   source $(dirname "${BASH_SOURCE}")/find-bazel.sh
   (
     set -o xtrace
-    bazel run @io_k8s_test_infra//hack:update-gofmt
+    "${BAZEL}" run @io_k8s_test_infra//hack:update-gofmt
   )
   exit 0
 fi

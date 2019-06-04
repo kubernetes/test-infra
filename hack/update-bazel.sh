@@ -19,22 +19,22 @@ set -o pipefail
 
 if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
   echo "Updating bazel rules..." >&2
-elif ! command -v bazel &>/dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
-elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
-  (
-    set -o xtrace
-    bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
-    bazel run @io_k8s_test_infra//hack:update-bazel
-  )
-  exit 0
 else
-  (
-    set -o xtrace
-    bazel run @io_k8s_test_infra//hack:update-bazel
-  )
-  exit 0
+  source $(dirname "${BASH_SOURCE}")/find-bazel.sh
+  if ! "${BAZEL}" query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
+    (
+      set -o xtrace
+      "${BAZEL}" run @io_k8s_test_infra//hack:bootstrap-testinfra
+      "${BAZEL}" run @io_k8s_test_infra//hack:update-bazel
+    )
+    exit 0
+  else
+    (
+      set -o xtrace
+      "${BAZEL}" run @io_k8s_test_infra//hack:update-bazel
+    )
+    exit 0
+  fi
 fi
 
 gazelle=$(realpath "$1")

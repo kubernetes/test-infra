@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,24 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-
-
-if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
-  echo "Linting python..." >&2
+if command -v bazelisk>/dev/null; then
+  export BAZEL=bazelisk
+elif command -v bazel>/dev/null; then
+  export BAZEL=bazel
 else
-  source $(dirname "${BASH_SOURCE}")/find-bazel.sh
-  (
-    set -o xtrace
-    "${BAZEL}" test --test_output=streamed //hack:verify-pylint
-  )
-  exit 0
+  echo "Install bazelisk (https://github.com/bazelbuild/bazelisk) or bazel (https://bazel.build)"
+  exit 1
 fi
-
-export PYLINTHOME=$TEST_TMPDIR
-pylint="$(dirname $0)/pylint_bin"
-
-shopt -s extglob globstar
-${pylint} !(gubernator|external|vendor|bazel-*)/**/*.py

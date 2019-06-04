@@ -29,6 +29,9 @@ py_binary(
 py_binary(
     name = "prepare_release_branch",
     srcs = ["prepare_release_branch.py"],
+    data = [
+        "//:.bazelversion",
+    ],
     deps = [
         "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
         "@sh",

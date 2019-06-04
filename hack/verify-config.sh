@@ -19,13 +19,11 @@ set -o pipefail
 
 if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
   echo "Validating job configs..." >&2
-elif ! command -v bazel &> /dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
 else
+  source $(dirname "${BASH_SOURCE}")/find-bazel.sh
   (
     set -o xtrace
-    bazel test --test_output=streamed //hack:verify-config
+    "${BAZEL}" test --test_output=streamed //hack:verify-config
   )
   exit 0
 fi

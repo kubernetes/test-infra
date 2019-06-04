@@ -35,6 +35,16 @@ class ToolError(Exception):
     pass
 
 
+try:
+    bazel = sh.Command('bazelisk')
+except sh.CommandNotFound:
+    try:
+        bazel = sh.Command('bazel')
+    except sh.CommandNotFound:
+        print("Please install bazelisk or bazel")
+        sys.exit(1)
+
+
 def check_version(branch_path):
     files = glob.glob(os.path.join(branch_path, "*.yaml"))
     if len(files) != 4:
@@ -59,21 +69,21 @@ def rotate_files(branch_path, current_version):
         filename = '%d.%d.yaml' % (current_version[0], current_version[1] - i)
         from_suffix = suffixes[i]
         to_suffix = suffixes[i+1]
-        sh.bazel.run("//experiment/config-rotator", "--",
-                     old=from_suffix,
-                     new=to_suffix,
-                     config_file=os.path.join(branch_path, filename),
-                     _fg=True)
+        bazel.run("//experiment/config-rotator", "--",
+                  old=from_suffix,
+                  new=to_suffix,
+                  config_file=os.path.join(branch_path, filename),
+                  _fg=True)
 
 
 def fork_new_file(branch_path, prowjob_path, current_version):
     next_version = (current_version[0], current_version[1] + 1)
     filename = '%d.%d.yaml' % (next_version[0], next_version[1])
-    sh.bazel.run("//experiment/config-forker", "--",
-                 job_config=os.path.abspath(prowjob_path),
-                 output=os.path.abspath(os.path.join(branch_path, filename)),
-                 version='%d.%d' % next_version,
-                 _fg=True)
+    bazel.run("//experiment/config-forker", "--",
+              job_config=os.path.abspath(prowjob_path),
+              output=os.path.abspath(os.path.join(branch_path, filename)),
+              version='%d.%d' % next_version,
+              _fg=True)
 
 
 def update_generated_config(latest_version):
@@ -96,10 +106,10 @@ def update_generated_config(latest_version):
 
 
 def regenerate_files():
-    sh.bazel.run("//experiment:generate_tests", "--",
-                 yaml_config_path=TEST_CONFIG_YAML,
-                 _fg=True)
-    sh.bazel.run("//hack:update-config", _fg=True)
+    bazel.run("//experiment:generate_tests", "--",
+              yaml_config_path=TEST_CONFIG_YAML,
+              _fg=True)
+    bazel.run("//hack:update-config", _fg=True)
 
 
 def main():
