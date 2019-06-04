@@ -18,22 +18,30 @@ package org
 
 import (
 	"fmt"
+
+	"k8s.io/test-infra/prow/github"
 )
+
+// FullConfig stores the full configuration to be used by the tool, mapping
+// orgs to their configuration at the top level under an `orgs` key.
+type FullConfig struct {
+	Orgs map[string]Config `json:"orgs,omitempty"`
+}
 
 // Metadata declares metadata about the GitHub org.
 //
 // See https://developer.github.com/v3/orgs/#edit-an-organization
 type Metadata struct {
-	BillingEmail                 *string              `json:"billing_email,omitempty"`
-	Company                      *string              `json:"company,omitempty"`
-	Email                        *string              `json:"email,omitempty"`
-	Name                         *string              `json:"name,omitempty"`
-	Description                  *string              `json:"description,omitempty"`
-	Location                     *string              `json:"location,omitempty"`
-	HasOrganizationProjects      *bool                `json:"has_organization_projects,omitempty"`
-	HasRepositoryProjects        *bool                `json:"has_repository_projects,omitempty"`
-	DefaultRepositoryPermission  *RepoPermissionLevel `json:"default_repository_permission,omitempty"`
-	MembersCanCreateRepositories *bool                `json:"members_can_create_repositories,omitempty"`
+	BillingEmail                 *string                     `json:"billing_email,omitempty"`
+	Company                      *string                     `json:"company,omitempty"`
+	Email                        *string                     `json:"email,omitempty"`
+	Name                         *string                     `json:"name,omitempty"`
+	Description                  *string                     `json:"description,omitempty"`
+	Location                     *string                     `json:"location,omitempty"`
+	HasOrganizationProjects      *bool                       `json:"has_organization_projects,omitempty"`
+	HasRepositoryProjects        *bool                       `json:"has_repository_projects,omitempty"`
+	DefaultRepositoryPermission  *github.RepoPermissionLevel `json:"default_repository_permission,omitempty"`
+	MembersCanCreateRepositories *bool                       `json:"members_can_create_repositories,omitempty"`
 }
 
 // Config declares org metadata as well as its people and teams.
@@ -60,44 +68,13 @@ type Team struct {
 	Children    map[string]Team `json:"teams,omitempty"`
 
 	Previously []string `json:"previously,omitempty"`
-}
 
-// RepoPermissionLevel is admin, write, read or none.
-//
-// See https://developer.github.com/v3/repos/collaborators/#review-a-users-permission-level
-type RepoPermissionLevel string
-
-const (
-	// Read allows pull but not push
-	Read RepoPermissionLevel = "read"
-	// Write allows Read plus push
-	Write RepoPermissionLevel = "write"
-	// Admin allows Write plus change others' rights.
-	Admin RepoPermissionLevel = "admin"
-	// None disallows everything
-	None RepoPermissionLevel = "none"
-)
-
-var repoPermissionLevels = map[RepoPermissionLevel]bool{
-	Read:  true,
-	Write: true,
-	Admin: true,
-	None:  true,
-}
-
-// MarshalText returns the byte representation of the permission
-func (l RepoPermissionLevel) MarshalText() ([]byte, error) {
-	return []byte(l), nil
-}
-
-// UnmarshalText validates the text is a valid string
-func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
-	v := RepoPermissionLevel(text)
-	if _, ok := repoPermissionLevels[v]; !ok {
-		return fmt.Errorf("bad repo permission: %s not in %v", v, repoPermissionLevels)
-	}
-	*l = v
-	return nil
+	// This is injected to the Team structure by listing privilege
+	// levels on dump and if set by users will cause privileges to
+	// be added on sync.
+	// https://developer.github.com/v3/teams/#list-team-repos
+	// https://developer.github.com/v3/teams/#add-or-update-team-repository
+	Repos map[string]github.RepoPermissionLevel `json:"repos,omitempty"`
 }
 
 // Privacy is secret or closed.

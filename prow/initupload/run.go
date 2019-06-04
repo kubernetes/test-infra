@@ -22,24 +22,28 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"strconv"
 	"time"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 // specToStarted translate a jobspec into a started struct
-// optionally overwrite RepoVersion with provided mainRefSHA
-func specToStarted(spec *downwardapi.JobSpec, mainRefSHA string) gcs.Started {
+// optionally overwrite RepoVersion with provided cloneRecords
+func specToStarted(spec *downwardapi.JobSpec, cloneRecords []clone.Record) gcs.Started {
 	started := gcs.Started{
-		Timestamp:   time.Now().Unix(),
-		RepoVersion: downwardapi.GetRevisionFromSpec(spec),
+		Timestamp: time.Now().Unix(),
 	}
 
-	if mainRefSHA != "" {
-		started.RepoVersion = mainRefSHA
+	if mainRefs := spec.MainRefs(); mainRefs != nil {
+		started.RepoVersion = shaForRefs(*mainRefs, cloneRecords)
+	}
+	if started.RepoVersion == "" {
+		started.RepoVersion = downwardapi.GetRevisionFromSpec(spec)
 	}
 
 	// TODO(fejta): VM name
@@ -60,6 +64,16 @@ func specToStarted(spec *downwardapi.JobSpec, mainRefSHA string) gcs.Started {
 	return started
 }
 
+// shaForRefs finds the resolved SHA after cloning and merging for the given refs
+func shaForRefs(refs prowapi.Refs, cloneRecords []clone.Record) string {
+	for _, record := range cloneRecords {
+		if reflect.DeepEqual(refs, record.Refs) {
+			return record.FinalSHA
+		}
+	}
+	return ""
+}
+
 // Run will start the initupload job to upload the artifacts, logs and clone status.
 func (o Options) Run() error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
@@ -70,14 +84,14 @@ func (o Options) Run() error {
 	uploadTargets := map[string]gcs.UploadFunc{}
 
 	var failed bool
-	var mainRefSHA string
+	var cloneRecords []clone.Record
 	if o.Log != "" {
-		if failed, mainRefSHA, err = processCloneLog(o.Log, uploadTargets); err != nil {
+		if failed, cloneRecords, err = processCloneLog(o.Log, uploadTargets); err != nil {
 			return err
 		}
 	}
 
-	started := specToStarted(spec, mainRefSHA)
+	started := specToStarted(spec, cloneRecords)
 
 	startedData, err := json.Marshal(&started)
 	if err != nil {
@@ -100,29 +114,24 @@ func (o Options) Run() error {
 // processCloneLog checks if clone operation successed or failed for a ref
 // and upload clone logs as build log upon failures.
 // returns: bool - clone status
-//          string - final main ref SHA on a successful clone
+//          []Record - containing final SHA on successful clones
 //          error - when unexpected file operation happens
-func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (bool, string, error) {
+func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (bool, []clone.Record, error) {
 	var cloneRecords []clone.Record
 	data, err := ioutil.ReadFile(logfile)
 	if err != nil {
-		return true, "", fmt.Errorf("could not read clone log: %v", err)
+		return true, cloneRecords, fmt.Errorf("could not read clone log: %v", err)
 	}
 	if err = json.Unmarshal(data, &cloneRecords); err != nil {
-		return true, "", fmt.Errorf("could not unmarshal clone records: %v", err)
+		return true, cloneRecords, fmt.Errorf("could not unmarshal clone records: %v", err)
 	}
 	// Do not read from cloneLog directly. Instead create multiple readers from cloneLog so it can
 	// be uploaded to both clone-log.txt and build-log.txt on failure.
 	cloneLog := bytes.Buffer{}
 	var failed bool
-	var mainRefSHA string
-	for idx, record := range cloneRecords {
+	for _, record := range cloneRecords {
 		cloneLog.WriteString(clone.FormatRecord(record))
 		failed = failed || record.Failed
-		// fill in mainRefSHA with FinalSHA from the first record
-		if idx == 0 {
-			mainRefSHA = record.FinalSHA
-		}
 
 	}
 	uploadTargets["clone-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
@@ -140,9 +149,9 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 		}
 		finishedData, err := json.Marshal(&finished)
 		if err != nil {
-			return true, mainRefSHA, fmt.Errorf("could not marshal finishing data: %v", err)
+			return true, cloneRecords, fmt.Errorf("could not marshal finishing data: %v", err)
 		}
 		uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewReader(finishedData))
 	}
-	return failed, mainRefSHA, nil
+	return failed, cloneRecords, nil
 }

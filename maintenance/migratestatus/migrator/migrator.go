@@ -218,7 +218,7 @@ type Migrator struct {
 }
 
 // New creates a new migrator with specified options and client.
-func New(mode Mode, client *github.Client, org, repo string, targetBranchFilter func(string) bool, continueOnError bool) *Migrator {
+func New(mode Mode, client github.Client, org, repo string, targetBranchFilter func(string) bool, continueOnError bool) *Migrator {
 	return &Migrator{
 		org:                org,
 		repo:               repo,

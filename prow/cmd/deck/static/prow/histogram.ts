@@ -83,6 +83,12 @@ export class JobBuckets {
               public end: number,
               public max: number) { }
 
+  public limitMaximum(maximum: number) {
+    if (this.max > maximum) {
+        this.max = maximum;
+    }
+  }
+
   public linearChunks(bucket: JobSample[], rows: number): JobSample[][] {
       const stride = Math.ceil((this.max) / rows);
       const chunks: JobSample[][] = [];
@@ -95,10 +101,20 @@ export class JobBuckets {
           }
           next = next + stride;
           while (next < sample.duration) {
-              chunks.push([]);
-              next = next + stride;
+            if (chunks.length > (rows - 1)) {
+                break;
+            }
+            chunks.push([]);
+            next = next + stride;
           }
-          chunks.push([sample]);
+          if (chunks.length > (rows - 1)) {
+            chunks[chunks.length - 1].push(sample);
+        } else {
+            chunks.push([sample]);
+          }
+      }
+      if (chunks.length > rows) {
+        throw new Error("invalid rows");
       }
       return chunks;
   }

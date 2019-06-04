@@ -12,18 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# note: sync this with planter.sh!
-# this should be bazel version - planter sub version
-BAZEL_VERSION ?= 0.22.0
-IMAGE_NAME ?= gcr.io/k8s-testimages/planter
-TAG = $(BAZEL_VERSION)
+push-prod:
+  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch planter
 
-image:
-	docker build --build-arg BAZEL_VERSION=$(BAZEL_VERSION) -t "$(IMAGE_NAME):$(TAG)" . --pull
-	docker build --build-arg BASEIMAGE="$(IMAGE_NAME):$(TAG)" -t "$(IMAGE_NAME):$(TAG)-cross" -f Dockerfile-cross .
-
-push: image
-	docker push "$(IMAGE_NAME):$(TAG)"
-	docker push "$(IMAGE_NAME):$(TAG)-cross"
-
-.PHONY: image push
+push:
+	bazel run //images/builder -- --allow-dirty planter

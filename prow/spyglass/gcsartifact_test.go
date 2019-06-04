@@ -29,6 +29,7 @@ import (
 
 type ByteReadCloser struct {
 	io.Reader
+	incompleteRead bool
 }
 
 func (rc *ByteReadCloser) Close() error {
@@ -36,6 +37,10 @@ func (rc *ByteReadCloser) Close() error {
 }
 
 func (rc *ByteReadCloser) Read(p []byte) (int, error) {
+	if rc.incompleteRead {
+		p = p[:len(p)/2]
+		rc.incompleteRead = false
+	}
 	read, err := rc.Reader.Read(p)
 	if err != nil {
 		return 0, err
@@ -47,8 +52,9 @@ func (rc *ByteReadCloser) Read(p []byte) (int, error) {
 }
 
 type fakeArtifactHandle struct {
-	oAttrs   *storage.ObjectAttrs
-	contents []byte
+	oAttrs         *storage.ObjectAttrs
+	contents       []byte
+	incompleteRead bool
 }
 
 func (h *fakeArtifactHandle) Attrs(ctx context.Context) (*storage.ObjectAttrs, error) {
@@ -75,7 +81,7 @@ func (h *fakeArtifactHandle) NewRangeReader(ctx context.Context, offset, length 
 			err = io.EOF
 		}
 	}
-	return &ByteReadCloser{bytes.NewReader(h.contents[offset : offset+toRead])}, err
+	return &ByteReadCloser{bytes.NewReader(h.contents[offset : offset+toRead]), h.incompleteRead}, err
 }
 
 func (h *fakeArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, error) {
@@ -94,7 +100,7 @@ func (h *fakeArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, erro
 	if bytes.Equal(h.contents, []byte("unreadable contents")) {
 		return nil, fmt.Errorf("cannot read unreadable contents")
 	}
-	return &ByteReadCloser{bytes.NewReader(h.contents)}, nil
+	return &ByteReadCloser{bytes.NewReader(h.contents), false}, nil
 }
 
 // Tests reading the tail n bytes of data from an artifact
@@ -267,13 +273,14 @@ func TestReadAt(t *testing.T) {
 	}
 	gzippedLog := buf.Bytes()
 	testCases := []struct {
-		name      string
-		n         int64
-		offset    int64
-		contents  []byte
-		encoding  string
-		expected  []byte
-		expectErr bool
+		name           string
+		n              int64
+		offset         int64
+		contents       []byte
+		encoding       string
+		expected       []byte
+		expectErr      bool
+		incompleteRead bool
 	}{
 		{
 			name:      "ReadAt example build log",
@@ -289,6 +296,14 @@ func TestReadAt(t *testing.T) {
 			offset:    400,
 			contents:  []byte("Oh wow\nlogs\nthis is\ncrazy"),
 			expectErr: true,
+		},
+		{
+			name:           "ReadAt needs multiple internal Reads",
+			n:              4,
+			offset:         6,
+			contents:       []byte("Oh wow\nlogs\nthis is\ncrazy"),
+			expected:       []byte("\nlog"),
+			incompleteRead: true,
 		},
 		{
 			name:      "ReadAt build log, gzipped",
@@ -321,6 +336,7 @@ func TestReadAt(t *testing.T) {
 				Size:            int64(len(tc.contents)),
 				ContentEncoding: tc.encoding,
 			},
+			incompleteRead: tc.incompleteRead,
 		}, "", "build-log.txt", 500e6)
 		p := make([]byte, tc.n)
 		bytesRead, err := artifact.ReadAt(p, tc.offset)

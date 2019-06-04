@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/adapter"
@@ -77,6 +78,9 @@ func gatherOptions() options {
 
 func main() {
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gerrit"}))
+
+	pjutil.ServePProf()
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
@@ -101,7 +105,7 @@ func main() {
 	logrus.Infof("Starting gerrit fetcher")
 
 	// TODO(fejta): refactor as timer, which we reset to the current TickInterval value each time
-	tick := time.Tick(cfg().Gerrit.TickInterval)
+	tick := time.Tick(cfg().Gerrit.TickInterval.Duration)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 

@@ -458,8 +458,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     120 * time.Minute,
-					GracePeriod: 10 * time.Second,
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -471,6 +471,7 @@ func TestProwJobToPod(t *testing.T) {
 						PathStrategy: "legacy",
 						DefaultOrg:   "kubernetes",
 						DefaultRepo:  "kubernetes",
+						MediaTypes:   map[string]string{"log": "text/plain"},
 					},
 					GCSCredentialsSecret: "secret-name",
 					CookiefileSecret:     "yummy/.gitcookies",
@@ -548,7 +549,7 @@ func TestProwJobToPod(t *testing.T) {
 							Image:   "initupload:tag",
 							Command: []string{"/initupload"},
 							Env: []coreapi.EnvVar{
-								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
+								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","mediaTypes":{"log":"text/plain"},"gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 							},
 							VolumeMounts: []coreapi.VolumeMount{
@@ -627,7 +628,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/sidecar"},
 							Env: []coreapi.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","mediaTypes":{"log":"text/plain"},"gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}]}`},
 							},
 							VolumeMounts: []coreapi.VolumeMount{
 								{
@@ -681,8 +682,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     120 * time.Minute,
-					GracePeriod: 10 * time.Second,
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -904,8 +905,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     120 * time.Minute,
-					GracePeriod: 10 * time.Second,
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -1153,8 +1154,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     120 * time.Minute,
-					GracePeriod: 10 * time.Second,
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -1401,8 +1402,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PeriodicJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     120 * time.Minute,
-					GracePeriod: 10 * time.Second,
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",
@@ -1564,8 +1565,8 @@ func TestProwJobToPod(t *testing.T) {
 				Type: prowapi.PresubmitJob,
 				Job:  "job-name",
 				DecorationConfig: &prowapi.DecorationConfig{
-					Timeout:     120 * time.Minute,
-					GracePeriod: 10 * time.Second,
+					Timeout:     &prowapi.Duration{Duration: 120 * time.Minute},
+					GracePeriod: &prowapi.Duration{Duration: 10 * time.Second},
 					UtilityImages: &prowapi.UtilityImages{
 						CloneRefs:  "clonerefs:tag",
 						InitUpload: "initupload:tag",

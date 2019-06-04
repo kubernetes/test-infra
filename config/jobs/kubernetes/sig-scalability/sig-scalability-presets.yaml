@@ -40,6 +40,8 @@ presets:
   # Allow one node to not be ready after cluster creation.
   - name: ALLOWED_NOTREADY_NODES
     value: 1
+  - name: ENABLE_PROMETHEUS_SERVER
+    value: "true"
 ### kubemark-gce-big
 - labels:
     preset-e2e-kubemark-gce-big: "true"
@@ -97,13 +99,10 @@ presets:
   - name: KUBELET_TEST_ARGS
     value: "--enable-debugging-handlers"
   - name: KUBEPROXY_TEST_ARGS
-  # TODO(#74011): Remove metrics-bind-address if the default is set.
+    # TODO(#74011): Remove metrics-bind-address if the default is set.
     value: "--profiling --metrics-bind-address=0.0.0.0"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
-  # Switch off image puller to workaround #44701
-  - name: PREPULL_E2E_IMAGES
-    value: "false"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2
@@ -121,9 +120,6 @@ presets:
   # Keep all logrotated files (not just 5 latest which is a default)
   - name: LOGROTATE_FILES_MAX_COUNT
     value: 1000
-  # Experimentally use cos-69-10895-138-0 to test fs-related fixes there.
-  - name: KUBE_GCE_MASTER_IMAGE
-    value: cos-69-10895-138-0
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
 
@@ -167,9 +163,6 @@ presets:
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
-  # Switch off image puller to workaround #44701
-  - name: PREPULL_E2E_IMAGES
-    value: "false"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2

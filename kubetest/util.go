@@ -151,3 +151,26 @@ func gcsWrite(dest string, contents []byte) error {
 
 	return control.FinishRunning(exec.Command("gsutil", "cp", f.Name(), dest))
 }
+
+func setKubeShhBastionEnv(gcpProject, gcpZone, sshProxyInstanceName string) error {
+	value, err := control.Output(exec.Command(
+		"gcloud", "compute", "instances", "describe",
+		sshProxyInstanceName,
+		"--project="+gcpProject,
+		"--zone="+gcpZone,
+		"--format=get(networkInterfaces[0].accessConfigs[0].natIP)"))
+	if err != nil {
+		return fmt.Errorf("failed to get the external IP address of the '%s' instance: %v",
+			sshProxyInstanceName, err)
+	}
+	address := strings.TrimSpace(string(value))
+	if address == "" {
+		return fmt.Errorf("instance '%s' doesn't have an external IP address", sshProxyInstanceName)
+	}
+	address += ":22"
+	if err := os.Setenv("KUBE_SSH_BASTION", address); err != nil {
+		return err
+	}
+	log.Printf("KUBE_SSH_BASTION set to: %v\n", address)
+	return nil
+}

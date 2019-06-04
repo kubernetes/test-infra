@@ -101,7 +101,7 @@ func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 func TestNormal(t *testing.T) {
 	var totalClean int32
 
-	fakeClean := func(p string) error {
+	fakeClean := func(resource *common.Resource, extraFlags []string) error {
 		atomic.AddInt32(&totalClean, 1)
 		return nil
 	}
@@ -109,7 +109,7 @@ func TestNormal(t *testing.T) {
 	types := []string{"a", "b", "c", "d"}
 	fb := createFakeBoskos(1000, types)
 
-	buffer := setup(fb, poolSize, bufferSize, fakeClean)
+	buffer := setup(fb, poolSize, bufferSize, fakeClean, nil)
 	totalAcquire := run(fb, buffer, []string{"t"})
 
 	if totalAcquire != len(fb.resources) {
@@ -131,7 +131,7 @@ func TestNormal(t *testing.T) {
 	}
 }
 
-func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
+func FakeRun(fb *fakeBoskos, buffer chan<- *common.Resource, res string) (int, error) {
 	timeout := time.NewTimer(5 * time.Second).C
 
 	totalClean := 0
@@ -142,9 +142,9 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 		case <-timeout:
 			return totalClean, errors.New("should not timedout")
 		default:
-			if projRes, err := fb.Acquire(res, common.Dirty, common.Cleaning); err != nil {
+			if resource, err := fb.Acquire(res, common.Dirty, common.Cleaning); err != nil {
 				return totalClean, fmt.Errorf("acquire failed with %v", err)
-			} else if projRes.Name == "" {
+			} else if resource.Name == "" {
 				return totalClean, errors.New("not expect to run out of resources")
 			} else {
 				if totalClean > maxAcquire {
@@ -153,7 +153,7 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 				}
 				boom := time.After(50 * time.Millisecond)
 				select {
-				case buffer <- projRes.Name: // normal case
+				case buffer <- resource: // normal case
 					totalClean++
 				case <-boom:
 					return totalClean, nil
@@ -166,14 +166,14 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 func TestMalfunctionJanitor(t *testing.T) {
 
 	stuck := make(chan string, 1)
-	fakeClean := func(p string) error {
+	fakeClean := func(resource *common.Resource, extraFlags []string) error {
 		<-stuck
 		return nil
 	}
 
 	fb := createFakeBoskos(200, []string{"t"})
 
-	buffer := setup(fb, poolSize, bufferSize, fakeClean)
+	buffer := setup(fb, poolSize, bufferSize, fakeClean, nil)
 
 	if totalClean, err := FakeRun(fb, buffer, "t"); err != nil {
 		t.Fatalf("run failed unexpectedly : %v", err)

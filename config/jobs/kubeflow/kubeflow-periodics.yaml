@@ -1,4 +1,19 @@
 periodics:
+- name: kubeflow-periodic-0-5-branch
+  interval: 8h
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/kubeflow-ci/test-worker:latest
+      imagePullPolicy: Always
+      env:
+      - name: REPO_OWNER
+        value: kubeflow
+      - name: REPO_NAME
+        value: kubeflow
+      - name: BRANCH_NAME
+        value: v0.5-branch
 - name: kubeflow-periodic-0-4-branch
   interval: 8h
   labels:

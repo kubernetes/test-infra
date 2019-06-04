@@ -33,7 +33,7 @@ go_library(
         "//kubetest/process:go_default_library",
         "//kubetest/util:go_default_library",
         "//vendor/github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources:go_default_library",
-        "//vendor/github.com/Azure/azure-storage-blob-go/2016-05-31/azblob:go_default_library",
+        "//vendor/github.com/Azure/azure-storage-blob-go/azblob:go_default_library",
         "//vendor/github.com/Azure/go-autorest/autorest:go_default_library",
         "//vendor/github.com/Azure/go-autorest/autorest/adal:go_default_library",
         "//vendor/github.com/Azure/go-autorest/autorest/azure:go_default_library",

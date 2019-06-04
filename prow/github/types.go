@@ -42,6 +42,12 @@ const (
 	// SearchTimeFormat is a time.Time format string for ISO8601 which is the
 	// format that GitHub requires for times specified as part of a search query.
 	SearchTimeFormat = "2006-01-02T15:04:05Z"
+
+	// DefaultAPIEndpoint is the default GitHub API endpoint.
+	DefaultAPIEndpoint = "https://api.github.com"
+
+	// DefaultGraphQLEndpoint is the default GitHub GraphQL API endpoint.
+	DefaultGraphQLEndpoint = "https://api.github.com/graphql"
 )
 
 var (
@@ -142,6 +148,7 @@ type Status struct {
 type CombinedStatus struct {
 	SHA      string   `json:"sha"`
 	Statuses []Status `json:"statuses"`
+	State    string   `json:"state"`
 }
 
 // User is a GitHub user account.
@@ -165,25 +172,27 @@ const (
 	// PullRequestActionAssigned means assignees were added.
 	PullRequestActionAssigned PullRequestEventAction = "assigned"
 	// PullRequestActionUnassigned means assignees were removed.
-	PullRequestActionUnassigned = "unassigned"
+	PullRequestActionUnassigned PullRequestEventAction = "unassigned"
 	// PullRequestActionReviewRequested means review requests were added.
-	PullRequestActionReviewRequested = "review_requested"
+	PullRequestActionReviewRequested PullRequestEventAction = "review_requested"
 	// PullRequestActionReviewRequestRemoved means review requests were removed.
-	PullRequestActionReviewRequestRemoved = "review_request_removed"
+	PullRequestActionReviewRequestRemoved PullRequestEventAction = "review_request_removed"
 	// PullRequestActionLabeled means labels were added.
-	PullRequestActionLabeled = "labeled"
+	PullRequestActionLabeled PullRequestEventAction = "labeled"
 	// PullRequestActionUnlabeled means labels were removed
-	PullRequestActionUnlabeled = "unlabeled"
+	PullRequestActionUnlabeled PullRequestEventAction = "unlabeled"
 	// PullRequestActionOpened means the PR was created
-	PullRequestActionOpened = "opened"
+	PullRequestActionOpened PullRequestEventAction = "opened"
 	// PullRequestActionEdited means the PR body changed.
-	PullRequestActionEdited = "edited"
+	PullRequestActionEdited PullRequestEventAction = "edited"
 	// PullRequestActionClosed means the PR was closed (or was merged).
-	PullRequestActionClosed = "closed"
+	PullRequestActionClosed PullRequestEventAction = "closed"
 	// PullRequestActionReopened means the PR was reopened.
-	PullRequestActionReopened = "reopened"
+	PullRequestActionReopened PullRequestEventAction = "reopened"
 	// PullRequestActionSynchronize means the git state changed.
-	PullRequestActionSynchronize = "synchronize"
+	PullRequestActionSynchronize PullRequestEventAction = "synchronize"
+	// PullRequestActionReadyForReview means the PR is no longer a draft PR.
+	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
 )
 
 // PullRequestEvent is what GitHub sends us when a PR is changed.
@@ -205,6 +214,7 @@ type PullRequestEvent struct {
 
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
+	ID                 int               `json:"id"`
 	Number             int               `json:"number"`
 	HTMLURL            string            `json:"html_url"`
 	User               User              `json:"user"`
@@ -284,6 +294,60 @@ type Repo struct {
 	Fork          bool   `json:"fork"`
 	DefaultBranch string `json:"default_branch"`
 	Archived      bool   `json:"archived"`
+
+	// Permissions reflect the permission level for the requester, so
+	// on a repository GET call this will be for the user whose token
+	// is being used, if listing a team's repos this will be for the
+	// team's privilege level in the repo
+	Permissions RepoPermissions `json:"permissions"`
+}
+
+// RepoPermissions describes which permission level an entity has in a
+// repo. At most one of the booleans here should be true.
+type RepoPermissions struct {
+	// Pull is equivalent to "Read" permissions in the web UI
+	Pull bool `json:"pull"`
+	// Push is equivalent to "Edit" permissions in the web UI
+	Push  bool `json:"push"`
+	Admin bool `json:"admin"`
+}
+
+// RepoPermissionLevel is admin, write, read or none.
+//
+// See https://developer.github.com/v3/repos/collaborators/#review-a-users-permission-level
+type RepoPermissionLevel string
+
+const (
+	// Read allows pull but not push
+	Read RepoPermissionLevel = "read"
+	// Write allows Read plus push
+	Write RepoPermissionLevel = "write"
+	// Admin allows Write plus change others' rights.
+	Admin RepoPermissionLevel = "admin"
+	// None disallows everything
+	None RepoPermissionLevel = "none"
+)
+
+var repoPermissionLevels = map[RepoPermissionLevel]bool{
+	Read:  true,
+	Write: true,
+	Admin: true,
+	None:  true,
+}
+
+// MarshalText returns the byte representation of the permission
+func (l RepoPermissionLevel) MarshalText() ([]byte, error) {
+	return []byte(l), nil
+}
+
+// UnmarshalText validates the text is a valid string
+func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
+	v := RepoPermissionLevel(text)
+	if _, ok := repoPermissionLevels[v]; !ok {
+		return fmt.Errorf("bad repo permission: %s not in %v", v, repoPermissionLevels)
+	}
+	*l = v
+	return nil
 }
 
 // Branch contains general branch information.
@@ -377,23 +441,27 @@ const (
 	// IssueActionAssigned means assignees were added.
 	IssueActionAssigned IssueEventAction = "assigned"
 	// IssueActionUnassigned means assignees were added.
-	IssueActionUnassigned = "unassigned"
+	IssueActionUnassigned IssueEventAction = "unassigned"
 	// IssueActionLabeled means labels were added.
-	IssueActionLabeled = "labeled"
+	IssueActionLabeled IssueEventAction = "labeled"
 	// IssueActionUnlabeled means labels were removed.
-	IssueActionUnlabeled = "unlabeled"
+	IssueActionUnlabeled IssueEventAction = "unlabeled"
 	// IssueActionOpened means issue was opened/created.
-	IssueActionOpened = "opened"
+	IssueActionOpened IssueEventAction = "opened"
 	// IssueActionEdited means issue body was edited.
-	IssueActionEdited = "edited"
+	IssueActionEdited IssueEventAction = "edited"
 	// IssueActionMilestoned means the milestone was added/changed.
-	IssueActionMilestoned = "milestoned"
+	IssueActionMilestoned IssueEventAction = "milestoned"
 	// IssueActionDemilestoned means a milestone was removed.
-	IssueActionDemilestoned = "demilestoned"
+	IssueActionDemilestoned IssueEventAction = "demilestoned"
 	// IssueActionClosed means issue was closed.
-	IssueActionClosed = "closed"
+	IssueActionClosed IssueEventAction = "closed"
 	// IssueActionReopened means issue was reopened.
-	IssueActionReopened = "reopened"
+	IssueActionReopened IssueEventAction = "reopened"
+	// IssueActionPinned means the issue was pinned.
+	IssueActionPinned IssueEventAction = "pinned"
+	// IssueActionUnpinned means the issue was unpinned.
+	IssueActionUnpinned IssueEventAction = "unpinned"
 )
 
 // IssueEvent represents an issue event from a webhook payload (not from the events API).
@@ -426,9 +494,9 @@ const (
 	// IssueCommentActionCreated means the comment was created.
 	IssueCommentActionCreated IssueCommentEventAction = "created"
 	// IssueCommentActionEdited means the comment was edited.
-	IssueCommentActionEdited = "edited"
+	IssueCommentActionEdited IssueCommentEventAction = "edited"
 	// IssueCommentActionDeleted means the comment was deleted.
-	IssueCommentActionDeleted = "deleted"
+	IssueCommentActionDeleted IssueCommentEventAction = "deleted"
 )
 
 // IssueCommentEvent is what GitHub sends us when an issue comment is changed.
@@ -444,6 +512,7 @@ type IssueCommentEvent struct {
 
 // Issue represents general info about an issue.
 type Issue struct {
+	ID        int       `json:"id"`
 	User      User      `json:"user"`
 	Number    int       `json:"number"`
 	Title     string    `json:"title"`
@@ -566,8 +635,9 @@ type PushEvent struct {
 
 // Branch returns the name of the branch to which the user pushed.
 func (pe PushEvent) Branch() string {
-	refs := strings.Split(pe.Ref, "/")
-	return refs[len(refs)-1]
+	ref := strings.TrimPrefix(pe.Ref, "refs/heads/") // if Ref is a branch
+	ref = strings.TrimPrefix(ref, "refs/tags/")      // if Ref is a tag
+	return ref
 }
 
 // Commit represents general info about a commit.
@@ -598,9 +668,9 @@ const (
 	// ReviewActionSubmitted means the review was submitted.
 	ReviewActionSubmitted ReviewEventAction = "submitted"
 	// ReviewActionEdited means the review was edited.
-	ReviewActionEdited = "edited"
+	ReviewActionEdited ReviewEventAction = "edited"
 	// ReviewActionDismissed means the review was dismissed.
-	ReviewActionDismissed = "dismissed"
+	ReviewActionDismissed ReviewEventAction = "dismissed"
 )
 
 // ReviewEvent is what GitHub sends us when a PR review is changed.
@@ -645,9 +715,9 @@ const (
 	// ReviewCommentActionCreated means the comment was created.
 	ReviewCommentActionCreated ReviewCommentEventAction = "created"
 	// ReviewCommentActionEdited means the comment was edited.
-	ReviewCommentActionEdited = "edited"
+	ReviewCommentActionEdited ReviewCommentEventAction = "edited"
 	// ReviewCommentActionDeleted means the comment was deleted.
-	ReviewCommentActionDeleted = "deleted"
+	ReviewCommentActionDeleted ReviewCommentEventAction = "deleted"
 )
 
 // ReviewCommentEvent is what GitHub sends us when a PR review comment is changed.
@@ -797,9 +867,9 @@ const (
 	// GenericCommentActionCreated means something was created/opened/submitted
 	GenericCommentActionCreated GenericCommentEventAction = "created" // "opened", "submitted"
 	// GenericCommentActionEdited means something was edited.
-	GenericCommentActionEdited = "edited"
+	GenericCommentActionEdited GenericCommentEventAction = "edited"
 	// GenericCommentActionDeleted means something was deleted/dismissed.
-	GenericCommentActionDeleted = "deleted" // "dismissed"
+	GenericCommentActionDeleted GenericCommentEventAction = "deleted" // "dismissed"
 )
 
 // GenericCommentEvent is a fake event type that is instantiated for any github event that contains
@@ -814,6 +884,7 @@ const (
 // Issue and PR "closed" events are not coerced to the "deleted" Action and do not trigger
 // a GenericCommentEvent because these events don't actually remove the comment content from GH.
 type GenericCommentEvent struct {
+	ID           int `json:"id"`
 	IsPR         bool
 	Action       GenericCommentEventAction
 	Body         string
@@ -853,4 +924,24 @@ type RepositoryCommit struct {
 type GitCommit struct {
 	SHA     string `json:"sha,omitempty"`
 	Message string `json:"message,omitempty"`
+}
+
+// Project is a github project
+type Project struct {
+	Name string `json:"name"`
+	ID   int    `json:"id"`
+}
+
+// ProjectColumn is a colunm in a github project
+type ProjectColumn struct {
+	Name string `json:"name"`
+	ID   int    `json:"id"`
+}
+
+// ProjectCard is a github project card
+type ProjectCard struct {
+	ID          int    `json:"id"`
+	ContentID   int    `json:"content_id"`
+	ContentType string `json:"content_type"`
+	ContentURL  string `json:"content_url"`
 }

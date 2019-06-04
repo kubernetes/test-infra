@@ -4,7 +4,8 @@
     "moment": "^2.22.2"
   },
   "devDependencies": {
-    "@bazel/typescript": "^0.22.0",
+    "@bazel/jasmine": "0.29.2",
+    "@bazel/typescript": "0.29.2",
     "@types/google.visualization": "^0.0.43",
     "@types/jasmine": "~2.8.0",
     "jasmine": "~2.8.0",

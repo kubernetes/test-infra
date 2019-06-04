@@ -14,6 +14,8 @@ Some Prow components expose prometheus metrics that can be used for monitoring, 
 
 * If you find that your GitHub bot is running low on API tokens consider using [`ghproxy`](/ghproxy) to cache requests to GitHub and take advantage of the strange re-validation rules that allow for additional API token savings.
 * [Testgrid](/testgrid) provides a highly configurable visual overview of test results and can be configured to send alerts for failing or stale results. Testgrid is in the process of being open sourced, but until it has completely made the switch OSS users will need to use the https://testgrid.k8s.io instance that is managed by the GKE-Engprod team.
+* [Kind](https://github.com/kubernetes-sigs/kind) lets you run an entire Kubernetes cluster in a container. This makes it fast and easy for ProwJobs to test anything that runs on Kubernetes (or Kubernetes itself).
+* [label_sync](/label_sync) maintains GitHub labels across orgs and repos based on yaml configuration.
 
 ## Handle scale
 

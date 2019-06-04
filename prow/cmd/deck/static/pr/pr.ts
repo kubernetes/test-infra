@@ -4,6 +4,7 @@ import {Context} from '../api/github';
 import {Label, PullRequest, UserData} from '../api/pr';
 import {Job, JobState} from '../api/prow';
 import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
+import {tidehistory} from '../common/common';
 
 declare const tideData: TideData;
 declare const allBuilds: Job[];
@@ -312,6 +313,7 @@ function createSearchCard(): HTMLElement {
     actionCtn.id = "search-action";
     actionCtn.appendChild(userBtn);
     actionCtn.appendChild(refBtn);
+    actionCtn.appendChild(tidehistory.authorIcon(getCookieByName("github_login")));
 
     const inputContainer = document.createElement("div");
     inputContainer.id = "search-input-ctn";
@@ -534,6 +536,8 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
     const prTitleText = document.createElement("div");
     prTitleText.appendChild(link);
     prTitleText.appendChild(subtitle);
+    prTitleText.appendChild(document.createTextNode("\u00A0"));
+    prTitleText.appendChild(tidehistory.poolIcon(pr.Repository.Owner.Login, pr.Repository.Name, pr.BaseRef.Name));
     prTitleText.classList.add("pr-title-text");
     prTitle.appendChild(prTitleText);
 

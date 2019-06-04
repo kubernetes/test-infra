@@ -2,21 +2,19 @@ package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("//prow:def.bzl", "prefix", "tags", "prow_push")
-load(
-    "//def:image.bzl",
-    image_tags = "tags",
-)
+load("//prow:def.bzl", "prefix", "prow_push", "tags")
 
 prow_push(
     name = "release-push",
     bundle_name = "release",
     images = tags(
+        "admission",
         "artifact-uploader",
         "branchprotector",
         "build",
         "checkconfig",
         "clonerefs",
+        "config-bootstrapper",
         "deck",
         "entrypoint",
         "gerrit",
@@ -27,6 +25,9 @@ prow_push(
         "horologium",
         "initupload",
         "jenkins-operator",
+        "mkpj",
+        "mkpod",
+        "peribolos",
         "plank",
         "sidecar",
         "sinker",
@@ -34,15 +35,16 @@ prow_push(
         "sub",
         "tide",
         "tot",
-    ) + image_tags(**{
-        prefix("needs-rebase"): "//prow/external-plugins/needs-rebase:image",
-    }) + image_tags(**{
-        prefix("cherrypicker"): "//prow/external-plugins/cherrypicker:image",
-    }) + image_tags(**{
-        prefix("refresh"): "//prow/external-plugins/refresh:image",
-    }) + image_tags(**{
-        prefix("ghproxy"): "//ghproxy:image",
-    }),
+        "pipeline",
+        **{
+            "needs-rebase": "//prow/external-plugins/needs-rebase:image",
+            "cherrypicker": "//prow/external-plugins/cherrypicker:image",
+            "refresh": "//prow/external-plugins/refresh:image",
+            "ghproxy": "//ghproxy:image",
+            "label_sync": "//label_sync:image",
+            "commenter": "//robots/commenter:image",
+        }
+    ),
 )
 
 prow_push(
@@ -52,11 +54,14 @@ prow_push(
         "sidecar",
         "initupload",
         "entrypoint",
+        "clonerefs",
         "deck",
         "hook",
         "plank",
         "crier",
-        "build",
+        "tide",
+        "horologium",
+        "sinker",
     ),
 )
 
@@ -83,6 +88,7 @@ filegroup(
         "//prow/client/listers/prowjobs/v1:all-srcs",
         "//prow/clonerefs:all-srcs",
         "//prow/cluster:all-srcs",
+        "//prow/cmd/admission:all-srcs",
         "//prow/cmd/artifact-uploader:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
         "//prow/cmd/build:all-srcs",
@@ -103,7 +109,9 @@ filegroup(
         "//prow/cmd/mkpj:all-srcs",
         "//prow/cmd/mkpod:all-srcs",
         "//prow/cmd/peribolos:all-srcs",
+        "//prow/cmd/phaino:all-srcs",
         "//prow/cmd/phony:all-srcs",
+        "//prow/cmd/pipeline:all-srcs",
         "//prow/cmd/plank:all-srcs",
         "//prow/cmd/sidecar:all-srcs",
         "//prow/cmd/sinker:all-srcs",
@@ -112,7 +120,6 @@ filegroup(
         "//prow/cmd/tackle:all-srcs",
         "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
-        "//prow/cmd/util:all-srcs",
         "//prow/commentpruner:all-srcs",
         "//prow/config:all-srcs",
         "//prow/crier:all-srcs",

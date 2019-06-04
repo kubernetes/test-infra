@@ -23,12 +23,13 @@
   <div class="table-container">
     <table id="pools">
       <thead>
-      <th>Repo</th>
-      <th>State</th>
-      <th>Batch</th>
-      <th>Passing</th>
-      <th>Pending</th>
-      <th>Queued for Retest</th>
+        <th></th>
+        <th>Repo</th>
+        <th>State</th>
+        <th>Batch</th>
+        <th>Passing</th>
+        <th>Pending</th>
+        <th>Queued for Retest</th>
       </thead>
       <tbody>
       </tbody>
@@ -37,4 +38,4 @@
 </article>
 {{end}}
 
-{{template "page" (settings mobileUnfriendly "tide" .)}}
+{{template "page" (settings mobileUnfriendly lightMode "tide" .)}}

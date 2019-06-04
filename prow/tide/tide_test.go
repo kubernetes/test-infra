@@ -25,13 +25,18 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"text/template"
+	"time"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+	clienttesting "k8s.io/client-go/testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
@@ -817,20 +822,82 @@ func TestPickBatch(t *testing.T) {
 	}
 }
 
-type fkc struct {
-	createdJobs []prowapi.ProwJob
-}
+func TestCheckMergeLabels(t *testing.T) {
+	squashLabel := "tide/squash"
+	mergeLabel := "tide/merge"
+	rebaseLabel := "tide/rebase"
 
-func (c *fkc) ListProwJobs(string) ([]prowapi.ProwJob, error) {
-	return nil, nil
-}
+	testcases := []struct {
+		name string
 
-func (c *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	c.createdJobs = append(c.createdJobs, pj)
-	return pj, nil
+		pr        PullRequest
+		method    github.PullRequestMergeType
+		expected  github.PullRequestMergeType
+		expectErr bool
+	}{
+		{
+			name:      "default method without PR label override",
+			pr:        PullRequest{},
+			method:    github.MergeMerge,
+			expected:  github.MergeMerge,
+			expectErr: false,
+		},
+		{
+			name: "irrelevant PR labels ignored",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String("sig/testing")}}},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeMerge,
+			expectErr: false,
+		},
+		{
+			name: "default method overridden by a PR label",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{{Name: githubql.String(squashLabel)}}},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeSquash,
+			expectErr: false,
+		},
+		{
+			name: "multiple merge method PR labels should not merge",
+			pr: PullRequest{
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{Nodes: []struct{ Name githubql.String }{
+					{Name: githubql.String(squashLabel)},
+					{Name: githubql.String(rebaseLabel)}},
+				},
+			},
+			method:    github.MergeMerge,
+			expected:  github.MergeSquash,
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := checkMergeLabels(tc.pr, squashLabel, rebaseLabel, mergeLabel, tc.method)
+			if err != nil && !tc.expectErr {
+				t.Errorf("unexpected error: %v", err)
+			} else if err == nil && tc.expectErr {
+				t.Errorf("missing expected error from checkMargeLabels")
+			} else if err == nil && tc.expected != actual {
+				t.Errorf("wanted: %q, got: %q", tc.expected, actual)
+			}
+		})
+	}
 }
 
 func TestTakeAction(t *testing.T) {
+	sleep = func(time.Duration) {}
+	defer func() { sleep = time.Sleep }()
+
 	// PRs 0-9 exist. All are mergable, and all are passing tests.
 	testcases := []struct {
 		name string
@@ -1204,14 +1271,14 @@ func TestTakeAction(t *testing.T) {
 			}
 			return prs
 		}
-		var fkc fkc
 		fgc := fgc{mergeErrs: tc.mergeErrs}
+		fakeProwJobClient := fake.NewSimpleClientset()
 		c := &Controller{
-			logger: logrus.WithField("controller", "tide"),
-			gc:     gc,
-			config: ca.Config,
-			ghc:    &fgc,
-			kc:     &fkc,
+			logger:        logrus.WithField("controller", "tide"),
+			gc:            gc,
+			config:        ca.Config,
+			ghc:           &fgc,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 		}
 		var batchPending []PullRequest
 		if tc.batchPending {
@@ -1226,24 +1293,32 @@ func TestTakeAction(t *testing.T) {
 		} else if act != tc.action {
 			t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 		}
-		if tc.triggered != len(fkc.createdJobs) {
-			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", len(fkc.createdJobs), tc.triggered)
+
+		numCreated := 0
+		var batchJobs []*prowapi.ProwJob
+		for _, action := range fakeProwJobClient.Actions() {
+			switch action := action.(type) {
+			case clienttesting.CreateActionImpl:
+				numCreated++
+				if prowJob, ok := action.Object.(*prowapi.ProwJob); ok && prowJob.Spec.Type == prowapi.BatchJob {
+					batchJobs = append(batchJobs, prowJob)
+				}
+			}
+		}
+		if tc.triggered != numCreated {
+			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", numCreated, tc.triggered)
 		}
 		if tc.merged != fgc.merged {
 			t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
 		}
 		// Ensure that the correct number of batch jobs were triggered
-		batches := 0
-		for _, job := range fkc.createdJobs {
-			if (len(job.Spec.Refs.Pulls) > 1) != (job.Spec.Type == prowapi.BatchJob) {
+		if tc.triggeredBatches != len(batchJobs) {
+			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", len(batchJobs), tc.triggeredBatches)
+		}
+		for _, job := range batchJobs {
+			if len(job.Spec.Refs.Pulls) <= 1 {
 				t.Error("Found a batch job that doesn't contain multiple pull refs!")
 			}
-			if len(job.Spec.Refs.Pulls) > 1 {
-				batches++
-			}
-		}
-		if tc.triggeredBatches != batches {
-			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggeredBatches)
 		}
 	}
 }
@@ -1255,7 +1330,7 @@ func TestServeHTTP(t *testing.T) {
 		Context:     githubql.String("coverage/coveralls"),
 		Description: githubql.String("Coverage increased (+0.1%) to 27.599%"),
 	}}
-	hist, err := history.New(100, nil)
+	hist, err := history.New(100, nil, "")
 	if err != nil {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
@@ -1385,6 +1460,9 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 }
 
 func TestSync(t *testing.T) {
+	sleep = func(time.Duration) {}
+	defer func() { sleep = time.Sleep }()
+
 	mergeableA := testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
 	unmergeableA := testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
 	unmergeableB := testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
@@ -1471,17 +1549,18 @@ func TestSync(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Starting case %q...", tc.name)
 		fgc := &fgc{prs: tc.prs}
-		fkc := &fkc{}
+		fakeProwJobClient := fake.NewSimpleClientset()
 		ca := &config.Agent{}
 		ca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Tide: config.Tide{
-					Queries:       []config.TideQuery{{}},
-					MaxGoroutines: 4,
+					Queries:            []config.TideQuery{{}},
+					MaxGoroutines:      4,
+					StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
 				},
 			},
 		})
-		hist, err := history.New(100, nil)
+		hist, err := history.New(100, nil, "")
 		if err != nil {
 			t.Fatalf("Failed to create history client: %v", err)
 		}
@@ -1495,11 +1574,11 @@ func TestSync(t *testing.T) {
 		go sc.run()
 		defer sc.shutdown()
 		c := &Controller{
-			config: ca.Config,
-			ghc:    fgc,
-			kc:     fkc,
-			logger: logrus.WithField("controller", "sync"),
-			sc:     sc,
+			config:        ca.Config,
+			ghc:           fgc,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			logger:        logrus.WithField("controller", "sync"),
+			sc:            sc,
 			changedFiles: &changedFilesAgent{
 				ghc:             fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
@@ -2227,6 +2306,107 @@ func TestPresubmitsByPull(t *testing.T) {
 		}
 		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
 			t.Errorf("got incorrect file change cache: %v", diff.ObjectReflectDiff(tc.expectedChangeCache, got))
+		}
+	}
+}
+
+func getTemplate(name, tplStr string) *template.Template {
+	tpl, _ := template.New(name).Parse(tplStr)
+	return tpl
+}
+
+func TestPrepareMergeDetails(t *testing.T) {
+	pr := PullRequest{
+		Number:     githubql.Int(1),
+		Mergeable:  githubql.MergeableStateMergeable,
+		HeadRefOID: githubql.String("SHA"),
+		Title:      "my commit title",
+		Body:       "my commit body",
+	}
+
+	testCases := []struct {
+		name        string
+		tpl         config.TideMergeCommitTemplate
+		pr          PullRequest
+		mergeMethod github.PullRequestMergeType
+		expected    github.MergeDetails
+	}{{
+		name:        "No commit template",
+		tpl:         config.TideMergeCommitTemplate{},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}, {
+		name: "No commit template fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: nil,
+			Body:  nil,
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}, {
+		name: "Static commit template",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "static title"),
+			Body:  getTemplate("CommitBody", "static body"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "static title",
+			CommitMessage: "static body",
+		},
+	}, {
+		name: "Commit template uses PullRequest fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Number }}: {{ .Title }}"),
+			Body:  getTemplate("CommitBody", "{{ .HeadRefOID }} - {{ .Body }}"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "1: my commit title",
+			CommitMessage: "SHA - my commit body",
+		},
+	}, {
+		name: "Commit template uses nonexistent fields",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Hello }}"),
+			Body:  getTemplate("CommitBody", "{{ .World }}"),
+		},
+		pr:          pr,
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+		},
+	}}
+
+	for _, test := range testCases {
+		cfg := &config.Config{}
+		cfgAgent := &config.Agent{}
+		cfgAgent.Set(cfg)
+		c := &Controller{
+			config: cfgAgent.Config,
+			ghc:    &fgc{},
+			logger: logrus.WithField("component", "tide"),
+		}
+
+		actual := c.prepareMergeDetails(test.tpl, test.pr, test.mergeMethod)
+
+		if !reflect.DeepEqual(actual, test.expected) {
+			t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
 		}
 	}
 }

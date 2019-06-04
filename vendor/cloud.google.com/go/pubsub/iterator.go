@@ -22,8 +22,9 @@ import (
 
 	vkit "cloud.google.com/go/pubsub/apiv1"
 	"cloud.google.com/go/pubsub/internal/distribution"
-	gax "github.com/googleapis/gax-go"
+	gax "github.com/googleapis/gax-go/v2"
 	pb "google.golang.org/genproto/googleapis/pubsub/v1"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -63,8 +64,6 @@ type messageIterator struct {
 	pendingNacks       map[string]bool
 	pendingModAcks     map[string]bool // ack IDs whose ack deadline is to be modified
 	err                error           // error from stream failure
-
-	minAckDeadline time.Duration
 }
 
 // newMessageIterator starts and returns a new messageIterator.
@@ -214,7 +213,7 @@ func (it *messageIterator) receive(maxToPull int32) ([]*Message, error) {
 		it.keepAliveDeadlines[m.ackID] = maxExt
 		// Don't change the mod-ack if the message is going to be nacked. This is
 		// possible if there are retries.
-		if !it.pendingNacks[m.ackID] && !it.po.synchronous {
+		if !it.pendingNacks[m.ackID] {
 			ackIDs[m.ackID] = true
 		}
 	}
@@ -236,7 +235,7 @@ func (it *messageIterator) pullMessages(maxToPull int32) ([]*pb.ReceivedMessage,
 	res, err := it.subc.Pull(it.ctx, &pb.PullRequest{
 		Subscription: it.subName,
 		MaxMessages:  maxToPull,
-	})
+	}, gax.WithGRPCOptions(grpc.MaxCallRecvMsgSize(maxSendRecvBytes)))
 	switch {
 	case err == context.Canceled:
 		return nil, nil

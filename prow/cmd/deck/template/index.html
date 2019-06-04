@@ -49,8 +49,12 @@
     <div id="job-bar-unknown" class="job-bar-state"></div>
     <div id="unknown-tooltip" class="mdl-tooltip" for="job-bar-unknown"></div>
     </div>
-    <table id="job-histogram"><tbody id="job-histogram-content"></tbody></table>
-    <div id="job-histogram-labels"><span>Now</span><span id="job-histogram-start"></span></div>
+    <div id="job-histogram-container">
+      <span id="job-histogram-labels-y-max"></span>
+      <span id="job-histogram-labels-y-mid"></span>
+      <table id="job-histogram"><tbody id="job-histogram-content"></tbody></table>
+    </div>
+    <div id="job-histogram-labels"><span id="job-histogram-end">Now</span><span id="job-histogram-start"></span><span id="job-histogram-summary"></span></div>
   </aside>
   <article>
     <div class="table-container">
@@ -79,4 +83,4 @@
 </div>
 {{end}}
 
-{{template "page" (settings mobileUnfriendly "index" .)}}
+{{template "page" (settings mobileUnfriendly lightMode "index" .)}}

@@ -199,6 +199,53 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/fairing:
+  - name: kubeflow-fairing-presubmit
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/metadata:
+  - name: kubeflow-metadata-presubmit
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/kfserving:
+  - name: kubeflow-kfserving-presubmit
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/manifests:
+  - name: kubeflow-manifests-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
 
   kubeflow/pipelines:
   - name: kubeflow-pipeline-e2e-test
@@ -208,7 +255,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
@@ -224,12 +271,12 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - ./test/presubmit-tests-with-pipeline-deployment.sh
         args:
         - --workflow_file
-        - sample_test_v2.yaml
+        - sample_test.yaml
         - --test_result_folder
         - sample_test
         - --timeout
@@ -242,7 +289,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - ./test/upgrade-tests.sh
         args:
@@ -256,7 +303,7 @@ presubmits:
 #       preset-service-account: "true"
 #     spec:
 #       containers:
-#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+#       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 #         command:
 #         - ./test/presubmit-tests-gce-minikube.sh
 #         args:

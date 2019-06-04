@@ -58,12 +58,12 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: "The wip (Work In Progress) plugin applies the '" + labels.WorkInProgress + "' Label to pull requests whose title starts with 'WIP' and removes it from pull requests when they remove the title prefix. The '" + labels.WorkInProgress + "' Label is typically used to block a pull request from merging while it is still in progress.",
+			Description: "The wip (Work In Progress) plugin applies the '" + labels.WorkInProgress + "' Label to pull requests whose title starts with 'WIP' or are in the 'draft' stage, and removes it from pull requests when they remove the title prefix or become ready for review. The '" + labels.WorkInProgress + "' Label is typically used to block a pull request from merging while it is still in progress.",
 		},
 		nil
 }
 
-// Strict subset of *github.Client methods.
+// Strict subset of github.Client methods.
 type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
@@ -74,7 +74,8 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	// These are the only actions indicating the PR title may have changed.
 	if pe.Action != github.PullRequestActionOpened &&
 		pe.Action != github.PullRequestActionReopened &&
-		pe.Action != github.PullRequestActionEdited {
+		pe.Action != github.PullRequestActionEdited &&
+		pe.Action != github.PullRequestActionReadyForReview {
 		return nil
 	}
 

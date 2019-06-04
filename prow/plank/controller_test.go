@@ -46,6 +46,7 @@ type fca struct {
 
 const (
 	podPendingTimeout = time.Hour
+	podRunningTimeout = time.Hour * 2
 )
 
 func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
@@ -83,7 +84,8 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 						MaxConcurrency: maxConcurrency,
 						MaxGoroutines:  20,
 					},
-					PodPendingTimeout: podPendingTimeout,
+					PodPendingTimeout: &metav1.Duration{Duration: podPendingTimeout},
+					PodRunningTimeout: &metav1.Duration{Duration: podRunningTimeout},
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -370,10 +372,11 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 		}
+		log := logrus.NewEntry(logrus.StandardLogger())
 		c := Controller{
 			kc:     fkc,
 			pkcs:   map[string]kubeClient{kube.DefaultClusterAlias: fkc},
-			log:    logrus.NewEntry(logrus.StandardLogger()),
+			log:    log,
 			config: fca.Config,
 		}
 
@@ -1101,6 +1104,35 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedReport:   true,
 			expectedURL:      "nightmare/error",
 		},
+		{
+			name: "stale running prow job",
+			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "endless",
+				},
+				Spec: prowapi.ProwJobSpec{},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "endless",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "endless",
+					},
+					Status: kube.PodStatus{
+						Phase:     kube.PodRunning,
+						StartTime: startTime(time.Now().Add(-podRunningTimeout)),
+					},
+				},
+			},
+			expectedState:    prowapi.AbortedState,
+			expectedNumPods:  0,
+			expectedComplete: true,
+			expectedReport:   true,
+			expectedURL:      "endless/aborted",
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("Running test case %q", tc.name)
@@ -1178,11 +1210,12 @@ func TestPeriodic(t *testing.T) {
 	fc := &fkc{
 		prowjobs: []prowapi.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil)},
 	}
+	log := logrus.NewEntry(logrus.StandardLogger())
 	c := Controller{
 		kc:          fc,
 		ghc:         &fghc{},
 		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
-		log:         logrus.NewEntry(logrus.StandardLogger()),
+		log:         log,
 		config:      newFakeConfigAgent(t, 0).Config,
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
@@ -1358,4 +1391,133 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			t.Errorf("expected pods: %d, got: %d", test.expectedPods, len(fpc.pods))
 		}
 	}
+}
+
+func TestMaxConcurency(t *testing.T) {
+	testCases := []struct {
+		name             string
+		prowJob          prowapi.ProwJob
+		existingProwJobs []prowapi.ProwJob
+		pendingJobs      map[string]int
+		expectedResult   bool
+	}{
+		{
+			name:           "Max concurency 0 always runs",
+			prowJob:        prowapi.ProwJob{Spec: prowapi.ProwJobSpec{MaxConcurrency: 0}},
+			expectedResult: true,
+		},
+		{
+			name: "Num pending exceeds max concurrency",
+			prowJob: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 10,
+					Job:            "my-pj"}},
+			pendingJobs:    map[string]int{"my-pj": 10},
+			expectedResult: false,
+		},
+		{
+			name: "Num pending plus older instances equals max concurency",
+			prowJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: metav1.Now(),
+				},
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 10,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.TriggeredState,
+					}},
+			},
+			pendingJobs:    map[string]int{"my-pj": 9},
+			expectedResult: false,
+		},
+		{
+			name: "Num pending plus older instances exceeds max concurency",
+			prowJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: metav1.Now(),
+				},
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 10,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.TriggeredState,
+					}},
+			},
+			pendingJobs:    map[string]int{"my-pj": 10},
+			expectedResult: false,
+		},
+		{
+			name: "Have other jobs that are newer, can execute",
+			prowJob: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 1,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						CreationTimestamp: metav1.Now(),
+					},
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.TriggeredState,
+					}},
+			},
+			expectedResult: true,
+		},
+		{
+			name: "Have older jobs that are not triggered, can execute",
+			prowJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: metav1.Now(),
+				},
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 2,
+					Job:            "my-pj"},
+			},
+			existingProwJobs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					}},
+			},
+			pendingJobs:    map[string]int{"my-pj": 1},
+			expectedResult: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if tc.pendingJobs == nil {
+				tc.pendingJobs = map[string]int{}
+			}
+			fpc := &fkc{}
+			c := Controller{
+				pjs:         tc.existingProwJobs,
+				pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
+				log:         logrus.NewEntry(logrus.StandardLogger()),
+				config:      newFakeConfigAgent(t, 0).Config,
+				pendingJobs: tc.pendingJobs,
+			}
+			logrus.SetLevel(logrus.DebugLevel)
+
+			result := c.canExecuteConcurrently(&tc.prowJob)
+
+			if result != tc.expectedResult {
+				t.Errorf("Expected result to be %t but was %t", tc.expectedResult, result)
+			}
+		})
+	}
+
 }

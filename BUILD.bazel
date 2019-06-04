@@ -3,8 +3,7 @@
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 # gazelle:exclude hack
 
-load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load("@io_k8s_repo_infra//defs:run_in_workspace.bzl", "workspace_binary")
 load("@io_bazel_rules_go//go:def.bzl", "nogo")
 
 workspace_binary(
@@ -75,47 +74,6 @@ workspace_binary(
     cmd = "@com_github_golang_lint//golint",
 )
 
-load("@bazel_gazelle//:def.bzl", "gazelle")
-
-gazelle(
-    name = "gazelle",
-    command = "fix",
-    external = "vendored",
-)
-
-gazelle(
-    name = "gazelle-diff",
-    command = "fix",
-    external = "vendored",
-    mode = "diff",
-)
-
-workspace_binary(
-    name = "kazel",
-    args = [
-        "--cfg-path=./hack/.kazelcfg.json",
-    ],
-    cmd = "@io_kubernetes_build//kazel",
-)
-
-workspace_binary(
-    name = "kazel-diff",
-    args = [
-        "--dry-run",
-        "--print-diff",
-        "--cfg-path=./hack/.kazelcfg.json",
-    ],
-    cmd = "@io_kubernetes_build//kazel",
-)
-
-nodejs_binary(
-    name = "tslint",
-    data = [
-        "@npm//tslint",
-    ],
-    entry_point = "tslint/bin/tslint",
-)
-
 filegroup(
     name = "package-srcs",
     srcs = glob(
@@ -145,6 +103,7 @@ filegroup(
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
         "//images/bootstrap/barnacle:all-srcs",
+        "//images/builder:all-srcs",
         "//images/kubekins-e2e:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
@@ -157,8 +116,10 @@ filegroup(
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
+        "//pkg/benchmarkjunit:all-srcs",
         "//pkg/flagutil:all-srcs",
         "//pkg/ghclient:all-srcs",
+        "//pkg/io:all-srcs",
         "//prow:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/coverage:all-srcs",
@@ -183,3 +144,15 @@ filegroup(
 )
 
 exports_files(["tsconfig.json"])
+
+platform(
+    name = "rbe_with_network",
+    parents = ["@rbe_default//config:platform"],
+    remote_execution_properties = """
+      properties: {
+        name: "dockerNetwork"
+        value: "standard"
+      }
+      {PARENT_REMOTE_EXECUTION_PROPERTIES}
+    """,
+)

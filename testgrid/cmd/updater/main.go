@@ -80,7 +80,7 @@ func (o *options) validate() error {
 func gatherOptions() options {
 	o := options{}
 	flag.Var(&o.config, "config", "gs://path/to/config.pb")
-	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty")
+	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty)")
 	flag.BoolVar(&o.confirm, "confirm", false, "Upload data if set")
 	flag.StringVar(&o.group, "test-group", "", "Only update named group if set")
 	flag.IntVar(&o.groupConcurrency, "group-concurrency", 0, "Manually define the number of groups to concurrently update if non-zero")

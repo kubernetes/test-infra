@@ -1,7 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- BenTheElder
 - krzyzacy
 - shyamjvs
 - wojtek-t # For European timezone emergencies.

@@ -2,17 +2,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "dial.go",
-        "go18.go",
-        "not_go18.go",
-    ],
+    srcs = ["dial.go"],
     importmap = "k8s.io/test-infra/vendor/google.golang.org/api/transport/grpc",
     importpath = "google.golang.org/api/transport/grpc",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/go.opencensus.io/plugin/ocgrpc:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/api/internal:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",

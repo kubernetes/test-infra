@@ -63,6 +63,7 @@ func TestUpdateConfig(t *testing.T) {
 		changes            []github.PullRequestChange
 		existConfigMaps    []runtime.Object
 		expectedConfigMaps []*coreapi.ConfigMap
+		config             *plugins.ConfigUpdater
 	}{
 		{
 			name:     "Opened PR, no update",
@@ -583,6 +584,409 @@ func TestUpdateConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:        "gzips all content if the top level gzip flag is set",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: true,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+						Key:  "test-key",
+					},
+				},
+			},
+		},
+		{
+			name:        "gzips all content except one marked false if the top level gzip flag is set",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "prow/plugins.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"plugins.yaml": "new-plugins",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: true,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+						GZIP: boolPtr(false),
+					},
+				},
+			},
+		},
+		{
+			name:        "gzips only one marked file if the top level gzip flag is set to false",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "prow/plugins.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"plugins.yaml": "new-plugins",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: false,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+						GZIP: boolPtr(true),
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+					},
+				},
+			},
+		},
+		{
+			name:        "adds both binary and text keys for a single configmap",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "prow/binary.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "new-config",
+					},
+					BinaryData: map[string][]byte{
+						"binary.yaml": []byte("new-binary\x00\xFF\xFF"),
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name: "config",
+					},
+				},
+			},
+		},
+		{
+			name:        "converts a text key to a binary key when it becomes binary",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/becoming-binary.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"becoming-binary.yaml": "not-yet-binary",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"becoming-binary.yaml": []byte("now-binary\x00\xFF\xFF"),
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name: "config",
+					},
+				},
+			},
+		},
+		{
+			name:        "converts a binary key to a text key when it becomes text",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/becoming-text.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"becoming-text.yaml": []byte("not-yet-text\x00\xFF\xFF"),
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"becoming-text.yaml": "now-text",
+					},
+					BinaryData: map[string][]uint8{},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name: "config",
+					},
+				},
+			},
+		},
+		{
+			name:        "simultaneously converts text to binary and binary to text",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/becoming-text.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "prow/becoming-binary.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"becoming-text.yaml": []byte("not-yet-text\x00\xFF\xFF"),
+					},
+					Data: map[string]string{
+						"becoming-binary.yaml": "not-yet-binary",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"becoming-binary.yaml": []byte("now-binary\x00\xFF\xFF"),
+					},
+					Data: map[string]string{
+						"becoming-text.yaml": "now-text",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name: "config",
+					},
+				},
+			},
+		},
+		{
+			name:        "correctly converts to binary when gzipping",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "old-config",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: true,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name: "config",
+					},
+				},
+			},
+		},
+		{
+			name:        "correctly converts to text when ungzipping",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					BinaryData: map[string][]byte{
+						"config.yaml": {31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 202, 75, 45, 215, 77, 206, 207, 75, 203, 76, 7, 4, 0, 0, 255, 255, 84, 214, 231, 87, 10, 0, 0, 0},
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "new-config",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: false,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name: "config",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -609,6 +1013,18 @@ func TestUpdateConfig(t *testing.T) {
 				"prow/config.yaml": {
 					"master": "old-config",
 					"12345":  "new-config",
+				},
+				"prow/binary.yaml": {
+					"master": "old-binary\x00\xFF\xFF",
+					"12345":  "new-binary\x00\xFF\xFF",
+				},
+				"prow/becoming-binary.yaml": {
+					"master": "not-yet-binary",
+					"12345":  "now-binary\x00\xFF\xFF",
+				},
+				"prow/becoming-text.yaml": {
+					"master": "not-yet-text\x00\xFF\xFF",
+					"12345":  "now-text",
 				},
 				"prow/plugins.yaml": {
 					"master": "old-plugins",
@@ -647,34 +1063,36 @@ func TestUpdateConfig(t *testing.T) {
 		}
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 
-		m := plugins.ConfigUpdater{
-			Maps: map[string]plugins.ConfigMapSpec{
-				"prow/config.yaml": {
-					Name: "config",
+		m := tc.config
+		if m == nil {
+			m = &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/config.yaml": {
+						Name: "config",
+					},
+					"prow/plugins.yaml": {
+						Name: "plugins",
+						Key:  "test-key",
+					},
+					"boskos/resources.yaml": {
+						Name:      "boskos-config",
+						Namespace: "boskos",
+					},
+					"config/foo.yaml": {
+						Name: "multikey-config",
+					},
+					"config/bar.yaml": {
+						Name: "multikey-config",
+					},
+					"dir/subdir/**/*.yaml": {
+						Name: "glob-config",
+					},
 				},
-				"prow/plugins.yaml": {
-					Name: "plugins",
-					Key:  "test-key",
-				},
-				"boskos/resources.yaml": {
-					Name:      "boskos-config",
-					Namespace: "boskos",
-				},
-				"config/foo.yaml": {
-					Name: "multikey-config",
-				},
-				"config/bar.yaml": {
-					Name: "multikey-config",
-				},
-				"dir/subdir/**/*.yaml": {
-					Name: "glob-config",
-				},
-			},
+			}
 		}
-
 		m.SetDefaults()
 
-		if err := handle(fgc, fkc.CoreV1(), defaultNamespace, log, event, m.Maps); err != nil {
+		if err := handle(fgc, fkc.CoreV1(), defaultNamespace, log, event, *m); err != nil {
 			t.Errorf("%s: unexpected error handling: %s", tc.name, err)
 			continue
 		}
@@ -737,4 +1155,8 @@ func TestUpdateConfig(t *testing.T) {
 			}
 		}
 	}
+}
+
+func boolPtr(b bool) *bool {
+	return &b
 }

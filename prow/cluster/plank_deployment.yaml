@@ -31,13 +31,13 @@ spec:
       # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190311-a967141
+        image: gcr.io/k8s-prow/plank:v20190528-0d7c4b53a
         args:
-        - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         volumeMounts:
         - mountPath: /etc/cluster

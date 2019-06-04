@@ -17,6 +17,7 @@ limitations under the License.
 package history
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -52,7 +53,7 @@ func TestHistory(t *testing.T) {
 		}
 	}
 
-	hist, err := New(logSizeLimit, nil)
+	hist, err := New(logSizeLimit, nil, "")
 	if err != nil {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
@@ -128,24 +129,32 @@ func TestHistory(t *testing.T) {
 	}
 }
 
-type testStorage struct {
+const fakePath = "/some/random/path"
+
+type testOpener struct {
 	content string
 	closed  bool
 	dne     bool
 }
 
-func (t *testStorage) NewReader() (io.ReadCloser, error) {
+func (t *testOpener) Reader(ctx context.Context, path string) (io.ReadCloser, error) {
 	if t.dne {
 		return nil, storage.ErrObjectNotExist
+	}
+	if path != fakePath {
+		return nil, fmt.Errorf("path %q != expected %q", path, fakePath)
 	}
 	return t, nil
 }
 
-func (t *testStorage) NewWriter() io.WriteCloser {
-	return t
+func (t *testOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+	if path != fakePath {
+		return nil, fmt.Errorf("path %q != expected %q", path, fakePath)
+	}
+	return t, nil
 }
 
-func (t *testStorage) Write(p []byte) (n int, err error) {
+func (t *testOpener) Write(p []byte) (n int, err error) {
 	if t.closed {
 		return 0, errors.New("writer is already closed")
 	}
@@ -153,7 +162,7 @@ func (t *testStorage) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (t *testStorage) Read(p []byte) (n int, err error) {
+func (t *testOpener) Read(p []byte) (n int, err error) {
 	if t.closed {
 		return 0, errors.New("reader is already closed")
 	}
@@ -164,7 +173,7 @@ func (t *testStorage) Read(p []byte) (n int, err error) {
 	return copy(p, t.content), nil
 }
 
-func (t *testStorage) Close() error {
+func (t *testOpener) Close() error {
 	if t.closed {
 		return errors.New("already closed")
 	}
@@ -237,8 +246,8 @@ func TestReadHistory(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			obj := &testStorage{content: tc.raw, dne: tc.dne}
-			hist, err := readHistory(tc.maxRecsPerPool, obj)
+			obj := &testOpener{content: tc.raw, dne: tc.dne}
+			hist, err := readHistory(tc.maxRecsPerPool, obj, fakePath)
 			if err != nil {
 				t.Fatalf("Unexpected error reading history: %v.", err)
 			}
@@ -289,8 +298,8 @@ func TestWriteHistory(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			obj := &testStorage{}
-			if err := writeHistory(obj, tc.recMap); err != nil {
+			obj := &testOpener{}
+			if err := writeHistory(obj, fakePath, tc.recMap); err != nil {
 				t.Fatalf("Unexpected error writing history: %v.", err)
 			}
 			if obj.content != tc.expectedWritten {

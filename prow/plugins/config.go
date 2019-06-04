@@ -65,6 +65,7 @@ type Configuration struct {
 	Label                      Label                  `json:"label"`
 	Lgtm                       []Lgtm                 `json:"lgtm,omitempty"`
 	RepoMilestone              map[string]Milestone   `json:"repo_milestone,omitempty"`
+	Project                    ProjectConfig          `json:"project_config,omitempty"`
 	RequireMatchingLabel       []RequireMatchingLabel `json:"require_matching_label,omitempty"`
 	RequireSIG                 RequireSIG             `json:"requiresig,omitempty"`
 	Slack                      Slack                  `json:"slack,omitempty"`
@@ -114,6 +115,11 @@ type Blunderbuss struct {
 	// insufficient reviewers are available. If ExcludeApprovers is true,
 	// approvers will never be considered as reviewers.
 	ExcludeApprovers bool `json:"exclude_approvers,omitempty"`
+	// UseStatusAvailability controls whether blunderbuss will consider GitHub's
+	// status availability when requesting reviews for users. This will use at one
+	// additional token per successful reviewer (and potentially more depending on
+	// how many busy reviewers it had to pass over).
+	UseStatusAvailability bool `json:"use_status_availability,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -253,27 +259,7 @@ type Approve struct {
 var (
 	warnImplicitSelfApprove time.Time
 	warnReviewActsAsApprove time.Time
-	warnLock                sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
 )
-
-func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
-	// have we warned within the last freq?
-	warnLock.RLock()
-	fresh := time.Now().Sub(*last) <= freq
-	warnLock.RUnlock()
-	if fresh { // we've warned recently
-		return
-	}
-	// Warning is stale, will we win the race to warn?
-	warnLock.Lock()
-	defer warnLock.Unlock()
-	now := time.Now()           // Recalculate now, we might wait awhile for the lock
-	if now.Sub(*last) <= freq { // Nope, we lost
-		return
-	}
-	*last = now
-	logrus.Warn(msg)
-}
 
 func (a Approve) HasSelfApproval() bool {
 	if a.DeprecatedImplicitSelfApprove != nil {
@@ -397,7 +383,10 @@ type ConfigMapSpec struct {
 	// Namespaces in which the configMap needs to be deployed, in addition to the above
 	// namespace provided, or the default if it is not set.
 	AdditionalNamespaces []string `json:"additional_namespaces,omitempty"`
-
+	// GZIP toggles whether the key's data should be GZIP'd before being stored
+	// If set to false and the global GZIP option is enabled, this file will
+	// will not be GZIP'd.
+	GZIP *bool `json:"gzip,omitempty"`
 	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
 	Namespaces []string `json:"-"`
 }
@@ -421,6 +410,36 @@ type ConfigUpdater struct {
 	// github.com/kubernetes/test-infra/prow/plugins.yaml assuming the config-updater
 	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/plugins.yaml".
 	PluginFile string `json:"plugin_file,omitempty"`
+	// If GZIP is true then files will be gzipped before insertion into
+	// their corresponding configmap
+	GZIP bool `json:"gzip"`
+}
+
+// ProjectConfig contains the configuration options for the project plugin
+type ProjectConfig struct {
+	// Org level configs for github projects; key is org name
+	Orgs map[string]ProjectOrgConfig `json:"project_org_configs,omitempty"`
+}
+
+// ProjectOrgConfig holds the github project config for an entire org.
+// This can be overridden by ProjectRepoConfig.
+type ProjectOrgConfig struct {
+	// ID of the github project maintainer team for a give project or org
+	MaintainerTeamID int `json:"org_maintainers_team_id,omitempty"`
+	// A map of project name to default column; an issue/PR will be added
+	// to the default column if column name is not provided in the command
+	ProjectColumnMap map[string]string `json:"org_default_column_map,omitempty"`
+	// Repo level configs for github projects; key is repo name
+	Repos map[string]ProjectRepoConfig `json:"project_repo_configs,omitempty"`
+}
+
+// ProjectRepoConfig holds the github project config for a github project.
+type ProjectRepoConfig struct {
+	// ID of the github project maintainer team for a give project or org
+	MaintainerTeamID int `json:"repo_maintainers_team_id,omitempty"`
+	// A map of project name to default column; an issue/PR will be added
+	// to the default column if column name is not provided in the command
+	ProjectColumnMap map[string]string `json:"repo_default_column_map,omitempty"`
 }
 
 // MergeWarning is a config for the slackevents plugin's manual merge warnings.
@@ -529,6 +548,29 @@ func (r RequireMatchingLabel) validate() error {
 		return errors.New("'regexp' must not match 'missing_label'")
 	}
 	return nil
+}
+
+var warnLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
+
+// warnDeprecated prints a deprecation warning for a particular configuration
+// option.
+func warnDeprecated(last *time.Time, freq time.Duration, msg string) {
+	// have we warned within the last freq?
+	warnLock.RLock()
+	fresh := time.Now().Sub(*last) <= freq
+	warnLock.RUnlock()
+	if fresh { // we've warned recently
+		return
+	}
+	// Warning is stale, will we win the race to warn?
+	warnLock.Lock()
+	defer warnLock.Unlock()
+	now := time.Now()           // Recalculate now, we might wait awhile for the lock
+	if now.Sub(*last) <= freq { // Nope, we lost
+		return
+	}
+	*last = now
+	logrus.Warn(msg)
 }
 
 // Describe generates a human readable description of the behavior that this
@@ -779,6 +821,8 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 	return nil
 }
 
+var warnBlunderbussFileWeightCount time.Time
+
 func validateBlunderbuss(b *Blunderbuss) error {
 	if b.ReviewerCount != nil && b.FileWeightCount != nil {
 		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
@@ -788,6 +832,9 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	}
 	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
 		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
+	}
+	if b.FileWeightCount != nil {
+		warnDeprecated(&warnBlunderbussFileWeightCount, 5*time.Minute, "file_weight_count is being deprecated in favour of max_request_count. Please ensure your configuration is updated before the end of May 2019.")
 	}
 	return nil
 }
@@ -895,5 +942,43 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 
+	return nil
+}
+
+func (pluginConfig *ProjectConfig) GetMaintainerTeam(org string, repo string) int {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			// look for repo level configs first because repo level config overrides org level configs
+			for repoName, repoConfig := range orgConfig.Repos {
+				if repo == repoName {
+					return repoConfig.MaintainerTeamID
+				}
+			}
+			return orgConfig.MaintainerTeamID
+		}
+	}
+	return -1
+}
+
+func (pluginConfig *ProjectConfig) GetColumnMap(org string, repo string) map[string]string {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			for repoName, repoConfig := range orgConfig.Repos {
+				if repo == repoName {
+					return repoConfig.ProjectColumnMap
+				}
+			}
+			return orgConfig.ProjectColumnMap
+		}
+	}
+	return nil
+}
+
+func (pluginConfig *ProjectConfig) GetOrgColumnMap(org string) map[string]string {
+	for orgName, orgConfig := range pluginConfig.Orgs {
+		if org == orgName {
+			return orgConfig.ProjectColumnMap
+		}
+	}
 	return nil
 }

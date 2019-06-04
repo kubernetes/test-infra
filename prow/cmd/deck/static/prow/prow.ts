@@ -1,6 +1,6 @@
 import moment from "moment";
 import {Job, JobState, JobType} from "../api/prow";
-import {cell} from "../common/common";
+import {cell, icon} from "../common/common";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
 
@@ -463,6 +463,8 @@ function redraw(fz: FuzzySearch): void {
 
     let lastKey = '';
     const jobCountMap = new Map() as Map<JobState, number>;
+    const jobInterval: Array<[number, number]> = [[3600 * 3, 0], [3600 * 12, 0], [3600 * 48, 0]];
+    let currentInterval = 0;
     const jobHistogram = new JobHistogram();
     const now = moment().unix();
     let totalJob = 0;
@@ -500,25 +502,49 @@ function redraw(fz: FuzzySearch): void {
         }
 
         if (!jobCountMap.has(build.state)) {
-          jobCountMap.set(build.state, 0);
+            jobCountMap.set(build.state, 0);
         }
         totalJob++;
         jobCountMap.set(build.state, jobCountMap.get(build.state)! + 1);
+
+        // accumulate a count of the percentage of successful jobs over each interval
+        const started = Number(build.started);
+        if (currentInterval >= 0 && (now - started) > jobInterval[currentInterval][0]) {
+            let successCount = jobCountMap.get("success");
+            if (!successCount) {
+                successCount = 0;
+            }
+            let failureCount = jobCountMap.get("failure");
+            if (!failureCount) {
+                failureCount = 0;
+            }
+            const total = successCount + failureCount;
+            if (total > 0) {
+                jobInterval[currentInterval][1] = successCount / total;
+            } else {
+                jobInterval[currentInterval][1] = 0;
+            }
+            currentInterval++;
+            if (currentInterval >= jobInterval.length) {
+                currentInterval = -1;
+            }
+        }
+
         if (displayedJob >= 500) {
-            jobHistogram.add(new JobSample(Number(build.started), parseDuration(build.duration), build.state, -1));
+            jobHistogram.add(new JobSample(started, parseDuration(build.duration), build.state, -1));
             continue;
         } else {
-            jobHistogram.add(new JobSample(Number(build.started), parseDuration(build.duration), build.state, builds.childElementCount));
+            jobHistogram.add(new JobSample(started, parseDuration(build.duration), build.state, builds.childElementCount));
         }
         displayedJob++;
         const r = document.createElement("tr");
         r.appendChild(cell.state(build.state));
         if (build.pod_name) {
-            const icon = createIcon("description", "Build log");
-            icon.href = `log?job=${build.job}&id=${build.build_id}`;
+            const logIcon = icon.create("description", "Build log");
+            logIcon.href = `log?job=${build.job}&id=${build.build_id}`;
             const c = document.createElement("td");
             c.classList.add("icon-cell");
-            c.appendChild(icon);
+            c.appendChild(logIcon);
             r.appendChild(c);
         } else {
             r.appendChild(cell.text(""));
@@ -581,17 +607,53 @@ function redraw(fz: FuzzySearch): void {
         r.appendChild(cell.text(build.duration));
         builds.appendChild(r);
     }
+
+    // fill out the remaining intervals if necessary
+    if (currentInterval !== -1) {
+        let successCount = jobCountMap.get("success");
+        if (!successCount) {
+            successCount = 0;
+        }
+        let failureCount = jobCountMap.get("failure");
+        if (!failureCount) {
+            failureCount = 0;
+        }
+        const total = successCount + failureCount;
+        for (let i = currentInterval; i < jobInterval.length; i++) {
+            if (total > 0) {
+                jobInterval[i][1] = successCount / total;
+            } else {
+                jobInterval[i][1] = 0;
+            }
+        }
+    }
+
+    const jobSummary = document.getElementById("job-histogram-summary")!;
+    const success = jobInterval.map((interval) => {
+        if (interval[1] < 0.5) {
+            return `${formatDuration(interval[0])}: <span class="state failure">${Math.ceil(interval[1] * 100)}%</span>`;
+        }
+        return `${formatDuration(interval[0])}: <span class="state success">${Math.ceil(interval[1] * 100)}%</span>`;
+    }).join(", ");
+    jobSummary.innerHTML = `Success rate over time: ${success}`;
     const jobCount = document.getElementById("job-count")!;
     jobCount.textContent = `Showing ${displayedJob}/${totalJob} jobs`;
     drawJobBar(totalJob, jobCountMap);
-    drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now);
+
+    // if we aren't filtering the output, cap the histogram y axis to 2 hours because it
+    // contains the bulk of our jobs
+    let max = Number.MAX_SAFE_INTEGER;
+    if (totalJob === allBuilds.length) {
+        max = 2 * 3600;
+    }
+    drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now, max);
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
     const url = `https://${window.location.hostname}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
-    const icon = createIcon("refresh", "Show instructions for rerunning this job");
-    icon.onclick = () => {
+    const i = icon.create("refresh", "Show instructions for rerunning this job");
+    i.onclick = () => {
         modal.style.display = "block";
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
         const copyButton = document.createElement('a');
@@ -600,7 +662,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
         rerunElement.appendChild(copyButton);
     };
-    c.appendChild(icon);
+    c.appendChild(i);
     c.classList.add("icon-cell");
     return c;
 }
@@ -646,8 +708,8 @@ function batchRevisionCell(build: Job): HTMLTableDataCellElement {
     if (!build.refs.pulls) {
         return c;
     }
-    for (let i = 1; i < build.refs.pulls.length; i++) {
-        if (i !== 1) {
+    for (let i = 0; i < build.refs.pulls.length; i++) {
+        if (i !== 0) {
             c.appendChild(document.createTextNode(", "));
         }
         const l = document.createElement("a");
@@ -729,13 +791,13 @@ function parseDuration(duration: string): number {
 
 function formatDuration(seconds: number): string {
     const parts: string[] = [];
-    if (seconds > 3600) {
+    if (seconds >= 3600) {
         const hours = Math.floor(seconds / 3600);
         parts.push(String(hours));
         parts.push('h');
         seconds = seconds % 3600;
     }
-    if (seconds > 60) {
+    if (seconds >= 60) {
         const minutes = Math.floor(seconds / 60);
         if (minutes > 0) {
             parts.push(String(minutes));
@@ -750,7 +812,7 @@ function formatDuration(seconds: number): string {
     return parts.join('');
 }
 
-function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number): void {
+function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number, maximum: number): void {
     const startEl = document.getElementById("job-histogram-start") as HTMLSpanElement;
     if (startEl != null) {
         startEl.textContent = `${formatDuration(end - start)} ago`;
@@ -786,8 +848,18 @@ function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: numb
         }
     }
 
-    // populate the buckets
     const buckets = jobHistogram.buckets(start, end, cols);
+    buckets.limitMaximum(maximum);
+
+    // show the max and mid y-axis labels rounded up to the nearest 10 minute mark
+    let maxY = buckets.max;
+    maxY = Math.ceil(maxY / 600);
+    const yMax = document.getElementById("job-histogram-labels-y-max") as HTMLSpanElement;
+    yMax.innerText = `${formatDuration(maxY * 600)}+`;
+    const yMid = document.getElementById("job-histogram-labels-y-mid") as HTMLSpanElement;
+    yMid.innerText = `${formatDuration(maxY / 2 * 600)}`;
+
+    // populate the buckets
     buckets.data.forEach((bucket, colIndex) => {
         let lastRowIndex = 0;
         buckets.linearChunks(bucket, rows).forEach((samples, rowIndex) =>  {
@@ -827,25 +899,10 @@ function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: numb
 }
 
 function createSpyglassCell(url: string): HTMLTableDataCellElement {
-    const icon = createIcon('visibility', 'View in Spyglass');
-    icon.href = url;
+    const i = icon.create('visibility', 'View in Spyglass');
+    i.href = url;
     const c = document.createElement('td');
     c.classList.add('icon-cell');
-    c.appendChild(icon);
+    c.appendChild(i);
     return c;
-}
-
-function createIcon(iconString: string, tooltip: string = ""): HTMLAnchorElement {
-    const icon = document.createElement("i");
-    icon.classList.add("icon-button", "material-icons");
-    icon.innerHTML = iconString;
-    if (tooltip !== "") {
-        icon.title = tooltip;
-    }
-
-    const container = document.createElement("a");
-    container.appendChild(icon);
-    container.classList.add("mdl-button", "mdl-js-button", "mdl-button--icon");
-
-    return container;
 }

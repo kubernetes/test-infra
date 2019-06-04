@@ -1,19 +1,4 @@
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
-
-# gazelle:proto package
-
-proto_library(
-    name = "issue_state_proto",
-    srcs = ["issue_state.proto"],
-    visibility = ["//visibility:public"],
-)
-
-go_proto_library(
-    name = "issue_state_go_proto",
-    importpath = "k8s.io/test-infra/testgrid/issue_state",
-    proto = ":issue_state_proto",
-    visibility = ["//visibility:public"],
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 filegroup(
     name = "package-srcs",
@@ -27,4 +12,12 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["issue_state.pb.go"],
+    importpath = "k8s.io/test-infra/testgrid/issue_state",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )

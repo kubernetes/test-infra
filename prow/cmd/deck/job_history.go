@@ -108,7 +108,7 @@ func readLatestBuild(bucket storageBucket, root string) (int64, error) {
 	if err != nil {
 		return -1, fmt.Errorf("failed to read %s: %v", key, err)
 	}
-	n, err := strconv.ParseInt(string(data), 10, 64)
+	n, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
 		return -1, fmt.Errorf("failed to parse %s: %v", key, err)
 	}
@@ -122,7 +122,7 @@ func (bucket gcsBucket) resolveSymLink(symLink string) (string, error) {
 		return "", fmt.Errorf("failed to read %s: %v", symLink, err)
 	}
 	// strip gs://<bucket-name> from global address `u`
-	u := string(data)
+	u := strings.TrimSpace(string(data))
 	return prefixRe.ReplaceAllString(u, ""), nil
 }
 

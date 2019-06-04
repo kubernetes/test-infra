@@ -50,7 +50,7 @@ func (b *buildStrategy) Set(value string) error {
 		}
 	}
 	switch value {
-	case "bazel", "e2e", "host-go", "quick", "release":
+	case "bazel", "e2e", "host-go", "quick", "release", "gce-windows-bazel":
 		*b = buildStrategy(value)
 		return nil
 	}
@@ -85,8 +85,27 @@ func (b *buildStrategy) Build() error {
 		target = "quick-release"
 	case "release":
 		target = "release"
+	case "gce-windows-bazel":
+		// bazel doesn't support building multiple platforms simultaneously
+		// yet. We add custom logic here to build both Windows and Linux
+		// release tars. https://github.com/kubernetes/kubernetes/issues/76470
+		// TODO: remove this after bazel supports the feature.
 	default:
 		return fmt.Errorf("Unknown build strategy: %v", b)
+	}
+
+	if *b == "gce-windows-bazel" {
+		// Build Linux aritifacts
+		cmd := exec.Command("bazel", "build", "--config=cross:linux_amd64", "//build/release-tars")
+		cmd.Dir = util.K8s("kubernetes")
+		err := control.FinishRunning(cmd)
+		if err != nil {
+			return err
+		}
+		// Build windows aritifacts
+		cmd = exec.Command("bazel", "build", "--config=cross:windows_amd64", "//build/release-tars")
+		cmd.Dir = util.K8s("kubernetes")
+		return control.FinishRunning(cmd)
 	}
 
 	// TODO(fejta): FIX ME

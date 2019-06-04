@@ -34,7 +34,7 @@ import (
 
 func TestCreateRefs(t *testing.T) {
 	pe := github.PushEvent{
-		Ref: "master",
+		Ref: "refs/heads/master",
 		Repo: github.Repo{
 			Owner: github.User{
 				Name: "kubernetes",
@@ -66,7 +66,7 @@ func TestHandlePE(t *testing.T) {
 		{
 			name: "branch deleted",
 			pe: github.PushEvent{
-				Ref: "master",
+				Ref: "refs/heads/master",
 				Repo: github.Repo{
 					FullName: "org/repo",
 				},
@@ -77,7 +77,7 @@ func TestHandlePE(t *testing.T) {
 		{
 			name: "no matching files",
 			pe: github.PushEvent{
-				Ref: "master",
+				Ref: "refs/heads/master",
 				Commits: []github.Commit{
 					{
 						Added: []string{"example.txt"},
@@ -91,7 +91,7 @@ func TestHandlePE(t *testing.T) {
 		{
 			name: "one matching file",
 			pe: github.PushEvent{
-				Ref: "master",
+				Ref: "refs/heads/master",
 				Commits: []github.Commit{
 					{
 						Added:    []string{"example.txt"},
@@ -107,7 +107,7 @@ func TestHandlePE(t *testing.T) {
 		{
 			name: "no change matcher",
 			pe: github.PushEvent{
-				Ref: "master",
+				Ref: "refs/heads/master",
 				Commits: []github.Commit{
 					{
 						Added: []string{"example.txt"},
@@ -115,6 +115,21 @@ func TestHandlePE(t *testing.T) {
 				},
 				Repo: github.Repo{
 					FullName: "org2/repo2",
+				},
+			},
+			jobsToRun: 1,
+		},
+		{
+			name: "branch name with a slash",
+			pe: github.PushEvent{
+				Ref: "refs/heads/release/v1.14",
+				Commits: []github.Commit{
+					{
+						Added: []string{"hack.sh"},
+					},
+				},
+				Repo: github.Repo{
+					FullName: "org3/repo3",
 				},
 			},
 			jobsToRun: 1,
@@ -144,6 +159,16 @@ func TestHandlePE(t *testing.T) {
 				{
 					JobBase: config.JobBase{
 						Name: "pass-salt",
+					},
+				},
+			},
+			"org3/repo3": {
+				{
+					JobBase: config.JobBase{
+						Name: "pass-pepper",
+					},
+					Brancher: config.Brancher{
+						Branches: []string{"release/v1.14"},
 					},
 				},
 			},

@@ -5,33 +5,71 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
+    preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         command:
         - "./hack/ci/build-all.sh"
   - name: pull-kind-verify
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
+    preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-experimental
         command:
         - "./hack/verify-all.sh"
-        env:
-        # skip dep verification in the main CI job, use verify-deps for that
-        - name: VERIFY_DEPS
-          value: "false"
-  - name: pull-kind-verify-deps
-    decorate: true
-    path_alias: sigs.k8s.io/kind
-    run_if_changed: ^(go\.mod)|(go\.sum)|(vendor/.*)$
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # IPv6 enabled variant
+  - name: pull-kind-conformance-parallel-ipv6
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
-        command:
-        - "./hack/verify-deps.sh"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes=master"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        # the script must run from kubernetes, but we're checking out kind
+        - "bash"
+        - "--"
+        - "-c"
+        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel
@@ -40,10 +78,11 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -65,13 +104,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # these are both a bit below peak usage during build
@@ -79,15 +111,47 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
+  # conformance test against kubernetes release-1.14 branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  - name: pull-kind-conformance-parallel-1-14
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.14
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes=release-1.14"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        # the script must run from kubernetes, but we're checking out kind
+        - "bash"
+        - "--"
+        - "-c"
+        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
   # conformance test against kubernetes release-1.13 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-13
@@ -96,10 +160,11 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.13
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -108,7 +173,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
-        - "--repo=k8s.io/kubernetes=release-1.12"
+        - "--repo=k8s.io/kubernetes=release-1.13"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
@@ -121,13 +186,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # these are both a bit below peak usage during build
@@ -135,15 +193,6 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
   # conformance test against kubernetes release-1.12 branch with `kind`, skipping
   # serial tests so it runs in ~20m
   - name: pull-kind-conformance-parallel-1-12
@@ -152,10 +201,11 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.12
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -177,13 +227,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # these are both a bit below peak usage during build
@@ -191,68 +234,3 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
-  # conformance test against kubernetes release-1.11 branch with `kind`, skipping
-  # serial tests so it runs in ~20m
-  - name: pull-kind-conformance-parallel-1-11
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-    always_run: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.11
-        env:
-        # skip serial tests and run with --ginkgo-parallel
-        - name: "PARALLEL"
-          value: "true"
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--root=/go/src"
-        - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
-        - "--repo=k8s.io/kubernetes=release-1.11"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        # the script must run from kubernetes, but we're checking out kind
-        - "bash"
-        - "--"
-        - "-c"
-        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-        resources:
-          requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory

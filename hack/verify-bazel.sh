@@ -17,51 +17,33 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-cd $(git rev-parse --show-toplevel)
-
-deprecated-verify() {
-  OUTPUT_GOBIN="./_output/bin"
-  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-  GOBIN="${OUTPUT_GOBIN}" go install ./vendor/k8s.io/repo-infra/kazel
-  gazelle_diff=$("${OUTPUT_GOBIN}/gazelle" fix \
-    -external=vendored \
-    -mode=diff)
-
-  kazel_diff=$("${OUTPUT_GOBIN}/kazel" \
-    -dry-run \
-    -print-diff\
-    --cfg-path=./hack/.kazelcfg.json)
-
-}
-
-mkdir -p ./vendor
-touch ./vendor/BUILD.bazel
-
-if ! which bazel &> /dev/null; then
-  echo "Bazel is the preferred way to build and test the test-infra repo." >&2
-  echo "Please install bazel at https://bazel.build/ (future commits may require it)" >&2
-  deprecated-verify
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Validating bazel rules..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+elif ! bazel query @//:all-srcs union @io_k8s_test_infra//hack:update-bazel &>/dev/null; then
+  echo "ERROR: bazel rules need bootstrapping. Run hack/update-bazel.sh" >&2
+  exit 1
 else
-  gazelle_diff=$(bazel run //:gazelle-diff)
-  kazel_diff=$(bazel run //:kazel-diff)
+  (
+    set -o xtrace
+    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-bazel
+  )
+  exit 0
 fi
 
-if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
+gazelle=$1
+kazel=$2
+
+gazelle_diff=$("$gazelle" fix --mode=diff --external=vendored)
+kazel_diff=$("$kazel" --dry-run --print-diff --cfg-path=./hack/.kazelcfg.json)
+
+if [[ -n "${gazelle_diff}${kazel_diff}" ]]; then
+  echo "Current rules (-) do not match expected (+):" >&2
   echo "${gazelle_diff}"
   echo "${kazel_diff}"
   echo
-  echo "Run ./hack/update-bazel.sh"
-  exit 1
-fi
-
-# Make sure there are no BUILD files outside vendor - we should only have
-# BUILD.bazel files.
-old_build_files=$(find . -name BUILD \( -type f -o -type l \) \
-  -not -path './vendor/*' | sort)
-if [[ -n "${old_build_files}" ]]; then
-  echo "One or more BUILD files found in the tree:" >&2
-  echo "${old_build_files}" >&2
-  echo >&2
-  echo "Only BUILD.bazel is allowed." >&2
+  echo "ERROR: bazel rules out of date. Fix with ./hack/update-bazel.sh" >&2
   exit 1
 fi

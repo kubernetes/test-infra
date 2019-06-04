@@ -1,16 +1,12 @@
 presubmits:
   kubernetes/kubernetes:
-  # manual-release-bump-required
   - name: pull-kubernetes-e2e-gke
     always_run: false
     optional: true
-    # TODO(bentheelder): enforce this pattern (skip all releases) or implement
-    # something better like https://github.com/kubernetes/test-infra/pull/4918
     skip_branches:
-    - release-1.14 # per-release image
-    - release-1.13 # per-release image
-    - release-1.12 # per-release image
-    - release-1.11 # per-release image
+    - release-\d+\.\d+
+    annotations:
+      fork-per-release: "true"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -41,182 +37,10 @@ presubmits:
         - --stage-suffix=pull-kubernetes-e2e-gke
         - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-e2e-gke
-    always_run: false
-    optional: true
-    branches:
-    - release-1.14 # per-release image
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-        - --gke-environment=test
-        - '--gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}'
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.14
-        resources:
-          requests:
-            memory: "6Gi"
-  - name: pull-kubernetes-e2e-gke
-    always_run: false
-    optional: true
-    branches:
-    - release-1.13 # per-release image
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-        - --gke-environment=test
-        - '--gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}'
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.13
-        resources:
-          requests:
-            memory: "6Gi"
-  - name: pull-kubernetes-e2e-gke
-    always_run: false
-    optional: true
-    branches:
-      - release-1.12 # per-release image
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=90
-            - --scenario=kubernetes_e2e
-            - --
-            - --build=bazel
-            - --cluster=
-            - --deployment=gke
-            - --extract=local
-            - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-            - --gcp-node-image=gci
-            - --gcp-zone=us-west1-b
-            - --ginkgo-parallel=30
-            - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-            - --gke-environment=test
-            - '--gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}'
-            - --provider=gke
-            - --stage=gs://kubernetes-release-dev/ci
-            - --stage-suffix=pull-kubernetes-e2e-gke
-            - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-            - --timeout=65m
-          # Bazel needs privileged mode in order to sandbox builds.
-          securityContext:
-            privileged: true
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.12
-          resources:
-            requests:
-              memory: "6Gi"
-  - name: pull-kubernetes-e2e-gke
-    always_run: false
-    optional: true
-    branches:
-    - release-1.11 # per-release image
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=bazel
-        - --cluster=
-        - --deployment=gke
-        - --extract=local
-        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-        - --gke-environment=test
-        - '--gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}'
-        - --provider=gke
-        - --stage=gs://kubernetes-release-dev/ci
-        - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=65m
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-1.11
-        resources:
-          requests:
-            memory: "6Gi"
-
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke
@@ -233,7 +57,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -243,7 +67,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-features
@@ -260,16 +84,16 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --gke-create-command=container clusters create --quiet --enable-kubernetes-alpha
       - --gke-environment=test
       - --provider=gke
-      - --test_args=--ginkgo.focus=\[Feature:(DynamicKubeletConfig|BlockVolume|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(DynamicKubeletConfig|BlockVolume|ExpandCSIVolumes|ExpandInUseVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
@@ -286,7 +110,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -296,7 +120,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-flaky
@@ -313,7 +137,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -321,7 +145,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-multizone
@@ -338,7 +162,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -348,7 +172,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-reboot
@@ -365,7 +189,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -373,7 +197,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-serial
@@ -390,7 +214,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -398,7 +222,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-slow
@@ -415,7 +239,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -424,7 +248,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-updown
@@ -440,7 +264,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -449,7 +273,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --timeout=30m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional
@@ -465,7 +289,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-e2e-regional
@@ -475,7 +299,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-serial
@@ -491,7 +315,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-region=us-central1
@@ -499,7 +323,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-slow
@@ -515,7 +339,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-region=us-central1
@@ -524,7 +348,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-gci-ci-master
@@ -540,7 +364,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -549,7 +373,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 12h
   name: ci-kubernetes-soak-gke-gci
@@ -566,7 +390,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=gke
       - --down=false
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gke-gci-soak
@@ -578,7 +402,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
 
 - interval: 2h
   name: istio-periodic-e2e-gke-addon
@@ -587,7 +411,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90
@@ -599,7 +423,7 @@ periodics:
       - --deployment=gke
       - --env=CLOUDSDK_CONTAINER_USE_V1_API=false
       - --env=TAG=0.8.0
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=istio-project

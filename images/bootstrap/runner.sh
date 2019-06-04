@@ -25,10 +25,10 @@ fi
 
 
 # used by cleanup_dind to ensure binfmt_misc entries are not persisted
-# TODO(bentheelder): consider moving *all* cleanup into a more robust program
+# TODO: consider moving *all* cleanup into a more robust program
 cleanup_binfmt_misc() {
     # make sure the vfs is mounted
-    # TODO(bentheelder): if this logic is moved out and made more general
+    # TODO: if this logic is moved out and made more general
     # we need to check that the host actually has binfmt_misc support first.
     if [ ! -f /proc/sys/fs/binfmt_misc/status ]; then
         mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc
@@ -53,6 +53,23 @@ cleanup_dind() {
     # note: we run this in a subshell so we can trace it for now
     (set -x; cleanup_binfmt_misc || true)
 }
+
+# optionally enable ipv6 docker
+export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
+if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
+    echo "Enabling IPV6 for Docker."
+    # configure the daemon with ipv6
+    mkdir -p /etc/docker/
+    cat <<EOF >/etc/docker/daemon.json
+{
+  "ipv6": true,
+  "fixed-cidr-v6": "fc00:db8:1::/64"
+}
+EOF
+    # enable ipv6
+    sysctl net.ipv6.conf.all.disable_ipv6=0
+    sysctl net.ipv6.conf.all.forwarding=1
+fi
 
 # Check if the job has opted-in to docker-in-docker availability.
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}

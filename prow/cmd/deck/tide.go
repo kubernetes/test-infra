@@ -50,6 +50,7 @@ type tideAgent struct {
 	// Config for hiding repos
 	hiddenRepos []string
 	hiddenOnly  bool
+	showHidden  bool
 
 	sync.Mutex
 	pools   []tide.Pool
@@ -162,7 +163,9 @@ func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
 	filtered := make([]tide.Pool, 0, len(pools))
 	for _, pool := range pools {
 		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos)
-		if needsHide == ta.hiddenOnly {
+		if needsHide && ta.showHidden {
+			filtered = append(filtered, pool)
+		} else if needsHide == ta.hiddenOnly {
 			filtered = append(filtered, pool)
 		} else {
 			ta.log.Debugf("Ignoring pool for %s.", pool.Org+"/"+pool.Repo)
@@ -179,7 +182,9 @@ func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[s
 	filtered := make(map[string][]history.Record, len(hist))
 	for pool, records := range hist {
 		needsHide := matches(strings.Split(pool, ":")[0], ta.hiddenRepos)
-		if needsHide == ta.hiddenOnly {
+		if needsHide && ta.showHidden {
+			filtered[pool] = records
+		} else if needsHide == ta.hiddenOnly {
 			filtered[pool] = records
 		} else {
 			ta.log.Debugf("Ignoring history for %s.", pool)
@@ -204,7 +209,9 @@ func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.Ti
 				break
 			}
 		}
-		if includesHidden == ta.hiddenOnly {
+		if includesHidden && ta.showHidden {
+			filtered = append(filtered, qc)
+		} else if includesHidden == ta.hiddenOnly {
 			filtered = append(filtered, qc)
 		} else {
 			ta.log.Debugf("Ignoring query: %s", qc.Query())

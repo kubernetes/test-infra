@@ -19,6 +19,7 @@ package spyglass
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
@@ -35,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/testgrid/metadata"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles
@@ -66,13 +68,20 @@ type LensRequest struct {
 	Artifacts []string `json:"artifacts"`
 }
 
+// ExtraLink represents an extra link to be added to the Spyglass page.
+type ExtraLink struct {
+	Name        string
+	Description string
+	URL         string
+}
+
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
-func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, ctx context.Context) *Spyglass {
+func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, gcsCredsFile string, ctx context.Context) *Spyglass {
 	return &Spyglass{
 		JobAgent:              ja,
 		config:                cfg,
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
-		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
+		GCSArtifactFetcher:    NewGCSArtifactFetcher(c, gcsCredsFile),
 		testgrid: &TestGrid{
 			conf:   cfg,
 			client: c,
@@ -302,6 +311,51 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 	default:
 		return "", "", 0, fmt.Errorf("unrecognized key type for src: %v", src)
 	}
+}
+
+// ExtraLinks fetches started.json and extracts links from metadata.links.
+func (sg *Spyglass) ExtraLinks(src string) ([]ExtraLink, error) {
+	artifacts, err := sg.FetchArtifacts(src, "", 1000000, []string{"started.json"})
+	// Failing to find started.json is okay, just return nothing quietly.
+	if err != nil || len(artifacts) == 0 {
+		logrus.WithError(err).Debugf("Failed to find started.json while looking for extra links.")
+		return nil, nil
+	}
+	// Failing to read an artifact we already know to exist shouldn't happen, so that's an error.
+	content, err := artifacts[0].ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	// Being unable to parse a successfully fetched started.json correctly is also an error.
+	started := metadata.Started{}
+	if err := json.Unmarshal(content, &started); err != nil {
+		return nil, err
+	}
+	// Not having any links is fine.
+	links, ok := started.Metadata.Meta("links")
+	if !ok {
+		return nil, nil
+	}
+	extraLinks := make([]ExtraLink, 0, len(*links))
+	for _, name := range links.Keys() {
+		m, ok := links.Meta(name)
+		if !ok {
+			// This should never happen, because Keys() should only return valid Metas.
+			logrus.Debugf("Got bad link key %q from %s, but that should be impossible.", name, artifacts[0].CanonicalLink())
+			continue
+		}
+		s := m.Strings()
+		link := ExtraLink{
+			Name:        name,
+			URL:         s["url"],
+			Description: s["description"],
+		}
+		if link.URL == "" || link.Name == "" {
+			continue
+		}
+		extraLinks = append(extraLinks, link)
+	}
+	return extraLinks, nil
 }
 
 // TestGridLink returns a link to a relevant TestGrid tab for the given source string.

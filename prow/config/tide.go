@@ -21,10 +21,11 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
+	"text/template"
 
 	"github.com/sirupsen/logrus"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
@@ -62,17 +63,22 @@ type TideContextPolicyOptions struct {
 	Orgs map[string]TideOrgContextPolicy `json:"orgs,omitempty"`
 }
 
+// TideMergeCommitTemplate holds templates to use for merge commits.
+type TideMergeCommitTemplate struct {
+	TitleTemplate string `json:"title,omitempty"`
+	BodyTemplate  string `json:"body,omitempty"`
+
+	Title *template.Template `json:"-"`
+	Body  *template.Template `json:"-"`
+}
+
 // Tide is config for the tide pool.
 type Tide struct {
-	// SyncPeriodString compiles into SyncPeriod at load time.
-	SyncPeriodString string `json:"sync_period,omitempty"`
 	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
-	SyncPeriod time.Duration `json:"-"`
-	// StatusUpdatePeriodString compiles into StatusUpdatePeriod at load time.
-	StatusUpdatePeriodString string `json:"status_update_period,omitempty"`
+	SyncPeriod *metav1.Duration `json:"sync_period,omitempty"`
 	// StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
 	// Defaults to the value of SyncPeriod.
-	StatusUpdatePeriod time.Duration `json:"-"`
+	StatusUpdatePeriod *metav1.Duration `json:"status_update_period,omitempty"`
 	// Queries represents a list of GitHub search queries that collectively
 	// specify the set of PRs that meet merge requirements.
 	Queries TideQueries `json:"queries,omitempty"`
@@ -80,6 +86,11 @@ type Tide struct {
 	// A key/value pair of an org/repo as the key and merge method to override
 	// the default method of merge. Valid options are squash, rebase, and merge.
 	MergeType map[string]github.PullRequestMergeType `json:"merge_method,omitempty"`
+
+	// A key/value pair of an org/repo as the key and Go template to override
+	// the default merge commit title and/or message. Template is passed the
+	// PullRequest struct (prow/github/types.go#PullRequest)
+	MergeTemplate map[string]TideMergeCommitTemplate `json:"merge_commit_template,omitempty"`
 
 	// URL for tide status contexts.
 	// We can consider allowing this to be set separately for separate repos, or
@@ -100,6 +111,16 @@ type Tide struct {
 	// always be squash merged.
 	// Leave this blank to disable this feature.
 	SquashLabel string `json:"squash_label,omitempty"`
+
+	// RebaseLabel is an optional label that is used to identify PRs that should
+	// always be rebased and merged.
+	// Leave this blank to disable this feature.
+	RebaseLabel string `json:"rebase_label,omitempty"`
+
+	// MergeLabel is an optional label that is used to identify PRs that should
+	// always be merged with all individual commits from the PR.
+	// Leave this blank to disable this feature.
+	MergeLabel string `json:"merge_label,omitempty"`
 
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
@@ -125,6 +146,18 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 		}
 
 		return github.MergeMerge
+	}
+
+	return v
+}
+
+// MergeCommitTemplate returns a struct with Go template string(s) or nil
+func (t *Tide) MergeCommitTemplate(org, repo string) TideMergeCommitTemplate {
+	name := org + "/" + repo
+
+	v, ok := t.MergeTemplate[name]
+	if !ok {
+		return t.MergeTemplate[org]
 	}
 
 	return v

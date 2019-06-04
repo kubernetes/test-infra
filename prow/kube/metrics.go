@@ -33,37 +33,58 @@ var (
 		"type",
 		// state of the prowjob: triggered, pending, success, failure, aborted, error
 		"state",
+		// the org of the prowjob's repo
+		"org",
+		// the prowjob's repo
+		"repo",
+		// the base_ref of the prowjob's repo
+		"base_ref",
 	})
 )
+
+type jobLabel struct {
+	jobName string
+	jobType string
+	state   string
+	org     string
+	repo    string
+	baseRef string
+}
 
 func init() {
 	prometheus.MustRegister(prowJobs)
 }
 
-// GatherProwJobMetrics gathers prometheus metrics for prowjobs.
-func GatherProwJobMetrics(pjs []prowapi.ProwJob) {
-	// map of job to job type to state to count
-	metricMap := make(map[string]map[string]map[string]float64)
+func getJobLabelMap(pjs []prowapi.ProwJob) map[jobLabel]float64 {
+	jobLabelMap := make(map[jobLabel]float64)
 
 	for _, pj := range pjs {
-		if metricMap[pj.Spec.Job] == nil {
-			metricMap[pj.Spec.Job] = make(map[string]map[string]float64)
-		}
-		if metricMap[pj.Spec.Job][string(pj.Spec.Type)] == nil {
-			metricMap[pj.Spec.Job][string(pj.Spec.Type)] = make(map[string]float64)
-		}
-		metricMap[pj.Spec.Job][string(pj.Spec.Type)][string(pj.Status.State)]++
-	}
+		jl := jobLabel{jobName: pj.Spec.Job, jobType: string(pj.Spec.Type), state: string(pj.Status.State)}
 
+		if pj.Spec.Refs != nil {
+			jl.org = pj.Spec.Refs.Org
+			jl.repo = pj.Spec.Refs.Repo
+			jl.baseRef = pj.Spec.Refs.BaseRef
+		} else if len(pj.Spec.ExtraRefs) > 0 {
+			jl.org = pj.Spec.ExtraRefs[0].Org
+			jl.repo = pj.Spec.ExtraRefs[0].Repo
+			jl.baseRef = pj.Spec.ExtraRefs[0].BaseRef
+		}
+
+		jobLabelMap[jl]++
+	}
+	return jobLabelMap
+}
+
+// GatherProwJobMetrics gathers prometheus metrics for prowjobs.
+func GatherProwJobMetrics(pjs []prowapi.ProwJob) {
+
+	jobLabelMap := getJobLabelMap(pjs)
 	// This may be racing with the prometheus server but we need to remove
 	// stale metrics like triggered or pending jobs that are now complete.
 	prowJobs.Reset()
 
-	for job, jobMap := range metricMap {
-		for jobType, typeMap := range jobMap {
-			for state, count := range typeMap {
-				prowJobs.WithLabelValues(job, jobType, state).Set(count)
-			}
-		}
+	for jl, count := range jobLabelMap {
+		prowJobs.WithLabelValues(jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef).Set(count)
 	}
 }

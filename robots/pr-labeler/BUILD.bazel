@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("//prow:def.bzl", "prow_push", "prow_image")
+load("//prow:def.bzl", "prow_image", "prow_push")
 
 prow_push(
     name = "push",

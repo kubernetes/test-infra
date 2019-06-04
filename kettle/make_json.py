@@ -23,6 +23,7 @@ import os
 import subprocess
 import sys
 import time
+import traceback
 
 try:
     import defusedxml.ElementTree as ET
@@ -79,10 +80,27 @@ def parse_junit(xml):
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
 
+def buckets_yaml():
+    import yaml  # does not support pypy
+    with open(os.path.dirname(os.path.abspath(__file__))+'/buckets.yaml') as fp:
+        return yaml.load(fp)
+
 # pypy compatibility hack
-BUCKETS = json.loads(subprocess.check_output(
-    ['python2', '-c', 'import json,yaml; print json.dumps(yaml.load(open("buckets.yaml")))'],
-    cwd=os.path.dirname(os.path.abspath(__file__))))
+def python_buckets_yaml(python='python2'):
+    return json.loads(subprocess.check_output(
+        [python, '-c', 'import json,yaml; print json.dumps(yaml.load(open("buckets.yaml")))'],
+        cwd=os.path.dirname(os.path.abspath(__file__))))
+
+for attempt in [python_buckets_yaml, buckets_yaml, lambda: python_buckets_yaml(python='python')]:
+    try:
+        BUCKETS = attempt()
+        break
+    except (ImportError, OSError):
+        traceback.print_exc()
+else:
+    # pylint: disable=misplaced-bare-raise
+    # This is safe because the only way we get here is by faling all attempts
+    raise
 
 
 def path_to_job_and_number(path):

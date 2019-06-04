@@ -9,7 +9,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -35,6 +35,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
       - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
@@ -47,7 +48,7 @@ periodics:
     preset-e2e-scalability-node: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -92,8 +93,8 @@ periodics:
       - --
       - --cluster=gke-scale-cluster
       - --deployment=gke
-      # TODO(wojtek-t): get rid of this once GKE is fixed in master
-      - --extract=ci/latest-1.13
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
@@ -114,7 +115,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       resources:
         requests:
           cpu: 6
@@ -139,8 +140,8 @@ periodics:
       - --
       - --cluster=gke-regional-cluster
       - --deployment=gke
-      # TODO(wojtek-t): get rid of this once GKE is fixed in master
-      - --extract=ci/latest-1.13
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
@@ -162,7 +163,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=570m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       resources:
         requests:
           cpu: 6
@@ -182,8 +183,8 @@ periodics:
       - --
       - --cluster=gke-scale-cluster
       - --deployment=gke
-      # TODO(wojtek-t): get rid of this once GKE is fixed in master
-      - --extract=ci/latest-1.13
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
@@ -196,7 +197,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       resources:
         requests:
           cpu: 6
@@ -213,7 +214,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=1080
+      - --timeout=1320
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -221,8 +222,8 @@ periodics:
       - --
       - --cluster=gke-scale-cluster
       - --deployment=gke
-      # TODO(wojtek-t): get rid of this once GKE is fixed in master
-      - --extract=ci/latest-1.13
+      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
+      - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=kubernetes-scale
@@ -241,9 +242,9 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=1030m
+      - --timeout=1270m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       resources:
         requests:
           cpu: 6
@@ -262,7 +263,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -309,7 +310,7 @@ periodics:
     preset-e2e-kubemark-gce-big: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -357,7 +358,7 @@ periodics:
     preset-e2e-kubemark-gce-scale: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -406,7 +407,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -448,7 +449,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -475,7 +476,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -494,7 +495,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=55
@@ -519,7 +520,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -540,3 +541,59 @@ periodics:
       - --test-cmd-args=/workspace/_artifacts
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
+
+- name: ci-benchmark-microbenchmarks
+  interval: 20m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ./pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - ../kubernetes/pkg/api/testing/...
+      - ../kubernetes/vendor/k8s.io/apiserver/pkg/endpoints/...
+
+# Experimental config for testing private gce clusters.
+- name: ci-kubernetes-e2e-gce-private-cluster-correctness
+  # TODO(mm4tt): Lower the timeout once we know how long the test takes.
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        args:
+          - --timeout=300
+          - --bare
+          - --scenario=kubernetes_e2e
+          - --
+          - --cluster=private-gce-test
+          - --env=KUBE_GCE_PRIVATE_CLUSTER=true
+          - --extract=ci/latest
+          - --gcp-master-image=gci
+          - --gcp-node-image=gci
+          - --gcp-nodes=5
+          - --gcp-ssh-proxy-instance-name=private-gce-test-master
+          - --gcp-zone=us-east1-b
+          - --ginkgo-parallel=5
+          - --provider=gce
+          - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
+          - --timeout=240m
+          - --use-logexporter

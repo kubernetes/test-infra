@@ -99,7 +99,7 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository strin
 	}
 
 	return &sql.IssueEvent{
-		ID:             strconv.Itoa(*gIssueEvent.ID),
+		ID:             itoa(*gIssueEvent.ID),
 		Label:          label,
 		Event:          *gIssueEvent.Event,
 		EventCreatedAt: *gIssueEvent.CreatedAt,
@@ -148,6 +148,10 @@ func newAssignees(issueID int, gAssignees []*github.User, repository string) ([]
 	return assignees, nil
 }
 
+func itoa(n int64) string {
+	return strconv.FormatInt(n, 10)
+}
+
 // NewIssueComment creates a Comment from a github.IssueComment
 func NewIssueComment(issueID int, gComment *github.IssueComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
@@ -163,7 +167,7 @@ func NewIssueComment(issueID int, gComment *github.IssueComment, repository stri
 	}
 
 	return &sql.Comment{
-		ID:               strconv.Itoa(*gComment.ID),
+		ID:               itoa(*gComment.ID),
 		IssueID:          strconv.Itoa(issueID),
 		Body:             *gComment.Body,
 		User:             login,
@@ -188,7 +192,7 @@ func NewPullComment(issueID int, gComment *github.PullRequestComment, repository
 		login = *gComment.User.Login
 	}
 	return &sql.Comment{
-		ID:               strconv.Itoa(*gComment.ID),
+		ID:               itoa(*gComment.ID),
 		IssueID:          strconv.Itoa(issueID),
 		Body:             *gComment.Body,
 		User:             login,

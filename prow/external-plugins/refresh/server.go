@@ -56,7 +56,7 @@ type server struct {
 	tokenGenerator func() []byte
 	prowURL        string
 	configAgent    *config.Agent
-	ghc            *github.Client
+	ghc            github.Client
 	log            *logrus.Entry
 }
 

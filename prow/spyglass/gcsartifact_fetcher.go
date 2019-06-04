@@ -18,18 +18,20 @@ package spyglass
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"math/rand"
 	"net/url"
+	"os"
 	"path"
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/traiana/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
+	"k8s.io/test-infra/traiana/storage"
 
 	"k8s.io/test-infra/prow/spyglass/lenses"
 	"k8s.io/test-infra/testgrid/util/gcs"
@@ -47,7 +49,8 @@ var (
 
 // GCSArtifactFetcher contains information used for fetching artifacts from GCS
 type GCSArtifactFetcher struct {
-	client *storage.Client
+	client       *storage.Client
+	gcsCredsFile string
 }
 
 // gcsJobSource is a location in GCS where Prow job-specific artifacts are stored. This implementation assumes
@@ -63,9 +66,10 @@ type gcsJobSource struct {
 }
 
 // NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
-func NewGCSArtifactFetcher(c *storage.Client) *GCSArtifactFetcher {
+func NewGCSArtifactFetcher(c *storage.Client, gcsCredsFile string) *GCSArtifactFetcher {
 	return &GCSArtifactFetcher{
-		client: c,
+		client:       c,
+		gcsCredsFile: gcsCredsFile,
 	}
 }
 
@@ -140,6 +144,43 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 	listElapsed := time.Since(listStart)
 	logrus.WithField("duration", listElapsed).Infof("Listed %d artifacts.", len(artifacts))
 	return artifacts, nil
+}
+
+func (af *GCSArtifactFetcher) signURL(bucket, obj string) (string, error) {
+	// If we're anonymous we can just return a plain URL.
+	if af.gcsCredsFile == "" {
+		artifactLink := &url.URL{
+			Scheme: httpsScheme,
+			Host:   "storage.googleapis.com",
+			Path:   path.Join(bucket, obj),
+		}
+		return artifactLink.String(), nil
+	}
+
+	// As far as I can tell, there is no sane way to get these values other than just
+	// reading them out of the JSON file ourselves.
+	f, err := os.Open(af.gcsCredsFile)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	auth := struct {
+		Type        string `json:"type"`
+		PrivateKey  string `json:"private_key"`
+		ClientEmail string `json:"client_email"`
+	}{}
+	if err := json.NewDecoder(f).Decode(&auth); err != nil {
+		return "", err
+	}
+	if auth.Type != "service_account" {
+		return "", fmt.Errorf("only service_account GCS auth is supported, got %q", auth.Type)
+	}
+	return storage.SignedURL(bucket, obj, &storage.SignedURLOptions{
+		Method:         "GET",
+		Expires:        time.Now().Add(10 * time.Minute),
+		GoogleAccessID: auth.ClientEmail,
+		PrivateKey:     []byte(auth.PrivateKey),
+	})
 }
 
 type gcsArtifactHandle struct {

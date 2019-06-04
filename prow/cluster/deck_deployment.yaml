@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190311-a967141 # https://github.com/kubernetes/test-infra/issues/11690
+        image: gcr.io/k8s-prow/deck:v20190528-0d7c4b53a
         imagePullPolicy: Always
         ports:
           - name: http
@@ -46,6 +46,7 @@ spec:
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
         - --oauth-url=/github-login
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --spyglass=true
         volumeMounts:

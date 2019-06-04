@@ -33,7 +33,7 @@ import (
 
 var (
 	maxTTL   = flag.Duration("ttl", 24*time.Hour, "Maximum time before attempting to delete a resource. Set to 0s to nuke all non-default resources.")
-	region   = flag.String("region", regions.Default, "The default AWS region")
+	region   = flag.String("region", "", "The region to clean (otherwise defaults to all regions)")
 	path     = flag.String("path", "", "S3 path for mark data (required when -all=false)")
 	cleanAll = flag.Bool("all", false, "Clean all resources (ignores -path)")
 )
@@ -54,14 +54,14 @@ func main() {
 		if err := resources.CleanAll(sess, *region); err != nil {
 			klog.Fatalf("Error cleaning all resources: %v", err)
 		}
-	} else if ok, err := markAndSweep(sess); err != nil {
+	} else if ok, err := markAndSweep(sess, *region); err != nil {
 		klog.Fatalf("Error marking and sweeping resources: %v", err)
 	} else if !ok {
 		os.Exit(1)
 	}
 }
 
-func markAndSweep(sess *session.Session) (bool, error) {
+func markAndSweep(sess *session.Session, region string) (bool, error) {
 	s3p, err := s3path.GetPath(sess, *path)
 	if err != nil {
 		return false, errors.Wrapf(err, "-path %q isn't a valid S3 path", *path)
@@ -73,9 +73,14 @@ func markAndSweep(sess *session.Session) (bool, error) {
 	}
 	klog.V(1).Infof("account: %s", acct)
 
-	regionList, err := regions.GetAll(sess)
-	if err != nil {
-		return false, errors.Wrap(err, "Error getting available regions")
+	var regionList []string
+	if region == "" {
+		regionList, err = regions.GetAll(sess)
+		if err != nil {
+			return false, errors.Wrap(err, "Error getting available regions")
+		}
+	} else {
+		regionList = []string{region}
 	}
 	klog.Infof("Regions: %+v", regionList)
 
@@ -93,7 +98,7 @@ func markAndSweep(sess *session.Session) (bool, error) {
 	}
 
 	for _, typ := range resources.GlobalTypeList {
-		if err := typ.MarkAndSweep(sess, acct, *region, res); err != nil {
+		if err := typ.MarkAndSweep(sess, acct, regions.Default, res); err != nil {
 			return false, errors.Wrapf(err, "Error sweeping %T", typ)
 		}
 	}

@@ -163,6 +163,41 @@ export namespace tooltip {
     tip.appendChild(tipElem);
     tip.setAttribute("data-mdl-for", elemID);
     tip.classList.add("mdl-tooltip", "mdl-tooltip--large");
+    tip.style.whiteSpace = "normal";
     return tip;
+  }
+}
+
+export namespace icon {
+  export function create(iconString: string, tip: string = ""): HTMLAnchorElement {
+    const i = document.createElement("i");
+    i.classList.add("icon-button", "material-icons");
+    i.innerHTML = iconString;
+    if (tip !== "") {
+       i.title = tip;
+    }
+
+    const container = document.createElement("a");
+    container.appendChild(i);
+    container.classList.add("mdl-button", "mdl-js-button", "mdl-button--icon");
+
+    return container;
+  }
+}
+
+export namespace tidehistory {
+  export function poolIcon(org: string, repo: string, branch: string): HTMLAnchorElement {
+    const link = icon.create("timeline", "Pool History");
+    const encodedRepo = encodeURIComponent(`${org}/${repo}`);
+    const encodedBranch = encodeURIComponent(branch);
+    link.href = `/tide-history?repo=${encodedRepo}&branch=${encodedBranch}`;
+    return link;
+  }
+
+  export function authorIcon(author: string): HTMLAnchorElement {
+    const link = icon.create("timeline", "Personal Tide History");
+    const encodedAuthor = encodeURIComponent(author);
+    link.href = `/tide-history?author=${encodedAuthor}`;
+    return link;
   }
 }

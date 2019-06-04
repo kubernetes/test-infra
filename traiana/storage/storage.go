@@ -147,11 +147,21 @@ func (o *ObjectHandle) Attrs(ctx context.Context) (attrs *ObjectAttrs, err error
 	}
 }
 
+func SignedURL(bucket, name string, opts *SignedURLOptions) (string, error) {
+	if traiana.Aws {
+		// TODO: do we need to implemenet this?
+		return "", nil
+	}
+	return storage.SignedURL(bucket, name, opts)
+}
+
 type Query = storage.Query
 
 type ObjectAttrs = storage.ObjectAttrs
 
 type ACLRule = storage.ACLRule
 type ACLRole = storage.ACLRole
+
+type SignedURLOptions = storage.SignedURLOptions
 
 var ErrObjectNotExist = storage.ErrObjectNotExist

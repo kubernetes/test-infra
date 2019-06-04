@@ -20,6 +20,7 @@ limitations under the License.
 package tide
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -29,27 +30,31 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/test-infra/traiana/storage"
-
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
 )
 
-type kubeClient interface {
-	ListProwJobs(string) ([]prowapi.ProwJob, error)
-	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+// For mocking out sleep during unit tests.
+var sleep = time.Sleep
+
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
 }
 
 type githubClient interface {
@@ -70,11 +75,11 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	logger *logrus.Entry
-	config config.Getter
-	ghc    githubClient
-	kc     kubeClient
-	gc     *git.Client
+	logger        *logrus.Entry
+	config        config.Getter
+	ghc           githubClient
+	prowJobClient prowJobClient
+	gc            *git.Client
 
 	sc *statusController
 
@@ -195,13 +200,13 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, historyHandle *storage.ObjectHandle, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
-	hist, err := history.New(maxRecordsPerPool, historyHandle)
+	hist, err := history.New(maxRecordsPerPool, opener, historyURI)
 	if err != nil {
-		return nil, fmt.Errorf("error initializing history client: %v", err)
+		return nil, fmt.Errorf("error initializing history client from %q: %v", historyURI, err)
 	}
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
@@ -209,15 +214,17 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, cfg confi
 		config:         cfg,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
+		opener:         opener,
+		path:           statusURI,
 	}
 	go sc.run()
 	return &Controller{
-		logger: logger.WithField("controller", "sync"),
-		ghc:    ghcSync,
-		kc:     kc,
-		config: cfg,
-		gc:     gc,
-		sc:     sc,
+		logger:        logger.WithField("controller", "sync"),
+		ghc:           ghcSync,
+		prowJobClient: prowJobClient,
+		config:        cfg,
+		gc:            gc,
+		sc:            sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
@@ -300,12 +307,13 @@ func (c *Controller) Sync() error {
 	var err error
 	if len(prs) > 0 {
 		start := time.Now()
-		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
+		pjList, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
 		if err != nil {
 			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
 		}
 		c.logger.WithField("duration", time.Since(start).String()).Debug("Listed ProwJobs from the cluster.")
+		pjs = pjList.Items
 
 		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
@@ -801,6 +809,56 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 	return res, nil
 }
 
+func checkMergeLabels(pr PullRequest, squash, rebase, merge string, method github.PullRequestMergeType) (github.PullRequestMergeType, error) {
+	labelCount := 0
+	for _, prlabel := range pr.Labels.Nodes {
+		switch string(prlabel.Name) {
+		case squash:
+			method = github.MergeSquash
+			labelCount++
+		case rebase:
+			method = github.MergeRebase
+			labelCount++
+		case merge:
+			method = github.MergeMerge
+			labelCount++
+		}
+		if labelCount > 1 {
+			return "", fmt.Errorf("conflicting merge method override labels")
+		}
+	}
+	return method, nil
+}
+
+func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr PullRequest, mergeMethod github.PullRequestMergeType) github.MergeDetails {
+	ghMergeDetails := github.MergeDetails{
+		SHA:         string(pr.HeadRefOID),
+		MergeMethod: string(mergeMethod),
+	}
+
+	if commitTemplates.Title != nil {
+		var b bytes.Buffer
+
+		if err := commitTemplates.Title.Execute(&b, pr); err != nil {
+			c.logger.Errorf("error executing commit title template: %v", err)
+		} else {
+			ghMergeDetails.CommitTitle = b.String()
+		}
+	}
+
+	if commitTemplates.Body != nil {
+		var b bytes.Buffer
+
+		if err := commitTemplates.Body.Execute(&b, pr); err != nil {
+			c.logger.Errorf("error executing commit body template: %v", err)
+		} else {
+			ghMergeDetails.CommitMessage = b.String()
+		}
+	}
+
+	return ghMergeDetails
+}
+
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	var merged, failed []int
 	defer func() {
@@ -815,20 +873,24 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for i, pr := range prs {
 		log := log.WithFields(pr.logFields())
 		mergeMethod := c.config().Tide.MergeMethod(sp.org, sp.repo)
-		if squashLabel := c.config().Tide.SquashLabel; squashLabel != "" {
-			for _, prlabel := range pr.Labels.Nodes {
-				if string(prlabel.Name) == squashLabel {
-					mergeMethod = github.MergeSquash
-					break
-				}
+		commitTemplates := c.config().Tide.MergeCommitTemplate(sp.org, sp.repo)
+		squashLabel := c.config().Tide.SquashLabel
+		rebaseLabel := c.config().Tide.RebaseLabel
+		mergeLabel := c.config().Tide.MergeLabel
+		if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
+			var err error
+			mergeMethod, err = checkMergeLabels(pr, squashLabel, rebaseLabel, mergeLabel, mergeMethod)
+			if err != nil {
+				log.WithError(err).Error("Merge failed.")
+				errs = append(errs, err)
+				failed = append(failed, int(pr.Number))
+				continue
 			}
 		}
 
 		keepTrying, err := tryMerge(func() error {
-			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-				SHA:         string(pr.HeadRefOID),
-				MergeMethod: string(mergeMethod),
-			})
+			ghMergeDetails := c.prepareMergeDetails(commitTemplates, pr, mergeMethod)
+			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
 		})
 		if err != nil {
 			log.WithError(err).Error("Merge failed.")
@@ -844,7 +906,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		// If we successfully merged this PR and have more to merge, sleep to give
 		// GitHub time to recalculate mergeability.
 		if err == nil && i+1 < len(prs) {
-			time.Sleep(time.Second * 5)
+			sleep(time.Second * 5)
 		}
 	}
 
@@ -899,7 +961,7 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 			// merge again.
 			err = fmt.Errorf("base branch was modified: %v", err)
 			if retry+1 < maxRetries {
-				time.Sleep(backoff)
+				sleep(backoff)
 				backoff *= 2
 			}
 		} else if _, ok = err.(github.UnauthorizedToPushError); ok {
@@ -961,7 +1023,8 @@ func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, 
 			}
 			pj := pjutil.NewProwJob(spec, ps.Labels)
 			start := time.Now()
-			if _, err := c.kc.CreateProwJob(pj); err != nil {
+			if _, err := c.prowJobClient.Create(&pj); err != nil {
+				c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 				return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 			}
 			c.logger.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
@@ -1296,6 +1359,7 @@ type PullRequest struct {
 	Milestone *struct {
 		Title githubql.String
 	}
+	Body      githubql.String
 	Title     githubql.String
 	UpdatedAt githubql.DateTime
 }

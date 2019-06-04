@@ -59,7 +59,8 @@ E2E_LOG_TIMESTAMP_RE = re.compile(r'(... .\d \d\d:\d\d:\d\d\.\d\d\d):.*')
 # Ginkgo gives a line like the following at the end of successful runs:
 # SUCCESS! -- 123 Passed | 0 Failed | 0 Pending | 587 Skipped PASS
 # we match this to detect overall success
-E2E_LOG_SUCCESS_RE = re.compile(r'SUCCESS! -- .* PASS')
+E2E_LOG_SUCCESS_RE = re.compile(r'Test Suite Passed')
+E2E_LOG_FAIL_RE = re.compile(r'Test Suite Failed')
 
 
 def log_line_strip_escape_sequences(line):
@@ -95,8 +96,7 @@ def parse_e2e_logfile(file_handle, year):
     Returns:
         started (datetime.datetime), finished (datetime.datetime), passed (boolean)
     """
-    started = finished = None
-    passed = False
+    passed = started = finished = None
     for line in file_handle:
         line = log_line_strip_escape_sequences(line)
         # try to get a timestamp from each line, keep the first one as
@@ -107,10 +107,13 @@ def parse_e2e_logfile(file_handle, year):
                 finished = timestamp
             else:
                 started = timestamp
-        # if we found the ginkgo success line then the run passed
-        is_success = E2E_LOG_SUCCESS_RE.match(line)
-        if is_success:
+        if passed is False:
+            # if we already have found a failure, ignore subsequent pass/fails
+            continue
+        elif E2E_LOG_SUCCESS_RE.match(line):
             passed = True
+        elif E2E_LOG_FAIL_RE.match(line):
+            passed = False
     return started, finished, passed
 
 

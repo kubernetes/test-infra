@@ -19,35 +19,29 @@ periodics:
       image: busybox
       args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-periodics.yaml"]
 - name: ci-test-infra-bazel
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-experimental
+    - image: launcher.gcr.io/google/bazel:0.24.1
+      command:
+      - hack/bazel.sh
       args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/test-infra=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=kubernetes_bazel"
-      - "--" # end bootstrap args, scenario args below
-      - "--build=//..."
-      - "--install=gubernator/test_requirements.txt"
-      - "--test=//..."
-      - "--test-args=--test_output=errors"
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "2Gi"
+      - test
+      - --config=ci
+      - --nobuild_tests_only
+      - //...
 
 - name: ci-test-infra-triage
   decorate: true
-  interval: 20m
+  interval: 40m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest

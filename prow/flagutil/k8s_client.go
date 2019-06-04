@@ -28,14 +28,13 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-// KubernetesOptions holds options for interacting with Kubernetes.
+// KubernetesClientOptions holds options for interacting with Kubernetes.
 type KubernetesClientOptions struct {
 	masterURL  string
 	kubeConfig string
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
-
 func (o *KubernetesClientOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.masterURL, "masterurl", "", "URL to k8s master")
 	fs.StringVar(&o.kubeConfig, "kubeconfig", "", "Cluster config for the cluster you want to connect to")
@@ -61,12 +60,12 @@ func (o *KubernetesClientOptions) Validate(dryRun bool) error {
 	return nil
 }
 
-// Client returns a Kubernetes client.
+// KubeClient returns a Kubernetes client.
 func (o *KubernetesClientOptions) KubeClient() (kubernetes.Interface, error) {
 	return kube.GetKubernetesClient(o.masterURL, o.kubeConfig)
 }
 
-// Client returns a Kubernetes client.
+// ProwJobClient returns a Kubernetes client.
 func (o *KubernetesClientOptions) ProwJobClient() (versioned.Interface, error) {
 	return kube.GetProwJobClient(o.masterURL, o.kubeConfig)
 }

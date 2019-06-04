@@ -232,6 +232,11 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 		htmlURL:     e.Review.HTMLURL,
 	}
 
+	// Only react to reviews that are being submitted (not editted or dismissed).
+	if e.Action != github.ReviewActionSubmitted {
+		return nil
+	}
+
 	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
 	// skip handling the review event
 	if lgtmRe.MatchString(rc.body) || lgtmCancelRe.MatchString(rc.body) {

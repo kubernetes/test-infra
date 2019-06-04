@@ -476,6 +476,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 	var testcases = []struct {
 		name          string
 		state         github.ReviewState
+		action        github.ReviewEventAction
 		body          string
 		reviewer      string
 		hasLGTM       bool
@@ -485,8 +486,27 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		storeTreeHash bool
 	}{
 		{
+			name:          "Edit approve review by reviewer, no lgtm on pr",
+			state:         github.ReviewStateApproved,
+			action:        github.ReviewActionEdited,
+			reviewer:      "reviewer1",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			storeTreeHash: true,
+		},
+		{
+			name:          "Dismiss approve review by reviewer, no lgtm on pr",
+			state:         github.ReviewStateApproved,
+			action:        github.ReviewActionDismissed,
+			reviewer:      "reviewer1",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			storeTreeHash: true,
+		},
+		{
 			name:          "Request changes review by reviewer, no lgtm on pr",
 			state:         github.ReviewStateChangesRequested,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "reviewer1",
 			hasLGTM:       false,
 			shouldToggle:  false,
@@ -496,6 +516,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:         "Request changes review by reviewer, lgtm on pr",
 			state:        github.ReviewStateChangesRequested,
+			action:       github.ReviewActionSubmitted,
 			reviewer:     "reviewer1",
 			hasLGTM:      true,
 			shouldToggle: true,
@@ -504,6 +525,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Approve review by reviewer, no lgtm on pr",
 			state:         github.ReviewStateApproved,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "reviewer1",
 			hasLGTM:       false,
 			shouldToggle:  true,
@@ -513,6 +535,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Approve review by reviewer, no lgtm on pr, do not store tree_hash",
 			state:         github.ReviewStateApproved,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "reviewer1",
 			hasLGTM:       false,
 			shouldToggle:  true,
@@ -521,6 +544,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:         "Approve review by reviewer, lgtm on pr",
 			state:        github.ReviewStateApproved,
+			action:       github.ReviewActionSubmitted,
 			reviewer:     "reviewer1",
 			hasLGTM:      true,
 			shouldToggle: false,
@@ -529,6 +553,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Approve review by non-reviewer, no lgtm on pr",
 			state:         github.ReviewStateApproved,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "o",
 			hasLGTM:       false,
 			shouldToggle:  true,
@@ -539,6 +564,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Request changes review by non-reviewer, no lgtm on pr",
 			state:         github.ReviewStateChangesRequested,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "o",
 			hasLGTM:       false,
 			shouldToggle:  false,
@@ -548,6 +574,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Approve review by rando",
 			state:         github.ReviewStateApproved,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "not-in-the-org",
 			hasLGTM:       false,
 			shouldToggle:  false,
@@ -557,6 +584,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Comment review by issue author, no lgtm on pr",
 			state:         github.ReviewStateCommented,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "author",
 			hasLGTM:       false,
 			shouldToggle:  false,
@@ -566,6 +594,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Comment body has /lgtm on Comment Review ",
 			state:         github.ReviewStateCommented,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "reviewer1",
 			body:          "/lgtm",
 			hasLGTM:       false,
@@ -576,6 +605,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		{
 			name:          "Comment body has /lgtm cancel on Approve Review",
 			state:         github.ReviewStateApproved,
+			action:        github.ReviewActionSubmitted,
 			reviewer:      "reviewer1",
 			body:          "/lgtm cancel",
 			hasLGTM:       false,
@@ -598,6 +628,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			},
 		}
 		e := &github.ReviewEvent{
+			Action:      tc.action,
 			Review:      github.Review{Body: tc.body, State: tc.state, HTMLURL: "<url>", User: github.User{Login: tc.reviewer}},
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}, Assignees: []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}}, Number: 5},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},

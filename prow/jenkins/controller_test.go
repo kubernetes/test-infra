@@ -119,7 +119,7 @@ func (f *fjc) Build(pj *prowapi.ProwJob, buildID string) error {
 	return nil
 }
 
-func (f *fjc) ListBuilds(jobs []string) (map[string]Build, error) {
+func (f *fjc) ListBuilds(jobs []BuildQueryParams) (map[string]Build, error) {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
@@ -899,6 +899,41 @@ func TestGetJenkinsJobs(t *testing.T) {
 			},
 			expected: []string{"maradona", "coolio"},
 		},
+		{
+			name: "running jenkins jobs",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job:   "coolio",
+						Agent: "jenkins",
+						JenkinsSpec: &prowapi.JenkinsSpec{
+							GitHubBranchSourceJob: true,
+						},
+						Refs: &prowapi.Refs{
+							BaseRef: "master",
+							Pulls: []prowapi.Pull{{
+								Number: 12,
+							}},
+						},
+					},
+					Status: prowapi.ProwJobStatus{},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job:   "maradona",
+						Agent: "jenkins",
+						JenkinsSpec: &prowapi.JenkinsSpec{
+							GitHubBranchSourceJob: true,
+						},
+						Refs: &prowapi.Refs{
+							BaseRef: "master",
+						},
+					},
+					Status: prowapi.ProwJobStatus{},
+				},
+			},
+			expected: []string{"maradona/job/master", "coolio/view/change-requests/job/PR-12"},
+		},
 	}
 
 	for _, test := range tests {
@@ -911,7 +946,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 		for _, ej := range test.expected {
 			var found bool
 			for _, gj := range got {
-				if ej == gj {
+				if ej == gj.JobName {
 					found = true
 					break
 				}

@@ -7,7 +7,7 @@ presets:
   - name: AZURE_SSH_PUBLIC_KEY_FILE
     value: /etc/azure-ssh/azure-ssh-pub
   - name: CLOUD_CONFIG
-    value: random 
+    value: random
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
   - name: REGISTRY
@@ -33,6 +33,56 @@ presets:
     mountPath: /etc/azure-ssh
     readOnly: true
 
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-aks-engine-azure-windows
+    always_run: false
+    optional: true
+    trigger: (?m)^/test( | .* )pull-kubernetes-e2e-aks-engine-azure-windows,?($|\s.*)
+    rerun_command: /test pull-kubernetes-e2e-aks-engine-azure-windows
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-acsengine: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--upload=gs://kubernetes-jenkins/pr-logs/"
+        - "--timeout=480"
+        - "--scenario=kubernetes_e2e"
+        - --
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine"
+        - "--provider=skeleton"
+        - "--build=bazel"
+        - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure-windows"
+        - "--ginkgo-parallel=4"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-admin-password=AdminPassw0rd"
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
+        - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-winZipBuildScript=$WIN_BUILD"
+        - "--acsengine-orchestratorRelease=1.14"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
+        - "--acsengine-win-binaries"
+        - "--acsengine-hyperkube"
+        - "--acsengine-agentpoolcount=2"
+        - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]"
+        - "--timeout=450m"
+        securityContext:
+          privileged: true
+
 
 periodics:
 - interval: 6h
@@ -44,7 +94,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -63,11 +113,11 @@ periodics:
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
+      - "--acsengine-download-url=https://k8swin.blob.core.windows.net/k8s-windows/aks-engine-dirty-22-05-2019.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
       - "--acsengine-orchestratorRelease=1.14"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release.json"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
@@ -85,7 +135,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -125,7 +175,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190301-76bc03340-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -140,10 +190,11 @@ periodics:
       - "--deployment=acsengine"
       - "--provider=skeleton"
       - "--build=bazel"
+      - "--ginkgo-parallel=4"
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
-      - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.32.0/aks-engine-v0.32.0-linux-amd64.tar.gz"
+      - "--acsengine-download-url=https://k8swin.blob.core.windows.net/k8s-windows/aks-engine-dirty-22-05-2019.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
       - "--acsengine-orchestratorRelease=1.14"
@@ -151,7 +202,7 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
-      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.flakeAttempts=2 --ginkgo.focus=\\[k8s.io\\].Pods.*should.cap.back-off.at.MaxContainerBackOff.\\[Slow\\]\\[NodeConformance\\]|\\[sig-network\\].DNS.should.provide.DNS.for.services..\\[Conformance\\]|\\[sig-storage\\].Secrets.should.be.consumable.from.pods.in.volume.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.in.a.pod.should.print.the.output.to.logs.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Kubelet.when.scheduling.a.busybox.command.that.always.fails.in.a.pod.should.be.possible.to.delete.\\[NodeConformance\\].\\[Conformance\\]|\\[k8s.io\\].Pods.*should.have.their.auto-restart.back-off.timer.reset.on.image.update.\\[Slow\\]\\[NodeConformance\\]"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]"
       - "--timeout=450m"
       securityContext:
         privileged: true

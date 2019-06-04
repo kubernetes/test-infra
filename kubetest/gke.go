@@ -88,6 +88,7 @@ type gkeDeployer struct {
 	commandGroup                []string
 	createCommand               []string
 	singleZoneNodeInstanceGroup bool
+	sshProxyInstanceName        string
 
 	setup          bool
 	kubecfg        string
@@ -103,7 +104,7 @@ type ig struct {
 
 var _ deployer = &gkeDeployer{}
 
-func newGKE(provider, project, zone, region, network, image, imageFamily, imageProject, cluster string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
+func newGKE(provider, project, zone, region, network, image, imageFamily, imageProject, cluster, sshProxyInstanceName string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
 	if provider != "gke" {
 		return nil, fmt.Errorf("--provider must be 'gke' for GKE deployment, found %q", provider)
 	}
@@ -263,6 +264,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 
 	g.singleZoneNodeInstanceGroup = *gkeSingleZoneNodeInstanceGroup
+	g.sshProxyInstanceName = sshProxyInstanceName
 
 	return g, nil
 }
@@ -435,6 +437,11 @@ func (g *gkeDeployer) TestSetup() error {
 	if err := g.setupEnv(); err != nil {
 		return err
 	}
+	if g.sshProxyInstanceName != "" {
+		if err := setKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName); err != nil {
+			return err
+		}
+	}
 	g.setup = true
 	return nil
 }
@@ -481,6 +488,9 @@ func (g *gkeDeployer) setupEnv() error {
 }
 
 func (g *gkeDeployer) ensureFirewall() error {
+	if g.network == "default" {
+		return nil
+	}
 	firewall, err := g.getClusterFirewall()
 	if err != nil {
 		return fmt.Errorf("error getting unique firewall: %v", err)
@@ -591,6 +601,15 @@ func (g *gkeDeployer) Down() error {
 		"gcloud", g.containerArgs("clusters", "delete", "-q", g.cluster,
 			"--project="+g.project,
 			g.location)...))
+
+	// don't delete default network
+	if g.network == "default" {
+		if errCluster != nil {
+			log.Printf("Error deleting cluster using default network, allow the error for now %s", errCluster)
+		}
+		return nil
+	}
+
 	var errFirewall error
 	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,

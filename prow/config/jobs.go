@@ -22,11 +22,12 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	"k8s.io/test-infra/prow/github"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/github"
 )
 
 // Preset is intended to match the k8s' PodPreset feature, and may be removed
@@ -84,8 +85,8 @@ type JobBase struct {
 	Labels map[string]string `json:"labels,omitempty"`
 	// MaximumConcurrency of this job, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
-	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
+	// Agent that will take care of running this job. Defaults to "kubernetes"
+	Agent string `json:"agent,omitempty"`
 	// Cluster is the alias of the cluster to run this job in.
 	// (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster,omitempty"`
@@ -104,6 +105,10 @@ type JobBase struct {
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// BuildSpec is the Knative build spec used if Agent is knative-build.
 	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
+	// PipelineRunSpec is the tekton pipeline spec used if Agent is tekton-pipeline.
+	PipelineRunSpec *pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
+	// Annotations are unused by prow itself, but provide a space to configure other automation.
+	Annotations map[string]string `json:"annotations,omitempty"`
 
 	UtilityConfig
 }
@@ -122,18 +127,20 @@ type Presubmit struct {
 	// e.g. `@k8s-bot e2e test this`
 	// RerunCommand must also be specified if this field is specified.
 	// (Default: `(?m)^/run (?:.*? )?<job name>(?: .*?)?$`)
-	Trigger string `json:"trigger"`
+	Trigger string `json:"trigger,omitempty"`
 
 	// The RerunCommand to give users. Must match Trigger.
 	// Trigger must also be specified if this field is specified.
 	// (Default: `/run <job name>`)
-	RerunCommand string `json:"rerun_command"`
+	RerunCommand string `json:"rerun_command,omitempty"`
 
 	Brancher
 
 	RegexpChangeMatcher
 
 	Reporter
+
+	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 
 	// We'll set these when we load it.
 	re *regexp.Regexp // from Trigger.
@@ -149,6 +156,8 @@ type Postsubmit struct {
 
 	// TODO(krzyzacy): Move existing `Report` into `Skip_Report` once this is deployed
 	Reporter
+
+	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 }
 
 // Periodic runs on a timer.
@@ -156,13 +165,20 @@ type Periodic struct {
 	JobBase
 
 	// (deprecated)Interval to wait between two runs of the job.
-	Interval string `json:"interval"`
+	Interval string `json:"interval,omitempty"`
 	// Cron representation of job trigger time
-	Cron string `json:"cron"`
+	Cron string `json:"cron,omitempty"`
 	// Tags for config entries
 	Tags []string `json:"tags,omitempty"`
 
 	interval time.Duration
+}
+
+// JenkinsSpec holds optional Jenkins job config
+type JenkinsSpec struct {
+	// Job is managed by the GH branch source plugin
+	// and requires a specific path
+	GitHubBranchSourceJob bool `json:"github_branch_source_job,omitempty"`
 }
 
 // SetInterval updates interval, the frequency duration it runs.
@@ -198,7 +214,8 @@ type RegexpChangeMatcher struct {
 
 type Reporter struct {
 	// Context is the name of the GitHub status context for the job.
-	Context string `json:"context"`
+	// Defaults: the same as the name of the job.
+	Context string `json:"context,omitempty"`
 	// SkipReport skips commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report,omitempty"`
 }
@@ -238,8 +255,13 @@ func (br Brancher) Intersects(other Brancher) bool {
 			}
 			return false
 		}
-		if !baseBranches.Intersection(sets.NewString(other.SkipBranches...)).Equal(baseBranches) {
-			return true
+
+		// Actually test our branches against the other brancher - if there are regex skip lists, simple comparison
+		// is insufficient.
+		for _, b := range baseBranches.List() {
+			if other.ShouldRun(b) {
+				return true
+			}
 		}
 		return false
 	}
@@ -393,6 +415,9 @@ type UtilityConfig struct {
 	// SkipSubmodules determines if submodules should be
 	// cloned when the job is run. Defaults to true.
 	SkipSubmodules bool `json:"skip_submodules,omitempty"`
+	// CloneDepth is the depth of the clone that will be used.
+	// A depth of zero will do a full clone.
+	CloneDepth int `json:"clone_depth,omitempty"`
 
 	// ExtraRefs are auxiliary repositories that
 	// need to be cloned, determined from config

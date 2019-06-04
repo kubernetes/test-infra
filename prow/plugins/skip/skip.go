@@ -42,7 +42,6 @@ type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	ListStatuses(org, repo, ref string) ([]github.Status, error)
 }
 
 func init() {
@@ -88,12 +87,16 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	statuses, err := gc.ListStatuses(org, repo, pr.Head.SHA)
+	combinedStatus, err := gc.GetCombinedStatus(org, repo, pr.Head.SHA)
 	if err != nil {
-		resp := fmt.Sprintf("Cannot get commit statuses for PR #%d in %s/%s: %v", number, org, repo, err)
+		resp := fmt.Sprintf("Cannot get combined commit statuses for PR #%d in %s/%s: %v", number, org, repo, err)
 		log.Warn(resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
+	if combinedStatus.State == github.StatusSuccess {
+		return nil
+	}
+	statuses := combinedStatus.Statuses
 
 	filteredPresubmits, _, err := trigger.FilterPresubmits(honorOkToTest, gc, e.Body, pr, presubmits, log)
 	if err != nil {
