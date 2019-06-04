@@ -41,6 +41,9 @@ presets:
             - mountPath: /var/log/glbc.log
               name: logfile
               readOnly: false
+            - mountPath: /etc/srv/kubernetes/l7-lb-controller
+              name: srvkube
+              readOnly: true
             resources:
               requests:
                 cpu: 10m
@@ -50,8 +53,8 @@ presets:
             - --logtostderr=false
             - --log_file=/var/log/glbc.log
             - --enable-finalizer-remove
-            - --apiserver-host=http://localhost:8080
             - --default-backend-service=kube-system/default-http-backend
+            - --kubeconfig=/etc/srv/kubernetes/l7-lb-controller/kubeconfig
             - --sync-period=600s
             - --running-in-cluster=false
             - --config-file-path=/etc/gce.conf
@@ -74,6 +77,9 @@ presets:
               path: /var/log/glbc.log
               type: FileOrCreate
             name: logfile
+          - name: srvkube
+            hostPath:
+              path: /etc/srv/kubernetes/l7-lb-controller
 
 - labels:
     preset-ingress-v1.3-and-above-yaml: "true"
@@ -124,7 +130,7 @@ presets:
             command:
             - sh
             - -c
-            - "exec /glbc --enable-backend-config --gce-ratelimit=ga.Operations.Get,qps,10,100 --gce-ratelimit=alpha.Operations.Get,qps,10,100 --gce-ratelimit=beta.Operations.Get,qps,10,100 --gce-ratelimit=ga.BackendServices.Get,qps,1.8,1 --gce-ratelimit=ga.HealthChecks.Get,qps,1.8,1 --gce-ratelimit=alpha.HealthChecks.Get,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.Get,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.AttachNetworkEndpoints,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.DetachNetworkEndpoints,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.ListNetworkEndpoints,qps,1.8,1 --verbose--apiserver-host=http://localhost:8080 --default-backend-service=kube-system/default-http-backend --sync-period=600s --running-in-cluster=false --config-file-path=/etc/gce.conf --healthz-port=8086 1>>/var/log/glbc.log 2>&1"
+            - "exec /glbc --enable-backend-config --gce-ratelimit=ga.Operations.Get,qps,10,100 --gce-ratelimit=alpha.Operations.Get,qps,10,100 --gce-ratelimit=beta.Operations.Get,qps,10,100 --gce-ratelimit=ga.BackendServices.Get,qps,1.8,1 --gce-ratelimit=ga.HealthChecks.Get,qps,1.8,1 --gce-ratelimit=alpha.HealthChecks.Get,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.Get,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.AttachNetworkEndpoints,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.DetachNetworkEndpoints,qps,1.8,1 --gce-ratelimit=beta.NetworkEndpointGroups.ListNetworkEndpoints,qps,1.8,1 --verbose --apiserver-host=http://localhost:8080 --default-backend-service=kube-system/default-http-backend --sync-period=600s --running-in-cluster=false --config-file-path=/etc/gce.conf --healthz-port=8086 1>>/var/log/glbc.log 2>&1"
           volumes:
           - hostPath:
               path: /etc/gce.conf
