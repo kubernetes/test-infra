@@ -671,7 +671,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
 function createViewJobCell(prowjob: string): HTMLTableDataCellElement {
     const c = document.createElement("td");
     const i = icon.create("pageview", "Show job YAML");
-    i.href = `https://${window.location.hostname}/rerun?prowjob=${prowjob}`;
+    i.href = `https://${window.location.hostname}/prowjob?prowjob=${prowjob}`;
     c.classList.add("icon-cell");
     c.appendChild(i);
     return c;
