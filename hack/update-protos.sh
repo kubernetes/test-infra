@@ -48,7 +48,7 @@ genproto() {
 }
 
 echo -n "Generating protos: " >&2
-for p in $(find . -not '(' -path './vendor'  -prune ')' -not '(' -path './node_modules' -prune ')' -name '*.proto'); do
+for p in $(find . -not '(' -path './vendor' -prune ')' -name '*.proto'); do
   echo -n "$p "
   genproto "$p"
 done

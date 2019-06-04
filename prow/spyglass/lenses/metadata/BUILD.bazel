@@ -1,6 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("@build_bazel_rules_typescript//:defs.bzl", "ts_library")
 
 go_library(
     name = "go_default_library",

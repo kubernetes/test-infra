@@ -1,4 +1,4 @@
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
+load("@build_bazel_rules_nodejs//:defs.bzl", "jasmine_node_test")
 
 py_test(
     name = "summarize_test",
