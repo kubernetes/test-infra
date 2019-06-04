@@ -81,9 +81,6 @@ presubmits:
         - /bin/bash
         - -c
         - "GIT_COMMIT=${PULL_PULL_SHA} make cover"
-        env:
-        - name: CODECOV_TOKEN
-          value: 9d09c10d-af0f-446e-94a2-e534c604d235
 
   - name: pull-ingress-nginx-e2e-1-12
     always_run: true
