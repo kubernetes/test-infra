@@ -330,8 +330,6 @@ tide:
     - kubernetes-csi
     - kubernetes-incubator
     - kubernetes-sigs
-    repos:
-    - client-go/unofficial-docs
     excludedRepos:
     - kubernetes/kubernetes # Handled with a separate Tide query below.
     # The following are staging repos which do not normally support merging PRs.
