@@ -4688,11 +4688,6 @@ dashboards:
     test_group_name: maintenance-ci-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: maintenance-aws-janitor
-    description: Deletes old resources from AWS projects
-    test_group_name: maintenance-ci-aws-janitor
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: pull-janitor
     description: Deletes old GCP resources from presubmit jobs
     test_group_name: maintenance-pull-janitor
