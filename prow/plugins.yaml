@@ -79,7 +79,6 @@ approve:
   - kubernetes-client
   - kubernetes-csi
   - kubernetes-sigs
-  - client-go/unofficial-docs
   require_self_approval: false
 - repos:
   - bazelbuild
@@ -655,20 +654,6 @@ plugins:
   - hold
   - cat
   - dog
-  - wip
-
-  client-go/unofficial-docs:
-  - approve
-  - assign
-  - blunderbuss
-  - cat
-  - cla
-  - dog
-  - help
-  - hold
-  - label
-  - lgtm
-  - verify-owners
   - wip
 
   cncf/apisnoop:
