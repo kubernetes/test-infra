@@ -40,7 +40,7 @@ periodics:
           --gcp-zone=us-west1-b \
           --provider=gce \
           --timeout=150m \
-          --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
+          --test_args="--ginkgo.focus=\[Conformance\]"
         cd ../test-infra
         bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
