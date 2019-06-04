@@ -217,6 +217,13 @@ slack:
     - testing-ops
     whitelist:
     - k8s-ci-robot
+  - repos:
+    - kubernetes/sig-release
+    - kubernetes/release
+    channels:
+    - sig-release
+    whitelist:
+    - k8s-ci-robot
 
 repo_milestone:
   # Default maintainer
