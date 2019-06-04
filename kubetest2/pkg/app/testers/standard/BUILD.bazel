@@ -5,7 +5,10 @@ go_library(
     srcs = ["standard.go"],
     importpath = "k8s.io/test-infra/kubetest2/pkg/app/testers/standard",
     visibility = ["//visibility:public"],
-    deps = ["//kubetest2/pkg/app/testers/standard/exec:go_default_library"],
+    deps = [
+        "//kubetest2/pkg/app/testers/standard/exec:go_default_library",
+        "//kubetest2/pkg/app/testers/standard/ginkgo:go_default_library",
+    ],
 )
 
 filegroup(
@@ -20,6 +23,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//kubetest2/pkg/app/testers/standard/exec:all-srcs",
+        "//kubetest2/pkg/app/testers/standard/ginkgo:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

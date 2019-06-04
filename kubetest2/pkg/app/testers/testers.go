@@ -59,3 +59,12 @@ func Register(name, usage string, tester types.NewTester) error {
 	}
 	return nil
 }
+
+// Names returns a slice of all registered tester names.
+func Names() []string {
+	result := make([]string, 0, len(registry))
+	for k := range registry {
+		result = append(result, k)
+	}
+	return result
+}
