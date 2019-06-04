@@ -30,6 +30,26 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+const (
+	cross      = "❌"
+	tick       = "✔️"
+	hourglass  = "⏳"
+	prohibited = "🚫"
+
+	defaultProwHeader = "Prow Status:"
+	jobReportFormat   = "%s %s %s - %s\n"
+)
+
+var (
+	stateIcon = map[v1.ProwJobState]string{
+		v1.PendingState:   hourglass,
+		v1.TriggeredState: hourglass,
+		v1.SuccessState:   tick,
+		v1.FailureState:   cross,
+		v1.AbortedState:   prohibited,
+	}
+)
+
 type gerritClient interface {
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 }
@@ -38,6 +58,20 @@ type gerritClient interface {
 type Client struct {
 	gc     gerritClient
 	lister pjlister.ProwJobLister
+}
+
+// Job is the view of a prowjob scoped for a report
+type Job struct {
+	Name, State, icon, url string
+}
+
+// JobReport is the structured job report format
+type JobReport struct {
+	Jobs    []*Job
+	success int
+	total   int
+	message string
+	header  string
 }
 
 // NewReporter returns a reporter client
@@ -142,8 +176,6 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	}
 
 	// generate an aggregated report:
-	success := 0
-	message := ""
 	var toReportJobs []*v1.ProwJob
 	mostRecentJob := map[string]*v1.ProwJob{}
 	for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
@@ -157,24 +189,9 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 			continue
 		}
 		toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
-
-		checkOrX := "❌"
-		if pjOnRevisionWithSameLabel.Status.State == v1.SuccessState {
-			checkOrX = "✔️"
-			success++
-		}
-
-		message += fmt.Sprintf("\n\n%s %s %s - %s", checkOrX, pjOnRevisionWithSameLabel.Spec.Job, strings.ToUpper(string(pjOnRevisionWithSameLabel.Status.State)), pjOnRevisionWithSameLabel.Status.URL)
 	}
-	total := len(toReportJobs)
-	if total <= 0 {
-		// Shouldn't happen but return if does
-		logger.Warn("Tried to report empty or aborted jobs.")
-		return nil, nil
-	}
-
-	message = fmt.Sprintf("%d out of %d jobs passed!%s", success, total, message)
-
+	report := generateReport(toReportJobs)
+	message := report.header + report.message
 	// report back
 	gerritID := pj.ObjectMeta.Annotations[clientGerritID]
 	gerritInstance := pj.ObjectMeta.Annotations[clientGerritInstance]
@@ -184,8 +201,14 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		reportLabel = val
 	}
 
+	if report.total <= 0 {
+		// Shouldn't happen but return if does
+		logger.Warn("Tried to report empty or aborted jobs.")
+		return nil, nil
+	}
+
 	vote := client.LBTM
-	if success == total {
+	if report.success == report.total {
 		vote = client.LGTM
 	}
 	reviewLabels := map[string]string{reportLabel: vote}
@@ -195,7 +218,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		logger.WithError(err).Errorf("fail to set review with %s label on change ID %s", reportLabel, gerritID)
 
 		// possibly don't have label permissions, try without labels
-		message = fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
+		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
 			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
 			return nil, err
@@ -204,4 +227,66 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
 
 	return toReportJobs, nil
+}
+
+func statusIcon(state v1.ProwJobState) string {
+	icon, ok := stateIcon[state]
+	if !ok {
+		return prohibited
+	}
+	return icon
+}
+
+func jobFromPJ(pj *v1.ProwJob) *Job {
+	return &Job{Name: pj.Spec.Job, State: string(pj.Status.State), icon: statusIcon(pj.Status.State), url: pj.Status.URL}
+}
+
+func (j *Job) serialize() string {
+	return fmt.Sprintf(jobReportFormat, j.icon, j.Name, strings.ToUpper(j.State), j.url)
+}
+
+func deserializeJob(s string) *Job {
+	j := &Job{}
+	n, err := fmt.Sscanf(s, jobReportFormat, &j.icon, &j.Name, &j.State, &j.url)
+	if err != nil || n != 4 {
+		logrus.Debugf("Could not deserialize %s to a job: %v", s, err)
+		return nil
+	}
+	return j
+}
+
+func generateReport(pjs []*v1.ProwJob) *JobReport {
+	report := &JobReport{total: len(pjs)}
+	for _, pj := range pjs {
+		job := jobFromPJ(pj)
+		report.Jobs = append(report.Jobs, job)
+		if pj.Status.State == v1.SuccessState {
+			report.success++
+		}
+
+		report.message += job.serialize()
+		report.message += "\n"
+
+	}
+	report.header = defaultProwHeader
+	report.header += fmt.Sprintf(" %d out of %d pjs passed!\n", report.success, report.total)
+	return report
+}
+
+// ParseReport creates a jobReport from a string, nil if cannot parse
+func ParseReport(message string) *JobReport {
+	contents := strings.Split(message, "\n")
+	if !strings.HasPrefix(contents[0], defaultProwHeader) {
+		return nil
+	}
+	report := &JobReport{}
+	report.header = contents[0]
+	for i := 1; i < len(contents); i++ {
+		j := deserializeJob(contents[i])
+		if j != nil {
+			report.Jobs = append(report.Jobs, j)
+		}
+	}
+	report.message = strings.TrimPrefix(message, report.header)
+	return report
 }

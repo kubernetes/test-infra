@@ -18,20 +18,16 @@ package trigger
 
 import (
 	"fmt"
-	"regexp"
-
-	"k8s.io/test-infra/prow/pjutil"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
-
-var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
-var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
 	org := gc.Repo.Owner.Login
@@ -45,7 +41,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		return nil
 	}
 	// Skip comments not germane to this plugin
-	if !retestRe.MatchString(gc.Body) && !okToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
+	if !pjutil.RetestRe.MatchString(gc.Body) && !pjutil.OkToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
 		matched := false
 		for _, presubmit := range c.Config.Presubmits[gc.Repo.FullName] {
 			matched = matched || presubmit.TriggerMatches(gc.Body)
@@ -102,7 +98,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			return err
 		}
 	}
-	isOkToTest := HonorOkToTest(trigger) && okToTestRe.MatchString(gc.Body)
+	isOkToTest := HonorOkToTest(trigger) && pjutil.OkToTestRe.MatchString(gc.Body)
 	if isOkToTest && !github.HasLabel(labels.OkToTest, l) {
 		if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
 			return err
@@ -147,7 +143,17 @@ type GitHubClient interface {
 // matching cases.
 func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, []config.Presubmit, error) {
 	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
-	filter, err := presubmitFilter(honorOkToTest, gitHubClient, body, org, repo, sha, logger)
+
+	contextGetter := func() (sets.String, sets.String, error) {
+		combinedStatus, err := gitHubClient.GetCombinedStatus(org, repo, sha)
+		if err != nil {
+			return nil, nil, err
+		}
+		failedContexts, allContexts := getContexts(combinedStatus)
+		return failedContexts, allContexts, nil
+	}
+
+	filter, err := pjutil.PresubmitFilter(honorOkToTest, contextGetter, body, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -157,46 +163,16 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	return pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 }
 
-type statusGetter interface {
-	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-}
-
-func presubmitFilter(honorOkToTest bool, statusGetter statusGetter, body, org, repo, sha string, logger *logrus.Entry) (pjutil.Filter, error) {
-	// the filters determine if we should check whether a job should run, whether
-	// it should run regardless of whether its triggering conditions match, and
-	// what the default behavior should be for that check. Multiple filters
-	// can match a single presubmit, so it is important to order them correctly
-	// as they have precedence -- filters that override the false default should
-	// match before others. We order filters by amount of specificity.
-	var filters []pjutil.Filter
-	filters = append(filters, pjutil.CommandFilter(body))
-	if retestRe.MatchString(body) {
-		logger.Debug("Using retest filter.")
-		combinedStatus, err := statusGetter.GetCombinedStatus(org, repo, sha)
-		if err != nil {
-			return nil, err
-		}
-		allContexts := sets.NewString()
-		failedContexts := sets.NewString()
+func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.String) {
+	allContexts := sets.String{}
+	failedContexts := sets.String{}
+	if combinedStatus != nil {
 		for _, status := range combinedStatus.Statuses {
 			allContexts.Insert(status.Context)
 			if status.State == github.StatusError || status.State == github.StatusFailure {
 				failedContexts.Insert(status.Context)
 			}
 		}
-
-		filters = append(filters, retestFilter(failedContexts, allContexts))
 	}
-	if (honorOkToTest && okToTestRe.MatchString(body)) || pjutil.TestAllRe.MatchString(body) {
-		logger.Debug("Using test-all filter.")
-		filters = append(filters, pjutil.TestAllFilter())
-	}
-	return pjutil.AggregateFilter(filters), nil
-}
-
-// retestFilter builds a filter for `/retest`
-func retestFilter(failedContexts, allContexts sets.String) pjutil.Filter {
-	return func(p config.Presubmit) (bool, bool, bool) {
-		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
-	}
+	return failedContexts, allContexts
 }

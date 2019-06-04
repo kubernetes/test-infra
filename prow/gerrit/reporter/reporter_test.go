@@ -937,3 +937,53 @@ func TestReport(t *testing.T) {
 		}
 	}
 }
+
+func TestParseReport(t *testing.T) {
+	var testcases = []struct {
+		name         string
+		comment      string
+		expectedJobs int
+		expectNil    bool
+	}{
+		{
+			name:         "parse multiple jobs",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse one job",
+			comment:      "Prow Status: 0 out of 1 passed\n❌ bar-job FAILURE - http://bar-status",
+			expectedJobs: 1,
+		},
+		{
+			name:         "parse 0 jobs",
+			comment:      "Prow Status: ",
+			expectedJobs: 0,
+		},
+		{
+			name:      "do not parse without the header",
+			comment:   "0 out of 1 passed\n❌ bar-job FAILURE - http://bar-status",
+			expectNil: true,
+		},
+		{
+			name:      "do not parse empty string",
+			comment:   "",
+			expectNil: true,
+		},
+	}
+	for _, tc := range testcases {
+		report := ParseReport(tc.comment)
+		if report == nil {
+			if !tc.expectNil {
+				t.Errorf("%s: expected non-nil report but got nil", tc.name)
+			}
+		} else {
+			if tc.expectNil {
+				t.Errorf("%s: expected nil report but got %v", tc.name, report)
+			} else if tc.expectedJobs != len(report.Jobs) {
+				t.Errorf("%s: expected %d jobs in the report but got %d instead", tc.name, tc.expectedJobs, len(report.Jobs))
+			}
+		}
+	}
+
+}

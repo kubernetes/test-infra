@@ -77,6 +77,10 @@ func (f *fgc) GetBranchRevision(instance, project, branch string) (string, error
 	return "abc", nil
 }
 
+func (f *fgc) Account(instance string) *gerrit.AccountInfo {
+	return &gerrit.AccountInfo{AccountID: 42}
+}
+
 func TestMakeCloneURI(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -429,6 +433,128 @@ func TestProcessChange(t *testing.T) {
 			},
 			numPJ: 1,
 		},
+		{
+			name: "retest correctly triggers failed jobs",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "retest-branch",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/retest",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 1 out of 2 passed\n✔️ foo-job SUCCESS - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+			},
+			numPJ: 1,
+		},
+		{
+			name: "retest uses latest status and ignores earlier status",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "retest-branch",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-3 * time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/retest",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 1 out of 2 passed\n✔️ foo-job SUCCESS - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						Date:           makeStamp(timeNow.Add(-time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						Date:           makeStamp(timeNow.Add(-2 * time.Hour)),
+					},
+				},
+			},
+			numPJ: 1,
+		},
+		{
+			name: "retest ignores statuses not reported by the prow account",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "retest-branch",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-3 * time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/retest",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 1 out of 2 passed\n✔️ foo-job SUCCESS - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 123},
+						Date:           makeStamp(timeNow.Add(-time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						Date:           makeStamp(timeNow.Add(-2 * time.Hour)),
+					},
+				},
+			},
+			numPJ: 2,
+		},
+		{
+			name: "retest does nothing if there are no latest reports",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "retest-branch",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/retest",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow),
+					},
+				},
+			},
+			numPJ: 0,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -438,6 +564,9 @@ func TestProcessChange(t *testing.T) {
 					Name: "always-runs-all-branches",
 				},
 				AlwaysRun: true,
+				Reporter: config.Reporter{
+					Context: "always-runs-all-branches",
+				},
 			},
 			{
 				JobBase: config.JobBase{
@@ -445,6 +574,9 @@ func TestProcessChange(t *testing.T) {
 				},
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
 					RunIfChanged: "\\.go",
+				},
+				Reporter: config.Reporter{
+					Context: "run-if-changed-all-branches",
 				},
 			},
 			{
@@ -455,6 +587,9 @@ func TestProcessChange(t *testing.T) {
 					Branches: []string{"pony"},
 				},
 				AlwaysRun: true,
+				Reporter: config.Reporter{
+					Context: "runs-on-pony-branch",
+				},
 			},
 			{
 				JobBase: config.JobBase{
@@ -464,6 +599,9 @@ func TestProcessChange(t *testing.T) {
 					SkipBranches: []string{"baz"},
 				},
 				AlwaysRun: true,
+				Reporter: config.Reporter{
+					Context: "runs-on-all-but-baz-branch",
+				},
 			},
 			{
 				JobBase: config.JobBase{
@@ -471,6 +609,25 @@ func TestProcessChange(t *testing.T) {
 				},
 				Trigger:      `.*/test\s*troll.*`,
 				RerunCommand: "/test troll",
+				Reporter: config.Reporter{
+					Context: "trigger-regex-all-branches",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "foo-job",
+				},
+				Reporter: config.Reporter{
+					Context: "foo-job",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "bar-job",
+				},
+				Reporter: config.Reporter{
+					Context: "bar-job",
+				},
 			},
 		}
 		if err := config.SetPresubmitRegexes(testInfraPresubmits); err != nil {

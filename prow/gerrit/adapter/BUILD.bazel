@@ -12,9 +12,12 @@ go_library(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/gerrit/client:go_default_library",
+        "//prow/gerrit/reporter:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//vendor/github.com/andygrunwald/go-gerrit:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 

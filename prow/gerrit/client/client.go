@@ -109,6 +109,8 @@ type gerritInstanceHandler struct {
 // Client holds a instance:handler map
 type Client struct {
 	handlers map[string]*gerritInstanceHandler
+	// map of instance to gerrit account
+	accounts map[string]*gerrit.AccountInfo
 }
 
 // ChangeInfo is a gerrit.ChangeInfo
@@ -124,6 +126,7 @@ type FileInfo = gerrit.FileInfo
 func NewClient(instances map[string][]string) (*Client, error) {
 	c := &Client{
 		handlers: map[string]*gerritInstanceHandler{},
+		accounts: map[string]*gerrit.AccountInfo{},
 	}
 	for instance := range instances {
 		gc, err := gerrit.NewClient(instance, nil)
@@ -164,7 +167,7 @@ func auth(c *Client, cookiefilePath string) {
 		logrus.Info("New token, updating handlers...")
 
 		// update auth token for each instance
-		for _, handler := range c.handlers {
+		for instance, handler := range c.handlers {
 			handler.authService.SetCookieAuth("o", token)
 
 			self, _, err := handler.accountService.GetAccount("self")
@@ -172,8 +175,8 @@ func auth(c *Client, cookiefilePath string) {
 				logrus.WithError(err).Error("Failed to auth with token")
 				continue
 			}
-
 			logrus.Infof("Authentication to %s successful, Username: %s", handler.instance, self.Name)
+			c.accounts[instance] = self
 		}
 		previousToken = token
 		time.Sleep(wait)
@@ -234,6 +237,11 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 	}
 
 	return res.Revision, nil
+}
+
+// Account returns gerrit account for the given instance
+func (c *Client) Account(instance string) *gerrit.AccountInfo {
+	return c.accounts[instance]
 }
 
 // private handler implementation details

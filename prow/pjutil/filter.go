@@ -20,11 +20,17 @@ import (
 	"regexp"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 )
 
 var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
+
+// RetestRe provides the regex for `/retest`
+var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
+
+var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 
 // Filter digests a presubmit config to determine if:
 //  - we the presubmit matched the filter
@@ -114,4 +120,38 @@ func determineSkippedPresubmits(toTrigger, toSkipSuperset []config.Presubmit, lo
 		toSkip = append(toSkip, presubmit)
 	}
 	return toSkip
+}
+
+// RetestFilter builds a filter for `/retest`
+func RetestFilter(failedContexts, allContexts sets.String) Filter {
+	return func(p config.Presubmit) (bool, bool, bool) {
+		return failedContexts.Has(p.Context) || (!p.NeedsExplicitTrigger() && !allContexts.Has(p.Context)), false, true
+	}
+}
+
+type contextGetter func() (sets.String, sets.String, error)
+
+// PresubmitFilter creates a filter for presubmits
+func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body string, logger *logrus.Entry) (Filter, error) {
+	// the filters determine if we should check whether a job should run, whether
+	// it should run regardless of whether its triggering conditions match, and
+	// what the default behavior should be for that check. Multiple filters
+	// can match a single presubmit, so it is important to order them correctly
+	// as they have precedence -- filters that override the false default should
+	// match before others. We order filters by amount of specificity.
+	var filters []Filter
+	filters = append(filters, CommandFilter(body))
+	if RetestRe.MatchString(body) {
+		logger.Debug("Using retest filter.")
+		failedContexts, allContexts, err := contextGetter()
+		if err != nil {
+			return nil, err
+		}
+		filters = append(filters, RetestFilter(failedContexts, allContexts))
+	}
+	if (honorOkToTest && OkToTestRe.MatchString(body)) || TestAllRe.MatchString(body) {
+		logger.Debug("Using test-all filter.")
+		filters = append(filters, TestAllFilter())
+	}
+	return AggregateFilter(filters), nil
 }
