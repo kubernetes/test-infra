@@ -406,6 +406,23 @@ func NewClient(getToken func() []byte, graphqlEndpoint string, bases ...string) 
 	return NewClientWithFields(logrus.Fields{}, getToken, graphqlEndpoint, bases...)
 }
 
+func NewClientWithLogger(logger logrus.FieldLogger, getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
+	return &client{
+		logger: logger.WithField("client", "github"),
+		time:   &standardTime{},
+		gqlc: githubql.NewEnterpriseClient(
+			graphqlEndpoint,
+			&http.Client{
+				Timeout:   maxRequestTime,
+				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+			}),
+		client:   &http.Client{Timeout: maxRequestTime},
+		bases:    bases,
+		getToken: getToken,
+		dry:      false,
+	}
+}
+
 // NewDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens. Additional fields are added to the logger.
