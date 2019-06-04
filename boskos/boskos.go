@@ -155,7 +155,11 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		resource, err := r.Acquire(rtype, state, dest, owner)
 
 		if err != nil {
-			logrus.WithError(err).Errorf("No available resource")
+			if err2, ok := err.(ranch.ResourceNotFound); ok {
+				logrus.WithError(err2).Warningf("No available resource")
+			} else {
+				logrus.WithError(err).Errorf("No available resource")
+			}
 			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}
