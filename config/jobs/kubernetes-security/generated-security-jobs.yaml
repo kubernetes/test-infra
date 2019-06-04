@@ -245,7 +245,7 @@ presubmits:
         - --ssh=/etc/ssh-security/ssh-security
         - --provider=skeleton
         - --deployment=kind
-        - --kind-binary-version=build
+        - --kind-binary-version=stable
         - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
         - --build=bazel
         - --up
@@ -328,7 +328,7 @@ presubmits:
         - --ssh=/etc/ssh-security/ssh-security
         - --provider=skeleton
         - --deployment=kind
-        - --kind-binary-version=build
+        - --kind-binary-version=stable
         - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/single-cp/single-cp.yaml
         - --build=bazel
         - --up
@@ -411,7 +411,7 @@ presubmits:
         - --ssh=/etc/ssh-security/ssh-security
         - --provider=skeleton
         - --deployment=kind
-        - --kind-binary-version=build
+        - --kind-binary-version=stable
         - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
         - --build=bazel
         - --up
@@ -496,7 +496,7 @@ presubmits:
         - --ssh=/etc/ssh-security/ssh-security
         - --provider=skeleton
         - --deployment=kind
-        - --kind-binary-version=build
+        - --kind-binary-version=stable
         - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
         - --build=bazel
         - --up
