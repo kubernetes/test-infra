@@ -42,6 +42,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-5000Nodes"
   - "perfDashJobType: performance"
+  cluster: scalability
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
