@@ -28,6 +28,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/plugins/bugzilla"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -506,11 +507,13 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 	configs := []plugin{
 		{name: lgtm.PluginName, label: labels.LGTM, matcher: requires},
 		{name: approve.PluginName, label: labels.Approved, matcher: requires},
+		{name: bugzilla.PluginName, label: labels.ValidBug, matcher: requires},
 	}
 	if includeForbidden {
 		configs = append(configs,
 			plugin{name: hold.PluginName, label: labels.Hold, matcher: forbids},
 			plugin{name: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
+			plugin{name: bugzilla.PluginName, label: labels.InvalidBug, matcher: forbids},
 			plugin{name: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
 			plugin{name: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
 			plugin{name: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},

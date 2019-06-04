@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
+	"sigs.k8s.io/yaml"
 )
 
 func TestValidateExternalPlugins(t *testing.T) {
@@ -317,5 +318,236 @@ The list of patch release managers for each release can be found [here](https://
 		if c.CherryPickUnapproved.Comment != tc.expectedComment {
 			t.Errorf("unexpected comment: %s, expected: %s", c.CherryPickUnapproved.Comment, tc.expectedComment)
 		}
+	}
+}
+
+func TestOptionsForItem(t *testing.T) {
+	open := true
+	one, two := "v1", "v2"
+	var testCases = []struct {
+		name     string
+		item     string
+		config   map[string]BugzillaBranchOptions
+		expected BugzillaBranchOptions
+	}{
+		{
+			name:     "no config means no options",
+			item:     "item",
+			config:   map[string]BugzillaBranchOptions{},
+			expected: BugzillaBranchOptions{},
+		},
+		{
+			name:     "unrelated config means no options",
+			item:     "item",
+			config:   map[string]BugzillaBranchOptions{"other": {IsOpen: &open, TargetRelease: &one}},
+			expected: BugzillaBranchOptions{},
+		},
+		{
+			name:     "global config resolves to options",
+			item:     "item",
+			config:   map[string]BugzillaBranchOptions{"*": {IsOpen: &open, TargetRelease: &one}},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+		},
+		{
+			name:     "specific config resolves to options",
+			item:     "item",
+			config:   map[string]BugzillaBranchOptions{"item": {IsOpen: &open, TargetRelease: &one}},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+		},
+		{
+			name: "global and specific config resolves to options that favor specificity",
+			item: "item",
+			config: map[string]BugzillaBranchOptions{
+				"*":    {IsOpen: &open, TargetRelease: &one},
+				"item": {TargetRelease: &two},
+			},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual, expected := OptionsForItem(testCase.item, testCase.config), testCase.expected; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect options for item %q: %v", testCase.name, testCase.item, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestResolveBugzillaOptions(t *testing.T) {
+	open, closed := true, false
+	one, two := "v1", "v2"
+	var testCases = []struct {
+		name          string
+		parent, child BugzillaBranchOptions
+		expected      BugzillaBranchOptions
+	}{
+		{
+			name: "no parent or child means no output",
+		},
+		{
+			name:     "no child means a copy of parent is the output",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+		},
+		{
+			name:     "no parent means a copy of child is the output",
+			child:    BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+		},
+		{
+			name:     "child overrides parent on IsOpen",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			child:    BugzillaBranchOptions{IsOpen: &closed},
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one},
+		},
+		{
+			name:     "child overrides parent on target release",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			child:    BugzillaBranchOptions{TargetRelease: &two},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two},
+		},
+		{
+			name:     "child overrides parent on all fields",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			child:    BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &two},
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &two},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual, expected := ResolveBugzillaOptions(testCase.parent, testCase.child), testCase.expected; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: resolved incorrect options for parent and child: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestOptionsForBranch(t *testing.T) {
+	open, closed := true, false
+	globalDefault, globalBranchDefault, orgDefault, orgBranchDefault, repoDefault, repoBranch := "global-default", "global-branch-default", "my-org-default", "my-org-branch-default", "my-repo-default", "my-repo-branch"
+
+	rawConfig := `default:
+  "*":
+    target_release: global-default
+  "global-branch":
+    is_open: false
+    target_release: global-branch-default
+orgs:
+  my-org:
+    default:
+      "*":
+        is_open: true
+        target_release: my-org-default
+      "my-org-branch":
+        target_release: my-org-branch-default
+    repos:
+      my-repo:
+        branches:
+          "*":
+            is_open: false
+            target_release: my-repo-default
+          "my-repo-branch":
+            target_release: my-repo-branch`
+	var config Bugzilla
+	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
+		t.Fatalf("couldn't unmarshal config: %v", err)
+	}
+
+	var testCases = []struct {
+		name              string
+		org, repo, branch string
+		expected          BugzillaBranchOptions
+	}{
+		{
+			name:     "unconfigured branch gets global default",
+			org:      "some-org",
+			repo:     "some-repo",
+			branch:   "some-branch",
+			expected: BugzillaBranchOptions{TargetRelease: &globalDefault},
+		},
+		{
+			name:     "branch on unconfigured org/repo gets global default",
+			org:      "some-org",
+			repo:     "some-repo",
+			branch:   "global-branch",
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &globalBranchDefault},
+		},
+		{
+			name:     "branch on configured org but not repo gets org default",
+			org:      "my-org",
+			repo:     "some-repo",
+			branch:   "some-branch",
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgDefault},
+		},
+		{
+			name:     "branch on configured org but not repo gets org branch default",
+			org:      "my-org",
+			repo:     "some-repo",
+			branch:   "my-org-branch",
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgBranchDefault},
+		},
+		{
+			name:     "branch on configured org and repo gets repo default",
+			org:      "my-org",
+			repo:     "my-repo",
+			branch:   "some-branch",
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &repoDefault},
+		},
+		{
+			name:     "branch on configured org and repo gets branch config",
+			org:      "my-org",
+			repo:     "my-repo",
+			branch:   "my-repo-branch",
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &repoBranch},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual, expected := config.OptionsForBranch(testCase.org, testCase.repo, testCase.branch), testCase.expected; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: resolved incorrect options for %s/%s#%s: %v", testCase.name, testCase.org, testCase.repo, testCase.branch, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+
+	var repoTestCases = []struct {
+		name      string
+		org, repo string
+		expected  map[string]BugzillaBranchOptions
+	}{
+		{
+			name: "unconfigured repo gets global default",
+			org:  "some-org",
+			repo: "some-repo",
+			expected: map[string]BugzillaBranchOptions{
+				"*":             {TargetRelease: &globalDefault},
+				"global-branch": {IsOpen: &closed, TargetRelease: &globalBranchDefault},
+			},
+		},
+		{
+			name: "repo in configured org gets org default",
+			org:  "my-org",
+			repo: "some-repo",
+			expected: map[string]BugzillaBranchOptions{
+				"*":             {IsOpen: &open, TargetRelease: &orgDefault},
+				"my-org-branch": {IsOpen: &open, TargetRelease: &orgBranchDefault},
+			},
+		},
+		{
+			name: "configured repo gets repo config",
+			org:  "my-org",
+			repo: "my-repo",
+			expected: map[string]BugzillaBranchOptions{
+				"*":              {IsOpen: &closed, TargetRelease: &repoDefault},
+				"my-repo-branch": {IsOpen: &closed, TargetRelease: &repoBranch},
+			},
+		},
+	}
+	for _, testCase := range repoTestCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual, expected := config.OptionsForRepo(testCase.org, testCase.repo), testCase.expected; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: resolved incorrect options for %s/%s: %v", testCase.name, testCase.org, testCase.repo, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
 	}
 }

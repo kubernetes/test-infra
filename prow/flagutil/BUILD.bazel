@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "bool.go",
+        "bugzilla.go",
         "doc.go",
         "github.go",
         "k8s_client.go",
@@ -14,6 +15,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/flagutil",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/bugzilla:go_default_library",
         "//prow/client/clientset/versioned:go_default_library",
         "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config/secret:go_default_library",

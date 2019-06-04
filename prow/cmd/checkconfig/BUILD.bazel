@@ -20,6 +20,7 @@ go_library(
         "//prow/plugins/approve:go_default_library",
         "//prow/plugins/blockade:go_default_library",
         "//prow/plugins/blunderbuss:go_default_library",
+        "//prow/plugins/bugzilla:go_default_library",
         "//prow/plugins/cherrypickunapproved:go_default_library",
         "//prow/plugins/hold:go_default_library",
         "//prow/plugins/lgtm:go_default_library",

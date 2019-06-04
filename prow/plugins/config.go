@@ -57,6 +57,7 @@ type Configuration struct {
 	UseDeprecatedReviewApprove bool                   `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
 	Blockades                  []Blockade             `json:"blockades,omitempty"`
 	Blunderbuss                Blunderbuss            `json:"blunderbuss,omitempty"`
+	Bugzilla                   Bugzilla               `json:"bugzilla"`
 	Cat                        Cat                    `json:"cat,omitempty"`
 	CherryPickUnapproved       CherryPickUnapproved   `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater              ConfigUpdater          `json:"config_updater,omitempty"`
@@ -981,4 +982,136 @@ func (pluginConfig *ProjectConfig) GetOrgColumnMap(org string) map[string]string
 		}
 	}
 	return nil
+}
+
+// Bugzilla holds options for checking Bugzilla bugs in a defaulting hierarchy.
+type Bugzilla struct {
+	// Default settings mapped by branch in any repo in any org.
+	// The `*` wildcard will apply to all branches.
+	Default map[string]BugzillaBranchOptions `json:"default"`
+	// Options for specific orgs. The `*` wildcard will apply to all orgs.
+	Orgs map[string]BugzillaOrgOptions `json:"orgs"`
+}
+
+// BugzillaOrgOptions holds options for checking Bugzilla bugs for an org.
+type BugzillaOrgOptions struct {
+	// Default settings mapped by branch in any repo in this org.
+	// The `*` wildcard will apply to all branches.
+	Default map[string]BugzillaBranchOptions `json:"default"`
+	// Options for specific repos. The `*` wildcard will apply to all repos.
+	Repos map[string]BugzillaRepoOptions `json:"repos"`
+}
+
+// BugzillaRepoOptions holds options for checking Bugzilla bugs for a repo.
+type BugzillaRepoOptions struct {
+	// Options for specific branches in this repo.
+	// The `*` wildcard will apply to all branches.
+	Branches map[string]BugzillaBranchOptions `json:"branches"`
+}
+
+// BugzillaBranchOptions describes how to check if a Bugzilla bug is valid or not.
+type BugzillaBranchOptions struct {
+	IsOpen        *bool   `json:"is_open,omitempty"`
+	TargetRelease *string `json:"target_release,omitempty"`
+}
+
+func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
+	isOpenMatch := o.IsOpen == nil && other.IsOpen == nil ||
+		(o.IsOpen != nil && other.IsOpen != nil && *o.IsOpen == *other.IsOpen)
+	targetReleaseMatch := o.TargetRelease == nil && other.TargetRelease == nil ||
+		(o.TargetRelease != nil && other.TargetRelease != nil && *o.TargetRelease == *other.TargetRelease)
+	return isOpenMatch && targetReleaseMatch
+}
+
+const BugzillaOptionsWildcard = `*`
+
+// OptionsForItem resolves a set of options for an item, honoring
+// the `*` wildcard and doing defaulting if it is present with the
+// item itself.
+func OptionsForItem(item string, config map[string]BugzillaBranchOptions) BugzillaBranchOptions {
+	return ResolveBugzillaOptions(config[BugzillaOptionsWildcard], config[item])
+}
+
+// ResolveBugzillaOptions implements defaulting for a parent/child configuration,
+// preferring child fields where set.
+func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchOptions {
+	output := BugzillaBranchOptions{}
+
+	// populate with the parent
+	if parent.IsOpen != nil {
+		output.IsOpen = parent.IsOpen
+	}
+	if parent.TargetRelease != nil {
+		output.TargetRelease = parent.TargetRelease
+	}
+
+	//override with the child
+	if child.IsOpen != nil {
+		output.IsOpen = child.IsOpen
+	}
+	if child.TargetRelease != nil {
+		output.TargetRelease = child.TargetRelease
+	}
+
+	return output
+}
+
+// OptionsForBranch determines the criteria for a valid Bugzilla bug on a branch of a repo
+// by defaulting in a cascading way, in the following order (later entries override earlier
+// ones), always searching for the wildcard as well as the branch name: global, then org,
+// repo, and finally branch-specific configuration.
+func (b *Bugzilla) OptionsForBranch(org, repo, branch string) BugzillaBranchOptions {
+	options := OptionsForItem(branch, b.Default)
+	orgOptions, exists := b.Orgs[org]
+	if !exists {
+		return options
+	}
+	options = ResolveBugzillaOptions(options, OptionsForItem(branch, orgOptions.Default))
+
+	repoOptions, exists := orgOptions.Repos[repo]
+	if !exists {
+		return options
+	}
+	options = ResolveBugzillaOptions(options, OptionsForItem(branch, repoOptions.Branches))
+
+	return options
+}
+
+// OptionsForRepo determines the criteria for a valid Bugzilla bug on branches of a repo
+// by defaulting in a cascading way, in the following order (later entries override earlier
+// ones), always searching for the wildcard as well as the branch name: global, then org,
+// repo, and finally branch-specific configuration.
+func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOptions {
+	options := map[string]BugzillaBranchOptions{}
+	for branch := range b.Default {
+		options[branch] = b.OptionsForBranch(org, repo, branch)
+	}
+
+	orgOptions, exists := b.Orgs[org]
+	if exists {
+		for branch := range orgOptions.Default {
+			options[branch] = b.OptionsForBranch(org, repo, branch)
+		}
+	}
+
+	repoOptions, exists := orgOptions.Repos[repo]
+	if exists {
+		for branch := range repoOptions.Branches {
+			options[branch] = b.OptionsForBranch(org, repo, branch)
+		}
+	}
+
+	// if there are nested defaults there is no reason to call out branches
+	// from higher levels of config
+	var toDelete []string
+	for branch, branchOptions := range options {
+		if branchOptions.matches(options[BugzillaOptionsWildcard]) && branch != BugzillaOptionsWildcard {
+			toDelete = append(toDelete, branch)
+		}
+	}
+	for _, branch := range toDelete {
+		delete(options, branch)
+	}
+
+	return options
 }
