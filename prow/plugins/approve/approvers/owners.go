@@ -607,10 +607,8 @@ Approval requirements bypassed by manually added approval.
 This pull-request has been approved by:{{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
-
-If they are not already assigned, you can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
+You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 
 {{if not .ap.RequireIssue -}}
@@ -630,8 +628,10 @@ Associated issue requirement bypassed by:{{range $index, $approval := .ap.ListNo
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo={{ .org }}%2F{{ .repo }}).
 
+{{ if (or .ap.AreFilesApproved (call .ap.ManuallyApproved)) -}}
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
+{{ end -}}
 <details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
 Needs approval from an approver in each of these files:
 
