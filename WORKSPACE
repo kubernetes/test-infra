@@ -1077,8 +1077,8 @@ go_repository(
 go_repository(
     name = "com_github_jinzhu_inflection",
     importpath = "github.com/jinzhu/inflection",
-    sum = "h1:+boKnC0mZ4voXeGF5Qy5Hyx4A17u59wSv42zjTZdxTQ=",
-    version = "v0.0.0-20151009084129-3272df6c21d0",
+    sum = "h1:LIwA5USOJ9W/0hwiRH1MugeThGBHGqv+USXcDKWHIVY=",
+    version = "v0.0.0-20190603042836-f5c5f50e6090",
 )
 
 go_repository(

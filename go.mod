@@ -57,7 +57,7 @@ require (
 	github.com/imdario/mergo v0.0.0-20180119215619-163f41321a19 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
-	github.com/jinzhu/inflection v0.0.0-20151009084129-3272df6c21d0 // indirect
+	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
@@ -80,7 +80,6 @@ require (
 	github.com/prometheus/client_golang v0.9.3
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.1 // indirect
-	github.com/qor/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
 	github.com/sirupsen/logrus v1.4.2
