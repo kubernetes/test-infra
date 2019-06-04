@@ -1207,11 +1207,47 @@ test_groups:
 - name: istio-kind-simpleTest-master
   gcs_prefix: istio-prow/logs/istio-kind-simpleTest-master
   num_failures_to_alert: 1
-- name: istio-integ-local-tests-master
-  gcs_prefix: istio-prow/logs/istio-integ-local-tests-master
+- name: integ-framework-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-framework-local-postsubmit-tests-master
   num_failures_to_alert: 1
-- name: istio-integ-k8s-tests-master
-  gcs_prefix: istio-prow/logs/istio-integ-k8s-tests-master
+- name: integ-galley-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-galley-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-istioctl-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-istioctl-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-mixer-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-mixer-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-pilot-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-pilot-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-security-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-security-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-telemetry-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-telemetry-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-framework-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-framework-k8s-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-galley-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-galley-k8s-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-istioctl-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-istioctl-k8s-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-mixer-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-mixer-k8s-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-pilot-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-pilot-k8s-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-security-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-security-k8s-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-telemetry-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-telemetry-k8s-postsubmit-tests-master
   num_failures_to_alert: 1
 - name: istio-e2e-simpleTests-master
   gcs_prefix: istio-prow/logs/e2e-simpleTests-master
@@ -5680,12 +5716,60 @@ dashboards:
     test_group_name: istio-kind-simpleTest-master
     alert_options:
       alert_mail_to_addresses: angwar@google.com
-  - name: integration-local-tests
-    test_group_name: istio-integ-local-tests-master
+  - name: integ-framework-local-postsubmit-tests
+    test_group_name: integ-framework-local-postsubmit-tests-master
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
-  - name: integration-k8s-tests
-    test_group_name: istio-integ-k8s-tests-master
+  - name: integ-galley-local-postsubmit-tests
+    test_group_name: integ-galley-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-istioctl-local-postsubmit-tests
+    test_group_name: integ-istioctl-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-mixer-local-postsubmit-tests
+    test_group_name: integ-mixer-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-pilot-local-postsubmit-tests
+    test_group_name: integ-pilot-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-security-local-postsubmit-tests
+    test_group_name: integ-security-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-telemetry-local-postsubmit-tests
+    test_group_name: integ-telemetry-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-framework-k8s-postsubmit-tests
+    test_group_name: integ-framework-k8s-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-galley-k8s-postsubmit-tests
+    test_group_name: integ-galley-k8s-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-istioctl-k8s-postsubmit-tests
+    test_group_name: integ-istioctl-k8s-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-mixer-k8s-postsubmit-tests
+    test_group_name: integ-mixer-k8s-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-pilot-k8s-postsubmit-tests
+    test_group_name: integ-pilot-k8s-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-security-k8s-postsubmit-tests
+    test_group_name: integ-security-k8s-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-telemetry-k8s-postsubmit-tests
+    test_group_name: integ-telemetry-k8s-postsubmit-tests-master
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: e2e-simpleTests
