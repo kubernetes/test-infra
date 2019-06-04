@@ -435,6 +435,6 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Slow\]|\[Feature:ServiceFinalizer\]  --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\]\sServices --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
