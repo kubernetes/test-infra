@@ -507,7 +507,6 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 	configs := []plugin{
 		{name: lgtm.PluginName, label: labels.LGTM, matcher: requires},
 		{name: approve.PluginName, label: labels.Approved, matcher: requires},
-		{name: bugzilla.PluginName, label: labels.ValidBug, matcher: requires},
 	}
 	if includeForbidden {
 		configs = append(configs,
