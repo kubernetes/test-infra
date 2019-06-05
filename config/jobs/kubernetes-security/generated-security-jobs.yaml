@@ -252,8 +252,7 @@ presubmits:
         - --test
         - --check-version-skew=false
         - --down
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
-          --num-nodes=3
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
         - --ginkgo-parallel
         - --timeout=30m
         command:
@@ -335,8 +334,7 @@ presubmits:
         - --test
         - --check-version-skew=false
         - --down
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
-          --num-nodes=3
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
         - --ginkgo-parallel
         - --timeout=30m
         command:
@@ -418,8 +416,7 @@ presubmits:
         - --test
         - --check-version-skew=false
         - --down
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
-          --num-nodes=3
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
         - --ginkgo-parallel
         - --timeout=30m
         command:
@@ -503,8 +500,7 @@ presubmits:
         - --test
         - --check-version-skew=false
         - --down
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
-          --num-nodes=3
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
         - --ginkgo-parallel
         - --timeout=30m
         command:

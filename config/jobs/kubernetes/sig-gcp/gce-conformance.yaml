@@ -22,7 +22,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-master
 
@@ -44,7 +44,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-1.12
 
@@ -65,7 +65,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-1.13
 
@@ -86,7 +86,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+      - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-1.14
 
@@ -108,6 +108,6 @@ periodics:
           - --gcp-node-image=gci
           - --gcp-zone=us-west1-b
           - --provider=gce
-          - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]
+          - --test_args=--ginkgo.focus=\[Conformance\]
           - --timeout=200m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-1.15
