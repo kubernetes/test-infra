@@ -60,7 +60,13 @@ func (c *client) GetBug(id int) (*Bug, error) {
 		return nil, err
 	}
 	if apiKey := c.getAPIKey(); len(apiKey) > 0 {
+		// some BugZilla servers are too old and can't handle the header.
+		// some don't want the query parameter. We can set both and keep
+		// everyone happy without negotiating on versions
 		req.Header.Set("X-BUGZILLA-API-KEY", string(apiKey))
+		values := req.URL.Query()
+		values.Add("api_key", string(apiKey))
+		req.URL.RawQuery = values.Encode()
 	}
 	resp, err := c.client.Do(req)
 	logger.WithField("response", resp.StatusCode).Debug("Got response from Bugzilla.")
