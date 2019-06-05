@@ -15,43 +15,43 @@ presubmits:
         - name: NO_DOCKER
           value: "1"
   - name: pull-service-catalog-integration
+    decorate: true
+    decoration_config:
+      timeout: 45m
     always_run: true
     skip_report: false
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
         args:
-        - "--repo=github.com/kubernetes-sigs/$(REPO_NAME)=$(PULL_REFS)"
-        - "--timeout=45"
-        - "--scenario=execute"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--"
-        - "make"
-        - "test-integration"
+        - make
+        - test-integration
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
   - name: pull-service-catalog-xbuild
+    decorate: true
+    decoration_config:
+      timeout: 90m
     always_run: true
     skip_report: false
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
         args:
-        - "--repo=github.com/kubernetes-sigs/$(REPO_NAME)=$(PULL_REFS)"
-        - "--timeout=90"
-        - "--scenario=execute"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--"
-        - "make"
-        - "images-all"
-        - "svcat-all"
+        - make
+        - images-all
+        - svcat-all
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
