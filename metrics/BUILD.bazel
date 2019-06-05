@@ -35,11 +35,15 @@ py_binary(
         ":k8": ["@jq_linux//file"],
     }),
     deps = [
-        requirement("python-dateutil"),
+        requirement("certifi"),
+        requirement("chardet"),
+        requirement("idna"),
         requirement("influxdb"),
+        requirement("python-dateutil"),
         requirement("pytz"),
-        requirement("requests"),
         requirement("PyYAML"),
+        requirement("requests"),
+        requirement("urllib3"),
     ],
 )
 
@@ -58,10 +62,14 @@ py_test(
         ":darwin": ["@jq_osx//file"],
     }),
     deps = [
-        requirement("python-dateutil"),
+        requirement("certifi"),
+        requirement("chardet"),
+        requirement("idna"),
         requirement("influxdb"),
+        requirement("python-dateutil"),
         requirement("pytz"),
-        requirement("requests"),
         requirement("PyYAML"),
+        requirement("requests"),
+        requirement("urllib3"),
     ],
 )
