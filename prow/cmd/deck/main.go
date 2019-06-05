@@ -577,6 +577,18 @@ func setHeadersNoCaching(w http.ResponseWriter) {
 	w.Header().Set("Expires", "0")
 }
 
+func writeJSONResponse(w http.ResponseWriter, r *http.Request, d []byte) {
+	// If we have a "var" query, then write out "var value = {...};".
+	// Otherwise, just write out the JSON.
+	if v := r.URL.Query().Get("var"); v != "" {
+		w.Header().Set("Content-Type", "application/javascript")
+		fmt.Fprintf(w, "var %s = %s;", v, string(d))
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, string(d))
+	}
+}
+
 func handleNotCached(next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
@@ -600,13 +612,7 @@ func handleProwJobs(ja *jobs.JobAgent) http.HandlerFunc {
 			logrus.WithError(err).Error("Error marshaling jobs.")
 			jd = []byte("{}")
 		}
-		// If we have a "var" query, then write out "var value = {...};".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
-		} else {
-			fmt.Fprint(w, string(jd))
-		}
+		writeJSONResponse(w, r, jd)
 	}
 }
 
@@ -619,13 +625,7 @@ func handleData(ja *jobs.JobAgent) http.HandlerFunc {
 			logrus.WithError(err).Error("Error marshaling jobs.")
 			jd = []byte("[]")
 		}
-		// If we have a "var" query, then write out "var value = {...};".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
-		} else {
-			fmt.Fprint(w, string(jd))
-		}
+		writeJSONResponse(w, r, jd)
 	}
 }
 
@@ -992,13 +992,7 @@ func handleTidePools(cfg config.Getter, ta *tideAgent) http.HandlerFunc {
 			logrus.WithError(err).Error("Error marshaling payload.")
 			pd = []byte("{}")
 		}
-		// If we have a "var" query, then write out "var value = {...};".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(pd))
-		} else {
-			fmt.Fprint(w, string(pd))
-		}
+		writeJSONResponse(w, r, pd)
 	}
 }
 
@@ -1018,13 +1012,7 @@ func handleTideHistory(ta *tideAgent) http.HandlerFunc {
 			logrus.WithError(err).Error("Error marshaling payload.")
 			pd = []byte("{}")
 		}
-		// If we have a "var" query, then write out "var value = {...};".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(pd))
-		} else {
-			fmt.Fprint(w, string(pd))
-		}
+		writeJSONResponse(w, r, pd)
 	}
 }
 
@@ -1041,13 +1029,7 @@ func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
 			logrus.WithError(err).Error("Marshaling plugin help.")
 			b = []byte("[]")
 		}
-		// If we have a "var" query, then write out "var value = [...];".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(b))
-		} else {
-			fmt.Fprint(w, string(b))
-		}
+		writeJSONResponse(w, r, b)
 	}
 }
 
@@ -1127,6 +1109,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 			logrus.WithError(err).Error("Error marshaling jobs.")
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		if _, err := w.Write(b); err != nil {
 			logrus.WithError(err).Error("Error writing log.")
 		}
@@ -1144,6 +1127,7 @@ func handleConfig(cfg config.Getter) http.HandlerFunc {
 			http.Error(w, "Failed to marhshal config.", http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		buff := bytes.NewBuffer(b)
 		_, err = buff.WriteTo(w)
 		if err != nil {
