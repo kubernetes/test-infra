@@ -777,6 +777,9 @@ func makeBuild(pj prowjobv1.ProwJob, defaultTimeout time.Duration) (*buildv1alph
 	}
 	injectTimeout(&b.Spec, pj.Spec.DecorationConfig, defaultTimeout)
 	if pj.Spec.DecorationConfig != nil {
+		if b.Spec.Template != nil {
+			return nil, errors.New("cannot decorate Build using BuildTemplate")
+		}
 		encodedJobSpec := rawEnv[downwardapi.JobSpecEnv]
 		err = decorateBuild(&b.Spec, encodedJobSpec, *pj.Spec.DecorationConfig, injectedSource)
 		if err != nil {

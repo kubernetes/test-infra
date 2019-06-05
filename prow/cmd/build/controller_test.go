@@ -1461,6 +1461,19 @@ func TestMakeBuild(t *testing.T) {
 			err:  true,
 		},
 		{
+			name: "reject decorate prow job with BuildTemplate",
+			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
+				pj.Spec.BuildSpec.Template = &buildv1alpha1.TemplateInstantiationSpec{}
+				pj.Spec.DecorationConfig = &prowjobv1.DecorationConfig{
+					UtilityImages: &prowjobv1.UtilityImages{},
+					Timeout:       &prowjobv1.Duration{Duration: 0},
+					GracePeriod:   &prowjobv1.Duration{Duration: 0},
+				}
+				return pj
+			},
+			err: true,
+		},
+		{
 			name: "return valid build with valid prowjob",
 		},
 		{
@@ -1499,7 +1512,6 @@ func TestMakeBuild(t *testing.T) {
 			pj.Spec.Type = prowjobv1.PeriodicJob
 			pj.Spec.BuildSpec = &buildv1alpha1.BuildSpec{}
 			pj.Spec.BuildSpec.Steps = append(pj.Spec.BuildSpec.Steps, corev1.Container{})
-			pj.Spec.BuildSpec.Template = &buildv1alpha1.TemplateInstantiationSpec{}
 			pj.Status.BuildID = randomBuildID
 			if tc.job != nil {
 				pj = tc.job(pj)
