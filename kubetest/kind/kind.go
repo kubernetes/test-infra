@@ -46,7 +46,7 @@ const (
 	kindBinaryStable = "stable"
 
 	// If a new version of kind is released this value has to be updated.
-	kindBinaryStableTag = "0.1.0"
+	kindBinaryStableTag = "0.2.0"
 
 	kindClusterNameDefault = "kind-kubetest"
 
