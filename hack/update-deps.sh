@@ -99,7 +99,7 @@ export GOSUMDB=sum.golang.org
 "$go" mod vendor
 prune-vendor
 touch ./vendor/BUILD.bazel
-"$gazelle" update-repos --from_file=go.mod
+"$gazelle" update-repos --from_file=go.mod --to_macro=repos.bzl%go_repositories
 "${update_bazel[@]}"
 "${update_bazel[@]}"
 echo "SUCCESS: updated modules"
