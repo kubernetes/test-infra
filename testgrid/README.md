@@ -162,10 +162,13 @@ and/or `alert_stale_results_hours` (alerts when tests haven't run recently).
 You can also set `num_passes_to_disable_alert`.
 
 In DashboardTab, set `alert_mail_to_addresses` (comma-separated list of email
-addresses to send mail to). Additional options for alerts are `num_passes_to_disable_alert`
-(the number of consecutive test passes to close the alert), `subject` (custom subject for alert mails),
-`debug_url` (custom link for further context/instructions on debugging this alert), and `debug_message`
-(custom text to show for the debug link; `debug_url` is required for `debug_message` to appear).
+addresses to send mail to).
+
+Additional options for DashboardTab alerts:
+- `num_passes_to_disable_alert`: the number of consecutive test passes to close the alert
+- `subject`: custom subject for alert mails
+- `debug_url`: custom link for further context/instructions on debugging this alert
+- `debug_message`: custom text to show for the debug link; `debug_url` is required for `debug_message` to appear
 
 These alerts will send whenever new failures are detected (or whenever the
 dashboard tab goes stale), and will stop when `num_passes_to_disable_alert`
