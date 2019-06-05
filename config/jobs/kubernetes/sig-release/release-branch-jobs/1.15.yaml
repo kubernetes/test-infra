@@ -1,7 +1,6 @@
 periodics:
 - annotations:
-    testgrid-dashboards: sig-release-1.15-informing, conformance-all, conformance-gce,
-      sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.15-informing, conformance-all, conformance-gce
     testgrid-tab-name: GCE, 1.15 (dev)
   interval: 6h
   labels:
