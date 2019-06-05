@@ -102,7 +102,7 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 		labels[k] = v
 	}
 	labels[github.EventGUID] = eventGUID
-	return NewProwJob(PresubmitSpec(job, refs), labels)
+	return NewProwJobWithAnnotation(PresubmitSpec(job, refs), labels, job.Annotations)
 }
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.

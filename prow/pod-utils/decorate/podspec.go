@@ -138,7 +138,7 @@ func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[stri
 		extraLabels = map[string]string{}
 	}
 	extraLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
-	return LabelsAndAnnotationsForSpec(pj.Spec, extraLabels, nil)
+	return LabelsAndAnnotationsForSpec(pj.Spec, extraLabels, pj.ObjectMeta.Annotations)
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.

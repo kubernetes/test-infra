@@ -191,8 +191,13 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		periodicJob.Labels[k] = v
 	}
 
+	// Adds / Updates Annotations from prow job event
+	for k, v := range pe.Annotations {
+		periodicJob.Annotations[k] = v
+	}
+
 	// Adds annotations
-	prowJob = pjutil.NewProwJobWithAnnotation(prowJobSpec, periodicJob.Labels, pe.Annotations)
+	prowJob = pjutil.NewProwJobWithAnnotation(prowJobSpec, periodicJob.Labels, periodicJob.Annotations)
 	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
 		for _, c := range prowJob.Spec.PodSpec.Containers {
