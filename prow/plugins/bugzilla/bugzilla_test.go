@@ -169,6 +169,32 @@ func TestDigestPR(t *testing.T) {
 			},
 		},
 		{
+			name: "title referencing bug with a dash in the middle of the title gets an event",
+			pre: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "org",
+							},
+							Name: "repo",
+						},
+						Ref: "branch",
+					},
+					Number:  1,
+					Title:   "[release-1.13] Bug 123 - fixed it!",
+					HTMLURL: "http.com",
+					User: github.User{
+						Login: "user",
+					},
+				},
+			},
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "[release-1.13] Bug 123 - fixed it!", htmlUrl: "http.com", login: "user",
+			},
+		},
+		{
 			name: "title change referencing same bug gets no event",
 			pre: github.PullRequestEvent{
 				Action: github.PullRequestActionOpened,
