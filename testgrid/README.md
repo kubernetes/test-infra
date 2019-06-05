@@ -43,9 +43,9 @@ annotations:
   testgrid-dashboards: dashboard-name  # a dashboard defined in config.yaml.
   testgrid-tab-name: some-short-name   # optionally, a shorter name for the tab. If omitted, just uses the job name.
   testgrid-alert-email: me@me.com      # optionally, an alert email that will be applied to the tab created in the
-                                       # first dashboard specified in testgrid-dashboards. 
+                                       # first dashboard specified in testgrid-dashboards.
   description: Words about your job.   # optionally, a description of your job. If omitted, just uses the job name.
-  
+
 ```
 
 If you need to create a new dashboard, or do anything more advanced, read on.
@@ -162,7 +162,10 @@ and/or `alert_stale_results_hours` (alerts when tests haven't run recently).
 You can also set `num_passes_to_disable_alert`.
 
 In DashboardTab, set `alert_mail_to_addresses` (comma-separated list of email
-addresses to send mail to).
+addresses to send mail to). Additional options for alerts are `num_passes_to_disable_alert`
+(the number of consecutive test passes to close the alert), `subject` (custom subject for alert mails),
+`debug_url` (custom link for further context/instructions on debugging this alert), and `debug_message`
+(custom text to show for the debug link; `debug_url` is required for `debug_message` to appear).
 
 These alerts will send whenever new failures are detected (or whenever the
 dashboard tab goes stale), and will stop when `num_passes_to_disable_alert`
