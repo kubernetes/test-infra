@@ -21,7 +21,7 @@
 base="$(dirname $0)"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190420-93fab49-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190523-0ebbc9b-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix.
@@ -265,6 +265,7 @@ EOF
     always_run: true
     decorate: true
     skip_report: false
+    skip_branches: [$(skip_branches $repo)]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
