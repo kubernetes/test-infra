@@ -462,6 +462,7 @@ plugins:
   kubernetes/kubernetes:
   - blockade
   - cherry-pick-unapproved
+  - mergecommitblocker
   - milestone
   - milestonestatus
   - override
