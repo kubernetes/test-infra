@@ -17,12 +17,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file"
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
 load(
-    "@kettle_deps//:requirements.bzl",
-    kettle_pip_install = "pip_install",
-)
-load(
     "@py_deps//:requirements.bzl",
-    py_pip_install = "pip_install",
+    "pip_install",
 )
 
 def python_repos():
@@ -57,5 +53,4 @@ py_library(
 
     py_appengine_repositories()
 
-    py_pip_install()
-    kettle_pip_install()
+    pip_install()

@@ -1,4 +1,4 @@
-load("@py_deps//:requirements.bzl", py_requirement = "requirement")
+load("@py_deps//:requirements.bzl", "requirement")
 
 py_test(
     name = "make_db_test",
@@ -12,12 +12,12 @@ py_test(
     # https://github.com/bazelbuild/bazel/issues/2056
     local = True,
     deps = [
-        py_requirement("certifi"),
-        py_requirement("chardet"),
-        py_requirement("idna"),
-        py_requirement("PyYAML"),
-        py_requirement("requests"),
-        py_requirement("urllib3"),
+        requirement("certifi"),
+        requirement("chardet"),
+        requirement("idna"),
+        requirement("PyYAML"),
+        requirement("requests"),
+        requirement("urllib3"),
     ],
 )
 
@@ -63,12 +63,12 @@ py_test(
         "schema.json",
     ],
     deps = [
-        py_requirement("certifi"),
-        py_requirement("chardet"),
-        py_requirement("idna"),
-        py_requirement("PyYAML"),
-        py_requirement("requests"),
-        py_requirement("urllib3"),
+        requirement("certifi"),
+        requirement("chardet"),
+        requirement("idna"),
+        requirement("PyYAML"),
+        requirement("requests"),
+        requirement("urllib3"),
     ],
 )
 
@@ -83,7 +83,7 @@ py_test(
     data = [":buckets.yaml"],
     # idem
     local = True,
-    deps = [py_requirement("PyYAML")],
+    deps = [requirement("PyYAML")],
 )
 
 filegroup(
