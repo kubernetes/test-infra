@@ -171,6 +171,9 @@ func main() {
 
 	buildConfigs := map[string]buildConfig{}
 	for context, cfg := range configs {
+		if context == kube.InClusterContext {
+			continue
+		}
 		var bc *buildConfig
 		bc, err = newBuildConfig(cfg, stop)
 		if apierrors.IsNotFound(err) {
