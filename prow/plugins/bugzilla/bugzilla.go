@@ -35,7 +35,7 @@ import (
 )
 
 var (
-	titleMatch   = regexp.MustCompile(`(?i)^.*Bug ([0-9]+):`)
+	titleMatch   = regexp.MustCompile(`(?i)^.*?Bug ([0-9]+):`)
 	commandMatch = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
 )
 

@@ -19,6 +19,7 @@ package bugzilla
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -582,6 +583,60 @@ func checkComments(client fakegithub.FakeClient, name, expectedComment string, t
 		if expectedComment != client.IssueCommentsAdded[0] {
 			t.Errorf("%s: got incorrect comment: %v", name, diff.StringDiff(expectedComment, client.IssueCommentsAdded[0]))
 		}
+	}
+}
+
+func TestTitleMatch(t *testing.T) {
+	var testCases = []struct {
+		title    string
+		expected int
+	}{
+		{
+			title:    "no match",
+			expected: -1,
+		},
+		{
+			title:    "Bug 12: Canonical",
+			expected: 12,
+		},
+		{
+			title:    "bug 12: Lowercase",
+			expected: 12,
+		},
+		{
+			title:    "Bug 12 : Space before colon",
+			expected: -1,
+		},
+		{
+			title:    "[rebase release-1.0] Bug 12: Prefix",
+			expected: 12,
+		},
+		{
+			title:    "Revert: \"Bug 12: Revert default\"",
+			expected: 12,
+		},
+		{
+			title:    "Bug 34: Revert: \"Bug 12: Revert default\"",
+			expected: 34,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.title, func(t *testing.T) {
+			actual := -1
+			match := titleMatch.FindStringSubmatch(testCase.title)
+			if match != nil {
+				id, err := strconv.Atoi(match[1])
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				actual = id
+			}
+
+			if actual != testCase.expected {
+				t.Errorf("unexpected %d != %d", actual, testCase.expected)
+			}
+		})
 	}
 }
 
