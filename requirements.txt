@@ -4,6 +4,8 @@ certifi==2019.3.9
 chardet==3.0.4
 configparser==3.5.0
 enum34==1.1.6
+google-cloud-bigquery==0.24.0
+google-cloud-pubsub==0.25.0
 idna==2.8
 influxdb==4.1.1
 isort==4.2.15
@@ -19,6 +21,7 @@ requests==2.22.0
 setuptools
 sh==1.12.14
 singledispatch==3.4.0.3
-six==1.10.0
+six==1.12.0
 urllib3==1.25.3
+webapp2==2.5.2
 wrapt==1.10.10

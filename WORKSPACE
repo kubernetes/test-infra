@@ -203,11 +203,6 @@ pip_import(
     requirements = "//:requirements.txt",
 )
 
-pip_import(
-    name = "kettle_deps",
-    requirements = "//kettle:requirements.txt",
-)
-
 load("//:py.bzl", "python_repos")
 
 python_repos()
