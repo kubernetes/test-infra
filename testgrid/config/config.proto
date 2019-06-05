@@ -230,6 +230,18 @@ message DashboardTabAlertOptions {
 
   // The comma-separated addresses to send mail.
   string alert_mail_to_addresses = 3;
+
+  // The number of consecutive test passes to close the alert.
+  int32 num_passes_to_disable_alert = 4;
+
+  // Custom subject for alert mails.
+  string subject = 5;
+
+  // Custom link for further help/instructions on debugging this alert.
+  string debug_url = 6;
+
+  // Custom text to show for the debug link.
+  string debug_message = 7;
 }
 
 // Specifies a dashboard group.
