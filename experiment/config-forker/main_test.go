@@ -358,9 +358,9 @@ func TestFixTestgridAnnotations(t *testing.T) {
 			isPresubmit: true,
 		},
 		{
-			name:        "periodic updates master-blocking to point at 1.15-blocking and adds 1.15-all",
+			name:        "periodic updates master-blocking to point at 1.15-blocking",
 			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking, sig-release-1.15-all"},
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking"},
 			isPresubmit: false,
 		},
 		{
@@ -705,7 +705,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Name: "post-kubernetes-generic-beta",
 					Annotations: map[string]string{
 						suffixAnnotation:             "true",
-						testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit, sig-release-1.15-all",
+						testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit",
 					},
 				},
 				Brancher: config.Brancher{
