@@ -5,7 +5,18 @@ This is a list of all the changes made to this repository to support Okro use ca
 - Prow plugins (traiana/prow/plugins):
   - okro/undoer ([commit](https://github.com/traiana/test-infra/commit/42d85973f83e4f39cd592543be144cef7a4f6d09))
 
-- Allow setting the logger for github and git clients ([commit](https://github.com/traiana/test-infra/commit/1666ebeb81d6b7ee303c642f0b9f38e98bca5d51))
+- Avoid reading aws credentials from gcs credentials file ([commit](https://github.com/traiana/test-infra/commit/0aa71031f4eda26676630e0549b517bcca3fb959))
+  - the secret used to mount the gcs credentials file contains 2 files: service-account.json, which used to contains the AWS
+  credentials and is not used anymore (kiam is used instead), and a config file which contains the AWS region
+  
+- Copy pj annotations from config to pj and from pj to pod ([commit](https://github.com/traiana/test-infra/commit/498d4fd37468972ff2f872562601d990089b731d))
+  - copy annotations set on jobs in prow/job config to the actual prow jobs
+  - copy annotations from prow jobs to pods created for them
+  - used to allow prowjobs to use kiam
+
+- Add NewClientWithLogger func to github package to create a github client with an injected logger ([commit](https://github.com/traiana/test-infra/commit/74f80b7d1237fb2c8b5b3f6844bf119f203543ee))
+
+- Allow setting the logger for git client ([commit](https://github.com/traiana/test-infra/commit/1666ebeb81d6b7ee303c642f0b9f38e98bca5d51))
 
 - Add EditIssue method to github client ([commit](https://github.com/traiana/test-infra/commit/1e4254e8faa45936bfb4090430f10ac3de21d437 ))
 
