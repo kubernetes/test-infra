@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -43,6 +44,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -53,6 +55,8 @@ import (
 const (
 	// DefaultJobTimeout represents the default deadline for a prow job.
 	DefaultJobTimeout = 24 * time.Hour
+
+	ProwImplicitGitResource = "PROW_IMPLICIT_GIT_REF"
 )
 
 // Config is a read-only snapshot of the config.
@@ -823,6 +827,9 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validatePodSpec(jobType, v.Spec); err != nil {
 		return err
 	}
+	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
+		return err
+	}
 	if err := validateLabels(v.Labels); err != nil {
 		return err
 	}
@@ -1292,6 +1299,52 @@ func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, bui
 		}
 	}
 
+	return nil
+}
+
+var ReProwExtraRef = regexp.MustCompile(`PROW_EXTRA_GIT_REF_(\d+)`)
+
+func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Refs, spec *pipelinev1alpha1.PipelineRunSpec) error {
+	if spec == nil {
+		return nil
+	}
+	// Validate that that the refs match what is requested by the job.
+	// The implicit git ref is optional to use, but any extra refs specified must
+	// be used or removed. (Specifying an unused extra ref must always be
+	// unintentional so we want to warn the user.)
+	extraIndexes := sets.NewInt()
+	for _, resource := range spec.Resources {
+		// Validate that periodic jobs don't request an implicit git ref
+		if jobType == prowapi.PeriodicJob && resource.ResourceRef.Name == ProwImplicitGitResource {
+			return fmt.Errorf("periodic jobs do not have an implicit git ref to replace %s", ProwImplicitGitResource)
+		}
+
+		match := ReProwExtraRef.FindStringSubmatch(resource.ResourceRef.Name)
+		if len(match) != 2 {
+			continue
+		}
+		if len(match[1]) > 1 && match[1][0] == '0' {
+			return fmt.Errorf("resource %q: leading zeros are not allowed in PROW_EXTRA_GIT_REF_* indexes", resource.Name)
+		}
+		i, _ := strconv.Atoi(match[1]) // This can't error based on the regexp.
+		extraIndexes.Insert(i)
+	}
+	for i := range extraRefs {
+		if !extraIndexes.Has(i) {
+			return fmt.Errorf("extra_refs[%d] is not used; some resource must reference PROW_EXTRA_GIT_REF_%d", i, i)
+		}
+	}
+	if len(extraRefs) != extraIndexes.Len() {
+		strs := make([]string, 0, extraIndexes.Len())
+		for i := range extraIndexes {
+			strs = append(strs, strconv.Itoa(i))
+		}
+		return fmt.Errorf(
+			"%d extra_refs are specified, but the following PROW_EXTRA_GIT_REF_* indexes are used: %s.",
+			len(extraRefs),
+			strings.Join(strs, ", "),
+		)
+	}
 	return nil
 }
 

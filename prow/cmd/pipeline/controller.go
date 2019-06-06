@@ -19,6 +19,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	"github.com/sirupsen/logrus"
@@ -364,6 +366,9 @@ func reconcile(c reconciler, key string) error {
 		return fmt.Errorf("get prowjob: %v", err)
 	case pj.Spec.Agent != prowjobv1.TektonAgent:
 		// Do not want a pipeline for this job
+		// We could look for a pipeline to remove, but it is more efficient to
+		// assume this field is immutable.
+		return nil
 	case pjutil.ClusterToCtx(pj.Spec.Cluster) != ctx:
 		// Build is in wrong cluster, we do not want this build
 		logrus.Warnf("%s found in context %s not %s", key, ctx, pjutil.ClusterToCtx(pj.Spec.Cluster))
@@ -415,17 +420,25 @@ func reconcile(c reconciler, key string) error {
 		pj.Status.BuildID = id
 		pj.Status.URL = url
 		newPipelineRun = true
-		pr := makePipelineGitResource(*pj)
-		logrus.Infof("Create PipelineResource/%s", key)
-		if pr, err = c.createPipelineResource(ctx, namespace, pr); err != nil {
-			return fmt.Errorf("create PipelineResource/%s: %v", key, err)
-		}
-		newp, err := makePipelineRun(*pj, pr)
+		pipelineRun, resources, err := makeResources(*pj)
 		if err != nil {
-			return fmt.Errorf("make PipelineRun/%s: %v", key, err)
+			return fmt.Errorf("error preparing resources: %v", err)
 		}
+
+		// Create the any git resources that are needed.
+		for _, res := range resources {
+			resKey := toKey(ctx, namespace, res.Name)
+			logrus.Infof("Create PipelineResource/%s", resKey)
+			if _, err = c.createPipelineResource(ctx, namespace, &res); err != nil {
+				if !apierrors.IsAlreadyExists(err) {
+					return fmt.Errorf("create PipelineResource/%s: %v", resKey, err)
+				}
+				logrus.Warnf("Already exists: PipelineResource/%s", resKey)
+			}
+		}
+
 		logrus.Infof("Create PipelineRun/%s", key)
-		p, err = c.createPipelineRun(ctx, namespace, newp)
+		p, err = c.createPipelineRun(ctx, namespace, pipelineRun)
 		if err != nil {
 			jerr := fmt.Errorf("start pipeline: %v", err)
 			// Set the prow job in error state to avoid an endless loop when
@@ -455,7 +468,7 @@ func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowj
 		}
 		npj.Status.State = state
 		npj.Status.Description = msg
-		logrus.Infof("Update ProwJob/%s: %s -> %s", key, haveState, state)
+		logrus.Infof("Update ProwJob/%s: %s -> %s: %s", key, haveState, state, msg)
 		if _, err := c.updateProwJob(npj); err != nil {
 			return fmt.Errorf("update prow status: %v", err)
 		}
@@ -502,7 +515,7 @@ func prowJobStatus(ps pipelinev1alpha1.PipelineRunStatus) (prowjobv1.ProwJobStat
 		if !finished.IsZero() {
 			return prowjobv1.ErrorState, descMissingCondition
 		}
-		return prowjobv1.TriggeredState, descScheduling
+		return prowjobv1.PendingState, descScheduling
 	}
 	cond := *pcond
 	switch {
@@ -511,7 +524,7 @@ func prowJobStatus(ps pipelinev1alpha1.PipelineRunStatus) (prowjobv1.ProwJobStat
 	case cond.Status == untypedcorev1.ConditionFalse:
 		return prowjobv1.FailureState, description(cond, descFailed)
 	case started.IsZero():
-		return prowjobv1.TriggeredState, description(cond, descInitializing)
+		return prowjobv1.PendingState, description(cond, descInitializing)
 	case cond.Status == untypedcorev1.ConditionUnknown, finished.IsZero():
 		return prowjobv1.PendingState, description(cond, descRunning)
 	}
@@ -521,60 +534,52 @@ func prowJobStatus(ps pipelinev1alpha1.PipelineRunStatus) (prowjobv1.ProwJobStat
 }
 
 // pipelineMeta builds the pipeline metadata from prow job definition
-func pipelineMeta(pj prowjobv1.ProwJob) metav1.ObjectMeta {
+func pipelineMeta(name string, pj prowjobv1.ProwJob) metav1.ObjectMeta {
 	labels, annotations := decorate.LabelsAndAnnotationsForJob(pj)
 	return metav1.ObjectMeta{
 		Annotations: annotations,
-		Name:        pj.Name,
+		Name:        name,
 		Namespace:   pj.Spec.Namespace,
 		Labels:      labels,
 	}
 }
 
-// defaultEnv adds the map of environment variables to the container, except keys already defined.
-func defaultEnv(c *untypedcorev1.Container, rawEnv map[string]string) {
-	keys := sets.String{}
-	for _, arg := range c.Env {
-		keys.Insert(arg.Name)
-	}
-	for _, k := range sets.StringKeySet(rawEnv).List() { // deterministic ordering
-		if keys.Has(k) {
-			continue
-		}
-		c.Env = append(c.Env, untypedcorev1.EnvVar{Name: k, Value: rawEnv[k]})
-	}
-}
-
-// sourceURL returns the source URL from prow jobs repository reference
-func sourceURL(pj prowjobv1.ProwJob) string {
-	if pj.Spec.Refs == nil {
-		return ""
-	}
-	sourceURL := pj.Spec.Refs.CloneURI
-	if sourceURL == "" {
-		sourceURL = fmt.Sprintf("%s.git", pj.Spec.Refs.RepoLink)
-	}
-	return sourceURL
-}
-
 // makePipelineGitResource creates a pipeline git resource from prow job
-func makePipelineGitResource(pj prowjobv1.ProwJob) *pipelinev1alpha1.PipelineResource {
-	var revision string
-	if pj.Spec.Refs != nil {
-		if len(pj.Spec.Refs.Pulls) > 0 {
-			revision = pj.Spec.Refs.Pulls[0].SHA
-		} else {
-			revision = pj.Spec.Refs.BaseSHA
-		}
+func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.ProwJob) *pipelinev1alpha1.PipelineResource {
+	// Pick source URL
+	var sourceURL string
+	switch {
+	case refs.CloneURI != "":
+		sourceURL = refs.CloneURI
+	case refs.RepoLink != "":
+		sourceURL = fmt.Sprintf("%s.git", refs.RepoLink)
+	default:
+		sourceURL = fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
 	}
+
+	// Pick revision
+	var revision string
+	switch {
+	case len(refs.Pulls) > 0:
+		if refs.Pulls[0].SHA != "" {
+			revision = refs.Pulls[0].SHA
+		} else {
+			revision = fmt.Sprintf("pull/%d/head", refs.Pulls[0].Number)
+		}
+	case refs.BaseSHA != "":
+		revision = refs.BaseSHA
+	default:
+		revision = refs.BaseRef
+	}
+
 	pr := pipelinev1alpha1.PipelineResource{
-		ObjectMeta: pipelineMeta(pj),
+		ObjectMeta: pipelineMeta(name, pj),
 		Spec: pipelinev1alpha1.PipelineResourceSpec{
 			Type: pipelinev1alpha1.PipelineResourceTypeGit,
 			Params: []pipelinev1alpha1.Param{
 				{
 					Name:  "url",
-					Value: sourceURL(pj),
+					Value: sourceURL,
 				},
 				{
 					Name:  "revision",
@@ -586,31 +591,72 @@ func makePipelineGitResource(pj prowjobv1.ProwJob) *pipelinev1alpha1.PipelineRes
 	return &pr
 }
 
-// makePipeline creates a PipelineRun from a prow job using the PipelineRunSpec defined in the prow job
-func makePipelineRun(pj prowjobv1.ProwJob, pr *pipelinev1alpha1.PipelineResource) (*pipelinev1alpha1.PipelineRun, error) {
+// makePipeline creates a PipelineRun and a slice of PipelineResources from a ProwJob using the
+// PipelineRunSpec and git refs.
+func makeResources(pj prowjobv1.ProwJob) (*pipelinev1alpha1.PipelineRun, []pipelinev1alpha1.PipelineResource, error) {
+	// First validate.
 	if pj.Spec.PipelineRunSpec == nil {
-		return nil, errors.New("no PipelineSpec defined")
-	}
-	p := pipelinev1alpha1.PipelineRun{
-		ObjectMeta: pipelineMeta(pj),
-		Spec:       *pj.Spec.PipelineRunSpec.DeepCopy(),
+		return nil, nil, errors.New("no PipelineSpec defined")
 	}
 	buildID := pj.Status.BuildID
 	if buildID == "" {
-		return nil, errors.New("empty BuildID in status")
+		return nil, nil, errors.New("empty BuildID in status")
 	}
-	p.Spec.Params = append(p.Spec.Params, pipelinev1alpha1.Param{
-		Name:  "build_id",
-		Value: buildID,
-	})
-	rb := pipelinev1alpha1.PipelineResourceBinding{
-		Name: pr.Name,
-		ResourceRef: pipelinev1alpha1.PipelineResourceRef{
-			Name:       pr.Name,
-			APIVersion: pr.APIVersion,
-		},
+	if err := config.ValidatePipelineRunSpec(pj.Spec.Type, pj.Spec.ExtraRefs, pj.Spec.PipelineRunSpec); err != nil {
+		return nil, nil, fmt.Errorf("invalid pipeline_run_spec: %v", err)
 	}
-	p.Spec.Resources = append(p.Spec.Resources, rb)
 
-	return &p, nil
+	p := pipelinev1alpha1.PipelineRun{
+		ObjectMeta: pipelineMeta(pj.Name, pj),
+		Spec:       *pj.Spec.PipelineRunSpec.DeepCopy(),
+	}
+
+	// Add parameters instead of env vars.
+	env, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(pj.Spec, buildID, pj.Name))
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, key := range sets.StringKeySet(env).List() {
+		val := env[key]
+		// TODO: make this handle existing values/substitutions.
+		p.Spec.Params = append(p.Spec.Params, pipelinev1alpha1.Param{
+			Name:  key,
+			Value: val,
+		})
+	}
+
+	// Create and substitute git resources.
+	resourceMap := map[string]*pipelinev1alpha1.PipelineResource{}
+	for i, res := range p.Spec.Resources {
+		refName := res.ResourceRef.Name
+		var refs prowjobv1.Refs
+		var suffix string
+		if refName == config.ProwImplicitGitResource {
+			if pj.Spec.Refs == nil {
+				return nil, nil, fmt.Errorf("%q requested on a ProwJob without an implicit git ref", config.ProwImplicitGitResource)
+			}
+			refs = *pj.Spec.Refs
+			suffix = "-implicit-ref"
+		} else if match := config.ReProwExtraRef.FindStringSubmatch(refName); len(match) == 2 {
+			index, _ := strconv.Atoi(match[1]) // We can't error because the regexp only matches digits.
+			refs = pj.Spec.ExtraRefs[index]    // ValidatePipelineRunSpec made sure this is safe.
+			suffix = fmt.Sprintf("-extra-ref-%d", index)
+		} else {
+			continue
+		}
+		name := pj.Name + suffix
+		if _, exists := resourceMap[name]; !exists {
+			resourceMap[name] = makePipelineGitResource(name, refs, pj)
+		}
+		resource := resourceMap[name]
+		p.Spec.Resources[i].ResourceRef.Name = resource.Name
+		p.Spec.Resources[i].ResourceRef.APIVersion = resource.APIVersion
+	}
+
+	resources := make([]pipelinev1alpha1.PipelineResource, 0, len(resourceMap))
+	for _, key := range sets.StringKeySet(resourceMap).List() {
+		resources = append(resources, *resourceMap[key])
+	}
+
+	return &p, resources, nil
 }
