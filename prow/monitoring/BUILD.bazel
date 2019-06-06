@@ -1,0 +1,58 @@
+load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
+
+# Usage:
+#   bazel run //prow/monitoring:release.apply
+
+release(
+    "production",
+    component("prow_monitoring", "namespace"),
+    component("prometheus_operator_rbac", MULTI_KIND),
+    component("prometheus_operator", "deployment"),
+
+    component("prometheus_rbac", MULTI_KIND),
+    component("prow", "prometheus"),
+    component("prometheus_expose", MULTI_KIND),
+    component("prometheus", "servicemonitor"),
+)
+
+load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+
+k8s_object(
+   name = "alertmanager_crd",
+   cluster = "{STABLE_PROW_CLUSTER}",
+   kind = None,
+   template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
+)
+
+k8s_object(
+   name = "prometheus_crd",
+   cluster = "{STABLE_PROW_CLUSTER}",
+   kind = None,
+   template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
+)
+
+k8s_object(
+   name = "prometheusrule_crd",
+   cluster = "{STABLE_PROW_CLUSTER}",
+   kind = None,
+   template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
+)
+
+k8s_object(
+   name = "servicemonitor_crd",
+   cluster = "{STABLE_PROW_CLUSTER}",
+   kind = None,
+   template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
+)
+
+load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
+
+k8s_objects(
+   name = "prometheus_operator_crd",
+   objects = [
+      ":alertmanager_crd",
+      ":prometheus_crd",
+      ":prometheusrule_crd",
+      ":servicemonitor_crd",
+   ]
+)
