@@ -970,6 +970,16 @@ func TestParseReport(t *testing.T) {
 			comment:   "",
 			expectNil: true,
 		},
+		{
+			name: "parse with extra stuff at the start as long as the header and jobs start on new lines",
+			comment: `qwerty
+Patch Set 1:
+Prow Status: 0 out of 2 pjs passed!
+❌ foo-job FAILURE - https://foo-status
+❌ bar-job FAILURE - https://bar-status
+`,
+			expectedJobs: 2,
+		},
 	}
 	for _, tc := range testcases {
 		report := ParseReport(tc.comment)
