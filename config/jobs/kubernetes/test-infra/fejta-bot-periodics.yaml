@@ -140,6 +140,7 @@ periodics:
         -label:needs-ok-to-test
         -label:"cncf-cla: no"
         repo:kubernetes/kubernetes
+        repo:kubernetes/test-infra
       - --token=/etc/token/bot-github-token
       - |-
         --comment=/retest
