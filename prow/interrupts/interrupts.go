@@ -1,0 +1,193 @@
+/*
+Copyright 2019 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Package interrupts exposes helpers for graceful handling of interrupt signals
+package interrupts
+
+import (
+	"context"
+	"net/http"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
+
+	"github.com/sirupsen/logrus"
+)
+
+// only one instance of the manager ever exists
+var single *manager
+
+func init() {
+	m := sync.Mutex{}
+	single = &manager{
+		c:  sync.NewCond(&m),
+		wg: sync.WaitGroup{},
+	}
+	go handleInterrupt()
+}
+
+type manager struct {
+	// only one signal handler should be installed, so we use a cond to
+	// broadcast to workers that an interrupt has occurred
+	c *sync.Cond
+	// we record whether we've broadcast in the past
+	seenSignal bool
+	// we want to ensure that all registered servers and workers get a
+	// change to gracefully shut down
+	wg sync.WaitGroup
+}
+
+// handleInterrupt turns an interrupt into a broadcast for our condition.
+// This must be called _first_ before any work is registered with the
+// manager, or there will be a deadlock.
+func handleInterrupt() {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	s := <-sig
+	logrus.WithField("signal", s).Info("Received signal.")
+	single.c.L.Lock()
+	single.seenSignal = true
+	single.c.Broadcast()
+	single.c.L.Unlock()
+}
+
+// wait executes the cancel when an interrupt is seen or if one has already
+// been handled
+func wait(cancel func()) {
+	single.c.L.Lock()
+	if !single.seenSignal {
+		single.c.Wait()
+	}
+	single.c.L.Unlock()
+	cancel()
+}
+
+// WaitForGracefulShutdown waits until all registered servers and workers
+// have had time to gracefully shut down, or times out. This function is
+// blocking.
+func WaitForGracefulShutdown() {
+	finished := make(chan struct{})
+	go func() {
+		single.wg.Wait()
+		close(finished)
+	}()
+	select {
+	case <-finished:
+		logrus.Info("All workers gracefully terminated, exiting.")
+	case <-time.After(1 * time.Minute):
+		logrus.Warn("Timed out waiting for workers to gracefully terminate, exiting.")
+	}
+}
+
+// Context returns a context that stays is cancelled when an interrupt hits.
+// Using this context is a weak guarantee that your work will finish before
+// process exit as callers cannot signal that they are finished. Prefer to use
+// Run().
+func Context() context.Context {
+	ctx, cancel := context.WithCancel(context.Background())
+	single.wg.Add(1)
+	go wait(func() {
+		cancel()
+		single.wg.Done()
+	})
+
+	return ctx
+}
+
+// Run will do work until an interrupt is received, then signal the
+// worker. This function is not blocking. Callers are expected to exit
+// only after WaitForGracefulShutdown returns to ensure all workers have
+// had time to shut down. This is preferable to getting the raw Context
+// as we can ensure that the work is finished before releasing our share
+// of the wait group on shutdown.
+func Run(work func(ctx context.Context)) {
+	ctx, cancel := context.WithCancel(context.Background())
+	single.wg.Add(1)
+	go func() {
+		defer single.wg.Done()
+		work(ctx)
+	}()
+
+	go wait(cancel)
+}
+
+// ListenAndServe runs the HTTP server and handles shutting it down
+// gracefully on interrupts. This function is not blocking. Callers
+// are expected to exit only after WaitForGracefulShutdown returns to
+// ensure all servers have had time to shut down.
+func ListenAndServe(server *http.Server, gracePeriod time.Duration) {
+	single.wg.Add(1)
+	go func() {
+		defer single.wg.Done()
+		logrus.WithError(server.ListenAndServe()).Info("Server exited.")
+	}()
+
+	go wait(shutdown(server, gracePeriod))
+}
+
+// ListenAndServe runs the HTTP server and handles shutting it down
+// gracefully on interrupts. This function is not blocking. Callers
+// are expected to exit only after WaitForGracefulShutdown returns to
+// ensure all servers have had time to shut down.
+func ListenAndServeTLS(server *http.Server, certFile, keyFile string, gracePeriod time.Duration) {
+	single.wg.Add(1)
+	go func() {
+		defer single.wg.Done()
+		logrus.WithError(server.ListenAndServeTLS(certFile, keyFile)).Info("Server exited.")
+	}()
+
+	go wait(shutdown(server, gracePeriod))
+}
+
+// shutdown will shut down the server
+func shutdown(server *http.Server, gracePeriod time.Duration) func() {
+	return func() {
+		logrus.Info("Server shutting down...")
+		ctx, cancel := context.WithTimeout(context.Background(), gracePeriod)
+		if err := server.Shutdown(ctx); err != nil {
+			logrus.WithError(err).Info("Error shutting down server...")
+		}
+		cancel()
+	}
+}
+
+// Tick will do work on an interval until an interrupt is received.
+// This function is not blocking. Callers are expected to exit only
+// after WaitForGracefulShutdown returns to ensure all workers have
+// had time to shut down.
+func Tick(work func(), interval time.Duration) {
+	sig := make(chan int, 1)
+	tick := time.Tick(interval)
+	single.wg.Add(1)
+	go func() {
+		defer single.wg.Done()
+		for {
+			select {
+			case <-tick:
+				work()
+			case <-sig:
+				logrus.Info("Worker shutting down...")
+				return
+			}
+		}
+	}()
+
+	go wait(func() {
+		sig <- 1
+	})
+}

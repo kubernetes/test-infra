@@ -21,12 +21,11 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/pkg/io"
@@ -107,6 +106,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 func main() {
 	logrusutil.ComponentInit("tide")
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
@@ -181,26 +182,15 @@ func main() {
 	if o.runOnce {
 		return
 	}
-	go func() {
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-		for {
-			select {
-			case <-time.After(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration))):
-				start = time.Now()
-				sync(c)
-			case <-sig:
-				logrus.Info("Tide is shutting down...")
-				// Shutdown the http server with a 10s timeout then return to execute
-				// deferred c.Shutdown()
-				ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-				defer cancel() // frees ctx resources
-				server.Shutdown(ctx)
-				return
-			}
-		}
-	}()
-	logrus.WithError(server.ListenAndServe()).Warn("Tide HTTP server stopped.")
+
+	// serve data
+	interrupts.ListenAndServe(server, 10*time.Second)
+
+	// run the controller, but only after one sync period expires after our first run
+	time.Sleep(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration)))
+	interrupts.Tick(func() {
+		sync(c)
+	}, cfg().Tide.SyncPeriod.Duration)
 }
 
 func sync(c *tide.Controller) {

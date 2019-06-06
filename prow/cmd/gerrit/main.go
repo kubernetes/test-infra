@@ -22,12 +22,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"os/signal"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -36,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -172,6 +170,8 @@ func (st *syncTime) Update(t time.Time) error {
 func main() {
 	logrusutil.ComponentInit("gerrit")
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 
 	o := gatherOptions()
@@ -210,22 +210,11 @@ func main() {
 
 	logrus.Infof("Starting gerrit fetcher")
 
-	// TODO(fejta): refactor as timer, which we reset to the current TickInterval value each time
-	tick := time.Tick(cfg().Gerrit.TickInterval.Duration)
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-tick:
-			start := time.Now()
-			if err := c.Sync(); err != nil {
-				logrus.WithError(err).Error("Error syncing.")
-			}
-			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
-		case <-sig:
-			logrus.Info("gerrit fetcher is shutting down...")
-			return
+	interrupts.Tick(func() {
+		start := time.Now()
+		if err := c.Sync(); err != nil {
+			logrus.WithError(err).Error("Error syncing.")
 		}
-	}
+		logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+	}, cfg().Gerrit.TickInterval.Duration)
 }

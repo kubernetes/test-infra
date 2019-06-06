@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -276,6 +277,8 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 	health := pjutil.NewHealth()
 
@@ -300,9 +303,9 @@ func main() {
 		}.get
 	}
 
-	http.HandleFunc("/vend/", s.handle)
-
+	mux := http.NewServeMux()
+	mux.HandleFunc("/vend/", s.handle)
+	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: mux}
 	health.ServeReady()
-
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
+	interrupts.ListenAndServe(server, 5*time.Second)
 }
