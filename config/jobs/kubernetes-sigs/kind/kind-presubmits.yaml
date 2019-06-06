@@ -36,6 +36,14 @@ presubmits:
     always_run: false
     optional: true
     spec:
+      # run on the ubuntu node pool, which has ipv6 modules
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "ubuntu"
+        effect: "NoSchedule"
+      nodeSelector:
+        dedicated: "ubuntu"
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
         env:
