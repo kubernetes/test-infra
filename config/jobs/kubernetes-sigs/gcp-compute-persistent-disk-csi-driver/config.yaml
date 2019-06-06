@@ -75,7 +75,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
