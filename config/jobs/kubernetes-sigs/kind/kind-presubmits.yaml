@@ -10,7 +10,8 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-master
         command:
-        - "./hack/ci/build-all.sh"
+        - runner.sh
+        - ./hack/ci/build-all.sh
   - name: pull-kind-verify
     decorate: true
     path_alias: sigs.k8s.io/kind
@@ -20,7 +21,8 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190516-576b68c-experimental
         command:
-        - "./hack/verify-all.sh"
+        - runner.sh
+        - ./hack/verify-all.sh
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # IPv6 enabled variant
