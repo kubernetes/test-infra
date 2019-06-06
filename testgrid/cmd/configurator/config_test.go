@@ -346,7 +346,7 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
 	"kubeflow/pipelines",
 	"kubernetes-csi/csi-driver-host-path",
-	"kubernetes-csi/csi-driver-host-path",
+	"kubernetes-csi/csi-driver-flex",
 	"kubernetes-csi/csi-lib-utils",
 	"kubernetes-csi/csi-release-tools",
 	"kubernetes-csi/csi-test",
