@@ -18,9 +18,10 @@
 </div>
 {{end}}
 <div id="lens-container">
-  {{if or .JobHistLink .ArtifactsLink .PRHistLink .TestgridLink .ExtraLinks}}
+  {{if or .JobHistLink .ProwJobLink .ArtifactsLink .PRHistLink .TestgridLink .ExtraLinks}}
   <div id="links-card" class="mdl-card mdl-shadow--2dp lens-card">
     {{if .JobHistLink}}<a href="{{.JobHistLink}}">Job History</a>{{end}}
+    {{if .ProwJobLink}}<a href="{{.ProwJobLink}}">Prow Job YAML</a>{{end}}
     {{if .PRHistLink}}<a href="{{.PRHistLink}}">PR History</a>{{end}}
     {{if .ArtifactsLink}}<a href="{{.ArtifactsLink}}">Artifacts</a>{{end}}
     {{if .TestgridLink}}<a href="{{.TestgridLink}}">Testgrid</a>{{end}}

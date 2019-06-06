@@ -30,6 +30,7 @@ import (
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -431,6 +432,132 @@ func TestJobPath(t *testing.T) {
 		fca := config.Agent{}
 		sg := New(fakeJa, fca.Config, fakeGCSClient, "", context.Background())
 		jobPath, err := sg.JobPath(tc.src)
+		if tc.expError && err == nil {
+			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
+			continue
+		}
+		if !tc.expError && err != nil {
+			t.Errorf("test %q: JobPath(%q) returned unexpected error %v", tc.name, tc.src, err)
+			continue
+		}
+		if jobPath != tc.expJobPath {
+			t.Errorf("test %q: JobPath(%q) expected %q, got %q", tc.name, tc.src, tc.expJobPath, jobPath)
+		}
+	}
+}
+
+func TestProwJobName(t *testing.T) {
+	kc := fkc{
+		prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Name: "flying-whales-1"},
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PeriodicJob,
+				Job:  "example-periodic-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1111",
+			},
+		},
+		prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Name: "flying-whales-2"},
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "example-presubmit-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "2222",
+			},
+		},
+		prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Name: "flying-whales-3"},
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "undecorated-job",
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1",
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type:             prowapi.PresubmitJob,
+				Job:              "missing-name-job",
+				DecorationConfig: &prowapi.DecorationConfig{},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1",
+			},
+		},
+	}
+	fca := config.Agent{}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca.Config)
+	fakeJa.Start()
+	testCases := []struct {
+		name       string
+		src        string
+		expJobPath string
+		expError   bool
+	}{
+		{
+			name:       "non-presubmit job in GCS without trailing /",
+			src:        "gcs/kubernetes-jenkins/logs/example-periodic-job/1111/",
+			expJobPath: "flying-whales-1",
+		},
+		{
+			name:       "presubmit job in GCS with trailing /",
+			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-presubmit-job/2222/",
+			expJobPath: "flying-whales-2",
+		},
+		{
+			name:       "non-presubmit Prow job",
+			src:        "prowjob/example-periodic-job/1111",
+			expJobPath: "flying-whales-1",
+		},
+		{
+			name:       "Prow presubmit job",
+			src:        "prowjob/example-presubmit-job/2222",
+			expJobPath: "flying-whales-2",
+		},
+		{
+			name:       "nonexistent job",
+			src:        "prowjob/example-periodic-job/0000",
+			expJobPath: "",
+		},
+		{
+			name:       "job missing name",
+			src:        "prowjob/missing-name-job/1",
+			expJobPath: "",
+		},
+		{
+			name:     "invalid key type",
+			src:      "oh/my/glob/drama/bomb",
+			expError: true,
+		},
+		{
+			name:     "invalid GCS path",
+			src:      "gcs/kubernetes-jenkins/bad-path",
+			expError: true,
+		},
+	}
+	for _, tc := range testCases {
+		fakeGCSClient := fakeGCSServer.Client()
+		fca := config.Agent{}
+		sg := New(fakeJa, fca.Config, fakeGCSClient, "", context.Background())
+		jobPath, err := sg.ProwJobName(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
 			continue

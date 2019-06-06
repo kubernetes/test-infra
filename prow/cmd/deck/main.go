@@ -784,6 +784,23 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		jobHistLink = path.Join("/job-history", jobPath)
 	}
 
+	var prowJobLink string
+	prowJobName, err := sg.ProwJobName(src)
+	if err == nil {
+		if prowJobName != "" {
+			u, err := url.Parse("/prowjob")
+			if err != nil {
+				return "", fmt.Errorf("error parsing prowjob path: %v", err)
+			}
+			query := url.Values{}
+			query.Set("prowjob", prowJobName)
+			u.RawQuery = query.Encode()
+			prowJobLink = u.String()
+		}
+	} else {
+		logrus.WithError(err).Warningf("Error getting ProwJob name for source %q.", src)
+	}
+
 	artifactsLink := ""
 	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefix
 	if gcswebPrefix != "" {
@@ -848,6 +865,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		Source        string
 		LensArtifacts map[string][]string
 		JobHistLink   string
+		ProwJobLink   string
 		ArtifactsLink string
 		PRHistLink    string
 		Announcement  template.HTML
@@ -862,6 +880,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		Source:        src,
 		LensArtifacts: viewerCache,
 		JobHistLink:   jobHistLink,
+		ProwJobLink:   prowJobLink,
 		ArtifactsLink: artifactsLink,
 		PRHistLink:    prHistLink,
 		Announcement:  template.HTML(announcement),
