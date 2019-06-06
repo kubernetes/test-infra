@@ -299,10 +299,13 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			}
 			report := reporter.ParseReport(message.Message)
 			if report != nil {
-				logrus.Infof("Found latest report: %s", message.Message)
+				logger.Infof("Found latest report: %s", message.Message)
 				latestReport = report
 				break
 			}
+		}
+		if latestReport == nil {
+			logger.Warnf("Found nil latest report")
 		}
 		filter, err := messageFilter(c.lastUpdate, change, presubmits, latestReport, logger)
 		if err != nil {

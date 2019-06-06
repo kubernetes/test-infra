@@ -276,12 +276,21 @@ func generateReport(pjs []*v1.ProwJob) *JobReport {
 // ParseReport creates a jobReport from a string, nil if cannot parse
 func ParseReport(message string) *JobReport {
 	contents := strings.Split(message, "\n")
-	if !strings.HasPrefix(contents[0], defaultProwHeader) {
+	start := 0
+	isReport := false
+	for start < len(contents) {
+		if strings.HasPrefix(contents[start], defaultProwHeader) {
+			isReport = true
+			break
+		}
+		start++
+	}
+	if !isReport {
 		return nil
 	}
 	report := &JobReport{}
-	report.header = contents[0]
-	for i := 1; i < len(contents); i++ {
+	report.header = contents[start]
+	for i := start; i < len(contents); i++ {
 		j := deserializeJob(contents[i])
 		if j != nil {
 			report.Jobs = append(report.Jobs, j)
