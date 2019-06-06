@@ -1,5 +1,30 @@
 presubmits:
   kubernetes/k8s.io:
+  - name: setup-k8sio-cip
+    decorate: true
+    skip_report: false
+    always_run: true
+    max_concurrency: 10
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/cloud-builders/git:latest
+        command:
+        - bash
+        args:
+        - -c
+        - /etc/promoter/setup.sh
+        env:
+        - name: _GOLANGCI_LINT_VERSION
+          value: v1.13.2
+        volumeMounts:
+        - name: promoter
+          mountPath: /etc/promoter
+      volumes:
+      - name: promoter
+        configMap:
+          name: promoter
   - name: pull-k8sio-cip
     decorate: true
     skip_report: false
