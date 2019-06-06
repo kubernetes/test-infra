@@ -634,7 +634,7 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
-        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
+        - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
         - --gke-environment=test
         - --gke-shape={"default":{"Nodes":4,"MachineType":"n1-standard-2"}}
         - --provider=gke
