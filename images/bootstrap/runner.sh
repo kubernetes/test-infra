@@ -69,6 +69,8 @@ EOF
     # enable ipv6
     sysctl net.ipv6.conf.all.disable_ipv6=0
     sysctl net.ipv6.conf.all.forwarding=1
+    # enable ipv6 iptables
+    modprobe -v ip6table_nat
 fi
 
 # Check if the job has opted-in to docker-in-docker availability.
