@@ -56,6 +56,7 @@ sh_test(
         "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
     ],
     data = [
+        ":boilerplate/boilerplate.generated.go.txt",
         ":update-codegen",
         "//vendor/k8s.io/code-generator/cmd/client-gen",
         "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
@@ -77,6 +78,7 @@ sh_binary(
         "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
     ],
     data = [
+        ":boilerplate/boilerplate.generated.go.txt",
         "//vendor/k8s.io/code-generator/cmd/client-gen",
         "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
         "//vendor/k8s.io/code-generator/cmd/informer-gen",

@@ -38,7 +38,8 @@ TMP_DIFFROOT="${TEST_TMPDIR}/prow"
 mkdir -p "${TMP_DIFFROOT}"
 cp -a "${DIFFROOT}"/{apis,client} "${TMP_DIFFROOT}"
 
-BUILD_WORKSPACE_DIRECTORY="$SCRIPT_ROOT" "$@"
+clean=yes # bazel test files are read-only, must first delete
+BUILD_WORKSPACE_DIRECTORY="$SCRIPT_ROOT" "$@" "$clean"
 echo "diffing ${DIFFROOT} against freshly generated codegen"
 ret=0
 diff -Naupr "${DIFFROOT}/apis" "${TMP_DIFFROOT}/apis" || ret=$?
