@@ -213,6 +213,7 @@ func getPathPrefix(path string) string {
 		"/pr-data.js",
 		"/log",
 		"/rerun",
+		"/prowjob",
 		"/spyglass/",
 		"/view/",
 		"/job-history/",
@@ -394,6 +395,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient)))
+	mux.Handle("/prowjob", gziphandler.GzipHandler(handleProwJob(prowJobClient)))
 
 	if o.spyglass {
 		initSpyglass(cfg, o, mux, ja)
@@ -1084,6 +1086,34 @@ func validateLogRequest(r *http.Request) error {
 		return errors.New("request did not provide the 'id' query parameter")
 	}
 	return nil
+}
+
+func handleProwJob(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("prowjob")
+		if name == "" {
+			http.Error(w, "request did not provide the 'prowjob' query parameter", http.StatusBadRequest)
+			return
+		}
+		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
+		if err != nil {
+			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
+			if !kerrors.IsNotFound(err) {
+				// admins only care about errors other than not found
+				logrus.WithError(err).Warning("ProwJob not found.")
+			}
+			return
+		}
+		b, err := yaml.Marshal(&pj)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
+			logrus.WithError(err).Error("Error marshaling jobs.")
+			return
+		}
+		if _, err := w.Write(b); err != nil {
+			logrus.WithError(err).Error("Error writing job.")
+		}
+	}
 }
 
 func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {

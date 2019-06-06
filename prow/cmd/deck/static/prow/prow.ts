@@ -550,6 +550,7 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.text(""));
         }
         r.appendChild(createRerunCell(modal, rerunCommand, build.prow_job));
+        r.appendChild(createViewJobCell(build.prow_job));
         const key = groupKey(build);
         if (key !== lastKey) {
             // This is a different PR or commit than the previous row.
@@ -664,6 +665,15 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
     };
     c.appendChild(i);
     c.classList.add("icon-cell");
+    return c;
+}
+
+function createViewJobCell(prowjob: string): HTMLTableDataCellElement {
+    const c = document.createElement("td");
+    const i = icon.create("pageview", "Show job YAML");
+    i.href = `https://${window.location.hostname}/prowjob?prowjob=${prowjob}`;
+    c.classList.add("icon-cell");
+    c.appendChild(i);
     return c;
 }
 
