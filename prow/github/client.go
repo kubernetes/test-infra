@@ -135,7 +135,6 @@ type RepositoryClient interface {
 	GetRepo(owner, name string) (Repo, error)
 	GetRepos(org string, isUser bool) ([]Repo, error)
 	GetBranches(org, repo string, onlyProtected bool) ([]Branch, error)
-	GetBranchProtection(org, repo, branch string) (*BranchProtection, error)
 	RemoveBranchProtection(org, repo, branch string) error
 	UpdateBranchProtection(org, repo, branch string, config BranchProtectionRequest) error
 	AddRepoLabel(org, repo, label, description, color string) error
@@ -1567,51 +1566,6 @@ func (c *client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, er
 		return nil, err
 	}
 	return branches, nil
-}
-
-// GetBranchProtection returns current protection object for the branch
-//
-// See https://developer.github.com/v3/repos/branches/#get-branch-protection
-func (c *client) GetBranchProtection(org, repo, branch string) (*BranchProtection, error) {
-	c.log("GetBranchProtection", org, repo, branch)
-	code, body, err := c.requestRaw(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/repos/%s/%s/branches/%s/protection", org, repo, branch),
-		// GitHub returns 404 for this call if either:
-		// - The branch is not protected
-		// - The access token used does not have sufficient privileges
-		// We therefore need to introspect the response body.
-		exitCodes: []int{200, 404},
-	})
-
-	switch {
-	case err != nil:
-		return nil, err
-	case code == 200:
-		var bp BranchProtection
-		if err := json.Unmarshal(body, &bp); err != nil {
-			return nil, err
-		}
-		return &bp, nil
-	case code == 404:
-		// continue
-	default:
-		return nil, fmt.Errorf("unexpected status code: %v", code)
-	}
-
-	var ge githubError
-	if err := json.Unmarshal(body, &ge); err != nil {
-		return nil, err
-	}
-
-	// If the error was because the branch is not protected, we return a
-	// nil pointer to indicate this.
-	if ge.Message == "Branch not protected" {
-		return nil, nil
-	}
-
-	// Otherwise we got some other 404 error.
-	return nil, fmt.Errorf("getting branch protection 404: %s", ge.Message)
 }
 
 // RemoveBranchProtection unprotects org/repo=branch.
