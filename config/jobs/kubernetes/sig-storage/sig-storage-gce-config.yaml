@@ -145,3 +145,151 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: pull-kubernetes-e2e-gce-iscsi
+    always_run: false
+    optional: true
+    run_if_changed: '(pkg\/volume\/iscsi)'
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=150
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=ubuntu
+        - --image-family=ubuntu-gke-1804-lts-1
+        - --image-project=ubuntu-os-gke-cloud
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --ginkgo-parallel=30
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi
+        - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=120m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-b03896b-master
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-e2e-gce-iscsi-serial
+    always_run: false
+    optional: true
+    run_if_changed: '(pkg\/volume\/iscsi)'
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=150
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=ubuntu
+        - --image-family=ubuntu-gke-1804-lts-1
+        - --image-project=ubuntu-os-gke-cloud
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi-serial
+        - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --timeout=120m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-b03896b-master
+        resources:
+          requests:
+            memory: "6Gi"
+
+periodics:
+- interval: 24h
+  name: ci-kubernetes-e2e-gce-iscsi
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-pull-kubernetes-e2e: "true"
+    preset-pull-kubernetes-e2e-gce: "true"
+  spec:
+    containers:
+    - args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=$(PULL_REFS)
+      - --repo=k8s.io/release
+      - --upload=gs://kubernetes-jenkins/pr-logs
+      - --timeout=150
+      - --scenario=kubernetes_e2e
+      - --
+      - --build=bazel
+      - --cluster=
+      - --extract=local
+      - --gcp-node-image=ubuntu
+      - --image-family=ubuntu-gke-1804-lts-1
+      - --image-project=ubuntu-os-gke-cloud
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --ginkgo-parallel=30
+      - --runtime-config=batch/v2alpha1=true
+      - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-iscsi
+      - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-b03896b-master
+      resources:
+        requests:
+          memory: "6Gi"
+- interval: 24h
+  name: ci-kubernetes-e2e-gce-iscsi-serial
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-pull-kubernetes-e2e: "true"
+    preset-pull-kubernetes-e2e-gce: "true"
+  spec:
+    containers:
+    - args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=$(PULL_REFS)
+      - --repo=k8s.io/release
+      - --upload=gs://kubernetes-jenkins/pr-logs
+      - --timeout=150
+      - --scenario=kubernetes_e2e
+      - --
+      - --build=bazel
+      - --cluster=
+      - --extract=local
+      - --gcp-node-image=ubuntu
+      - --image-family=ubuntu-gke-1804-lts-1
+      - --image-project=ubuntu-os-gke-cloud
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --runtime-config=batch/v2alpha1=true
+      - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-iscsi-serial
+      - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-b03896b-master
+      resources:
+        requests:
+          memory: "6Gi"

@@ -976,6 +976,18 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable3
   num_failures_to_alert: 1
+- name: pull-kubernetes-e2e-gce-iscsi
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-iscsi
+  num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-iscsi-serial
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-iscsi-serial
+  num_columns_recent: 20
+- name: ci-kubernetes-e2e-gce-iscsi
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-iscsi
+  num_columns_recent: 20
+- name: ci-kubernetes-e2e-gce-iscsi-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-iscsi-serial
+  num_columns_recent: 20
 # GCE Guest compute-image-tools
 - name: ci-daisy-e2e
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
@@ -4655,6 +4667,19 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-regional-slow
     base_options: include-filter-by-regex=Volume%7Cstorage
     description: storage gke regional slow e2e tests for master branch
+  - name: gce-iscsi
+    test_group_name: ci-kubernetes-e2e-gce-iscsi
+    base_options: include-filter-by-regex=Volume%7Cstorage
+    description: storage iSCSI e2e tests for master branch
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+  - name: gce-iscsi-serial
+    test_group_name: ci-kubernetes-e2e-gce-iscsi-serial
+    base_options: include-filter-by-regex=Volume%7Cstorage
+    description: storage iSCSI serial e2e tests for master branch
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+
 
 - name: sig-storage-local-static-provisioner
   dashboard_tab:
@@ -5254,6 +5279,12 @@ dashboards:
     base_options: width=10
   - name: pull-canaries
     test_group_name: pull-kubernetes-dependencies-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-iscsi
+    test_group_name: pull-kubernetes-e2e-gce-iscsi
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-iscsi-serial
+    test_group_name: pull-kubernetes-e2e-gce-iscsi-serial
     base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
