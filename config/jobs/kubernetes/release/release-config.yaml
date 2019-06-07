@@ -34,7 +34,7 @@ presubmits:
           requests:
             memory: "6Gi"
 
-  - name: unit-test
+  - name: pull-release-unit
     always_run: true
     decorate: true
     path_alias: k8s.io/release

@@ -373,7 +373,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes/k8s.io",
 	"kubernetes/kubeadm",
 	"kubernetes/minikube",
-	"kubernetes/release",
 	// This is the one entry that should be here
 	"kubernetes-security/",
 }
