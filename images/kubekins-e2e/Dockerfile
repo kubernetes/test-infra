@@ -43,6 +43,8 @@ RUN apt-get update && \
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli
+# Allow generate junit.xml in python
+RUN pip install junit-xml
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
