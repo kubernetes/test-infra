@@ -21,6 +21,9 @@ presets:
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling"
+  # Increase throughput in Kubemark master components.
+  - name: KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS
+    value: "--kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity
   - name: TEST_CLUSTER_LOG_LEVEL
     value: "--v=2"
@@ -47,9 +50,6 @@ presets:
     preset-e2e-kubemark-gce-big: "true"
   env:
   # kubernetes env
-  # Increase throughput in Kubemark master components.
-  - name: KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS
-    value: "--kube-api-qps=100 --kube-api-burst=100"
   ### e2e-env
   # Increase throughput in Load test.
   - name: LOAD_TEST_THROUGHPUT
@@ -59,9 +59,6 @@ presets:
     preset-e2e-kubemark-gce-scale: "true"
   env:
   # kubernetes env
-  # Increase throughput in Kubemark master components.
-  - name: KUBEMARK_MASTER_COMPONENTS_QPS_LIMITS
-    value: "--kube-api-qps=100 --kube-api-burst=100"
   # TODO: Remove this after kube-proxy improvements.
   - name: USE_REAL_PROXIER
     value: "false"
