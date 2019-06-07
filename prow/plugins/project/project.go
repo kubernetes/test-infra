@@ -47,6 +47,7 @@ var (
 	successMovingCardMsg      = "You have successfully moved the project card for this issue to column %s (ID %d)."
 	successCreatingCardMsg    = "You have successfully created a project card for this issue. It's been added to project %s column %s (ID %D)."
 	successClearingProjectMsg = "You have successfully removed this issue/PR from project %s."
+	failedClearingProjectMsg  = "The project %q is not valid for the issue/PR %v. Please provide a valid project to which this issue belongs."
 	clearKeyword              = "clear"
 	projectNameToIDMap        = make(map[string]int)
 )
@@ -229,15 +230,6 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		}
 	}
 
-	// Clear issue/PR from project if command is to clear
-	if shouldClear {
-		if err := gc.DeleteProjectCard(projectID); err != nil {
-			return err
-		}
-		msg = fmt.Sprintf(successClearingProjectMsg, proposedProject)
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
-	}
-
 	// Get all columns for proposedProject
 	projectColumns, err := gc.GetProjectColumns(projectID)
 	if err != nil {
@@ -255,7 +247,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 			break
 		}
 	}
-	if !columnFound {
+	if !columnFound && !shouldClear {
 		// If user does not provide a column name, look for the columns
 		// specified in the project config and see if any of them exists on the
 		// proposed project
@@ -315,6 +307,21 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return nil
 	}
 
+	// Clear issue/PR from project if command is to clear
+	if shouldClear {
+		if existingProjectCard != nil {
+			if err := gc.DeleteProjectCard(existingProjectCard.ID); err != nil {
+				return err
+			}
+			msg = fmt.Sprintf(successClearingProjectMsg, proposedProject)
+			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		} else {
+			msg = fmt.Sprintf(failedClearingProjectMsg, proposedProject, e.Number)
+			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		}
+	}
+
+	// Move this issue/PR to the new column if there's already a project card for this issue/PR in this project
 	if existingProjectCard != nil {
 		log.Infof("Move card to column proposedColumnID: %v with issue: %v ", proposedColumnID, e.Number)
 		if err := gc.MoveProjectCard(existingProjectCard.ID, proposedColumnID); err != nil {
