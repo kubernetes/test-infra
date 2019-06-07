@@ -75,11 +75,10 @@ func TestOptions_Validate(t *testing.T) {
 }
 
 type fakeClient struct {
-	repos             map[string][]github.Repo
-	branches          map[string][]github.Branch
-	deleted           map[string]bool
-	updated           map[string]github.BranchProtectionRequest
-	branchProtections map[string]github.BranchProtection
+	repos    map[string][]github.Repo
+	branches map[string][]github.Branch
+	deleted  map[string]bool
+	updated  map[string]github.BranchProtectionRequest
 }
 
 func (c fakeClient) GetRepo(org string, repo string) (github.Repo, error) {
@@ -125,14 +124,6 @@ func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.
 		}
 	}
 	return b, nil
-}
-
-func (c *fakeClient) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
-	ctx := org + "/" + repo + "=" + branch
-	if bp, ok := c.branchProtections[ctx]; ok {
-		return &bp, nil
-	}
-	return nil, nil
 }
 
 func (c *fakeClient) UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error {
@@ -270,14 +261,13 @@ func TestProtect(t *testing.T) {
 	yes := true
 
 	cases := []struct {
-		name              string
-		branches          []string
-		startUnprotected  bool
-		config            string
-		archived          string
-		expected          []requirements
-		branchProtections map[string]github.BranchProtection
-		errors            int
+		name             string
+		branches         []string
+		startUnprotected bool
+		config           string
+		archived         string
+		expected         []requirements
+		errors           int
 	}{
 		{
 			name: "nothing",
@@ -707,98 +697,6 @@ branch-protection:
 				},
 			},
 		},
-		{
-			name:     "do not make update request if the branch is already up-to-date",
-			branches: []string{"kubernetes/test-infra=master"},
-			config: `
-branch-protection:
-  enforce_admins: true
-  required_status_checks:
-    contexts:
-    - config-presubmit
-    strict: true
-  required_pull_request_reviews:
-    required_approving_review_count: 3
-    dismiss_stale: false
-    require_code_owner_reviews: true
-    dismissal_restrictions:
-      users:
-      - bob
-      - jane
-      teams:
-      - oncall
-      - sres
-  restrictions:
-    teams:
-    - config-team
-    users:
-    - cindy
-  protect: true
-  orgs:
-    kubernetes:
-      repos:
-        test-infra:
-`,
-			branchProtections: map[string]github.BranchProtection{
-				"kubernetes/test-infra=master": {
-					EnforceAdmins: github.EnforceAdmins{Enabled: true},
-					RequiredStatusChecks: &github.RequiredStatusChecks{
-						Strict:   true,
-						Contexts: []string{"config-presubmit"},
-					},
-					RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
-						DismissStaleReviews:          false,
-						RequireCodeOwnerReviews:      true,
-						RequiredApprovingReviewCount: 3,
-						DismissalRestrictions: github.Restrictions{
-							Users: &[]string{"bob", "jane"},
-							Teams: &[]string{"oncall", "sres"},
-						},
-					},
-					Restrictions: &github.Restrictions{
-						Users: &[]string{"cindy"},
-						Teams: &[]string{"config-team"},
-					},
-				},
-			},
-		},
-		{
-			name:     "make request if branch protection is present, but out of date",
-			branches: []string{"kubernetes/test-infra=master"},
-			config: `
-branch-protection:
-  enforce_admins: true
-  required_pull_request_reviews:
-    required_approving_review_count: 3
-  protect: true
-  orgs:
-    kubernetes:
-      repos:
-        test-infra:
-`,
-			branchProtections: map[string]github.BranchProtection{
-				"kubernetes/test-infra=master": {
-					EnforceAdmins: github.EnforceAdmins{Enabled: true},
-					RequiredStatusChecks: &github.RequiredStatusChecks{
-						Strict:   true,
-						Contexts: []string{"config-presubmit"},
-					},
-				},
-			},
-			expected: []requirements{
-				{
-					Org:    "kubernetes",
-					Repo:   "test-infra",
-					Branch: "master",
-					Request: &github.BranchProtectionRequest{
-						EnforceAdmins: &yes,
-						RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
-							RequiredApprovingReviewCount: 3,
-						},
-					},
-				},
-			},
-		},
 	}
 
 	for _, tc := range cases {
@@ -819,9 +717,8 @@ branch-protection:
 				repos[org][repo] = true
 			}
 			fc := fakeClient{
-				branches:          branches,
-				repos:             map[string][]github.Repo{},
-				branchProtections: tc.branchProtections,
+				branches: branches,
+				repos:    map[string][]github.Repo{},
 			}
 			for org, r := range repos {
 				for rname := range r {
