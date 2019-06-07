@@ -1774,6 +1774,14 @@ test_groups:
 - name: ci-kubernetes-e2e-ovn-ovs-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-ovn-ovs-master-windows
 
+# Release Engineering test groups
+- name: pull-release-cluster-up
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-cluster-up
+  num_columns_recent: 30
+- name: pull-release-unit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-unit
+  num_columns_recent: 30
+
 # Add New Testgroups Here
 
 
@@ -2910,6 +2918,41 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
     description: "Uses kubetest to run a subset of e2e tests (+Feature:Reboot) against a cluster created with cluster/kube-up.sh"
 
+- name: sig-release-misc
+  dashboard_tab:
+  - name: cross-build
+    test_group_name: ci-kubernetes-cross-build
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
+  - name: kops-build
+    test_group_name: ci-kops-build
+    alert_options:
+      alert_mail_to_addresses: kubernetes-release-team@googlegroups.com
+  - name: debian-unstable
+    test_group_name: ci-kubernetes-build-debian-unstable
+    alert_options:
+      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
+  - name: post-k8sio-cip
+    test_group_name: post-k8sio-cip
+  - name: ci-k8sio-cip
+    test_group_name: ci-k8sio-cip
+  - name: periodic-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
+    alert_options:
+      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
+  - name: periodic-packages-install-deb
+    test_group_name: periodic-kubernetes-e2e-packages-install-deb
+    alert_options:
+      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
+  - name: release-cluster-up
+    test_group_name: pull-release-cluster-up
+    alert_options:
+      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
+  - name: release-unit
+    test_group_name: pull-release-unit
+    alert_options:
+      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
+
 - name: sig-release-1.15-blocking
 - name: sig-release-1.15-informing
 - name: sig-release-1.15-all
@@ -3118,23 +3161,6 @@ dashboards:
     test_group_name: post-community-tempelis-apply
     alert_options:
       alert_mail_to_addresses: ktbry@google.com
-
-- name: sig-release-misc
-  dashboard_tab:
-  - name: cross-build
-    test_group_name: ci-kubernetes-cross-build
-  - name: kops-build
-    test_group_name: ci-kops-build
-  - name: debian-unstable
-    test_group_name: ci-kubernetes-build-debian-unstable
-  - name: post-k8sio-cip
-    test_group_name: post-k8sio-cip
-  - name: ci-k8sio-cip
-    test_group_name: ci-k8sio-cip
-  - name: periodic-packages-pushed
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
-  - name: periodic-packages-install-deb
-    test_group_name: periodic-kubernetes-e2e-packages-install-deb
 
 - name: sig-release-1.12-all
   dashboard_tab:
@@ -6527,6 +6553,7 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
+  - sig-release-misc
   - sig-release-1.15-all
   - sig-release-1.15-blocking
   - sig-release-1.15-informing
@@ -6539,7 +6566,6 @@ dashboard_groups:
   - sig-release-1.12-all
   - sig-release-1.12-blocking
   - sig-release-1.12-informing
-  - sig-release-misc
   - sig-release-publishing-bot
 
 - name: sig-scalability
