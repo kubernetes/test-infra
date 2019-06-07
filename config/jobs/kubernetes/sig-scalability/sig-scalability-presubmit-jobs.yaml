@@ -44,7 +44,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-b96146a3c-master
         resources:
           requests:
             memory: "6Gi"
@@ -92,7 +92,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-b96146a3c-master
         resources:
           requests:
             memory: "6Gi"
@@ -140,7 +140,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-b96146a3c-master
         resources:
           requests:
             memory: "6Gi"
@@ -162,7 +162,7 @@ presubmits:
       preset-e2e-kubemark-gce-big: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-b96146a3c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -222,7 +222,7 @@ presubmits:
       preset-e2e-kubemark-gce-scale: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-b96146a3c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -309,7 +309,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-b96146a3c-master
         resources:
           requests:
             memory: "6Gi"
@@ -364,7 +364,7 @@ presubmits:
             - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-b96146a3c-master
           resources:
             requests:
               memory: "6Gi"
