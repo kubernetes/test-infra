@@ -45,7 +45,7 @@ presubmits:
       nodeSelector:
         dedicated: "ubuntu"
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190605-45f60c3-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190606-4bd9b45-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
