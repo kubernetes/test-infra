@@ -297,6 +297,7 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       # docker-in-docker needs privileged mode
@@ -391,6 +392,7 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
       # docker-in-docker needs privilged mode
