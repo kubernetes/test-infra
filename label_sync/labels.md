@@ -8,6 +8,7 @@
 - [Labels that apply to all repos, for both issues and PRs](#labels-that-apply-to-all-repos-for-both-issues-and-prs)
 - [Labels that apply to all repos, only for issues](#labels-that-apply-to-all-repos-only-for-issues)
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
+- [Labels that apply to kubernetes-sigs/cluster-api, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/enhancements, for both issues and PRs](#labels-that-apply-to-kubernetesenhancements-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/k8s.io, for both issues and PRs](#labels-that-apply-to-kubernetesk8s.io-for-both-issues-and-prs)
@@ -161,6 +162,20 @@ larger set of contributors to apply/remove them.
 | <a id="tide/merge-method-merge" href="#tide/merge-method-merge">`tide/merge-method-merge`</a> | Denotes a PR that should use a standard merge by tide when it merges.| humans | |
 | <a id="tide/merge-method-rebase" href="#tide/merge-method-rebase">`tide/merge-method-rebase`</a> | Denotes a PR that should be rebased by tide when it merges.| humans | |
 | <a id="tide/merge-method-squash" href="#tide/merge-method-squash">`tide/merge-method-squash`</a> | Denotes a PR that should be squashed by tide when it merges. <br><br> This was previously `tide/squash`, | humans | |
+
+## Labels that apply to kubernetes-sigs/cluster-api, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/api" href="#area/api">`area/api`</a> | Issues or PRs related to the APIs| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/clusterctl" href="#area/clusterctl">`area/clusterctl`</a> | Issues or PRs related to clusterctl| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/control-plane" href="#area/control-plane">`area/control-plane`</a> | Issues or PRs related to control-plane lifecycle management| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/health" href="#area/health">`area/health`</a> | Issues or PRs related to health| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/machine" href="#area/machine">`area/machine`</a> | Issues or PRs related to machine lifecycle management| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/release" href="#area/release">`area/release`</a> | Issues or PRs related to releasing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/testing" href="#area/testing">`area/testing`</a> | Issues or PRs related to testing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/upgrades" href="#area/upgrades">`area/upgrades`</a> | Issues or PRs related to upgrades| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/ux" href="#area/ux">`area/ux`</a> | Issues or PRs related to UX| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/community, for both issues and PRs
 

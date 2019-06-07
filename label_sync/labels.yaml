@@ -1175,3 +1175,59 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/cluster-api:
+    labels:
+      - color: 0ffa16
+        description: Issues or PRs related to clusterctl
+        name: area/clusterctl
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to the APIs
+        name: area/api
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to UX
+        name: area/ux
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to releasing
+        name: area/release
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to testing
+        name: area/testing
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to upgrades
+        name: area/upgrades
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to control-plane lifecycle management
+        name: area/control-plane
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to machine lifecycle management
+        name: area/machine
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0ffa16
+        description: Issues or PRs related to health
+        name: area/health
+        target: both
+        prowPlugin: label
+        addedBy: anyone
