@@ -357,22 +357,6 @@ type Branch struct {
 	// TODO(fejta): consider including undocumented protection key
 }
 
-// BranchProtection represents protections
-// in place for a branch
-// See also: https://developer.github.com/v3/repos/branches/#get-branch-protection
-type BranchProtection struct {
-	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks"`
-	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
-	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
-	Restrictions               *Restrictions               `json:"restrictions"`
-}
-
-// EnforceAdmins specifies whether to enforce the
-// configured branch restrictions for administrators.
-type EnforceAdmins struct {
-	Enabled bool `json:"enabled"`
-}
-
 // BranchProtectionRequest represents
 // protections in place for a branch.
 // See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
