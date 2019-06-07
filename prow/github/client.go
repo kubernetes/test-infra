@@ -98,12 +98,15 @@ type IssueClient interface {
 	CloseIssue(org, repo string, number int) error
 	ReopenIssue(org, repo string, number int) error
 	FindIssues(query, sort string, asc bool) ([]Issue, error)
+	GetIssue(org, repo string, number int) (*Issue, error)
+	EditIssue(org, repo string, number int, issue *Issue) (*Issue, error)
 }
 
 // PullRequestClient interface for pull request related API actions
 type PullRequestClient interface {
 	GetPullRequests(org, repo string) ([]PullRequest, error)
 	GetPullRequest(org, repo string, number int) (*PullRequest, error)
+	EditPullRequest(org, repo string, number int, pr *PullRequest) (*PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
@@ -1264,6 +1267,65 @@ func (c *client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 		exitCodes: []int{200},
 	}, &pr)
 	return &pr, err
+}
+
+// EditPullRequest will update the pull request.
+//
+// See https://developer.github.com/v3/pulls/#update-a-pull-request
+func (c *client) EditPullRequest(org, repo string, number int, pr *PullRequest) (*PullRequest, error) {
+	c.log("EditPullRequest", org, repo, number)
+	if c.dry {
+		return pr, nil
+	}
+	var ret PullRequest
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
+		exitCodes:   []int{200},
+		requestBody: &pr,
+	}, &ret)
+	if err != nil {
+		return nil, err
+	}
+	return &ret, nil
+}
+
+// GetIssue gets an issue.
+//
+// See https://developer.github.com/v3/issues/#get-a-single-issue
+func (c *client) GetIssue(org, repo string, number int) (*Issue, error) {
+	c.log("GetIssue", org, repo, number)
+	var i Issue
+	_, err := c.request(&request{
+		// allow emoji
+		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		accept:    "application/vnd.github.symmetra-preview+json",
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
+		exitCodes: []int{200},
+	}, &i)
+	return &i, err
+}
+
+// EditIssue will update the issue.
+//
+// See https://developer.github.com/v3/issues/#edit-an-issue
+func (c *client) EditIssue(org, repo string, number int, issue *Issue) (*Issue, error) {
+	c.log("EditIssue", org, repo, number)
+	if c.dry {
+		return issue, nil
+	}
+	var ret Issue
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
+		exitCodes:   []int{200},
+		requestBody: &issue,
+	}, &ret)
+	if err != nil {
+		return nil, err
+	}
+	return &ret, nil
 }
 
 // GetPullRequestPatch gets the patch version of a pull request.
