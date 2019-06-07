@@ -286,22 +286,13 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 	if err != nil {
 		return fmt.Errorf("get current branch protection: %v", err)
 	}
-	var policyBP github.BranchProtection
 	var req *github.BranchProtectionRequest
 	if *bp.Protect {
 		r := makeRequest(*bp)
 		req = &r
-		policyBP = github.BranchProtection{
-			EnforceAdmins: github.EnforceAdmins{
-				Enabled: r.EnforceAdmins != nil && *r.EnforceAdmins,
-			},
-			RequiredPullRequestReviews: r.RequiredPullRequestReviews,
-			RequiredStatusChecks:       r.RequiredStatusChecks,
-			Restrictions:               r.Restrictions,
-		}
 	}
 
-	if req != nil && currentBP != nil && equalBranchProtections(*currentBP, policyBP) {
+	if equalBranchProtections(currentBP, req) {
 		logrus.Debugf("%s/%s=%s: current branch protection matches policy, skipping", orgName, repo, branchName)
 		return nil
 	}
@@ -315,67 +306,113 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 	return nil
 }
 
-func equalBranchProtections(bp1, bp2 github.BranchProtection) bool {
-	equalStringSlices := func(s1, s2 *[]string) bool {
-		switch {
-		case s1 == s2:
-			return true
-		case s1 != nil && s2 != nil:
-			if len(*s1) != len(*s2) {
+func equalBranchProtections(state *github.BranchProtection, request *github.BranchProtectionRequest) bool {
+	switch {
+	case state == nil && request == nil:
+		return true
+	case state != nil && request != nil:
+		return equalRequiredStatusChecks(state.RequiredStatusChecks, request.RequiredStatusChecks) &&
+			equalAdminEnforcement(state.EnforceAdmins, request.EnforceAdmins) &&
+			equalRequiredPullRequestReviews(state.RequiredPullRequestReviews, request.RequiredPullRequestReviews) &&
+			equalRestrictions(state.Restrictions, request.Restrictions)
+	default:
+		return false
+	}
+}
+
+func equalRequiredStatusChecks(state, request *github.RequiredStatusChecks) bool {
+	switch {
+	case state == request:
+		return true
+	case state != nil && request != nil:
+		return state.Strict == request.Strict &&
+			equalStringSlices(&state.Contexts, &request.Contexts)
+	default:
+		return false
+	}
+}
+
+func equalStringSlices(s1, s2 *[]string) bool {
+	switch {
+	case s1 == s2:
+		return true
+	case s1 != nil && s2 != nil:
+		if len(*s1) != len(*s2) {
+			return false
+		}
+		sort.Strings(*s1)
+		sort.Strings(*s2)
+		for i, v := range *s1 {
+			if v != (*s2)[i] {
 				return false
 			}
-			sort.Strings(*s1)
-			sort.Strings(*s2)
-			for i, v := range *s1 {
-				if v != (*s2)[i] {
-					return false
-				}
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+func equalAdminEnforcement(state github.EnforceAdmins, request *bool) bool {
+	switch {
+	case request == nil:
+		// the state we read from the GitHub API will always contain
+		// a non-nil configuration for admins, while our request may
+		// be nil to signify we do not want to make any statement.
+		// However, not making any statement about admins will buy
+		// into the default behavior, which is for admins to not be
+		// bound by the branch protection rules. Therefore, making no
+		// request is equivalent to making a request to not enforce
+		// rules on admins.
+		return state.Enabled == false
+	default:
+		return state.Enabled == *request
+	}
+}
+
+func equalRequiredPullRequestReviews(state *github.RequiredPullRequestReviews, request *github.RequiredPullRequestReviewsRequest) bool {
+	switch {
+	case state == nil && request == nil:
+		return true
+	case state != nil && request != nil:
+		return state.DismissStaleReviews == request.DismissStaleReviews &&
+			state.RequireCodeOwnerReviews == request.RequireCodeOwnerReviews &&
+			state.RequiredApprovingReviewCount == request.RequiredApprovingReviewCount &&
+			equalRestrictions(state.DismissalRestrictions, &request.DismissalRestrictions)
+	default:
+		return false
+	}
+}
+
+func equalRestrictions(state *github.Restrictions, request *github.RestrictionsRequest) bool {
+	switch {
+	case state == nil && request == nil:
+		return true
+	case state == nil && request != nil:
+		// when there are no restrictions on users or teams, GitHub will
+		// omit the fields from the response we get when asking for the
+		// current state. If we _are_ making a request but it has no real
+		// effect, this is identical to making no request for restriction.
+		return request.Users == nil && request.Teams == nil
+	case state != nil && request != nil:
+		var users []string
+		for _, user := range state.Users {
+			users = append(users, github.NormLogin(user.Login))
+		}
+		var teams []string
+		for _, team := range state.Teams {
+			// RestrictionsRequests record the teams by slug, not name
+			teams = append(teams, team.Slug)
+		}
+
+		var requestUsers []string
+		if request.Users != nil {
+			for _, user := range *request.Users {
+				requestUsers = append(requestUsers, github.NormLogin(user))
 			}
-			return true
-		default:
-			return false
 		}
+		return equalStringSlices(&teams, request.Teams) && equalStringSlices(&users, &requestUsers)
+	default:
+		return false
 	}
-
-	equalStatusChecks := func(sc1, sc2 *github.RequiredStatusChecks) bool {
-		switch {
-		case sc1 == sc2:
-			return true
-		case sc1 != nil && sc2 != nil:
-			return sc1.Strict == sc2.Strict &&
-				equalStringSlices(&sc1.Contexts, &sc2.Contexts)
-		default:
-			return false
-		}
-	}
-
-	equalRestrictions := func(r1, r2 *github.Restrictions) bool {
-		switch {
-		case r1 == r2:
-			return true
-		case r1 != nil && r2 != nil:
-			return equalStringSlices(r1.Teams, r2.Teams) && equalStringSlices(r1.Users, r2.Users)
-		default:
-			return false
-		}
-	}
-
-	equalReviews := func(r1, r2 *github.RequiredPullRequestReviews) bool {
-		switch {
-		case r1 == r2:
-			return true
-		case r1 != nil && r2 != nil:
-			return r1.DismissStaleReviews == r2.DismissStaleReviews &&
-				r1.RequireCodeOwnerReviews == r2.RequireCodeOwnerReviews &&
-				r1.RequiredApprovingReviewCount == r2.RequiredApprovingReviewCount &&
-				equalRestrictions(&r1.DismissalRestrictions, &r2.DismissalRestrictions)
-		default:
-			return false
-		}
-	}
-
-	return bp1.EnforceAdmins == bp2.EnforceAdmins &&
-		equalStatusChecks(bp1.RequiredStatusChecks, bp2.RequiredStatusChecks) &&
-		equalReviews(bp1.RequiredPullRequestReviews, bp2.RequiredPullRequestReviews) &&
-		equalRestrictions(bp1.Restrictions, bp2.Restrictions)
 }

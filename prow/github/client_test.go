@@ -1500,7 +1500,7 @@ func TestGetBranches(t *testing.T) {
 
 func TestGetBranchProtection(t *testing.T) {
 	contexts := []string{"foo-pr-test", "other"}
-	pushers := []string{"movers", "awesome-team", "shakers"}
+	pushers := []Team{{Slug: "movers"}, {Slug: "awesome-team"}, {Slug: "shakers"}}
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			t.Errorf("Bad method: %s", r.Method)
@@ -1513,7 +1513,7 @@ func TestGetBranchProtection(t *testing.T) {
 				Contexts: contexts,
 			},
 			Restrictions: &Restrictions{
-				Teams: &pushers,
+				Teams: pushers,
 			},
 		}
 		b, err := json.Marshal(&bp)
@@ -1530,11 +1530,11 @@ func TestGetBranchProtection(t *testing.T) {
 	}
 	switch {
 	case bp.Restrictions == nil:
-		t.Errorf("Restrictions unset")
+		t.Errorf("RestrictionsRequest unset")
 	case bp.Restrictions.Teams == nil:
 		t.Errorf("Teams unset")
-	case len(*bp.Restrictions.Teams) != len(pushers):
-		t.Errorf("Bad teams: expected %v, got: %v", pushers, *bp.Restrictions.Teams)
+	case len(bp.Restrictions.Teams) != len(pushers):
+		t.Errorf("Bad teams: expected %v, got: %v", pushers, bp.Restrictions.Teams)
 	case bp.RequiredStatusChecks == nil:
 		t.Errorf("RequiredStatusChecks unset")
 	case len(bp.RequiredStatusChecks.Contexts) != len(contexts):
@@ -1554,13 +1554,13 @@ func TestGetBranchProtection(t *testing.T) {
 			t.Errorf("missing %d required contexts: %v", n, missing)
 		}
 		mp := map[string]bool{}
-		for _, k := range *bp.Restrictions.Teams {
-			mp[k] = true
+		for _, k := range bp.Restrictions.Teams {
+			mp[k.Slug] = true
 		}
 		missing = nil
 		for _, k := range pushers {
-			if mp[k] != true {
-				missing = append(missing, k)
+			if mp[k.Slug] != true {
+				missing = append(missing, k.Slug)
 			}
 		}
 		if n := len(missing); n > 0 {
@@ -1719,7 +1719,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 			RequiredStatusChecks: &RequiredStatusChecks{
 				Contexts: tc.contexts,
 			},
-			Restrictions: &Restrictions{
+			Restrictions: &RestrictionsRequest{
 				Teams: &tc.pushers,
 			},
 		})

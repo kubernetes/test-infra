@@ -59,7 +59,7 @@ func TestMakeReviews(t *testing.T) {
 	cases := []struct {
 		name     string
 		input    *branchprotection.ReviewPolicy
-		expected *github.RequiredPullRequestReviews
+		expected *github.RequiredPullRequestReviewsRequest
 	}{
 		{
 			name: "nil returns nil",
@@ -81,7 +81,7 @@ func TestMakeReviews(t *testing.T) {
 			input: &branchprotection.ReviewPolicy{
 				Approvals: &three,
 			},
-			expected: &github.RequiredPullRequestReviews{
+			expected: &github.RequiredPullRequestReviewsRequest{
 				RequiredApprovingReviewCount: 3,
 			},
 		},
@@ -96,11 +96,11 @@ func TestMakeReviews(t *testing.T) {
 					Teams: []string{"megacorp", "startup"},
 				},
 			},
-			expected: &github.RequiredPullRequestReviews{
+			expected: &github.RequiredPullRequestReviewsRequest{
 				RequiredApprovingReviewCount: 1,
 				RequireCodeOwnerReviews:      true,
 				DismissStaleReviews:          true,
-				DismissalRestrictions: github.Restrictions{
+				DismissalRestrictions: github.RestrictionsRequest{
 					Teams: &[]string{"megacorp", "startup"},
 					Users: &[]string{"fred", "jane"},
 				},
@@ -134,7 +134,7 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
-				Restrictions: &github.Restrictions{
+				Restrictions: &github.RestrictionsRequest{
 					Teams: &[]string{"hello"},
 					Users: &[]string{},
 				},
@@ -148,7 +148,7 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
-				Restrictions: &github.Restrictions{
+				Restrictions: &github.RestrictionsRequest{
 					Users: &[]string{"there"},
 					Teams: &[]string{},
 				},
