@@ -148,21 +148,12 @@ func staticHandlerFromDir(dir string) http.Handler {
 var (
 	deckMetrics = struct {
 		httpRequestDuration *prometheus.HistogramVec
-		httpResponseSize    *prometheus.HistogramVec
 	}{
 		httpRequestDuration: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
-				Name:    "http_request_duration_seconds",
-				Help:    "http request duration in seconds",
+				Name:    "deck_http_request_duration_seconds",
+				Help:    "http request duration seconds for deck server",
 				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
-			},
-			[]string{"path", "method", "status"},
-		),
-		httpResponseSize: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "http_response_size_bytes",
-				Help:    "http response size in bytes",
-				Buckets: []float64{16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216},
 			},
 			[]string{"path", "method", "status"},
 		),
@@ -172,18 +163,11 @@ var (
 type traceResponseWriter struct {
 	http.ResponseWriter
 	statusCode int
-	size       int
 }
 
 func (trw *traceResponseWriter) WriteHeader(code int) {
 	trw.statusCode = code
 	trw.ResponseWriter.WriteHeader(code)
-}
-
-func (trw *traceResponseWriter) Write(data []byte) (int, error) {
-	size, err := trw.ResponseWriter.Write(data)
-	trw.size += size
-	return size, err
 }
 
 func init() {
@@ -195,12 +179,13 @@ func traceHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
 		// Initialize the status to 200 in case WriteHeader is not called
-		trw := &traceResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+		trw := &traceResponseWriter{w, http.StatusOK}
 		h.ServeHTTP(trw, r)
 		latency := time.Since(t)
-		labels := prometheus.Labels{"path": getPathPrefix(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode)}
-		deckMetrics.httpRequestDuration.With(labels).Observe(latency.Seconds())
-		deckMetrics.httpResponseSize.With(labels).Observe(float64(trw.size))
+		pathPrefix := getPathPrefix(r.URL.Path)
+		deckMetrics.httpRequestDuration.With(
+			prometheus.Labels{"path": pathPrefix, "method": r.Method, "status": strconv.Itoa(trw.statusCode)}).
+			Observe(latency.Seconds())
 	})
 }
 
