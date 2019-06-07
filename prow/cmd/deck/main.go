@@ -172,7 +172,6 @@ func (trw *traceResponseWriter) WriteHeader(code int) {
 
 func init() {
 	prometheus.MustRegister(deckMetrics.httpRequestDuration)
-	prometheus.MustRegister(deckMetrics.httpResponseSize)
 }
 
 func traceHandler(h http.Handler) http.Handler {
