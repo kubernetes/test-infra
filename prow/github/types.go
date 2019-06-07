@@ -361,10 +361,10 @@ type Branch struct {
 // in place for a branch
 // See also: https://developer.github.com/v3/repos/branches/#get-branch-protection
 type BranchProtection struct {
-	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks,omitempty"`
+	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks"`
 	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
-	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews,omitempty"`
-	Restrictions               *Restrictions               `json:"restrictions,omitempty"`
+	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
+	Restrictions               *Restrictions               `json:"restrictions"`
 }
 
 // EnforceAdmins specifies whether to enforce the
@@ -377,10 +377,10 @@ type EnforceAdmins struct {
 // protections in place for a branch.
 // See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
 type BranchProtectionRequest struct {
-	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks,omitempty"`
-	EnforceAdmins              *bool                       `json:"enforce_admins,omitempty"`
-	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews,omitempty"`
-	Restrictions               *Restrictions               `json:"restrictions,omitempty"`
+	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks"`
+	EnforceAdmins              *bool                       `json:"enforce_admins"`
+	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
+	Restrictions               *Restrictions               `json:"restrictions"`
 }
 
 func (r BranchProtectionRequest) String() string {
