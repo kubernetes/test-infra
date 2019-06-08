@@ -27,39 +27,49 @@ import (
 type DefaultFieldsFormatter struct {
 	WrappedFormatter logrus.Formatter
 	DefaultFields    logrus.Fields
+	PrintLineNumber  bool
 }
 
-// NewDefaultFieldsFormatter returns a DefaultFieldsFormatter,
-// if wrappedFormatter is nil &logrus.JSONFormatter{} will be used instead
-func NewDefaultFieldsFormatter(
-	wrappedFormatter logrus.Formatter, defaultFields logrus.Fields,
-) *DefaultFieldsFormatter {
-	res := &DefaultFieldsFormatter{
-		WrappedFormatter: wrappedFormatter,
-		DefaultFields:    defaultFields,
+// Init set Logrus formatter
+// if DefaultFieldsFormatter.wrappedFormatter is nil &logrus.JSONFormatter{} will be used instead
+func Init(formatter *DefaultFieldsFormatter) {
+	if formatter == nil {
+		return
 	}
-	if res.WrappedFormatter == nil {
-		res.WrappedFormatter = &logrus.JSONFormatter{}
+	if formatter.WrappedFormatter == nil {
+		formatter.WrappedFormatter = &logrus.JSONFormatter{}
 	}
-	return res
+	logrus.SetFormatter(formatter)
+	logrus.SetReportCaller(formatter.PrintLineNumber)
+}
+
+// ComponentInit is a syntax sugar for easier Init
+func ComponentInit(component string) {
+	Init(
+		&DefaultFieldsFormatter{
+			PrintLineNumber: true,
+			DefaultFields:   logrus.Fields{"component": component},
+		},
+	)
 }
 
 // Format implements logrus.Formatter's Format. We allocate a new Fields
 // map in order to not modify the caller's Entry, as that is not a thread
 // safe operation.
-func (d *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	data := make(logrus.Fields, len(entry.Data)+len(d.DefaultFields))
-	for k, v := range d.DefaultFields {
+func (f *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields))
+	for k, v := range f.DefaultFields {
 		data[k] = v
 	}
 	for k, v := range entry.Data {
 		data[k] = v
 	}
-	return d.WrappedFormatter.Format(&logrus.Entry{
+	return f.WrappedFormatter.Format(&logrus.Entry{
 		Logger:  entry.Logger,
 		Data:    data,
 		Time:    entry.Time,
 		Level:   entry.Level,
 		Message: entry.Message,
+		Caller:  entry.Caller,
 	})
 }
