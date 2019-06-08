@@ -152,7 +152,7 @@ var (
 	}{
 		httpRequestDuration: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
-				Name:    "http_request_duration_seconds",
+				Name:    "deck_http_request_duration_seconds",
 				Help:    "http request duration in seconds",
 				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
 			},
@@ -160,7 +160,7 @@ var (
 		),
 		httpResponseSize: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
-				Name:    "http_response_size_bytes",
+				Name:    "deck_http_response_size_bytes",
 				Help:    "http response size in bytes",
 				Buckets: []float64{16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216},
 			},
