@@ -3,6 +3,7 @@ presubmits:
   - name: pull-cloud-provider-aws-check
     always_run: true
     decorate: true
+    path_alias: k8s.io/cloud-provider-aws
     labels:
       preset-service-account: "true"
     spec:
@@ -17,6 +18,7 @@ presubmits:
   - name: pull-cloud-provider-aws-test
     always_run: true
     decorate: true
+    path_alias: k8s.io/cloud-provider-aws
     labels:
       preset-service-account: "true"
     spec:
