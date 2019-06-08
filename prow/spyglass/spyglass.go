@@ -217,6 +217,44 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 	}
 }
 
+// ProwJobName returns a link to the YAML for the job specified in src.
+// If no job is found, it returns an empty string and nil error.
+func (s *Spyglass) ProwJobName(src string) (string, error) {
+	src = strings.TrimSuffix(src, "/")
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return "", fmt.Errorf("error parsing src: %v", src)
+	}
+	split := strings.Split(key, "/")
+	var jobName string
+	var buildID string
+	switch keyType {
+	case gcsKeyType:
+		if len(split) < 4 {
+			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
+		}
+		jobName = split[len(split)-2]
+		buildID = split[len(split)-1]
+	case prowKeyType:
+		if len(split) < 2 {
+			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+		}
+		jobName = split[0]
+		buildID = split[1]
+	default:
+		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+	}
+	job, err := s.jobAgent.GetProwJob(jobName, buildID)
+	if err != nil {
+		if jobs.IsErrProwJobNotFound(err) {
+			return "", nil
+		} else {
+			return "", err
+		}
+	}
+	return job.Name, nil
+}
+
 // RunPath returns the path to the GCS directory for the job run specified in src.
 func (s *Spyglass) RunPath(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")

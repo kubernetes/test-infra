@@ -44,6 +44,10 @@ var (
 	errProwjobNotFound = errors.New("prowjob not found")
 )
 
+func IsErrProwJobNotFound(err error) bool {
+	return err == errProwjobNotFound
+}
+
 // Job holds information about a job prow is running/has run.
 // TODO(#5216): Remove this, and all associated machinery.
 type Job struct {
