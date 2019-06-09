@@ -36,9 +36,12 @@ const (
 )
 
 var (
-	projectRegex              = regexp.MustCompile(`(?m)^/project\s+(.+?)(?:\s+(.+?)\s*)?$`)
+	projectRegex              = regexp.MustCompile(`(?m)^\/project\s+(?:(set)\s+(?:(project=(?:'.*?'|".*?"))(?:\s+(column=(?:'.*?'|".*?"))\s*?)?$)|(?:(clear)\s+(project=(?:'.*?'|".*?"))\s*?$))`)
+	projectNameRegex          = regexp.MustCompile(`(?m)project=(?:'(.*?)'|"(.*?)")`)
+	columnNameRegex           = regexp.MustCompile(`(?m)column=(?:'(.*?)'|"(.*?)")`)
 	notTeamConfigMsg          = "There is no maintainer team for this repo or org."
 	notATeamMemberMsg         = "You must be a member of the [%s/%s](https://github.com/orgs/%s/teams/%s/members) github team to set the project and column."
+	noProjectSpecifiedMsg     = "Please specify a project to set or clear."
 	invalidProject            = "The provided project is not valid for this organization. Projects in Kubernetes orgs and repositories: [%s]."
 	invalidColumn             = "A column is not provided or it's not valid for the project %s. Please provide one of the following columns in the command:\n%v"
 	invalidNumArgs            = "Please provide 1 or more arguments. Example usage: /project 0.5.0, /project 0.5.0 To do, /project clear 0.4.0"
@@ -114,28 +117,42 @@ func updateProjectNameToIDMap(projects []github.Project) {
 	}
 }
 
+// getName gets the project name or the column name from the regex matches
+func getName(matches []string) string {
+	// Because there are 2 capture groups (one for '' and the other one for ""),
+	// one of the capture groups is empty
+	if matches[1] != "" {
+		return matches[1]
+	}
+	return matches[2]
+}
+
 // processRegexMatches processes the user command regex matches and returns the proposed project name,
 // proposed column name, whether the command is to remove issue/PR from project,
 // and the error message
 func processRegexMatches(matches []string) (string, string, bool, string) {
 	var shouldClear = false
-	proposedProject := matches[1]
+	proposedProject := ""
 	proposedColumnName := ""
-	if len(matches) > 1 && proposedProject != clearKeyword {
-		proposedColumnName = matches[2]
-	}
-	// If command is to clear and the project is provided
-	if proposedProject == clearKeyword {
-		if len(matches) > 2 && matches[2] != "" {
-			proposedProject = matches[2]
+	msg := ""
+	for _, m := range matches {
+		if m == clearKeyword {
 			shouldClear = true
-		} else {
-			msg := invalidNumArgs
-			return "", "", false, msg
+		}
+		projectNameMatches := projectNameRegex.FindStringSubmatch(m)
+		if len(projectNameMatches) > 1 {
+			proposedProject = getName(projectNameMatches)
+		}
+		columnNameMatches := columnNameRegex.FindStringSubmatch(m)
+		if len(columnNameMatches) > 1 {
+			proposedColumnName = getName(columnNameMatches)
 		}
 	}
+	if proposedProject == "" {
+		msg = noProjectSpecifiedMsg
+	}
 
-	return proposedProject, proposedColumnName, shouldClear, ""
+	return proposedProject, proposedColumnName, shouldClear, msg
 }
 
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, projectConfig plugins.ProjectConfig) error {
@@ -162,7 +179,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	proposedProject, proposedColumnName, shouldClear, msg := processRegexMatches(matches)
-	if proposedProject == "" {
+	if msg != "" {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
