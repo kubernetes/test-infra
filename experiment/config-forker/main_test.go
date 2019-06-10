@@ -537,6 +537,13 @@ func TestGeneratePeriodics(t *testing.T) {
 			},
 		},
 		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "some-generic-periodic-will-end-up-in-all-master",
+				Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true", testgridDashboardsAnnotation: "google-unit"},
+			},
+		},
+		{
 			Interval: "1h",
 			JobBase: config.JobBase{
 				Name: "periodic-with-replacements",
@@ -589,6 +596,13 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-beta",
 				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-1.15-all"},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "some-generic-periodic-will-end-up-in-all-beta",
+				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "google-unit, sig-release-1.15-all"},
 			},
 		},
 		{
@@ -660,6 +674,19 @@ func TestGeneratePostsubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
+					Name: "post-kubernetes-generic-will-end-up-in-all",
+					Annotations: map[string]string{
+						forkAnnotation:               "true",
+						suffixAnnotation:             "true",
+						testgridDashboardsAnnotation: "google-unit",
+					},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+			},
+			{
+				JobBase: config.JobBase{
 					Name: "post-replace-some-things-master",
 					Annotations: map[string]string{
 						forkAnnotation:        "true",
@@ -706,6 +733,18 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Annotations: map[string]string{
 						suffixAnnotation:             "true",
 						testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit",
+					},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "post-kubernetes-generic-will-end-up-in-all-beta",
+					Annotations: map[string]string{
+						suffixAnnotation:             "true",
+						testgridDashboardsAnnotation: "google-unit, sig-release-1.15-all",
 					},
 				},
 				Brancher: config.Brancher{
