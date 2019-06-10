@@ -1276,12 +1276,21 @@ func (c *client) EditPullRequest(org, repo string, number int, pr *PullRequest) 
 	if c.dry {
 		return pr, nil
 	}
+	edit := struct {
+		Title string `json:"title,omitempty"`
+		Body  string `json:"body,omitempty"`
+		State string `json:"state,omitempty"`
+	}{
+		Title: pr.Title,
+		Body:  pr.Body,
+		State: pr.State,
+	}
 	var ret PullRequest
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		exitCodes:   []int{200},
-		requestBody: &pr,
+		requestBody: &edit,
 	}, &ret)
 	if err != nil {
 		return nil, err
@@ -1314,12 +1323,21 @@ func (c *client) EditIssue(org, repo string, number int, issue *Issue) (*Issue, 
 	if c.dry {
 		return issue, nil
 	}
+	edit := struct {
+		Title string `json:"title,omitempty"`
+		Body  string `json:"body,omitempty"`
+		State string `json:"state,omitempty"`
+	}{
+		Title: issue.Title,
+		Body:  issue.Body,
+		State: issue.State,
+	}
 	var ret Issue
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
 		exitCodes:   []int{200},
-		requestBody: &issue,
+		requestBody: &edit,
 	}, &ret)
 	if err != nil {
 		return nil, err
