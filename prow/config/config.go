@@ -1276,6 +1276,10 @@ func validateTriggering(job Presubmit) error {
 		return fmt.Errorf("job %s is set to report but has no context configured", job.Name)
 	}
 
+	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
+		return fmt.Errorf("Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job %q", job.Name)
+	}
+
 	return nil
 }
 
