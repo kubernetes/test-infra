@@ -35,7 +35,7 @@ const (
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
-	Issues              []github.Issue
+	Issues              map[int]*github.Issue
 	OrgMembers          map[string][]string
 	Collaborators       []string
 	IssueComments       map[int][]github.IssueComment
@@ -204,9 +204,36 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
 	val, exists := f.PullRequests[number]
 	if !exists {
-		return nil, fmt.Errorf("Pull request number %d does not exit", number)
+		return nil, fmt.Errorf("pull request number %d does not exist", number)
 	}
 	return val, nil
+}
+
+// EditPullRequest edits the pull request.
+func (f *FakeClient) EditPullRequest(org, repo string, number int, issue *github.PullRequest) (*github.PullRequest, error) {
+	if _, exists := f.PullRequests[number]; !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	f.PullRequests[number] = issue
+	return issue, nil
+}
+
+// GetIssue returns the issue.
+func (f *FakeClient) GetIssue(owner, repo string, number int) (*github.Issue, error) {
+	val, exists := f.Issues[number]
+	if !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	return val, nil
+}
+
+// EditIssue edits the issue.
+func (f *FakeClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
+	if _, exists := f.Issues[number]; !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	f.Issues[number] = issue
+	return issue, nil
 }
 
 // GetPullRequestChanges returns the file modifications in a PR.
@@ -316,7 +343,11 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 
 // FindIssues returns f.Issues
 func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
-	return f.Issues, nil
+	var issues []github.Issue
+	for _, issue := range f.Issues {
+		issues = append(issues, *issue)
+	}
+	return issues, nil
 }
 
 // AssignIssue adds assignees.

@@ -89,6 +89,7 @@ filegroup(
         "//prow/plugins/releasenote:all-srcs",
         "//prow/plugins/require-matching-label:all-srcs",
         "//prow/plugins/requiresig:all-srcs",
+        "//prow/plugins/retitle:all-srcs",
         "//prow/plugins/shrug:all-srcs",
         "//prow/plugins/sigmention:all-srcs",
         "//prow/plugins/size:all-srcs",
