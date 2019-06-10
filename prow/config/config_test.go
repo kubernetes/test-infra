@@ -2219,3 +2219,52 @@ func TestSlackReporterValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateTriggering(t *testing.T) {
+	testCases := []struct {
+		name        string
+		presubmit   Presubmit
+		errExpected bool
+	}{
+		{
+			name: "Trigger set, rerun command unset, err",
+			presubmit: Presubmit{
+				Trigger: "my-trigger",
+				Reporter: Reporter{
+					Context: "my-context",
+				},
+			},
+			errExpected: true,
+		},
+		{
+			name: "Triger unset, rerun command set, err",
+			presubmit: Presubmit{
+				RerunCommand: "my-rerun-command",
+				Reporter: Reporter{
+					Context: "my-context",
+				},
+			},
+			errExpected: true,
+		},
+		{
+			name: "Both trigger and rerun command set, no err",
+			presubmit: Presubmit{
+				Trigger:      "my-trigger",
+				RerunCommand: "my-rerun-command",
+				Reporter: Reporter{
+					Context: "my-context",
+				},
+			},
+			errExpected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateTriggering(tc.presubmit)
+			if err != nil != tc.errExpected {
+				t.Errorf("Expected err: %t but got err %v", tc.errExpected, err)
+			}
+		})
+	}
+}
