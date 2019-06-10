@@ -275,8 +275,9 @@ annotations:
 	for k, v := range annotations {
 		switch k {
 		case testgridDashboardsAnnotation:
+			fmt.Println(v)
 			v = r.Replace(v)
-			if !isPresubmit {
+			if !isPresubmit && !inOtherSigReleaseDashboard(v, version) {
 				v += ", " + "sig-release-" + version + "-all"
 			}
 			didDashboards = true
@@ -294,6 +295,10 @@ annotations:
 	}
 	return a
 
+}
+
+func inOtherSigReleaseDashboard(existingDashboards, version string) bool {
+	return strings.Contains(existingDashboards, "sig-release-"+version)
 }
 
 func generateNameVariant(name, version string, generic bool) string {
