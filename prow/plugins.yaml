@@ -617,6 +617,7 @@ plugins:
 
   kubernetes-sigs/contributor-playground:
   - require-sig
+  - retitle
 
   containerd/cri:
   - assign
