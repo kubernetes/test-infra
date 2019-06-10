@@ -1,0 +1,75 @@
+presets:
+- labels:
+    preset-cloudprovider-azure-creds: "true"
+  env:
+  - name: AZURE_CREDENTIALS
+    value: /etc/azure-cred/credentials
+  - name: AZURE_SSH_PUBLIC_KEY_FILE
+    value: /etc/azure-ssh/azure-ssh-pub
+  - name: REGISTRY
+    value: k8sprow.azurecr.io
+  - name: KUBE_VERBOSE
+    value: 0
+  volumes:
+  - name: azure-cred
+    secret:
+      secretName: azure-cred
+  - name: azure-ssh
+    secret:
+      secretName: azure-ssh
+  volumeMounts:
+  - name: azure-cred
+    mountPath: /etc/azure-cred
+    readOnly: true
+  - name: azure-ssh
+    mountPath: /etc/azure-ssh
+    readOnly: true
+
+periodics:
+- interval: 6h
+  # ci-dualstack-azure-e2e runs IPv6DualStack feature specific tests on aks-e cluster.
+  name: ci-dualstack-azure-e2e
+  labels:
+    preset-service-account: "true"
+    preset-cloudprovider-azure-creds: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=470
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --test=true
+      - --up=true
+      - --down=true
+      - --deployment=acsengine
+      - --build=bazel
+      - --provider=skeleton
+      - --ginkgo-parallel=1
+      - --acsengine-agentpoolcount=2
+      - --acsengine-admin-username=azureuser
+      - --acsengine-creds=$AZURE_CREDENTIALS
+      - --acsengine-orchestratorRelease=1.16
+      - --acsengine-mastervmsize=Standard_DS2_v2
+      - --acsengine-agentvmsize=Standard_D4s_v3
+      - --acsengine-hyperkube=True
+      - --acsengine-location=eastus2
+      - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --acsengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.0/aks-engine-v0.39.0-linux-amd64.tar.gz
+      - --timeout=450m
+      # can enable [sig-network] tests too once we validate the job is successfully working
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\] --ginkgo.skip=\[Feature:IPv6DualStackAlphaFeature:Phase2\]
+      securityContext:
+         privileged: true
+  annotations:
+    testgrid-dashboards: sig-network-dualstack-azure-e2e
+    testgrid-tab-name: dualstack-azure-e2e
+    description: "Dual-stack e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
