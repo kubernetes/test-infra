@@ -1498,6 +1498,134 @@ func TestGetBranches(t *testing.T) {
 	}
 }
 
+func TestGetBranchProtection(t *testing.T) {
+	contexts := []string{"foo-pr-test", "other"}
+	pushers := []Team{{Slug: "movers"}, {Slug: "awesome-team"}, {Slug: "shakers"}}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		bp := BranchProtection{
+			RequiredStatusChecks: &RequiredStatusChecks{
+				Contexts: contexts,
+			},
+			Restrictions: &Restrictions{
+				Teams: pushers,
+			},
+		}
+		b, err := json.Marshal(&bp)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	bp, err := c.GetBranchProtection("org", "repo", "master")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+	switch {
+	case bp.Restrictions == nil:
+		t.Errorf("RestrictionsRequest unset")
+	case bp.Restrictions.Teams == nil:
+		t.Errorf("Teams unset")
+	case len(bp.Restrictions.Teams) != len(pushers):
+		t.Errorf("Bad teams: expected %v, got: %v", pushers, bp.Restrictions.Teams)
+	case bp.RequiredStatusChecks == nil:
+		t.Errorf("RequiredStatusChecks unset")
+	case len(bp.RequiredStatusChecks.Contexts) != len(contexts):
+		t.Errorf("Bad contexts: expected: %v, got: %v", contexts, bp.RequiredStatusChecks.Contexts)
+	default:
+		mc := map[string]bool{}
+		for _, k := range bp.RequiredStatusChecks.Contexts {
+			mc[k] = true
+		}
+		var missing []string
+		for _, k := range contexts {
+			if mc[k] != true {
+				missing = append(missing, k)
+			}
+		}
+		if n := len(missing); n > 0 {
+			t.Errorf("missing %d required contexts: %v", n, missing)
+		}
+		mp := map[string]bool{}
+		for _, k := range bp.Restrictions.Teams {
+			mp[k.Slug] = true
+		}
+		missing = nil
+		for _, k := range pushers {
+			if mp[k.Slug] != true {
+				missing = append(missing, k.Slug)
+			}
+		}
+		if n := len(missing); n > 0 {
+			t.Errorf("missing %d pushers: %v", n, missing)
+		}
+	}
+}
+
+// GetBranchProtection should return nil if the github API call
+// returns 404 with "Branch not protected" message
+func TestGetBranchProtection404BranchNotProtected(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		ge := &githubError{
+			Message: "Branch not protected",
+		}
+		b, err := json.Marshal(&ge)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusNotFound)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	bp, err := c.GetBranchProtection("org", "repo", "master")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if bp != nil {
+		t.Errorf("Expected nil as BranchProtection object, got: %v", *bp)
+	}
+}
+
+// GetBranchProtection should fail on any 404 which is NOT due to
+// branch not being protected.
+func TestGetBranchProtectionFailsOnOther404(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		ge := &githubError{
+			Message: "Not Found",
+		}
+		b, err := json.Marshal(&ge)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusNotFound)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	_, err := c.GetBranchProtection("org", "repo", "master")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}
+
 func TestRemoveBranchProtection(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
@@ -1591,7 +1719,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 			RequiredStatusChecks: &RequiredStatusChecks{
 				Contexts: tc.contexts,
 			},
-			Restrictions: &Restrictions{
+			Restrictions: &RestrictionsRequest{
 				Teams: &tc.pushers,
 			},
 		})

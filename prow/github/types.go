@@ -357,14 +357,44 @@ type Branch struct {
 	// TODO(fejta): consider including undocumented protection key
 }
 
-// BranchProtectionRequest represents
-// protections in place for a branch.
-// See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
-type BranchProtectionRequest struct {
+// BranchProtection represents protections
+// currently in place for a branch
+// See also: https://developer.github.com/v3/repos/branches/#get-branch-protection
+type BranchProtection struct {
 	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks"`
-	EnforceAdmins              *bool                       `json:"enforce_admins"`
+	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+}
+
+// EnforceAdmins specifies whether to enforce the
+// configured branch restrictions for administrators.
+type EnforceAdmins struct {
+	Enabled bool `json:"enabled"`
+}
+
+// RequiredPullRequestReviews exposes the state of review rights.
+type RequiredPullRequestReviews struct {
+	DismissalRestrictions        *Restrictions `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool          `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool          `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int           `json:"required_approving_review_count"`
+}
+
+// Restrictions exposes restrictions in github for an activity to people/teams.
+type Restrictions struct {
+	Users []User `json:"users,omitempty"`
+	Teams []Team `json:"teams,omitempty"`
+}
+
+// BranchProtectionRequest represents
+// protections to put in place for a branch.
+// See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
+type BranchProtectionRequest struct {
+	RequiredStatusChecks       *RequiredStatusChecks              `json:"required_status_checks"`
+	EnforceAdmins              *bool                              `json:"enforce_admins"`
+	RequiredPullRequestReviews *RequiredPullRequestReviewsRequest `json:"required_pull_request_reviews"`
+	Restrictions               *RestrictionsRequest               `json:"restrictions"`
 }
 
 func (r BranchProtectionRequest) String() string {
@@ -381,21 +411,23 @@ type RequiredStatusChecks struct {
 	Contexts []string `json:"contexts"`
 }
 
-// RequiredPullRequestReviews controls review rights.
-type RequiredPullRequestReviews struct {
-	DismissalRestrictions        Restrictions `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool         `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool         `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int          `json:"required_approving_review_count"`
+// RequiredPullRequestReviewsRequest controls a request for review rights.
+type RequiredPullRequestReviewsRequest struct {
+	DismissalRestrictions        RestrictionsRequest `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                 `json:"required_approving_review_count"`
 }
 
-// Restrictions tells github to restrict an activity to people/teams.
+// RestrictionsRequest tells github to restrict an activity to people/teams.
 //
 // Use *[]string in order to distinguish unset and empty list.
 // This is needed by dismissal_restrictions to distinguish
 // do not restrict (empty object) and restrict everyone (nil user/teams list)
-type Restrictions struct {
+type RestrictionsRequest struct {
+	// Users is a list of user logins
 	Users *[]string `json:"users,omitempty"`
+	// Teams is a list of team slugs
 	Teams *[]string `json:"teams,omitempty"`
 }
 
@@ -771,6 +803,7 @@ const (
 type Team struct {
 	ID           int    `json:"id,omitempty"`
 	Name         string `json:"name"`
+	Slug         string `json:"slug"`
 	Description  string `json:"description,omitempty"`
 	Privacy      string `json:"privacy,omitempty"`
 	Parent       *Team  `json:"parent,omitempty"`         // Only present in responses
