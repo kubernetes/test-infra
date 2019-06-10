@@ -116,6 +116,16 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 	return false, nil
 }
 
+// ListOpenIssues returns f.issues
+// To mock a mix of issues and pull requests, see github.Issue.PullRequest
+func (f *FakeClient) ListOpenIssues(org, repo string) ([]github.Issue, error) {
+	var issues []github.Issue
+	for _, issue := range f.Issues {
+		issues = append(issues, *issue)
+	}
+	return issues, nil
+}
+
 // ListIssueComments returns comments.
 func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil

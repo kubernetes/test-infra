@@ -20,6 +20,7 @@ filegroup(
         ":package-srcs",
         "//testgrid/cluster:all-srcs",
         "//testgrid/cmd/configurator:all-srcs",
+        "//testgrid/cmd/entomologist:all-srcs",
         "//testgrid/cmd/updater:all-srcs",
         "//testgrid/config:all-srcs",
         "//testgrid/images:all-srcs",
