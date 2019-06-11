@@ -101,7 +101,32 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-migration-stable-master
+- name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-master
+      args:
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=90" # Minutes
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-k8s-integration.sh"
+      env:
+      - name: GCE_PD_OVERLAY_NAME
+        value: "dev"
+      - name: GCE_PD_DO_DRIVER_BUILD
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+- name: ci-gcp-compute-persistent-disk-csi-driver-stable-k8s-master-migration
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -123,6 +148,38 @@ periodics:
         value: "stable"
       - name: GCE_PD_DO_DRIVER_BUILD
         value: "false"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+    resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+- name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-migration
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-master
+      args:
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=180" # Minutes
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-k8s-integration-migration.sh"
+      env:
+      - name: GCE_PD_OVERLAY_NAME
+        value: "dev"
+      - name: GCE_PD_DO_DRIVER_BUILD
+        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
