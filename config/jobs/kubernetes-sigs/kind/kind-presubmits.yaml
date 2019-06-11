@@ -27,7 +27,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-c90971a-experimental
         command:
         - runner.sh
-        - ./hack/verify-all.sh
+        - ./hack/verify/all.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
