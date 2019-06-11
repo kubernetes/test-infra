@@ -9,6 +9,8 @@ steps will show you how to setup an oauth app that works with PR Status.
 
     https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/
     
+    Make sure to create a GitHub Oauth App and not a regular GitHub App.
+    
     The callback url should be:
     
     `<PROW_BASE_URL>/github-login/redirect`
@@ -72,3 +74,7 @@ When testing locally, pass the path to your secrets to `deck` using the `--githu
 Run the commands:
 
 `go build . && ./deck --config-path=../../config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth-url=/pr`
+
+## Run PR Status endpoint on a test cluster
+If hosting your instance on http instead of https, you will need to set `Secure` to `false` every time it appears in githuboauth/githuboauth.go.  
+
