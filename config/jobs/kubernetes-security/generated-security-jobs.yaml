@@ -2559,6 +2559,62 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
+    always_run: false
+    branches:
+    - release-1.15
+    cluster: security
+    context: pull-security-kubernetes-e2e-containerd-gce
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-containerd-gce
+    optional: true
+    rerun_command: /test pull-security-kubernetes-e2e-containerd-gce
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=105
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]
+          --minStartupPods=8
+        - --timeout=80m
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
+        - --gcp-project=k8s-jkns-pr-gce-etcd3
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-c90971a-1.15
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-containerd-gce,?($|\s.*)
+  - agent: kubernetes
     always_run: true
     branches:
     - release-1.15
@@ -2656,7 +2712,7 @@ presubmits:
           ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance $(bazel query --keep_going --noshow_progress "kind(.*_binary, rdeps(//... -//vendor/..., //...)) except attr('tags', 'manual', //...)") //build/release-tars
         command:
         - bash
-        image: launcher.gcr.io/google/bazel:0.24.1
+        image: launcher.gcr.io/google/bazel:0.25.2
         name: ""
         resources: {}
         volumeMounts:
@@ -2698,7 +2754,7 @@ presubmits:
         - -//vendor/...
         command:
         - ../test-infra/hack/bazel.sh
-        image: launcher.gcr.io/google/bazel:0.24.1
+        image: launcher.gcr.io/google/bazel:0.25.2
         name: ""
         resources: {}
         volumeMounts:
