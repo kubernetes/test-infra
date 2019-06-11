@@ -52,7 +52,7 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'instance-templates', None, None, None, False, True),
     Resource('', 'compute', 'sole-tenancy', 'node-groups', 'zone', None, False, True),
     Resource('', 'compute', 'sole-tenancy', 'node-templates', 'region', None, False, True),
-    Resource('beta', 'compute', 'network-endpoint-groups', None, None, None, True, False),
+    Resource('beta', 'compute', 'network-endpoint-groups', None, 'zone', None, False, False),
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
     Resource('', 'compute', 'networks', None, '', None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
@@ -235,11 +235,6 @@ def clear_resources(project, cols, resource, rate_limit):
                 condition = '--%s=%s' % (resource.condition, col)
             else:
                 condition = '--global'
-
-        # hard code asia-southeast1-a for NEG
-        # TODO(freehan): remove this once limitation is dropped
-        if resource.name == 'network-endpoint-groups':
-            condition = '--zone=asia-southeast1-a'
 
         log('going to delete %d %s' % (len(items), resource.name))
         # try to delete at most $rate_limit items at a time
