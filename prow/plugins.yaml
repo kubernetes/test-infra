@@ -419,6 +419,7 @@ plugins:
   - lifecycle
   - owners-label
   - pony
+  - retitle
   - shrug
   - sigmention
   - size
@@ -509,6 +510,7 @@ plugins:
   - lifecycle
   - owners-label
   - pony
+  - retitle
   - shrug
   - size
   - skip
@@ -534,6 +536,7 @@ plugins:
   - lifecycle
   - owners-label
   - pony
+  - retitle
   - release-note
   - shrug
   - size
@@ -560,6 +563,7 @@ plugins:
   - lifecycle
   - owners-label
   - pony
+  - retitle
   - shrug
   - size
   - skip
@@ -588,6 +592,7 @@ plugins:
   - lifecycle
   - owners-label
   - pony
+  - retitle
   - shrug
   - size
   - skip
@@ -617,7 +622,6 @@ plugins:
 
   kubernetes-sigs/contributor-playground:
   - require-sig
-  - retitle
 
   containerd/cri:
   - assign
