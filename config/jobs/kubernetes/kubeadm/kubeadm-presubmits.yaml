@@ -7,6 +7,6 @@ presubmits:
     run_if_changed: '^kinder\/.*$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190607-c90971a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190611-6adfc2e-master
         command:
         - "./kinder/hack/verify-all.sh"
