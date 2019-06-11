@@ -23,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 
 # A resource that need to be cleared.
 Resource = collections.namedtuple(
@@ -64,7 +65,7 @@ DEMOLISH_ORDER = [
 def log(message):
     """ print a message if --verbose is set. """
     if ARGS.verbose:
-        print message
+        print message + '\n'
 
 
 def base_command(resource):
@@ -178,6 +179,19 @@ def collect(project, age, resource, filt, clear_all):
             col[colname].append(item['name'])
     return col
 
+def asyncCall(cmd, tolerate, name, errs, lock, hide_output):
+    log('Call %r' % cmd)
+    try:
+        if hide_output:
+            FNULL = open(os.devnull, 'w')
+            subprocess.check_call(cmd, stdout=FNULL)
+        else:
+            subprocess.check_call(cmd)
+    except subprocess.CalledProcessError as exc:
+        if not tolerate:
+            with lock:
+                errs.append(exc)
+        print >> sys.stderr, 'Error try to delete resources %s: %r' % (name, exc)
 
 def clear_resources(project, cols, resource, rate_limit):
     """Clear a collection of resource, from collect func above.
@@ -189,9 +203,11 @@ def clear_resources(project, cols, resource, rate_limit):
         rate_limit: how many resources to delete per gcloud delete call
     Returns:
         0 if no error
-        1 if deletion command fails
+        > 0 if deletion command fails
     """
-    err = 0
+    errs = []
+    threads = list()
+    lock = threading.Lock()
 
     # delete one resource at a time, if there's no api support
     # aka, logging sinks for example
@@ -232,14 +248,16 @@ def clear_resources(project, cols, resource, rate_limit):
             cmd = base + list(clean)
             if condition:
                 cmd.append(condition)
-            log('Call %r' % cmd)
-            try:
-                subprocess.check_call(cmd)
-            except subprocess.CalledProcessError as exc:
-                if not resource.tolerate:
-                    err = 1
-                print >> sys.stderr, 'Error try to delete resources: %r' % exc
-    return err
+            thread = threading.Thread(
+                target=asyncCall, args=(cmd, resource.tolerate, resource.name, errs, lock, False))
+            threads.append(thread)
+            log('start a new thread, total %d' % len(threads))
+            thread.start()
+
+    log('Waiting for all %d thread to finish' % len(threads))
+    for thread in threads:
+        thread.join()
+    return len(errs)
 
 
 def clean_gke_cluster(project, age, filt):
@@ -252,7 +270,10 @@ def clean_gke_cluster(project, age, filt):
         'https://container.googleapis.com/',  # prod
     ]
 
-    err = 0
+    errs = []
+    threads = list()
+    lock = threading.Lock()
+
     for endpoint in endpoints:
         os.environ['CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER'] = endpoint
         log("checking endpoint %s" % endpoint)
@@ -293,14 +314,17 @@ def clean_gke_cluster(project, age, filt):
                     '--project=%s' % project,
                     '--zone=%s' % item['zone'],
                 ]
-                try:
-                    log('running %s' % delete)
-                    subprocess.check_call(delete)
-                except subprocess.CalledProcessError as exc:
-                    err = 1
-                    print >> sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
+                thread = threading.Thread(
+                    target=asyncCall, args=(delete, False, item['name'], errs, lock, True))
+                threads.append(thread)
+                log('start a new thread, total %d' % len(threads))
+                thread.start()
 
-    return err
+    log('Waiting for all %d thread to finish' % len(threads))
+    for thread in threads:
+        thread.join()
+
+    return len(errs) > 0
 
 
 def activate_service_account(service_account):
