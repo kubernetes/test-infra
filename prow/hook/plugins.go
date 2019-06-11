@@ -42,6 +42,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/lifecycle"
 	_ "k8s.io/test-infra/prow/plugins/mergecommitblocker"
 	_ "k8s.io/test-infra/prow/plugins/milestone"
+	_ "k8s.io/test-infra/prow/plugins/milestoneapplier"
 	_ "k8s.io/test-infra/prow/plugins/milestonestatus"
 	_ "k8s.io/test-infra/prow/plugins/override"
 	_ "k8s.io/test-infra/prow/plugins/owners-label"

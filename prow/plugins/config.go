@@ -52,28 +52,29 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Approve                    []Approve              `json:"approve,omitempty"`
-	UseDeprecatedSelfApprove   bool                   `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`
-	UseDeprecatedReviewApprove bool                   `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
-	Blockades                  []Blockade             `json:"blockades,omitempty"`
-	Blunderbuss                Blunderbuss            `json:"blunderbuss,omitempty"`
-	Bugzilla                   Bugzilla               `json:"bugzilla"`
-	Cat                        Cat                    `json:"cat,omitempty"`
-	CherryPickUnapproved       CherryPickUnapproved   `json:"cherry_pick_unapproved,omitempty"`
-	ConfigUpdater              ConfigUpdater          `json:"config_updater,omitempty"`
-	Golint                     Golint                 `json:"golint"`
-	Heart                      Heart                  `json:"heart,omitempty"`
-	Label                      Label                  `json:"label"`
-	Lgtm                       []Lgtm                 `json:"lgtm,omitempty"`
-	RepoMilestone              map[string]Milestone   `json:"repo_milestone,omitempty"`
-	Project                    ProjectConfig          `json:"project_config,omitempty"`
-	RequireMatchingLabel       []RequireMatchingLabel `json:"require_matching_label,omitempty"`
-	RequireSIG                 RequireSIG             `json:"requiresig,omitempty"`
-	Slack                      Slack                  `json:"slack,omitempty"`
-	SigMention                 SigMention             `json:"sigmention,omitempty"`
-	Size                       Size                   `json:"size"`
-	Triggers                   []Trigger              `json:"triggers,omitempty"`
-	Welcome                    []Welcome              `json:"welcome,omitempty"`
+	Approve                    []Approve                    `json:"approve,omitempty"`
+	UseDeprecatedSelfApprove   bool                         `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`
+	UseDeprecatedReviewApprove bool                         `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
+	Blockades                  []Blockade                   `json:"blockades,omitempty"`
+	Blunderbuss                Blunderbuss                  `json:"blunderbuss,omitempty"`
+	Bugzilla                   Bugzilla                     `json:"bugzilla"`
+	Cat                        Cat                          `json:"cat,omitempty"`
+	CherryPickUnapproved       CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
+	ConfigUpdater              ConfigUpdater                `json:"config_updater,omitempty"`
+	Golint                     Golint                       `json:"golint"`
+	Heart                      Heart                        `json:"heart,omitempty"`
+	Label                      Label                        `json:"label"`
+	Lgtm                       []Lgtm                       `json:"lgtm,omitempty"`
+	MilestoneApplier           map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
+	RepoMilestone              map[string]Milestone         `json:"repo_milestone,omitempty"`
+	Project                    ProjectConfig                `json:"project_config,omitempty"`
+	RequireMatchingLabel       []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
+	RequireSIG                 RequireSIG                   `json:"requiresig,omitempty"`
+	Slack                      Slack                        `json:"slack,omitempty"`
+	SigMention                 SigMention                   `json:"sigmention,omitempty"`
+	Size                       Size                         `json:"size"`
+	Triggers                   []Trigger                    `json:"triggers,omitempty"`
+	Welcome                    []Welcome                    `json:"welcome,omitempty"`
 }
 
 // Golint holds configuration for the golint plugin
@@ -363,6 +364,10 @@ type Milestone struct {
 	MaintainersTeam         string `json:"maintainers_team,omitempty"`
 	MaintainersFriendlyName string `json:"maintainers_friendly_name,omitempty"`
 }
+
+// BranchToMilestone is a map of the branch name to the configured milestone for that branch.
+// This is used by the milestoneapplier plugin.
+type BranchToMilestone map[string]string
 
 // Slack contains the configuration for the slack plugin.
 type Slack struct {

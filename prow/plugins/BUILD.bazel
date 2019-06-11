@@ -82,6 +82,7 @@ filegroup(
         "//prow/plugins/lifecycle:all-srcs",
         "//prow/plugins/mergecommitblocker:all-srcs",
         "//prow/plugins/milestone:all-srcs",
+        "//prow/plugins/milestoneapplier:all-srcs",
         "//prow/plugins/milestonestatus:all-srcs",
         "//prow/plugins/override:all-srcs",
         "//prow/plugins/owners-label:all-srcs",
