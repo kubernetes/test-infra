@@ -76,7 +76,15 @@ make_bazel_rc () {
     # since this is the only hash our cache supports
     echo "startup --host_jvm_args=-Dbazel.DigestFunction=sha256"
     # use remote caching for all the things
-    echo "build --experimental_remote_spawn_cache"
+    # Only set this flag for older bazel versions, it is now enabled by 
+    # default and the flag was removed.
+    #
+    # NOTE: This is an exceptional case (version comparison)
+    # shellcheck disable=SC2072
+    # https://github.com/koalaman/shellcheck/wiki/SC2072#exceptions
+    if [[ "${BAZEL_VERSION:-}" < '0.25' ]]; then
+       echo "build --experimental_remote_spawn_cache"
+    fi
     # don't fail if the cache is unavailable
     echo "build --remote_local_fallback"
     # point bazel at our http cache ...
