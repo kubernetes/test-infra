@@ -27,7 +27,7 @@ git_repository(
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
-versions.check(minimum_bazel_version = "0.23.0")
+versions.check(minimum_bazel_version = "0.26.0")
 
 # TODO(fejta): delete the com_google_protobuf rule once rules_go >= 0.18.4
 # This silences the shallow_since message (and increases cache hit rate)
