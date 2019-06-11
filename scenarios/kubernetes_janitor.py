@@ -174,7 +174,7 @@ def main(mode, ratelimit, projects, age, artifacts):
                     tc.add_failure_info('failed to clean up gcp project')
                 tcs.append(tc)
 
-            ts = TestSuite('my test suite', tcs)
+            ts = TestSuite('janitor', tcs)
             with open(output, 'w') as f:
                 TestSuite.to_file(f, [ts])
     if FAILED:
