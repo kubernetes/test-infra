@@ -1,4 +1,5 @@
 {
 	"GoPrefix": "k8s.io/test-infra",
-	"AddSourcesRules": true
+	"AddSourcesRules": true,
+	"SkippedPaths": ["^node_modules/"]
 }

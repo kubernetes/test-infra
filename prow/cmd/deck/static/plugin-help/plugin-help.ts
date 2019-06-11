@@ -1,9 +1,5 @@
-import "dialog-polyfill";
+import dialogPolyfill from "dialog-polyfill";
 import {Command, Help, PluginHelp} from "../api/help";
-
-declare const dialogPolyfill: {
-  registerDialog(element: HTMLDialogElement): void;
-};
 
 declare const allHelp: Help;
 

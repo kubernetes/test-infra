@@ -144,17 +144,14 @@ git_repository(
     shallow_since = "1517262872 -0800",
 )
 
-git_repository(
+# https://github.com/bazelbuild/rules_nodejs
+http_archive(
     name = "build_bazel_rules_nodejs",
-    commit = "0eb4a19507211ab3863f4d82e9412a33f759abcd",
-    remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    shallow_since = "1548802468 -0800",
-    #tag = "0.16.6",
+    sha256 = "bc180118b9e1c7f2b74dc76a8f798d706fe9fc53470ef9296728267b4cd29441",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.30.2/rules_nodejs-0.30.2.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
-
-node_repositories(package_json = ["//:package.json"])
+load("@build_bazel_rules_nodejs//:defs.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
@@ -163,20 +160,13 @@ yarn_install(
     yarn_lock = "//:yarn.lock",
 )
 
-http_archive(
-    name = "build_bazel_rules_typescript",
-    sha256 = "136ba6be39b4ff934cc0f41f043912305e98cb62254d9e6af467e247daafcd34",
-    strip_prefix = "rules_typescript-0.22.0",
-    url = "https://github.com/bazelbuild/rules_typescript/archive/0.22.0.zip",
-)
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
 
-# Fetch our Bazel dependencies that aren't distributed on npm
-load("@build_bazel_rules_typescript//:package.bzl", "rules_typescript_dependencies")
+install_bazel_dependencies()
 
-rules_typescript_dependencies()
+load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 
-# Setup TypeScript toolchain
-load("@build_bazel_rules_typescript//:defs.bzl", "ts_setup_workspace")
+ts_setup_workspace()
 
 # Python setup
 # pip_import() calls must live in WORKSPACE, otherwise we get a load() after non-load() error

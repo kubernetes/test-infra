@@ -1,4 +1,4 @@
-import "dialog-polyfill";
+import dialogPolyfill from "dialog-polyfill";
 
 import {Context} from '../api/github';
 import {Label, PullRequest, UserData} from '../api/pr';
@@ -8,9 +8,6 @@ import {tidehistory} from '../common/common';
 
 declare const tideData: TideData;
 declare const allBuilds: Job[];
-declare const dialogPolyfill: {
-  registerDialog(element: HTMLDialogElement): void;
-};
 
 type UnifiedState = JobState | "expected" | "error" | "failure" | "pending" | "success";
 
