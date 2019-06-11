@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: prow
+    role: alert-rules
+  name: prow
+  namespace: prow-monitoring
+spec:
+  groups:
+  - name: ci-absent
+    rules:
+    - alert: deckDown
+      annotations:
+        message: The service deck has been down for 5 minutes.
+      expr: |
+        absent(up{job="deck"} == 1)
+      for: 5m
+      labels:
+        severity: slack
