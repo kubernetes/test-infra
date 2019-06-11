@@ -155,8 +155,6 @@ periodics:
       env:
       - name: K8S_VERSION
         value: ci/latest.txt
-      - name: DESTROY_FORCE
-        value: "dryrun"
 - name: ci-cloud-provider-vsphere-conformance-stable-1-14
   interval: 12h
   decorate: true
