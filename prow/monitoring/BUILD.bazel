@@ -13,6 +13,12 @@ release(
     component("prow", "prometheus"),
     component("prometheus_expose", MULTI_KIND),
     component("prometheus", "servicemonitor"),
+
+    component("grafana_rbac", MULTI_KIND),
+    component("grafana_expose", MULTI_KIND),
+    component("grafana_configmaps", MULTI_KIND),
+    component("grafana", "deployment"),
+    component("grafana", "servicemonitor"),
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")

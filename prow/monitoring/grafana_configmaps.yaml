@@ -1,0 +1,41 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: prow-monitoring
+  name: grafana-datasources
+data:
+  datasources.yaml: |
+    ---
+    apiVersion: 1
+    datasources:
+      - name: prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus.prow-monitoring.svc:9090
+        version: 1
+        orgId: 1
+        editable: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: prow-monitoring
+  name: grafana-config
+data:
+  grafana.ini: |
+    [auth]
+    disable_login_form = true
+    disable_signout_menu = true
+    [auth.basic]
+    enabled = false
+    [auth.anonymous]
+    enabled = true
+    org_role = Viewer
+    [paths]
+    data = /var/lib/grafana
+    logs = /var/lib/grafana/logs
+    plugins = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
+    [server]
+    http_port = 3001

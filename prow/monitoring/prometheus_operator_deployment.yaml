@@ -10,11 +10,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      k8s-app: prometheus-operator
+      app: prometheus-operator
   template:
     metadata:
       labels:
-        k8s-app: prometheus-operator
+        app: prometheus-operator
     spec:
       containers:
         - args:
