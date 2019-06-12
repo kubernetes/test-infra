@@ -32,11 +32,11 @@ import (
 
 const (
 	binary = "ginkgo" // TODO(RonWeber): Actually find these binaries.
-
 )
 
 var (
-	platformPath string
+	kubeRoot    string
+	e2eTestPath = filepath.Join("kubernetes", "test", "bin", "e2e.test")
 )
 
 const usage = `--flake-attempts Make up to this many attempts to run each spec.
@@ -66,8 +66,7 @@ type Tester struct {
 // NewTester creates a new Tester
 func NewTester(common types.Options, testArgs []string, deployer types.Deployer) (types.Tester, error) {
 	wd, _ := os.Getwd()
-	kubeRoot := filepath.Join(wd, "kubernetes")                                              //TODO(RonWeber): Real logic to get kubernetes
-	platformPath = filepath.Join(kubeRoot, "_output", "dockerized", "bin", "linux", "amd64") //TODO(RonWeber): Real logic to figure out current platform.
+	kubeRoot = filepath.Join(wd, "kubernetes")
 
 	t := Tester{}
 	t.deployer = deployer
@@ -95,7 +94,6 @@ func (t *Tester) Test() error {
 		return err
 	}
 
-	e2eTest := filepath.Join(platformPath, "e2e.test")
 	e2eTestArgs := []string{
 		"--host=" + t.host,
 		"--provider=" + t.provider,
@@ -106,7 +104,7 @@ func (t *Tester) Test() error {
 	}
 	ginkgoArgs := append([]string{
 		"--nodes=" + t.parallel,
-		e2eTest,
+		e2eTestPath,
 		"--"}, e2eTestArgs...)
 
 	log.Printf("Running ginkgo test as %s %+v", binary, ginkgoArgs)
