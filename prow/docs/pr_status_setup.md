@@ -77,4 +77,4 @@ Run the commands:
 
 ## Run PR Status endpoint on a test cluster
 If hosting your instance on http instead of https, you will need to set `Secure` to `false` every time it appears in [`githuboauth.go`](/prow/githuboauth/githuboauth.go).  
-
+There is an open issue for a flag that will do this for you: [#12989](https://github.com/kubernetes/test-infra/issues/12989)
