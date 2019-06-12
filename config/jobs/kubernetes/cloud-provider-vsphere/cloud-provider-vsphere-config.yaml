@@ -109,6 +109,7 @@ postsubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
     max_concurrency: 1
     branches:
     - ^master$
