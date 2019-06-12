@@ -76,5 +76,5 @@ Run the commands:
 `go build . && ./deck --config-path=../../config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth-url=/pr`
 
 ## Run PR Status endpoint on a test cluster
-If hosting your instance on http instead of https, you will need to set `Secure` to `false` every time it appears in githuboauth/githuboauth.go.  
+If hosting your instance on http instead of https, you will need to set `Secure` to `false` every time it appears in [`githuboauth.go`](/prow/githuboauth/githuboauth.go).  
 
