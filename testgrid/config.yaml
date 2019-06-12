@@ -995,8 +995,8 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e-daily
 - name: ci-daisy-e2e-weekly
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e-weekly
-- name: ci-image-import-export-cli-e2e-tests
-  gcs_prefix: compute-image-tools-test/logs/ci-image-import-export-cli-e2e-tests
+- name: ci-images-import-export-cli-e2e-tests
+  gcs_prefix: compute-image-tools-test/logs/ci-images-import-export-cli-e2e-tests
 - name: ci-ovf-import-e2e-tests-daily
   gcs_prefix: compute-image-tools-test/logs/ci-ovf-import-e2e-tests-daily
 - name: linux-image-tests
@@ -2585,13 +2585,13 @@ dashboards:
         value: 'ci-daisy-e2e-weekly issue: <test-name>'
       - key: body
         value: <test-url>
-  - name: ci-image-import-export-cli-e2e-tests
-    test_group_name: ci-image-import-export-cli-e2e-tests
+  - name: ci-images-import-export-cli-e2e-tests
+    test_group_name: ci-images-import-export-cli-e2e-tests
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
       options:
       - key: title
-        value: 'ci-image-import-export-cli-e2e-tests issue: <test-name>'
+        value: 'ci-images-import-export-cli-e2e-tests issue: <test-name>'
       - key: body
         value: <test-url>
   - name: ci-ovf-import-e2e-tests-daily
