@@ -20,41 +20,14 @@ HUB ?= gcr.io/k8s-testimages
 
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
-boskos:
-	go build k8s.io/test-infra/boskos/
-
-client:
-	go build -o client/client k8s.io/test-infra/boskos/client/
-
-reaper:
-	go build -o reaper/reaper k8s.io/test-infra/boskos/reaper/
-
-janitor:
-	go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
-
 janitor-aws:
 	$(MAKE) -C ../maintenance/aws-janitor/cmd/aws-janitor-boskos
 
-metrics:
-	go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
-
 images:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch boskos
-
-server-image:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant boskos boskos
-
-reaper-image:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant reaper boskos
-
-janitor-image:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant janitor boskos
+	bazel run //boskos:push
 
 janitor-aws-image:
 	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant aws-janitor boskos
-
-metrics-image:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant metrics boskos
 
 server-deployment: get-cluster-credentials
 	kubectl apply -f deployment.yaml

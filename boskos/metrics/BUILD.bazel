@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
 licenses(["notice"])
 
 load(
@@ -27,6 +29,15 @@ go_library(
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
+)
+
+go_image(
+    name = "image",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

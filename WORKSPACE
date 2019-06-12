@@ -126,6 +126,14 @@ container_pull(
     tag = "2",
 )
 
+container_pull(
+    name = "gcloud-go",
+    digest = "sha256:0dd11e500c64b7e722ad13bc9616598a14bb0f66d9e1de4330456c646eaf237d",  # 2019/01/25
+    registry = "gcr.io",
+    repository = "k8s-testimages/gcloud-in-go",
+    tag = "v20190125-cc5d6ecff3",
+)
+
 http_archive(
     name = "io_bazel_rules_k8s",
     sha256 = "91fef3e6054096a8947289ba0b6da3cba559ecb11c851d7bdfc9ca395b46d8d8",
