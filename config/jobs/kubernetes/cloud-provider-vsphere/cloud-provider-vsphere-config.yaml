@@ -38,7 +38,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
         command:
         - "make"
         args:
@@ -55,7 +55,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
         command:
         - "make"
         args:
@@ -72,7 +72,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
         command:
         - "make"
         args:
@@ -92,7 +92,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
         command:
         - "make"
         args:
@@ -117,7 +117,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+      - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
         command:
         - "make"
         args:
@@ -146,7 +146,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
@@ -172,7 +172,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
@@ -198,7 +198,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
@@ -224,7 +224,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
@@ -254,7 +254,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
@@ -282,7 +282,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
@@ -310,7 +310,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
@@ -338,7 +338,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:caae939f
+    - image: gcr.io/cloud-provider-vsphere/ci:0cadcaaa
       command:
       - "make"
       args:
