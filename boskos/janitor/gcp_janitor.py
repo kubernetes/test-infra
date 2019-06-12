@@ -266,10 +266,11 @@ def clean_gke_cluster(project, age, filt):
     ]
 
     errs = []
-    threads = list()
-    lock = threading.Lock()
 
     for endpoint in endpoints:
+        threads = list()
+        lock = threading.Lock()
+
         os.environ['CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER'] = endpoint
         log("checking endpoint %s" % endpoint)
         cmd = [
@@ -315,9 +316,9 @@ def clean_gke_cluster(project, age, filt):
                 log('start a new thread, total %d' % len(threads))
                 thread.start()
 
-    log('Waiting for all %d thread to finish' % len(threads))
-    for thread in threads:
-        thread.join()
+        log('Waiting for all %d thread to finish in %s' % (len(threads), endpoint))
+        for thread in threads:
+            thread.join()
 
     return len(errs) > 0
 
