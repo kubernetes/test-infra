@@ -1268,9 +1268,6 @@ test_groups:
 - name: istio-e2e-simpleTests-master
   gcs_prefix: istio-prow/logs/e2e-simpleTests-master
   num_failures_to_alert: 1
-- name: istio-istio_auth_sds_e2e-master
-  gcs_prefix: istio-prow/logs/istio_auth_sds_e2e-master
-  num_failures_to_alert: 1
 - name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-master
   gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-master
   num_failures_to_alert: 1
