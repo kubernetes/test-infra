@@ -1,0 +1,68 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+load("@npm_bazel_typescript//:index.bzl", "ts_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["coverage.go"],
+    importpath = "k8s.io/test-infra/prow/spyglass/lenses/coverage",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/spyglass/lenses:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+ts_library(
+    name = "script",
+    srcs = [
+        "coverage.ts",
+        "vendor.d.ts",
+    ],
+    deps = [
+        "//gopherage/cmd/html/static:parser",
+        "//prow/spyglass/lenses:lens_api",
+        "@npm//@types/color",
+        "@npm//@types/pako",
+    ],
+)
+
+rollup_bundle(
+    name = "script_bundle",
+    entry_point = "prow/spyglass/lenses/coverage/coverage",
+    deps = [
+        ":script",
+        "//gopherage/cmd/html/static:parser",
+        "@npm//color",
+        "@npm//pako",
+    ],
+)
+
+filegroup(
+    name = "resources",
+    srcs = [
+        "coverage.css",
+        ":script_bundle.es2015.js",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "template",
+    srcs = ["template.html"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
