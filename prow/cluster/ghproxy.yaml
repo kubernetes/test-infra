@@ -76,15 +76,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: default
   labels:
     app: ghproxy
+  namespace: default
   name: ghproxy
 spec:
   ports:
-  - port: 80
+  - name: main
+    port: 80
     protocol: TCP
     targetPort: 8888
+  - name: metrics
+    port: 9090
   selector:
     app: ghproxy
   type: NodePort # TODO(fejta): remove this?
