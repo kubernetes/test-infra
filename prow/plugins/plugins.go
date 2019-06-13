@@ -159,7 +159,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
 	return Agent{
-		GitHubClient:     clientAgent.GitHubClient,
+		GitHubClient:     clientAgent.GitHubClient.WithFields(logger.Data),
 		KubernetesClient: clientAgent.KubernetesClient,
 		ProwJobClient:    clientAgent.ProwJobClient,
 		GitClient:        clientAgent.GitClient,
