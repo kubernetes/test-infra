@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: grafana
+    prow-app: monitoring
+  name: grafana
+  namespace: prow-monitoring
+spec:
+  endpoints:
+  - interval: 30s
+    port: http
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - prow-monitoring
+  selector:
+    matchLabels:
+      app: grafana
