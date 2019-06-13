@@ -309,11 +309,22 @@ func equalBranchProtections(state *github.BranchProtection, request *github.Bran
 	case state == nil && request == nil:
 		return true
 	case state != nil && request != nil:
+		switch {
+		case !equalRequiredStatusChecks(state.RequiredStatusChecks, request.RequiredStatusChecks):
+			logrus.Debugf("Branch protections unequal: required status checks requested (%v) does not match state (%v)", request.RequiredStatusChecks, state.RequiredStatusChecks)
+		case !equalAdminEnforcement(state.EnforceAdmins, request.EnforceAdmins):
+			logrus.Debugf("Branch protections unequal: admin enforcement requested (%v) does not match state (%v)", request.EnforceAdmins, state.EnforceAdmins)
+		case !equalRequiredPullRequestReviews(state.RequiredPullRequestReviews, request.RequiredPullRequestReviews):
+			logrus.Debugf("Branch protections unequal: required pull request reviews requested (%v) does not match state (%v)", request.RequiredPullRequestReviews, state.RequiredPullRequestReviews)
+		case !equalRestrictions(state.Restrictions, request.Restrictions):
+			logrus.Debugf("Branch protections unequal: restrictions requested (%v) does not match state (%v)", request.Restrictions, state.Restrictions)
+		}
 		return equalRequiredStatusChecks(state.RequiredStatusChecks, request.RequiredStatusChecks) &&
 			equalAdminEnforcement(state.EnforceAdmins, request.EnforceAdmins) &&
 			equalRequiredPullRequestReviews(state.RequiredPullRequestReviews, request.RequiredPullRequestReviews) &&
 			equalRestrictions(state.Restrictions, request.Restrictions)
 	default:
+		logrus.Debug("Branch protections unequal: one of request or state unset, the other is set")
 		return false
 	}
 }
@@ -323,9 +334,16 @@ func equalRequiredStatusChecks(state, request *github.RequiredStatusChecks) bool
 	case state == request:
 		return true
 	case state != nil && request != nil:
+		switch {
+		case state.Strict != request.Strict:
+			logrus.Debug("Required status checks unequal: strictness requested (%v) does not match state (%v)", request.Strict, state.Strict)
+		case !equalStringSlices(&state.Contexts, &request.Contexts):
+			logrus.Debug("Required status checks unequal: contexts requested (%v) does not match state (%v)", &request.Contexts, &state.Contexts)
+		}
 		return state.Strict == request.Strict &&
 			equalStringSlices(&state.Contexts, &request.Contexts)
 	default:
+		logrus.Debug("Required status checks unequal: one of request or state unset, the other is set")
 		return false
 	}
 }
@@ -336,17 +354,20 @@ func equalStringSlices(s1, s2 *[]string) bool {
 		return true
 	case s1 != nil && s2 != nil:
 		if len(*s1) != len(*s2) {
+			logrus.Debugf("String slices unequal: different lengths (%d, %d)", len(*s1), len(*s2))
 			return false
 		}
 		sort.Strings(*s1)
 		sort.Strings(*s2)
 		for i, v := range *s1 {
 			if v != (*s2)[i] {
+				logrus.Debugf("String slices unequal: different item at index %d (%s, %s)", i, v, (*s2)[i])
 				return false
 			}
 		}
 		return true
 	default:
+		logrus.Debug("String slices unequal: one slice unset, one set")
 		return false
 	}
 }
@@ -362,8 +383,14 @@ func equalAdminEnforcement(state github.EnforceAdmins, request *bool) bool {
 		// bound by the branch protection rules. Therefore, making no
 		// request is equivalent to making a request to not enforce
 		// rules on admins.
+		if state.Enabled != false {
+			logrus.Debug("Admin enforcement unequal: request unset but state set to enabled")
+		}
 		return state.Enabled == false
 	default:
+		if state.Enabled != *request {
+			logrus.Debugf("Admin enforcement unequal: request (%v) does not match state (%v)", *request, state.Enabled)
+		}
 		return state.Enabled == *request
 	}
 }
@@ -373,11 +400,22 @@ func equalRequiredPullRequestReviews(state *github.RequiredPullRequestReviews, r
 	case state == nil && request == nil:
 		return true
 	case state != nil && request != nil:
+		switch {
+		case state.DismissStaleReviews != request.DismissStaleReviews:
+			logrus.Debugf("Required pull request reviews unequal: dimiss stale reviews requested (%v) does not match state (%v)", request.DismissStaleReviews, state.DismissStaleReviews)
+		case state.RequireCodeOwnerReviews != request.RequireCodeOwnerReviews:
+			logrus.Debugf("Required pull request reviews unequal: code owner reviews requested (%v) does not match state (%v)", request.RequireCodeOwnerReviews, state.RequireCodeOwnerReviews)
+		case state.RequiredApprovingReviewCount != request.RequiredApprovingReviewCount:
+			logrus.Debugf("Required pull request reviews unequal: approving review count requested (%v) does not match state (%v)", request.RequiredApprovingReviewCount, state.RequiredApprovingReviewCount)
+		case !equalRestrictions(state.DismissalRestrictions, &request.DismissalRestrictions):
+			logrus.Debugf("Required pull request reviews unequal: dismissal restrictions requested (%v) does not match state (%v)", request.DismissalRestrictions, state.DismissalRestrictions)
+		}
 		return state.DismissStaleReviews == request.DismissStaleReviews &&
 			state.RequireCodeOwnerReviews == request.RequireCodeOwnerReviews &&
 			state.RequiredApprovingReviewCount == request.RequiredApprovingReviewCount &&
 			equalRestrictions(state.DismissalRestrictions, &request.DismissalRestrictions)
 	default:
+		logrus.Debug("Required pull request reviews unequal: one of request or state unset, the other is set")
 		return false
 	}
 }
@@ -391,6 +429,12 @@ func equalRestrictions(state *github.Restrictions, request *github.RestrictionsR
 		// omit the fields from the response we get when asking for the
 		// current state. If we _are_ making a request but it has no real
 		// effect, this is identical to making no request for restriction.
+		if request.Users != nil {
+			logrus.Debugf("Restrictions unequal: no restrictions configured but users are requested (%v)", request.Users)
+		}
+		if request.Teams != nil {
+			logrus.Debugf("Restrictions unequal: no restrictions configured but teams are requested (%v)", request.Teams)
+		}
 		return request.Users == nil && request.Teams == nil
 	case state != nil && request != nil:
 		var users []string
@@ -409,8 +453,15 @@ func equalRestrictions(state *github.Restrictions, request *github.RestrictionsR
 				requestUsers = append(requestUsers, github.NormLogin(user))
 			}
 		}
+		if !equalStringSlices(&teams, request.Teams) {
+			logrus.Debugf("Restrictions unequal: requested teams (%v) does not match state (%v)", request.Teams, &teams)
+		}
+		if !equalStringSlices(&users, &requestUsers) {
+			logrus.Debugf("Restrictions unequal: requested users (%v) does not match state (%v)", request.Users, &users)
+		}
 		return equalStringSlices(&teams, request.Teams) && equalStringSlices(&users, &requestUsers)
 	default:
+		logrus.Debug("Restrictions unequal: one of request or state unset, the other is set")
 		return false
 	}
 }
