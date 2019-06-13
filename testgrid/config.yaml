@@ -1949,8 +1949,14 @@ test_groups:
 - name: pull-npd-e2e-kubernetes-gce-gci
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-gci
   num_columns_recent: 30
+- name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-gci-custom-flags
+  num_columns_recent: 30
 - name: pull-npd-e2e-kubernetes-gce-ubuntu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-ubuntu
+  num_columns_recent: 30
+- name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
   num_columns_recent: 30
 
 - name: ci-npd-build
@@ -1973,8 +1979,18 @@ test_groups:
   num_columns_recent: 30
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-npd-e2e-kubernetes-gce-gci-custom-flags
+  gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-kubernetes-gce-gci-custom-flags
+  num_columns_recent: 30
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-npd-e2e-kubernetes-gce-ubuntu
   gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-kubernetes-gce-ubuntu
+  num_columns_recent: 30
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+  gcs_prefix: kubernetes-jenkins/logs/ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
   num_columns_recent: 30
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
@@ -4542,8 +4558,16 @@ dashboards:
     test_group_name: ci-npd-e2e-kubernetes-gce-gci
     alert_options:
       alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
+  - name: ci-npd-e2e-kubernetes-gce-gci-custom-flags
+    test_group_name: ci-npd-e2e-kubernetes-gce-gci-custom-flags
+    alert_options:
+      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
   - name: ci-npd-e2e-kubernetes-gce-ubuntu
     test_group_name: ci-npd-e2e-kubernetes-gce-ubuntu
+    alert_options:
+      alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
+  - name: ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+    test_group_name: ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
     alert_options:
       alert_mail_to_addresses: zhenw@google.com,lantaol@google.com
 
@@ -5513,8 +5537,12 @@ dashboards:
     test_group_name: pull-npd-e2e-node
   - name: pull-npd-e2e-kubernetes-gce-gci
     test_group_name: pull-npd-e2e-kubernetes-gce-gci
+  - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
+    test_group_name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
   - name: pull-npd-e2e-kubernetes-gce-ubuntu
     test_group_name: pull-npd-e2e-kubernetes-gce-ubuntu
+  - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+    test_group_name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
 
 - name: google-rules_k8s
   dashboard_tab:
