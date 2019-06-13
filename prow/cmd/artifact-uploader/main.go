@@ -151,6 +151,8 @@ func (o *Options) Run() error {
 }
 
 func main() {
+	logrusutil.ComponentInit("artifact-uploader")
+
 	o := newOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
@@ -159,10 +161,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "artifact-uploader"}),
-	)
 
 	if err := o.Run(); err != nil {
 		logrus.WithError(err).Fatal("Failed to run the GCS uploader controller")

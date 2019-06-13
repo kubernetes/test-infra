@@ -75,14 +75,12 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	logrusutil.ComponentInit("config-bootstrapper")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "config-bootstrapper"}),
-	)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {

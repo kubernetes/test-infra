@@ -117,9 +117,7 @@ func flagOptions() *options {
 }
 
 func main() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "ghproxy"}),
-	)
+	logrusutil.ComponentInit("ghproxy")
 
 	o := flagOptions()
 	flag.Parse()

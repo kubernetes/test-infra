@@ -105,9 +105,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func main() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
-	)
+	logrusutil.ComponentInit("tide")
 
 	pjutil.ServePProf()
 

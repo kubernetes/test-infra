@@ -125,8 +125,9 @@ func newPipelineConfig(cfg rest.Config, stop chan struct{}) (*pipelineConfig, er
 }
 
 func main() {
+	logrusutil.ComponentInit("pipeline")
+
 	o := parseOptions()
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "pipeline"})
 
 	pjutil.ServePProf()
 

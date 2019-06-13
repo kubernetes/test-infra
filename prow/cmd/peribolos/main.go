@@ -147,9 +147,8 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 }
 
 func main() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "peribolos"}),
-	)
+	logrusutil.ComponentInit("peribolos")
+
 	o := parseOptions()
 
 	secretAgent := &secret.Agent{}

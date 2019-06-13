@@ -269,13 +269,12 @@ func (f fallbackHandler) getURL(jobName string) string {
 }
 
 func main() {
+	logrusutil.ComponentInit("tot")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tot"}),
-	)
 
 	pjutil.ServePProf()
 	health := pjutil.NewHealth()

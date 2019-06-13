@@ -137,6 +137,8 @@ func gatherOptions() options {
 }
 
 func main() {
+	logrusutil.ComponentInit("checkconfig")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
@@ -146,10 +148,6 @@ func main() {
 	if len(o.warnings.Strings()) == 0 {
 		o.warnings = flagutil.NewStrings(allWarnings...)
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(&logrus.TextFormatter{}, logrus.Fields{"component": "checkconfig"}),
-	)
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {

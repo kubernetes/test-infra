@@ -85,9 +85,7 @@ func (e *Errors) add(err error) {
 }
 
 func main() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "branchprotector"}),
-	)
+	logrusutil.ComponentInit("branchprotector")
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

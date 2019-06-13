@@ -89,8 +89,7 @@ func init() {
 }
 
 func main() {
-
-	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "pubsub-subscriber"}))
+	logrusutil.ComponentInit("pubsub-subscriber")
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(flagOptions.configPath, flagOptions.jobConfigPath); err != nil {

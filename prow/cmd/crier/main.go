@@ -150,11 +150,9 @@ func parseOptions() options {
 }
 
 func main() {
-	o := parseOptions()
+	logrusutil.ComponentInit("crier")
 
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "crier"}),
-	)
+	o := parseOptions()
 
 	pjutil.ServePProf()
 
