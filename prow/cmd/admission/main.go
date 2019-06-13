@@ -55,8 +55,9 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 }
 
 func main() {
+	logrusutil.ComponentInit("admission")
+
 	o := parseOptions()
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "admission"})
 
 	pjutil.ServePProf()
 	health := pjutil.NewHealth()

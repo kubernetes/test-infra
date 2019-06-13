@@ -84,16 +84,14 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	logrusutil.ComponentInit("sinker")
+
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
 	pjutil.ServePProf()
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
-	)
 
 	if !o.dryRun.Explicit {
 		logrus.Warning("Sinker requires --dry-run=false to function correctly in production.")

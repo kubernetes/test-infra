@@ -87,14 +87,12 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	logrusutil.ComponentInit("plank")
+
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "plank"}),
-	)
 
 	pjutil.ServePProf()
 

@@ -73,11 +73,12 @@ func gatherOptions() options {
 }
 
 func main() {
+	logrusutil.ComponentInit("tracer")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tracer"}))
 
 	client, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {

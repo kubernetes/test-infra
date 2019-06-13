@@ -123,13 +123,12 @@ func gatherOptions() options {
 }
 
 func main() {
+	logrusutil.ComponentInit("jenkins-operator")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "jenkins-operator"}),
-	)
 
 	pjutil.ServePProf()
 

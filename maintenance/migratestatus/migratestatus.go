@@ -107,14 +107,12 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	logrusutil.ComponentInit("migratestatus")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "migratestatus"}),
-	)
 
 	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {

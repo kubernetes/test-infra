@@ -88,14 +88,12 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	logrusutil.ComponentInit("status-reconciler")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "status-reconciler"}),
-	)
 
 	pjutil.ServePProf()
 

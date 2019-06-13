@@ -77,7 +77,7 @@ func gatherOptions() options {
 }
 
 func main() {
-	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gerrit"}))
+	logrusutil.ComponentInit("gerrit")
 
 	pjutil.ServePProf()
 

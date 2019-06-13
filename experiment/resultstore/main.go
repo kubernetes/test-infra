@@ -101,7 +101,8 @@ func parseOptions() options {
 }
 
 func main() {
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "storeship"})
+	logrusutil.ComponentInit("storeship")
+
 	opt := parseOptions()
 	for {
 		err := run(opt)

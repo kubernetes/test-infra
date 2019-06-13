@@ -129,8 +129,9 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 }
 
 func main() {
+	logrusutil.ComponentInit("build")
+
 	o := parseOptions()
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "build"})
 
 	pjutil.ServePProf()
 
