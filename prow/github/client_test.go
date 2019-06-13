@@ -54,14 +54,16 @@ func getClient(url string) *client {
 	}
 
 	return &client{
-		time:     &testTime{},
-		getToken: getToken,
-		client: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		delegate: &delegate{
+			time:     &testTime{},
+			getToken: getToken,
+			client: &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
 			},
+			bases: []string{url},
 		},
-		bases: []string{url},
 	}
 }
 

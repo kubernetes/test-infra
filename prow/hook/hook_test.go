@@ -59,7 +59,9 @@ func TestHook(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
-	clientAgent := &plugins.ClientAgent{}
+	clientAgent := &plugins.ClientAgent{
+		GitHubClient: github.NewFakeClient(),
+	}
 	metrics := NewMetrics()
 
 	getSecret := func() []byte {

@@ -210,13 +210,20 @@ type Client interface {
 
 	Throttle(hourlyTokens, burst int)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
+
+	WithFields(fields logrus.Fields) Client
 }
 
 // client interacts with the github api.
 type client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
-	time   timeClient
+	*delegate
+}
+
+// delegate actually does the work to talk to GitHub
+type delegate struct {
+	time timeClient
 
 	gqlc     gqlClient
 	client   httpClient
@@ -229,6 +236,15 @@ type client struct {
 	mut     sync.Mutex // protects botName and email
 	botName string
 	email   string
+}
+
+// WithFields clones the client, keeping the underlying delegate the same but adding
+// fields to the logging context
+func (c *client) WithFields(fields logrus.Fields) Client {
+	return &client{
+		logger:   c.logger.WithFields(fields),
+		delegate: c.delegate,
+	}
 }
 
 var (
@@ -390,17 +406,19 @@ func (c *client) Throttle(hourlyTokens, burst int) {
 func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
-		time:   &standardTime{},
-		gqlc: githubql.NewEnterpriseClient(
-			graphqlEndpoint,
-			&http.Client{
-				Timeout:   maxRequestTime,
-				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
-			}),
-		client:   &http.Client{Timeout: maxRequestTime},
-		bases:    bases,
-		getToken: getToken,
-		dry:      false,
+		delegate: &delegate{
+			time: &standardTime{},
+			gqlc: githubql.NewEnterpriseClient(
+				graphqlEndpoint,
+				&http.Client{
+					Timeout:   maxRequestTime,
+					Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+				}),
+			client:   &http.Client{Timeout: maxRequestTime},
+			bases:    bases,
+			getToken: getToken,
+			dry:      false,
+		},
 	}
 }
 
@@ -420,17 +438,19 @@ func NewClient(getToken func() []byte, graphqlEndpoint string, bases ...string) 
 func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
-		time:   &standardTime{},
-		gqlc: githubql.NewEnterpriseClient(
-			graphqlEndpoint,
-			&http.Client{
-				Timeout:   maxRequestTime,
-				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
-			}),
-		client:   &http.Client{Timeout: maxRequestTime},
-		bases:    bases,
-		getToken: getToken,
-		dry:      true,
+		delegate: &delegate{
+			time: &standardTime{},
+			gqlc: githubql.NewEnterpriseClient(
+				graphqlEndpoint,
+				&http.Client{
+					Timeout:   maxRequestTime,
+					Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+				}),
+			client:   &http.Client{Timeout: maxRequestTime},
+			bases:    bases,
+			getToken: getToken,
+			dry:      true,
+		},
 	}
 }
 
@@ -450,9 +470,11 @@ func NewDryRunClient(getToken func() []byte, graphqlEndpoint string, bases ...st
 func NewFakeClient() Client {
 	return &client{
 		logger: logrus.WithField("client", "github"),
-		time:   &standardTime{},
-		fake:   true,
-		dry:    true,
+		delegate: &delegate{
+			time: &standardTime{},
+			fake: true,
+			dry:  true,
+		},
 	}
 }
 
