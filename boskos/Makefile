@@ -20,14 +20,8 @@ HUB ?= gcr.io/k8s-testimages
 
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
-janitor-aws:
-	$(MAKE) -C ../maintenance/aws-janitor/cmd/aws-janitor-boskos
-
 images:
 	bazel run //boskos:push
-
-janitor-aws-image:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --variant aws-janitor boskos
 
 server-deployment: get-cluster-credentials
 	kubectl apply -f deployment.yaml

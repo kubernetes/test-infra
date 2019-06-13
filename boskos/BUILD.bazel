@@ -26,13 +26,14 @@ go_image(
 )
 
 prow_push(
-    name = "push",
+    name = "release-push",
     images = tags(**{
+        "{STABLE_PROW_REPO}/boskos/aws-janitor": "//maintenance/aws-janitor:image",
         "{STABLE_PROW_REPO}/boskos/boskos": "//boskos:image",
-        "{STABLE_PROW_REPO}/boskos/janitor": "//boskos/janitor:image",
-        "{STABLE_PROW_REPO}/boskos/reaper": "//boskos/reaper:image",
-        "{STABLE_PROW_REPO}/boskos/metrics": "//boskos/metrics:image",
         "{STABLE_PROW_REPO}/boskos/fake-mason": "//boskos/mason/fake-mason:image",
+        "{STABLE_PROW_REPO}/boskos/janitor": "//boskos/janitor:image",
+        "{STABLE_PROW_REPO}/boskos/metrics": "//boskos/metrics:image",
+        "{STABLE_PROW_REPO}/boskos/reaper": "//boskos/reaper:image",
     }),
 )
 

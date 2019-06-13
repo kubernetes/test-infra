@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/gcloud-in-go:0.4
+# This image is also constructed with Bazel,
+# please make sure this matches the gcloud-go entry in WORKSPACE
+FROM gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
 
 RUN apt-get install ca-certificates && update-ca-certificates && \
     rm -rf /var/lib/apt/lists/*
