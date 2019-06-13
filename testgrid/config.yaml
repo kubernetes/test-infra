@@ -6872,12 +6872,12 @@ dashboard_groups:
   - conformance-alibaba-cloud-provider
   - conformance-cloud-provider-vsphere
   - conformance-vsphere
-  - conformance-gardener
   - conformance-hack-local-up-cluster
   - conformance-arm
   - conformance-ppc64le
   - conformance-eks
   - conformance-oracle-cloud-infrastructure
+  - conformance-gardener
 
 - name: vmware
   dashboard_names:
@@ -6914,4 +6914,3 @@ dashboard_groups:
   - gardener-openstack
   - gardener-alicloud
   - gardener-azure
-  - conformance-gardener
