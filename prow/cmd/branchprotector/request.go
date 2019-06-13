@@ -35,12 +35,17 @@ func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest 
 
 }
 
-// makeAdmins returns true iff *val == true, else nil
+// makeAdmins returns true iff *val == true, else false
+// TODO(skuznets): the API documentation tells us to pass
+//    `nil` to unset, but that is broken so we need to pass
+//    false. Change back when it's fixed
 func makeAdmins(val *bool) *bool {
-	if v := makeBool(val); v {
-		return &v
+	if val != nil {
+		return val
+	} else {
+		no := false
+		return &no
 	}
-	return nil
 }
 
 // makeBool returns true iff *val == true
