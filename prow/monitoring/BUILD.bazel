@@ -73,3 +73,15 @@ filegroup(
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
+
+load("//def:secret.bzl", "k8s_secret")
+
+k8s_secret(
+    name = "alertmanager-prow",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    data = {
+        "alertmanager.yaml": ":alertmanager.yaml",
+        "msg.tmpl": ":msg.tmpl",
+    },
+    namespace = "prow-monitoring",
+)

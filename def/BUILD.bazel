@@ -10,6 +10,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//def/configmap:all-srcs",
+        "//def/secret:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
