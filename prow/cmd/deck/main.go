@@ -752,29 +752,43 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 		return "", fmt.Errorf("found no artifacts for %s", src)
 	}
 
-	viewerCache := map[string][]string{}
-	viewersRegistry := cfg().Deck.Spyglass.Viewers
 	regexCache := cfg().Deck.Spyglass.RegexCache
-
-	for re, viewerNames := range viewersRegistry {
-		matches := []string{}
-		for _, a := range artifactNames {
-			if regexCache[re].MatchString(a) {
-				matches = append(matches, a)
+	lensCache := map[int][]string{}
+	var lensIndexes []int
+lensesLoop:
+	for i, lfc := range cfg().Deck.Spyglass.Lenses {
+		matches := map[string]struct{}{}
+		for _, re := range lfc.RequiredFiles {
+			found := false
+			for _, a := range artifactNames {
+				if regexCache[re].MatchString(a) {
+					matches[a] = struct{}{}
+					found = true
+				}
+			}
+			if !found {
+				continue lensesLoop
 			}
 		}
-		if len(matches) > 0 {
-			for _, vName := range viewerNames {
-				viewerCache[vName] = matches
+
+		for _, re := range lfc.OptionalFiles {
+			for _, a := range artifactNames {
+				if regexCache[re].MatchString(a) {
+					matches[a] = struct{}{}
+				}
 			}
 		}
+
+		matchSlice := make([]string, 0, len(matches))
+		for k := range matches {
+			matchSlice = append(matchSlice, k)
+		}
+
+		lensCache[i] = matchSlice
+		lensIndexes = append(lensIndexes, i)
 	}
 
-	ls := sg.Lenses(viewerCache)
-	lensNames := []string{}
-	for _, l := range ls {
-		lensNames = append(lensNames, l.Config().Name)
-	}
+	lensIndexes, ls := sg.Lenses(lensIndexes)
 
 	jobHistLink := ""
 	jobPath, err := sg.JobPath(src)
@@ -858,10 +872,10 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 
 	var viewBuf bytes.Buffer
 	type lensesTemplate struct {
-		Lenses        []lenses.Lens
-		LensNames     []string
+		Lenses        map[int]lenses.Lens
+		LensIndexes   []int
 		Source        string
-		LensArtifacts map[string][]string
+		LensArtifacts map[int][]string
 		JobHistLink   string
 		ProwJobLink   string
 		ArtifactsLink string
@@ -874,9 +888,9 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	}
 	lTmpl := lensesTemplate{
 		Lenses:        ls,
-		LensNames:     lensNames,
+		LensIndexes:   lensIndexes,
 		Source:        src,
-		LensArtifacts: viewerCache,
+		LensArtifacts: lensCache,
 		JobHistLink:   jobHistLink,
 		ProwJobLink:   prowJobLink,
 		ArtifactsLink: artifactsLink,
@@ -964,8 +978,8 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 			}{
 				lensConfig.Title,
 				"/spyglass/static/" + lensName + "/",
-				template.HTML(lens.Header(artifacts, lensResourcesDir)),
-				template.HTML(lens.Body(artifacts, lensResourcesDir, "")),
+				template.HTML(lens.Header(artifacts, lensResourcesDir, cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
+				template.HTML(lens.Body(artifacts, lensResourcesDir, "", cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)),
 			})
 		case "rerender":
 			data, err := ioutil.ReadAll(r.Body)
@@ -974,14 +988,14 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 				return
 			}
 			w.Header().Set("Content-Type", "text/html; encoding=utf-8")
-			w.Write([]byte(lens.Body(artifacts, lensResourcesDir, string(data))))
+			w.Write([]byte(lens.Body(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
 		case "callback":
 			data, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
 				return
 			}
-			w.Write([]byte(lens.Callback(artifacts, lensResourcesDir, string(data))))
+			w.Write([]byte(lens.Callback(artifacts, lensResourcesDir, string(data), cfg().Deck.Spyglass.Lenses[request.Index].Lens.Config)))
 		default:
 			http.NotFound(w, r)
 		}

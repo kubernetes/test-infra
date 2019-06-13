@@ -2,26 +2,27 @@ import { isTransitMessage } from "./common";
 
 declare const src: string;
 declare const lensArtifacts: {[key: string]: string[]};
-declare const lenses: string[];
+declare const lensIndexes: number[];
 
 // Loads views for this job
 function loadLenses(): void {
-  for (const lens of lenses) {
-    const frame = document.querySelector<HTMLIFrameElement>(`#iframe-${lens}`)!;
-    frame.src = urlForLensRequest(lens, 'iframe');
+  for (const lensIndex of lensIndexes) {
+    const frame = document.querySelector<HTMLIFrameElement>(`#iframe-${lensIndex}`)!;
+    frame.src = urlForLensRequest(frame.dataset.lensName!, Number(frame.dataset.lensIndex!), 'iframe');
   }
 }
 
-function queryForLens(lens: string): string {
+function queryForLens(lens: string, index: number): string {
   const data = {
-    artifacts: lensArtifacts[lens],
+    artifacts: lensArtifacts[index],
+    index,
     src,
   };
   return `req=${encodeURIComponent(JSON.stringify(data))}`;
 }
 
-function urlForLensRequest(lens: string, request: string): string {
-  return `/spyglass/lens/${lens}/${request}?${queryForLens(lens)}`;
+function urlForLensRequest(lens: string, index: number, request: string): string {
+  return `/spyglass/lens/${lens}/${request}?${queryForLens(lens, index)}`;
 }
 
 function frameForMessage(e: MessageEvent): HTMLIFrameElement {
@@ -38,7 +39,8 @@ window.addEventListener('message', async (e) => {
   if (isTransitMessage(data)) {
     const {id, message} = data;
     const frame = frameForMessage(e);
-    const lens = frame.dataset.lens!;
+    const lens = frame.dataset.lensName!;
+    const index = Number(frame.dataset.lensIndex!);
 
     const respond = (response: string): void => {
       frame.contentWindow!.postMessage({id, message: {type: 'response', data: response}}, '*');
@@ -55,13 +57,13 @@ window.addEventListener('message', async (e) => {
         respond('');
         break;
       case "request": {
-        const req = await fetch(urlForLensRequest(lens, 'callback'),
+        const req = await fetch(urlForLensRequest(lens, index, 'callback'),
           {body: message.data, method: 'POST'});
         respond(await req.text());
         break;
       }
       case "requestPage": {
-        const req = await fetch(urlForLensRequest(lens, 'rerender'),
+        const req = await fetch(urlForLensRequest(lens, index, 'rerender'),
           {body: message.data, method: 'POST'});
         respond(await req.text());
         break;
@@ -70,7 +72,7 @@ window.addEventListener('message', async (e) => {
         const spinner = document.querySelector<HTMLElement>(`#${lens}-loading`)!;
         frame.style.visibility = 'visible';
         spinner.style.display = 'block';
-        const req = await fetch(urlForLensRequest(lens, 'rerender'),
+        const req = await fetch(urlForLensRequest(lens, index, 'rerender'),
           {body: message.data, method: 'POST'});
         respond(await req.text());
         break;
