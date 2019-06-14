@@ -662,7 +662,7 @@ func commentFromIssueComment(ic *github.IssueComment) *comment {
 }
 
 func commentsFromIssueComments(ics []github.IssueComment) []*comment {
-	comments := []*comment{}
+	comments := make([]*comment, 0, len(ics))
 	for i := range ics {
 		comments = append(comments, commentFromIssueComment(&ics[i]))
 	}
@@ -683,7 +683,7 @@ func commentFromReviewComment(rc *github.ReviewComment) *comment {
 }
 
 func commentsFromReviewComments(rcs []github.ReviewComment) []*comment {
-	comments := []*comment{}
+	comments := make([]*comment, 0, len(rcs))
 	for i := range rcs {
 		comments = append(comments, commentFromReviewComment(&rcs[i]))
 	}
@@ -705,7 +705,7 @@ func commentFromReview(review *github.Review) *comment {
 }
 
 func commentsFromReviews(reviews []github.Review) []*comment {
-	comments := []*comment{}
+	comments := make([]*comment, 0, len(reviews))
 	for i := range reviews {
 		comments = append(comments, commentFromReview(&reviews[i]))
 	}
@@ -713,7 +713,7 @@ func commentsFromReviews(reviews []github.Review) []*comment {
 }
 
 func filterComments(comments []*comment, filter func(*comment) bool) []*comment {
-	var filtered []*comment
+	filtered := make([]*comment, 0, len(comments))
 	for _, c := range comments {
 		if filter(c) {
 			filtered = append(filtered, c)
