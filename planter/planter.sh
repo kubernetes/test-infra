@@ -69,7 +69,7 @@ RUN_OPTS="${RUN_OPTS} -it"
 RUN_OPTS="${RUN_OPTS} --hostname=planter"
 
 # - NOTE: SELinux disabled for this container to prevent relabeling $HOME (!)
-RUN_OPTS="${RUN_OPTS} --security-opt label:disable"
+RUN_OPTS="${RUN_OPTS} --security-opt label=disable"
 
 # - supply the host user's `id` info so we can run as the host user and create
 #   a matching environment for the purposes of building, see the Dockerfile and
