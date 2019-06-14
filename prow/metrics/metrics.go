@@ -29,14 +29,18 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 )
 
 const metricsPort = 9090
 
 // ExposeMetrics chooses whether to serve or push metrics for the service
-func ExposeMetrics(component string, endpoint string, interval time.Duration) {
-	if endpoint != "" {
-		go pushMetrics(component, endpoint, interval)
+func ExposeMetrics(component string, pushGateway config.PushGateway) {
+	if pushGateway.Endpoint != "" {
+		go pushMetrics(component, pushGateway.Endpoint, pushGateway.Interval.Duration)
+		if pushGateway.ServeMetrics {
+			serveMetrics()
+		}
 	} else {
 		serveMetrics()
 	}

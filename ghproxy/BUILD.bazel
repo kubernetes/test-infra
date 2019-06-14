@@ -32,10 +32,12 @@ go_library(
     deps = [
         "//ghproxy/ghcache:go_default_library",
         "//greenhouse/diskutil:go_default_library",
+        "//prow/config:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
 

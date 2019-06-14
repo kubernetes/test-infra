@@ -245,8 +245,7 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	pushGateway := cfg().PushGateway
-	metrics.ExposeMetrics("deck", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	metrics.ExposeMetrics("deck", cfg().PushGateway)
 
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the

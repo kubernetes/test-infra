@@ -120,8 +120,7 @@ func main() {
 	promMetrics := subscriber.NewMetrics()
 
 	// Expose prometheus metrics
-	pushGateway := configAgent.Config().PushGateway
-	metrics.ExposeMetrics("sub", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway)
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,

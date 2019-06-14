@@ -174,8 +174,7 @@ func main() {
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
-	pushGateway := cfg().PushGateway
-	metrics.ExposeMetrics("tide", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	metrics.ExposeMetrics("tide", cfg().PushGateway)
 
 	start := time.Now()
 	sync(c)
