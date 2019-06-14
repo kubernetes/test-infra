@@ -83,7 +83,17 @@ presubmits:
         - "GIT_COMMIT=${PULL_PULL_SHA} make cover"
         env:
         - name: CODECOV_TOKEN
-          value: 9d09c10d-af0f-446e-94a2-e534c604d235
+          valueFrom:
+            secretKeyRef:
+              name: ingress-nginx-codecov-token
+              key: ingress-nginx-codecov-token
+    volumes:
+      - name: ingress-nginx-codecov-token
+        secret:
+          secretName: ingress-nginx-codecov-token
+          items:
+          - key: ingress-nginx-codecov-token
+            path: ingress-nginx-codecov-token
 
   - name: pull-ingress-nginx-e2e-1-12
     always_run: true
