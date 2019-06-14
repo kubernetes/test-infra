@@ -47,6 +47,7 @@ var (
 		"kopeio",
 		"redhat",
 		"vmware",
+		"gardener",
 	}
 	orgs = []string{
 		"conformance",
