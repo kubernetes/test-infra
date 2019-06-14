@@ -3528,6 +3528,9 @@ presubmits:
         - --
         - -c
         - cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh
+        env:
+        - name: E2E_VERBOSITY
+          value: "8"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190614-260dce7-master
         name: ""
         resources:

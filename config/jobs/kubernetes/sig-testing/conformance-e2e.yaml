@@ -43,6 +43,10 @@ presubmits:
               memory: "9000Mi"
               # during the tests more like 3-20m is used
               cpu: 2000m
+          env:
+            # This E2E_VERBOSITY 8 is for outputting API operations on e2e.log
+            - name: E2E_VERBOSITY
+              value: "8"
 
 periodics:
   # conformance test using image against kubernetes master branch with `kind`
