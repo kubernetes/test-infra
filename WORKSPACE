@@ -207,7 +207,6 @@ new_git_repository(
     name = "operator_framework_community_operators",
     commit = "42131df7167ec0b264c892c1f3c49ba9a72142da",
     remote = "https://github.com/operator-framework/community-operators.git",
-    shallow_since = "1559569397 +0200",
     build_file_content = """
 exports_files([
     "upstream-community-operators/prometheus/alertmanager.crd.yaml",
