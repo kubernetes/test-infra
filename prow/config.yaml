@@ -453,6 +453,7 @@ tide:
 
 push_gateway:
   endpoint: pushgateway
+  serve_metrics: true
 
 github_reporter:
   job_types_to_report:
