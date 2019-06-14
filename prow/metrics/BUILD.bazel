@@ -6,6 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/metrics",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/config:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/push:go_default_library",

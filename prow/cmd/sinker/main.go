@@ -104,8 +104,7 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	pushGateway := cfg().PushGateway
-	metrics.ExposeMetrics("sinker", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	metrics.ExposeMetrics("sinker", cfg().PushGateway)
 
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun.Value)
 	if err != nil {

@@ -143,8 +143,7 @@ func main() {
 	}
 
 	// Expose prometheus metrics
-	pushGateway := cfg().PushGateway
-	metrics.ExposeMetrics("plank", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	metrics.ExposeMetrics("plank", cfg().PushGateway)
 	// gather metrics for the jobs handled by plank.
 	go gather(c)
 
