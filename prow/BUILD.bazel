@@ -130,6 +130,7 @@ filegroup(
         "//prow/labels:all-srcs",
         "//prow/logrusutil:all-srcs",
         "//prow/metrics:all-srcs",
+        "//prow/monitoring:all-srcs",
         "//prow/phony:all-srcs",
         "//prow/pjutil:all-srcs",
         "//prow/plank:all-srcs",
