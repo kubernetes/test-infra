@@ -23,10 +23,7 @@ import (
 )
 
 var (
-	prowJobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "prowjobs",
-		Help: "Number of prowjobs in the system",
-	}, []string{
+	metricLabels = []string{
 		// name of the job
 		"job_name",
 		// type of the prowjob: presubmit, postsubmit, periodic, batch
@@ -39,7 +36,15 @@ var (
 		"repo",
 		// the base_ref of the prowjob's repo
 		"base_ref",
-	})
+	}
+	prowJobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "prowjobs",
+		Help: "Number of prowjobs in the system",
+	}, metricLabels)
+	prowJobTransitions = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "prowjob_state_transitions",
+		Help: "Number of prowjobs transitioning states",
+	}, metricLabels)
 )
 
 type jobLabel struct {
@@ -49,6 +54,10 @@ type jobLabel struct {
 	org     string
 	repo    string
 	baseRef string
+}
+
+func (jl *jobLabel) values() []string {
+	return []string{jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef}
 }
 
 func init() {
@@ -76,15 +85,33 @@ func getJobLabelMap(pjs []prowapi.ProwJob) map[jobLabel]float64 {
 	return jobLabelMap
 }
 
-// GatherProwJobMetrics gathers prometheus metrics for prowjobs.
-func GatherProwJobMetrics(pjs []prowapi.ProwJob) {
+// previousStates records the prowJobs we were called with previously
+var previousStates map[jobLabel]prowapi.ProwJobState
 
-	jobLabelMap := getJobLabelMap(pjs)
+// GatherProwJobMetrics gathers prometheus metrics for prowjobs.
+// Not threadsafe, ensure this is called serially.
+func GatherProwJobMetrics(current []prowapi.ProwJob) {
+
+	// record the current state of ProwJob CRs on the system
+	jobLabelMap := getJobLabelMap(current)
 	// This may be racing with the prometheus server but we need to remove
 	// stale metrics like triggered or pending jobs that are now complete.
 	prowJobs.Reset()
 
 	for jl, count := range jobLabelMap {
-		prowJobs.WithLabelValues(jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef).Set(count)
+		prowJobs.WithLabelValues(jl.values()...).Set(count)
 	}
+
+	// record state transitions since the last time we were called
+	currentStates := map[jobLabel]prowapi.ProwJobState{}
+	for jl := range jobLabelMap {
+		state := prowapi.ProwJobState(jl.state)
+		currentStates[jl] = state
+
+		if previousState, seen := previousStates[jl]; !seen || previousState != state {
+			prowJobTransitions.WithLabelValues(jl.values()...).Inc()
+		}
+	}
+
+	previousStates = currentStates
 }
