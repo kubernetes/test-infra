@@ -268,6 +268,7 @@ func split(branch string) (string, string, string) {
 
 func TestProtect(t *testing.T) {
 	yes := true
+	no := false
 
 	cases := []struct {
 		name              string
@@ -303,22 +304,28 @@ branch-protection:
 `,
 			expected: []requirements{
 				{
-					Org:     "cfgdef",
-					Repo:    "repo1",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "cfgdef",
-					Repo:    "repo1",
-					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "cfgdef",
-					Repo:    "repo2",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "cfgdef",
+					Repo:   "repo2",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 			},
 		},
@@ -335,10 +342,12 @@ branch-protection:
 `,
 			expected: []requirements{
 				{
-					Org:     "this",
-					Repo:    "yes",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "this",
+					Repo:   "yes",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
 					Org:     "that",
@@ -369,16 +378,19 @@ branch-protection:
 					Repo:   "test-infra",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
 						RequiredStatusChecks: &github.RequiredStatusChecks{
 							Contexts: []string{"hello-world"},
 						},
 					},
 				},
 				{
-					Org:     "kubernetes",
-					Repo:    "publishing-bot",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "kubernetes",
+					Repo:   "publishing-bot",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 			},
 		},
@@ -439,16 +451,20 @@ branch-protection:
 `,
 			expected: []requirements{
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
 					Org:     "org",
@@ -472,16 +488,20 @@ branch-protection:
 			archived: "skip",
 			expected: []requirements{
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 			},
 		},
@@ -506,6 +526,7 @@ branch-protection:
 					Repo:   "repo",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
 						RequiredStatusChecks: &github.RequiredStatusChecks{
 							Contexts: []string{"duplicate-context", "hello-world"},
 						},
@@ -544,6 +565,7 @@ branch-protection:
 					Repo:   "repo",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
 						RequiredStatusChecks: &github.RequiredStatusChecks{
 							Contexts: []string{"config-presubmit", "org-presubmit", "repo-presubmit", "branch-presubmit"},
 						},
@@ -582,6 +604,7 @@ branch-protection:
 					Repo:   "repo",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
 						Restrictions: &github.RestrictionsRequest{
 							Users: &[]string{},
 							Teams: &[]string{"config-team", "org-team", "repo-team", "branch-team"},
@@ -703,10 +726,12 @@ branch-protection:
 			startUnprotected: true,
 			expected: []requirements{
 				{
-					Org:     "protect",
-					Repo:    "update",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "protect",
+					Repo:   "update",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 			},
 		},

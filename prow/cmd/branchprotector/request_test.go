@@ -118,6 +118,7 @@ func TestMakeReviews(t *testing.T) {
 
 func TestMakeRequest(t *testing.T) {
 	yes := true
+	no := false
 	cases := []struct {
 		name     string
 		policy   branchprotection.Policy
@@ -125,6 +126,9 @@ func TestMakeRequest(t *testing.T) {
 	}{
 		{
 			name: "Empty works",
+			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
+			},
 		},
 		{
 			name: "teams != nil => users != nil",
@@ -134,6 +138,7 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
 				Restrictions: &github.RestrictionsRequest{
 					Teams: &[]string{"hello"},
 					Users: &[]string{},
@@ -148,6 +153,7 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
 				Restrictions: &github.RestrictionsRequest{
 					Users: &[]string{"there"},
 					Teams: &[]string{},
@@ -162,6 +168,7 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
 				RequiredStatusChecks: &github.RequiredStatusChecks{
 					Strict:   true,
 					Contexts: []string{},
