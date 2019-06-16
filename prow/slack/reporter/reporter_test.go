@@ -145,3 +145,45 @@ func TestReloadsConfig(t *testing.T) {
 		t.Error("Did expect shouldReport to be true after config change")
 	}
 }
+
+func TestUsesChannelOverrideFromJob(t *testing.T) {
+	testCases := []struct {
+		name     string
+		cfg      *config.SlackReporter
+		pj       *v1.ProwJob
+		expected string
+	}{
+		{
+			name: "No job-level config, use global default",
+			cfg: &config.SlackReporter{
+				Channel: "global-default",
+			},
+			pj:       &v1.ProwJob{},
+			expected: "global-default",
+		},
+		{
+			name: "Job-level config present, use it",
+			cfg: &config.SlackReporter{
+				Channel: "global-default",
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					ReporterConfig: &v1.ReporterConfig{
+						Slack: &v1.SlackReporterConfig{
+							Channel: "team-a",
+						},
+					},
+				},
+			},
+			expected: "team-a",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if result := channel(tc.cfg, tc.pj); result != tc.expected {
+				t.Fatalf("Expected result to be %q, was %q", tc.expected, result)
+			}
+		})
+	}
+}

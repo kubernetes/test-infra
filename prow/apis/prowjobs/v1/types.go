@@ -158,6 +158,17 @@ type ProwJobSpec struct {
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
 	DecorationConfig *DecorationConfig `json:"decoration_config,omitempty"`
+
+	// ReporterConfig holds reporter-specific configuration
+	ReporterConfig *ReporterConfig `json:"reporter_config,omitempty"`
+}
+
+type ReporterConfig struct {
+	Slack *SlackReporterConfig `json:"slack,omitempty"`
+}
+
+type SlackReporterConfig struct {
+	Channel string `json:"channel"`
 }
 
 // Duration is a wrapper around time.Duration that parses times in either

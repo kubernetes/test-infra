@@ -38,8 +38,16 @@ type slackReporter struct {
 	dryRun bool
 }
 
+func channel(cfg *config.SlackReporter, pj *v1.ProwJob) string {
+	if pj.Spec.ReporterConfig != nil && pj.Spec.ReporterConfig.Slack != nil && pj.Spec.ReporterConfig.Slack.Channel != "" {
+		return pj.Spec.ReporterConfig.Slack.Channel
+	}
+	return cfg.Channel
+}
+
 func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	config := sr.config()
+	channel := channel(config, pj)
 	b := &bytes.Buffer{}
 	tmpl, err := template.New("").Parse(config.ReportTemplate)
 	if err != nil {
@@ -57,7 +65,7 @@ func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 			Debug("Skipping reporting because dry-run is enabled")
 		return []*v1.ProwJob{pj}, nil
 	}
-	if err := sr.client.WriteMessage(b.String(), config.Channel); err != nil {
+	if err := sr.client.WriteMessage(b.String(), channel); err != nil {
 		sr.logger.WithError(err).Error("failed to write Slack message")
 		return nil, fmt.Errorf("failed to write Slack message: %v", err)
 	}

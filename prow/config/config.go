@@ -373,7 +373,8 @@ type GitHubOptions struct {
 	LinkURL *url.URL
 }
 
-// SlackReporter represents the config for the Slack reporter
+// SlackReporter represents the config for the Slack reporter. The channel can be overridden
+// on the job via the .reporter_config.slack.channel property
 type SlackReporter struct {
 	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report"`
 	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report"`

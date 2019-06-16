@@ -17,6 +17,8 @@ limitations under the License.
 package pjutil
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 	"text/template"
@@ -698,5 +700,46 @@ func TestCreateRefs(t *testing.T) {
 	}
 	if actual := createRefs(pr, "abcdef"); !reflect.DeepEqual(expected, actual) {
 		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
+	}
+}
+
+func TestSpecFromJobBase(t *testing.T) {
+	testCases := []struct {
+		name    string
+		jobBase config.JobBase
+		verify  func(prowapi.ProwJobSpec) error
+	}{
+		{
+			name: "Verify reporter config gets copied",
+			jobBase: config.JobBase{
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						Channel: "my-channel",
+					},
+				},
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				if pj.ReporterConfig == nil {
+					return errors.New("Expected ReporterConfig to be non-nil")
+				}
+				if pj.ReporterConfig.Slack == nil {
+					return errors.New("Expected ReporterConfig.Slack to be non-nil")
+				}
+				if pj.ReporterConfig.Slack.Channel != "my-channel" {
+					return fmt.Errorf("Expected pj.ReporterConfig.Slack.Channel to be \"my-channel\", was %q",
+						pj.ReporterConfig.Slack.Channel)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pj := specFromJobBase(tc.jobBase)
+			if err := tc.verify(pj); err != nil {
+				t.Fatalf("Verification failed: %v", err)
+			}
+		})
 	}
 }
