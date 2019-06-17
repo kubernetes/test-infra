@@ -182,11 +182,11 @@ func (dumpLens) Config() lenses.LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+func (dumpLens) Header(artifacts []lenses.Artifact, resourceDir string, config interface{}) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir, data string) string {
+func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -199,7 +199,7 @@ func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir, data string) stri
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []lenses.Artifact, resourceDir, data string) string {
+func (dumpLens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
 	return ""
 }
 
@@ -208,23 +208,14 @@ func TestViews(t *testing.T) {
 	testCases := []struct {
 		name               string
 		registeredViewers  []lenses.Lens
-		matchCache         map[string][]string
+		lenses             []int
 		expectedLensTitles []string
 	}{
 		{
-			name:              "Spyglass basic test",
-			registeredViewers: []lenses.Lens{dumpLens{}},
-			matchCache: map[string][]string{
-				"dump": {"started.json"},
-			},
+			name:               "Spyglass basic test",
+			registeredViewers:  []lenses.Lens{dumpLens{}},
+			lenses:             []int{0},
 			expectedLensTitles: []string{"Dump View"},
-		},
-		{
-			name:              "Spyglass no matches",
-			registeredViewers: []lenses.Lens{dumpLens{}},
-			matchCache: map[string][]string{
-				"dump": {},
-			},
 		},
 	}
 
@@ -233,10 +224,26 @@ func TestViews(t *testing.T) {
 			for _, l := range tc.registeredViewers {
 				lenses.RegisterLens(l)
 			}
-			fca := config.Agent{}
-			sg := New(fakeJa, fca.Config, fakeGCSClient, "", context.Background())
-			lenses := sg.Lenses(tc.matchCache)
-			for _, l := range lenses {
+			c := fca{
+				c: config.Config{
+					ProwConfig: config.ProwConfig{
+						Deck: config.Deck{
+							Spyglass: config.Spyglass{
+								Lenses: []config.LensFileConfig{
+									{
+										Lens: config.LensConfig{
+											Name: "dump",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			sg := New(fakeJa, c.Config, fakeGCSClient, "", context.Background())
+			_, ls := sg.Lenses(tc.lenses)
+			for _, l := range ls {
 				var found bool
 				for _, title := range tc.expectedLensTitles {
 					if title == l.Config().Title {
@@ -249,7 +256,7 @@ func TestViews(t *testing.T) {
 			}
 			for _, title := range tc.expectedLensTitles {
 				var found bool
-				for _, l := range lenses {
+				for _, l := range ls {
 					if title == l.Config().Title {
 						found = true
 					}

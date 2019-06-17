@@ -53,7 +53,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the content of <head> from template.html.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config interface{}) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -66,12 +66,12 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string 
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string) string {
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
 	return ""
 }
 
 // Body renders the <body>
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
 	if len(artifacts) == 0 {
 		logrus.Error("coverage Body() called with no artifacts, which should never happen.")
 		return "Why am I here? There is no coverage file."

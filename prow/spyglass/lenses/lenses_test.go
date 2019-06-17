@@ -89,11 +89,11 @@ func (dumpLens) Config() LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []Artifact, resourceDir string) string {
+func (dumpLens) Header(artifacts []Artifact, resourceDir string, config interface{}) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []Artifact, resourceDir, data string) string {
+func (dumpLens) Body(artifacts []Artifact, resourceDir string, data string, config interface{}) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -106,7 +106,7 @@ func (dumpLens) Body(artifacts []Artifact, resourceDir, data string) string {
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []Artifact, resourceDir, data string) string {
+func (dumpLens) Callback(artifacts []Artifact, resourceDir string, data string, config interface{}) string {
 	return ""
 }
 
@@ -163,7 +163,7 @@ crazy`,
 		if tc.err == nil && lens == nil {
 			t.Fatalf("Expected lens %s but got nil.", tc.lensName)
 		}
-		if lens != nil && lens.Body(tc.artifacts, "", tc.raw) != tc.expected {
+		if lens != nil && lens.Body(tc.artifacts, "", tc.raw, nil) != tc.expected {
 			t.Errorf("%s expected view to be %s but got %s", tc.name, tc.expected, lens)
 		}
 	}

@@ -65,6 +65,7 @@ type Spyglass struct {
 // LensRequest holds data sent by a view
 type LensRequest struct {
 	Source    string   `json:"src"`
+	Index     int      `json:"index"`
 	Artifacts []string `json:"artifacts"`
 }
 
@@ -95,23 +96,25 @@ func (sg *Spyglass) Start() {
 }
 
 // Lenses gets all views of all artifact files matching each regexp with a registered lens
-func (s *Spyglass) Lenses(matchCache map[string][]string) []lenses.Lens {
-	ls := []lenses.Lens{}
-	for lensName, matches := range matchCache {
-		if len(matches) == 0 {
-			continue
-		}
-		lens, err := lenses.GetLens(lensName)
+func (s *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensMap map[int]lenses.Lens) {
+	type ld struct {
+		lens  lenses.Lens
+		index int
+	}
+	var ls []ld
+	for _, lensIndex := range lensConfigIndexes {
+		lfc := s.config().Deck.Spyglass.Lenses[lensIndex]
+		lens, err := lenses.GetLens(lfc.Lens.Name)
 		if err != nil {
 			logrus.WithField("lensName", lens).WithError(err).Error("Could not find artifact lens")
 		} else {
-			ls = append(ls, lens)
+			ls = append(ls, ld{lens, lensIndex})
 		}
 	}
 	// Make sure lenses are rendered in order by ascending priority
 	sort.Slice(ls, func(i, j int) bool {
-		iconf := ls[i].Config()
-		jconf := ls[j].Config()
+		iconf := ls[i].lens.Config()
+		jconf := ls[j].lens.Config()
 		iname := iconf.Name
 		jname := jconf.Name
 		pi := iconf.Priority
@@ -121,7 +124,14 @@ func (s *Spyglass) Lenses(matchCache map[string][]string) []lenses.Lens {
 		}
 		return pi < pj
 	})
-	return ls
+
+	lensMap = map[int]lenses.Lens{}
+	for _, l := range ls {
+		orderedIndexes = append(orderedIndexes, l.index)
+		lensMap[l.index] = l.lens
+	}
+
+	return orderedIndexes, lensMap
 }
 
 func (s *Spyglass) ResolveSymlink(src string) (string, error) {
