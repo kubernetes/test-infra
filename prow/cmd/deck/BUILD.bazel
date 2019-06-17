@@ -117,6 +117,7 @@ go_library(
         "//prow/spyglass:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
         "//prow/spyglass/lenses/buildlog:go_default_library",
+        "//prow/spyglass/lenses/coverage:go_default_library",
         "//prow/spyglass/lenses/junit:go_default_library",
         "//prow/spyglass/lenses/metadata:go_default_library",
         "//prow/tide:go_default_library",
