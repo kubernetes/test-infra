@@ -24,9 +24,6 @@ metadata:
   name: grafana-config
 data:
   grafana.ini: |
-    [auth]
-    disable_login_form = true
-    disable_signout_menu = true
     [auth.basic]
     enabled = false
     [auth.anonymous]
