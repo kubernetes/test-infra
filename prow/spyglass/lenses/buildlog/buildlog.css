@@ -22,6 +22,9 @@ html {
     color: #fff;
     width: calc(100% - 30px);
 }
+.loglines .linetext span {
+    white-space: pre-wrap;
+}
 .line-highlighted {
     color: rgba(255, 224, 0, 1.0);
 }
