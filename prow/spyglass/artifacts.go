@@ -141,7 +141,7 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 		}
 	}
 
-	logrus.WithField("duration", time.Since(artStart)).Infof("Retrieved artifacts for %v", src)
+	logrus.WithField("duration", time.Since(artStart).String()).Infof("Retrieved artifacts for %v", src)
 	return arts, nil
 }
 
