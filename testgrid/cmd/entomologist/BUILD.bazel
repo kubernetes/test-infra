@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -46,5 +47,10 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+prow_image(
+    name = "image",
     visibility = ["//visibility:public"],
 )
