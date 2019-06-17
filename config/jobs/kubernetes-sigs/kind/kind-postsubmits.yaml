@@ -6,7 +6,7 @@ postsubmits:
     path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190613-295f98c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190614-260dce7-master
         command:
         - "./hack/ci/build-all.sh"
       # trialing this on kind jobs, we are using FQDN for in-cluster services, now
