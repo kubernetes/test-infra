@@ -34,6 +34,7 @@ type Suites struct {
 // Suite holds <testsuite/> results
 type Suite struct {
 	XMLName  xml.Name `xml:"testsuite"`
+	Suites   []Suite  `xml:"testsuite"`
 	Name     string   `xml:"name,attr"`
 	Time     float64  `xml:"time,attr"` // Seconds
 	Failures int      `xml:"failures,attr"`
