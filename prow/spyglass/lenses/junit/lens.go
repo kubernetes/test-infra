@@ -114,10 +114,17 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 				resultChan <- result
 				return
 			}
-			for _, suite := range suites.Suites {
+			var record func(suite junit.Suite)
+			record = func(suite junit.Suite) {
+				for _, subSuite := range suite.Suites {
+					record(subSuite)
+				}
 				for _, test := range suite.Results {
 					result.junit = append(result.junit, test)
 				}
+			}
+			for _, suite := range suites.Suites {
+				record(suite)
 			}
 			resultChan <- result
 		}(artifact)

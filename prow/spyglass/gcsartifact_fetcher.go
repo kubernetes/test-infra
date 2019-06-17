@@ -141,8 +141,7 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 		artifacts = append(artifacts, strings.TrimPrefix(oAttrs.Name, prefix))
 		i = 0
 	}
-	listElapsed := time.Since(listStart)
-	logrus.WithField("duration", listElapsed).Infof("Listed %d artifacts.", len(artifacts))
+	logrus.WithField("duration", time.Since(listStart).String()).Infof("Listed %d artifacts.", len(artifacts))
 	return artifacts, nil
 }
 
