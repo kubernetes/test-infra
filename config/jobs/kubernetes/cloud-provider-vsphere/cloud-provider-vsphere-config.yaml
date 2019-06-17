@@ -156,6 +156,8 @@ periodics:
       env:
       - name: K8S_VERSION
         value: ci/latest.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
 - name: ci-cloud-provider-vsphere-conformance-stable-1-14
   interval: 12h
   decorate: true
@@ -182,6 +184,8 @@ periodics:
       env:
       - name: K8S_VERSION
         value: release/stable-1.14.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
 - name: ci-cloud-provider-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
@@ -208,6 +212,8 @@ periodics:
       env:
       - name: K8S_VERSION
         value: release/stable-1.13.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
 - name: ci-cloud-provider-vsphere-conformance-stable-1-12
   interval: 12h
   decorate: true
@@ -234,6 +240,8 @@ periodics:
       env:
       - name: K8S_VERSION
         value: release/stable-1.12.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
 
 # Runs the e2e conformance suite against a cluster turned up with the
 # in-tree vSphere cloud provider. This job is duplicated for multiple versions
