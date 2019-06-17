@@ -2,6 +2,9 @@
 
 For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"](/prow/life_of_a_prow_job.md).
 
+For a brief cookbook for jobs intended for [prow.k8s.io], please refer to
+[`config/jobs/README.md`](/config/jobs/README.md)
+
 ## How to configure new jobs
 
 To configure a new job you'll need to add an entry into [config.yaml](/prow/config.yaml).
