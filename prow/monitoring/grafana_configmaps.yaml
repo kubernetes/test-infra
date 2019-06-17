@@ -55,3 +55,152 @@ data:
         path: "/grafana-dashboard-definitions/0"
       orgId: 1
       type: file
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-prow
+  namespace: prow-monitoring
+data:
+  prow.json: |
+    {
+       "__inputs": [ ],
+       "__requires": [ ],
+       "annotations": {
+          "list": [ ]
+       },
+       "editable": false,
+       "gnetId": null,
+       "graphTooltip": 0,
+       "hideControls": false,
+       "id": null,
+       "links": [ ],
+       "panels": [
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum by(job) (up)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 2,
+             "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum by(job) (up)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{job}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "up",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          }
+       ],
+       "refresh": "",
+       "rows": [ ],
+       "schemaVersion": 18,
+       "style": "dark",
+       "tags": [ ],
+       "templating": {
+          "list": [ ]
+       },
+       "time": {
+          "from": "now-1d",
+          "to": "now"
+       },
+       "timepicker": {
+          "refresh_intervals": [
+             "5s",
+             "10s",
+             "30s",
+             "1m",
+             "5m",
+             "15m",
+             "30m",
+             "1h",
+             "2h",
+             "1d"
+          ],
+          "time_options": [
+             "5m",
+             "15m",
+             "1h",
+             "6h",
+             "12h",
+             "24h",
+             "2d",
+             "7d",
+             "30d"
+          ]
+       },
+       "timezone": "browser",
+       "title": "prow dashboard",
+       "uid": "970b051d3adfd62eb592154c5ce80377",
+       "version": 0
+    }
