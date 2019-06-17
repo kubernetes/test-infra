@@ -1,6 +1,8 @@
 # Announcements
 
 New features added to each component:
+ - *June 17, 2019* It is now possible to configure the channel for the Slack reporter
+   directly on jobs via the `.reporter_config.slack.channel` config option
  - *May 13, 2019* New `plank` config `pod_running_timeout` is added and
    defaulted to two days to allow plank abort pods stuck in running state.
  - *April 25, 2019* `--job-config` in `peribolos` has never been used; it is

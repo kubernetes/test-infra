@@ -109,6 +109,8 @@ type JobBase struct {
 	PipelineRunSpec *pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
 	// Annotations are unused by prow itself, but provide a space to configure other automation.
 	Annotations map[string]string `json:"annotations,omitempty"`
+	// ReporterConfig provides the option to configure reporting on job level
+	ReporterConfig *prowapi.ReporterConfig `json:"reporter_config,omitempty"`
 
 	UtilityConfig
 }
