@@ -1866,6 +1866,10 @@ test_groups:
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-l2bridge-master-windows
 - name: ci-kubernetes-e2e-flannel-overlay-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-overlay-master-windows
+- name: ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
+  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
+- name: ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
+  gcs_prefix: k8s-ovn/ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
 
 # OVN-OVS CNI on Windows test groups
 - name: ci-kubernetes-e2e-ovn-ovs-master-windows
@@ -6538,6 +6542,12 @@ dashboards:
   - name: flannel-overlay-windows-master
     description: Runs Windows e2e tests on K8s clusters on Openstack vms with Flannel CNI in overlay network mode.
     test_group_name: ci-kubernetes-e2e-flannel-overlay-master-windows
+  - name: containerd-l2bridge-windows-master
+    description: Runs Windows e2e tests on K8s clusters with Containerd and Flannel CNI in l2bridge network mode.
+    test_group_name: ci-kubernetes-e2e-sdnbridge-ctrd-master-windows
+  - name: containerd-overlay-windows-master
+    description: Runs Windows e2e tests on K8s clusters with Containerd and Flannel CNI in overlay network mode.
+    test_group_name: ci-kubernetes-e2e-sdnoverlay-ctrd-master-windows
   - name: ovn-ovs-windows-master
     description: Runs Windows e2e tests on K8s clusters on Openstack vms with OVN-OVS CNI.
     test_group_name: ci-kubernetes-e2e-ovn-ovs-master-windows
