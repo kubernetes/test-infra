@@ -48,6 +48,9 @@ spec:
         - mountPath: /etc/grafana
           name: grafana-config
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/prow
+          name: grafana-dashboard-prow
+          readOnly: false
       nodeSelector: {}
       securityContext: {}
       serviceAccountName: grafana
@@ -63,3 +66,6 @@ spec:
       - name: grafana-config
         configMap:
           name: grafana-config
+      - name: grafana-dashboard-prow
+        configMap:
+          name: grafana-dashboard-prow
