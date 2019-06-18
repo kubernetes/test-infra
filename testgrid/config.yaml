@@ -4850,6 +4850,8 @@ dashboards:
     test_group_name: ci-sig-storage-local-static-provisioner-master-gce-latest
     base_options: include-filter-by-regex=sig-storage
     description: E2E tests against latest kubernetes on GCE
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: master-gke-default
     test_group_name: ci-sig-storage-local-static-provisioner-master-gke-default
     base_options: include-filter-by-regex=sig-storage
@@ -4857,6 +4859,8 @@ dashboards:
   - name: master-canary-build
     test_group_name: post-sig-storage-local-static-provisioner-build-canary
     description: Canary image build against latest master
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: release-build
     test_group_name: post-sig-storage-local-static-provisioner-build-release
     description: Release image build against tagged releases
@@ -4866,39 +4870,61 @@ dashboards:
   - name: 1-13-on-1-13
     test_group_name: ci-kubernetes-csi-1-13-on-kubernetes-1-13
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.13 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: 1-13-on-1-14
     test_group_name: ci-kubernetes-csi-1-13-on-kubernetes-1-14
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14.x and 1.13 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: 1-13-on-master
     test_group_name: ci-kubernetes-csi-1-13-on-kubernetes-master
     description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.13 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: 1-14-on-1-13
     test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-1-13
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.14 sidecars
   - name: 1-14-on-1-14
     test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-1-14
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14.x and 1.14 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: 1-14-on-master
     test_group_name: ci-kubernetes-csi-1-14-on-kubernetes-master
     description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.14 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: alpha-1-13-on-1-13
     test_group_name: ci-kubernetes-csi-alpha-1-13-on-kubernetes-1-13
     description: Kubernetes-CSI alpha tests with Kubernetes 1.13.x and 1.13 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: alpha-1-14-on-1-14
     test_group_name: ci-kubernetes-csi-alpha-1-14-on-kubernetes-1-14
     description: Kubernetes-CSI alpha tests with Kubernetes 1.14.x and 1.14 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: canary-on-1-13
     test_group_name: ci-kubernetes-csi-canary-on-kubernetes-1-13
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.14 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: canary-on-1-14
     test_group_name: ci-kubernetes-csi-canary-on-kubernetes-1-14
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14.x and 1.14 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: canary-on-master
     test_group_name: ci-kubernetes-csi-canary-on-kubernetes-master
     description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.14 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: alpha-canary-on-master
     test_group_name: ci-kubernetes-csi-alpha-canary-on-kubernetes-master
     description: Kubernetes-CSI alpha tests with Kubernetes master and 1.14 sidecars
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
 
 - name: sig-testing-maintenance
   dashboard_tab:
