@@ -122,6 +122,11 @@ type BuildLogsView struct {
 }
 
 func getHighlightRegex(rawConfig json.RawMessage) *regexp.Regexp {
+	// No config at all is fine.
+	if len(rawConfig) == 0 {
+		return defaultErrRE
+	}
+
 	var c config
 	if err := json.Unmarshal(rawConfig, &c); err != nil {
 		logrus.WithError(err).Error("Failed to decode buildlog config")
