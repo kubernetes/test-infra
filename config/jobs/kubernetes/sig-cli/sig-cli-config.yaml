@@ -59,7 +59,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -84,7 +84,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -477,7 +477,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=gke
       - --extract=ci/k8s-stable1
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-c
@@ -505,7 +505,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=gke
       - --extract=ci/k8s-stable1
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-c
@@ -531,7 +531,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
@@ -558,7 +558,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci

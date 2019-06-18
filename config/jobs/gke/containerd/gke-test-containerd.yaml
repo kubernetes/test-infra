@@ -22,7 +22,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=cos_containerd
       - --gcp-zone=us-central1-f
@@ -325,7 +325,7 @@ periodics:
       - --cluster=
       - --deployment=gke
       - --down=false
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=cos_containerd
       - --gcp-project=k8s-jkns-e2e-gci-gke-staging

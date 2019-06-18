@@ -262,7 +262,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=ca
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-e2e-gci-gke-autoscaling
@@ -288,7 +288,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=hpa
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-e2e-gci-gke-autoscaling
@@ -313,7 +313,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-autoscaling-regio

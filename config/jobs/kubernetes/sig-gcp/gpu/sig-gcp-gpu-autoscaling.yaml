@@ -15,7 +15,7 @@ periodics:
       - --cluster=ca-gpu
       - --deployment=gke
       - --env=TESTED_GPU_TYPE=nvidia-tesla-k80
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -42,7 +42,7 @@ periodics:
       - --cluster=ca-gpu
       - --deployment=gke
       - --env=TESTED_GPU_TYPE=nvidia-tesla-p100
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -69,7 +69,7 @@ periodics:
       - --cluster=ca-gpu
       - --deployment=gke
       - --env=TESTED_GPU_TYPE=nvidia-tesla-v100
-      - --extract=ci/latest
+      - --extract=ci-cross/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project=k8s-gke-gpu-boskos-v100
