@@ -19,6 +19,7 @@ package lenses
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io/ioutil"
 	"testing"
 
@@ -89,11 +90,11 @@ func (dumpLens) Config() LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []Artifact, resourceDir string, config interface{}) string {
+func (dumpLens) Header(artifacts []Artifact, resourceDir string, config json.RawMessage) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []Artifact, resourceDir string, data string, config interface{}) string {
+func (dumpLens) Body(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -106,7 +107,7 @@ func (dumpLens) Body(artifacts []Artifact, resourceDir string, data string, conf
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []Artifact, resourceDir string, data string, config interface{}) string {
+func (dumpLens) Callback(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 

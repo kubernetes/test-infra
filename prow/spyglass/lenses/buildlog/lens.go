@@ -40,6 +40,10 @@ const (
 	maxHighlightLength = 10000 // Maximum length of a line worth highlighting
 )
 
+type config struct {
+	HighlightRegexes []string `json:"highlight_regexes"`
+}
+
 // Lens implements the build lens.
 type Lens struct{}
 
@@ -53,12 +57,13 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header executes the "header" section of the template.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config interface{}) string {
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
 	return executeTemplate(resourceDir, "header", BuildLogsView{})
 }
 
-// errRE matches keywords and glog error messages
-var errRE = regexp.MustCompile(`timed out|ERROR:|(\s|^)(FAIL|Failure \[)\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
+// defaultErrRE matches keywords and glog error messages.
+// It is only used if higlight_regexes is not specified in the lens config.
+var defaultErrRE = regexp.MustCompile(`timed out|ERROR:|(\s|^)(FAIL|Failure \[)\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
 
 func init() {
 	lenses.RegisterLens(Lens{})
@@ -116,14 +121,33 @@ type BuildLogsView struct {
 	RawGetMoreRequests map[string]string
 }
 
+func getHighlightRegex(rawConfig json.RawMessage) *regexp.Regexp {
+	var c config
+	if err := json.Unmarshal(rawConfig, &c); err != nil {
+		logrus.WithError(err).Error("Failed to decode buildlog config")
+		return defaultErrRE
+	}
+	if len(c.HighlightRegexes) == 0 {
+		return defaultErrRE
+	}
+
+	re, err := regexp.Compile(strings.Join(c.HighlightRegexes, "|"))
+	if err != nil {
+		logrus.WithError(err).Warn("Couldn't compile %q", c.HighlightRegexes)
+		return defaultErrRE
+	}
+	return re
+}
+
 // Body returns the <body> content for a build log (or multiple build logs)
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
 	buildLogsView := BuildLogsView{
 		LogViews:           []LogArtifactView{},
 		RawGetAllRequests:  make(map[string]string),
 		RawGetMoreRequests: make(map[string]string),
 	}
 
+	highlightRe := getHighlightRegex(rawConfig)
 	// Read log artifacts and construct template structs
 	for _, a := range artifacts {
 		av := LogArtifactView{
@@ -135,7 +159,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			logrus.WithError(err).Info("Error reading log.")
 			continue
 		}
-		av.LineGroups = groupLines(highlightLines(lines, 0))
+		av.LineGroups = groupLines(highlightLines(lines, 0, highlightRe))
 		av.ViewAll = true
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
@@ -144,7 +168,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 }
 
 // Callback is used to retrieve new log segments
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
 	var request LineRequest
 	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {
@@ -165,7 +189,7 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 		return fmt.Sprintf("failed to retrieve log lines: %v", err)
 	}
 
-	logLines := highlightLines(lines, request.StartLine)
+	logLines := highlightLines(lines, request.StartLine, getHighlightRegex(rawConfig))
 	return executeTemplate(resourceDir, "line group", logLines)
 }
 
@@ -205,19 +229,19 @@ func logLines(artifact lenses.Artifact, offset, length int64) ([]string, error) 
 	return strings.Split(string(b), "\n"), nil
 }
 
-func highlightLines(lines []string, startLine int) []LogLine {
+func highlightLines(lines []string, startLine int, highlightRegex *regexp.Regexp) []LogLine {
 	// mark highlighted lines
 	logLines := make([]LogLine, 0, len(lines))
 	for i, text := range lines {
 		length := len(text)
 		subLines := []SubLine{}
 		if length <= maxHighlightLength {
-			loc := errRE.FindStringIndex(text)
+			loc := highlightRegex.FindStringIndex(text)
 			for loc != nil {
 				subLines = append(subLines, SubLine{false, text[:loc[0]]})
 				subLines = append(subLines, SubLine{true, text[loc[0]:loc[1]]})
 				text = text[loc[1]:]
-				loc = errRE.FindStringIndex(text)
+				loc = highlightRegex.FindStringIndex(text)
 			}
 		}
 		subLines = append(subLines, SubLine{false, text})

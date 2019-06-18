@@ -20,6 +20,7 @@ package config
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -284,7 +285,7 @@ type LensConfig struct {
 	Name string `json:"name"`
 	// Config is some lens-specific configuration. Interpreting it is the responsibility of the
 	// lens in question.
-	Config interface{} `json:"config"`
+	Config json.RawMessage `json:"config"`
 }
 
 // LensFileConfig is a single entry under Lenses, describing how to configure a lens
