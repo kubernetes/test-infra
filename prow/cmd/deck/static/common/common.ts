@@ -204,3 +204,18 @@ export namespace tidehistory {
     return link;
   }
 }
+
+export function getCookieByName(name: string): string {
+  if (!document.cookie) {
+    return "";
+  }
+  const docCookies = decodeURIComponent(document.cookie).split(";");
+  for (const cookie of docCookies) {
+    const c = cookie.trim();
+    const pref = name + "=";
+    if (c.indexOf(pref) === 0) {
+      return c.slice(pref.length);
+    }
+  }
+  return "";
+}

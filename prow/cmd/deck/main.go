@@ -453,13 +453,14 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		githubOAuthConfig.InitGitHubOAuthConfig(cookie)
 
 		goa := githuboauth.NewAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
-		oauthClient := &oauth2.Config{
+		oauthClient := githuboauth.NewClient(&oauth2.Config{
 			ClientID:     githubOAuthConfig.ClientID,
 			ClientSecret: githubOAuthConfig.ClientSecret,
 			RedirectURL:  githubOAuthConfig.RedirectURL,
 			Scopes:       githubOAuthConfig.Scopes,
 			Endpoint:     github.Endpoint,
-		}
+		},
+		)
 
 		repoSet := make(map[string]bool)
 		for r := range cfg().Presubmits {
@@ -1231,6 +1232,5 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 
 func isValidatedGitOAuthConfig(githubOAuthConfig *config.GitHubOAuthConfig) bool {
 	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
-		githubOAuthConfig.RedirectURL != "" &&
-		githubOAuthConfig.FinalRedirectURL != ""
+		githubOAuthConfig.RedirectURL != ""
 }
