@@ -69,48 +69,63 @@ func getJobLabelMap(pjs []prowapi.ProwJob) map[jobLabel]float64 {
 	jobLabelMap := make(map[jobLabel]float64)
 
 	for _, pj := range pjs {
-		jl := jobLabel{jobName: pj.Spec.Job, jobType: string(pj.Spec.Type), state: string(pj.Status.State)}
-
-		if pj.Spec.Refs != nil {
-			jl.org = pj.Spec.Refs.Org
-			jl.repo = pj.Spec.Refs.Repo
-			jl.baseRef = pj.Spec.Refs.BaseRef
-		} else if len(pj.Spec.ExtraRefs) > 0 {
-			jl.org = pj.Spec.ExtraRefs[0].Org
-			jl.repo = pj.Spec.ExtraRefs[0].Repo
-			jl.baseRef = pj.Spec.ExtraRefs[0].BaseRef
-		}
-
-		jobLabelMap[jl]++
+		jobLabelMap[getJobLabel(pj)]++
 	}
 	return jobLabelMap
 }
 
+func getJobLabel(pj prowapi.ProwJob) jobLabel {
+	jl := jobLabel{jobName: pj.Spec.Job, jobType: string(pj.Spec.Type), state: string(pj.Status.State)}
+
+	if pj.Spec.Refs != nil {
+		jl.org = pj.Spec.Refs.Org
+		jl.repo = pj.Spec.Refs.Repo
+		jl.baseRef = pj.Spec.Refs.BaseRef
+	} else if len(pj.Spec.ExtraRefs) > 0 {
+		jl.org = pj.Spec.ExtraRefs[0].Org
+		jl.repo = pj.Spec.ExtraRefs[0].Repo
+		jl.baseRef = pj.Spec.ExtraRefs[0].BaseRef
+	}
+
+	return jl
+}
+
+type jobIdentifier struct {
+	jobLabel
+	buildId string
+}
+
+func getJobIdentifier(pj prowapi.ProwJob) jobIdentifier {
+	return jobIdentifier{
+		jobLabel: getJobLabel(pj),
+		buildId:  pj.Status.BuildID,
+	}
+}
+
 // previousStates records the prowJobs we were called with previously
-var previousStates map[jobLabel]prowapi.ProwJobState
+var previousStates map[jobIdentifier]prowapi.ProwJobState
 
 // GatherProwJobMetrics gathers prometheus metrics for prowjobs.
 // Not threadsafe, ensure this is called serially.
 func GatherProwJobMetrics(current []prowapi.ProwJob) {
-
-	// record the current state of ProwJob CRs on the system
-	jobLabelMap := getJobLabelMap(current)
 	// This may be racing with the prometheus server but we need to remove
 	// stale metrics like triggered or pending jobs that are now complete.
 	prowJobs.Reset()
 
-	for jl, count := range jobLabelMap {
+	// record the current state of ProwJob CRs on the system
+	for jl, count := range getJobLabelMap(current) {
 		prowJobs.WithLabelValues(jl.values()...).Set(count)
 	}
 
 	// record state transitions since the last time we were called
-	currentStates := map[jobLabel]prowapi.ProwJobState{}
-	for jl := range jobLabelMap {
-		state := prowapi.ProwJobState(jl.state)
-		currentStates[jl] = state
+	currentStates := map[jobIdentifier]prowapi.ProwJobState{}
+	for _, pj := range current {
+		ji := getJobIdentifier(pj)
+		state := prowapi.ProwJobState(ji.state)
+		currentStates[ji] = state
 
-		if previousState, seen := previousStates[jl]; !seen || previousState != state {
-			prowJobTransitions.WithLabelValues(jl.values()...).Inc()
+		if previousState, seen := previousStates[ji]; !seen || previousState != state {
+			prowJobTransitions.WithLabelValues(ji.values()...).Inc()
 		}
 	}
 
