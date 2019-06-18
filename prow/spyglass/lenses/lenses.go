@@ -20,6 +20,7 @@ package lenses
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
@@ -60,13 +61,13 @@ type Lens interface {
 	// Config returns a LensConfig that describes the lens.
 	Config() LensConfig
 	// Header returns a a string that is injected into the rendered lens's <head>
-	Header(artifacts []Artifact, resourceDir string, config interface{}) string
+	Header(artifacts []Artifact, resourceDir string, config json.RawMessage) string
 	// Body returns a string that is initially injected into the rendered lens's <body>.
 	// The lens's front-end code may call back to Body again, passing in some data string of its choosing.
-	Body(artifacts []Artifact, resourceDir string, data string, config interface{}) string
+	Body(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string
 	// Callback receives a string sent by the lens's front-end code and returns another string to be returned
 	// to that frontend code.
-	Callback(artifacts []Artifact, resourceDir string, data string, config interface{}) string
+	Callback(artifacts []Artifact, resourceDir string, data string, config json.RawMessage) string
 }
 
 // Artifact represents some output of a prow job

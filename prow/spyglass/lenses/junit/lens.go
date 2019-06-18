@@ -19,6 +19,7 @@ package junit
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"path/filepath"
@@ -54,7 +55,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the content of <head> from template.html.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config interface{}) string {
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -67,7 +68,7 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config 
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 
@@ -86,7 +87,7 @@ type TestResult struct {
 }
 
 // Body renders the <body> for JUnit tests
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	type testResults struct {
 		junit []junit.Result
 		link  string

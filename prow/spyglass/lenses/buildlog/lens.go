@@ -53,7 +53,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header executes the "header" section of the template.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config interface{}) string {
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
 	return executeTemplate(resourceDir, "header", BuildLogsView{})
 }
 
@@ -117,7 +117,7 @@ type BuildLogsView struct {
 }
 
 // Body returns the <body> content for a build log (or multiple build logs)
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
 	buildLogsView := BuildLogsView{
 		LogViews:           []LogArtifactView{},
 		RawGetAllRequests:  make(map[string]string),
@@ -144,7 +144,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 }
 
 // Callback is used to retrieve new log segments
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config interface{}) string {
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, rawConfig json.RawMessage) string {
 	var request LineRequest
 	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {
