@@ -1173,7 +1173,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool) http
 		// Ref: https://github.com/kubernetes/test-infra/pull/12827#issuecomment-502850414
 		if createProwJob {
 			if r.Method != http.MethodPost {
-				http.Error(w, "request must be of type POST", http.StatusBadRequest)
+				http.Error(w, "request must be of type POST", http.StatusMethodNotAllowed)
 				return
 			}
 			if _, err := prowJobClient.Create(&newPJ); err != nil {
