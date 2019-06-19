@@ -199,3 +199,3361 @@ data:
        "uid": "970b051d3adfd62eb592154c5ce80377",
        "version": 0
     }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-deck
+  namespace: prow-monitoring
+data:
+  deck.json: |
+    {
+       "__inputs": [ ],
+       "__requires": [ ],
+       "annotations": {
+          "list": [ ]
+       },
+       "editable": false,
+       "gnetId": null,
+       "graphTooltip": 0,
+       "hideControls": false,
+       "id": null,
+       "links": [ ],
+       "panels": [
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"<path>\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 2,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/tide\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/tide",
+                   "refId": "A"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/plugin-help.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/plugin-help.js",
+                   "refId": "B"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/data.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/data.js",
+                   "refId": "C"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/prowjobs.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/prowjobs.js",
+                   "refId": "D"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/pr-data.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/pr-data.js",
+                   "refId": "E"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/log\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/log",
+                   "refId": "F"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/rerun\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/rerun",
+                   "refId": "G"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/spyglass/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/spyglass/",
+                   "refId": "H"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/view/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/view/",
+                   "refId": "I"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/job-history/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/job-history/",
+                   "refId": "J"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=\"/pr-history/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/pr-history/",
+                   "refId": "K"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{path=\"others\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "others",
+                   "refId": "L"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "median latency with (pre-defined) paths, method ${method}, and status ${status}",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "histogram_quantile(<phi>, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 3,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "histogram_quantile(0.99, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "phi=0.99",
+                   "refId": "A"
+                },
+                {
+                   "expr": "histogram_quantile(0.95, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "phi=0.95",
+                   "refId": "B"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "phi=0.5",
+                   "refId": "C"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "latency percentile with path ${path}, method ${method}, and status ${status}",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", path=~\"$path\", method=~\"$method\"}[5m])) by (status)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 4,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", path=~\"$path\", method=~\"$method\"}[5m])) by (status)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{status}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "traffic: couter by status with path ${path} and method ${method}",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", status=~\"n..\", path=~\"$path\", method=~\"$method\"}[5m]))/sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", path=~\"$path\"}[5m]))",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 5,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": true,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", status=~\"2..\", path=~\"$path\", method=~\"$method\"}[5m]))/sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", path=~\"$path\", method=~\"$method\"}[5m]))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "2XX",
+                   "refId": "A"
+                },
+                {
+                   "expr": "sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", status=~\"3..\", path=~\"$path\", method=~\"$method\"}[5m]))/sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", path=~\"$path\", method=~\"$method\"}[5m]))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "3XX",
+                   "refId": "B"
+                },
+                {
+                   "expr": "sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", status=~\"4..\", path=~\"$path\", method=~\"$method\"}[5m]))/sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", path=~\"$path\", method=~\"$method\"}[5m]))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "4XX",
+                   "refId": "C"
+                },
+                {
+                   "expr": "sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", status=~\"5..\", path=~\"$path\", method=~\"$method\"}[5m]))/sum(rate(deck_http_request_duration_seconds_count{job=\"deck\", path=~\"$path\", method=~\"$method\"}[5m]))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "5XX",
+                   "refId": "D"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "status percentage with path ${path} and method ${method}",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": "1",
+                   "min": "0",
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": "1",
+                   "min": "0",
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "( sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", le=\"2.5\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (job) + sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", le=\"10\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (job) ) / 2 / sum(rate(deck_http_request_duration_seconds_count{path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (job)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 6,
+             "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "( sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", le=\"2.5\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (job) + sum(rate(deck_http_request_duration_seconds_bucket{job=\"deck\", le=\"10\", path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (job) ) / 2 / sum(rate(deck_http_request_duration_seconds_count{path=~\"${path}\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (job)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "apdex score with target 2.5s and tolerance 10s, path ${path}, method ${method}, and status ${status}",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": "1",
+                   "min": "0",
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": "1",
+                   "min": "0",
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"<path>\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 7,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/tide\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/tide",
+                   "refId": "A"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/plugin-help.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/plugin-help.js",
+                   "refId": "B"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/data.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/data.js",
+                   "refId": "C"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/prowjobs.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/prowjobs.js",
+                   "refId": "D"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/pr-data.js\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/pr-data.js",
+                   "refId": "E"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/log\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/log",
+                   "refId": "F"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/rerun\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/rerun",
+                   "refId": "G"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/spyglass/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/spyglass/",
+                   "refId": "H"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/view/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/view/",
+                   "refId": "I"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/job-history/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/job-history/",
+                   "refId": "J"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{job=\"deck\", path=\"/pr-history/\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "/pr-history/",
+                   "refId": "K"
+                },
+                {
+                   "expr": "histogram_quantile(0.5, sum(rate(deck_http_response_size_bytes_bucket{path=\"others\", method=~\"${method}\", status=~\"${status}\"}[5m])) by (le))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "others",
+                   "refId": "L"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "median response size with (pre-defined) paths, method ${method}, and status ${status}",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          }
+       ],
+       "refresh": "",
+       "rows": [ ],
+       "schemaVersion": 18,
+       "style": "dark",
+       "tags": [ ],
+       "templating": {
+          "list": [
+             {
+                "allValue": ".*",
+                "current": { },
+                "datasource": "prometheus",
+                "hide": 0,
+                "includeAll": true,
+                "label": "path",
+                "multi": false,
+                "name": "path",
+                "options": [ ],
+                "query": "label_values(deck_http_request_duration_seconds_count{job=\"deck\"}, path)",
+                "refresh": 2,
+                "regex": "",
+                "sort": 0,
+                "tagValuesQuery": "",
+                "tags": [ ],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+             },
+             {
+                "allValue": ".*",
+                "current": { },
+                "datasource": "prometheus",
+                "hide": 0,
+                "includeAll": true,
+                "label": "method",
+                "multi": false,
+                "name": "method",
+                "options": [ ],
+                "query": "label_values(deck_http_request_duration_seconds_count{job=\"deck\"}, method)",
+                "refresh": 2,
+                "regex": "",
+                "sort": 0,
+                "tagValuesQuery": "",
+                "tags": [ ],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+             },
+             {
+                "allValue": ".*",
+                "current": { },
+                "datasource": "prometheus",
+                "hide": 0,
+                "includeAll": true,
+                "label": "status",
+                "multi": false,
+                "name": "status",
+                "options": [ ],
+                "query": "label_values(deck_http_request_duration_seconds_count{job=\"deck\"}, status)",
+                "refresh": 2,
+                "regex": "",
+                "sort": 0,
+                "tagValuesQuery": "",
+                "tags": [ ],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+             }
+          ]
+       },
+       "time": {
+          "from": "now-1h",
+          "to": "now"
+       },
+       "timepicker": {
+          "refresh_intervals": [
+             "5s",
+             "10s",
+             "30s",
+             "1m",
+             "5m",
+             "15m",
+             "30m",
+             "1h",
+             "2h",
+             "1d"
+          ],
+          "time_options": [
+             "5m",
+             "15m",
+             "1h",
+             "6h",
+             "12h",
+             "24h",
+             "2d",
+             "7d",
+             "30d"
+          ]
+       },
+       "timezone": "browser",
+       "title": "deck dashboard",
+       "uid": "c27162ae7ad9ce08d2dcfa2d5ce7fee8",
+       "version": 0
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-ghproxy
+  namespace: prow-monitoring
+data:
+  ghproxy.json: |
+    {
+      "__requires": [
+        {
+          "type": "grafana",
+          "id": "grafana",
+          "name": "Grafana",
+          "version": "4.4.2"
+        },
+        {
+          "type": "panel",
+          "id": "graph",
+          "name": "Graph",
+          "version": ""
+        },
+        {
+          "type": "datasource",
+          "id": "prometheus",
+          "name": "Prometheus",
+          "version": "1.0.0"
+        },
+        {
+          "type": "panel",
+          "id": "singlestat",
+          "name": "Singlestat",
+          "version": ""
+        }
+      ],
+      "annotations": {
+        "list": []
+      },
+      "description": "Metrics from the GitHub API reverse proxy HTTP cache in the Prow cluster.",
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "hideControls": false,
+      "id": null,
+      "links": [],
+      "refresh": "1m",
+      "rows": [
+        {
+          "collapse": false,
+          "height": 219,
+          "panels": [
+            {
+              "aliasColors": {},
+              "bars": false,
+              "dashLength": 10,
+              "dashes": false,
+              "datasource": "prometheus",
+              "description": "Count of cache requests of each cache mode over the last hour.",
+              "fill": 1,
+              "height": "",
+              "id": 1,
+              "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 220,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+              },
+              "lines": true,
+              "linewidth": 1,
+              "links": [],
+              "nullPointMode": "null",
+              "percentage": false,
+              "pointradius": 5,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "spaceLength": 10,
+              "span": 12,
+              "stack": false,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "dsType": "influxdb",
+                  "expr": "sum(increase(ghcache_responses[1h])) by (mode)",
+                  "format": "time_series",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$__interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "intervalFactor": 2,
+                  "legendFormat": "{{mode}}",
+                  "metric": "ghcache_responses",
+                  "orderByTime": "ASC",
+                  "policy": "default",
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "mean"
+                      }
+                    ]
+                  ],
+                  "step": 1200,
+                  "tags": []
+                },
+                {
+                  "expr": "sum(increase(ghcache_responses{mode=~\"COALESCED|REVALIDATED\"}[1h]))",
+                  "format": "time_series",
+                  "intervalFactor": 2,
+                  "legendFormat": "(No Cost)",
+                  "metric": "ghcache_responses",
+                  "refId": "B",
+                  "step": 1200
+                }
+              ],
+              "thresholds": [],
+              "timeFrom": null,
+              "timeShift": null,
+              "title": "Cache Requests (per hour)",
+              "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+              },
+              "type": "graph",
+              "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+              },
+              "yaxes": [
+                {
+                  "format": "short",
+                  "label": null,
+                  "logBase": 1,
+                  "max": null,
+                  "min": "0",
+                  "show": true
+                },
+                {
+                  "format": "short",
+                  "label": "",
+                  "logBase": 1,
+                  "max": null,
+                  "min": "0",
+                  "show": true
+                }
+              ]
+            }
+          ],
+          "repeat": null,
+          "repeatIteration": null,
+          "repeatRowId": null,
+          "showTitle": false,
+          "title": "Dashboard Row",
+          "titleSize": "h6"
+        },
+        {
+          "collapse": false,
+          "height": 397,
+          "panels": [
+            {
+              "aliasColors": {},
+              "bars": false,
+              "dashLength": 10,
+              "dashes": false,
+              "datasource": "prometheus",
+              "description": "Percentage of cacheable requests that are fulfilled for free.\nNo cost modes are \"COALESCED\" and \"REVALIDATED\".\nCacheable modes include the no cost modes, \"CHANGED\" and \"MISS\".",
+              "fill": 1,
+              "id": 6,
+              "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 220,
+                "total": false,
+                "values": true
+              },
+              "lines": true,
+              "linewidth": 1,
+              "links": [],
+              "nullPointMode": "null",
+              "percentage": false,
+              "pointradius": 5,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "spaceLength": 10,
+              "span": 12,
+              "stack": false,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "dsType": "influxdb",
+                  "expr": "sum(increase(ghcache_responses{mode=~\"COALESCED|REVALIDATED\"}[1h])) \n/ sum(increase(ghcache_responses{mode=~\"COALESCED|REVALIDATED|MISS|CHANGED\"}[1h]))",
+                  "format": "time_series",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$__interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "intervalFactor": 2,
+                  "legendFormat": "Efficiency",
+                  "metric": "ghcache_responses",
+                  "orderByTime": "ASC",
+                  "policy": "default",
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "mean"
+                      }
+                    ]
+                  ],
+                  "step": 1200,
+                  "tags": []
+                }
+              ],
+              "thresholds": [],
+              "timeFrom": null,
+              "timeShift": null,
+              "title": "Cache Efficiency",
+              "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+              },
+              "type": "graph",
+              "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+              },
+              "yaxes": [
+                {
+                  "format": "percentunit",
+                  "label": "% Cacheable Request Fulfilled for Free",
+                  "logBase": 1,
+                  "max": "1",
+                  "min": "0",
+                  "show": true
+                },
+                {
+                  "format": "short",
+                  "label": null,
+                  "logBase": 1,
+                  "max": null,
+                  "min": null,
+                  "show": false
+                }
+              ]
+            }
+          ],
+          "repeat": null,
+          "repeatIteration": null,
+          "repeatRowId": null,
+          "showTitle": false,
+          "title": "Dashboard Row",
+          "titleSize": "h6"
+        },
+        {
+          "collapse": false,
+          "height": 217,
+          "panels": [],
+          "repeat": null,
+          "repeatIteration": null,
+          "repeatRowId": null,
+          "showTitle": false,
+          "title": "Dashboard Row",
+          "titleSize": "h6"
+        },
+        {
+          "collapse": false,
+          "height": 148,
+          "panels": [
+            {
+              "aliasColors": {},
+              "bars": false,
+              "dashLength": 10,
+              "dashes": false,
+              "datasource": "prometheus",
+              "decimals": 2,
+              "description": "",
+              "fill": 1,
+              "id": 3,
+              "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 50,
+                "total": false,
+                "values": true
+              },
+              "lines": true,
+              "linewidth": 1,
+              "links": [],
+              "nullPointMode": "connected",
+              "percentage": true,
+              "pointradius": 5,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [
+                {
+                  "alias": "GB Used",
+                  "lines": false,
+                  "yaxis": 2
+                },
+                {
+                  "alias": "GB Free",
+                  "lines": false,
+                  "yaxis": 2
+                }
+              ],
+              "spaceLength": 10,
+              "span": 8,
+              "stack": false,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "dsType": "influxdb",
+                  "expr": "avg(ghcache_disk_used/(ghcache_disk_used+ghcache_disk_free)) without(instance)",
+                  "format": "time_series",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$__interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "intervalFactor": 2,
+                  "legendFormat": "% Used",
+                  "metric": "ghcache_disk_used",
+                  "orderByTime": "ASC",
+                  "policy": "default",
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "mean"
+                      }
+                    ]
+                  ],
+                  "step": 1200,
+                  "tags": []
+                },
+                {
+                  "dsType": "influxdb",
+                  "expr": "avg(ghcache_disk_used) without(instance)",
+                  "format": "time_series",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$__interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "hide": false,
+                  "intervalFactor": 2,
+                  "legendFormat": "GB Used",
+                  "metric": "ghcache_disk_used",
+                  "orderByTime": "ASC",
+                  "policy": "default",
+                  "refId": "B",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "mean"
+                      }
+                    ]
+                  ],
+                  "step": 1200,
+                  "tags": []
+                },
+                {
+                  "dsType": "influxdb",
+                  "expr": "avg(ghcache_disk_free) without(instance)",
+                  "format": "time_series",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$__interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "hide": false,
+                  "intervalFactor": 2,
+                  "legendFormat": "GB Free",
+                  "metric": "ghcache_disk_free",
+                  "orderByTime": "ASC",
+                  "policy": "default",
+                  "refId": "C",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "mean"
+                      }
+                    ]
+                  ],
+                  "step": 1200,
+                  "tags": []
+                }
+              ],
+              "thresholds": [],
+              "timeFrom": null,
+              "timeShift": null,
+              "title": "Disk Usage",
+              "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+              },
+              "type": "graph",
+              "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+              },
+              "yaxes": [
+                {
+                  "format": "percentunit",
+                  "label": null,
+                  "logBase": 1,
+                  "max": "1",
+                  "min": "0",
+                  "show": true
+                },
+                {
+                  "format": "decgbytes",
+                  "label": null,
+                  "logBase": 1,
+                  "max": "105",
+                  "min": "0",
+                  "show": false
+                }
+              ]
+            },
+            {
+              "cacheTimeout": null,
+              "colorBackground": false,
+              "colorValue": false,
+              "colors": [
+                "rgba(245, 54, 54, 0.9)",
+                "rgba(237, 129, 40, 0.89)",
+                "rgba(50, 172, 45, 0.97)"
+              ],
+              "datasource": "prometheus",
+              "decimals": null,
+              "description": "The number of no cost requests in the last hour.\nThis includes both \"COALESCED\" and \"REVALIDATED\" modes.",
+              "format": "none",
+              "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
+              },
+              "id": 8,
+              "interval": null,
+              "links": [],
+              "mappingType": 1,
+              "mappingTypes": [
+                {
+                  "name": "value to text",
+                  "value": 1
+                },
+                {
+                  "name": "range to text",
+                  "value": 2
+                }
+              ],
+              "maxDataPoints": 100,
+              "nullPointMode": "connected",
+              "nullText": null,
+              "postfix": "",
+              "postfixFontSize": "50%",
+              "prefix": "",
+              "prefixFontSize": "50%",
+              "rangeMaps": [
+                {
+                  "from": "null",
+                  "text": "N/A",
+                  "to": "null"
+                }
+              ],
+              "span": 2,
+              "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+              },
+              "tableColumn": "",
+              "targets": [
+                {
+                  "dsType": "influxdb",
+                  "expr": "sum(increase(ghcache_responses{mode=~\"COALESCED|REVALIDATED\"}[1h]))",
+                  "format": "time_series",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$__interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "intervalFactor": 2,
+                  "metric": "ghcache_responses",
+                  "orderByTime": "ASC",
+                  "policy": "default",
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "mean"
+                      }
+                    ]
+                  ],
+                  "step": 14400,
+                  "tags": []
+                }
+              ],
+              "thresholds": "",
+              "title": "API Tokens Saved: Last hour",
+              "type": "singlestat",
+              "valueFontSize": "100%",
+              "valueMaps": [
+                {
+                  "op": "=",
+                  "text": "N/A",
+                  "value": "null"
+                }
+              ],
+              "valueName": "current"
+            },
+            {
+              "cacheTimeout": null,
+              "colorBackground": false,
+              "colorValue": false,
+              "colors": [
+                "rgba(245, 54, 54, 0.9)",
+                "rgba(237, 129, 40, 0.89)",
+                "rgba(50, 172, 45, 0.97)"
+              ],
+              "datasource": "prometheus",
+              "description": "The number of no cost requests in the last 7 days.\nThis includes both \"COALESCED\" and \"REVALIDATED\" modes.",
+              "format": "short",
+              "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
+              },
+              "id": 5,
+              "interval": null,
+              "links": [],
+              "mappingType": 1,
+              "mappingTypes": [
+                {
+                  "name": "value to text",
+                  "value": 1
+                },
+                {
+                  "name": "range to text",
+                  "value": 2
+                }
+              ],
+              "maxDataPoints": 100,
+              "nullPointMode": "connected",
+              "nullText": null,
+              "postfix": "",
+              "postfixFontSize": "50%",
+              "prefix": "",
+              "prefixFontSize": "50%",
+              "rangeMaps": [
+                {
+                  "from": "null",
+                  "text": "N/A",
+                  "to": "null"
+                }
+              ],
+              "span": 2,
+              "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+              },
+              "tableColumn": "",
+              "targets": [
+                {
+                  "dsType": "influxdb",
+                  "expr": "sum(increase(ghcache_responses{mode=~\"COALESCED|REVALIDATED\"}[7d]))",
+                  "format": "time_series",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$__interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "intervalFactor": 2,
+                  "metric": "ghcache_responses",
+                  "orderByTime": "ASC",
+                  "policy": "default",
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "mean"
+                      }
+                    ]
+                  ],
+                  "step": 14400,
+                  "tags": []
+                }
+              ],
+              "thresholds": "",
+              "title": "API Tokens Saved: Last 7 days",
+              "type": "singlestat",
+              "valueFontSize": "100%",
+              "valueMaps": [
+                {
+                  "op": "=",
+                  "text": "N/A",
+                  "value": "null"
+                }
+              ],
+              "valueName": "current"
+            }
+          ],
+          "repeat": null,
+          "repeatIteration": null,
+          "repeatRowId": null,
+          "showTitle": false,
+          "title": "Dashboard Row",
+          "titleSize": "h6"
+        }
+      ],
+      "schemaVersion": 14,
+      "style": "dark",
+      "tags": [],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-7d",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "5s",
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "1h",
+          "2h",
+          "1d"
+        ],
+        "time_options": [
+          "5m",
+          "15m",
+          "1h",
+          "6h",
+          "12h",
+          "24h",
+          "2d",
+          "7d",
+          "30d"
+        ]
+      },
+      "timezone": "",
+      "title": "GitHub Cache",
+      "version": 9
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-hook
+  namespace: prow-monitoring
+data:
+  hook.json: |
+    {
+       "__inputs": [ ],
+       "__requires": [ ],
+       "annotations": {
+          "list": [ ]
+       },
+       "editable": false,
+       "gnetId": null,
+       "graphTooltip": 0,
+       "hideControls": false,
+       "id": null,
+       "links": [ ],
+       "panels": [
+          {
+             "cacheTimeout": null,
+             "colorBackground": false,
+             "colorValue": false,
+             "colors": [
+                "#299c46",
+                "rgba(237, 129, 40, 0.89)",
+                "#d44a3a"
+             ],
+             "datasource": "prometheus",
+             "description": "sum(prow_webhook_counter)",
+             "format": "none",
+             "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
+             },
+             "gridPos": {
+                "h": 4,
+                "w": 12,
+                "x": 0,
+                "y": 0
+             },
+             "id": 2,
+             "interval": null,
+             "links": [ ],
+             "mappingType": 1,
+             "mappingTypes": [
+                {
+                   "name": "value to text",
+                   "value": 1
+                },
+                {
+                   "name": "range to text",
+                   "value": 2
+                }
+             ],
+             "maxDataPoints": 100,
+             "nullPointMode": "connected",
+             "nullText": null,
+             "postfix": "",
+             "postfixFontSize": "50%",
+             "prefix": "",
+             "prefixFontSize": "50%",
+             "rangeMaps": [
+                {
+                   "from": "null",
+                   "text": "N/A",
+                   "to": "null"
+                }
+             ],
+             "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+             },
+             "tableColumn": "",
+             "targets": [
+                {
+                   "expr": "sum(prow_webhook_counter)",
+                   "format": "time_series",
+                   "instant": true,
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": "",
+             "title": "webhook counter",
+             "type": "singlestat",
+             "valueFontSize": "80%",
+             "valueMaps": [
+                {
+                   "op": "=",
+                   "text": "N/A",
+                   "value": "null"
+                }
+             ],
+             "valueName": "avg"
+          },
+          {
+             "cacheTimeout": null,
+             "colorBackground": false,
+             "colorValue": false,
+             "colors": [
+                "#299c46",
+                "rgba(237, 129, 40, 0.89)",
+                "#d44a3a"
+             ],
+             "datasource": "prometheus",
+             "description": "sum(prow_webhook_response_codes)",
+             "format": "none",
+             "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
+             },
+             "gridPos": {
+                "h": 4,
+                "w": 12,
+                "x": 12,
+                "y": 0
+             },
+             "id": 3,
+             "interval": null,
+             "links": [ ],
+             "mappingType": 1,
+             "mappingTypes": [
+                {
+                   "name": "value to text",
+                   "value": 1
+                },
+                {
+                   "name": "range to text",
+                   "value": 2
+                }
+             ],
+             "maxDataPoints": 100,
+             "nullPointMode": "connected",
+             "nullText": null,
+             "postfix": "",
+             "postfixFontSize": "50%",
+             "prefix": "",
+             "prefixFontSize": "50%",
+             "rangeMaps": [
+                {
+                   "from": "null",
+                   "text": "N/A",
+                   "to": "null"
+                }
+             ],
+             "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+             },
+             "tableColumn": "",
+             "targets": [
+                {
+                   "expr": "sum(prow_webhook_response_codes)",
+                   "format": "time_series",
+                   "instant": true,
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": "",
+             "title": "webhook response codes",
+             "type": "singlestat",
+             "valueFontSize": "80%",
+             "valueMaps": [
+                {
+                   "op": "=",
+                   "text": "N/A",
+                   "value": "null"
+                }
+             ],
+             "valueName": "avg"
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(rate(prow_webhook_counter[1m])) by (event_type)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 4
+             },
+             "id": 4,
+             "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(rate(prow_webhook_counter[1m])) by (event_type)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{event_type}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "incoming webhooks by event type",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(rate(prow_webhook_response_codes[1m])) by (response_code)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 12,
+                "y": 13
+             },
+             "id": 5,
+             "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(rate(prow_webhook_response_codes[1m])) by (response_code)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{response_code}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "webhook response codes",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          }
+       ],
+       "refresh": "",
+       "rows": [ ],
+       "schemaVersion": 18,
+       "style": "dark",
+       "tags": [ ],
+       "templating": {
+          "list": [ ]
+       },
+       "time": {
+          "from": "now-1h",
+          "to": "now"
+       },
+       "timepicker": {
+          "refresh_intervals": [
+             "5s",
+             "10s",
+             "30s",
+             "1m",
+             "5m",
+             "15m",
+             "30m",
+             "1h",
+             "2h",
+             "1d"
+          ],
+          "time_options": [
+             "5m",
+             "15m",
+             "1h",
+             "6h",
+             "12h",
+             "24h",
+             "2d",
+             "7d",
+             "30d"
+          ]
+       },
+       "timezone": "browser",
+       "title": "hook dashboard",
+       "uid": "6123f547a129441c2cdeac6c5ce802eb",
+       "version": 0
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-plank
+  namespace: prow-monitoring
+data:
+  plank.json: |
+    {
+       "__inputs": [ ],
+       "__requires": [ ],
+       "annotations": {
+          "list": [ ]
+       },
+       "editable": false,
+       "gnetId": null,
+       "graphTooltip": 0,
+       "hideControls": false,
+       "id": null,
+       "links": [ ],
+       "panels": [
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(prowjobs{job=\"plank\"}) by (type)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 2,
+             "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(prowjobs{job=\"plank\"}) by (type)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{type}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "number of Prow jobs by type",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(prowjobs{job=\"plank\"}) by (state)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 9
+             },
+             "id": 3,
+             "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 250,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(prowjobs{job=\"plank\"}) by (state)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{state}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "number of Prow jobs by state",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          }
+       ],
+       "refresh": "",
+       "rows": [ ],
+       "schemaVersion": 18,
+       "style": "dark",
+       "tags": [ ],
+       "templating": {
+          "list": [ ]
+       },
+       "time": {
+          "from": "now-1h",
+          "to": "now"
+       },
+       "timepicker": {
+          "refresh_intervals": [
+             "5s",
+             "10s",
+             "30s",
+             "1m",
+             "5m",
+             "15m",
+             "30m",
+             "1h",
+             "2h",
+             "1d"
+          ],
+          "time_options": [
+             "5m",
+             "15m",
+             "1h",
+             "6h",
+             "12h",
+             "24h",
+             "2d",
+             "7d",
+             "30d"
+          ]
+       },
+       "timezone": "browser",
+       "title": "plank dashboard",
+       "uid": "e1778910572e3552a935c2035ce80369",
+       "version": 0
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-sinker
+  namespace: prow-monitoring
+data:
+  sinker.json: |
+    {
+       "__inputs": [ ],
+       "__requires": [ ],
+       "annotations": {
+          "list": [ ]
+       },
+       "editable": false,
+       "gnetId": null,
+       "graphTooltip": 0,
+       "hideControls": false,
+       "id": null,
+       "links": [ ],
+       "panels": [
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(sinker_loop_duration_seconds)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 2,
+             "legend": {
+                "alignAsTable": false,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(sinker_loop_duration_seconds)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "time used in each sinker cleaning",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(sinker_pods_existing) and sum(sinker_prow_jobs_existing)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 18
+             },
+             "id": 3,
+             "legend": {
+                "alignAsTable": false,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(sinker_pods_existing)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                },
+                {
+                   "expr": "sum(sinker_prow_jobs_existing)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "B"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "existing pods/prow jobs",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(sinker_pods_removed) by (reason)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 27
+             },
+             "id": 4,
+             "legend": {
+                "alignAsTable": false,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(sinker_pods_removed) by (reason)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "removed pods",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(sinker_prow_jobs_cleaned) by (reason)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 27
+             },
+             "id": 5,
+             "legend": {
+                "alignAsTable": false,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(sinker_prow_jobs_cleaned) by (reason)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "cleaned prow jobs",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(sinker_pod_removal_errors) by (reason)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 27
+             },
+             "id": 6,
+             "legend": {
+                "alignAsTable": false,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(sinker_pod_removal_errors) by (reason)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "errors occurred in pod cleaning",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "sum(sinker_prow_jobs_cleaning_errors) by (reason)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 27
+             },
+             "id": 7,
+             "legend": {
+                "alignAsTable": false,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": false,
+                "show": true,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "sum(sinker_prow_jobs_cleaning_errors) by (reason)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "errors occurred in prow job cleaning",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          }
+       ],
+       "refresh": "",
+       "rows": [ ],
+       "schemaVersion": 18,
+       "style": "dark",
+       "tags": [ ],
+       "templating": {
+          "list": [ ]
+       },
+       "time": {
+          "from": "now-1h",
+          "to": "now"
+       },
+       "timepicker": {
+          "refresh_intervals": [
+             "5s",
+             "10s",
+             "30s",
+             "1m",
+             "5m",
+             "15m",
+             "30m",
+             "1h",
+             "2h",
+             "1d"
+          ],
+          "time_options": [
+             "5m",
+             "15m",
+             "1h",
+             "6h",
+             "12h",
+             "24h",
+             "2d",
+             "7d",
+             "30d"
+          ]
+       },
+       "timezone": "browser",
+       "title": "sinker dashboard",
+       "uid": "950e4d81ca8c2272d9717cc35ce80381",
+       "version": 0
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-tide
+  namespace: prow-monitoring
+data:
+  tide.json: |
+    {
+       "__inputs": [ ],
+       "__requires": [ ],
+       "annotations": {
+          "list": [ ]
+       },
+       "editable": false,
+       "gnetId": null,
+       "graphTooltip": 0,
+       "hideControls": false,
+       "id": null,
+       "links": [ ],
+       "panels": [
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "The number of PRs eligible for merge in each Tide pool.",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 0
+             },
+             "id": 2,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 500,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null as zero",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "avg(pooledprs and ((time() - updatetime) < 240)) by (org, repo, branch)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{org}}/{{repo}}:{{branch}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "Tide Pool Sizes",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "Calculated on a 24 hour interval.",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 9
+             },
+             "id": 3,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 500,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null as zero",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "(sum(rate(merges_sum[1d]) > 0) by (org, repo, branch)) * 86400",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{org}}/{{repo}}:{{branch}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "Tide Daily Merge Rate",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "Calculated on a 24 hour interval.",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 27
+             },
+             "id": 4,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 500,
+                "sort": "avg",
+                "sortDesc": true,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null as zero",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "(sum(    rate(merges_sum[1d]) - (sum(rate(merges_bucket{le=\"1\"}[1d])) without (le)) > 0     ) by (org, repo, branch)) * 86400",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "{{org}}/{{repo}}:{{branch}}",
+                   "refId": "A"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "Tide Daily Merge Rate: Batches Only",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "description": "Tide stats for the master branch of the openshift/origin repo.\nSpecifically, the number of pooled PRs and the daily merge rate.\n(See the more general graphs for details on how these are calculated.)",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 36
+             },
+             "id": 5,
+             "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": true,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 500,
+                "total": false,
+                "values": true
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null as zero",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "avg(pooledprs{org=\"openshift\",repo=\"origin\",branch=\"master\"} and ((time() - updatetime) < 240)) or vector(0)",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "Pool size",
+                   "refId": "A"
+                },
+                {
+                   "expr": "sum(rate(merges_sum{org=\"openshift\",repo=\"origin\",branch=\"master\"}[1d])) * 86400",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "Daily merge rate",
+                   "refId": "B"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "Tide Pool: openshift/origin:master",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          },
+          {
+             "aliasColors": { },
+             "bars": false,
+             "dashLength": 10,
+             "dashes": false,
+             "datasource": "prometheus",
+             "fill": 1,
+             "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 45
+             },
+             "id": 6,
+             "legend": {
+                "alignAsTable": true,
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "rightSide": true,
+                "show": true,
+                "sideWidth": 500,
+                "total": false,
+                "values": false
+             },
+             "lines": true,
+             "linewidth": 1,
+             "links": [ ],
+             "nullPointMode": "null",
+             "percentage": false,
+             "pointradius": 5,
+             "points": false,
+             "renderer": "flot",
+             "repeat": null,
+             "seriesOverrides": [ ],
+             "spaceLength": 10,
+             "stack": false,
+             "steppedLine": false,
+             "targets": [
+                {
+                   "expr": "max(syncdur and (changes(syncdur[1h]) > 0))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "Sync time",
+                   "refId": "A"
+                },
+                {
+                   "expr": "max(statusupdatedur and (changes(statusupdatedur[1h]) > 0))",
+                   "format": "time_series",
+                   "intervalFactor": 2,
+                   "legendFormat": "Status update time",
+                   "refId": "B"
+                }
+             ],
+             "thresholds": [ ],
+             "timeFrom": null,
+             "timeShift": null,
+             "title": "Tide Processing Time (seconds)",
+             "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+             },
+             "type": "graph",
+             "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": [ ]
+             },
+             "yaxes": [
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                },
+                {
+                   "format": "short",
+                   "label": null,
+                   "logBase": 1,
+                   "max": null,
+                   "min": null,
+                   "show": true
+                }
+             ]
+          }
+       ],
+       "refresh": "",
+       "rows": [ ],
+       "schemaVersion": 18,
+       "style": "dark",
+       "tags": [ ],
+       "templating": {
+          "list": [ ]
+       },
+       "time": {
+          "from": "now-2d",
+          "to": "now"
+       },
+       "timepicker": {
+          "refresh_intervals": [
+             "5s",
+             "10s",
+             "30s",
+             "1m",
+             "5m",
+             "15m",
+             "30m",
+             "1h",
+             "2h",
+             "1d"
+          ],
+          "time_options": [
+             "5m",
+             "15m",
+             "1h",
+             "6h",
+             "12h",
+             "24h",
+             "2d",
+             "7d",
+             "30d"
+          ]
+       },
+       "timezone": "browser",
+       "title": "tide dashboard",
+       "uid": "d69a91f76d8110d3e72885ee5ce8038e",
+       "version": 0
+    }
