@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -35,6 +36,7 @@ import (
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/tide/blockers"
 )
 
 const (
@@ -71,6 +73,7 @@ type statusController struct {
 
 	sync.Mutex
 	poolPRs map[string]PullRequest
+	blocks  blockers.Blockers
 
 	storedState
 	opener io.Opener
@@ -220,8 +223,21 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker) (string, string) {
+func expectedStatus(queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker, blocks blockers.Blockers) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
+		// if the branch is blocked forget checking for a diff
+		blockingIssues := blocks.GetApplicable(string(pr.Repository.Owner.Login), string(pr.Repository.Name), string(pr.BaseRef.Name))
+		var numbers []string
+		for _, issue := range blockingIssues {
+			numbers = append(numbers, strconv.Itoa(issue.Number))
+		}
+		if len(numbers) > 0 {
+			var s string
+			if len(numbers) > 1 {
+				s = "s"
+			}
+			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", ")))
+		}
 		minDiffCount := -1
 		var minDiff string
 		for _, q := range queryMap.ForRepo(string(pr.Repository.Owner.Login), string(pr.Repository.Name)) {
@@ -258,7 +274,7 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	return link
 }
 
-func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest) {
+func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest, blocks blockers.Blockers) {
 	// queryMap caches which queries match a repo.
 	// Make a new one each sync loop as queries will change.
 	queryMap := sc.config().Tide.Queries.QueryMap()
@@ -281,7 +297,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr, blocks)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -414,8 +430,9 @@ func (sc *statusController) waitSync() {
 		case <-wait:
 			sc.Lock()
 			pool := sc.poolPRs
+			blocks := sc.blocks
 			sc.Unlock()
-			sc.sync(pool)
+			sc.sync(pool, blocks)
 			return
 		case more := <-sc.newPoolPending:
 			if !more {
@@ -425,7 +442,7 @@ func (sc *statusController) waitSync() {
 	}
 }
 
-func (sc *statusController) sync(pool map[string]PullRequest) {
+func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Blockers) {
 	sc.lastSyncStart = time.Now()
 	defer func() {
 		duration := time.Since(sc.lastSyncStart)
@@ -433,7 +450,7 @@ func (sc *statusController) sync(pool map[string]PullRequest) {
 		tideMetrics.statusUpdateDuration.Set(duration.Seconds())
 	}()
 
-	sc.setStatuses(sc.search(), pool)
+	sc.setStatuses(sc.search(), pool, blocks)
 }
 
 func (sc *statusController) search() []PullRequest {

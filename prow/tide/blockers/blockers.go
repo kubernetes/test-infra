@@ -43,25 +43,25 @@ type Blocker struct {
 	// TODO: time blocked? (when blocker label was added)
 }
 
-type orgRepo struct {
-	org, repo string
+type OrgRepo struct {
+	Org, Repo string
 }
 
-type orgRepoBranch struct {
-	org, repo, branch string
+type OrgRepoBranch struct {
+	Org, Repo, Branch string
 }
 
 // Blockers holds maps of issues that are blocking various repos/branches.
 type Blockers struct {
-	Repo   map[orgRepo][]Blocker       `json:"repo,omitempty"`
-	Branch map[orgRepoBranch][]Blocker `json:"branch,omitempty"`
+	Repo   map[OrgRepo][]Blocker       `json:"repo,omitempty"`
+	Branch map[OrgRepoBranch][]Blocker `json:"branch,omitempty"`
 }
 
 // GetApplicable returns the subset of blockers applicable to the specified branch.
 func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 	var res []Blocker
-	res = append(res, b.Repo[orgRepo{org: org, repo: repo}]...)
-	res = append(res, b.Branch[orgRepoBranch{org: org, repo: repo, branch: branch}]...)
+	res = append(res, b.Repo[OrgRepo{Org: org, Repo: repo}]...)
+	res = append(res, b.Branch[OrgRepoBranch{Org: org, Repo: repo, Branch: branch}]...)
 
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].Number < res[j].Number
@@ -86,7 +86,7 @@ func FindAll(ghc githubClient, log *logrus.Entry, label, orgRepoTokens string) (
 
 func fromIssues(issues []Issue, log *logrus.Entry) Blockers {
 	log.Debugf("Finding blockers from %d issues.", len(issues))
-	res := Blockers{Repo: make(map[orgRepo][]Blocker), Branch: make(map[orgRepoBranch][]Blocker)}
+	res := Blockers{Repo: make(map[OrgRepo][]Blocker), Branch: make(map[OrgRepoBranch][]Blocker)}
 	for _, issue := range issues {
 		logger := log.WithFields(logrus.Fields{"org": issue.Repository.Owner.Login, "repo": issue.Repository.Name, "issue": issue.Number})
 		strippedTitle := branchRE.ReplaceAllLiteralString(string(issue.Title), "")
@@ -97,18 +97,18 @@ func fromIssues(issues []Issue, log *logrus.Entry) Blockers {
 		}
 		if branches := parseBranches(string(issue.Title)); len(branches) > 0 {
 			for _, branch := range branches {
-				key := orgRepoBranch{
-					org:    string(issue.Repository.Owner.Login),
-					repo:   string(issue.Repository.Name),
-					branch: branch,
+				key := OrgRepoBranch{
+					Org:    string(issue.Repository.Owner.Login),
+					Repo:   string(issue.Repository.Name),
+					Branch: branch,
 				}
 				logger.WithField("branch", branch).Debug("Blocking merges to branch via issue.")
 				res.Branch[key] = append(res.Branch[key], block)
 			}
 		} else {
-			key := orgRepo{
-				org:  string(issue.Repository.Owner.Login),
-				repo: string(issue.Repository.Name),
+			key := OrgRepo{
+				Org:  string(issue.Repository.Owner.Login),
+				Repo: string(issue.Repository.Name),
 			}
 			logger.Debug("Blocking merges to all branches via issue.")
 			res.Repo[key] = append(res.Repo[key], block)

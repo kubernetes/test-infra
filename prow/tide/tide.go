@@ -338,6 +338,7 @@ func (c *Controller) Sync() error {
 
 	// Notify statusController about the new pool.
 	c.sc.Lock()
+	c.sc.blocks = blocks
 	c.sc.poolPRs = poolPRMap(filteredPools)
 	select {
 	case c.sc.newPoolPending <- true:
