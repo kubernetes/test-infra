@@ -11,7 +11,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -36,7 +36,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -62,7 +62,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -133,7 +133,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -189,7 +189,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-master
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -215,7 +215,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
