@@ -8,6 +8,7 @@ metadata:
   namespace: prow-monitoring
 spec:
   type: NodePort
+  sessionAffinity: ClientIP
   ports:
   - name: http
     port: 3001
