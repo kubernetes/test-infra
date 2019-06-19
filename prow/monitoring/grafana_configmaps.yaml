@@ -24,8 +24,6 @@ metadata:
   name: grafana-config
 data:
   grafana.ini: |
-    [auth.basic]
-    enabled = false
     [auth.anonymous]
     enabled = true
     org_role = Viewer
