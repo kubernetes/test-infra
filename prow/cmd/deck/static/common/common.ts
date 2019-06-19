@@ -169,12 +169,15 @@ export namespace tooltip {
 }
 
 export namespace icon {
-  export function create(iconString: string, tip: string = ""): HTMLAnchorElement {
+  export function create(iconString: string, tip: string = "", onClick?: (this: HTMLElement, ev: MouseEvent) => any): HTMLAnchorElement {
     const i = document.createElement("i");
     i.classList.add("icon-button", "material-icons");
     i.innerHTML = iconString;
     if (tip !== "") {
        i.title = tip;
+    }
+    if (onClick) {
+      i.addEventListener("click", onClick);
     }
 
     const container = document.createElement("a");

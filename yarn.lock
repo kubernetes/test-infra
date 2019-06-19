@@ -97,6 +97,11 @@
   version "0.0.43"
   resolved "https://registry.yarnpkg.com/@types/google.visualization/-/google.visualization-0.0.43.tgz#d4172f94292b68a49a5666033386ce177f0ead9d"
 
+"@types/gtag.js@^0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@types/gtag.js/-/gtag.js-0.0.0.tgz#9ae744b83de4f3f975ef8abf99c979d21ce31fd4"
+  integrity sha512-CELflfjpDL6pthp74HVpNWn19Uv/qopdPZ6J85hKl1zCxUVJ7fMEaTtr3PTRA3oMvj2hMOQdChbUBH/F4XwLCQ==
+
 "@types/jasmine@~3.3.13":
   version "3.3.13"
   resolved "https://registry.yarnpkg.com/@types/jasmine/-/jasmine-3.3.13.tgz#d5daabb0af47bcddee40597acf6e804433bab439"

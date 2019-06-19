@@ -10,6 +10,7 @@
     "@bazel/typescript": "^0.30.2",
     "@types/color": "^3.0.0",
     "@types/google.visualization": "^0.0.43",
+    "@types/gtag.js": "^0.0.0",
     "@types/jasmine": "~3.3.13",
     "@types/pako": "^1.0.1",
     "jasmine": "~3.4.0",
