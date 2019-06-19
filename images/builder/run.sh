@@ -24,7 +24,7 @@ gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIAL
 echo "Running..."
 if [[ ! -z "${ARTIFACTS}" ]]; then
   echo "\$ARTIFACTS is set, sending logs to ${ARTIFACTS}"
-  ./builder --log-dir="${ARTIFACTS}" "$@"
+  /builder --log-dir="${ARTIFACTS}" "$@"
 else
-  ./builder "$@"
+  /builder "$@"
 fi
