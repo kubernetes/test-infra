@@ -795,3 +795,75 @@ func Test_gatherOptions(t *testing.T) {
 	}
 
 }
+
+func TestHandleConfig(t *testing.T) {
+	trueVal := true
+	c := config.Config{
+		JobConfig: config.JobConfig{
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Reporter: config.Reporter{
+							Context: "gce",
+						},
+						AlwaysRun: true,
+					},
+					{
+						Reporter: config.Reporter{
+							Context: "unit",
+						},
+						AlwaysRun: true,
+					},
+				},
+			},
+		},
+		ProwConfig: config.ProwConfig{
+			BranchProtection: config.BranchProtection{
+				Orgs: map[string]config.Org{
+					"kubernetes": {
+						Policy: config.Policy{
+							Protect: &trueVal,
+							RequiredStatusChecks: &config.ContextPolicy{
+								Strict: &trueVal,
+							},
+						},
+					},
+				},
+			},
+			Tide: config.Tide{
+				Queries: []config.TideQuery{
+					{Repos: []string{"prowapi.netes/test-infra"}},
+				},
+			},
+		},
+	}
+	configGetter := func() *config.Config {
+		return &c
+	}
+	handler := handleConfig(configGetter)
+	req, err := http.NewRequest(http.MethodGet, "/config", nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	if h := rr.Header().Get("Content-Type"); h != "application/x-yaml" {
+		t.Fatalf("Bad Content-Type, expected: 'application/x-yaml', got: %v", h)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error reading response body: %v", err)
+	}
+	var res config.Config
+	if err := yaml.Unmarshal(body, &res); err != nil {
+		t.Fatalf("Error unmarshaling: %v", err)
+	}
+	if !reflect.DeepEqual(c, res) {
+		t.Errorf("Invalid config. Got %v, expected %v", res, c)
+	}
+}

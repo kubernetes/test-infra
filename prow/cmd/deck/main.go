@@ -1188,7 +1188,7 @@ func handleConfig(cfg config.Getter) http.HandlerFunc {
 			http.Error(w, "Failed to marhshal config.", http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "application/x-yaml")
 		buff := bytes.NewBuffer(b)
 		_, err = buff.WriteTo(w)
 		if err != nil {
