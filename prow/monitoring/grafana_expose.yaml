@@ -13,6 +13,9 @@ spec:
   - name: http
     port: 3001
     targetPort: http
+  - name: nginx
+    port: 80
+    targetPort: nginx
   selector:
     app: grafana
 ---
@@ -38,4 +41,4 @@ spec:
         paths:
           - backend:
               serviceName: grafana
-              servicePort: 3001
+              servicePort: 80

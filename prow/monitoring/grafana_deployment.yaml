@@ -19,6 +19,10 @@ spec:
         app: grafana
     spec:
       containers:
+      - image: docker.io/nginx:1.17.0-alpine
+        volumeMounts:
+          - mountPath: /etc/nginx/
+            name: grafana-nginx
       - args:
         - -config=/etc/grafana/grafana.ini
         image: grafana/grafana:6.1.4
@@ -108,3 +112,6 @@ spec:
       - name: grafana-dashboard-tide
         configMap:
           name: grafana-dashboard-tide
+      - name: grafana-nginx
+        configMap:
+          name: grafana-nginx
