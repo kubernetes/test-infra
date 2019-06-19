@@ -55,6 +55,7 @@ spec:
         - --cache-dir=/cache
         - --cache-sizeGB=99
         - --push-gateway=pushgateway
+        - --serve-metrics=true
         ports:
         - containerPort: 8888
         volumeMounts:
