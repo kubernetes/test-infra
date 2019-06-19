@@ -87,3 +87,21 @@ spec:
       - name: grafana-dashboard-prow
         configMap:
           name: grafana-dashboard-prow
+      - name: grafana-dashboard-deck
+        configMap:
+          name: grafana-dashboard-deck
+      - name: grafana-dashboard-ghproxy
+        configMap:
+          name: grafana-dashboard-ghproxy
+      - name: grafana-dashboard-hook
+        configMap:
+          name: grafana-dashboard-hook
+      - name: grafana-dashboard-plank
+        configMap:
+          name: grafana-dashboard-plank
+      - name: grafana-dashboard-sinker
+        configMap:
+          name: grafana-dashboard-sinker
+      - name: grafana-dashboard-tide
+        configMap:
+          name: grafana-dashboard-tide
