@@ -6,6 +6,7 @@ import {JobHistogram, JobSample} from './histogram';
 
 declare const allBuilds: Job[];
 declare const spyglass: boolean;
+declare const rerunCreatesJob: boolean;
 
 // http://stackoverflow.com/a/5158301/3694
 function getParameterByName(name: string): string | null {
@@ -653,8 +654,19 @@ function redraw(fz: FuzzySearch): void {
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
     const url = `https://${window.location.hostname}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
-    const i = icon.create("refresh", "Show instructions for rerunning this job");
-    i.onclick = () => {
+    let i;
+    if (rerunCreatesJob) {
+      i = icon.create("refresh", "Rerun this job");
+      i.onclick = () => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `${url}`;
+        c.appendChild(form);
+        form.submit();
+      };
+    } else {
+      i = icon.create("refresh", "Show instructions for rerunning this job");
+      i.onclick = () => {
         modal.style.display = "block";
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
         const copyButton = document.createElement('a');
@@ -662,7 +674,8 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}"`);
         copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
         rerunElement.appendChild(copyButton);
-    };
+      };
+    }
     c.appendChild(i);
     c.classList.add("icon-cell");
     return c;

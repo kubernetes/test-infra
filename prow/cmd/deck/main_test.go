@@ -256,51 +256,84 @@ func TestProwJob(t *testing.T) {
 // TestRerun just checks that the result can be unmarshaled properly, has an
 // updated status, and has equal spec.
 func TestRerun(t *testing.T) {
-	fakeProwJobClient := fake.NewSimpleClientset(&prowapi.ProwJob{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "wowsuch",
-			Namespace: "prowjobs",
+	testCases := []struct {
+		name                string
+		shouldCreateProwjob bool
+	}{
+		{
+			name:                "Handler returns ProwJob",
+			shouldCreateProwjob: false,
 		},
-		Spec: prowapi.ProwJobSpec{
-			Job:  "whoa",
-			Type: prowapi.PresubmitJob,
-			Refs: &prowapi.Refs{
-				Org:  "org",
-				Repo: "repo",
-				Pulls: []prowapi.Pull{
-					{Number: 1},
+		{
+			name:                "Handler creates ProwJob",
+			shouldCreateProwjob: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeProwJobClient := fake.NewSimpleClientset(&prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "wowsuch",
+					Namespace: "prowjobs",
 				},
-			},
-		},
-		Status: prowapi.ProwJobStatus{
-			State: prowapi.PendingState,
-		},
-	})
-	handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"))
-	req, err := http.NewRequest(http.MethodGet, "/rerun?prowjob=wowsuch", nil)
-	if err != nil {
-		t.Fatalf("Error making request: %v", err)
-	}
-	rr := httptest.NewRecorder()
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusOK {
-		t.Fatalf("Bad error code: %d", rr.Code)
-	}
-	resp := rr.Result()
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Error reading response body: %v", err)
-	}
-	var res prowapi.ProwJob
-	if err := yaml.Unmarshal(body, &res); err != nil {
-		t.Fatalf("Error unmarshaling: %v", err)
-	}
-	if res.Spec.Job != "whoa" {
-		t.Errorf("Wrong job, expected \"whoa\", got \"%s\"", res.Spec.Job)
-	}
-	if res.Status.State != prowapi.TriggeredState {
-		t.Errorf("Wrong state, expected \"%v\", got \"%v\"", prowapi.TriggeredState, res.Status.State)
+				Spec: prowapi.ProwJobSpec{
+					Job:  "whoa",
+					Type: prowapi.PresubmitJob,
+					Refs: &prowapi.Refs{
+						Org:  "org",
+						Repo: "repo",
+						Pulls: []prowapi.Pull{
+							{Number: 1},
+						},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.PendingState,
+				},
+			})
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.shouldCreateProwjob)
+			req, err := http.NewRequest(http.MethodPost, "/rerun?prowjob=wowsuch", nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+
+			if tc.shouldCreateProwjob {
+				if rr.Code != http.StatusNoContent {
+					t.Fatalf("Unexpected http status code: %d, expected 204", rr.Code)
+				}
+				pjs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+				if err != nil {
+					t.Fatalf("failed to list prowjobs: %v", err)
+				}
+				if numPJs := len(pjs.Items); numPJs != 2 {
+					t.Errorf("expected to get two prowjobs, got %d", numPJs)
+				}
+
+			} else {
+				if rr.Code != http.StatusOK {
+					t.Fatalf("Bad error code: %d", rr.Code)
+				}
+				resp := rr.Result()
+				defer resp.Body.Close()
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					t.Fatalf("Error reading response body: %v", err)
+				}
+				var res prowapi.ProwJob
+				if err := yaml.Unmarshal(body, &res); err != nil {
+					t.Fatalf("Error unmarshaling: %v", err)
+				}
+				if res.Spec.Job != "whoa" {
+					t.Errorf("Wrong job, expected \"whoa\", got \"%s\"", res.Spec.Job)
+				}
+				if res.Status.State != prowapi.TriggeredState {
+					t.Errorf("Wrong state, expected \"%v\", got \"%v\"", prowapi.TriggeredState, res.Status.State)
+				}
+			}
+		})
 	}
 }
 

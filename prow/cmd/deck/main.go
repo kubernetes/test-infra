@@ -91,6 +91,7 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
+	rerunCreatesJob       bool
 }
 
 func (o *options) Validate() error {
@@ -136,6 +137,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	o.kubernetes.AddFlags(fs)
 	fs.Parse(args)
 	o.configPath = config.ConfigPath(o.configPath)
@@ -267,7 +269,7 @@ func main() {
 	mux.Handle("/tide-history", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "tide-history.html", nil)))
 	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "plugins.html", nil)))
 
-	indexHandler := handleSimpleTemplate(o, cfg, "index.html", struct{ SpyglassEnabled bool }{o.spyglass})
+	indexHandler := handleSimpleTemplate(o, cfg, "index.html", struct{ SpyglassEnabled, ReRunCreatesJob bool }{o.spyglass, o.rerunCreatesJob})
 
 	runLocal := o.pregeneratedData != ""
 
@@ -392,7 +394,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient)))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob)))
 	mux.Handle("/prowjob", gziphandler.GzipHandler(handleProwJob(prowJobClient)))
 
 	if o.spyglass {
@@ -1147,7 +1149,7 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 	}
 }
 
-func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
+func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		if name == "" {
@@ -1163,8 +1165,26 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 			}
 			return
 		}
-		pjutil := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels)
-		b, err := yaml.Marshal(&pjutil)
+		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels)
+		// Be very careful about this on publicly accessible Prow instances. Even after we have authentication
+		// for the handler, we need CSRF protection.
+		// On Prow instances that require auth even for viewing Deck this is okayish, because the Prowjob UUID
+		// is hard to guess
+		// Ref: https://github.com/kubernetes/test-infra/pull/12827#issuecomment-502850414
+		if createProwJob {
+			if r.Method != http.MethodPost {
+				http.Error(w, "request must be of type POST", http.StatusMethodNotAllowed)
+				return
+			}
+			if _, err := prowJobClient.Create(&newPJ); err != nil {
+				logrus.WithError(err).Error("Error creating job")
+				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		b, err := yaml.Marshal(&newPJ)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
 			logrus.WithError(err).Error("Error marshaling jobs.")
