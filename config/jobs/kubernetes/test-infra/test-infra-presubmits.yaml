@@ -74,7 +74,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-experimental
         command:
         - ./hack/verify-file-perms.sh
 

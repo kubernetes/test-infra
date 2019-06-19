@@ -28,7 +28,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190617-ea4f8aa-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190618-b782256-master
         command:
         - make
         args:
