@@ -6,7 +6,10 @@ metadata:
   name: grafana
   namespace: prow-monitoring
 spec:
-  replicas: 2
+  #keep replicas 1 unless we have a solution to
+  #A. GLB BackendConfig with session affinity, or
+  #B. SHARED session between replicas
+  replicas: 1
   selector:
     matchLabels:
       app: grafana
