@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/github"
@@ -79,24 +80,30 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 				message = fmt.Sprintf("on the %q branch, ", branch)
 			}
 			message += "valid bugs must "
-			var conditionsExist bool
+			var conditions []string
 			if opts[branch].IsOpen != nil {
-				conditionsExist = true
 				if *opts[branch].IsOpen {
-					message += "be open"
+					conditions = append(conditions, "be open")
 				} else {
-					message += "be closed"
+					conditions = append(conditions, "be closed")
 				}
 			}
 			if opts[branch].TargetRelease != nil {
-				conditionsExist = true
-				if opts[branch].IsOpen != nil {
-					message += " and "
-				}
-				message += fmt.Sprintf("target the %q release", *opts[branch].TargetRelease)
+				conditions = append(conditions, fmt.Sprintf("target the %q release", *opts[branch].TargetRelease))
 			}
-			if !conditionsExist {
+			if opts[branch].Statuses != nil {
+				conditions = append(conditions, fmt.Sprintf("be in one of the following states: %s", strings.Join(*opts[branch].Statuses, ", ")))
+			}
+			switch len(conditions) {
+			case 0:
 				message += "exist"
+			case 1:
+				message += conditions[0]
+			case 2:
+				message += fmt.Sprintf("%s and %s", conditions[0], conditions[1])
+			default:
+				conditions[len(conditions)-1] = fmt.Sprintf("and %s", conditions[len(conditions)-1])
+				message += strings.Join(conditions, ", ")
 			}
 			configInfoStrings = append(configInfoStrings, "<li>"+message+"</li>")
 		}
@@ -389,6 +396,13 @@ func validateBug(bug bugzilla.Bug, options plugins.BugzillaBranchOptions) (bool,
 			// not even clear if the list can have more than one item in the response
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to target the %q release, but it targets %q instead", *options.TargetRelease, bug.TargetRelease[0]))
+		}
+	}
+
+	if options.Statuses != nil {
+		if !sets.NewString(*options.Statuses...).Has(bug.Status) {
+			valid = false
+			errors = append(errors, fmt.Sprintf("expected the bug to be in one of the following states: %s, but it is %s instead", strings.Join(*options.Statuses, ", "), bug.Status))
 		}
 	}
 
