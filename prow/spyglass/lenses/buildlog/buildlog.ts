@@ -35,7 +35,7 @@ function ansiToHTML(orig: string): string {
   const filtered = orig.replace(/\033\[([0-9;]*)\w(\033\[1m)?([^\033]*?)\033\[0m/g, (match: string, cmd: string, bold: string, body: string, offset: number, str: string) => {
     if (bold !== undefined) {
       // normal code + bold
-      return `<em>${annotate(cmd, body)}</em>`;
+      return `<strong>${annotate(cmd, body)}</strong>`;
     }
     return annotate(cmd, body);
   });
