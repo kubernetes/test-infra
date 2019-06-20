@@ -3340,7 +3340,7 @@ data:
              "dashLength": 10,
              "dashes": false,
              "datasource": "prometheus",
-             "description": "Tide stats for the master branch of the openshift/origin repo.\nSpecifically, the number of pooled PRs and the daily merge rate.\n(See the more general graphs for details on how these are calculated.)",
+             "description": "Tide stats for the master branch of the kubernetes/kubernetes repo.\nSpecifically, the number of pooled PRs and the daily merge rate.\n(See the more general graphs for details on how these are calculated.)",
              "fill": 1,
              "gridPos": {
                 "h": 9,
@@ -3376,14 +3376,14 @@ data:
              "steppedLine": false,
              "targets": [
                 {
-                   "expr": "avg(pooledprs{org=\"openshift\",repo=\"origin\",branch=\"master\"} and ((time() - updatetime) < 240)) or vector(0)",
+                   "expr": "avg(pooledprs{org=\"kubernetes\",repo=\"kubernetes\",branch=\"master\"} and ((time() - updatetime) < 240)) or vector(0)",
                    "format": "time_series",
                    "intervalFactor": 2,
                    "legendFormat": "Pool size",
                    "refId": "A"
                 },
                 {
-                   "expr": "sum(rate(merges_sum{org=\"openshift\",repo=\"origin\",branch=\"master\"}[1d])) * 86400",
+                   "expr": "sum(rate(merges_sum{org=\"kubernetes\",repo=\"kubernetes\",branch=\"master\"}[1d])) * 86400",
                    "format": "time_series",
                    "intervalFactor": 2,
                    "legendFormat": "Daily merge rate",
@@ -3393,7 +3393,7 @@ data:
              "thresholds": [ ],
              "timeFrom": null,
              "timeShift": null,
-             "title": "Tide Pool: openshift/origin:master",
+             "title": "Tide Pool: kubernetes/kubernetes:master",
              "tooltip": {
                 "shared": true,
                 "sort": 0,
