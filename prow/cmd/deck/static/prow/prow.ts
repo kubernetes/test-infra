@@ -683,7 +683,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
 
 function createViewJobCell(prowjob: string): HTMLTableDataCellElement {
     const c = document.createElement("td");
-    const i = icon.create("pageview", "Show job YAML");
+    const i = icon.create("pageview", "Show job YAML", () => gtag("event", "view_job_yaml", {event_category: "engagement", transport_type: "beacon"}));
     i.href = `https://${window.location.hostname}/prowjob?prowjob=${prowjob}`;
     c.classList.add("icon-cell");
     c.appendChild(i);

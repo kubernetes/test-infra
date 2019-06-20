@@ -36,6 +36,7 @@ ts_library(
         ":api",
         ":common",
         ":histogram",
+        "@npm//@types/gtag.js",
         "@npm//moment",
     ],
 )
