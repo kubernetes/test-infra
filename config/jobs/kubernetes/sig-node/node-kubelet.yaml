@@ -213,7 +213,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190619-f71580d-master
       args:
       - --repo=k8s.io/kubernetes=master
-      - --timeout=265
+      - --timeout=320
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -225,7 +225,7 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]"
-      - --timeout=245m
+      - --timeout=300m
       env:
       - name: GOPATH
         value: /go
