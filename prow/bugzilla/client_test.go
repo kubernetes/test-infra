@@ -18,6 +18,7 @@ package bugzilla
 
 import (
 	"crypto/tls"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -61,6 +62,11 @@ func TestGetBug(t *testing.T) {
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
+		if r.Method != http.MethodGet {
+			t.Errorf("incorrect method to get a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
 		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
 			t.Errorf("incorrect path to get a bug: %s", r.URL.Path)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
@@ -99,5 +105,62 @@ func TestGetBug(t *testing.T) {
 	}
 	if otherBug != nil {
 		t.Errorf("expected no bug, got: %v", otherBug)
+	}
+}
+
+func TestUpdateBug(t *testing.T) {
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodPut {
+			t.Errorf("incorrect method to update a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to update a bug: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/")); err != nil {
+			t.Errorf("malformed bug id: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		} else {
+			if id == 1705243 {
+				raw, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Errorf("failed to read update body: %v", err)
+				}
+				if actual, expected := string(raw), `{"status":"UPDATED"}`; actual != expected {
+					t.Errorf("got incorrect udpate: expected %v, got %v", expected, actual)
+				}
+			} else {
+				http.Error(w, "404 Not Found", http.StatusNotFound)
+			}
+		}
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+
+	// this should run an update
+	if err := client.UpdateBug(1705243, BugUpdate{Status: "UPDATED"}); err != nil {
+		t.Errorf("expected no error, but got one: %v", err)
+	}
+
+	// this should 404
+	err := client.UpdateBug(1, BugUpdate{Status: "UPDATE"})
+	if err == nil {
+		t.Error("expected an error, but got none")
+	} else if !IsNotFound(err) {
+		t.Errorf("expected a not found error, got %v", err)
 	}
 }

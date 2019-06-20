@@ -1011,9 +1011,17 @@ type BugzillaRepoOptions struct {
 
 // BugzillaBranchOptions describes how to check if a Bugzilla bug is valid or not.
 type BugzillaBranchOptions struct {
-	IsOpen        *bool     `json:"is_open,omitempty"`
-	TargetRelease *string   `json:"target_release,omitempty"`
-	Statuses      *[]string `json:"statuses,omitempty"`
+	// IsOpen determines whether a bug needs to be open to be valid
+	IsOpen *bool `json:"is_open,omitempty"`
+	// TargetRelease determines which release a bug needs to target to be valid
+	TargetRelease *string `json:"target_release,omitempty"`
+	// Statuses determine which statuses a bug may have to be valid
+	Statuses *[]string `json:"statuses,omitempty"`
+
+	// StatusAfterValidation is the status which the bug will be moved to after being
+	// deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
+	// if others are set.
+	StatusAfterValidation *string `json:"status_after_validation,omitempty"`
 }
 
 func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
@@ -1023,7 +1031,9 @@ func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
 		(o.TargetRelease != nil && other.TargetRelease != nil && *o.TargetRelease == *other.TargetRelease)
 	statusesMatch := o.Statuses == nil && other.Statuses == nil ||
 		(o.Statuses != nil && other.Statuses != nil && sets.NewString(*o.Statuses...).Equal(sets.NewString(*other.Statuses...)))
-	return isOpenMatch && targetReleaseMatch && statusesMatch
+	statusesAfterValidationMatch := o.StatusAfterValidation == nil && other.StatusAfterValidation == nil ||
+		(o.StatusAfterValidation != nil && other.StatusAfterValidation != nil && *o.StatusAfterValidation == *other.StatusAfterValidation)
+	return isOpenMatch && targetReleaseMatch && statusesMatch && statusesAfterValidationMatch
 }
 
 const BugzillaOptionsWildcard = `*`
@@ -1050,6 +1060,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	if parent.Statuses != nil {
 		output.Statuses = parent.Statuses
 	}
+	if parent.StatusAfterValidation != nil {
+		output.StatusAfterValidation = parent.StatusAfterValidation
+	}
 
 	//override with the child
 	if child.IsOpen != nil {
@@ -1060,6 +1073,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.Statuses != nil {
 		output.Statuses = child.Statuses
+	}
+	if child.StatusAfterValidation != nil {
+		output.StatusAfterValidation = child.StatusAfterValidation
 	}
 
 	return output
