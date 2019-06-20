@@ -368,6 +368,11 @@ func (ps Presubmit) TriggerMatches(body string) bool {
 	return ps.Trigger != "" && ps.re.MatchString(body)
 }
 
+// GetGroups returns a slice of matched groups.
+func (ps Presubmit) GetGroups(body string) []string {
+	return ps.re.FindStringSubmatch(body)
+}
+
 // ContextRequired checks whether a context is required from github points of view (required check).
 func (ps Presubmit) ContextRequired() bool {
 	return !ps.Optional && !ps.SkipReport

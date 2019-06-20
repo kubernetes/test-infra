@@ -21,6 +21,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -114,6 +115,17 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if err != nil {
 		return err
 	}
+
+	for _, ps := range toTest {
+		groups := ps.GetGroups(gc.Body)
+		if groups != nil {
+			for i, group := range groups[1:] {
+				env := v1.EnvVar{Name: fmt.Sprintf("ARG%d", i), Value: group}
+				ps.Spec.Containers[0].Env = append(ps.Spec.Containers[0].Env, env)
+			}
+		}
+	}
+
 	return RunAndSkipJobs(c, pr, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
 }
 
