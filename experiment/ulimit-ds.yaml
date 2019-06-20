@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ulimit-ds
+  namespace: kube-system
+  labels:
+    k8s-app: ulimit-ds
+spec:
+  template:
+    spec:
+      hostPID: true
+      containers:
+      - name: set-ulimits
+        image: alpine
+        cmd:
+        - sh
+        - -c
+        - ulimit -n 65536; while true; do sleep 10; done
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 10m
+            memory: 50Mi
+          requests:
+            cpu: 10m
+            memory: 50Mi
