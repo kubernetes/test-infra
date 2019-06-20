@@ -150,10 +150,10 @@ type ProwJobSpec struct {
 	// JenkinsSpec holds configuration specific to Jenkins jobs
 	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 
-	// PipelineRunSpec provides the basis for running the test as
+	// TektonSpec provides the basis for running the test as
 	// a pipeline-crd resource
 	// https://github.com/tektoncd/pipeline
-	PipelineRunSpec *pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
+	TektonSpec *TektonSpec `json:"tekton_spec,omitempty"`
 
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
@@ -161,6 +161,16 @@ type ProwJobSpec struct {
 
 	// ReporterConfig holds reporter-specific configuration
 	ReporterConfig *ReporterConfig `json:"reporter_config,omitempty"`
+}
+
+type TektonSpec struct {
+	// GitResourceName is the name to use when binding the prow git resource
+	GitResourceName string
+
+	// PipelineRunSpec provides the basis for running the test as
+	// a pipeline-crd resource
+	// https://github.com/tektoncd/pipeline
+	PipelineRunSpec pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec"`
 }
 
 type ReporterConfig struct {

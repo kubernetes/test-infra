@@ -51,6 +51,8 @@ import (
 
 const (
 	controllerName = "prow-pipeline-crd"
+
+	defaultGitResourceName = "source"
 )
 
 type controller struct {
@@ -405,8 +407,8 @@ func reconcile(c reconciler, key string) error {
 	case finalState(pj.Status.State):
 		logrus.Infof("Observed finished: %s", key)
 		return nil
-	case wantPipelineRun && pj.Spec.PipelineRunSpec == nil:
-		return fmt.Errorf("nil PipelineRunSpec in ProwJob/%s", key)
+	case wantPipelineRun && pj.Spec.TektonSpec == nil:
+		return fmt.Errorf("nil TektonSpec in ProwJob/%s", key)
 	case wantPipelineRun && !havePipelineRun:
 		id, url, err := c.pipelineID(*pj)
 		if err != nil {
@@ -586,14 +588,14 @@ func makePipelineGitResource(pj prowjobv1.ProwJob) *pipelinev1alpha1.PipelineRes
 	return &pr
 }
 
-// makePipeline creates a PipelineRun from a prow job using the PipelineRunSpec defined in the prow job
+// makePipeline creates a PipelineRun from a prow job using the TektonSpec defined in the prow job
 func makePipelineRun(pj prowjobv1.ProwJob, pr *pipelinev1alpha1.PipelineResource) (*pipelinev1alpha1.PipelineRun, error) {
-	if pj.Spec.PipelineRunSpec == nil {
+	if pj.Spec.TektonSpec == nil {
 		return nil, errors.New("no PipelineSpec defined")
 	}
 	p := pipelinev1alpha1.PipelineRun{
 		ObjectMeta: pipelineMeta(pj),
-		Spec:       *pj.Spec.PipelineRunSpec.DeepCopy(),
+		Spec:       *pj.Spec.TektonSpec.PipelineRunSpec.DeepCopy(),
 	}
 	buildID := pj.Status.BuildID
 	if buildID == "" {
@@ -603,8 +605,12 @@ func makePipelineRun(pj prowjobv1.ProwJob, pr *pipelinev1alpha1.PipelineResource
 		Name:  "build_id",
 		Value: buildID,
 	})
+	resourceName := pj.Spec.TektonSpec.GitResourceName
+	if resourceName == "" {
+		resourceName = defaultGitResourceName
+	}
 	rb := pipelinev1alpha1.PipelineResourceBinding{
-		Name: pr.Name,
+		Name: resourceName,
 		ResourceRef: pipelinev1alpha1.PipelineResourceRef{
 			Name:       pr.Name,
 			APIVersion: pr.APIVersion,
