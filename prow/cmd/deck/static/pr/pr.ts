@@ -366,8 +366,10 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
  */
 function loadPrStatus(prData: UserData): void {
     const tideQueries: TideQuery[] = [];
-    for (const query of tideData.TideQueries) {
-        tideQueries.push(new TideQuery(query));
+    if (tideData.TideQueries) {
+        for (const query of tideData.TideQueries) {
+            tideQueries.push(new TideQuery(query));
+        }
     }
 
     const container = document.querySelector("#pr-container")!;
