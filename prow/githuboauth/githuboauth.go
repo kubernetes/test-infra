@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -54,11 +55,41 @@ type GitHubClientGetter interface {
 
 // OAuthClient is an interface for a GitHub OAuth client.
 type OAuthClient interface {
+	WithFinalRedirectURL(url string) (OAuthClient, error)
 	// Exchanges code from GitHub OAuth redirect for user access token.
 	Exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error)
 	// Returns a URL to GitHub's OAuth 2.0 consent page. The state is a token to protect the user
 	// from an XSRF attack.
 	AuthCodeURL(state string, opts ...oauth2.AuthCodeOption) string
+}
+
+type client struct {
+	*oauth2.Config
+}
+
+func NewClient(config *oauth2.Config) client {
+	return client{
+		config,
+	}
+}
+
+func (cli client) WithFinalRedirectURL(path string) (OAuthClient, error) {
+	parsedURL, err := url.Parse(cli.RedirectURL)
+	if err != nil {
+		return nil, err
+	}
+	q := parsedURL.Query()
+	q.Set("dest", path)
+	parsedURL.RawQuery = q.Encode()
+	return NewClient(
+		&oauth2.Config{
+			ClientID:     cli.ClientID,
+			ClientSecret: cli.ClientSecret,
+			RedirectURL:  parsedURL.String(),
+			Scopes:       cli.Scopes,
+			Endpoint:     cli.Endpoint,
+		},
+	), nil
 }
 
 type githubClientGetter struct{}
@@ -92,6 +123,7 @@ func NewAgent(config *config.GitHubOAuthConfig, logger *logrus.Entry) *Agent {
 // redirect user to GitHub OAuth end-point for authentication.
 func (ga *Agent) HandleLogin(client OAuthClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		destPage := r.URL.Query().Get("dest")
 		stateToken := xsrftoken.Generate(ga.gc.ClientSecret, "", "")
 		state := hex.EncodeToString([]byte(stateToken))
 		oauthSession, err := ga.gc.CookieStore.New(r, oauthSessionCookie)
@@ -108,8 +140,11 @@ func (ga *Agent) HandleLogin(client OAuthClient) http.HandlerFunc {
 			ga.serverError(w, "Save oauth session", err)
 			return
 		}
-
-		redirectURL := client.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
+		newClient, err := client.WithFinalRedirectURL(destPage)
+		if err != nil {
+			ga.serverError(w, "Failed to parse redirect URL", err)
+		}
+		redirectURL := newClient.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
 }
@@ -135,7 +170,7 @@ func (ga *Agent) HandleLogout(client OAuthClient) http.HandlerFunc {
 			loginCookie.Expires = time.Now().Add(-time.Hour * 24)
 			http.SetCookie(w, loginCookie)
 		}
-		http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
+		http.Redirect(w, r, r.URL.Host, http.StatusFound)
 	}
 }
 
@@ -144,6 +179,14 @@ func (ga *Agent) HandleLogout(client OAuthClient) http.HandlerFunc {
 // the final destination in the config, which should be the front-end.
 func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		finalRedirectURL, err := r.URL.Parse(r.URL.Query().Get("dest"))
+		//This check prevents someone from specifying a different host to redirect to.
+		if finalRedirectURL.Host != "" {
+			ga.serverError(w, "Invalid hostname", fmt.Errorf("%s, expected %s", finalRedirectURL.Host, r.URL.Host))
+		}
+		if err != nil {
+			ga.serverError(w, "Failed to parse final destination from OAuth redirect payload", err)
+		}
 		state := r.FormValue("state")
 		stateTokenRaw, err := hex.DecodeString(state)
 		if err != nil {
@@ -163,7 +206,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) h
 		}
 		secretState, ok := oauthSession.Values[stateKey].(string)
 		if !ok {
-			ga.serverError(w, "Get secret state", fmt.Errorf("empty string or cannot convert to string"))
+			ga.serverError(w, "Get secret state", fmt.Errorf("empty string or cannot convert to string. this probably means the options passed to GitHub don't match what was expected"))
 			return
 		}
 		// Validate the state parameter to prevent cross-site attack.
@@ -219,7 +262,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) h
 			Expires: time.Now().Add(time.Hour * 24 * 30),
 			Secure:  true,
 		})
-		http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
+		http.Redirect(w, r, finalRedirectURL.String(), http.StatusFound)
 	}
 }
 
