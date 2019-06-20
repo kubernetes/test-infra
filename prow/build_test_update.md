@@ -58,8 +58,6 @@ kubectl apply -f prow/cluster/hook_deployment.yaml
 
 ## How to test a ProwJob
 
-EXPERIMENTAL: try out [phaino](/prow/cmd/phaino) to run the job locally on your workstation in a docker container.
-
 The best way to go about testing a new ProwJob depends on the job itself. If the
 job's test container can be run locally that is typically the best way to
 initially test the job because local debugging is easier than debugging a job in
@@ -73,7 +71,12 @@ these values can be changed to make the job run everywhere and become visible
 to users by posting results to GitHub (if desired).
 Changes to existing jobs can be trialed on canary jobs.
 
-### How to manually run a given job on prow
+### Running a ProwJob Locally
+
+[Phaino](/prow/cmd/phaino) lets you interactively mock and run the job locally on your workstation
+in a docker container. Detailed instructions can be found in Phaino's [Readme](/prow/cmd/phaino/README.md)
+
+### How to manually run a given job on Prow
 
 If the normal job triggering mechanisms (`/test foo` comments, PR changes, PR
 merges, cron schedule) are not sufficient for your testing you can use `mkpj` to

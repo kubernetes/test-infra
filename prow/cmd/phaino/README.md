@@ -24,6 +24,9 @@ bazel run //prow/cmd/mkpj -- --config-path=/your/config --job=foo > /tmp/foo
 bazel run //prow/cmd/phaino -- /tmp/foo
 ```
 
+Phaino is an interactive utility; it will prompt you for a local copy of any secrets or
+volumes that the Prow Job may require.
+
 ### Common options
 
 * `--grace=5m` controls how long to wait for interrupted jobs before terminating.
@@ -35,7 +38,7 @@ See `bazel run //prow/cmd/phaino -- --help` for full option list.
 
 
 ### Usage examples
-URL example:
+#### URL example
 
 * Go to your [deck deployment](https://prow.k8s.io)
 * Pick a job and click the rerun icon on the left
@@ -45,9 +48,9 @@ URL example:
   - Alternatively `bazel run //prow/cmd/phaino -- <(curl $URL)`
 
 
-A `mkpj` example:
+#### Configuration example:
 
-* Use `mkpj` to create the job and pipe this to `phaino`
+* Use [`mkpj`](/prow/cmd/mkpj) to create the job and pipe this to `phaino`
   - For prow.k8s.io jobs use `//config:mkpj`
       ```
       bazel run //config:mkpj -- --job=pull-test-infra-bazel > /tmp/foo
