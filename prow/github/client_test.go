@@ -1389,7 +1389,10 @@ func TestIsCollaborator(t *testing.T) {
 }
 
 func TestListCollaborators(t *testing.T) {
-	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
+	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{
+		{Login: "foo", Permissions: RepoPermissions{Pull: true}},
+		{Login: "bar", Permissions: RepoPermissions{Push: true}},
+	})
 	defer ts.Close()
 	c := getClient(ts.URL)
 	users, err := c.ListCollaborators("org", "repo")
@@ -1402,8 +1405,14 @@ func TestListCollaborators(t *testing.T) {
 	if users[0].Login != "foo" {
 		t.Errorf("Wrong user login for index 0: %v", users[0])
 	}
+	if !reflect.DeepEqual(users[0].Permissions, RepoPermissions{Pull: true}) {
+		t.Errorf("Wrong permissions for index 0: %v", users[0])
+	}
 	if users[1].Login != "bar" {
 		t.Errorf("Wrong user login for index 1: %v", users[1])
+	}
+	if !reflect.DeepEqual(users[1].Permissions, RepoPermissions{Push: true}) {
+		t.Errorf("Wrong permissions for index 1: %v", users[1])
 	}
 }
 

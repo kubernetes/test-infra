@@ -153,11 +153,12 @@ type CombinedStatus struct {
 
 // User is a GitHub user account.
 type User struct {
-	Login   string `json:"login"`
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	ID      int    `json:"id"`
-	HTMLURL string `json:"html_url"`
+	Login       string          `json:"login"`
+	Name        string          `json:"name"`
+	Email       string          `json:"email"`
+	ID          int             `json:"id"`
+	HTMLURL     string          `json:"html_url"`
+	Permissions RepoPermissions `json:"permissions"`
 }
 
 // NormLogin normalizes GitHub login strings
