@@ -1416,6 +1416,26 @@ func TestListCollaborators(t *testing.T) {
 	}
 }
 
+func TestListRepoTeams(t *testing.T) {
+	expectedTeams := []Team{
+		{ID: 1, Slug: "foo", Permission: RepoPull},
+		{ID: 2, Slug: "bar", Permission: RepoPush},
+		{ID: 3, Slug: "foobar", Permission: RepoAdmin},
+	}
+	ts := simpleTestServer(t, "/repos/org/repo/teams", expectedTeams)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teams, err := c.ListRepoTeams("org", "repo")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teams) != 3 {
+		t.Errorf("Expected three teams, found %d: %v", len(teams), teams)
+		return
+	}
+	if !reflect.DeepEqual(teams, expectedTeams) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedTeams, teams)
+	}
+}
 func TestListIssueEvents(t *testing.T) {
 	ts := simpleTestServer(
 		t,
