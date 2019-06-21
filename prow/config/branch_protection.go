@@ -37,6 +37,9 @@ type Policy struct {
 	Restrictions *Restrictions `json:"restrictions,omitempty"`
 	// RequiredPullRequestReviews specifies github approval/review criteria.
 	RequiredPullRequestReviews *ReviewPolicy `json:"required_pull_request_reviews,omitempty"`
+	// Exclude specifies a set of regular expressions which identify branches
+	// that should be excluded from the protection policy
+	Exclude []string `json:"exclude,omitempty"`
 }
 
 func (p Policy) defined() bool {
@@ -152,6 +155,7 @@ func (p Policy) Apply(child Policy) Policy {
 		Admins:                     selectBool(p.Admins, child.Admins),
 		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
 		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
+		Exclude:                    unionStrings(p.Exclude, child.Exclude),
 	}
 }
 

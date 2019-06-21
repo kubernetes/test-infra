@@ -36,6 +36,7 @@ func normalize(policy *Policy) {
 		return
 	}
 	sort.Strings(policy.RequiredStatusChecks.Contexts)
+	sort.Strings(policy.Exclude)
 }
 
 func TestSelectBool(t *testing.T) {
@@ -269,6 +270,18 @@ func TestApply(test *testing.T) {
 				Protect: &t,
 			},
 		},
+		{
+			name: "merge exclusion strings",
+			child: Policy{
+				Exclude: []string{"foo*"},
+			},
+			parent: Policy{
+				Exclude: []string{"bar*"},
+			},
+			expected: Policy{
+				Exclude: []string{"bar*", "foo*"},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -383,11 +396,10 @@ func TestBranchRequirements(t *testing.T) {
 
 func TestConfig_GetBranchProtection(t *testing.T) {
 	testCases := []struct {
-		name              string
-		config            Config
-		org, repo, branch string
-		err               bool
-		expected          *Policy
+		name     string
+		config   Config
+		err      bool
+		expected *Policy
 	}{
 		{
 			name: "unprotected by default",

@@ -827,8 +827,80 @@ branch-protection:
 				},
 			},
 		},
-	}
+		{
+			name:     "excluded branches are not protected",
+			branches: []string{"kubernetes/test-infra=master", "kubernetes/test-infra=skip"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    kubernetes:
+      repos:
+        test-infra:
+          exclude:
+          - sk.*
+`,
 
+			expected: []requirements{
+				{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{EnforceAdmins: &no},
+				},
+			},
+		},
+		{
+			name:     "org and repo level branch exclusions are combined",
+			branches: []string{"kubernetes/test-infra=master", "kubernetes/test-infra=skip", "kubernetes/test-infra=foobar1"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    kubernetes:
+      exclude:
+      - foo.*
+      repos:
+        test-infra:
+          exclude:
+          - sk.*
+`,
+
+			expected: []requirements{
+				{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{EnforceAdmins: &no},
+				},
+			},
+		},
+		{
+			name:     "explicitly specified branches are not affected by Exclude",
+			branches: []string{"kubernetes/test-infra=master"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    kubernetes:
+      exclude:
+      - master.*
+      repos:
+        test-infra:
+          branches:
+            master:
+`,
+
+			expected: []requirements{
+				{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{EnforceAdmins: &no},
+				},
+			},
+		},
+	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			repos := map[string]map[string]bool{}

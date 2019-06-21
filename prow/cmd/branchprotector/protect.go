@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -242,6 +243,14 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		return nil
 	}
 
+	var branchExclusions *regexp.Regexp
+	if len(repo.Policy.Exclude) > 0 {
+		branchExclusions, err = regexp.Compile(strings.Join(repo.Policy.Exclude, `|`))
+		if err != nil {
+			return err
+		}
+	}
+
 	branches := map[string]github.Branch{}
 	for _, onlyProtected := range []bool{false, true} { // put true second so b.Protected is set correctly
 		bs, err := p.client.GetBranches(orgName, repoName, onlyProtected)
@@ -249,6 +258,11 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 			return fmt.Errorf("list branches: %v", err)
 		}
 		for _, b := range bs {
+			_, ok := repo.Branches[b.Name]
+			if !ok && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
+				logrus.Infof("%s/%s=%s: excluded", orgName, repoName, b.Name)
+				continue
+			}
 			branches[b.Name] = b
 		}
 	}
