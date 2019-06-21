@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("//prow:def.bzl", "prow_image")
+
 licenses(["notice"])
 
 load(
@@ -27,6 +29,11 @@ go_library(
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
+)
+
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

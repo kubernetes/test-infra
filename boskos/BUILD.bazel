@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+load("//def:image.bzl", "tags")
+load("//prow:def.bzl", "prow_image", "prow_push")
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -11,6 +13,23 @@ go_binary(
     name = "boskos",
     embed = [":go_default_library"],
     pure = "on",
+)
+
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
+)
+
+prow_push(
+    name = "push",
+    images = tags(**{
+        "{STABLE_PROW_REPO}/boskos/aws-janitor": "//maintenance/aws-janitor:image",
+        "{STABLE_PROW_REPO}/boskos/boskos": "//boskos:image",
+        "{STABLE_PROW_REPO}/boskos/fake-mason": "//boskos/mason/fake-mason:image",
+        "{STABLE_PROW_REPO}/boskos/janitor": "//boskos/janitor:image",
+        "{STABLE_PROW_REPO}/boskos/metrics": "//boskos/metrics:image",
+        "{STABLE_PROW_REPO}/boskos/reaper": "//boskos/reaper:image",
+    }),
 )
 
 go_test(
