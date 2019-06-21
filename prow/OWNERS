@@ -11,6 +11,7 @@ filters:
       - spxtr	# 2018-09-17
     reviewers:
       - matthyx
+      - alvaroaleman
     labels:
       - area/prow
   "(plugins|config)\\.yaml$":
