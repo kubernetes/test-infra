@@ -1888,6 +1888,9 @@ test_groups:
 - name: pull-release-unit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-unit
   num_columns_recent: 30
+- name: pull-release-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-verify
+  num_columns_recent: 30
 
 # Add New Testgroups Here
 
@@ -3106,6 +3109,10 @@ dashboards:
       alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
   - name: release-unit
     test_group_name: pull-release-unit
+    alert_options:
+      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
+  - name: release-verify
+    test_group_name: pull-release-verify
     alert_options:
       alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
 

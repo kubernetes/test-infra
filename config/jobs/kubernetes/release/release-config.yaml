@@ -46,3 +46,18 @@ presubmits:
           args:
             - test
             - ./...
+  - name: pull-release-verify
+    always_run: true
+    optional: true
+    decorate: true
+    path_alias: k8s.io/release
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-3070529-master
+          command:
+            - runner.sh
+            - make verify
+      securityContext:
+        privileged: true
