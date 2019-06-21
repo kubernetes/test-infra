@@ -1611,6 +1611,9 @@ test_groups:
 - name: ci-kubernetes-kind-conformance-ipv6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-ipv6
   num_columns_recent: 3
+- name: ci-kubernetes-kind-conformance-parallel-ipv6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-parallel-ipv6
+  num_columns_recent: 3
 - name: ci-kubernetes-kind-conformance-latest-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-latest-1-12
   num_columns_recent: 3
@@ -2186,6 +2189,9 @@ dashboards:
   - name: kind (IPv6), master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-ipv6
+  - name: kind (IPv6), master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
+    test_group_name: ci-kubernetes-kind-conformance-parallel-ipv6
   - name: kind-image, master (dev)
     description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-conformance-image-test
@@ -2372,6 +2378,11 @@ dashboards:
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
+    alert_options:
+      alert_mail_to_addresses: bentheelder@google.com
+  - name: kind (IPv6), master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
+    test_group_name: ci-kubernetes-kind-conformance-parallel-ipv6
     alert_options:
       alert_mail_to_addresses: bentheelder@google.com
   - name: kind, v1.14 (dev)
@@ -5244,6 +5255,9 @@ dashboards:
   - name: conformance, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
+  - name: kind (IPv6), master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
+    test_group_name: ci-kubernetes-kind-conformance-parallel-ipv6
   - name: kind, v1.14 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes relase-1.14 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-14
