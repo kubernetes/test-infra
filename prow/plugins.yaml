@@ -597,6 +597,9 @@ plugins:
   - wip
   - yuks
 
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+  - release-note
+  
   kubernetes-sigs/kind:
   - override
 
