@@ -24,6 +24,7 @@ set -o nounset
 set -o pipefail
 
 # TODO(fejta): rewrite this in a better language REAL SOON
+# TODO(sebastienvas): make this script reusable
 
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
 
@@ -66,7 +67,7 @@ fi
 echo -e "Pushing $(color-version ${new_version}) via $(color-target //boskos:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
 # Remove retries after https://github.com/bazelbuild/rules_docker/issues/673
 for i in {1..3}; do
-  if bazel run //boskos:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64; then
+  if bazel run //boskos:push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64; then
     exit 0
   elif [[ "$i" == 3 ]]; then
     echo "Failed"

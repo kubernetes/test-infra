@@ -1,8 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("//def:image.bzl", "tags")
-load("//prow:def.bzl", "prow_push")
+load("//prow:def.bzl", "prow_image", "prow_push")
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -16,17 +15,13 @@ go_binary(
     pure = "on",
 )
 
-go_image(
+prow_image(
     name = "image",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
     visibility = ["//visibility:public"],
 )
 
 prow_push(
-    name = "release-push",
+    name = "push",
     images = tags(**{
         "{STABLE_PROW_REPO}/boskos/aws-janitor": "//maintenance/aws-janitor:image",
         "{STABLE_PROW_REPO}/boskos/boskos": "//boskos:image",

@@ -1,8 +1,8 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("//prow:def.bzl", "prow_image")
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -46,13 +46,9 @@ container_image(
     tars = [":janitor_tar"],
 )
 
-go_image(
+prow_image(
     name = "image",
     base = ":janitor_image",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
     visibility = ["//visibility:public"],
 )
 
