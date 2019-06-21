@@ -17,12 +17,12 @@ load("//prow:def.bzl", "prow_push")
 
 package(default_visibility = ["//testgrid:__subpackages__"])
 
-# TODO(fejta): move registry to a variable
 prow_push(
     name = "push",
     images = tags(**{
-        "gcr.io/fejta-prod/testgrid/updater": "//testgrid/cmd/updater:image",
-        "gcr.io/fejta-prod/testgrid/configurator": "//testgrid/cmd/configurator:image",
+        "{STABLE_TESTGRID_REPO}/updater": "//testgrid/cmd/updater:image",
+        "{STABLE_TESTGRID_REPO}/configurator": "//testgrid/cmd/configurator:image",
+        "{STABLE_TESTGRID_REPO}/entomologist": "//testgrid/cmd/entomologist:image",
     }),
 )
 
