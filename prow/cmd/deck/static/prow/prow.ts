@@ -658,7 +658,7 @@ function redraw(fz: FuzzySearch): void {
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
-    const url = `/rerun?prowjob=${prowjob}`;
+    const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
     const i = icon.create("refresh", "Show instructions for rerunning this job");
     const login = getCookieByName("github_login");
