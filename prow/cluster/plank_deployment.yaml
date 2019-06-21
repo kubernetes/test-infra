@@ -39,6 +39,7 @@ spec:
         - --github-endpoint=https://api.github.com
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --skip-report=true
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster

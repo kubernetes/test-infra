@@ -31,8 +31,7 @@ spec:
       - name: crier
         image: gcr.io/k8s-prow/crier:v20190620-f4e6553b2
         args:
-        - --github-workers=1
-        - --report-agent=knative-build
+        - --github-workers=5
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
