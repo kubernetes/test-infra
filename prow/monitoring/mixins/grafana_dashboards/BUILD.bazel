@@ -1,0 +1,24 @@
+load("@io_bazel_rules_jsonnet//jsonnet:jsonnet.bzl", "jsonnet_library", "jsonnet_to_json")
+
+jsonnet_to_json(
+    name = "tide",
+    src = "tide.jsonnet",
+    outs = ["tide.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
