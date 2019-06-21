@@ -80,6 +80,8 @@ type fakeClient struct {
 	deleted           map[string]bool
 	updated           map[string]github.BranchProtectionRequest
 	branchProtections map[string]github.BranchProtection
+	collaborators     []github.User
+	teams             []github.Team
 }
 
 func (c fakeClient) GetRepo(org string, repo string) (github.Repo, error) {
@@ -157,6 +159,14 @@ func (c *fakeClient) RemoveBranchProtection(org, repo, branch string) error {
 	ctx := org + "/" + repo + "=" + branch
 	c.deleted[ctx] = true
 	return nil
+}
+
+func (c *fakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
+	return c.collaborators, nil
+}
+
+func (c *fakeClient) ListRepoTeams(org, repo string) ([]github.Team, error) {
+	return c.teams, nil
 }
 
 func TestConfigureBranches(t *testing.T) {
@@ -278,6 +288,8 @@ func TestProtect(t *testing.T) {
 		archived          string
 		expected          []requirements
 		branchProtections map[string]github.BranchProtection
+		collaborators     []github.User
+		teams             []github.Team
 		errors            int
 	}{
 		{
@@ -576,6 +588,24 @@ branch-protection:
 		{
 			name:     "append pushers",
 			branches: []string{"org/repo=master"},
+			teams: []github.Team{
+				{
+					Slug:       "config-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "org-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "repo-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "branch-team",
+					Permission: github.RepoPush,
+				},
+			},
 			config: `
 branch-protection:
   protect: true
@@ -616,6 +646,22 @@ branch-protection:
 		{
 			name:     "all modern fields",
 			branches: []string{"all/modern=master"},
+			collaborators: []github.User{
+				{
+					Login:       "cindy",
+					Permissions: github.RepoPermissions{Push: true},
+				},
+			},
+			teams: []github.Team{
+				{
+					Slug:       "config-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "org-team",
+					Permission: github.RepoPush,
+				},
+			},
 			config: `
 branch-protection:
   protect: true
@@ -738,6 +784,18 @@ branch-protection:
 		{
 			name:     "do not make update request if the branch is already up-to-date",
 			branches: []string{"kubernetes/test-infra=master"},
+			collaborators: []github.User{
+				{
+					Login:       "cindy",
+					Permissions: github.RepoPermissions{Push: true},
+				},
+			},
+			teams: []github.Team{
+				{
+					Slug:       "config-team",
+					Permission: github.RepoPush,
+				},
+			},
 			config: `
 branch-protection:
   enforce_admins: true
@@ -865,7 +923,6 @@ branch-protection:
           exclude:
           - sk.*
 `,
-
 			expected: []requirements{
 				{
 					Org:     "kubernetes",
@@ -890,7 +947,6 @@ branch-protection:
           branches:
             master:
 `,
-
 			expected: []requirements{
 				{
 					Org:     "kubernetes",
@@ -900,7 +956,28 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:     "do not make update request if the team or collaborator is not authorized",
+			branches: []string{"org/unauthorized-collaborator=master", "org/unauthorized-team=master"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    org:
+      repos:
+        unauthorized-collaborator:
+          restrictions:
+            users:
+            - cindy
+        unauthorized-team:
+          restrictions:
+            teams:
+            - config-team
+`,
+			errors: 1,
+		},
 	}
+
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			repos := map[string]map[string]bool{}
@@ -922,6 +999,8 @@ branch-protection:
 				branches:          branches,
 				repos:             map[string][]github.Repo{},
 				branchProtections: tc.branchProtections,
+				collaborators:     tc.collaborators,
+				teams:             tc.teams,
 			}
 			for org, r := range repos {
 				for rname := range r {
@@ -1485,5 +1564,164 @@ func TestEqualRestrictions(t *testing.T) {
 		if actual, expected := equalRestrictions(testCase.state, testCase.request), testCase.expected; actual != expected {
 			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
 		}
+	}
+}
+
+func TestValidateRequest(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		request       *github.BranchProtectionRequest
+		collaborators []string
+		teams         []string
+		errs          []error
+	}{
+		{
+			name: "restrict to unathorized collaborator results in error",
+			request: &github.BranchProtectionRequest{
+				Restrictions: &github.RestrictionsRequest{
+					Users: &[]string{"foo"},
+				},
+			},
+			errs: []error{fmt.Errorf("the following collaborators are not authorized for %s/%s: [%s]", "org", "repo", "foo")},
+		},
+		{
+			name: "restrict to unauthorized team results in error",
+			request: &github.BranchProtectionRequest{
+				Restrictions: &github.RestrictionsRequest{
+					Teams: &[]string{"bar"},
+				},
+			},
+			errs: []error{fmt.Errorf("the following teams are not authorized for %s/%s: [%s]", "org", "repo", "bar")},
+		},
+		{
+			name: "authorized user and team result in no errors",
+			request: &github.BranchProtectionRequest{
+				Restrictions: &github.RestrictionsRequest{
+					Users: &[]string{"foo"},
+					Teams: &[]string{"bar"},
+				},
+			},
+			collaborators: []string{"foo"},
+			teams:         []string{"bar"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			errs := validateRequest("org", "repo", tc.request, tc.collaborators, tc.teams)
+			if !reflect.DeepEqual(errs, tc.errs) {
+				t.Errorf("%s: errors %v != expected %v", tc.name, errs, tc.errs)
+			}
+		})
+	}
+}
+
+func TestAuthorizedCollaborators(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		collaborators []github.User
+		expected      []string
+	}{
+		{
+			name: "Collaborator with pull permission is not included",
+			collaborators: []github.User{
+				{
+					Login: "foo",
+					Permissions: github.RepoPermissions{
+						Pull: true,
+					},
+				},
+			},
+		},
+		{
+			name: "Collaborators with Push or Admin permission are included",
+			collaborators: []github.User{
+				{
+					Login: "foo",
+					Permissions: github.RepoPermissions{
+						Push: true,
+					},
+				},
+				{
+					Login: "bar",
+					Permissions: github.RepoPermissions{
+						Admin: true,
+					},
+				},
+			},
+			expected: []string{"foo", "bar"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := fakeClient{collaborators: tc.collaborators}
+			p := protector{
+				client: &fc,
+				errors: Errors{},
+			}
+
+			collaborators, err := p.authorizedCollaborators("org", "repo")
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			sort.Strings(tc.expected)
+			sort.Strings(collaborators)
+			if !reflect.DeepEqual(tc.expected, collaborators) {
+				t.Errorf("expected: %v, got: %v", tc.expected, collaborators)
+			}
+		})
+	}
+}
+
+func TestAuthorizedTeams(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		teams    []github.Team
+		expected []string
+	}{
+		{
+			name: "Team with pull permission is not included",
+			teams: []github.Team{
+				{
+					Slug:       "foo",
+					Permission: github.RepoPull,
+				},
+			},
+		},
+		{
+			name: "Teams with Push or Admin permission are included",
+			teams: []github.Team{
+				{
+					Slug:       "foo",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "bar",
+					Permission: github.RepoAdmin,
+				},
+			},
+			expected: []string{"foo", "bar"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := fakeClient{teams: tc.teams}
+			p := protector{
+				client: &fc,
+				errors: Errors{},
+			}
+
+			teams, err := p.authorizedTeams("org", "repo")
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			sort.Strings(tc.expected)
+			sort.Strings(teams)
+			if !reflect.DeepEqual(tc.expected, teams) {
+				t.Errorf("expected: %v, got: %v", tc.expected, teams)
+			}
+		})
 	}
 }
