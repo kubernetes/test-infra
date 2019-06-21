@@ -213,7 +213,7 @@ For the boskos server that handles k8s e2e jobs, the status is available from th
     ```
 
 ## Local test:
-1. Start boskos with a fake config.yaml, with `go run boskos.go -config=/path/to/config.yaml`
+1. Start boskos with a fake config.yaml, with `go run boskos.go -in_memory -config=/path/to/config.yaml`
 
 1. Sent some local requests to boskos:
 ```
