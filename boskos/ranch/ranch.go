@@ -121,11 +121,12 @@ func (r *Ranch) Acquire(rType, state, dest, owner string) (*common.Resource, err
 			if state == res.State && res.Owner == "" {
 				res.Owner = owner
 				res.State = dest
-				if err := r.Storage.UpdateResource(res); err != nil {
+				updatedRes, err := r.Storage.UpdateResource(res)
+				if err != nil {
 					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 					return nil, err
 				}
-				return &res, nil
+				return &updatedRes, nil
 			}
 		}
 	}
@@ -173,11 +174,12 @@ func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]com
 			if rNames[res.Name] {
 				res.Owner = owner
 				res.State = dest
-				if err := r.Storage.UpdateResource(res); err != nil {
+				updatedRes, err := r.Storage.UpdateResource(res)
+				if err != nil {
 					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 					return nil, err
 				}
-				resources = append(resources, res)
+				resources = append(resources, updatedRes)
 				delete(rNames, res.Name)
 			}
 		}
@@ -229,7 +231,7 @@ func (r *Ranch) Release(name, dest, owner string) error {
 		}
 	}
 
-	if err := r.Storage.UpdateResource(res); err != nil {
+	if _, err := r.Storage.UpdateResource(res); err != nil {
 		logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 		return err
 	}
@@ -264,7 +266,7 @@ func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
 		res.UserData = &common.UserData{}
 	}
 	res.UserData.Update(ud)
-	if err := r.Storage.UpdateResource(res); err != nil {
+	if _, err := r.Storage.UpdateResource(res); err != nil {
 		logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 		return err
 	}
@@ -296,7 +298,7 @@ func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (m
 				ret[res.Name] = res.Owner
 				res.Owner = ""
 				res.State = dest
-				if err := r.Storage.UpdateResource(res); err != nil {
+				if _, err := r.Storage.UpdateResource(res); err != nil {
 					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
 					return ret, err
 				}

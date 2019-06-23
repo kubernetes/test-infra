@@ -100,7 +100,7 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.Resource
 	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
 	var configs []common.ResourcesConfig
-	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), "")
+	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), storage.NewMemoryStorage(), "")
 	r, _ := ranch.NewRanch("", s)
 
 	for rtype, c := range tc {
@@ -504,7 +504,7 @@ func TestMasonStartStop(t *testing.T) {
 }
 
 func TestConfig(t *testing.T) {
-	resources, err := ranch.ParseConfig("test-resources.yaml")
+	config, err := ranch.ParseConfig("test-resources.yaml")
 	if err != nil {
 		t.Error(err)
 	}
@@ -512,8 +512,8 @@ func TestConfig(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if err := ValidateConfig(configs, resources); err == nil {
-		t.Error(err)
+	if err := ValidateConfig(configs, config); err == nil {
+		t.Error(fmt.Errorf("should have failed since there is more type2 than type1 resources"))
 	}
 }
 

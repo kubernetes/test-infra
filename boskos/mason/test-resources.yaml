@@ -7,9 +7,5 @@ resources:
   - test-boskos-03
 - type: type2
   state: dirty
-  useconfig: true
-  names:
-  - test-boskos-03
-  - test-boskos-04
-  - test-boskos-05
-  - test-boskos-06
+  min-count: 1
+  max-count: 4

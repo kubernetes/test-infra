@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
+	storage2 "k8s.io/test-infra/boskos/storage"
 )
 
 var (
@@ -52,7 +53,8 @@ func main() {
 	}
 
 	resourceStorage := crds.NewCRDStorage(rc)
-	storage, err := ranch.NewStorage(resourceStorage, *storagePath)
+	lfStorage := storage2.NewMemoryStorage()
+	storage, err := ranch.NewStorage(resourceStorage, lfStorage, *storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create storage")
 	}

@@ -39,14 +39,25 @@ type Storage struct {
 	resourcesLock                        sync.RWMutex
 
 	// For testing
-	UpdateTime func() time.Time
+	updateTime func() time.Time
+}
+
+// NewTestingStorage is used only for testing.
+func NewTestingStorage(res, lf storage.PersistenceLayer, updateTime func() time.Time) *Storage {
+	return &Storage{
+		resources:                 res,
+		dynamicResourceLifeCycles: lf,
+		updateTime:                updateTime,
+	}
 }
 
 // NewStorage instantiates a new Storage with a PersistenceLayer implementation
 // If storage string is not empty, it will read resource data from the file
-func NewStorage(r storage.PersistenceLayer, storage string) (*Storage, error) {
+func NewStorage(res, lf storage.PersistenceLayer, storage string) (*Storage, error) {
 	s := &Storage{
-		resources: r,
+		resources:                 res,
+		dynamicResourceLifeCycles: lf,
+		updateTime:                func() time.Time { return time.Now() },
 	}
 
 	if storage != "" {
@@ -85,9 +96,18 @@ func (s *Storage) DeleteResource(name string) error {
 }
 
 // UpdateResource updates a resource if it exists, errors otherwise
-func (s *Storage) UpdateResource(resource common.Resource) error {
-	resource.LastUpdate = s.UpdateTime()
-	return s.resources.Update(resource)
+func (s *Storage) UpdateResource(resource common.Resource) (common.Resource, error) {
+	resource.LastUpdate = s.updateTime()
+	i, err := s.resources.Update(resource)
+	if err != nil {
+		return common.Resource{}, err
+	}
+	var res common.Resource
+	res, err = common.ItemToResource(i)
+	if err != nil {
+		return common.Resource{}, err
+	}
+	return res, nil
 }
 
 // GetResource gets an existing resource, errors otherwise
@@ -134,8 +154,17 @@ func (s *Storage) DeleteDynamicResourceLifeCycle(name string) error {
 }
 
 // UpdateDynamicResourceLifeCycle updates a resource if it exists, errors otherwise
-func (s *Storage) UpdateDynamicResourceLifeCycle(resource common.DynamicResourceLifeCycle) error {
-	return s.dynamicResourceLifeCycles.Update(resource)
+func (s *Storage) UpdateDynamicResourceLifeCycle(resource common.DynamicResourceLifeCycle) (common.DynamicResourceLifeCycle, error) {
+	i, err := s.dynamicResourceLifeCycles.Update(resource)
+	if err != nil {
+		return common.DynamicResourceLifeCycle{}, err
+	}
+	var res common.DynamicResourceLifeCycle
+	res, err = common.ItemToDynamicResourceLifeCycle(i)
+	if err != nil {
+		return common.DynamicResourceLifeCycle{}, err
+	}
+	return res, nil
 }
 
 // GetDynamicResourceLifeCycle gets an existing resource, errors otherwise
@@ -265,7 +294,7 @@ func (s *Storage) updateDynamicResources(lifecycle common.DynamicResourceLifeCyc
 
 	for i := count; i < lifecycle.MinCount; i++ {
 		name := generateDynamicResourceName(lifecycle.Type, resources)
-		res := common.NewResource(name, lifecycle.Type, lifecycle.InitialState, "", s.UpdateTime())
+		res := common.NewResource(name, lifecycle.Type, lifecycle.InitialState, "", s.updateTime())
 		toAdd = append(toAdd, res)
 		count++
 	}
@@ -353,7 +382,7 @@ func (s *Storage) persistResources(resToUpdate, resToAdd, resToDelete []common.R
 
 	for _, r := range resToUpdate {
 		logrus.Infof("Updating resource %s", r.Name)
-		if err := s.UpdateResource(r); err != nil {
+		if _, err := s.UpdateResource(r); err != nil {
 			finalError = multierror.Append(finalError, err)
 			logrus.WithError(err).Errorf("unable to updateresource %s", r.Name)
 		}
@@ -366,7 +395,7 @@ func (s *Storage) persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLC
 
 	for _, dRLC := range dRLCToUpdate {
 		logrus.Infof("Updating resource type life cycle %s", dRLC.Type)
-		if err := s.UpdateDynamicResourceLifeCycle(dRLC); err != nil {
+		if _, err := s.UpdateDynamicResourceLifeCycle(dRLC); err != nil {
 			finalError = multierror.Append(finalError, err)
 			logrus.WithError(err).Errorf("unable to update resource type life cycle %s", dRLC.Type)
 		}

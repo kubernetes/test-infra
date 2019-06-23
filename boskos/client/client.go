@@ -275,7 +275,7 @@ func (c *Client) SyncAll() error {
 			allErrors = multierror.Append(allErrors, err)
 			continue
 		}
-		if err := c.storage.Update(r); err != nil {
+		if _, err := c.storage.Update(r); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 		}
 	}
@@ -328,8 +328,8 @@ func (c *Client) updateLocalResource(i common.Item, state string, data *common.U
 	} else {
 		res.UserData.Update(data)
 	}
-
-	return c.storage.Update(res)
+	_, err = c.storage.Update(res)
+	return err
 }
 
 func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {

@@ -13,6 +13,7 @@ go_test(
     deps = [
         "//boskos/common:go_default_library",
         "//boskos/crds:go_default_library",
+        "//boskos/storage:go_default_library",
     ],
 )
 

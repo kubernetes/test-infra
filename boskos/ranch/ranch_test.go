@@ -24,11 +24,25 @@ import (
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
+	"k8s.io/test-infra/boskos/storage"
 )
+
+var fakeNow = fakeTime(time.Now())
+
+// json does not serialized time with nanosecond precision
+func fakeTime(t time.Time) time.Time {
+	format := "2006-01-02 15:04:05.000"
+	now, _ := time.Parse(format, t.Format(format))
+	return now
+}
 
 func MakeTestRanch(resources []common.Resource) *Ranch {
 	rs := crds.NewCRDStorage(crds.NewTestResourceClient())
-	s, _ := NewStorage(rs, "")
+	lfs := storage.NewMemoryStorage()
+	s, _ := NewStorage(rs, lfs, "")
+	s.updateTime = func() time.Time {
+		return fakeNow.Add(time.Second)
+	}
 	for _, res := range resources {
 		s.AddResource(res)
 	}
@@ -80,7 +94,6 @@ func AreErrorsEqual(got error, expect error) bool {
 }
 
 func TestAcquire(t *testing.T) {
-	FakeNow := time.Now()
 	var testcases = []struct {
 		name      string
 		resources []common.Resource
@@ -102,7 +115,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: "no match type",
 			resources: []common.Resource{
-				common.NewResource("res", "wrong", "s", "", FakeNow),
+				common.NewResource("res", "wrong", "s", "", fakeNow),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -113,7 +126,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: "no match state",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "wrong", "", FakeNow),
+				common.NewResource("res", "t", "wrong", "", fakeNow),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -124,7 +137,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: common.Busy,
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "foo", FakeNow),
+				common.NewResource("res", "t", "s", "foo", fakeNow),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -135,7 +148,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: "ok",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "", FakeNow),
+				common.NewResource("res", "t", "s", "", fakeNow),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -165,13 +178,13 @@ func TestAcquire(t *testing.T) {
 			}
 			if !reflect.DeepEqual(*res, resources[0]) {
 				t.Errorf("%s - Wrong resource. Got %v, expect %v", tc.name, res, resources[0])
-			} else if !res.LastUpdate.After(FakeNow) {
+			} else if !res.LastUpdate.After(fakeNow) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		} else {
 			for _, res := range resources {
-				if res.LastUpdate != FakeNow {
-					t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, FakeNow)
+				if res.LastUpdate != fakeNow {
+					t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, fakeNow)
 				}
 			}
 		}
@@ -179,10 +192,9 @@ func TestAcquire(t *testing.T) {
 }
 
 func TestAcquireRoundRobin(t *testing.T) {
-	FakeNow := time.Now()
 	var resources []common.Resource
 	for i := 1; i < 5; i++ {
-		resources = append(resources, common.NewResource("res-1", "t", "s", "", FakeNow))
+		resources = append(resources, common.NewResource("res-1", "t", "s", "", fakeNow))
 	}
 
 	results := map[string]int{}
@@ -202,7 +214,6 @@ func TestAcquireRoundRobin(t *testing.T) {
 }
 
 func TestRelease(t *testing.T) {
-	FakeNow := time.Now()
 	var testcases = []struct {
 		name      string
 		resources []common.Resource
@@ -222,7 +233,7 @@ func TestRelease(t *testing.T) {
 		{
 			name: "wrong owner",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", FakeNow),
+				common.NewResource("res", "t", "s", "merlin", fakeNow),
 			},
 			resName:   "res",
 			owner:     "user",
@@ -232,7 +243,7 @@ func TestRelease(t *testing.T) {
 		{
 			name: "no match name",
 			resources: []common.Resource{
-				common.NewResource("foo", "t", "s", "merlin", FakeNow),
+				common.NewResource("foo", "t", "s", "merlin", fakeNow),
 			},
 			resName:   "res",
 			owner:     "user",
@@ -242,7 +253,7 @@ func TestRelease(t *testing.T) {
 		{
 			name: "ok",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", FakeNow),
+				common.NewResource("res", "t", "s", "merlin", fakeNow),
 			},
 			resName:   "res",
 			owner:     "merlin",
@@ -268,13 +279,13 @@ func TestRelease(t *testing.T) {
 				t.Errorf("%s - Wrong owner after release. Got %v, expect empty", tc.name, resources[0].Owner)
 			} else if resources[0].State != tc.dest {
 				t.Errorf("%s - Wrong state after release. Got %v, expect %v", tc.name, resources[0].State, tc.dest)
-			} else if !resources[0].LastUpdate.After(FakeNow) {
+			} else if !resources[0].LastUpdate.After(fakeNow) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		} else {
 			for _, res := range resources {
-				if res.LastUpdate != FakeNow {
-					t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, FakeNow)
+				if res.LastUpdate != fakeNow {
+					t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, fakeNow)
 				}
 			}
 		}
@@ -282,8 +293,6 @@ func TestRelease(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
-	FakeNow := time.Now()
-
 	var testcases = []struct {
 		name       string
 		resources  []common.Resource
@@ -297,7 +306,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - has no owner",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "", FakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "t", "s", "", fakeNow.Add(-time.Minute*20)),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -307,7 +316,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - not expire",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "", FakeNow),
+				common.NewResource("res", "t", "s", "", fakeNow),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -317,7 +326,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - no match type",
 			resources: []common.Resource{
-				common.NewResource("res", "wrong", "s", "", FakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "wrong", "s", "", fakeNow.Add(-time.Minute*20)),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -327,7 +336,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - no match state",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "wrong", "", FakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "t", "wrong", "", fakeNow.Add(-time.Minute*20)),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -337,7 +346,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "ok",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "user", FakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "t", "s", "user", fakeNow.Add(-time.Minute*20)),
 			},
 			rtype:      "t",
 			state:      "s",
@@ -367,7 +376,7 @@ func TestReset(t *testing.T) {
 				t.Errorf("failed to get resources")
 				continue
 			}
-			if !resources[0].LastUpdate.After(FakeNow) {
+			if !resources[0].LastUpdate.After(fakeNow) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		}
@@ -375,8 +384,6 @@ func TestReset(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	FakeNow := time.Now()
-
 	var testcases = []struct {
 		name      string
 		resources []common.Resource
@@ -396,7 +403,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "wrong owner",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", FakeNow),
+				common.NewResource("res", "t", "s", "merlin", fakeNow),
 			},
 			resName:   "res",
 			owner:     "user",
@@ -406,7 +413,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "wrong state",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", FakeNow),
+				common.NewResource("res", "t", "s", "merlin", fakeNow),
 			},
 			resName:   "res",
 			owner:     "merlin",
@@ -416,7 +423,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "no matched resource",
 			resources: []common.Resource{
-				common.NewResource("foo", "t", "s", "merlin", FakeNow),
+				common.NewResource("foo", "t", "s", "merlin", fakeNow),
 			},
 			resName:   "res",
 			owner:     "merlin",
@@ -426,7 +433,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "ok",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", FakeNow),
+				common.NewResource("res", "t", "s", "merlin", fakeNow),
 			},
 			resName: "res",
 			owner:   "merlin",
@@ -452,13 +459,13 @@ func TestUpdate(t *testing.T) {
 					t.Errorf("%s - Wrong owner after release. Got %v, expect %v", tc.name, resources[0].Owner, tc.owner)
 				} else if resources[0].State != tc.state {
 					t.Errorf("%s - Wrong state after release. Got %v, expect %v", tc.name, resources[0].State, tc.state)
-				} else if !resources[0].LastUpdate.After(FakeNow) {
+				} else if !resources[0].LastUpdate.After(fakeNow) {
 					t.Errorf("%s - LastUpdate did not update.", tc.name)
 				}
 			} else {
 				for _, res := range resources {
-					if res.LastUpdate != FakeNow {
-						t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, FakeNow)
+					if res.LastUpdate != fakeNow {
+						t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, fakeNow)
 					}
 				}
 			}
@@ -565,7 +572,7 @@ func TestSyncResources(t *testing.T) {
 			},
 		},
 		{
-			name: "should not have a type change",
+			name: "should only change last update",
 			oldRes: []common.Resource{
 				common.NewResource("res", "t", "", "", time.Time{}),
 			},
@@ -573,7 +580,7 @@ func TestSyncResources(t *testing.T) {
 				common.NewResource("res", "d", "", "", time.Time{}),
 			},
 			expect: []common.Resource{
-				common.NewResource("res", "t", "", "", time.Time{}),
+				common.NewResource("res", "t", "", "", fakeNow.Add(time.Second)),
 			},
 		},
 		{
@@ -634,7 +641,7 @@ func TestSyncResources(t *testing.T) {
 
 	for _, tc := range testcases {
 		c := MakeTestRanch(tc.oldRes)
-		c.Storage.SyncResources(tc.newRes)
+		c.Storage.syncStaticResources(tc.newRes, tc.oldRes)
 		resources, err := c.Storage.GetResources()
 		if err != nil {
 			t.Errorf("failed to get resources")

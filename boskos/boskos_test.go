@@ -18,6 +18,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -30,11 +31,14 @@ import (
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
+	"k8s.io/test-infra/boskos/storage"
 )
+
+var fakeNow = now()
 
 func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
 	resourceClient := crds.NewTestResourceClient()
-	s, _ := ranch.NewStorage(crds.NewCRDStorage(resourceClient), "")
+	s := ranch.NewTestingStorage(crds.NewCRDStorage(resourceClient), storage.NewMemoryStorage(), func() time.Time { return fakeNow })
 	for _, r := range resources {
 		s.AddResource(r)
 	}
@@ -779,34 +783,42 @@ func TestDefault(t *testing.T) {
 }
 
 func TestConfig(t *testing.T) {
-	resources, err := ranch.ParseConfig("resources.yaml")
+	config, err := ranch.ParseConfig("resources.yaml")
 	if err != nil {
 		t.Errorf("parseConfig error: %v", err)
 	}
 
-	if len(resources) == 0 {
+	if len(config.Resources) == 0 {
 		t.Errorf("empty data")
 	}
 	resourceNames := map[string]bool{}
 
-	for _, p := range resources {
-		if p.Name == "" {
-			t.Errorf("empty resource name: %s", p.Name)
+	for _, e := range config.Resources {
+		if e.Type == "" {
+			t.Errorf("empty resource type: %s", e.Type)
 		}
+		names := e.Names
 
-		errs := validation.IsQualifiedName(p.Name)
-		if len(errs) != 0 {
-			t.Errorf("resource name %s is not a qualified k8s object name, errs: %v", p.Name, errs)
+		if len(e.Names) == 0 {
+			if e.MinCount >= e.MaxCount {
+				t.Errorf("min should be < max %v", e)
+			}
+			for i := 0; i < e.MaxCount; i++ {
+				name := fmt.Sprintf("%s_%d", e.Type, i)
+				names = append(names, name)
+			}
 		}
+		for _, name := range names {
+			errs := validation.IsQualifiedName(name)
+			if len(errs) != 0 {
+				t.Errorf("resource name %s is not a qualified k8s object name, errs: %v", name, errs)
+			}
 
-		if p.Type == "" {
-			t.Errorf("empty resource type: %s", p.Name)
-		}
-
-		if _, ok := resourceNames[p.Name]; ok {
-			t.Errorf("duplicated resource name: %s", p.Name)
-		} else {
-			resourceNames[p.Name] = true
+			if _, ok := resourceNames[name]; ok {
+				t.Errorf("duplicated resource name: %s", name)
+			} else {
+				resourceNames[name] = true
+			}
 		}
 	}
 }

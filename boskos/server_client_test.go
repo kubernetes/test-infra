@@ -95,8 +95,6 @@ func TestAcquireUpdate(t *testing.T) {
 func TestAcquireByState(t *testing.T) {
 	newState := "newState"
 	owner := "owner"
-	fakeNow := now()
-	updateTime := func() time.Time { return fakeNow }
 	var testcases = []struct {
 		name, state         string
 		resources, expected []common.Resource
@@ -150,7 +148,6 @@ func TestAcquireByState(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		r := MakeTestRanch(tc.resources)
-		r.UpdateTime = updateTime
 		boskos := makeTestBoskos(r)
 		client := client.NewClient(owner, boskos.URL)
 		receivedRes, err := client.AcquireByState(tc.state, newState, tc.names)
@@ -168,7 +165,6 @@ func TestAcquireByState(t *testing.T) {
 
 func TestClientServerUpdate(t *testing.T) {
 	owner := "owner"
-	fakeNow := now()
 
 	newResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) common.Resource {
 		res := common.NewResource(name, rtype, state, owner, t)
@@ -176,7 +172,6 @@ func TestClientServerUpdate(t *testing.T) {
 		return res
 	}
 
-	updateTime := func() time.Time { return fakeNow }
 	initialState := "state1"
 	finalState := "state2"
 	rType := "type"
@@ -221,7 +216,6 @@ func TestClientServerUpdate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		r := MakeTestRanch([]common.Resource{tc.resource})
-		r.UpdateTime = updateTime
 		boskos := makeTestBoskos(r)
 		client := client.NewClient(owner, boskos.URL)
 		client.Acquire(rType, initialState, finalState)
