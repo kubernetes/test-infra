@@ -611,11 +611,21 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
 	var c *storage.Client
 	var err error
-	if o.gcsCredentialsFile == "" {
-		c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
+	if o.gcsProxy != "" {
+		logrus.Debugf("use proxy %s to connect gcs", o.gcsProxy)
+		if o.gcsCredentialsFile == "" {
+			c, err = storage.NewProxyClient(context.Background(), o.gcsProxy, option.WithoutAuthentication())
+		} else {
+			c, err = storage.NewProxyClient(context.Background(), o.gcsProxy, option.WithCredentialsFile(o.gcsCredentialsFile))
+		}
 	} else {
-		c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+		if o.gcsCredentialsFile == "" {
+			c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
+		} else {
+			c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+		}
 	}
+
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
@@ -811,6 +821,9 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options) 
 
 		csrfToken := csrf.Token(r)
 		page, err := renderSpyglass(sg, cfg, src, o, csrfToken)
+
+		logrus.Debugf("src = %s", src)
+
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			message := fmt.Sprintf("error rendering spyglass page: %v", err)
@@ -839,7 +852,10 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	}
 	src = realPath
 
+	logrus.Debugf("readPath=%s", realPath)
 	artifactNames, err := sg.ListArtifacts(src)
+
+	logrus.Debugf("artifactNames=%v", artifactNames)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
 	}
@@ -887,6 +903,7 @@ lensesLoop:
 
 	jobHistLink := ""
 	jobPath, err := sg.JobPath(src)
+	logrus.Infof("sg.JobPath(src) return, src=%s, jobPath=%s", src, jobPath)
 	if err == nil {
 		jobHistLink = path.Join("/job-history", jobPath)
 	}

@@ -34,6 +34,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"net"
 	"unicode/utf8"
 
 	"cloud.google.com/go/internal/optional"
@@ -95,6 +96,7 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 	if err != nil {
 		return nil, fmt.Errorf("dialing: %v", err)
 	}
+
 	rawService, err := raw.New(hc)
 	if err != nil {
 		return nil, fmt.Errorf("storage client: %v", err)
@@ -102,6 +104,49 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 	if ep != "" {
 		rawService.BasePath = ep
 	}
+	return &Client{
+		hc:  hc,
+		raw: rawService,
+	}, nil
+}
+
+func NewProxyClient(ctx context.Context, proxy string, opts ...option.ClientOption) (*Client, error) {
+	o := []option.ClientOption{
+		option.WithScopes(ScopeFullControl),
+		option.WithUserAgent(userAgent),
+	}
+
+	proxyUrl, err := url.Parse(proxy)
+	if err != nil {
+		return nil, err
+	}
+
+	var proxyTr http.RoundTripper = &http.Transport{
+		Proxy: http.ProxyURL(proxyUrl),
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	opts = append(o, opts...)
+
+	trans, err := htransport.NewTransport(ctx, proxyTr, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	hc := &http.Client{Transport:trans}
+	rawService, err := raw.New(hc)
+	if err != nil {
+		return nil, fmt.Errorf("storage client: %v", err)
+	}
+
 	return &Client{
 		hc:  hc,
 		raw: rawService,

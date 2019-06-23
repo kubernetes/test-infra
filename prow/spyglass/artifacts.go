@@ -31,6 +31,9 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	if err != nil {
 		return []string{}, fmt.Errorf("error parsing src: %v", err)
 	}
+
+	logrus.Infof("func return: keyType: %s, key: %s", keyType, key)
+
 	gcsKey := ""
 	switch keyType {
 	case gcsKeyType:
@@ -44,6 +47,9 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	}
 
 	artifactNames, err := s.GCSArtifactFetcher.artifacts(gcsKey)
+
+	logrus.Infof("s.GCSArtifactFetcher.artifacts(gcsKey) return, artifactNames: %v, gcsKey: %s", artifactNames, gcsKey)
+
 	logFound := false
 	for _, name := range artifactNames {
 		if name == "build-log.txt" {
