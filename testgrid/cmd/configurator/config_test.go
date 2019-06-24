@@ -391,6 +391,7 @@ func hasAnyPrefix(s string, prefixes []string) bool {
 
 func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T) {
 	jobs := make(map[string]bool)
+	annotations := make(map[string]bool)
 
 	prowConfig, err := prow_config.Load(prowPath, jobPath)
 	if err != nil {
@@ -403,15 +404,24 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		}
 		for _, job := range presubmits {
 			jobs[job.Name] = false
+			_, isDash := job.Annotations[testgridDashboardsAnnotation]
+			_, isGroup := job.Annotations[testgridCreateTestGroupAnnotation]
+			annotations[job.Name] = isDash || isGroup
 		}
 	}
 
 	for _, job := range prowConfig.AllPostsubmits([]string{}) {
 		jobs[job.Name] = false
+		_, isDash := job.Annotations[testgridDashboardsAnnotation]
+		_, isGroup := job.Annotations[testgridCreateTestGroupAnnotation]
+		annotations[job.Name] = isDash || isGroup
 	}
 
 	for _, job := range prowConfig.AllPeriodics() {
 		jobs[job.Name] = false
+		_, isDash := job.Annotations[testgridDashboardsAnnotation]
+		_, isGroup := job.Annotations[testgridCreateTestGroupAnnotation]
+		annotations[job.Name] = isDash || isGroup
 	}
 
 	// Ignore any test groups that get their results from a gcs prefix
@@ -434,6 +444,13 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		if _, ok := testgroups[job]; ok {
 			testgroups[job] = true
 			jobs[job] = true
+		}
+	}
+
+	// Warn if a job doesn't annotate their configuration, but the configuration is correct anyway
+	for job := range jobs {
+		if !annotations[job] {
+			t.Logf("NOTICE: The Prow Job %s seems to be unannotated; consider annotations", job)
 		}
 	}
 
