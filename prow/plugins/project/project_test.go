@@ -134,7 +134,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project and column with valid values, but commenter does not belong to the project maintainer team",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project set project='0.0.0' column='To do'",
+			body:            "/project project='0.0.0' column='To do'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "random-user",
@@ -147,7 +147,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project and column with valid values; project card does not currently exist for this issue/PR in the project",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project set project='0.0.0' column='To do'",
+			body:            "/project project='0.0.0' column='To do'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -159,7 +159,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project and column with valid values; project card already exist for this issue/PR in the project, but the project card is under a different column",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project set project='0.0.0' column='To do'",
+			body:            "/project project='0.0.0' column='To do'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -171,7 +171,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project without column value; the project specified exists on the repo level; the default column is set on the project and it exists on the project",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project set project='0.1.0'",
+			body:            "/project project='0.1.0'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -183,7 +183,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project without column value; the project specified exists on the org level; the default column is set on the project and it exists on the project",
 			action:          github.GenericCommentActionCreated,
-			body:            `/project set project="0.0.0"`,
+			body:            `/project project="0.0.0"`,
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -195,7 +195,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project without column value; the default column is set on the project but it does not exist on the project",
 			action:          github.GenericCommentActionCreated,
-			body:            `/project set project="0.1.0"`,
+			body:            `/project project="0.1.0"`,
 			repo:            "community",
 			org:             "kubernetes",
 			commenter:       "default-sig-lead",
@@ -208,7 +208,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project with invalid column value; an error will be returned",
 			action:          github.GenericCommentActionCreated,
-			body:            `"/project set project="0.1.0" column="Random 2"`,
+			body:            `"/project project="0.1.0" column="Random 2"`,
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "default-sig-lead",
@@ -221,7 +221,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Clearing project for a issue/PR; the project name provided is valid",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project clear project='0.0.0'",
+			body:            "/remove-project project='0.0.0'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -246,7 +246,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Setting project with invalid project name",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project set project='invalidprojectname'",
+			body:            "/project project='invalidprojectname'",
 			repo:            "community",
 			org:             "kubernetes",
 			commenter:       "default-sig-lead",
@@ -259,7 +259,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Clearing project for a issue/PR; the project name provided doesn't follow project name regex",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project clear invalidprojectname",
+			body:            "/remove-project invalidprojectname",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -272,7 +272,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Clearing project for a issue/PR; the project name provided doesn't follow project name regex",
 			action:          github.GenericCommentActionCreated,
-			body:            `/project clear project="invalidprojectname"`,
+			body:            `/remove-project project="invalidprojectname"`,
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -285,7 +285,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "Clearing project for a issue/PR; the project does not contain the card",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project clear project='0.1.0'",
+			body:            "/remove-project project='0.1.0'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -298,7 +298,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "No action on events that are not new comments",
 			action:          github.GenericCommentActionEdited,
-			body:            "/project set project='0.0.0' column='To do'",
+			body:            "/project project='0.0.0' column='To do'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       "sig-lead",
@@ -311,7 +311,7 @@ func TestProjectCommand(t *testing.T) {
 		{
 			name:            "No action on bot comments",
 			action:          github.GenericCommentActionCreated,
-			body:            "/project set project='0.0.0' column='To do'",
+			body:            "/project project='0.0.0' column='To do'",
 			repo:            "kubernetes",
 			org:             "kubernetes",
 			commenter:       botName,
@@ -386,14 +386,14 @@ func TestParseCommand(t *testing.T) {
 	}{
 		{
 			hasMatches:      true,
-			command:         "/project set project='0.0.0' column='To do'",
+			command:         "/project project='0.0.0' column='To do'",
 			proposedProject: "0.0.0",
 			proposedColumn:  "To do",
 			shouldClear:     false,
 		},
 		{
 			hasMatches:      true,
-			command:         `/project set project="0.0.0" column="To do"`,
+			command:         `/project project="0.0.0" column="To do"`,
 			proposedProject: "0.0.0",
 			proposedColumn:  "To do",
 			shouldClear:     false,
@@ -407,14 +407,14 @@ func TestParseCommand(t *testing.T) {
 		},
 		{
 			hasMatches:      true,
-			command:         `/project set project="0.0.0" column="Backlog"`,
+			command:         `/project project="0.0.0" column="Backlog"`,
 			proposedProject: "0.0.0",
 			proposedColumn:  "Backlog",
 			shouldClear:     false,
 		},
 		{
 			hasMatches:      true,
-			command:         `/project set project='0.0.0' column='Backlog'`,
+			command:         `/project project='0.0.0' column='Backlog'`,
 			proposedProject: "0.0.0",
 			proposedColumn:  "Backlog",
 			shouldClear:     false,
@@ -428,42 +428,42 @@ func TestParseCommand(t *testing.T) {
 		},
 		{
 			hasMatches:      true,
-			command:         "/project clear project='0.0.0'",
+			command:         "/remove-project project='0.0.0'",
 			proposedProject: "0.0.0",
 			proposedColumn:  "",
 			shouldClear:     true,
 		},
 		{
 			hasMatches:      true,
-			command:         `/project clear project="0.0.0"`,
+			command:         `/remove-project project="0.0.0"`,
 			proposedProject: "0.0.0",
 			proposedColumn:  "",
 			shouldClear:     true,
 		},
 		{
 			hasMatches:      true,
-			command:         `/project clear 0.0.0`,
+			command:         `/remove-project 0.0.0`,
 			proposedProject: "",
 			proposedColumn:  "",
 			shouldClear:     false,
 		},
 		{
 			hasMatches:      true,
-			command:         "/project clear",
+			command:         "/remove-project",
 			proposedProject: "",
 			proposedColumn:  "",
 			shouldClear:     false,
 		},
 		{
 			hasMatches:      true,
-			command:         "/project set project='0.0.0'",
+			command:         "/project project='0.0.0'",
 			proposedProject: "0.0.0",
 			proposedColumn:  "",
 			shouldClear:     false,
 		},
 		{
 			hasMatches:      true,
-			command:         `/project set project="0.0.0"`,
+			command:         `/project project="0.0.0"`,
 			proposedProject: "0.0.0",
 			proposedColumn:  "",
 			shouldClear:     false,

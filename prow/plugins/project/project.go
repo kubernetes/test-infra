@@ -36,7 +36,7 @@ const (
 )
 
 var (
-	projectRegex              = regexp.MustCompile(`(?m)^\/project\s+(?:(set)\s+(?:(project=(?:'.*?'|".*?"))(?:\s+(column=(?:'.*?'|".*?"))\s*?)?$)|(?:(clear)\s+(project=(?:'.*?'|".*?"))\s*?$))`)
+	projectRegex              = regexp.MustCompile(`(?m)^\/((?:remove-)?project)\s+project=['"]([^'"]+)['"](?:\s+(?:column=['"]([^'"]+)['"]))?`)
 	projectNameRegex          = regexp.MustCompile(`(?m)project=(?:'(.*?)'|"(.*?)")`)
 	columnNameRegex           = regexp.MustCompile(`(?m)column=(?:'(.*?)'|"(.*?)")`)
 	notTeamConfigMsg          = "There is no maintainer team for this repo or org."
@@ -51,7 +51,7 @@ var (
 	successCreatingCardMsg    = "You have successfully created a project card for this issue. It's been added to project %s column %s (ID %D)."
 	successClearingProjectMsg = "You have successfully removed this issue/PR from project %s."
 	failedClearingProjectMsg  = "The project %q is not valid for the issue/PR %v. Please provide a valid project to which this issue belongs."
-	clearKeyword              = "clear"
+	clearKeyword              = "remove-project"
 	projectNameToIDMap        = make(map[string]int)
 )
 
