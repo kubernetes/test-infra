@@ -23,6 +23,7 @@ import (
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/tide/blockers"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
@@ -43,6 +44,7 @@ func TestExpectedStatus(t *testing.T) {
 		milestone       string
 		contexts        []Context
 		inPool          bool
+		blocks          []int
 
 		state string
 		desc  string
@@ -193,6 +195,16 @@ func TestExpectedStatus(t *testing.T) {
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2 labels."),
 		},
+		{
+			name:      "check that blockers take precedence over other queries",
+			labels:    []string{"3", "4", "5", "6", "7"},
+			milestone: "v1.0",
+			inPool:    false,
+			blocks:    []int{1, 2},
+
+			state: github.StatusError,
+			desc:  fmt.Sprintf(statusNotInPool, " Merging is blocked by issues 1, 2."),
+		},
 	}
 
 	for _, tc := range testcases {
@@ -253,8 +265,16 @@ func TestExpectedStatus(t *testing.T) {
 		if tc.inPool {
 			pool = map[string]PullRequest{"#0": {}}
 		}
+		blocks := blockers.Blockers{
+			Repo: map[blockers.OrgRepo][]blockers.Blocker{},
+		}
+		var items []blockers.Blocker
+		for _, block := range tc.blocks {
+			items = append(items, blockers.Blocker{Number: block})
+		}
+		blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{})
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{}, blocks)
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -371,7 +391,7 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		sc := &statusController{ghc: fc, config: ca.Config, logger: log}
-		sc.setStatuses([]PullRequest{pr}, pool)
+		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{})
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
 		} else if str != initialLog {
