@@ -259,9 +259,9 @@ func TestSetCherryPickUnapprovedDefaults(t *testing.T) {
 	defaultBranchRegexp := `^release-.*$`
 	defaultComment := `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
 
-To approve the cherry-pick, please assign the patch release manager for the release branch by writing ` + "`/assign @username`" + ` in a comment when ready.
+To approve the cherry-pick, please ping the *kubernetes/patch-release-team* in a comment when ready.
 
-The list of patch release managers for each release can be found [here](https://git.k8s.io/sig-release/release-managers.md).`
+See also [Kuberentes Patch Releases](https://github.com/kubernetes/sig-release/blob/master/releases/patch-releases.md)`
 
 	testcases := []struct {
 		name string
