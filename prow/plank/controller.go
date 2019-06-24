@@ -349,7 +349,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 		if err != nil {
 			_, isUnprocessable := err.(kube.UnprocessableEntityError)
 			if !isUnprocessable {
-				return fmt.Errorf("error starting pod: %v", err)
+				return fmt.Errorf("error starting pod %s: %v", pod.Name, err)
 			}
 			pj.Status.State = prowapi.ErrorState
 			pj.SetComplete()
@@ -369,7 +369,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is in unknown state, deleting & restarting pod")
 			client, ok := c.pkcs[pj.ClusterAlias()]
 			if !ok {
-				return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 			return client.DeletePod(pj.ObjectMeta.Name)
 
@@ -394,7 +394,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 				c.incrementNumPendingJobs(pj.Spec.Job)
 				client, ok := c.pkcs[pj.ClusterAlias()]
 				if !ok {
-					return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 				}
 				return client.DeletePod(pj.ObjectMeta.Name)
 			}
@@ -418,7 +418,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			pj.Status.Description = "Pod pending timeout."
 			client, ok := c.pkcs[pj.ClusterAlias()]
 			if !ok {
-				return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+				return fmt.Errorf("pending pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 			if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
 				return fmt.Errorf("failed to delete pod %s that was in pending timeout: %v", pod.Name, err)
@@ -440,7 +440,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			pj.Status.Description = "Pod running timeout."
 			client, ok := c.pkcs[pj.ClusterAlias()]
 			if !ok {
-				return fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
+				return fmt.Errorf("running pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 			if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
 				return fmt.Errorf("failed to delete pod %s that was in running timeout: %v", pod.Name, err)
