@@ -198,7 +198,7 @@ periodics:
       # kind specific args
       - --provider=skeleton
       - --deployment=kind
-      - --kind-binary-version=stable
+      - --kind-binary-version=build
       - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
       # generic e2e test args
       - --build=bazel
@@ -277,7 +277,7 @@ periodics:
       # kind specific args
       - --provider=skeleton
       - --deployment=kind
-      - --kind-binary-version=stable
+      - --kind-binary-version=build
       - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
       # generic e2e test args
       - --build=bazel
@@ -578,7 +578,7 @@ presubmits:
         # kind specific args
         - --provider=skeleton
         - --deployment=kind
-        - --kind-binary-version=stable
+        - --kind-binary-version=build
         - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
         # generic e2e test args
         - --build=bazel
