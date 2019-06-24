@@ -162,9 +162,18 @@ func (p Policy) Apply(child Policy) Policy {
 // BranchProtection specifies the global branch protection policy
 type BranchProtection struct {
 	Policy
-	ProtectTested         bool           `json:"protect-tested-repos,omitempty"`
-	Orgs                  map[string]Org `json:"orgs,omitempty"`
-	AllowDisabledPolicies bool           `json:"allow_disabled_policies,omitempty"`
+	// ProtectTested determines if branch protection rules are set for all repos
+	// that Prow has registered jobs for, regardless of if those repos are in the
+	// branch protection config.
+	ProtectTested bool `json:"protect-tested-repos,omitempty"`
+	// Orgs holds branch protection options for orgs by name
+	Orgs map[string]Org `json:"orgs,omitempty"`
+	// AllowDisabledPolicies allows a child to disable all protection even if the
+	// branch has inherited protection options from a parent.
+	AllowDisabledPolicies bool `json:"allow_disabled_policies,omitempty"`
+	// AllowDisabledJobPolicies allows a branch to choose to opt out of branch protection
+	// even if Prow has registered required jobs for that branch.
+	AllowDisabledJobPolicies bool `json:"allow_disabled_job_policies,omitempty"`
 }
 
 // GetOrg returns the org config after merging in any global policies.
@@ -243,7 +252,11 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) 
 	if prowContexts, _, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
-			return nil, fmt.Errorf("required prow jobs require branch protection")
+			if c.BranchProtection.AllowDisabledJobPolicies {
+				logrus.Warnf("%s/%s=%s has required jobs but has protect: false", org, repo, branch)
+			} else {
+				return nil, fmt.Errorf("required prow jobs require branch protection")
+			}
 		}
 		ps := Policy{
 			RequiredStatusChecks: &ContextPolicy{
