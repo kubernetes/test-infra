@@ -221,6 +221,8 @@ branch-protection:
           branches:
             master:
               protect: true
+            release-1.10:
+              protect: true
             release-1.11:
               protect: true
             release-1.12:
