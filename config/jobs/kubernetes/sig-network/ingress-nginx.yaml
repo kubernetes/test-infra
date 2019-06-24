@@ -10,7 +10,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
         command:
         - ./hack/verify-boilerplate.sh
 
@@ -23,7 +23,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
         command:
         - ./hack/verify-codegen.sh
 
@@ -36,7 +36,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
         command:
         - ./hack/verify-gofmt.sh
 
@@ -49,7 +49,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
         command:
         - ./hack/verify-golint.sh
 
@@ -62,7 +62,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
         command:
         - make
         - lua-test
@@ -76,7 +76,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
         command:
         - /bin/bash
         - -c
@@ -105,7 +105,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06232019-2eec29455
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -120,7 +120,7 @@ presubmits:
         - name: E2E_NODES
           value: "15"
         - name: K8S_VERSION
-          value: v1.12.8
+          value: v1.12.9
         resources:
           requests:
             cpu: 2
@@ -135,7 +135,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06232019-2eec29455
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -150,7 +150,7 @@ presubmits:
         - name: E2E_NODES
           value: "15"
         - name: K8S_VERSION
-          value: v1.13.6
+          value: v1.13.7
         resources:
           requests:
             cpu: 2
@@ -165,7 +165,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06232019-2eec29455
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -180,7 +180,37 @@ presubmits:
         - name: E2E_NODES
           value: "15"
         - name: K8S_VERSION
-          value: v1.14.1
+          value: v1.14.3
+        resources:
+          requests:
+            cpu: 2
+
+  - name: pull-ingress-nginx-e2e-1-15
+    always_run: true
+    decorate: true
+    max_concurrency: 5
+    path_alias: k8s.io/ingress-nginx
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06232019-2eec29455
+        command:
+        - /usr/local/bin/runner.sh
+        args:
+        - make
+        - kind-e2e-test
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        - name: REPO_INFO
+          value: https://github.com/kubernetes/ingress-nginx
+        - name: E2E_NODES
+          value: "15"
+        - name: K8S_VERSION
+          value: v1.15.0
         resources:
           requests:
             cpu: 2
@@ -197,7 +227,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v05232019-ee1f36d8d
+    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06232019-2eec29455
       command:
       - /usr/local/bin/runner.sh
       args:

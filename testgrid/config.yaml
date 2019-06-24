@@ -2136,6 +2136,9 @@ test_groups:
 - name: pull-ingress-nginx-e2e-1-14
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-14
   num_columns_recent: 20
+- name: pull-ingress-nginx-e2e-1-15
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-15
+  num_columns_recent: 20
 - name: ci-ingress-nginx-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-ingress-nginx-e2e
   num_columns_recent: 20
@@ -4460,6 +4463,8 @@ dashboards:
     test_group_name: pull-ingress-nginx-e2e-1-13
   - name: e2e-1-14
     test_group_name: pull-ingress-nginx-e2e-1-14
+  - name: e2e-1-15
+    test_group_name: pull-ingress-nginx-e2e-1-15
   - name: ci-e2e
     test_group_name: ci-ingress-nginx-e2e
 
