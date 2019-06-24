@@ -377,6 +377,7 @@ func TestOptionsForItem(t *testing.T) {
 func TestResolveBugzillaOptions(t *testing.T) {
 	open, closed := true, false
 	one, two := "v1", "v2"
+	modified, verified := []string{"VERIFIED"}, []string{"MODIFIED"}
 	var testCases = []struct {
 		name          string
 		parent, child BugzillaBranchOptions
@@ -387,31 +388,37 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:     "no child means a copy of parent is the output",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
-			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified},
 		},
 		{
 			name:     "no parent means a copy of child is the output",
-			child:    BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
-			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			child:    BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified},
 		},
 		{
 			name:     "child overrides parent on IsOpen",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified},
 			child:    BugzillaBranchOptions{IsOpen: &closed},
-			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one},
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, Statuses: &modified},
 		},
 		{
 			name:     "child overrides parent on target release",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified},
 			child:    BugzillaBranchOptions{TargetRelease: &two},
-			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, Statuses: &modified},
+		},
+		{
+			name:     "child overrides parent on statuses",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified},
+			child:    BugzillaBranchOptions{Statuses: &verified},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &verified},
 		},
 		{
 			name:     "child overrides parent on all fields",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one},
-			child:    BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &two},
-			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &two},
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &verified},
+			child:    BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &two, Statuses: &modified},
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &two, Statuses: &modified},
 		},
 	}
 	for _, testCase := range testCases {
@@ -426,6 +433,7 @@ func TestResolveBugzillaOptions(t *testing.T) {
 func TestOptionsForBranch(t *testing.T) {
 	open, closed := true, false
 	globalDefault, globalBranchDefault, orgDefault, orgBranchDefault, repoDefault, repoBranch := "global-default", "global-branch-default", "my-org-default", "my-org-branch-default", "my-repo-default", "my-repo-branch"
+	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
 
 	rawConfig := `default:
   "*":
@@ -447,8 +455,12 @@ orgs:
           "*":
             is_open: false
             target_release: my-repo-default
+            statuses:
+            - VERIFIED
           "my-repo-branch":
-            target_release: my-repo-branch`
+            target_release: my-repo-branch
+            statuses:
+            - MODIFIED`
 	var config Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -492,14 +504,14 @@ orgs:
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "some-branch",
-			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &repoDefault},
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified},
 		},
 		{
 			name:     "branch on configured org and repo gets branch config",
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "my-repo-branch",
-			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &repoBranch},
+			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &repoBranch, Statuses: &modified},
 		},
 	}
 	for _, testCase := range testCases {
@@ -538,8 +550,8 @@ orgs:
 			org:  "my-org",
 			repo: "my-repo",
 			expected: map[string]BugzillaBranchOptions{
-				"*":              {IsOpen: &closed, TargetRelease: &repoDefault},
-				"my-repo-branch": {IsOpen: &closed, TargetRelease: &repoBranch},
+				"*":              {IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified},
+				"my-repo-branch": {IsOpen: &closed, TargetRelease: &repoBranch, Statuses: &modified},
 			},
 		},
 	}

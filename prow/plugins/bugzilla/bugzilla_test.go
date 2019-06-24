@@ -55,8 +55,12 @@ orgs:
           "*":
             is_open: false
             target_release: my-repo-default
+            statuses:
+            - VALIDATED
           "my-repo-branch":
-            target_release: my-repo-branch`
+            target_release: my-repo-branch
+            statuses:
+            - MODIFIED`
 	var config plugins.Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -80,8 +84,8 @@ orgs:
 <li>on the "my-org-branch" branch, valid bugs must be open and target the "my-org-branch-default" release</li>
 </ul>`,
 			"my-org/my-repo": `The plugin has the following configuration:<ul>
-<li>by default, valid bugs must be closed and target the "my-repo-default" release</li>
-<li>on the "my-repo-branch" branch, valid bugs must be closed and target the "my-repo-branch" release</li>
+<li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED</li>
+<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED</li>
 </ul>`,
 		},
 		Commands: []pluginhelp.Command{{
@@ -643,6 +647,7 @@ func TestTitleMatch(t *testing.T) {
 func TestValidateBug(t *testing.T) {
 	open, closed := true, false
 	one, two := "v1", "v2"
+	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
 	var testCases = []struct {
 		name    string
 		bug     bugzilla.Bug
@@ -703,19 +708,33 @@ func TestValidateBug(t *testing.T) {
 			why:     []string{"expected the bug to target the \"v1\" release, but no target release was set"},
 		},
 		{
-			name:    "matching both requirements means a valid bug",
-			bug:     bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}},
-			options: plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one},
+			name:    "matching status requirement means a valid bug",
+			bug:     bugzilla.Bug{Status: "MODIFIED"},
+			options: plugins.BugzillaBranchOptions{Statuses: &modified},
 			valid:   true,
 		},
 		{
-			name:    "matching neither requirements means an invalid bug",
-			bug:     bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}},
-			options: plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two},
+			name:    "not matching status requirement means an invalid bug",
+			bug:     bugzilla.Bug{Status: "MODIFIED"},
+			options: plugins.BugzillaBranchOptions{Statuses: &verified},
+			valid:   false,
+			why:     []string{"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
+		},
+		{
+			name:    "matching all requirements means a valid bug",
+			bug:     bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED"},
+			options: plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, Statuses: &modified},
+			valid:   true,
+		},
+		{
+			name:    "matching no requirements means an invalid bug",
+			bug:     bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED"},
+			options: plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, Statuses: &verified},
 			valid:   false,
 			why: []string{
 				"expected the bug to be open, but it isn't",
 				"expected the bug to target the \"v2\" release, but it targets \"v1\" instead",
+				"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 			},
 		},
 	}

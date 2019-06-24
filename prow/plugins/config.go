@@ -1011,8 +1011,9 @@ type BugzillaRepoOptions struct {
 
 // BugzillaBranchOptions describes how to check if a Bugzilla bug is valid or not.
 type BugzillaBranchOptions struct {
-	IsOpen        *bool   `json:"is_open,omitempty"`
-	TargetRelease *string `json:"target_release,omitempty"`
+	IsOpen        *bool     `json:"is_open,omitempty"`
+	TargetRelease *string   `json:"target_release,omitempty"`
+	Statuses      *[]string `json:"statuses,omitempty"`
 }
 
 func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
@@ -1020,7 +1021,9 @@ func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
 		(o.IsOpen != nil && other.IsOpen != nil && *o.IsOpen == *other.IsOpen)
 	targetReleaseMatch := o.TargetRelease == nil && other.TargetRelease == nil ||
 		(o.TargetRelease != nil && other.TargetRelease != nil && *o.TargetRelease == *other.TargetRelease)
-	return isOpenMatch && targetReleaseMatch
+	statusesMatch := o.Statuses == nil && other.Statuses == nil ||
+		(o.Statuses != nil && other.Statuses != nil && sets.NewString(*o.Statuses...).Equal(sets.NewString(*other.Statuses...)))
+	return isOpenMatch && targetReleaseMatch && statusesMatch
 }
 
 const BugzillaOptionsWildcard = `*`
@@ -1044,6 +1047,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	if parent.TargetRelease != nil {
 		output.TargetRelease = parent.TargetRelease
 	}
+	if parent.Statuses != nil {
+		output.Statuses = parent.Statuses
+	}
 
 	//override with the child
 	if child.IsOpen != nil {
@@ -1051,6 +1057,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.TargetRelease != nil {
 		output.TargetRelease = child.TargetRelease
+	}
+	if child.Statuses != nil {
+		output.Statuses = child.Statuses
 	}
 
 	return output
