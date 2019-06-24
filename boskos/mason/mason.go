@@ -108,6 +108,7 @@ func ParseConfig(configPath string) ([]common.ResourcesConfig, error) {
 
 // ValidateConfig validates config with existing resources
 // In: configs   - a list of resources configs
+//     masonConfig - a list of Mason config
 //     boskosConfig - a boskos config defining resources
 // Out: nil on success, error on failure
 func ValidateConfig(masonConfig []common.ResourcesConfig, boskosConfig *common.BoskosConfig) error {

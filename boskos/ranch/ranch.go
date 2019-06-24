@@ -32,6 +32,8 @@ import (
 type Ranch struct {
 	Storage       *Storage
 	resourcesLock sync.RWMutex
+	//
+	now func() time.Time
 }
 
 func updateTime() time.Time {
@@ -75,7 +77,7 @@ type StateNotMatch struct {
 }
 
 func (s StateNotMatch) Error() string {
-	return fmt.Sprintf("StateNotMatch - expect %v, current %v", s.expect, s.current)
+	return fmt.Sprintf("StateNotMatch - expectedRes %v, current %v", s.expect, s.current)
 }
 
 // NewRanch creates a new Ranch object.
@@ -85,6 +87,7 @@ func (s StateNotMatch) Error() string {
 func NewRanch(config string, s *Storage) (*Ranch, error) {
 	newRanch := &Ranch{
 		Storage: s,
+		now:     time.Now,
 	}
 	if config != "" {
 		if err := newRanch.SyncConfig(config); err != nil {
@@ -219,16 +222,15 @@ func (r *Ranch) Release(name, dest, owner string) error {
 	res.Owner = ""
 	res.State = dest
 
-	if res.State == common.Free {
-		// Lifespan only makes sense for free resource.
-		if lf, err := r.Storage.GetDynamicResourceLifeCycle(res.Type); err == nil {
-			// Assuming error means not existing as the only way to differentiate would be to list
-			// all resources and find the right one which is more costly.
-			if lf.LifeSpan != nil {
-				expirationTime := time.Now().Add(*lf.LifeSpan)
-				res.ExpirationDate = &expirationTime
-			}
+	if lf, err := r.Storage.GetDynamicResourceLifeCycle(res.Type); err == nil {
+		// Assuming error means not existing as the only way to differentiate would be to list
+		// all resources and find the right one which is more costly.
+		if lf.LifeSpan != nil {
+			expirationTime := r.now().Add(*lf.LifeSpan)
+			res.ExpirationDate = &expirationTime
 		}
+	} else {
+		res.ExpirationDate = nil
 	}
 
 	if _, err := r.Storage.UpdateResource(res); err != nil {
@@ -294,7 +296,7 @@ func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (m
 	for idx := range resources {
 		res := resources[idx]
 		if rtype == res.Type && state == res.State && res.Owner != "" {
-			if time.Since(res.LastUpdate) > expire {
+			if r.now().Sub(res.LastUpdate) > expire {
 				ret[res.Name] = res.Owner
 				res.Owner = ""
 				res.State = dest

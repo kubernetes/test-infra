@@ -24,6 +24,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	"sigs.k8s.io/yaml"
 )
 
@@ -94,12 +96,6 @@ type DynamicResourceLifeCycle struct {
 	LifeSpan *time.Duration `json:"lifespan,omitempty"`
 }
 
-type NewResourceRequest struct {
-	Type string `json:"type"`
-	User string `json:"user"`
-	ID   string `json:"id"`
-}
-
 // BoskosConfig defines config used by boskos server
 type BoskosConfig struct {
 	Resources []ResourceEntry `json:"resources,flow"`
@@ -113,16 +109,9 @@ type Metric struct {
 	// TODO: implements state transition metrics
 }
 
+// IsInUsed reports if the resource is owned by anything else than Boskos.
 func (r *Resource) IsInUsed() bool {
 	return r.Owner != ""
-}
-
-func (r *Resource) IsExpired() bool {
-	if r.ExpirationDate != nil {
-		return time.Now().After(*r.ExpirationDate)
-	}
-	// Never expires.
-	return false
 }
 
 // NewResource creates a new Boskos Resource.
@@ -308,4 +297,9 @@ func ItemToDynamicResourceLifeCycle(i Item) (DynamicResourceLifeCycle, error) {
 		return DynamicResourceLifeCycle{}, fmt.Errorf("cannot construct Resource from received object %v", i)
 	}
 	return res, nil
+}
+
+// GenerateDynamicResourceName generates a unique name for dynamic resources
+func GenerateDynamicResourceName() string {
+	return uuid.New().String()
 }

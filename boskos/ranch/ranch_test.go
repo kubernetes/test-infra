@@ -17,8 +17,10 @@ limitations under the License.
 package ranch
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
+	"sync"
 	"testing"
 	"time"
 
@@ -27,7 +29,22 @@ import (
 	"k8s.io/test-infra/boskos/storage"
 )
 
-var fakeNow = fakeTime(time.Now())
+var (
+	startTime = fakeTime(time.Now())
+	fakeNow   = fakeTime(startTime.Add(time.Second))
+)
+
+type nameGenerator struct {
+	lock  sync.Mutex
+	index int
+}
+
+func (g *nameGenerator) name() string {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+	g.index++
+	return fmt.Sprintf("new-dynamic-res-%d", g.index)
+}
 
 // json does not serialized time with nanosecond precision
 func fakeTime(t time.Time) time.Time {
@@ -36,17 +53,25 @@ func fakeTime(t time.Time) time.Time {
 	return now
 }
 
-func MakeTestRanch(resources []common.Resource) *Ranch {
+func MakeTestRanch(resources []common.Resource, dResources []common.DynamicResourceLifeCycle) *Ranch {
 	rs := crds.NewCRDStorage(crds.NewTestResourceClient())
 	lfs := storage.NewMemoryStorage()
 	s, _ := NewStorage(rs, lfs, "")
-	s.updateTime = func() time.Time {
-		return fakeNow.Add(time.Second)
+	s.now = func() time.Time {
+		return fakeNow
 	}
+	nameGen := &nameGenerator{}
+	s.generateName = nameGen.name
 	for _, res := range resources {
 		s.AddResource(res)
 	}
+	for _, res := range dResources {
+		s.AddDynamicResourceLifeCycle(res)
+	}
 	r, _ := NewRanch("", s)
+	r.now = func() time.Time {
+		return fakeNow
+	}
 	return r
 }
 
@@ -115,7 +140,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: "no match type",
 			resources: []common.Resource{
-				common.NewResource("res", "wrong", "s", "", fakeNow),
+				common.NewResource("res", "wrong", "s", "", startTime),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -126,7 +151,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: "no match state",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "wrong", "", fakeNow),
+				common.NewResource("res", "t", "wrong", "", startTime),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -137,7 +162,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: common.Busy,
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "foo", fakeNow),
+				common.NewResource("res", "t", "s", "foo", startTime),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -148,7 +173,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name: "ok",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "", fakeNow),
+				common.NewResource("res", "t", "s", "", startTime),
 			},
 			owner:     "user",
 			rtype:     "t",
@@ -159,10 +184,10 @@ func TestAcquire(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
+		c := MakeTestRanch(tc.resources, nil)
 		res, err := c.Acquire(tc.rtype, tc.state, tc.dest, tc.owner)
 		if !AreErrorsEqual(err, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expect error %v", tc.name, err, tc.expectErr)
+			t.Errorf("%s - Got error %v, expectedRes error %v", tc.name, err, tc.expectErr)
 			continue
 		}
 
@@ -174,17 +199,17 @@ func TestAcquire(t *testing.T) {
 
 		if err == nil {
 			if res.State != tc.dest {
-				t.Errorf("%s - Wrong final state. Got %v, expect %v", tc.name, res.State, tc.dest)
+				t.Errorf("%s - Wrong final state. Got %v, expectedRes %v", tc.name, res.State, tc.dest)
 			}
 			if !reflect.DeepEqual(*res, resources[0]) {
-				t.Errorf("%s - Wrong resource. Got %v, expect %v", tc.name, res, resources[0])
-			} else if !res.LastUpdate.After(fakeNow) {
+				t.Errorf("%s - Wrong resource. Got %v, expectedRes %v", tc.name, res, resources[0])
+			} else if !res.LastUpdate.After(startTime) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		} else {
 			for _, res := range resources {
-				if res.LastUpdate != fakeNow {
-					t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, fakeNow)
+				if res.LastUpdate != startTime {
+					t.Errorf("%s - LastUpdate should not update. Got %v, expectedRes %v", tc.name, resources[0].LastUpdate, startTime)
 				}
 			}
 		}
@@ -194,12 +219,12 @@ func TestAcquire(t *testing.T) {
 func TestAcquireRoundRobin(t *testing.T) {
 	var resources []common.Resource
 	for i := 1; i < 5; i++ {
-		resources = append(resources, common.NewResource("res-1", "t", "s", "", fakeNow))
+		resources = append(resources, common.NewResource("res-1", "t", "s", "", startTime))
 	}
 
 	results := map[string]int{}
 
-	c := MakeTestRanch(resources)
+	c := MakeTestRanch(resources, nil)
 	for i := 0; i < 4; i++ {
 		res, err := c.Acquire("t", "s", "d", "foo")
 		if err != nil {
@@ -214,80 +239,93 @@ func TestAcquireRoundRobin(t *testing.T) {
 }
 
 func TestRelease(t *testing.T) {
+	var lifespan = time.Minute
+	updatedRes := common.NewResource("res", "t", "d", "", fakeNow)
+	expirationDate := fakeTime(fakeNow.Add(lifespan))
+	updatedRes.ExpirationDate = &expirationDate
 	var testcases = []struct {
-		name      string
-		resources []common.Resource
-		resName   string
-		owner     string
-		dest      string
-		expectErr error
+		name        string
+		resource    common.Resource
+		dResource   common.DynamicResourceLifeCycle
+		resName     string
+		owner       string
+		dest        string
+		expectErr   error
+		expectedRes common.Resource
 	}{
 		{
-			name:      "ranch has no resource",
-			resources: []common.Resource{},
-			resName:   "res",
-			owner:     "user",
-			dest:      "d",
-			expectErr: &ResourceNotFound{"res"},
+			name:        "ranch has no resource",
+			resource:    common.Resource{},
+			resName:     "res",
+			owner:       "user",
+			dest:        "d",
+			expectErr:   &ResourceNotFound{"res"},
+			expectedRes: common.Resource{},
 		},
 		{
-			name: "wrong owner",
-			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", fakeNow),
-			},
-			resName:   "res",
-			owner:     "user",
-			dest:      "d",
-			expectErr: &OwnerNotMatch{"merlin", "user"},
+			name:        "wrong owner",
+			resource:    common.NewResource("res", "t", "s", "merlin", startTime),
+			resName:     "res",
+			owner:       "user",
+			dest:        "d",
+			expectErr:   &OwnerNotMatch{"merlin", "user"},
+			expectedRes: common.NewResource("res", "t", "s", "merlin", startTime),
 		},
 		{
-			name: "no match name",
-			resources: []common.Resource{
-				common.NewResource("foo", "t", "s", "merlin", fakeNow),
-			},
-			resName:   "res",
-			owner:     "user",
-			dest:      "d",
-			expectErr: &ResourceNotFound{"res"},
+			name:        "no match name",
+			resource:    common.NewResource("foo", "t", "s", "merlin", startTime),
+			resName:     "res",
+			owner:       "user",
+			dest:        "d",
+			expectErr:   &ResourceNotFound{"res"},
+			expectedRes: common.Resource{},
 		},
 		{
-			name: "ok",
-			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", fakeNow),
+			name:        "ok",
+			resource:    common.NewResource("res", "t", "s", "merlin", startTime),
+			resName:     "res",
+			owner:       "merlin",
+			dest:        "d",
+			expectErr:   nil,
+			expectedRes: common.NewResource("res", "t", "d", "", fakeNow),
+		},
+		{
+			name:     "ok - has dynamic resource lf no lifespan",
+			resource: common.NewResource("res", "t", "s", "merlin", startTime),
+			dResource: common.DynamicResourceLifeCycle{
+				Type: "t",
 			},
-			resName:   "res",
-			owner:     "merlin",
-			dest:      "d",
-			expectErr: nil,
+			resName:     "res",
+			owner:       "merlin",
+			dest:        "d",
+			expectErr:   nil,
+			expectedRes: common.NewResource("res", "t", "d", "", fakeNow),
+		},
+		{
+			name:     "ok - has dynamic resource lf with lifespan",
+			resource: common.NewResource("res", "t", "s", "merlin", startTime),
+			dResource: common.DynamicResourceLifeCycle{
+				Type:     "t",
+				LifeSpan: &lifespan,
+			},
+			resName:     "res",
+			owner:       "merlin",
+			dest:        "d",
+			expectErr:   nil,
+			expectedRes: updatedRes,
 		},
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
-		err := c.Release(tc.resName, tc.dest, tc.owner)
-		if !AreErrorsEqual(err, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expect error %v", tc.name, err, tc.expectErr)
+		c := MakeTestRanch([]common.Resource{tc.resource}, []common.DynamicResourceLifeCycle{tc.dResource})
+		releaseErr := c.Release(tc.resName, tc.dest, tc.owner)
+		if !AreErrorsEqual(releaseErr, tc.expectErr) {
+			t.Errorf("%s - Got error %v, expectedRes error %v", tc.name, releaseErr, tc.expectErr)
 			continue
 		}
-		resources, err2 := c.Storage.GetResources()
-		if err2 != nil {
-			t.Errorf("failed to get resources")
-			continue
-		}
-		if err == nil {
-			if resources[0].Owner != "" {
-				t.Errorf("%s - Wrong owner after release. Got %v, expect empty", tc.name, resources[0].Owner)
-			} else if resources[0].State != tc.dest {
-				t.Errorf("%s - Wrong state after release. Got %v, expect %v", tc.name, resources[0].State, tc.dest)
-			} else if !resources[0].LastUpdate.After(fakeNow) {
-				t.Errorf("%s - LastUpdate did not update.", tc.name)
-			}
-		} else {
-			for _, res := range resources {
-				if res.LastUpdate != fakeNow {
-					t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, fakeNow)
-				}
-			}
+		res, _ := c.Storage.GetResource(tc.resName)
+		if !reflect.DeepEqual(res, tc.expectedRes) {
+			t.Errorf("Test %v: got %v, expectedRes %v", tc.name, res, tc.expectedRes)
 		}
 	}
 }
@@ -306,7 +344,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - has no owner",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "", fakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "t", "s", "", startTime.Add(-time.Minute*20)),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -316,7 +354,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - not expire",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "", fakeNow),
+				common.NewResource("res", "t", "s", "", startTime),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -326,7 +364,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - no match type",
 			resources: []common.Resource{
-				common.NewResource("res", "wrong", "s", "", fakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "wrong", "s", "", startTime.Add(-time.Minute*20)),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -336,7 +374,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "empty - no match state",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "wrong", "", fakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "t", "wrong", "", startTime.Add(-time.Minute*20)),
 			},
 			rtype:  "t",
 			state:  "s",
@@ -346,7 +384,7 @@ func TestReset(t *testing.T) {
 		{
 			name: "ok",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "user", fakeNow.Add(-time.Minute*20)),
+				common.NewResource("res", "t", "s", "user", startTime.Add(-time.Minute*20)),
 			},
 			rtype:      "t",
 			state:      "s",
@@ -357,7 +395,7 @@ func TestReset(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
+		c := MakeTestRanch(tc.resources, nil)
 		rmap, err := c.Reset(tc.rtype, tc.state, tc.expire, tc.dest)
 		if err != nil {
 			t.Errorf("failed to reset %v", err)
@@ -376,7 +414,7 @@ func TestReset(t *testing.T) {
 				t.Errorf("failed to get resources")
 				continue
 			}
-			if !resources[0].LastUpdate.After(fakeNow) {
+			if !resources[0].LastUpdate.After(startTime) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		}
@@ -403,7 +441,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "wrong owner",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", fakeNow),
+				common.NewResource("res", "t", "s", "merlin", startTime),
 			},
 			resName:   "res",
 			owner:     "user",
@@ -413,7 +451,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "wrong state",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", fakeNow),
+				common.NewResource("res", "t", "s", "merlin", startTime),
 			},
 			resName:   "res",
 			owner:     "merlin",
@@ -423,7 +461,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "no matched resource",
 			resources: []common.Resource{
-				common.NewResource("foo", "t", "s", "merlin", fakeNow),
+				common.NewResource("foo", "t", "s", "merlin", startTime),
 			},
 			resName:   "res",
 			owner:     "merlin",
@@ -433,7 +471,7 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "ok",
 			resources: []common.Resource{
-				common.NewResource("res", "t", "s", "merlin", fakeNow),
+				common.NewResource("res", "t", "s", "merlin", startTime),
 			},
 			resName: "res",
 			owner:   "merlin",
@@ -443,10 +481,10 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := MakeTestRanch(tc.resources)
+			c := MakeTestRanch(tc.resources, nil)
 			err := c.Update(tc.resName, tc.owner, tc.state, nil)
 			if !AreErrorsEqual(err, tc.expectErr) {
-				t.Fatalf("Got error %v, expect error %v", err, tc.expectErr)
+				t.Fatalf("Got error %v, expectedRes error %v", err, tc.expectErr)
 			}
 
 			resources, err2 := c.Storage.GetResources()
@@ -456,16 +494,16 @@ func TestUpdate(t *testing.T) {
 
 			if err == nil {
 				if resources[0].Owner != tc.owner {
-					t.Errorf("%s - Wrong owner after release. Got %v, expect %v", tc.name, resources[0].Owner, tc.owner)
+					t.Errorf("%s - Wrong owner after release. Got %v, expectedRes %v", tc.name, resources[0].Owner, tc.owner)
 				} else if resources[0].State != tc.state {
-					t.Errorf("%s - Wrong state after release. Got %v, expect %v", tc.name, resources[0].State, tc.state)
-				} else if !resources[0].LastUpdate.After(fakeNow) {
+					t.Errorf("%s - Wrong state after release. Got %v, expectedRes %v", tc.name, resources[0].State, tc.state)
+				} else if !resources[0].LastUpdate.After(startTime) {
 					t.Errorf("%s - LastUpdate did not update.", tc.name)
 				}
 			} else {
 				for _, res := range resources {
-					if res.LastUpdate != fakeNow {
-						t.Errorf("%s - LastUpdate should not update. Got %v, expect %v", tc.name, resources[0].LastUpdate, fakeNow)
+					if res.LastUpdate != startTime {
+						t.Errorf("%s - LastUpdate should not update. Got %v, expectedRes %v", tc.name, resources[0].LastUpdate, startTime)
 					}
 				}
 			}
@@ -537,10 +575,10 @@ func TestMetric(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.resources)
+		c := MakeTestRanch(tc.resources, nil)
 		metric, err := c.Metric(tc.metricType)
 		if !AreErrorsEqual(err, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expect error %v", tc.name, err, tc.expectErr)
+			t.Errorf("%s - Got error %v, expectedRes error %v", tc.name, err, tc.expectErr)
 			continue
 		}
 
@@ -552,105 +590,404 @@ func TestMetric(t *testing.T) {
 	}
 }
 
+func setExpiration(res common.Resource, exp time.Time) common.Resource {
+	res.ExpirationDate = &exp
+	return res
+}
+
 func TestSyncResources(t *testing.T) {
 	var testcases = []struct {
-		name   string
-		oldRes []common.Resource
-		newRes []common.Resource
-		expect []common.Resource
+		name                    string
+		currentRes, expectedRes []common.Resource
+		currentLCs, expectedLCs []common.DynamicResourceLifeCycle
+		config                  *common.BoskosConfig
 	}{
 		{
 			name: "empty",
 		},
 		{
 			name: "append",
-			newRes: []common.Resource{
-				common.NewResource("res", "t", "", "", time.Time{}),
+			currentRes: []common.Resource{
+				common.NewResource("res-1", "t", "", "", startTime),
 			},
-			expect: []common.Resource{
-				common.NewResource("res", "t", common.Free, "", time.Time{}),
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:  "t",
+						Names: []string{"res-1", "res-2"},
+					},
+					{
+						Type:     "dt",
+						MinCount: 1,
+						MaxCount: 2,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("res-1", "t", common.Free, "", fakeNow),
+				common.NewResource("res-2", "t", common.Free, "", fakeNow),
+				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
 			},
 		},
 		{
 			name: "should only change last update",
-			oldRes: []common.Resource{
-				common.NewResource("res", "t", "", "", time.Time{}),
+			currentRes: []common.Resource{
+				common.NewResource("res-1", "t", "", "", startTime),
+				common.NewResource("dt_1", "dt", "", "", startTime),
 			},
-			newRes: []common.Resource{
-				common.NewResource("res", "d", "", "", time.Time{}),
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
 			},
-			expect: []common.Resource{
-				common.NewResource("res", "t", "", "", fakeNow.Add(time.Second)),
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:  "t",
+						Names: []string{"res-1"},
+					},
+					{
+						Type:     "dt",
+						MinCount: 1,
+						MaxCount: 2,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("res-1", "t", "", "", fakeNow),
+				common.NewResource("dt_1", "dt", "", "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
 			},
 		},
 		{
 			name: "delete",
-			oldRes: []common.Resource{
-				common.NewResource("res", "t", "", "", time.Time{}),
+			currentRes: []common.Resource{
+				common.NewResource("res", "t", "", "", startTime),
+				common.NewResource("dt_1", "dt", "", "", startTime),
 			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+			config: &common.BoskosConfig{},
 		},
 		{
 			name: "delete busy",
-			oldRes: []common.Resource{
-				common.NewResource("res", "t", common.Busy, "o", time.Time{}),
+			currentRes: []common.Resource{
+				common.NewResource("res", "t", common.Busy, "o", startTime),
+				common.NewResource("dt_1", "dt", common.Busy, "o", startTime),
 			},
-			expect: []common.Resource{
-				common.NewResource("res", "t", common.Busy, "o", time.Time{}),
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+			config: &common.BoskosConfig{},
+			expectedRes: []common.Resource{
+				common.NewResource("res", "t", common.Busy, "o", startTime),
+				common.NewResource("dt_1", "dt", common.Busy, "o", startTime),
 			},
 		},
 		{
 			name: "append and delete",
-			oldRes: []common.Resource{
-				common.NewResource("res-1", "t", "", "", time.Time{}),
+			currentRes: []common.Resource{
+				common.NewResource("res-1", "t", "", "", startTime),
+				common.NewResource("dt_1", "dt", "", "", startTime),
+				common.NewResource("dt_2", "dt", "", "", startTime),
+				common.NewResource("dt_3", "dt", "", "", startTime),
 			},
-			newRes: []common.Resource{
-				common.NewResource("res-2", "t", "", "", time.Time{}),
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 3,
+				},
 			},
-			expect: []common.Resource{
-				common.NewResource("res-2", "t", common.Free, "", time.Time{}),
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:  "t",
+						Names: []string{"res-2"},
+					},
+					{
+						Type:     "dt",
+						MinCount: 1,
+						MaxCount: 2,
+					},
+					{
+						Type:     "dt2",
+						MinCount: 1,
+						MaxCount: 2,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("res-2", "t", common.Free, "", fakeNow),
+				common.NewResource("dt_1", "dt", common.Free, "", fakeNow),
+				common.NewResource("dt_2", "dt", common.Free, "", fakeNow),
+				common.NewResource("new-dynamic-res-1", "dt2", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+				{
+					Type:     "dt2",
+					MinCount: 1,
+					MaxCount: 2,
+				},
 			},
 		},
 		{
 			name: "append and delete busy",
-			oldRes: []common.Resource{
-				common.NewResource("res-1", "t", common.Busy, "o", time.Time{}),
+			currentRes: []common.Resource{
+				common.NewResource("res-1", "t", common.Busy, "o", startTime),
+				common.NewResource("dt_1", "dt", "", "", startTime),
+				common.NewResource("dt_2", "dt", "", "", startTime),
+				common.NewResource("dt_3", "dt", common.Busy, "o", startTime),
 			},
-			newRes: []common.Resource{
-				common.NewResource("res-2", "t", "", "", time.Time{}),
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 3,
+				},
 			},
-			expect: []common.Resource{
-				common.NewResource("res-1", "t", common.Busy, "o", time.Time{}),
-				common.NewResource("res-2", "t", common.Free, "", time.Time{}),
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:  "t",
+						Names: []string{"res-2"},
+					},
+					{
+						Type:     "dt",
+						MinCount: 1,
+						MaxCount: 2,
+					},
+					{
+						Type:     "dt2",
+						MinCount: 1,
+						MaxCount: 2,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("res-1", "t", common.Busy, "o", startTime),
+				common.NewResource("res-2", "t", common.Free, "", fakeNow),
+				common.NewResource("dt_1", "dt", common.Free, "", fakeNow),
+				common.NewResource("dt_3", "dt", common.Busy, "o", startTime),
+				common.NewResource("new-dynamic-res-1", "dt2", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+				{
+					Type:     "dt2",
+					MinCount: 1,
+					MaxCount: 2,
+				},
 			},
 		},
 		{
 			name: "append/delete mixed type",
-			oldRes: []common.Resource{
-				common.NewResource("res-1", "t", "", "", time.Time{}),
+			currentRes: []common.Resource{
+				common.NewResource("res-1", "t", "", "", startTime),
 			},
-			newRes: []common.Resource{
-				common.NewResource("res-2", "t", "", "", time.Time{}),
-				common.NewResource("res-3", "t2", "", "", time.Time{}),
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:  "t",
+						Names: []string{"res-2"},
+					},
+					{
+						Type:  "t2",
+						Names: []string{"res-3"},
+					},
+				},
 			},
-			expect: []common.Resource{
-				common.NewResource("res-2", "t", "free", "", time.Time{}),
-				common.NewResource("res-3", "t2", "free", "", time.Time{}),
+			expectedRes: []common.Resource{
+				common.NewResource("res-2", "t", "free", "", fakeNow),
+				common.NewResource("res-3", "t2", "free", "", fakeNow),
+			},
+		},
+		{
+			name: "delete expired resource",
+			currentRes: []common.Resource{
+				setExpiration(
+					common.NewResource("dt_1", "dt", "", "", startTime),
+					startTime),
+				common.NewResource("dt_2", "dt", "", "", startTime),
+				setExpiration(
+					common.NewResource("dt_3", "dt", "", "", startTime),
+					startTime),
+				common.NewResource("dt_4", "dt", "", "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 2,
+					MaxCount: 4,
+				},
+			},
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:     "dt",
+						MinCount: 2,
+						MaxCount: 4,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_2", "dt", common.Free, "", fakeNow),
+				common.NewResource("dt_4", "dt", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 2,
+					MaxCount: 4,
+				},
+			},
+		},
+		{
+			name: "delete expired resource / do not delete busy",
+			currentRes: []common.Resource{
+				setExpiration(
+					common.NewResource("dt_1", "dt", "", "", startTime),
+					startTime),
+				common.NewResource("dt_2", "dt", "", "", startTime),
+				setExpiration(
+					common.NewResource("dt_3", "dt", common.Busy, "o", startTime),
+					startTime),
+				common.NewResource("dt_4", "dt", common.Busy, "o", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 4,
+				},
+			},
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:     "dt",
+						MinCount: 1,
+						MaxCount: 3,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_2", "dt", common.Free, "", fakeNow),
+				setExpiration(
+					common.NewResource("dt_3", "dt", common.Busy, "o", startTime),
+					startTime),
+				common.NewResource("dt_4", "dt", common.Busy, "o", startTime),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 3,
+				},
+			},
+		},
+		{
+			name: "delete expired resource, recreate up to Min",
+			currentRes: []common.Resource{
+				setExpiration(
+					common.NewResource("dt_1", "dt", "", "", startTime),
+					startTime),
+				common.NewResource("dt_2", "dt", "", "", startTime),
+				setExpiration(
+					common.NewResource("dt_3", "dt", "", "", startTime),
+					startTime),
+				common.NewResource("dt_4", "dt", "", "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 4,
+					MaxCount: 6,
+				},
+			},
+			config: &common.BoskosConfig{
+				Resources: []common.ResourceEntry{
+					{
+						Type:     "dt",
+						MinCount: 4,
+						MaxCount: 6,
+					},
+				},
+			},
+			expectedRes: []common.Resource{
+				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
+				common.NewResource("dt_2", "dt", common.Free, "", fakeNow),
+				common.NewResource("new-dynamic-res-2", "dt", common.Free, "", fakeNow),
+				common.NewResource("dt_4", "dt", common.Free, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 4,
+					MaxCount: 6,
+				},
 			},
 		},
 	}
 
 	for _, tc := range testcases {
-		c := MakeTestRanch(tc.oldRes)
-		c.Storage.syncStaticResources(tc.newRes, tc.oldRes)
+		c := MakeTestRanch(tc.currentRes, tc.currentLCs)
+		c.Storage.SyncResources(tc.config)
 		resources, err := c.Storage.GetResources()
 		if err != nil {
 			t.Errorf("failed to get resources")
 			continue
 		}
 		sort.Stable(common.ResourceByName(resources))
-		sort.Stable(common.ResourceByName(tc.expect))
-		if !reflect.DeepEqual(resources, tc.expect) {
-			t.Errorf("Test %v: got %v, expect %v", tc.name, resources, tc.expect)
+		sort.Stable(common.ResourceByName(tc.expectedRes))
+		if !reflect.DeepEqual(resources, tc.expectedRes) {
+			t.Errorf("Test %v: \n got \t\t %v, \n expectedRes %v", tc.name, resources, tc.expectedRes)
+		}
+		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
+		sort.SliceStable(lfs, func(i, j int) bool {
+			{
+				return lfs[i].GetName() < lfs[j].GetName()
+			}
+		})
+		sort.SliceStable(tc.expectedLCs, func(i, j int) bool {
+			{
+				return tc.expectedLCs[i].GetName() < tc.expectedLCs[j].GetName()
+			}
+		})
+		if !reflect.DeepEqual(lfs, tc.expectedLCs) {
+			t.Errorf("Test %v: \n got \t\t %v, \n expectedRes %v", tc.name, lfs, tc.expectedLCs)
 		}
 	}
 }
