@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # also do one level up so foo.bar imports work :shrug:
     EXTRAS = set(os.path.dirname(e) for e in EXTRAS).union(EXTRAS)
     # append these to the path
-    sys.path.extend(EXTRAS)
+    sys.path.extend(sorted(EXTRAS))
 
     # Otherwise this is the entirety of bin/pylint
     pylint.run_pylint()

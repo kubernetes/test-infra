@@ -37,7 +37,7 @@ nodejs_test(
         "//:all-srcs",
         "@npm//tslint",
     ],
-    entry_point = "@npm//node_modules/tslint:bin/tslint",
+    entry_point = "@npm//:node_modules/tslint/bin/tslint",
     tags = ["lint"],
     templated_args = [
         "-p",
@@ -285,13 +285,16 @@ py_binary(
     tags = ["lint"],
     # NOTE: this should only contain direct third party imports and pylint
     deps = [
+        requirement("enum34"),
         requirement("influxdb"),
+        requirement("lazy-object-proxy"),
         requirement("pylint"),
         requirement("pytz"),
-        requirement("requests"),
-        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
         requirement("PyYAML"),
+        requirement("requests"),
         requirement("setuptools"),
+        requirement("wrapt"),
+        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
     ],
 )
 
