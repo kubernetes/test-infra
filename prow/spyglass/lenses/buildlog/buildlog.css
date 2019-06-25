@@ -37,6 +37,8 @@ html {
 
 .linenum {
     user-select: none;
+    -moz-user-select: none; /* for Firefox pre-69 */
+    -webkit-user-select: none; /* for Safari, Opera, and Edge (pre-Blink) */
     color: rgba(255,255,2552,0.6);
     text-align: right;
     vertical-align: top;
