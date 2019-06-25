@@ -423,6 +423,8 @@ kind: Ingress
 metadata:
   namespace: default
   name: ing
+  annotations:
+    kubernetes.io/ingress.class: traefik
 spec:
   rules:
   - http:
