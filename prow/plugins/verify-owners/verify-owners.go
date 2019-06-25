@@ -133,6 +133,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 		if change.Filename == ownersAliasesFileName {
 			modifiedOwnerAliasesFile = change
 			ownerAliasesModified = true
+			break
 		}
 	}
 
