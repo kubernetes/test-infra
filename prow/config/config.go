@@ -136,11 +136,13 @@ type OwnersDirBlacklist struct {
 	// Repos configures a directory blacklist per repo (or org)
 	Repos map[string][]string `json:"repos"`
 	// Default configures a default blacklist for all repos (or orgs).
+	// Some directories like ".git", "_output" and "vendor/.*/OWNERS"
+	// are already preconfigured to be blacklisted, and need not be included here.
+	Default []string `json:"default"`
 	// By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
 	// are preconfigured to be blacklisted.
-	Default []string `json:"default"`
-	// By default, some directories are preconfigured to be blacklisted.
-	// If set, IgnorePreconfiguredDefaults will ignore these preconfigured directories.
+	// If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
+	// to the blacklist.
 	IgnorePreconfiguredDefaults bool `json:"ignore_preconfigured_defaults,omitempty"`
 }
 
