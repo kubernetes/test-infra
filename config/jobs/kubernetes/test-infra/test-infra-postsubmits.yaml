@@ -42,7 +42,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190622-f76a924-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-experimental
         command:
         - runner.sh
         args:
@@ -69,7 +69,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190622-f76a924-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-experimental
         command:
         - runner.sh
         args:
