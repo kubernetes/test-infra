@@ -18,15 +18,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
 	"testing"
 	"time"
-
-	"k8s.io/apimachinery/pkg/util/validation"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
@@ -788,37 +785,7 @@ func TestConfig(t *testing.T) {
 		t.Errorf("parseConfig error: %v", err)
 	}
 
-	if len(config.Resources) == 0 {
-		t.Errorf("empty data")
-	}
-	resourceNames := map[string]bool{}
-
-	for _, e := range config.Resources {
-		if e.Type == "" {
-			t.Errorf("empty resource type: %s", e.Type)
-		}
-		names := e.Names
-
-		if len(e.Names) == 0 {
-			if e.MinCount >= e.MaxCount {
-				t.Errorf("min should be < max %v", e)
-			}
-			for i := 0; i < e.MaxCount; i++ {
-				name := fmt.Sprintf("%s_%d", e.Type, i)
-				names = append(names, name)
-			}
-		}
-		for _, name := range names {
-			errs := validation.IsQualifiedName(name)
-			if len(errs) != 0 {
-				t.Errorf("resource name %s is not a qualified k8s object name, errs: %v", name, errs)
-			}
-
-			if _, ok := resourceNames[name]; ok {
-				t.Errorf("duplicated resource name: %s", name)
-			} else {
-				resourceNames[name] = true
-			}
-		}
+	if err = ranch.ValidateConfig(config); err != nil {
+		t.Errorf("invalid config: %v", err)
 	}
 }

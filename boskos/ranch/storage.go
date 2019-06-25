@@ -29,6 +29,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
 )
@@ -449,6 +450,46 @@ func (s *Storage) syncStaticResources(newConfig, existingResources []common.Reso
 		}
 	}
 	return s.persistResources(resToUpdate, resToAdd, resToDelete)
+}
+
+func ValidateConfig(config *common.BoskosConfig) error {
+	if len(config.Resources) == 0 {
+		return fmt.Errorf("empty config")
+	}
+	resourceNames := map[string]bool{}
+
+	for _, e := range config.Resources {
+		if e.Type == "" {
+			return fmt.Errorf("empty resource type: %s", e.Type)
+		}
+		names := e.Names
+
+		if len(e.Names) == 0 {
+			if e.MaxCount == 0 {
+				return fmt.Errorf("max should be > 0")
+			}
+			if e.MinCount > e.MaxCount {
+				return fmt.Errorf("min should be <= max %v", e)
+			}
+			for i := 0; i < e.MaxCount; i++ {
+				name := fmt.Sprintf("%s_%d", e.Type, i)
+				names = append(names, name)
+			}
+		}
+		for _, name := range names {
+			errs := validation.IsQualifiedName(name)
+			if len(errs) != 0 {
+				return fmt.Errorf("resource name %s is not a qualified k8s object name, errs: %v", name, errs)
+			}
+
+			if _, ok := resourceNames[name]; ok {
+				return fmt.Errorf("duplicated resource name: %s", name)
+			} else {
+				resourceNames[name] = true
+			}
+		}
+	}
+	return nil
 }
 
 // ParseConfig reads in configPath and returns a list of resource objects

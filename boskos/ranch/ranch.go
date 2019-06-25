@@ -329,6 +329,9 @@ func (r *Ranch) SyncConfig(configPath string) error {
 	if err != nil {
 		return err
 	}
+	if err := ValidateConfig(config); err != nil {
+		return err
+	}
 	if err := r.Storage.SyncResources(config); err != nil {
 		return err
 	}
