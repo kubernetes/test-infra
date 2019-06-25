@@ -6,6 +6,27 @@ Prow runs in any kubernetes cluster. Our `tackle` utility helps deploy it correc
 
 Both of these are focused on [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/) but should work on any kubernetes distro with no/minimal changes.
 
+## GitHub bot account
+
+Before using `tackle` or deploying prow manually, ensure you have created a
+GitHub account for prow to use.  Prow will ignore most GitHub events generated
+by this account, so it is important this account be separate from any users or
+automation you wish to interact with prow. For example, you still need to do
+this even if you'd just setting up a prow instance to work against your own
+personal repos.
+
+1. Ensure the bot user has the following permissions
+  - Write access to the repos you plan on handling
+  - Owner access (and org membership) for the orgs you plan on handling (note
+    it is possible to handle specific repos in an org without this)
+1. Create a [personal access token][1] for the GitHub bot account, adding the
+   following scopes (more details [here][8])
+  - Must have the `public_repo` and `repo:status` scopes
+  - Add the `repo` scope if you plan on handing private repos
+  - Add the `admin_org:hook` scope if you plan on handling a github org
+1. Set this token aside for later (we'll assume you wrote it to a file on your
+   workstation at `/path/to/oauth/secret`)
+
 ## Tackle deployment
 
 Prow's `tackle` utility walks you through deploying a new instance of prow in a couple minutes, try it out!
@@ -14,15 +35,7 @@ You need a few things:
 
 1. [`bazel`](https://bazel.build/) build tool installed and working
 1. The prow `tackle` utility. It is recommended to use it by running `bazel run //prow/cmd/tackle` from `test-infra` directory, alternatively you can install it by running `go get -u k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go installed and working).
-1. A [personal access token][1] for the GitHub bot user you want to act as prow. If you're setting up prow for personal repo (not organization) then bot user == you (your GitHub account).
-
-   - Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
-   - Prow uploads this token into a secret in your cluster
-   - Bot user must have write access to the repo
-
-1. Optionally, credentials to a Kubernetes cluster
-
-   - Otherwise the tackle command can help you create one
+1. Optionally, credentials to a Kubernetes cluster (otherwise, `tackle` will help you create one)
 
 To install prow run the following from the `test-infra` directory and follow the on-screen instructions:
 
@@ -36,9 +49,9 @@ The will help you through the following steps:
 
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
-* Configuring GitHub to send prow webhooks for your repos. Please note that the absolute path to a personal access token should be specified.
+* Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/oauth/secret`
 
-See the Next Steps section after running this utility.
+See the [Next Steps][#next-steps] section after running this utility.
 
 ## Manual deployment
 
@@ -118,26 +131,12 @@ randomness-generator, eg `openssl rand -hex 20`.
 kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
-The `oauth-token` is an OAuth2 token that has read and write access to the bot account:
-
-- Bot user must have write access to the repo
-- Token must have `public_repo` and `repo:status` scopes (and repo for private repos), more details [here][8].
-
-Generate it from the
-[account's Settings -> Developer settings -> Personal access tokens -> Generate new token][1].
+The `oauth-token` is the OAuth2 token you created above for the [GitHub bot account]
 
 ```sh
 # https://github.com/settings/tokens
 kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
 ```
-
-#### Bot account
-
-The bot account used by prow must be granted owner level access to the GitHub
-orgs that prow will operate on. Note that events triggered by this account are
-ignored by some prow plugins. It is prudent to use a different bot account for
-other GitHub automation that prow should interact with to prevent events from
-being ignored unjustly.
 
 ### Add the prow components to the cluster
 
@@ -205,7 +204,7 @@ A green check mark (for a ping event, if you click edit and view the details of 
 You can click `Add webhook` on the Webhooks page to add the hook manually
 if you do not want to use the `add-hook` utility.
 
-## Next steps
+## Next Steps
 
 You now have a working Prow cluster (Woohoo!), but it isn't doing anything interesting yet.
 This section will help you configure your first plugin and job, and complete any additional setup that your instance may need.
@@ -295,12 +294,12 @@ In order to configure the bucket, follow the following steps:
 1. [provision](https://cloud.google.com/iam/docs/creating-managing-service-accounts) a new service account for interaction with the bucket
 1. [create](https://cloud.google.com/storage/docs/creating-buckets) the bucket
 1. (optionally) [expose](https://cloud.google.com/storage/docs/access-control/making-data-public) the bucket contents to the world
-1. [grant access](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) to write to the bucket for the service account
+1. [grant access](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) to admin the bucket for the service account
 1. [serialize](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) a key for the service account
 1. upload the key to a `Secret` under the `service-account.json` key
 1. edit the `plank` configuration for `default_decoration_config.gcs_credentials_secret` to point to the `Secret` above
 
-After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating, 
+After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating,
 the following script will execute the above steps for you:
 
 ```sh
@@ -308,19 +307,30 @@ gcloud iam service-accounts create prow-gcs-publisher # step 1
 identifier="$(  gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)' )"
 gsutil mb gs://prow-artifacts/ # step 2
 gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
-gsutil iam ch "serviceAccount:${identifier}:objectCreator" gs://prow-artifacts # step 4
+gsutil iam ch "serviceAccount:${identifier}:objectAdmin" gs://prow-artifacts # step 4
 gcloud iam service-accounts keys create --iam-account "${identifier}" service-account.json # step 5
 kubectl create secret generic gcs-credentials --from-file=service-account.json # step 6
 ```
 
-Then, set the field in your `config.yaml`:
+Before we can update plank's `default_decoration_config` we'll need to know the version we're using
+```sh
+$ kubectl get pod -lapp=plank -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d: -f2
+v20190619-25afbb545
+```
 
+Then, setup plank's `default_decoration_config` in `config.yaml`:
 ```yaml
 plank:
-  # other config ...
   default_decoration_config:
-    # other config ...
-    gcs_credentials_secret: gcs-credentials
+    utility_images: # using the tag we identified above
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190619-25afbb545"
+      initupload: "gcr.io/k8s-prow/initupload:v20190619-25afbb545"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190619-25afbb545"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20190619-25afbb545"
+    gcs_configuration:
+      bucket: prow-artifacts # the bucket we just made
+      path_strategy: explicit
+    gcs_credentials_secret: gcs-credentials # the secret we just made
 ```
 
 ### Add more jobs by modifying `config.yaml`
