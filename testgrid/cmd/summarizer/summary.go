@@ -33,17 +33,17 @@ type Response struct {
 
 	Bugs              map[string]string `json:"bugs"`
 	BuildIds          []string          `json:"build-ids"`
-	ColumnIDs         []string          `json:"column-ids"`
+	ColumnIDs         []string          `json:"column_ids"`
 	CustomColumns     [][]string        `json:"custom-columns"`
 	ColumnHeaderNames []string          `json:"column-header-names"`
 	Groups            []string          `json:"groups"`
 	Metrics           []string          `json:"metrics"`
 	Tests             []*Row            `json:"tests"`
-	RowIDs            []*string         `json:"row-ids"` // client wants nullable strings here
+	RowIDs            []*string         `json:"row_ids"` // client wants nullable strings here
 	Timestamps        []int             `json:"timestamps"`
 
 	// Lookup map for shortening long test IDs in each row.
-	TestIDMap map[int]string `json:"test-id-map"`
+	TestIDMap map[int]string `json:"test_id_map"`
 
 	TestMetadata map[string]testMetadata `json:"test-metadata"`
 
@@ -90,7 +90,7 @@ type testMetadata struct {
 
 type notification struct {
 	Summary     string `json:"summary"`
-	ContextLink string `json:"context-link,omitempty"`
+	ContextLink string `json:"context_link,omitempty"`
 }
 
 // Row describes a test row.
@@ -98,11 +98,11 @@ type Row struct {
 	Name              string      `json:"name"`
 	OriginalName      string      `json:"original-name"`
 	Alert             *TestAlert  `json:"alert"`
-	LinkedBugs        []string    `json:"linked-bugs"`
+	LinkedBugs        []string    `json:"linked_bugs"`
 	Messages          []string    `json:"messages"`
-	ShortTexts        []string    `json:"short-texts"`
-	TestIDs           []string    `json:"test-ids,omitempty"`
-	ShortTestIDs      []int       `json:"short-test-ids,omitempty"`
+	ShortTexts        []string    `json:"short_texts"`
+	TestIDs           []string    `json:"test_ids,omitempty"`
+	ShortTestIDs      []int       `json:"short_test_ids,omitempty"`
 	Statuses          []rleStatus `json:"statuses"`
 	Target            string      `json:"target"`
 	Tests             []*Row      `json:"tests,omitempty"`
