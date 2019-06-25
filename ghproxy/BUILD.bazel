@@ -53,6 +53,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//ghproxy/ghcache:all-srcs",
+        "//ghproxy/ghmetrics:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
