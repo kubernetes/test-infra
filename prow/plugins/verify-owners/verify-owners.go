@@ -98,7 +98,15 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if err != nil {
 		return err
 	}
-	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), cp)
+
+	var skipTrustedUserCheck bool
+	for _, r := range pc.PluginConfig.Owners.SkipCollaborators {
+		if r == pre.Repo.Name {
+			skipTrustedUserCheck = true
+			break
+		}
+	}
+	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp)
 }
 
 type messageWithLine struct {
@@ -106,7 +114,7 @@ type messageWithLine struct {
 	message string
 }
 
-func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string, triggerConfig plugins.Trigger, cp commentPruner) error {
+func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
 	number := pre.Number
@@ -163,7 +171,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 
 	// If OWNERS_ALIASES file exists, get all aliases.
 	// If the file was modified, check for non trusted users in the newly added owners.
-	nonTrustedUsers, repoAliases, err := nonTrustedUsersInOwnersAliases(ghc, log, triggerConfig, org, repo, r.Dir, modifiedOwnerAliasesFile.Patch, ownerAliasesModified)
+	nonTrustedUsers, repoAliases, err := nonTrustedUsersInOwnersAliases(ghc, log, triggerConfig, org, repo, r.Dir, modifiedOwnerAliasesFile.Patch, ownerAliasesModified, skipTrustedUserCheck)
 	if err != nil {
 		return err
 	}
@@ -187,9 +195,11 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 			continue
 		}
 
-		nonTrustedUsers, err = nonTrustedUsersInOwners(ghc, log, triggerConfig, org, repo, c.Patch, c.Filename, owners, nonTrustedUsers, repoAliases)
-		if err != nil {
-			return err
+		if !skipTrustedUserCheck {
+			nonTrustedUsers, err = nonTrustedUsersInOwners(ghc, log, triggerConfig, org, repo, c.Patch, c.Filename, owners, nonTrustedUsers, repoAliases)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -341,7 +351,7 @@ func markdownFriendlyComment(org string, nonTrustedUsers map[string][]string) st
 	return strings.Join(commentLines, "\n")
 }
 
-func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified bool) (map[string][]string, repoowners.RepoAliases, error) {
+func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified, skipTrustedUserCheck bool) (map[string][]string, repoowners.RepoAliases, error) {
 	repoAliases := make(repoowners.RepoAliases)
 	// nonTrustedUsers is a map of non-trusted users to the list of files they are being added in
 	nonTrustedUsers := map[string][]string{}
@@ -361,7 +371,7 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 	}
 
 	// If OWNERS_ALIASES file was modified, check if newly added owners are trusted.
-	if ownerAliasesModified {
+	if ownerAliasesModified && !skipTrustedUserCheck {
 		allOwners := repoAliases.ExpandAllAliases().List()
 		for _, owner := range allOwners {
 			// cap the number of checks to avoid exhausting tokens in case of large OWNERS refactors.

@@ -395,7 +395,7 @@ func TestHandle(t *testing.T) {
 			},
 		}
 
-		if err := handle(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, &fakePruner{}); err != nil {
+		if err := handle(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
 		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
@@ -668,15 +668,16 @@ aliases:
 
 func TestNonCollaborators(t *testing.T) {
 	var tests = []struct {
-		name                string
-		filesChanged        []string
-		ownersFile          string
-		ownersPatch         string
-		ownersAliasesFile   string
-		ownersAliasesPatch  string
-		includeVendorOwners bool
-		shouldLabel         bool
-		shouldComment       bool
+		name                 string
+		filesChanged         []string
+		ownersFile           string
+		ownersPatch          string
+		ownersAliasesFile    string
+		ownersAliasesPatch   string
+		includeVendorOwners  bool
+		skipTrustedUserCheck bool
+		shouldLabel          bool
+		shouldComment        bool
 	}{
 		{
 			name:          "non-collaborators additions in OWNERS file",
@@ -687,6 +688,15 @@ func TestNonCollaborators(t *testing.T) {
 			shouldComment: true,
 		},
 		{
+			name:                 "non-collaborators additions in OWNERS file, with skipTrustedUserCheck=true",
+			filesChanged:         []string{"OWNERS"},
+			ownersFile:           "nonCollaboratorAdditions",
+			ownersPatch:          "nonCollaboratorAdditions",
+			skipTrustedUserCheck: true,
+			shouldLabel:          false,
+			shouldComment:        false,
+		},
+		{
 			name:               "non-collaborators additions in OWNERS_ALIASES file",
 			filesChanged:       []string{"OWNERS_ALIASES"},
 			ownersFile:         "collaboratorsWithAliases",
@@ -694,6 +704,16 @@ func TestNonCollaborators(t *testing.T) {
 			ownersAliasesPatch: "nonCollaboratorAdditions",
 			shouldLabel:        true,
 			shouldComment:      true,
+		},
+		{
+			name:                 "non-collaborators additions in OWNERS_ALIASES file, with skipTrustedUserCheck=true",
+			filesChanged:         []string{"OWNERS_ALIASES"},
+			ownersFile:           "collaboratorsWithAliases",
+			ownersAliasesFile:    "nonCollaboratorAdditions",
+			ownersAliasesPatch:   "nonCollaboratorAdditions",
+			skipTrustedUserCheck: true,
+			shouldLabel:          false,
+			shouldComment:        false,
 		},
 		{
 			name:               "non-collaborators additions in both OWNERS and OWNERS_ALIASES file",
@@ -822,7 +842,7 @@ func TestNonCollaborators(t *testing.T) {
 			froc.foc.dirBlacklist = blacklist
 		}
 
-		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, &fakePruner{}); err != nil {
+		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, test.skipTrustedUserCheck, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
 		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
