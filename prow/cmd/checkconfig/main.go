@@ -369,7 +369,12 @@ func checkUnknownFields(keyPref string, obj interface{}, cfg reflect.Value) []st
 	case []interface{}:
 		for i, val := range concreteVal {
 			fullKey := fmt.Sprintf("%s[%v]", keyPref, i)
-			subCfg := cfg.Index(i)
+			var subCfg reflect.Value
+			if cfg.Kind() == reflect.Ptr {
+				subCfg = cfg.Elem().Index(i)
+			} else {
+				subCfg = cfg.Index(i)
+			}
 			uf = append(uf, checkUnknownFields(fullKey, val, subCfg)...)
 		}
 	}
