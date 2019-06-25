@@ -23,7 +23,12 @@ source $(dirname "${BASH_SOURCE[0]}")/kind-e2e.sh
 run_tests() {
   # binaries needed by the conformance image
   rm -rf _output/bin
-  make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"
+  NEW_GO_RUNNER_DIR="cluster/images/conformance/go-runner"
+  if [ -d "$NEW_GO_RUNNER_DIR" ]; then
+      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl cluster/images/conformance/go-runner"
+  else
+      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"
+  fi
 
   # grab the version number for kubernetes
   export KUBE_ROOT=${PWD}

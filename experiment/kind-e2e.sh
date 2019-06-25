@@ -71,8 +71,13 @@ build() {
     kind build node-image --type=bazel --kube-root="${PWD}"
 
     # make sure we have e2e requirements
-    #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
-    bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
+    #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cluster/images/conformance/go-runner"
+    NEW_GO_RUNNER_DIR="cluster/images/conformance/go-runner"
+    if [ -d "$NEW_GO_RUNNER_DIR" ]; then
+        bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo //cluster/images/conformance/go-runner
+    else
+        bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
+    fi
 
     # try to make sure the kubectl we built is in PATH
     local maybe_kubectl
@@ -146,7 +151,7 @@ run_tests() {
     # add ginkgo args
     KUBETEST_ARGS="${KUBETEST_ARGS} --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP} --report-dir=${ARTIFACTS} --disable-log-dump=true --num-nodes=${NUM_NODES}\""
 
-    # setting this env prevents ginkg e2e from trying to run provider setup
+    # setting this env prevents ginkgo e2e from trying to run provider setup
     export KUBERNETES_CONFORMANCE_TEST="y"
 
     # run kubetest, if it fails clean up and exit failure
