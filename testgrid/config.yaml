@@ -229,7 +229,7 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
-  num_failures_to_alert: 1
+  num_failures_to_alert: 2
 - name: ci-kubernetes-e2e-gci-gce-ipvs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ipvs
   alert_stale_results_hours: 24
