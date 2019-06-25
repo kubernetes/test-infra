@@ -38,7 +38,7 @@ import (
 
 const pluginName = "cherrypick"
 
-var cherryPickRe = regexp.MustCompile(`(?m)^/cherrypick\s+(.+)$`)
+var cherryPickRe = regexp.MustCompile(`(?m)^(?:/cherrypick|/cherry-pick)\s+(.+)$`)
 var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 
 type githubClient interface {
@@ -65,7 +65,7 @@ func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 		Featured:    true,
 		// depends on how the cherrypick server runs; needs auth by default (--allow-all=false)
 		WhoCanUse: "Members of the trusted organization for the repo.",
-		Examples:  []string{"/cherrypick release-3.9"},
+		Examples:  []string{"/cherrypick release-3.9", "/cherry-pick release-1.15"},
 	})
 	return pluginHelp, nil
 }
