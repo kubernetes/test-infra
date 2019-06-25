@@ -497,6 +497,19 @@ size:
 			expectedErr: fmt.Errorf("unknown fields present in embedded.yaml: " +
 				"presubmits.kube/kube[0].never_run, size, tide.not-a-property"),
 		},
+		{
+			name:     "pointer to a slice",
+			filename: "pointer.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`bugzilla:
+  default:
+    '*':
+      statuses:
+      - foobar
+      extra: oops`),
+			expectedErr: fmt.Errorf("unknown fields present in pointer.yaml: " +
+				"bugzilla.default.*.extra"),
+		},
 	}
 
 	for _, tc := range testCases {
