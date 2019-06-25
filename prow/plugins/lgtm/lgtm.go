@@ -290,23 +290,27 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	// check if skip collaborators is enabled for this org/repo
 	skipCollaborators := skipCollaborators(config, org, repoName)
 
+	// check if the commentor is a collaborator
+	isCollaborator, err := gc.IsCollaborator(org, repoName, author)
+	if err != nil {
+		log.WithError(err).Error("Failed to check if author is a collaborator.")
+		return err // abort if we can't determine if commentor is a collaborator
+	}
+
+	// if commentor isn't a collaborator, and we care about collaborators, abort
+	if !isAuthor && !skipCollaborators && !isCollaborator {
+		resp := "changing LGTM is restricted to collaborators"
+		log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
+		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
+	}
+
 	// either ensure that the commentor is a collaborator or an approver/reviwer
 	if !isAuthor && !isAssignee && !skipCollaborators {
 		// in this case we need to ensure the commentor is assignable to the PR
 		// by assigning them
 		log.Infof("Assigning %s/%s#%d to %s", org, repoName, number, author)
 		if err := gc.AssignIssue(org, repoName, number, []string{author}); err != nil {
-			msg := "assigning you to the PR failed"
-			if ok, merr := gc.IsCollaborator(org, repoName, author); merr == nil && !ok {
-				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repoName)
-			} else if merr != nil {
-				log.WithError(merr).Error("Failed to check if author is a collaborator.")
-			} else {
-				log.WithError(err).Error("Failed to assign issue to author.")
-			}
-			resp := "changing LGTM is restricted to assignees, and " + msg + "."
-			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
-			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
+			log.WithError(err).Errorf("Failed to assign %s/%s#%d to %s", org, repoName, number, author)
 		}
 	} else if !isAuthor && skipCollaborators {
 		// in this case we depend on OWNERS files instead to check if the author
