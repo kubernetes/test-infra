@@ -434,8 +434,14 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 
 	simple, err := o.ParseSimpleConfig(path)
+	if err == filepath.SkipDir {
+		return err
+	}
 	if err != nil || simple.Empty() {
 		c, err := o.ParseFullConfig(path)
+		if err == filepath.SkipDir {
+			return err
+		}
 		if err != nil {
 			log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
 		} else {

@@ -283,6 +283,9 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 	// by default we bind errors to line 1
 	lineNumber := 1
 	simple, err := oc.ParseSimpleConfig(path)
+	if err == filepath.SkipDir {
+		return nil, nil
+	}
 	if err != nil || simple.Empty() {
 		full, err := oc.ParseFullConfig(path)
 		if err == filepath.SkipDir {
