@@ -3520,7 +3520,6 @@ presubmits:
         - --root=/go/src
         - --repo=k8s.io/test-infra=master
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
-        - --repo=sigs.k8s.io/kind=master
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --scenario=execute
@@ -3528,7 +3527,7 @@ presubmits:
         - bash
         - --
         - -c
-        - cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-e2e.sh
+        - cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-master
         name: ""
         resources:
