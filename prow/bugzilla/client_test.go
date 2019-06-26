@@ -115,6 +115,11 @@ func TestUpdateBug(t *testing.T) {
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
+		if r.Header.Get("Content-Type") != "application/json" {
+			t.Error("did not correctly set content-type header for JSON")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
 		if r.URL.Query().Get("api_key") != "api-key" {
 			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
