@@ -22,6 +22,22 @@ resources:
     - "account2"
 ```
 
+For dynamic resources, ie resources that are created from static resources (See Mason), a specific config can be used:
+
+```yaml
+---
+resources:
+  (...)
+  - type: "aws-cluster"
+    state: dirty
+    min-count: 1
+    max-count: 2
+    lifespan: 48h
+```
+
+Boskos will take care of creating and naming the resources (if the current count is below min-count) and deleting the resources if they are expired or over max-count.
+
+
 Type can be GCPProject, cluster, or even a dota2 server, anything that you
 want to be a group of resources. Name is a unique identifier of the resource.
 State is a string that tells the current status of the resource.
