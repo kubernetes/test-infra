@@ -19,7 +19,7 @@ package(default_visibility = ["//testgrid:__subpackages__"])
 
 prow_push(
     name = "push",
-    images = tags(**{
+    images = tags({
         "{STABLE_TESTGRID_REPO}/updater": "//testgrid/cmd/updater:image",
         "{STABLE_TESTGRID_REPO}/configurator": "//testgrid/cmd/configurator:image",
         "{STABLE_TESTGRID_REPO}/entomologist": "//testgrid/cmd/entomologist:image",
