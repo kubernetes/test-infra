@@ -98,14 +98,24 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 	Help: "How many pending requests are waiting to be sent to GitHub servers.",
 })
 
-// ghTokenRequestsCounterVec provides the 'github_token_request_usage' counter, that
-// enables counting of GitHub calls by path and grouping by reset times.
-var ghTokenRequestsCounterVec = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "github_token_request_usage",
+// ghTokenUsageGaugeVec provides the 'github_token_usage' gauge that
+// enables keeping track of GitHub calls and quotas.
+var ghTokenUsageGaugeVec = prometheus.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "github_token_usage",
 		Help: "How many GitHub token requets have been used up.",
 	},
-	[]string{"limit", "remaining", "reset", "path"},
+	[]string{"limit", "remaining", "until-reset"},
+)
+
+// ghRequestsGauge provides the 'github_requests' gauge that keeps track
+// of the number of GitHub requests by API path.
+var ghRequestsGauge = prometheus.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "github_requests",
+		Help: "GitHub requests by API path.",
+	},
+	[]string{"path", "status", "duration"},
 )
 
 func init() {
@@ -113,7 +123,8 @@ func init() {
 	prometheus.MustRegister(outboundConcurrencyGauge)
 	prometheus.MustRegister(pendingOutboundConnectionsGauge)
 
-	prometheus.MustRegister(ghTokenRequestsCounterVec)
+	prometheus.MustRegister(ghTokenUsageGaugeVec)
+	prometheus.MustRegister(ghRequestsGauge)
 }
 
 func cacheResponseMode(headers http.Header) CacheResponseMode {
@@ -168,12 +179,14 @@ type upstreamTransport struct {
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	etag := req.Header.Get("if-none-match")
+	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.
 	resp, err := u.delegate.RoundTrip(req)
 	if err != nil {
 		logrus.WithField("cache-key", req.URL.String()).WithError(err).Error("Error from upstream (GitHub).")
 		return nil, err
 	}
+	roundTripTime := time.Now().Sub(reqStartTime)
 
 	if resp.StatusCode >= 400 {
 		// Don't store errors. They can't be revalidated to save API tokens.
@@ -185,7 +198,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
 
-	githubMetricCollection(req.RequestURI, resp.Header)
+	githubTokenMetrics(resp.Header)
+	ghRequestsGauge.With(prometheus.Labels{"path": req.URL.Path, "status": string(resp.StatusCode), "duration": roundTripTime.String()}).Inc()
 
 	return resp, nil
 }
@@ -231,16 +245,21 @@ func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurren
 }
 
 // githubMetricCollection publishes the rate limits of the github api to
-// prometheus.
-func githubMetricCollection(path string, headers http.Header) {
+// `github_token_usage` on prometheus.
+func githubTokenMetrics(headers http.Header) {
 	limit := headers.Get("X-RateLimit-Limit")
 	remaining := headers.Get("X-RateLimit-Remaining")
-	reset := headers.Get("X-RateLimit-Reset") // unit timestamp
+	timeUntilReset := timeUntilFromUnix(headers.Get("X-RateLimit-Reset"))
+	ghTokenUsageGaugeVec.With(prometheus.Labels{"limit": limit, "remaining": remaining, "until-reset": timeUntilReset.String()}).Inc()
+}
+
+// timeUntilFromUnix takes a unix timestamp and returns a `time.Duration` from `time.Now()`
+// until the passed unix timestamps point in time.
+func timeUntilFromUnix(reset string) time.Duration {
 	timestamp, err := strconv.ParseInt(reset, 10, 64)
 	if err != nil {
 		logrus.WithField("timestamp", reset).Info("Couldn't convert unix timestamp")
 	}
 	resetTime := time.Unix(timestamp, 0)
-
-	ghTokenRequestsCounterVec.With(prometheus.Labels{"limit": limit, "remaining": remaining, "reset": resetTime.Format(time.RFC850), "path": path}).Inc()
+	return time.Until(resetTime)
 }
