@@ -91,6 +91,7 @@ func (c *client) UpdateBug(id int, update BugUpdate) error {
 	if err != nil {
 		return err
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	_, err = c.request(req, logger)
 	return err
