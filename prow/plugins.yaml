@@ -253,6 +253,10 @@ repo_milestone:
     maintainers_id: 2060651
     maintainers_team: kops-maintainers
     maintainers_friendly_name: Kops Maintainers
+  kubernetes/org:
+    maintainers_id: 2842373
+    maintainers_team: owners
+    maintainers_friendly_name: GitHub Admin Team
   kubernetes/website:
     maintainers_id: 3175912
     maintainers_team: website-milestone-maintainers
@@ -469,6 +473,9 @@ plugins:
   - override
   - release-note
   - require-matching-label
+
+  kubernetes/org:
+  - milestone
 
   kubernetes/publishing-bot:
   - override
