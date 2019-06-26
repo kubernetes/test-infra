@@ -29,7 +29,7 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
-    entry_point = "prow/spyglass/lenses/coverage/coverage",
+    entry_point = ":coverage.ts",
     deps = [
         ":script",
         "//gopherage/cmd/html/static:parser",

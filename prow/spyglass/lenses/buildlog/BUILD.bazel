@@ -23,7 +23,7 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
-    entry_point = "prow/spyglass/lenses/buildlog/buildlog",
+    entry_point = ":buildlog.ts",
     deps = [
         ":script",
     ],

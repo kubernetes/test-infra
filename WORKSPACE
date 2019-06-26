@@ -155,8 +155,8 @@ git_repository(
 # https://github.com/bazelbuild/rules_nodejs
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "bc180118b9e1c7f2b74dc76a8f798d706fe9fc53470ef9296728267b4cd29441",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.30.2/rules_nodejs-0.30.2.tar.gz"],
+    sha256 = "e04a82a72146bfbca2d0575947daa60fda1878c8d3a3afe868a8ec39a6b968bb",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.31.1/rules_nodejs-0.31.1.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "yarn_install")
@@ -213,8 +213,6 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 
 new_git_repository(
     name = "operator_framework_community_operators",
-    commit = "42131df7167ec0b264c892c1f3c49ba9a72142da",
-    remote = "https://github.com/operator-framework/community-operators.git",
     build_file_content = """
 exports_files([
     "upstream-community-operators/prometheus/alertmanager.crd.yaml",
@@ -223,4 +221,6 @@ exports_files([
     "upstream-community-operators/prometheus/servicemonitor.crd.yaml",
 ])
 """,
+    commit = "42131df7167ec0b264c892c1f3c49ba9a72142da",
+    remote = "https://github.com/operator-framework/community-operators.git",
 )
