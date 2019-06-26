@@ -105,9 +105,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 				conditions[len(conditions)-1] = fmt.Sprintf("and %s", conditions[len(conditions)-1])
 				message += strings.Join(conditions, ", ")
 			}
+			if opts[branch].StatusAfterValidation != nil {
+				message += fmt.Sprintf(". After being linked to a pull request, bugs will be moved to the %q state.", *opts[branch].StatusAfterValidation)
+			}
 			configInfoStrings = append(configInfoStrings, "<li>"+message+"</li>")
 		}
-		configInfoStrings = append(configInfoStrings, fmt.Sprintf("</ul>"))
+		configInfoStrings = append(configInfoStrings, "</ul>")
+
 		configInfo[orgRepo] = strings.Join(configInfoStrings, "\n")
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
@@ -320,6 +324,17 @@ Once a valid bug is referenced in the title of this pull request, request a bug 
 		if valid {
 			log.Debug("Valid bug found.")
 			response = fmt.Sprintf(`This pull request references a valid `+bugLink+`.`, bc.Endpoint(), e.bugId)
+			// if configured, move the bug to the new state
+			if options.StatusAfterValidation != nil {
+				if err := bc.UpdateBug(e.bugId, bugzilla.BugUpdate{Status: *options.StatusAfterValidation}); err != nil {
+					log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
+					return comment(fmt.Sprintf(`An error was encountered updating the bug to the %s state on the Bugzilla server at %s for bug %d:
+> %v
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
+						*options.StatusAfterValidation, bc.Endpoint(), e.bugId, err))
+				}
+				response += fmt.Sprintf(" The bug has been moved to the %s state.", *options.StatusAfterValidation)
+			}
 		} else {
 			log.Debug("Invalid bug found.")
 			var formattedReasons string
@@ -400,7 +415,11 @@ func validateBug(bug bugzilla.Bug, options plugins.BugzillaBranchOptions) (bool,
 	}
 
 	if options.Statuses != nil {
-		if !sets.NewString(*options.Statuses...).Has(bug.Status) {
+		validStatuses := sets.NewString(*options.Statuses...)
+		if options.StatusAfterValidation != nil {
+			validStatuses.Insert(*options.StatusAfterValidation)
+		}
+		if !validStatuses.Has(bug.Status) {
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to be in one of the following states: %s, but it is %s instead", strings.Join(*options.Statuses, ", "), bug.Status))
 		}

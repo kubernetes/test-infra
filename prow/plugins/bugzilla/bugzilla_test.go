@@ -47,8 +47,10 @@ orgs:
       "*":
         is_open: true
         target_release: my-org-default
+        status_after_validation: "PRE"
       "my-org-branch":
         target_release: my-org-branch-default
+        status_after_validation: "POST"
     repos:
       my-repo:
         branches:
@@ -80,12 +82,13 @@ orgs:
 <li>on the "global-branch" branch, valid bugs must be closed and target the "global-branch-default" release</li>
 </ul>`,
 			"my-org/some-repo": `The plugin has the following configuration:<ul>
-<li>by default, valid bugs must be open and target the "my-org-default" release</li>
-<li>on the "my-org-branch" branch, valid bugs must be open and target the "my-org-branch-default" release</li>
+<li>by default, valid bugs must be open and target the "my-org-default" release. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
+<li>on the "my-org-branch" branch, valid bugs must be open and target the "my-org-branch-default" release. After being linked to a pull request, bugs will be moved to the "POST" state.</li>
 </ul>`,
 			"my-org/my-repo": `The plugin has the following configuration:<ul>
-<li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED</li>
-<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED</li>
+<li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
+<li>on the "my-org-branch" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "POST" state.</li>
+<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
 </ul>`,
 		},
 		Commands: []pluginhelp.Command{{
@@ -421,6 +424,7 @@ Instructions for interacting with me using PR comments are available [here](http
 
 func TestHandle(t *testing.T) {
 	open := true
+	updated := "UPDATED"
 	e := event{
 		org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 	}
@@ -434,6 +438,7 @@ func TestHandle(t *testing.T) {
 		expectedLabels  []string
 		expectedErr     bool
 		expectedComment string
+		expectedBug     *bugzilla.Bug
 	}{
 		{
 			name: "no bug found leaves a comment",
@@ -522,6 +527,25 @@ In response to [this](http.com):
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
 		},
+		{
+			name:           "valid bug with status update removes invalid label, adds valid label, comments and updates status",
+			bug:            &bugzilla.Bug{ID: 123},
+			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
+			labels:         []string{"bugzilla/invalid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123). The bug has been moved to the UPDATED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -570,6 +594,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 
 			checkComments(gc, testCase.name, testCase.expectedComment, t)
+
+			if testCase.expectedBug != nil {
+				if actual, expected := bc.Bugs[testCase.expectedBug.ID], *testCase.expectedBug; !reflect.DeepEqual(actual, expected) {
+					t.Errorf("%s: got incorrect bug after update: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+				}
+			}
 		})
 	}
 }
@@ -648,6 +678,7 @@ func TestValidateBug(t *testing.T) {
 	open, closed := true, false
 	one, two := "v1", "v2"
 	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
+	updated := "UPDATED"
 	var testCases = []struct {
 		name    string
 		bug     bugzilla.Bug
@@ -711,6 +742,12 @@ func TestValidateBug(t *testing.T) {
 			name:    "matching status requirement means a valid bug",
 			bug:     bugzilla.Bug{Status: "MODIFIED"},
 			options: plugins.BugzillaBranchOptions{Statuses: &modified},
+			valid:   true,
+		},
+		{
+			name:    "matching status requirement by being in the migrated state means a valid bug",
+			bug:     bugzilla.Bug{Status: "UPDATED"},
+			options: plugins.BugzillaBranchOptions{Statuses: &modified, StatusAfterValidation: &updated},
 			valid:   true,
 		},
 		{

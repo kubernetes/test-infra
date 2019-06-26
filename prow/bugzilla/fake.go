@@ -48,5 +48,20 @@ func (c *Fake) GetBug(id int) (*Bug, error) {
 	}
 }
 
+// UpdateBug updates the bug, if registered, or an error, if set,
+// or responds with an error that matches IsNotFound
+func (c *Fake) UpdateBug(id int, update BugUpdate) error {
+	if c.BugErrors.Has(id) {
+		return errors.New("injected error getting bug")
+	}
+	if bug, exists := c.Bugs[id]; exists {
+		bug.Status = update.Status
+		c.Bugs[id] = bug
+		return nil
+	} else {
+		return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+	}
+}
+
 // the Fake is a Client
 var _ Client = &Fake{}

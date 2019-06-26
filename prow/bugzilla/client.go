@@ -17,6 +17,7 @@ limitations under the License.
 package bugzilla
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +29,7 @@ import (
 type Client interface {
 	Endpoint() string
 	GetBug(id int) (*Bug, error)
+	UpdateBug(id int, update BugUpdate) error
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
@@ -53,12 +55,48 @@ func (c *client) Endpoint() string {
 	return c.endpoint
 }
 
+// GetBug retrieves a Bug from the server
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
 func (c *client) GetBug(id int) (*Bug, error) {
 	logger := c.logger.WithFields(logrus.Fields{"method": "GetBug", "id": id})
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), nil)
 	if err != nil {
 		return nil, err
 	}
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	var parsedResponse struct {
+		Bugs []*Bug `json:"bugs,omitempty"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	if len(parsedResponse.Bugs) != 1 {
+		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
+	}
+	return parsedResponse.Bugs[0], nil
+}
+
+// UpdateBug updates the fields of a bug on the server
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
+func (c *client) UpdateBug(id int, update BugUpdate) error {
+	logger := c.logger.WithFields(logrus.Fields{"method": "UpdateBug", "id": id, "update": update})
+	body, err := json.Marshal(update)
+	if err != nil {
+		return fmt.Errorf("failed to marshal update payload: %v", update)
+	}
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	_, err = c.request(req, logger)
+	return err
+}
+
+func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error) {
 	if apiKey := c.getAPIKey(); len(apiKey) > 0 {
 		// some BugZilla servers are too old and can't handle the header.
 		// some don't want the query parameter. We can set both and keep
@@ -89,16 +127,7 @@ func (c *client) GetBug(id int) (*Bug, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read response body: %v", err)
 	}
-	var parsedResponse struct {
-		Bugs []*Bug `json:"bugs,omitempty"`
-	}
-	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
-		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
-	}
-	if len(parsedResponse.Bugs) != 1 {
-		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
-	}
-	return parsedResponse.Bugs[0], nil
+	return raw, nil
 }
 
 type requestError struct {

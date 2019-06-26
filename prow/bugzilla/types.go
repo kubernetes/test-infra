@@ -138,3 +138,10 @@ type Flag struct {
 	// The login name of the user this flag has been requested to be granted or denied. Note, this field is only returned if a requestee is set.
 	Requestee string `json:"requestee,omitempty"`
 }
+
+// BugUpdate contains fields to update on a Bug. See API documentation at:
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
+type BugUpdate struct {
+	// Status is the current status of the bug.
+	Status string `json:"status,omitempty"`
+}
