@@ -1873,6 +1873,78 @@ github_reporter:
 	}
 }
 
+func TestValidRerunAuthConfig(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		prowConfig  string
+		expectError bool
+	}{
+		{
+			name: "valid rerun auth config",
+			prowConfig: `
+deck:
+  rerun_auth_config:
+    allow_anyone: false
+    authorized_users:
+    - someperson
+    - someotherperson
+`,
+			expectError: false,
+		},
+		{
+			name: "allow anyone and whitelist specified",
+			prowConfig: `
+deck:
+  rerun_auth_config:
+    allow_anyone: true
+    authorized_users:
+    - someperson
+    - anotherperson
+`,
+			expectError: true,
+		},
+		{
+			name: "empty config",
+			prowConfig: `
+deck:
+  rerun_auth_config:
+`,
+			expectError: false,
+		},
+		{
+			name: "allow anyone with empty whitelist",
+			prowConfig: `
+deck:
+  rerun_auth_config:
+    allow_anyone: true
+    authorized_users:
+`,
+			expectError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		// save the config
+		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+		if err != nil {
+			t.Fatalf("fail to make tempdir: %v", err)
+		}
+		defer os.RemoveAll(prowConfigDir)
+
+		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+		if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+			t.Fatalf("fail to write prow config: %v", err)
+		}
+
+		_, err = Load(prowConfig, "")
+		if tc.expectError && err == nil {
+			t.Errorf("tc %s: Expect error, but got nil", tc.name)
+		} else if !tc.expectError && err != nil {
+			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+		}
+	}
+}
+
 func TestMergeCommitTemplateLoading(t *testing.T) {
 	var testCases = []struct {
 		name        string
