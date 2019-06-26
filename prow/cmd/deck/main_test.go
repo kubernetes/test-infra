@@ -258,15 +258,43 @@ func TestProwJob(t *testing.T) {
 func TestRerun(t *testing.T) {
 	testCases := []struct {
 		name                string
-		shouldCreateProwjob bool
+		login               string
+		allowAnyone         bool
+		rerunCreatesJob     bool
+		shouldCreateProwJob bool
+		httpCode            int
 	}{
 		{
 			name:                "Handler returns ProwJob",
-			shouldCreateProwjob: false,
+			login:               "hello",
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusFound,
 		},
 		{
-			name:                "Handler creates ProwJob",
-			shouldCreateProwjob: true,
+			name:                "User not authorized to create prow job",
+			login:               "malicious",
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: false,
+			httpCode:            http.StatusFound,
+		},
+		{
+			name:                "RerunCreatesJob set to false, should not create prow job",
+			login:               "hello",
+			allowAnyone:         true,
+			rerunCreatesJob:     false,
+			shouldCreateProwJob: false,
+			httpCode:            http.StatusOK,
+		},
+		{
+			name:                "Allow anyone set to true, creates job",
+			login:               "ugh",
+			allowAnyone:         true,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusFound,
 		},
 	}
 
@@ -292,18 +320,37 @@ func TestRerun(t *testing.T) {
 					State: prowapi.PendingState,
 				},
 			})
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.shouldCreateProwjob)
+			configGetter := func() *config.Config {
+				return &config.Config{
+					ProwConfig: config.ProwConfig{
+						Deck: config.Deck{
+							RerunAuthConfig: config.RerunAuthConfig{
+								AllowAnyone:     tc.allowAnyone,
+								AuthorizedUsers: []string{"hello", "world"},
+							},
+						},
+					},
+				}
+			}
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter)
 			req, err := http.NewRequest(http.MethodPost, "/rerun?prowjob=wowsuch", nil)
+			req.AddCookie(&http.Cookie{
+				Name:    "github_login",
+				Value:   tc.login,
+				Path:    "/",
+				Expires: time.Now().Add(time.Hour * 24 * 30),
+				Secure:  true,
+			})
 			if err != nil {
 				t.Fatalf("Error making request: %v", err)
 			}
 			rr := httptest.NewRecorder()
 			handler.ServeHTTP(rr, req)
+			if rr.Code != tc.httpCode {
+				t.Fatalf("Bad error code: %d", rr.Code)
+			}
 
-			if tc.shouldCreateProwjob {
-				if rr.Code != http.StatusNoContent {
-					t.Fatalf("Unexpected http status code: %d, expected 204", rr.Code)
-				}
+			if tc.shouldCreateProwJob {
 				pjs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
 				if err != nil {
 					t.Fatalf("failed to list prowjobs: %v", err)
@@ -312,10 +359,7 @@ func TestRerun(t *testing.T) {
 					t.Errorf("expected to get two prowjobs, got %d", numPJs)
 				}
 
-			} else {
-				if rr.Code != http.StatusOK {
-					t.Fatalf("Bad error code: %d", rr.Code)
-				}
+			} else if !tc.rerunCreatesJob {
 				resp := rr.Result()
 				defer resp.Body.Close()
 				body, err := ioutil.ReadAll(resp.Body)

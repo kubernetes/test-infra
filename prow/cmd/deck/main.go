@@ -394,7 +394,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob)))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfg)))
 	mux.Handle("/prowjob", gziphandler.GzipHandler(handleProwJob(prowJobClient)))
 
 	if o.spyglass {
@@ -1150,7 +1150,22 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 	}
 }
 
-func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool) http.HandlerFunc {
+// canTriggerJob determines whether the given user can trigger any job.
+func canTriggerJob(user string, cfg config.Getter) bool {
+	if cfg().Deck.RerunAuthConfig.AllowAnyone {
+		return true
+	}
+	if cfg().Deck.RerunAuthConfig.AuthorizedUsers != nil {
+		for _, s := range cfg().Deck.RerunAuthConfig.AuthorizedUsers {
+			if user == s {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg config.Getter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		if name == "" {
@@ -1177,13 +1192,25 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool) http
 				http.Error(w, "request must be of type POST", http.StatusMethodNotAllowed)
 				return
 			}
-			if _, err := prowJobClient.Create(&newPJ); err != nil {
-				logrus.WithError(err).Error("Error creating job")
-				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
+			githubCookie, err := r.Cookie("github_login")
+			if err == http.ErrNoCookie {
+				http.Redirect(w, r, "/github-login", http.StatusFound)
+			} else if err != nil {
+				http.Error(w, fmt.Sprintf("Error retrieving GitHub cookie: %v", err), http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusNoContent)
-			return
+			if canTriggerJob(githubCookie.Value, cfg) {
+				if _, err := prowJobClient.Create(&newPJ); err != nil {
+					logrus.WithError(err).Error("Error creating job")
+					http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
+					return
+				}
+				http.Redirect(w, r, "/?rerun=success", http.StatusFound)
+				return
+			} else {
+				http.Redirect(w, r, "/?rerun=denied", http.StatusFound)
+				return
+			}
 		}
 		b, err := yaml.Marshal(&newPJ)
 		if err != nil {

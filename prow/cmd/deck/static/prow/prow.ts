@@ -650,7 +650,13 @@ function redraw(fz: FuzzySearch): void {
         max = 2 * 3600;
     }
     drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now, max);
-    if (rerunStatus != null) {
+    if (rerunStatus === "denied") {
+        modal.style.display = "block";
+        rerunCommand.innerHTML = `You don't have permission to rerun that job. Try asking @cjwagner.`;
+    } else if (rerunStatus === "success") {
+        modal.style.display = "block";
+        rerunCommand.innerHTML = `Job successfully triggered`;
+    } else if (rerunStatus != null) {
         modal.style.display = "block";
         rerunCommand.innerHTML = `Nice try! The direct rerun feature hasn't been implemented yet, so that button does nothing.`;
     }
@@ -671,7 +677,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
         rerunElement.appendChild(copyButton);
         const runButton = document.createElement('a');
-        runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Run</button>";
+        runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
         if (login === "") {
             runButton.href = `/github-login?dest=%2F?rerun=work_in_progress`;
         } else {
