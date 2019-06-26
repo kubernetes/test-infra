@@ -77,7 +77,7 @@ type StateNotMatch struct {
 }
 
 func (s StateNotMatch) Error() string {
-	return fmt.Sprintf("StateNotMatch - expectedRes %v, current %v", s.expect, s.current)
+	return fmt.Sprintf("StateNotMatch - expected %v, current %v", s.expect, s.current)
 }
 
 // NewRanch creates a new Ranch object.

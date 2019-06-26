@@ -137,8 +137,8 @@ type Metric struct {
 	// TODO: implements state transition metrics
 }
 
-// IsInUsed reports if the resource is owned by anything else than Boskos.
-func (r *Resource) IsInUsed() bool {
+// IsInUse reports if the resource is owned by anything else than Boskos.
+func (r *Resource) IsInUse() bool {
 	return r.Owner != ""
 }
 

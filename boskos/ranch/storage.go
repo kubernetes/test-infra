@@ -265,7 +265,7 @@ func (s *Storage) updateDynamicResources(lifecycle common.DynamicResourceLifeCyc
 	count := 0
 	for _, r := range resources {
 		// We can only delete resources not in use
-		if !r.IsInUsed() {
+		if !r.IsInUse() {
 			// Expired
 			if r.ExpirationDate != nil && s.now().After(*r.ExpirationDate) {
 				toDelete = append(toDelete, r)
@@ -357,7 +357,7 @@ func (s *Storage) persistResources(resToUpdate, resToAdd, resToDelete []common.R
 
 	for _, r := range resToDelete {
 		// If currently busy, yield deletion to later cycles.
-		if !r.IsInUsed() {
+		if !r.IsInUse() {
 			logrus.Infof("Deleting resource %s", r.Name)
 			if err := s.DeleteResource(r.Name); err != nil {
 				finalError = multierror.Append(finalError, err)
@@ -376,7 +376,7 @@ func (s *Storage) persistResources(resToUpdate, resToAdd, resToDelete []common.R
 	}
 
 	for _, r := range resToUpdate {
-		if !r.IsInUsed() {
+		if !r.IsInUse() {
 			logrus.Infof("Updating resource %s", r.Name)
 			if _, err := s.UpdateResource(r); err != nil {
 				finalError = multierror.Append(finalError, err)
