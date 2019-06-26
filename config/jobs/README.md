@@ -72,12 +72,6 @@ of kubernetes/community at the PR's HEAD. It will report back to the PR via a
 status context named `pull-kubernetes-community`. Its logs and results are going
 to end up in GCS under `kubernetes-jenkins/pr-logs/pull/community`.
 
-There are few things it does wrong ([#13118]):
-- It's using the `gcloud-in-go` image, but doesn't need `gcloud`, which is a
-  practice we [discourage](#job-images)
-- The first couple of args are used by a deprecated thing called `bootstrap.py`
-  that should not be used by any new jobs.
-
 ```yaml
 presubmits:
   kubernetes/community:
@@ -88,12 +82,13 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: golang:1.12.5
         command:
         - /bin/bash
         args:
         - -c
-        - "make verify"
+        # Add GOPATH/bin back to PATH to workaround #9469
+        - "export PATH=$GOPATH/bin:$PATH && make verify"
 ```
 
 A periodic job named "periodic-cluster-api-provider-aws-test-creds" that will

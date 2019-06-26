@@ -11,6 +11,7 @@ presubmits:
         command:
         - sh
         - "-c"
+        # Add GOPATH/bin back to PATH to workaround #9469
         - "export PATH=$PATH:$GOPATH/bin && make verify"
   - name: pull-community-tempelis-check
     decorate: true
