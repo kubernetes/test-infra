@@ -769,6 +769,44 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			},
 			expected: &Policy{Protect: yes},
 		},
+		{
+			name: "Explicit non-configuration takes precedence over ProtectTested",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						AllowDisabledJobPolicies: true,
+						ProtectTested:            true,
+						Orgs: map[string]Org{
+							"org": {
+								Repos: map[string]Repo{
+									"repo": {
+										Policy: Policy{
+											Protect: no,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				JobConfig: JobConfig{
+					Presubmits: map[string][]Presubmit{
+						"org/repo": {
+							{
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
+								Reporter: Reporter{
+									Context: "required presubmit",
+								},
+								AlwaysRun: true,
+							},
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
 	}
 
 	for _, tc := range testCases {
