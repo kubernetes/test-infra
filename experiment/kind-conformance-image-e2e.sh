@@ -13,15 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# hack script for running a kind e2e
-# must be run with a kubernetes checkout in $PWD (IE from the checkout)
-# TODO(bentheelder): replace this with kubetest integration
-# Usage: SKIP="ginkgo skip regex" FOCUS="ginkgo focus regex" kind-e2e.sh
-
 set -o errexit
 set -o nounset
 set -o pipefail
 set -o xtrace
+
+# set a fixed version so that users of this script manually upgrade kind
+# in a controlled fashion along with the script contents (config, flags...)
+STABLE_KIND_VERSION=v0.4.0
 
 # our exit handler (trap)
 cleanup() {
@@ -46,14 +45,7 @@ install_kind() {
     TMP_DIR=$(mktemp -d)
     # ensure bin dir
     mkdir -p "${TMP_DIR}/bin"
-    # if we have a kind checkout, install that to the tmpdir, otherwise go get it
-    if [[ $(go list sigs.k8s.io/kind) = "sigs.k8s.io/kind" ]]; then
-        pushd $GOPATH/src/sigs.k8s.io/kind
-        make install
-        popd
-    else
-        env "GOPATH=${TMP_DIR}" go get -u sigs.k8s.io/kind
-    fi
+    env "GOPATH=${TMP_DIR}" GO111MODULE="on" go get -u "sigs.k8s.io/kind@${STABLE_KIND_VERSION}"
     PATH="${TMP_DIR}/bin:${PATH}"
     export PATH
 }
@@ -70,10 +62,6 @@ build() {
     # build the node image w/ kubernetes
     kind build node-image --type=bazel --kube-root="${PWD}"
 
-    # make sure we have e2e requirements
-    #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
-    bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
-
     # try to make sure the kubectl we built is in PATH
     local maybe_kubectl
     maybe_kubectl="$(find "${PWD}/bazel-bin/" -name "kubectl" -type f)"
@@ -87,19 +75,20 @@ build() {
     echo 1 > /proc/sys/vm/drop_caches || true
 }
 
+
 # up a cluster with kind
 create_cluster() {
     # create the config file
     cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
 # config for 1 control plane node and 2 workers
 # necessary for conformance
-kind: Config
-apiVersion: kind.sigs.k8s.io/v1alpha2
+kind: Cluster
+apiVersion: kind.sigs.k8s.io/v1alpha3
 nodes:
 # the control plane node
 - role: control-plane
 - role: worker
-  replicas: 2
+- role: worker
 EOF
     # mark the cluster as up for cleanup
     # even if kind create fails, kind delete can clean up after it
@@ -117,40 +106,42 @@ EOF
         "--config=${ARTIFACTS}/kind-config.yaml"
 }
 
-# run e2es with kubetest
+
 run_tests() {
-    # export the KUBECONFIG
-    KUBECONFIG="$(kind get kubeconfig-path)"
-    export KUBECONFIG
+  # binaries needed by the conformance image
+  rm -rf _output/bin
+  NEW_GO_RUNNER_DIR="cluster/images/conformance/go-runner"
+  if [ -d "$NEW_GO_RUNNER_DIR" ]; then
+      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl cluster/images/conformance/go-runner"
+  else
+      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"
+  fi
 
-    # base kubetest args
-    KUBETEST_ARGS="--provider=skeleton --test --check-version-skew=false"
+  # grab the version number for kubernetes
+  export KUBE_ROOT=${PWD}
+  source "${KUBE_ROOT}/hack/lib/version.sh"
+  kube::version::get_version_vars
 
-    # get the number of worker nodes
-    # TODO(bentheelder): this is kinda gross
-    NUM_NODES="$(kubectl get nodes \
-        -o=jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.taints}{"\n"}{end}' \
-        | grep -cv "node-role.kubernetes.io/master" \
-    )"
+  VERSION=$(echo -n "${KUBE_GIT_VERSION}" | cut -f 1 -d '+')
+  export VERSION
+  KUBECONFIG=$(kind get kubeconfig-path)
+  export KUBECONFIG
 
-    # ginkgo regexes
-    SKIP="${SKIP:-"Alpha|Kubectl|\\[(Disruptive|Feature:[^\\]]+|Flaky)\\]"}"
-    FOCUS="${FOCUS:-"\\[Conformance\\]"}"
-    # if we set PARALLEL=true, skip serial tests set --ginkgo-parallel
-    PARALLEL="${PARALLEL:-false}"
-    if [[ "${PARALLEL}" == "true" ]]; then
-        SKIP="\\[Serial\\]|${SKIP}"
-        KUBETEST_ARGS="${KUBETEST_ARGS} --ginkgo-parallel"
-    fi
+  pushd ${PWD}/cluster/images/conformance
 
-    # add ginkgo args
-    KUBETEST_ARGS="${KUBETEST_ARGS} --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP} --report-dir=${ARTIFACTS} --disable-log-dump=true --num-nodes=${NUM_NODES}\""
+  # build and load the conformance image into the kind nodes
+  make build ARCH=amd64
+  kind load docker-image k8s.gcr.io/conformance-amd64:${VERSION}
 
-    # setting this env prevents ginkg e2e from trying to run provider setup
-    export KUBERNETES_CONFORMANCE_TEST="y"
+  # patch the image in manifest
+  sed -i "s|conformance-amd64:.*|conformance-amd64:${VERSION}|g" conformance-e2e.yaml
+  ./conformance-e2e.sh
 
-    # run kubetest, if it fails clean up and exit failure
-    eval "kubetest ${KUBETEST_ARGS}"
+  popd
+
+  # extract the test results
+  NODE_NAME=$(kubectl get po -n conformance e2e-conformance-test -o 'jsonpath={.spec.nodeName}')
+  docker exec "${NODE_NAME}" tar cvf - /tmp/results | tar -C "${ARTIFACTS}" --strip-components 2 -xf -
 }
 
 # setup kind, build kubernetes, create a cluster, run the e2es
@@ -167,6 +158,4 @@ main() {
     run_tests
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  main
-fi
+main
