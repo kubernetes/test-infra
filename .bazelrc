@@ -4,6 +4,16 @@ run --workspace_status_command=./hack/print-workspace-status.sh
 
 # https://github.com/kubernetes/test-infra/issues/12876
 build --incompatible_depset_union=false
+# https://github.com/kubernetes/test-infra/issues/13140
+build --incompatible_disable_deprecated_attr_params=false
+# https://github.com/bazelbuild/bazel/issues/7802
+build --incompatible_string_join_requires_strings=false
+# https://github.com/bazelbuild/bazel/issues/7793
+build --incompatible_require_ctx_in_configure_features=false
+# Looks like this needs a rules_k8s bump
+build --incompatible_no_support_tools_in_action_inputs=false
+# --incompatible_depset_is_not_iterable=false depends on this
+build --incompatible_depset_is_not_iterable=false
 
 # enable data race detection
 test --features=race --test_output=errors
