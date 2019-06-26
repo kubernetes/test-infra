@@ -309,7 +309,7 @@ gsutil mb gs://prow-artifacts/ # step 2
 gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
 gsutil iam ch "serviceAccount:${identifier}:objectAdmin" gs://prow-artifacts # step 4
 gcloud iam service-accounts keys create --iam-account "${identifier}" service-account.json # step 5
-kubectl create secret generic gcs-credentials --from-file=service-account.json # step 6
+kubectl -n test-pods create secret generic gcs-credentials --from-file=service-account.json # step 6
 ```
 
 Before we can update plank's `default_decoration_config` we'll need to know the version we're using
