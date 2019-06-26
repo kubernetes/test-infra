@@ -62,7 +62,7 @@ jasmine_node_test(
 
 rollup_bundle(
     name = "prow_bundle",
-    entry_point = "prow/cmd/deck/static/prow/prow",
+    entry_point = ":prow/prow.ts",
     deps = [
         ":prow",
         "@npm//moment",
@@ -79,7 +79,7 @@ ts_library(
 
 rollup_bundle(
     name = "plugin_help_bundle",
-    entry_point = "prow/cmd/deck/static/plugin-help/plugin-help",
+    entry_point = ":plugin-help/plugin-help.ts",
     deps = [
         ":plugin_help",
         "@npm//dialog-polyfill",
@@ -97,7 +97,7 @@ ts_library(
 
 rollup_bundle(
     name = "pr_bundle",
-    entry_point = "prow/cmd/deck/static/pr/pr",
+    entry_point = "pr/pr.ts",
     deps = [
         ":pr",
         "@npm//dialog-polyfill",
@@ -116,7 +116,7 @@ ts_library(
 
 rollup_bundle(
     name = "tide_bundle",
-    entry_point = "prow/cmd/deck/static/tide/tide",
+    entry_point = ":tide/tide.ts",
     deps = [
         ":tide",
         "@npm//moment",
@@ -135,7 +135,7 @@ ts_library(
 
 rollup_bundle(
     name = "tide_history_bundle",
-    entry_point = "prow/cmd/deck/static/tide-history/tide-history",
+    entry_point = ":tide-history/tide-history.ts",
     deps = [
         ":tide_history",
         "@npm//moment",
@@ -152,7 +152,7 @@ ts_library(
 
 rollup_bundle(
     name = "command_help_bundle",
-    entry_point = "prow/cmd/deck/static/command-help/command-help",
+    entry_point = ":command-help/command-help.ts",
     deps = [
         ":command_help",
         "@npm//dialog-polyfill",
@@ -182,7 +182,7 @@ ts_library(
 
 rollup_bundle(
     name = "spyglass_bundle",
-    entry_point = "prow/cmd/deck/static/spyglass/spyglass",
+    entry_point = ":spyglass/common.ts",
     deps = [
         ":spyglass",
         ":spyglass_common",
@@ -191,7 +191,7 @@ rollup_bundle(
 
 rollup_bundle(
     name = "spyglass_lens_bundle",
-    entry_point = "prow/cmd/deck/static/spyglass/lens",
+    entry_point = ":spyglass/lens.ts",
     deps = [
         ":spyglass_common",
         ":spyglass_lens",

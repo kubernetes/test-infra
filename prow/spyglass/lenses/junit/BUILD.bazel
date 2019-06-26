@@ -24,7 +24,7 @@ ts_library(
 
 rollup_bundle(
     name = "script_bundle",
-    entry_point = "prow/spyglass/lenses/junit/lens",
+    entry_point = ":lens.ts",
     deps = [
         ":script",
     ],
