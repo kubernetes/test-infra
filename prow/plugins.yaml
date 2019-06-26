@@ -604,7 +604,7 @@ plugins:
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - release-note
-  
+
   kubernetes-sigs/kind:
   - override
 
@@ -621,6 +621,9 @@ plugins:
   - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-ibmcloud:
+  - milestone
+
+  kubernetes-sigs/cluster-api-provider-docker:
   - milestone
 
   kubernetes-sigs/contributor-playground:
