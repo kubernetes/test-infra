@@ -10,12 +10,14 @@ py_test(
         "coalesce.py",
         "coalesce_test.py",
     ],
+    python_version = "PY2",
 )
 
 py_test(
     name = "verify_boilerplate",
     srcs = ["verify_boilerplate.py"],
     data = ["//:all-srcs"],
+    python_version = "PY2",
     tags = ["lint"],
 )
 
@@ -279,6 +281,7 @@ sh_test(
 py_binary(
     name = "pylint_bin",
     srcs = ["pylint_bin.py"],
+    python_version = "PY2",
     tags = ["lint"],
     # NOTE: this should only contain direct third party imports and pylint
     deps = [

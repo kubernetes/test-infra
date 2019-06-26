@@ -9,6 +9,7 @@ py_test(
         ":configs",
     ],
     main = "config.py",
+    python_version = "PY2",
     deps = [requirement("pyyaml")],
 )
 
