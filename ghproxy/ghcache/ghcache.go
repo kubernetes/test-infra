@@ -29,7 +29,9 @@ import (
 	"context"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/gregjones/httpcache"
@@ -96,10 +98,22 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 	Help: "How many pending requests are waiting to be sent to GitHub servers.",
 })
 
+// ghTokenRequestsCounterVec provides the 'github_token_request_usage' counter, that
+// enables counting of GitHub calls by path and grouping by reset times.
+var ghTokenRequestsCounterVec = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "github_token_request_usage",
+		Help: "How many GitHub token requets have been used up.",
+	},
+	[]string{"limit", "remaining", "reset", "path"},
+)
+
 func init() {
 	prometheus.MustRegister(cacheCounter)
 	prometheus.MustRegister(outboundConcurrencyGauge)
 	prometheus.MustRegister(pendingOutboundConnectionsGauge)
+
+	prometheus.MustRegister(ghTokenRequestsCounterVec)
 }
 
 func cacheResponseMode(headers http.Header) CacheResponseMode {
@@ -170,6 +184,9 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	if etag != "" {
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
+
+	githubMetricCollection(req.RequestURI, resp.Header)
+
 	return resp, nil
 }
 
@@ -211,4 +228,19 @@ func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurren
 		logrus.WithError(err).Fatal("Error connecting to Redis")
 	}
 	return NewFromCache(delegate, rediscache.NewWithClient(conn), maxConcurrency)
+}
+
+// githubMetricCollection publishes the rate limits of the github api to
+// prometheus.
+func githubMetricCollection(path string, headers http.Header) {
+	limit := headers.Get("X-RateLimit-Limit")
+	remaining := headers.Get("X-RateLimit-Remaining")
+	reset := headers.Get("X-RateLimit-Reset") // unit timestamp
+	timestamp, err := strconv.ParseInt(reset, 10, 64)
+	if err != nil {
+		logrus.WithField("timestamp", reset).Info("Couldn't convert unix timestamp")
+	}
+	resetTime := time.Unix(timestamp, 0)
+
+	ghTokenRequestsCounterVec.With(prometheus.Labels{"limit": limit, "remaining": remaining, "reset": resetTime.Format(time.RFC850), "path": path}).Inc()
 }
