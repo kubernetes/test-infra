@@ -504,15 +504,18 @@ func TestMasonStartStop(t *testing.T) {
 }
 
 func TestConfig(t *testing.T) {
-	config, err := ranch.ParseConfig("test-resources.yaml")
+	boskosConfig, err := ranch.ParseConfig("test-resources.yaml")
 	if err != nil {
 		t.Error(err)
 	}
-	configs, err := ParseConfig("test-configs.yaml")
+	masonConfig, err := ParseConfig("test-configs.yaml")
 	if err != nil {
 		t.Error(err)
 	}
-	if err := ValidateConfig(configs, config); err == nil {
+	for _, c := range boskosConfig.Resources {
+		fmt.Println(c.LifeSpan)
+	}
+	if err := ValidateConfig(masonConfig, boskosConfig); err == nil {
 		t.Error(fmt.Errorf("should have failed since there is more type2 than type1 resources"))
 	}
 }

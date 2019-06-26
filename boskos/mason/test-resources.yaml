@@ -9,3 +9,4 @@ resources:
   state: dirty
   min-count: 1
   max-count: 4
+  lifespan: 24h

@@ -60,6 +60,34 @@ type Item interface {
 	GetName() string
 }
 
+// Duration is a wrapper around time.Duration that parses times in either
+// 'integer number of nanoseconds' or 'duration string' formats and serializes
+// to 'duration string' format.
+type Duration struct {
+	*time.Duration
+}
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &d.Duration); err == nil {
+		// b was an integer number of nanoseconds.
+		return nil
+	}
+	// b was not an integer. Assume that it is a duration string.
+
+	var str string
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+
+	pd, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+	d.Duration = &pd
+	return nil
+}
+
 // Resource abstracts any resource type that can be tracked by boskos
 type Resource struct {
 	Type       string    `json:"type"`
@@ -75,12 +103,12 @@ type Resource struct {
 
 // ResourceEntry is resource config format defined from config.yaml
 type ResourceEntry struct {
-	Type     string         `json:"type"`
-	State    string         `json:"state"`
-	Names    []string       `json:"names,flow"`
-	MaxCount int            `json:"max-count,omitempty"`
-	MinCount int            `json:"min-count,omitempty"`
-	LifeSpan *time.Duration `json:"lifespan,omitempty"`
+	Type     string    `json:"type"`
+	State    string    `json:"state"`
+	Names    []string  `json:"names,flow"`
+	MaxCount int       `json:"max-count,omitempty"`
+	MinCount int       `json:"min-count,omitempty"`
+	LifeSpan *Duration `json:"lifespan,omitempty"`
 }
 
 // DynamicResourceLifeCycle defines the life cycle of a dynamic resource.
@@ -141,11 +169,15 @@ func NewResourcesFromConfig(e ResourceEntry) []Resource {
 
 // NewResourceTypeLifeCycleFromConfig parse the a ResourceEntry into a DynamicResourceLifeCycle
 func NewDynamicResourceLifeCycleFromConfig(e ResourceEntry) DynamicResourceLifeCycle {
+	var dur *time.Duration
+	if e.LifeSpan != nil {
+		dur = e.LifeSpan.Duration
+	}
 	return DynamicResourceLifeCycle{
 		Type:         e.Type,
 		MaxCount:     e.MaxCount,
 		MinCount:     e.MinCount,
-		LifeSpan:     e.LifeSpan,
+		LifeSpan:     dur,
 		InitialState: e.State,
 	}
 }
