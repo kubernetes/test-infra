@@ -38,12 +38,13 @@ git_repository(
     shallow_since = "1551387314 -0800",
 )
 
-git_repository(
+http_archive(
     name = "io_bazel_rules_go",
-    commit = "3c34e66b0507056e83bcbd9c963ab9d7e6cb049f",  # Delete com_google_protobuf please
-    remote = "https://github.com/bazelbuild/rules_go.git",
-    shallow_since = "1555072240 -0400",
-    # tag = "0.18.3",
+    sha256 = "f04d2373bcaf8aa09bccb08a98a57e721306c8f6043a2a0ee610fd6853dcde3d",
+    urls = [
+        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
+    ],
 )
 
 git_repository(
@@ -59,7 +60,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.12.2",
+    go_version = "1.12.6",
     nogo = "@//:nogo_vet",
 )
 
