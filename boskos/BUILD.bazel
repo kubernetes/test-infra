@@ -22,7 +22,7 @@ prow_image(
 
 prow_push(
     name = "push",
-    images = tags(**{
+    images = tags(targets = {
         "{STABLE_PROW_REPO}/boskos/aws-janitor": "//maintenance/aws-janitor:image",
         "{STABLE_PROW_REPO}/boskos/boskos": "//boskos:image",
         "{STABLE_PROW_REPO}/boskos/fake-mason": "//boskos/mason/fake-mason:image",

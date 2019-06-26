@@ -96,11 +96,11 @@ def target(cmd):
 #     "gcr.io/k8s-prow/ghproxy:latest": "//ghproxy:image",
 #     "gcr.io/k8s-prow/ghproxy:latest-fejta": "//ghproxy:image",
 #   }
-def tags(*cmds, **targets):
+def tags(cmds, targets):
     # Create :YYYYmmdd-commitish :latest :latest-USER tags
     cmd_targets = {prefix(cmd): target(cmd) for cmd in cmds}
     cmd_targets.update({prefix(p): t for (p, t) in targets.items()})
-    return _image_tags(**cmd_targets)
+    return _image_tags(cmd_targets)
 
 def object(name, cluster = CORE_CLUSTER, **kwargs):
     k8s_object(
@@ -110,9 +110,9 @@ def object(name, cluster = CORE_CLUSTER, **kwargs):
     )
 
 def _basename(name):
-    if '/' not in name:
+    if "/" not in name:
         return name
-    return name.rpartition('/')[-1]
+    return name.rpartition("/")[-1]
 
 # component generates k8s_object rules and returns a {kind: [targets]} map.
 #
