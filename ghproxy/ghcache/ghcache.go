@@ -105,7 +105,7 @@ var ghTokenUsageGaugeVec = prometheus.NewGaugeVec(
 		Name: "github_token_usage",
 		Help: "How many GitHub token requets have been used up.",
 	},
-	[]string{"limit", "remaining", "until-reset"},
+	[]string{"remaining", "until-reset"},
 )
 
 // ghRequestsGauge provides the 'github_requests' gauge that keeps track
@@ -198,7 +198,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
 
-	githubTokenMetrics(resp.Header)
+	githubTokenMetrics(resp.Header, reqStartTime)
 	ghRequestsGauge.With(prometheus.Labels{"path": req.URL.Path, "status": string(resp.StatusCode), "duration": roundTripTime.String()}).Inc()
 
 	return resp, nil
@@ -246,20 +246,20 @@ func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurren
 
 // githubMetricCollection publishes the rate limits of the github api to
 // `github_token_usage` on prometheus.
-func githubTokenMetrics(headers http.Header) {
-	limit := headers.Get("X-RateLimit-Limit")
+func githubTokenMetrics(headers http.Header, now time.Time) {
 	remaining := headers.Get("X-RateLimit-Remaining")
-	timeUntilReset := timeUntilFromUnix(headers.Get("X-RateLimit-Reset"))
-	ghTokenUsageGaugeVec.With(prometheus.Labels{"limit": limit, "remaining": remaining, "until-reset": timeUntilReset.String()}).Inc()
+	timeUntilReset := timeUntilFromUnix(headers.Get("X-RateLimit-Reset"), now)
+
+	ghTokenUsageGaugeVec.With(prometheus.Labels{"remaining": remaining, "until-reset": timeUntilReset.String()}).Inc()
 }
 
-// timeUntilFromUnix takes a unix timestamp and returns a `time.Duration` from `time.Now()`
-// until the passed unix timestamps point in time.
-func timeUntilFromUnix(reset string) time.Duration {
+// timeUntilFromUnix takes a unix timestamp and returns a `time.Duration`
+// from the given time until the passed unix timestamps point in time.
+func timeUntilFromUnix(reset string, now time.Time) time.Duration {
 	timestamp, err := strconv.ParseInt(reset, 10, 64)
 	if err != nil {
 		logrus.WithField("timestamp", reset).Info("Couldn't convert unix timestamp")
 	}
 	resetTime := time.Unix(timestamp, 0)
-	return time.Until(resetTime)
+	return resetTime.Sub(now)
 }
