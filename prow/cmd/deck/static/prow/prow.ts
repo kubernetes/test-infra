@@ -685,6 +685,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
                 };
             } else {
                 runButton.href = `/?rerun=work_in_progress`;
+                runButton.onclick = () => gtag("event", "troll_rerun_popup", {event_category: "engagement", transport_type: "beacon"});
             }
         }
         rerunElement.appendChild(runButton);
