@@ -1226,7 +1226,8 @@ func validateAgent(v JobBase, podNamespace string) error {
 	b := string(prowapi.KnativeBuildAgent)
 	j := string(prowapi.JenkinsAgent)
 	p := string(prowapi.TektonAgent)
-	agents := sets.NewString(k, b, j, p)
+	x := string(prowapi.JenkinsXAgent)
+	agents := sets.NewString(k, b, j, p, x)
 	agent := v.Agent
 	switch {
 	case !agents.Has(agent):
