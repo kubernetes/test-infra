@@ -205,7 +205,7 @@ def set_current_account(account, dry_run):
     cmd = ['gcloud', 'config', 'set', 'core/account', account]
     print >>sys.stderr, 'Run:', cmd
     if dry_run:
-        return None
+        return
     return subprocess.check_call(cmd)
 
 
@@ -223,7 +223,7 @@ def revoke_current_account(dry_run):
     cmd = ['gcloud', 'auth', 'revoke']
     print >>sys.stderr, 'Run:', cmd
     if dry_run:
-        return None
+        return
     return subprocess.check_call(cmd)
 
 

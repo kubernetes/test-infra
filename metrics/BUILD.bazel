@@ -44,7 +44,6 @@ py_binary(
         requirement("pytz"),
         requirement("PyYAML"),
         requirement("requests"),
-        requirement("six"),
         requirement("urllib3"),
     ],
 )
@@ -73,7 +72,6 @@ py_test(
         requirement("pytz"),
         requirement("PyYAML"),
         requirement("requests"),
-        requirement("six"),
         requirement("urllib3"),
     ],
 )
