@@ -25,11 +25,17 @@ Simply add this to your prowjob:
 
 ```yaml
 annotations:
-  testgrid-dashboards: dashboard-name  # a dashboard defined in config.yaml.
-  testgrid-tab-name: some-short-name   # optionally, a shorter name for the tab. If omitted, just uses the job name.
-  testgrid-alert-email: me@me.com      # optionally, an alert email that will be applied to the tab created in the
-                                       # first dashboard specified in testgrid-dashboards.
-  description: Words about your job.   # optionally, a description of your job. If omitted, just uses the job name.
+  testgrid-dashboards: dashboard-name    # a dashboard defined in config.yaml.
+  testgrid-tab-name: some-short-name     # optionally, a shorter name for the tab. If omitted, just uses the job name.
+  testgrid-alert-email: me@me.com        # optionally, an alert email that will be applied to the tab created in the
+                                         # first dashboard specified in testgrid-dashboards.
+  description: Words about your job.     # optionally, a description of your job. If omitted, just uses the job name.
+  
+  testgrid-num-columns-recent: 10        # optionally, the number of runs a row can be omitted from before it is
+                                         # considered stale. Currently defaults to 10.
+  testgrid-num-failures-to-alert: 3      # optionally, the number of continuous failures before sending an email.
+                                         # Currently defaults to 3.
+  testgrid-alert-stale-results-hours: 12 # optionally, send an email if this many hours pass with no results at all.
 
 ```
 
