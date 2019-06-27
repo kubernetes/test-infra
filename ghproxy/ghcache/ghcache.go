@@ -199,7 +199,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	}
 
 	githubTokenMetrics(resp.Header, reqStartTime)
-	ghRequestsGauge.With(prometheus.Labels{"path": req.URL.Path, "status": string(resp.StatusCode), "duration": roundTripTime.String()}).Inc()
+	ghRequestsGauge.With(prometheus.Labels{"path": getFirstPathFragment(req.URL.Path), "status": string(resp.StatusCode), "duration": roundTripTime.String()}).Inc()
 
 	return resp, nil
 }
@@ -262,4 +262,16 @@ func timeUntilFromUnix(reset string, now time.Time) time.Duration {
 	}
 	resetTime := time.Unix(timestamp, 0)
 	return resetTime.Sub(now)
+}
+
+// getFirstPathFragment returns the first fragment of a path, of a
+// `*url.URL.Path`. e.g. `/repo/kubernetes/test-infra/` will return `repo`
+func getFirstPathFragment(path string) string {
+	if len(path) > 1 {
+		if path[0] == '/' {
+			return strings.Split(path[:1], "/")[0]
+		}
+		return strings.Split(path, "/")[0]
+	}
+	return path
 }
