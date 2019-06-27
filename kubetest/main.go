@@ -119,6 +119,7 @@ type options struct {
 	testCmdArgs             []string
 	up                      bool
 	upgradeArgs             string
+	boskosWaitDuration      time.Duration
 }
 
 func defineFlags() *options {
@@ -181,6 +182,7 @@ func defineFlags() *options {
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
+	flag.DurationVar(&o.boskosWaitDuration, "boskos-wait-duration", 5*time.Minute, "Defines how long it waits until quit getting Boskos resoure, default 5 minutes")
 
 	// The "-v" flag was also used by glog, which is used by k8s.io/client-go. Duplicate flags cause panics.
 	// 1. Even if we could convince glog to change, they have too many consumers to ever do so.
@@ -732,7 +734,7 @@ func prepareGcp(o *options) error {
 		log.Printf("provider %v, will acquire project type %v from boskos", o.provider, resType)
 
 		// let's retry 5min to get next available resource
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+		ctx, cancel := context.WithTimeout(context.Background(), o.boskosWaitDuration)
 		defer cancel()
 		p, err := boskos.AcquireWait(ctx, resType, "free", "busy")
 		if err != nil {
