@@ -615,7 +615,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190611-6adfc2e-0.24.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190627-ae82881-0.27.0
       command:
       - hack/autodeps.sh
       args:
@@ -648,7 +648,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190611-6adfc2e-0.24.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190627-ae82881-0.27.0
       command:
       - hack/autodeps.sh
       args:
@@ -681,7 +681,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190611-6adfc2e-0.26.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190627-ae82881-0.27.0
       command:
       - bazel
       - run
