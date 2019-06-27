@@ -149,6 +149,29 @@ func (ga *Agent) HandleLogin(client OAuthClient) http.HandlerFunc {
 	}
 }
 
+// GetLogin returns the username of the already authenticated GitHub user.
+func (ga *Agent) GetLogin(r *http.Request, getter GitHubClientGetter) (string, error) {
+	session, err := ga.gc.CookieStore.Get(r, tokenSession)
+	if err != nil {
+		return "", err
+	}
+	val := session.Values[tokenKey]
+	if val == nil {
+		return "", fmt.Errorf("Could not find GitHub token")
+	}
+	var token = &oauth2.Token{}
+	token, ok := val.(*oauth2.Token)
+	if !ok {
+		return "", fmt.Errorf("Unexpected GitHub token type")
+	}
+	ghc := getter.GetGitHubClient(token.AccessToken, false)
+	userInfo, err := ghc.GetUser("")
+	if err != nil {
+		return "", err
+	}
+	return *userInfo.Login, nil
+}
+
 // HandleLogout handles GitHub logout request from front-end. It invalidates cookie sessions and
 // redirect back to the front page.
 func (ga *Agent) HandleLogout(client OAuthClient) http.HandlerFunc {

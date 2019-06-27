@@ -54,6 +54,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -171,6 +172,8 @@ var (
 		),
 	}
 )
+
+type authCfgGetter func() *config.RerunAuthConfig
 
 type traceResponseWriter struct {
 	http.ResponseWriter
@@ -389,12 +392,14 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	}, podLogClients, cfg)
 	ja.Start()
 
+	cfgGetter := func() *config.RerunAuthConfig { return &cfg().Deck.RerunAuthConfig }
+
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfg)))
+
 	mux.Handle("/prowjob", gziphandler.GzipHandler(handleProwJob(prowJobClient)))
 
 	if o.spyglass {
@@ -489,6 +494,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
 		// Handles redirect from GitHub OAuth server.
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter()))
+		mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter())))
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer
@@ -1151,23 +1157,38 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 }
 
 // canTriggerJob determines whether the given user can trigger any job.
-func canTriggerJob(user string, cfg config.Getter) bool {
-	if cfg().Deck.RerunAuthConfig.AllowAnyone {
+func canTriggerJob(user string, cfg *config.RerunAuthConfig) bool {
+	if cfg.AllowAnyone {
 		return true
 	}
-	if cfg().Deck.RerunAuthConfig.AuthorizedUsers != nil {
-		for _, s := range cfg().Deck.RerunAuthConfig.AuthorizedUsers {
-			if user == s {
-				return true
-			}
+	for _, u := range cfg.AuthorizedUsers {
+		if prowgithub.NormLogin(u) == prowgithub.NormLogin(user) {
+			return true
 		}
 	}
 	return false
 }
 
-func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg config.Getter) http.HandlerFunc {
+func marshalJob(w http.ResponseWriter, pj prowapi.ProwJob, l *logrus.Entry) {
+	b, err := yaml.Marshal(&pj)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
+		l.WithError(err).Error("Error marshaling job.")
+		return
+	}
+	w.Header().Set("Content-Type", "application/x-yaml")
+	if _, err := w.Write(b); err != nil {
+		l.WithError(err).Error("Error writing log.")
+	}
+}
+
+// handleRerun triggers a rerun of the given job if that features is enabled, it receives a
+// POST request, and the user has the necessary permissions. Otherwise, it writes the config
+// for a new job but does not trigger it.
+func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.GitHubClientGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
+		l := logrus.WithField("prowjob", name)
 		if name == "" {
 			http.Error(w, "request did not provide the 'name' query parameter", http.StatusBadRequest)
 			return
@@ -1177,7 +1198,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
 				// admins only care about errors other than not found
-				logrus.WithError(err).Warning("ProwJob not found.")
+				l.WithError(err).Warning("ProwJob not found.")
 			}
 			return
 		}
@@ -1187,40 +1208,34 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 		// On Prow instances that require auth even for viewing Deck this is okayish, because the Prowjob UUID
 		// is hard to guess
 		// Ref: https://github.com/kubernetes/test-infra/pull/12827#issuecomment-502850414
-		if createProwJob {
-			if r.Method != http.MethodPost {
-				http.Error(w, "request must be of type POST", http.StatusMethodNotAllowed)
+		switch r.Method {
+		case http.MethodGet:
+			marshalJob(w, newPJ, l)
+		case http.MethodPost:
+			if !createProwJob {
+				http.Error(w, "Direct rerun feature is not yet enabled", http.StatusMethodNotAllowed)
 				return
 			}
-			githubCookie, err := r.Cookie("github_login")
-			if err == http.ErrNoCookie {
-				http.Redirect(w, r, "/github-login", http.StatusFound)
-			} else if err != nil {
-				http.Error(w, fmt.Sprintf("Error retrieving GitHub cookie: %v", err), http.StatusInternalServerError)
+			login, err := goa.GetLogin(r, ghc)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Error retrieving GitHub login: %v", err), http.StatusInternalServerError)
+				l.WithError(err).Errorf("Error retrieving GitHub login")
 				return
 			}
-			if canTriggerJob(githubCookie.Value, cfg) {
-				if _, err := prowJobClient.Create(&newPJ); err != nil {
-					logrus.WithError(err).Error("Error creating job")
-					http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
-					return
-				}
-				http.Redirect(w, r, "/?rerun=success", http.StatusFound)
-				return
-			} else {
-				http.Redirect(w, r, "/?rerun=denied", http.StatusFound)
+			if !canTriggerJob(login, cfg()) {
+				http.Redirect(w, r, "/?rerun=error", http.StatusFound)
 				return
 			}
-		}
-		b, err := yaml.Marshal(&newPJ)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
-			logrus.WithError(err).Error("Error marshaling jobs.")
+			if _, err := prowJobClient.Create(&newPJ); err != nil {
+				l.WithError(err).Error("Error creating job")
+				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/?rerun=success", http.StatusFound)
 			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		if _, err := w.Write(b); err != nil {
-			logrus.WithError(err).Error("Error writing log.")
+		default:
+			http.Error(w, fmt.Sprintf("bad verb %v", r.Method), http.StatusMethodNotAllowed)
+			return
 		}
 	}
 }
