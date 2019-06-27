@@ -1,0 +1,13 @@
+# sigs.k8s.io/cluster-api-provider-docker presubmits
+presubmits:
+  kubernetes-sigs/cluster-api-provider-docker:
+  - name: pull-cluster-api-provider-docker-verify
+    path_alias: "sigs.k8s.io/cluster-api-provider-docker"
+    always_run: true
+    optional: false
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-master
+        command:
+        - "./hack/verify-all.sh"
