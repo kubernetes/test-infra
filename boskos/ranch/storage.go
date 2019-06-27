@@ -184,7 +184,7 @@ func (s *Storage) GetDynamicResourceLifeCycle(name string) (common.DynamicResour
 	return res, nil
 }
 
-// GetResourcesLifeCycle list all dynamic resource life cycle
+// GetDynamicResourceLifeCycles list all dynamic resource life cycle
 func (s *Storage) GetDynamicResourceLifeCycles() ([]common.DynamicResourceLifeCycle, error) {
 	var resources []common.DynamicResourceLifeCycle
 	items, err := s.dynamicResourceLifeCycles.List()
@@ -480,9 +480,8 @@ func ValidateConfig(config *common.BoskosConfig) error {
 
 			if _, ok := resourceNames[name]; ok {
 				return fmt.Errorf("duplicated resource name: %s", name)
-			} else {
-				resourceNames[name] = true
 			}
+			resourceNames[name] = true
 		}
 	}
 	return nil

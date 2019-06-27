@@ -67,6 +67,7 @@ type Duration struct {
 	*time.Duration
 }
 
+// UnmarshalJSON implement the JSON Unmarshaler interface in order to be able parse string to time.Duration.
 func (d *Duration) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &d.Duration); err == nil {
 		// b was an integer number of nanoseconds.
@@ -167,7 +168,7 @@ func NewResourcesFromConfig(e ResourceEntry) []Resource {
 	return resources
 }
 
-// NewResourceTypeLifeCycleFromConfig parse the a ResourceEntry into a DynamicResourceLifeCycle
+// NewDynamicResourceLifeCycleFromConfig parse the a ResourceEntry into a DynamicResourceLifeCycle
 func NewDynamicResourceLifeCycleFromConfig(e ResourceEntry) DynamicResourceLifeCycle {
 	var dur *time.Duration
 	if e.LifeSpan != nil {

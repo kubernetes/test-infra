@@ -187,7 +187,7 @@ func TestAcquire(t *testing.T) {
 		c := MakeTestRanch(tc.resources, nil)
 		res, err := c.Acquire(tc.rtype, tc.state, tc.dest, tc.owner)
 		if !AreErrorsEqual(err, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expectedRes error %v", tc.name, err, tc.expectErr)
+			t.Errorf("%s - Got error %v, expected error %v", tc.name, err, tc.expectErr)
 			continue
 		}
 
@@ -199,17 +199,17 @@ func TestAcquire(t *testing.T) {
 
 		if err == nil {
 			if res.State != tc.dest {
-				t.Errorf("%s - Wrong final state. Got %v, expectedRes %v", tc.name, res.State, tc.dest)
+				t.Errorf("%s - Wrong final state. Got %v, expected %v", tc.name, res.State, tc.dest)
 			}
 			if !reflect.DeepEqual(*res, resources[0]) {
-				t.Errorf("%s - Wrong resource. Got %v, expectedRes %v", tc.name, res, resources[0])
+				t.Errorf("%s - Wrong resource. Got %v, expected %v", tc.name, res, resources[0])
 			} else if !res.LastUpdate.After(startTime) {
 				t.Errorf("%s - LastUpdate did not update.", tc.name)
 			}
 		} else {
 			for _, res := range resources {
 				if res.LastUpdate != startTime {
-					t.Errorf("%s - LastUpdate should not update. Got %v, expectedRes %v", tc.name, resources[0].LastUpdate, startTime)
+					t.Errorf("%s - LastUpdate should not update. Got %v, expected %v", tc.name, resources[0].LastUpdate, startTime)
 				}
 			}
 		}
@@ -320,12 +320,12 @@ func TestRelease(t *testing.T) {
 		c := MakeTestRanch([]common.Resource{tc.resource}, []common.DynamicResourceLifeCycle{tc.dResource})
 		releaseErr := c.Release(tc.resName, tc.dest, tc.owner)
 		if !AreErrorsEqual(releaseErr, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expectedRes error %v", tc.name, releaseErr, tc.expectErr)
+			t.Errorf("%s - Got error %v, expected error %v", tc.name, releaseErr, tc.expectErr)
 			continue
 		}
 		res, _ := c.Storage.GetResource(tc.resName)
 		if !reflect.DeepEqual(res, tc.expectedRes) {
-			t.Errorf("Test %v: got %v, expectedRes %v", tc.name, res, tc.expectedRes)
+			t.Errorf("Test %v: got %v, expected %v", tc.name, res, tc.expectedRes)
 		}
 	}
 }
@@ -484,7 +484,7 @@ func TestUpdate(t *testing.T) {
 			c := MakeTestRanch(tc.resources, nil)
 			err := c.Update(tc.resName, tc.owner, tc.state, nil)
 			if !AreErrorsEqual(err, tc.expectErr) {
-				t.Fatalf("Got error %v, expectedRes error %v", err, tc.expectErr)
+				t.Fatalf("Got error %v, expected error %v", err, tc.expectErr)
 			}
 
 			resources, err2 := c.Storage.GetResources()
@@ -494,16 +494,16 @@ func TestUpdate(t *testing.T) {
 
 			if err == nil {
 				if resources[0].Owner != tc.owner {
-					t.Errorf("%s - Wrong owner after release. Got %v, expectedRes %v", tc.name, resources[0].Owner, tc.owner)
+					t.Errorf("%s - Wrong owner after release. Got %v, expected %v", tc.name, resources[0].Owner, tc.owner)
 				} else if resources[0].State != tc.state {
-					t.Errorf("%s - Wrong state after release. Got %v, expectedRes %v", tc.name, resources[0].State, tc.state)
+					t.Errorf("%s - Wrong state after release. Got %v, expected %v", tc.name, resources[0].State, tc.state)
 				} else if !resources[0].LastUpdate.After(startTime) {
 					t.Errorf("%s - LastUpdate did not update.", tc.name)
 				}
 			} else {
 				for _, res := range resources {
 					if res.LastUpdate != startTime {
-						t.Errorf("%s - LastUpdate should not update. Got %v, expectedRes %v", tc.name, resources[0].LastUpdate, startTime)
+						t.Errorf("%s - LastUpdate should not update. Got %v, expected %v", tc.name, resources[0].LastUpdate, startTime)
 					}
 				}
 			}
@@ -578,7 +578,7 @@ func TestMetric(t *testing.T) {
 		c := MakeTestRanch(tc.resources, nil)
 		metric, err := c.Metric(tc.metricType)
 		if !AreErrorsEqual(err, tc.expectErr) {
-			t.Errorf("%s - Got error %v, expectedRes error %v", tc.name, err, tc.expectErr)
+			t.Errorf("%s - Got error %v, expected error %v", tc.name, err, tc.expectErr)
 			continue
 		}
 
@@ -973,7 +973,7 @@ func TestSyncResources(t *testing.T) {
 		sort.Stable(common.ResourceByName(resources))
 		sort.Stable(common.ResourceByName(tc.expectedRes))
 		if !reflect.DeepEqual(resources, tc.expectedRes) {
-			t.Errorf("Test %v: \n got \t\t %v, \n expectedRes %v", tc.name, resources, tc.expectedRes)
+			t.Errorf("Test %v: \n got \t\t %v, \n expected %v", tc.name, resources, tc.expectedRes)
 		}
 		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
 		sort.SliceStable(lfs, func(i, j int) bool {
@@ -987,7 +987,7 @@ func TestSyncResources(t *testing.T) {
 			}
 		})
 		if !reflect.DeepEqual(lfs, tc.expectedLCs) {
-			t.Errorf("Test %v: \n got \t\t %v, \n expectedRes %v", tc.name, lfs, tc.expectedLCs)
+			t.Errorf("Test %v: \n got \t\t %v, \n expected %v", tc.name, lfs, tc.expectedLCs)
 		}
 	}
 }
