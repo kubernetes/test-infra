@@ -623,262 +623,190 @@ test_groups:
 #presubmits
 - name: pull-cluster-api-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-build
-  num_columns_recent: 20
 - name: pull-cluster-api-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-make
-  num_columns_recent: 20
 - name: pull-cluster-api-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-test
-  num_columns_recent: 20
 - name: pull-cluster-api-vendor-in-sync
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-vendor-in-sync
-  num_columns_recent: 20
 - name: pull-cluster-api-integration
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-integration
-  num_columns_recent: 20
 - name: periodic-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-bazel-e2e
-  num_columns_recent: 20
 - name: periodic-cluster-api-provider-aws-test-creds
   gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-test-creds
-  num_columns_recent: 20
 - name: ci-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-verify
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-verify-boilerplate
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-verify-boilerplate
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-build
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-test
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-bazel-integration
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-integration
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-azure-bazel-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-verify
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-azure-verify-boilerplate
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-verify-boilerplate
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-azure-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-build
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-azure-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-azure-bazel-test
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-digitalocean-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-build
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-digitalocean-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-test
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-digitalocean-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-verify
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-digitalocean-lint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-digitalocean-lint
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-build
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-make
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-test
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-ibmcloud-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-ibmcloud-make
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-ibmcloud-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-ibmcloud-test
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-ibmcloud-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-ibmcloud-check
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-vsphere-verify-crds
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-verify-crds
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-test
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-vsphere-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-vsphere-e2e
-  num_columns_recent: 20
 - name: ci-cluster-api-provider-vsphere-ova-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-cluster-api-provider-vsphere-ova-e2e
   num_columns_recent: 20
 - name: pull-cluster-api-provider-openstack-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-openstack-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-test
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-openstack-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-check
-  num_columns_recent: 20
 - name: pull-cluster-api-provider-docker-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-docker-verify
-  num_columns_recent: 20
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-bazel-build-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build-canary
-  num_columns_recent: 20
 - name: pull-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-bazel-test-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test-canary
-  num_columns_recent: 20
 - name: pull-kubernetes-bazel-test-integration-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test-integration-canary
-  num_columns_recent: 20
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-aks-engine-azure
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure
   num_columns_recent: 30
 - name: pull-kubernetes-e2e-gce-rbe
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-rbe
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-kind
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kind
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-gce-100-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-alpha-features
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-csi-serial
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-csi-serial
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-storage-slow
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-storage-slow
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-storage-slow-rbe
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-storage-slow-rbe
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-big-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-big-performance
   days_of_results: 60
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-large-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-large-performance
   days_of_results: 60
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-device-plugin-gpu
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gke-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke-device-plugin-gpu
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-node-e2e-alpha
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-alpha
-  num_columns_recent: 20
 - name: pull-kubernetes-node-e2e-containerd
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-containerd
-  num_columns_recent: 20
 - name: pull-kubernetes-local-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-local-e2e
-  num_columns_recent: 20
 - name: pull-kubernetes-conformance-image-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-conformance-image-test
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-containerd-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-containerd-gce
-  num_columns_recent: 20
   num_failures_to_alert: 10
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
-  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce-scale
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-scale
   days_of_results: 30
-  num_columns_recent: 20
 - name: pull-perf-tests-clusterloader2
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2
   days_of_results: 30
-  num_columns_recent: 20
 - name: pull-perf-tests-clusterloader2-kubemark
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2-kubemark
   days_of_results: 30
-  num_columns_recent: 20
 - name: pull-kubernetes-node-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-integration
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-integration
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-integration-podutil
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-integration-podutil
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-typecheck
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-typecheck
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-dependencies
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-dependencies
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-kubernetes-dependencies-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-dependencies-canary
-  num_columns_recent: 20
 - name: pull-kubernetes-godeps
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-godeps
-  num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
 - name: pull-publishing-bot-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-build
-  num_columns_recent: 20
 - name: pull-publishing-bot-validate
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-publishing-bot-validate
-  num_columns_recent: 20
 - name: post-test-infra-deploy-prow
   gcs_prefix: kubernetes-jenkins/logs/post-test-infra-deploy-prow
 - name: post-test-infra-push-prow
@@ -893,31 +821,22 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-update-slack-oncall
 - name: pull-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
-  num_columns_recent: 20
 - name: pull-test-infra-bazel-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel-canary
-  num_columns_recent: 20
 - name: pull-test-infra-gubernator
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-gubernator
-  num_columns_recent: 20
 - name: pull-test-infra-verify-file-perms
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-file-perms
-  num_columns_recent: 20
 - name: pull-test-infra-yamllint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-yamllint
-  num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-check
-  num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-build
-  num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-unit-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-unit-test
-  num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-integration-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-integration-test
-  num_columns_recent: 20
 - name: post-cloud-provider-vsphere-deploy
   gcs_prefix: kubernetes-jenkins/logs/post-cloud-provider-vsphere-deploy
   num_columns_recent: 20
@@ -963,13 +882,10 @@ test_groups:
   num_failures_to_alert: 1
 - name: pull-vsphere-csi-driver-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-vsphere-csi-driver-check
-  num_columns_recent: 20
 - name: pull-vsphere-csi-driver-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-vsphere-csi-driver-build
-  num_columns_recent: 20
 - name: pull-vsphere-csi-driver-unit-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-vsphere-csi-driver-unit-test
-  num_columns_recent: 20
 - name: post-vsphere-csi-driver-deploy
   gcs_prefix: kubernetes-jenkins/logs/post-vsphere-csi-driver-deploy
   num_columns_recent: 20
@@ -984,10 +900,8 @@ test_groups:
   num_failures_to_alert: 1
 - name: pull-kubernetes-e2e-gce-iscsi
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-iscsi
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-iscsi-serial
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-iscsi-serial
-  num_columns_recent: 20
 - name: ci-kubernetes-e2e-gce-iscsi
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-iscsi
   num_columns_recent: 20
@@ -1014,10 +928,8 @@ test_groups:
 # Cluster registry
 - name: pull-cluster-registry-verify-gensrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
-  num_columns_recent: 20
 - name: pull-cluster-registry-verify-gosrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gosrc
-  num_columns_recent: 20
 # k8s-beta (active release branch) jobs
 - name: ci-kubernetes-e2e-gci-gce-scalability-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-beta
@@ -1537,49 +1449,36 @@ test_groups:
   num_failures_to_alert: 1
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
-  num_columns_recent: 20
 - name: pull-kops-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-build
-  num_columns_recent: 20
 - name: pull-kops-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-test
-  num_columns_recent: 20
 - name: pull-kops-verify-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-bazel
-  num_columns_recent: 20
 - name: pull-kops-verify-boilerplate
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-boilerplate
-  num_columns_recent: 20
 - name: pull-kops-verify-govet
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-govet
-  num_columns_recent: 20
 - name: pull-kops-verify-gofmt
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-gofmt
-  num_columns_recent: 20
 - name: pull-kops-verify-packages
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-packages
-  num_columns_recent: 20
 - name: pull-charts-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-charts-e2e
-  num_columns_recent: 20
 - name: pull-cadvisor-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cadvisor-e2e
-  num_columns_recent: 20
 # Poseidon
 - name: ci-poseidon-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-poseidon-e2e-gce
   num_columns_recent: 20
 - name: pull-poseidon-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-bazel
-  num_columns_recent: 20
 - name: pull-poseidon-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-verify
-  num_columns_recent: 20
 
 # Kube-Batch
 - name: pull-kube-batch-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-batch-verify
-  num_columns_recent: 20
 
 # Prow hosted conformance tests
 - name: ci-kubernetes-gce-conformance-latest
@@ -2103,45 +2002,33 @@ test_groups:
 
 - name: pull-community-tempelis-check
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-tempelis-check
-  num_columns_recent: 20
 - name: post-community-tempelis-apply
   gcs_prefix: kubernetes-jenkins/logs/post-community-tempelis-apply
   num_failures_to_alert: 1
 - name: pull-community-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-verify
-  num_columns_recent: 20
 
 # ingress-nginx
 - name: pull-ingress-nginx-boilerplate
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-boilerplate
-  num_columns_recent: 20
 - name: pull-ingress-nginx-codegen
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-codegen
-  num_columns_recent: 20
 - name: pull-ingress-nginx-gofmt
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-gofmt
-  num_columns_recent: 20
 - name: pull-ingress-nginx-golint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-golint
-  num_columns_recent: 20
 - name: pull-ingress-nginx-test-lua
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-test-lua
-  num_columns_recent: 20
 - name: pull-ingress-nginx-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-test
-  num_columns_recent: 20
 - name: pull-ingress-nginx-e2e-1-12
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-12
-  num_columns_recent: 20
 - name: pull-ingress-nginx-e2e-1-13
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-13
-  num_columns_recent: 20
 - name: pull-ingress-nginx-e2e-1-14
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-14
-  num_columns_recent: 20
 - name: pull-ingress-nginx-e2e-1-15
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-e2e-1-15
-  num_columns_recent: 20
 - name: ci-ingress-nginx-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-ingress-nginx-e2e
   num_columns_recent: 20
