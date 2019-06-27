@@ -2000,11 +2000,6 @@ test_groups:
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 
-- name: pull-community-tempelis-check
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-tempelis-check
-- name: post-community-tempelis-apply
-  gcs_prefix: kubernetes-jenkins/logs/post-community-tempelis-apply
-  num_failures_to_alert: 1
 - name: pull-community-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-community-verify
 
@@ -3198,15 +3193,6 @@ dashboards:
   dashboard_tab:
   - name: pull-verify
     test_group_name: pull-community-verify
-
-- name: sig-contribex-tempelis
-  dashboard_tab:
-  - name: presubmit
-    test_group_name: pull-community-tempelis-check
-  - name: postsubmit
-    test_group_name: post-community-tempelis-apply
-    alert_options:
-      alert_mail_to_addresses: ktbry@google.com
 
 - name: sig-release-1.12-all
   dashboard_tab:
@@ -6671,6 +6657,8 @@ dashboards:
     test_group_name: pull-release-notes-test
     base_options: width=10
 
+- name: sig-contribex-slack-infra
+
 #
 # Start dashboard groups
 #
@@ -6777,7 +6765,7 @@ dashboard_groups:
 - name: sig-contribex
   dashboard_names:
   - sig-contribex-community
-  - sig-contribex-tempelis
+  - sig-contribex-slack-infra
 
 - name: sig-multicluster
   dashboard_names:
