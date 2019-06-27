@@ -27,7 +27,7 @@ git_repository(
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
 
-versions.check(minimum_bazel_version = "0.27.0")
+versions.check(minimum_bazel_version = "0.26.0")
 
 # TODO(fejta): delete the com_google_protobuf rule once rules_go >= 0.18.4
 # This silences the shallow_since message (and increases cache hit rate)
@@ -156,8 +156,8 @@ git_repository(
 # https://github.com/bazelbuild/rules_nodejs
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "6d4edbf28ff6720aedf5f97f9b9a7679401bf7fca9d14a0fff80f644a99992b4",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.32.2/rules_nodejs-0.32.2.tar.gz"],
+    sha256 = "e04a82a72146bfbca2d0575947daa60fda1878c8d3a3afe868a8ec39a6b968bb",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.31.1/rules_nodejs-0.31.1.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "yarn_install")

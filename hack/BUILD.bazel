@@ -37,7 +37,7 @@ nodejs_test(
         "//:all-srcs",
         "@npm//tslint",
     ],
-    entry_point = "@npm//:node_modules/tslint/bin/tslint",
+    entry_point = "@npm//node_modules/tslint:bin/tslint",
     tags = ["lint"],
     templated_args = [
         "-p",
