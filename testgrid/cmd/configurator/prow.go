@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"k8s.io/test-infra/testgrid/config"
 	"path"
+	"strconv"
 	"strings"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -32,6 +33,9 @@ const testgridCreateTestGroupAnnotation = "testgrid-create-test-group"
 const testgridDashboardsAnnotation = "testgrid-dashboards"
 const testgridTabNameAnnotation = "testgrid-tab-name"
 const testgridEmailAnnotation = "testgrid-alert-email"
+const testgridNumColumnsRecentAnnotation = "testgrid-num-columns-recent"
+const testgridAlertStaleResultsHoursAnnotation = "testgrid-alert-stale-results-hours"
+const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
 const descriptionAnnotation = "description"
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
@@ -45,9 +49,10 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	mustNotMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "false"
 	dashboards, addToDashboards := j.Annotations[testgridDashboardsAnnotation]
 	mightMakeGroup := (mustMakeGroup || addToDashboards || jobType != prowapi.PresubmitJob) && !mustNotMakeGroup
+	var testGroup *config.TestGroup
 
 	if mightMakeGroup {
-		if c.config.FindTestGroup(testGroupName) != nil {
+		if testGroup = c.config.FindTestGroup(testGroupName); testGroup != nil {
 			if mustMakeGroup {
 				return fmt.Errorf("test group %q already exists", testGroupName)
 			}
@@ -61,13 +66,37 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 				return fmt.Errorf("job %s: couldn't figure out a default decoration config", j.Name)
 			}
 
-			g := &config.TestGroup{
+			testGroup = &config.TestGroup{
 				Name:      testGroupName,
 				GcsPrefix: path.Join(prefix, prowGCS.RootForSpec(&downwardapi.JobSpec{Job: j.Name, Type: jobType})),
 			}
-			ReconcileTestGroup(g, c.defaultConfig.DefaultTestGroup)
-			c.config.TestGroups = append(c.config.TestGroups, g)
+			ReconcileTestGroup(testGroup, c.defaultConfig.DefaultTestGroup)
+			c.config.TestGroups = append(c.config.TestGroups, testGroup)
 		}
+	}
+
+	if ncr, ok := j.Annotations[testgridNumColumnsRecentAnnotation]; ok {
+		ncrInt, err := strconv.ParseInt(ncr, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid integer", testgridNumColumnsRecentAnnotation, ncr)
+		}
+		testGroup.NumColumnsRecent = int32(ncrInt)
+	}
+
+	if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
+		srhInt, err := strconv.ParseInt(srh, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid integer", testgridAlertStaleResultsHoursAnnotation, srh)
+		}
+		testGroup.AlertStaleResultsHours = int32(srhInt)
+	}
+
+	if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
+		nftaInt, err := strconv.ParseInt(nfta, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
+		}
+		testGroup.NumFailuresToAlert = int32(nftaInt)
 	}
 
 	if tn, ok := j.Annotations[testgridTabNameAnnotation]; ok {
