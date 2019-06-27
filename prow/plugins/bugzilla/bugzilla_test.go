@@ -499,6 +499,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedComment: `org/repo#1:@user: This pull request references an invalid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123):
  - expected the bug to be open, but it isn't
 
+Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
 
 <details>
 
