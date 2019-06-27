@@ -37,6 +37,7 @@ const testgridNumColumnsRecentAnnotation = "testgrid-num-columns-recent"
 const testgridAlertStaleResultsHoursAnnotation = "testgrid-alert-stale-results-hours"
 const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
 const descriptionAnnotation = "description"
+const minPresubmitNumColumnsRecent = 20
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
 
@@ -95,6 +96,8 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 			return fmt.Errorf("%s value %q is not a valid integer", testgridNumColumnsRecentAnnotation, ncr)
 		}
 		testGroup.NumColumnsRecent = int32(ncrInt)
+	} else if jobType == prowapi.PresubmitJob && testGroup.NumColumnsRecent < minPresubmitNumColumnsRecent {
+		testGroup.NumColumnsRecent = minPresubmitNumColumnsRecent
 	}
 
 	if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
