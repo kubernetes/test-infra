@@ -1095,7 +1095,7 @@ repos:
         addedBy: label
   kubernetes/website:
     labels:
-      - color: 0ffa16
+      - color: 0052cc
         description: Issues or PRs related to the Kubernetes Blog subproject
         name: area/blog
         target: both
