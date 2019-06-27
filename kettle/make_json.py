@@ -250,6 +250,7 @@ def main(db, opts, outfile):
         print >>sys.stderr, 'incremental progress gen #%d' % gen
     else:
         print >>sys.stderr, 'no rows emitted'
+    return 0
 
 
 if __name__ == '__main__':

@@ -181,9 +181,9 @@ ts_setup_workspace()
 # pip_import() calls must live in WORKSPACE, otherwise we get a load() after non-load() error
 git_repository(
     name = "io_bazel_rules_python",
-    commit = "cc4cbf2f042695f4d1d4198c22459b3dbe7f8e43",
+    commit = "fdbb17a4118a1728d19e638a5291b4c4266ea5b8",
     remote = "https://github.com/bazelbuild/rules_python.git",
-    shallow_since = "1546820050 -0500",
+    shallow_since = "1557865590 -0400",
 )
 
 # TODO(fejta): get this to work
