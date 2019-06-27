@@ -4165,6 +4165,8 @@ dashboards:
   - name: pr-verify
     test_group_name: pull-cluster-api-provider-docker-verify
 
+- name: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
+
 - name: sig-multicluster-kubemci
   dashboard_tab:
   - name: kubemci-image-push
