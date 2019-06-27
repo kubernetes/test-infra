@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/github/reporter"
 )
 
 // prowClient a minimalistic prow client required by the aborter
@@ -104,6 +105,11 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 		toCancel.SetComplete()
 		prevState := toCancel.Status.State
 		toCancel.Status.State = prowapi.AbortedState
+		if toCancel.Status.PrevReportStates == nil {
+			toCancel.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
+		}
+		toCancel.Status.PrevReportStates[reporter.GitHubReporterName] = toCancel.Status.State
+
 		log.WithFields(ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states")
