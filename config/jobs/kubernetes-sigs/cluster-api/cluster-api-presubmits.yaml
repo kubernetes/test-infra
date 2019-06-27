@@ -8,7 +8,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190626-f0c7a9f-1.15
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -36,7 +36,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190626-f0c7a9f-1.15
         resources:
           requests:
             memory: "6Gi"
@@ -48,7 +48,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190626-f0c7a9f-1.15
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -68,7 +68,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190626-f0c7a9f-1.15
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -86,7 +86,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190624-0fabd2e-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190626-f0c7a9f-1.15
         command:
         - runner.sh
         args:
