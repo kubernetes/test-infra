@@ -27,6 +27,7 @@ package ghcache
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"path"
 	"strconv"
@@ -269,9 +270,9 @@ func timeUntilFromUnix(reset string, now time.Time) time.Duration {
 func getFirstPathFragment(path string) string {
 	if len(path) > 1 {
 		if path[0] == '/' {
-			return strings.Split(path[:1], "/")[0]
+			return fmt.Sprintf("/%s", strings.Split(path[:1], "/")[0])
 		}
-		return strings.Split(path, "/")[0]
+		return fmt.Sprintf("/%s", strings.Split(path, "/")[0])
 	}
 	return path
 }
