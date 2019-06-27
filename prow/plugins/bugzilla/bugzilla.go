@@ -342,7 +342,8 @@ Please contact an administrator to resolve this issue, then request a bug refres
 				formattedReasons += fmt.Sprintf(" - %s\n", reason)
 			}
 			response = fmt.Sprintf(`This pull request references an invalid `+bugLink+`:
-%s`, bc.Endpoint(), e.bugId, formattedReasons)
+%s
+Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.`, bc.Endpoint(), e.bugId, formattedReasons)
 		}
 	}
 
