@@ -705,7 +705,7 @@ periodics:
       secret:
         secretName: k8s-ci-robot-ssh-keys
         defaultMode: 0400
-- cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) Mon-Fri
+- cron: "05 15-23 * * 1-5"  # Run at 7:05-15:05 PST (15:05 UTC) Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
