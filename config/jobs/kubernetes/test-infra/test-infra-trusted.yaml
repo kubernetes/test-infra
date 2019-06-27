@@ -553,6 +553,10 @@ postsubmits:
     branches:
       - ^master$
     run_if_changed: '^communication/slack-config'
+    annotations:
+      testgrid-num-failures-to-alert: "1"
+      testgrid-alert-email: ktbry@google.com
+      testgrid-dashboards: sig-contribex-slack-infra
     spec:
       containers:
         - image: gcr.io/k8s-tempelis/tempelis:v20190412-7c9b6e51
@@ -575,6 +579,10 @@ postsubmits:
   - name: post-slack-infra-push-images
     cluster: test-infra-trusted
     run_if_changed: '^(slack|tempelis)'
+    annotations:
+      testgrid-num-failures-to-alert: "1"
+      testgrid-alert-email: ktbry@google.com
+      testgrid-dashboards: sig-contribex-slack-infra
     decorate: true
     branches:
       - ^master$
