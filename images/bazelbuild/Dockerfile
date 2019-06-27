@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Includes git, gcloud, and bazel.
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
