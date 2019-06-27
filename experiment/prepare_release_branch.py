@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # pylint can't figure out sh.bazel
-# pylint: disable=no-member
+# pylint: disable=no-member,import-error
 
 import os
 import sys

@@ -74,13 +74,13 @@ wordDistances = {}
 # the results of better algorithms.
 def dynamicProgrammingLevenshtein(s1, s2):
     lastRow = range(len(s1) + 1)
-    for j, s2_item in enumerate(s2):
+    for j in range(0, len(s2)):
         thisRow = [0] * len(lastRow)
         thisRow[0] = j + 1
         for i in range(1, len(thisRow)):
             thisRow[i] = min(lastRow[i] + 1,
                              thisRow[i - 1] + 1,
-                             lastRow[i - 1] + int(s2_item != s1[i-1]))
+                             lastRow[i - 1] + int(s2[j] != s1[i-1]))
         lastRow = thisRow
     return lastRow[-1]
 
