@@ -61,5 +61,5 @@ presubmits:
           args:
             - make
             - verify
-      securityContext:
-        privileged: true
+          securityContext:
+            privileged: true
