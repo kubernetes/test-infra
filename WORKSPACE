@@ -70,10 +70,14 @@ gazelle_dependencies()
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "aed1c249d4ec8f703edddf35cbe9dfaca0b5f5ea6e4cd9e83e99f3b0d1136c3d",
-    strip_prefix = "rules_docker-0.7.0",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.7.0.tar.gz"],
+    sha256 = "87fc6a2b128147a0a3039a2fd0b53cc1f2ed5adb8716f50756544a572999ae9a",
+    strip_prefix = "rules_docker-0.8.1",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.8.1.tar.gz"],
 )
+
+load("@io_bazel_rules_docker//repositories:repositories.bzl", _container_repositories = "repositories")
+
+_container_repositories()
 
 load(
     "@io_bazel_rules_docker//go:image.bzl",
@@ -135,11 +139,11 @@ container_pull(
     tag = "v20190125-cc5d6ecff3",
 )
 
-http_archive(
+git_repository(
     name = "io_bazel_rules_k8s",
-    sha256 = "91fef3e6054096a8947289ba0b6da3cba559ecb11c851d7bdfc9ca395b46d8d8",
-    strip_prefix = "rules_k8s-0.1",
-    urls = ["https://github.com/bazelbuild/rules_k8s/archive/v0.1.tar.gz"],
+    commit = "dda7ab9151cb95f944e59beabaa0d960825ee17c",
+    remote = "https://github.com/bazelbuild/rules_k8s.git",
+    shallow_since = "1561405837 -0700",
 )
 
 load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
