@@ -633,6 +633,9 @@ plugins:
   kubernetes-sigs/cluster-api-provider-docker:
   - milestone
 
+  kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
+  - milestone
+
   kubernetes-sigs/contributor-playground:
   - require-sig
 
