@@ -547,6 +547,25 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
 		},
+		{
+			name:           "valid bug with status update removes invalid label, adds valid label, comments and does not update status when it is already correct",
+			bug:            &bugzilla.Bug{ID: 123, Status: updated},
+			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
+			labels:         []string{"bugzilla/invalid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
+		},
 	}
 
 	for _, testCase := range testCases {
