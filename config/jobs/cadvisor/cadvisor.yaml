@@ -54,7 +54,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190627-40343dd
+    - image: gcr.io/k8s-testimages/bootstrap:v20190628-0b1fa57
       args:
       - --repo=github.com/google/cadvisor
       - --root=/go/src
