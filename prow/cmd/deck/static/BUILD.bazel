@@ -182,7 +182,7 @@ ts_library(
 
 rollup_bundle(
     name = "spyglass_bundle",
-    entry_point = ":spyglass/common.ts",
+    entry_point = ":spyglass/spyglass.ts",
     deps = [
         ":spyglass",
         ":spyglass_common",
