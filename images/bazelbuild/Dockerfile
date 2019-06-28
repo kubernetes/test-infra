@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     openssh-client \
     python \
+    python2.7 \
+    python3 \
     python-pip \
     rpm \
     unzip \
