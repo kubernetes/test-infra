@@ -6728,6 +6728,8 @@ dashboard_groups:
   - presubmits-poseidon
   - presubmits-kube-batch
   - presubmits-misc
+  - presubmits-release-notes-master
+  - presubmits-cloud-provider-alibaba
 
 - name: sig-api-machinery
   dashboard_names:
@@ -6762,6 +6764,8 @@ dashboard_groups:
   - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-ibmcloud
   - sig-cluster-lifecycle-cluster-api-provider-openstack
+  - sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
+  - sig-cluster-lifecycle-cluster-api-provider-docker
   - sig-cluster-lifecycle-kops
 
 - name: sig-contribex
@@ -6888,14 +6892,6 @@ dashboard_groups:
   - redhat-openshift-release-blocking
   - redhat-osd-stage
   - redhat-osd-prod
-
-- name: presubmits-cloud-provider
-  dashboard_names:
-  - presubmits-cloud-provider-alibaba
-
-- name: presubmits-release-notes
-  dashboard_names:
-  - presubmits-release-notes-master
 
 - name: gardener
   dashboard_names:
