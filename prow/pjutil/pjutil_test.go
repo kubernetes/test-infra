@@ -580,7 +580,7 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		pj := NewProwJobWithAnnotation(testCase.spec, nil, testCase.annotations)
+		pj := NewProwJob(testCase.spec, nil, testCase.annotations)
 		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}

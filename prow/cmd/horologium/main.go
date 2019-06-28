@@ -146,7 +146,7 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 			shouldTrigger := j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()
 			logger = logger.WithField("should-trigger", shouldTrigger)
 			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)
+				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
 				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
@@ -156,7 +156,7 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 			shouldTrigger := j.Complete()
 			logger = logger.WithField("should-trigger", shouldTrigger)
 			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)
+				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
 				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of cron periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)

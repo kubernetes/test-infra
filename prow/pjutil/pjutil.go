@@ -36,17 +36,8 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
-// NewProwJobWithAnnotation initializes a ProwJob out of a ProwJobSpec with annotations.
-func NewProwJobWithAnnotation(spec prowapi.ProwJobSpec, labels, annotations map[string]string) prowapi.ProwJob {
-	return newProwJob(spec, labels, annotations)
-}
-
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
-func NewProwJob(spec prowapi.ProwJobSpec, labels map[string]string) prowapi.ProwJob {
-	return newProwJob(spec, labels, nil)
-}
-
-func newProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) prowapi.ProwJob {
+func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) prowapi.ProwJob {
 	labels, annotations := decorate.LabelsAndAnnotationsForSpec(spec, extraLabels, extraAnnotations)
 
 	return prowapi.ProwJob{
@@ -101,8 +92,12 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
+	annotations := make(map[string]string)
+	for k, v := range job.Annotations {
+		annotations[k] = v
+	}
 	labels[github.EventGUID] = eventGUID
-	return NewProwJob(PresubmitSpec(job, refs), labels)
+	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
 }
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.

@@ -1166,7 +1166,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool) http
 			}
 			return
 		}
-		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels)
+		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
 		// Be very careful about this on publicly accessible Prow instances. Even after we have authentication
 		// for the handler, we need CSRF protection.
 		// On Prow instances that require auth even for viewing Deck this is okayish, because the Prowjob UUID
