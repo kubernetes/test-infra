@@ -1022,6 +1022,9 @@ type BugzillaBranchOptions struct {
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
 	// if others are set.
 	StatusAfterValidation *string `json:"status_after_validation,omitempty"`
+	// AddExternalLink determines whether the pull request will be added to the Bugzilla
+	// bug using the ExternalBug tracker API after being validated
+	AddExternalLink *bool `json:"add_external_link,omitempty"`
 }
 
 func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
@@ -1033,7 +1036,9 @@ func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
 		(o.Statuses != nil && other.Statuses != nil && sets.NewString(*o.Statuses...).Equal(sets.NewString(*other.Statuses...)))
 	statusesAfterValidationMatch := o.StatusAfterValidation == nil && other.StatusAfterValidation == nil ||
 		(o.StatusAfterValidation != nil && other.StatusAfterValidation != nil && *o.StatusAfterValidation == *other.StatusAfterValidation)
-	return isOpenMatch && targetReleaseMatch && statusesMatch && statusesAfterValidationMatch
+	addExternalLinkMatch := o.AddExternalLink == nil && other.AddExternalLink == nil ||
+		(o.AddExternalLink != nil && other.AddExternalLink != nil && *o.AddExternalLink == *other.AddExternalLink)
+	return isOpenMatch && targetReleaseMatch && statusesMatch && statusesAfterValidationMatch && addExternalLinkMatch
 }
 
 const BugzillaOptionsWildcard = `*`
@@ -1063,6 +1068,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	if parent.StatusAfterValidation != nil {
 		output.StatusAfterValidation = parent.StatusAfterValidation
 	}
+	if parent.AddExternalLink != nil {
+		output.AddExternalLink = parent.AddExternalLink
+	}
 
 	//override with the child
 	if child.IsOpen != nil {
@@ -1076,6 +1084,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.StatusAfterValidation != nil {
 		output.StatusAfterValidation = child.StatusAfterValidation
+	}
+	if child.AddExternalLink != nil {
+		output.AddExternalLink = child.AddExternalLink
 	}
 
 	return output
