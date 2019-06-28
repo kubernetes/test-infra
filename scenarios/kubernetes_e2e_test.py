@@ -259,7 +259,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         args = kubernetes_e2e.parse_args(migrated
                                          + explicit_passthrough_args
                                          + ['--test=false'])
-        self.assertEquals(migrated, args.kubetest_args)
+        self.assertEqual(migrated, args.kubetest_args)
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
