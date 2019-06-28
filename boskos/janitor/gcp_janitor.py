@@ -65,7 +65,8 @@ DEMOLISH_ORDER = [
 def log(message):
     """ print a message if --verbose is set. """
     if ARGS.verbose:
-        print message + '\n'
+        tss = "[" + str(datetime.datetime.now()) + "] "
+        print tss + message + '\n'
 
 
 def base_command(resource):
