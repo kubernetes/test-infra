@@ -58,6 +58,8 @@ presubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20190604-3070529-master
           command:
             - runner.sh
-            - make verify
+          args:
+            - make
+            - verify
       securityContext:
         privileged: true
