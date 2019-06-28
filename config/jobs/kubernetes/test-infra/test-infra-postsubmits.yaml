@@ -42,10 +42,8 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190627-02aaed0-experimental
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190627-9413fcb-0.27.0
         command:
-        - runner.sh
-        args:
         - ./boskos/update_prow_config.sh
         env:
         - name: PROW_SERVICE_ACCOUNT
@@ -69,10 +67,8 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190627-02aaed0-experimental
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190627-9413fcb-0.27.0
         command:
-        - runner.sh
-        args:
         - ./testgrid/config-upload.sh
         resources:
           requests:
