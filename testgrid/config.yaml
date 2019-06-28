@@ -2913,12 +2913,6 @@ dashboards:
   - name: Conformance - OpenStack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
     description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
-  - name: gce-master-scale-correctness
-    test_group_name: ci-kubernetes-e2e-gce-scale-correctness
-    description: "OWNER: sig-scalability; Runs 1000-node performance test once a week and checks that operational results are still all correct at that scale"
-  - name: gce-master-scale-performance
-    test_group_name: ci-kubernetes-e2e-gce-scale-performance
-    description: "OWNER: sig-scalability; 5000-node performance test, runs once a day on weekdays"
   - name: kubeadm-kind-master
     test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
     description: "OWNER: sig-testing (kind); Uses kubetest to run e2e tests (+Conformance, -Serial|Alpha|Kubectl|Disruptive|Flaky|Feature) against a cluster created with sigs.k8s.io/kind"
@@ -4580,11 +4574,6 @@ dashboards:
 # Move sig-release here
 
 - name: sig-scalability-gce
-  dashboard_tab:
-  - name: gce-scale-correctness
-    test_group_name: ci-kubernetes-e2e-gce-scale-correctness
-  - name: gce-scale-performance
-    test_group_name: ci-kubernetes-e2e-gce-scale-performance
 
 - name: sig-scalability-gke
   dashboard_tab:
