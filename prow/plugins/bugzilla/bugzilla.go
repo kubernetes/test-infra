@@ -325,7 +325,7 @@ Once a valid bug is referenced in the title of this pull request, request a bug 
 			log.Debug("Valid bug found.")
 			response = fmt.Sprintf(`This pull request references a valid `+bugLink+`.`, bc.Endpoint(), e.bugId)
 			// if configured, move the bug to the new state
-			if options.StatusAfterValidation != nil {
+			if options.StatusAfterValidation != nil && bug.Status != *options.StatusAfterValidation {
 				if err := bc.UpdateBug(e.bugId, bugzilla.BugUpdate{Status: *options.StatusAfterValidation}); err != nil {
 					log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
 					return comment(fmt.Sprintf(`An error was encountered updating the bug to the %s state on the Bugzilla server at %s for bug %d:
