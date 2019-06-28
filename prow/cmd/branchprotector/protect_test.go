@@ -281,16 +281,17 @@ func TestProtect(t *testing.T) {
 	no := false
 
 	cases := []struct {
-		name              string
-		branches          []string
-		startUnprotected  bool
-		config            string
-		archived          string
-		expected          []requirements
-		branchProtections map[string]github.BranchProtection
-		collaborators     []github.User
-		teams             []github.Team
-		errors            int
+		name                   string
+		branches               []string
+		startUnprotected       bool
+		config                 string
+		archived               string
+		expected               []requirements
+		branchProtections      map[string]github.BranchProtection
+		collaborators          []github.User
+		teams                  []github.Team
+		skipVerifyRestrictions bool
+		errors                 int
 	}{
 		{
 			name: "nothing",
@@ -976,6 +977,39 @@ branch-protection:
 `,
 			errors: 1,
 		},
+		{
+			name:     "make request for unauthorized collaborators/teams if the verify-restrictions feature flag is not set",
+			branches: []string{"org/unauthorized=master"},
+			config: `
+branch-protection:
+  restrictions:
+    teams:
+    - config-team
+    users:
+    - cindy
+  protect: true
+  orgs:
+    org:
+      repos:
+        unauthorized:
+          protect: true
+`,
+			skipVerifyRestrictions: true,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "unauthorized",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+						Restrictions: &github.RestrictionsRequest{
+							Users: &[]string{"cindy"},
+							Teams: &[]string{"config-team"},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -1013,12 +1047,13 @@ branch-protection:
 				t.Fatalf("failed to parse config: %v", err)
 			}
 			p := protector{
-				client:         &fc,
-				cfg:            &cfg,
-				errors:         Errors{},
-				updates:        make(chan requirements),
-				done:           make(chan []error),
-				completedRepos: make(map[string]bool),
+				client:             &fc,
+				cfg:                &cfg,
+				errors:             Errors{},
+				updates:            make(chan requirements),
+				done:               make(chan []error),
+				completedRepos:     make(map[string]bool),
+				verifyRestrictions: !tc.skipVerifyRestrictions,
 			}
 			go func() {
 				p.protect()
@@ -1608,7 +1643,7 @@ func TestValidateRequest(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			errs := validateRequest("org", "repo", tc.request, tc.collaborators, tc.teams)
+			errs := validateRestrictions("org", "repo", tc.request, tc.collaborators, tc.teams)
 			if !reflect.DeepEqual(errs, tc.errs) {
 				t.Errorf("%s: errors %v != expected %v", tc.name, errs, tc.errs)
 			}

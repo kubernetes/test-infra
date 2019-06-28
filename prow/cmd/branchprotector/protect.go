@@ -37,10 +37,11 @@ import (
 )
 
 type options struct {
-	config    string
-	jobConfig string
-	confirm   bool
-	github    flagutil.GitHubOptions
+	config             string
+	jobConfig          string
+	confirm            bool
+	verifyRestrictions bool
+	github             flagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
@@ -61,6 +62,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
 	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
+	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
@@ -111,12 +113,13 @@ func main() {
 	githubClient.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 
 	p := protector{
-		client:         githubClient,
-		cfg:            cfg,
-		updates:        make(chan requirements),
-		errors:         Errors{},
-		completedRepos: make(map[string]bool),
-		done:           make(chan []error),
+		client:             githubClient,
+		cfg:                cfg,
+		updates:            make(chan requirements),
+		errors:             Errors{},
+		completedRepos:     make(map[string]bool),
+		done:               make(chan []error),
+		verifyRestrictions: o.verifyRestrictions,
 	}
 
 	go p.configureBranches()
@@ -143,12 +146,13 @@ type client interface {
 }
 
 type protector struct {
-	client         client
-	cfg            *config.Config
-	updates        chan requirements
-	errors         Errors
-	completedRepos map[string]bool
-	done           chan []error
+	client             client
+	cfg                *config.Config
+	updates            chan requirements
+	errors             Errors
+	completedRepos     map[string]bool
+	done               chan []error
+	verifyRestrictions bool
 }
 
 func (p *protector) configureBranches() {
@@ -270,16 +274,19 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		}
 	}
 
-	collaborators, err := p.authorizedCollaborators(orgName, repoName)
-	if err != nil {
-		logrus.Infof("%s/%s: error getting list of collaborators: %v", orgName, repoName, err)
-		return err
-	}
+	var collaborators, teams []string
+	if p.verifyRestrictions {
+		collaborators, err = p.authorizedCollaborators(orgName, repoName)
+		if err != nil {
+			logrus.Infof("%s/%s: error getting list of collaborators: %v", orgName, repoName, err)
+			return err
+		}
 
-	teams, err := p.authorizedTeams(orgName, repoName)
-	if err != nil {
-		logrus.Infof("%s/%s: error getting list of teams: %v", orgName, repoName, err)
-		return err
+		teams, err = p.authorizedTeams(orgName, repoName)
+		if err != nil {
+			logrus.Infof("%s/%s: error getting list of teams: %v", orgName, repoName, err)
+			return err
+		}
 	}
 
 	for bn, githubBranch := range branches {
@@ -324,7 +331,7 @@ func (p *protector) authorizedTeams(org, repo string) ([]string, error) {
 	return authorized, nil
 }
 
-func validateRequest(org, repo string, bp *github.BranchProtectionRequest, authorizedCollaborators, authorizedTeams []string) []error {
+func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, authorizedCollaborators, authorizedTeams []string) []error {
 	if bp == nil || bp.Restrictions == nil {
 		return nil
 	}
@@ -363,13 +370,15 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		req = &r
 	}
 
-	if validationErrors := validateRequest(orgName, repo, req, authorizedCollaborators, authorizedTeams); len(validationErrors) != 0 {
-		logrus.Warnf("invalid branch protection request: %s/%s=%s: %v", orgName, repo, branchName, validationErrors)
-		errs := make([]string, 0, len(validationErrors))
-		for _, e := range validationErrors {
-			errs = append(errs, e.Error())
+	if p.verifyRestrictions {
+		if validationErrors := validateRestrictions(orgName, repo, req, authorizedCollaborators, authorizedTeams); len(validationErrors) != 0 {
+			logrus.Warnf("invalid branch protection request: %s/%s=%s: %v", orgName, repo, branchName, validationErrors)
+			errs := make([]string, 0, len(validationErrors))
+			for _, e := range validationErrors {
+				errs = append(errs, e.Error())
+			}
+			return fmt.Errorf("invalid branch protection request: %s/%s=%s: %s", orgName, repo, branchName, strings.Join(errs, "\n"))
 		}
-		return fmt.Errorf("invalid branch protection request: %s/%s=%s: %s", orgName, repo, branchName, strings.Join(errs, "\n"))
 	}
 
 	// The github API currently does not support listing protections for all
