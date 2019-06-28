@@ -3,12 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "pointer_unsafe.go",
-        "sort.go",
-        "zero.go",
+        "flags.go",
+        "toolchain_legacy.go",
+        "toolchain_recent.go",
     ],
-    importmap = "k8s.io/test-infra/vendor/github.com/google/go-cmp/cmp/internal/value",
-    importpath = "github.com/google/go-cmp/cmp/internal/value",
+    importmap = "k8s.io/test-infra/vendor/github.com/google/go-cmp/cmp/internal/flags",
+    importpath = "github.com/google/go-cmp/cmp/internal/flags",
     visibility = ["//vendor/github.com/google/go-cmp/cmp:__subpackages__"],
 )
 
