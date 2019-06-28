@@ -312,8 +312,8 @@ def go_repositories():
     go_repository(
         name = "com_github_go_logfmt_logfmt",
         importpath = "github.com/go-logfmt/logfmt",
-        sum = "h1:MP4Eh7ZCb31lleYCFuwm0oe4/YGak+5l1vA2NOE80nA=",
-        version = "v0.4.0",
+        sum = "h1:8HUsc87TaSWLKwrnumgC8/YconD2fJQsRJAsWaPg2ic=",
+        version = "v0.3.0",
     )
     go_repository(
         name = "com_github_go_openapi_jsonpointer",
@@ -414,8 +414,8 @@ def go_repositories():
     go_repository(
         name = "com_github_google_go_cmp",
         importpath = "github.com/google/go-cmp",
-        sum = "h1:+dTQ8DZQJz0Mb/HjFlkptS1FeQ4cWSnN941F8aEG4SQ=",
-        version = "v0.2.0",
+        sum = "h1:crn/baboCvb5fXaQ0IJ1SGTsTVrWpDsCWC8EGETZijY=",
+        version = "v0.3.0",
     )
     go_repository(
         name = "com_github_google_go_containerregistry",
@@ -468,8 +468,8 @@ def go_repositories():
     go_repository(
         name = "com_github_googleapis_gax_go_v2",
         importpath = "github.com/googleapis/gax-go/v2",
-        sum = "h1:hU4mGcQI4DaAYW+IbTun+2qEZVFxK0ySjQLTbS0VQKc=",
-        version = "v2.0.4",
+        sum = "h1:sjZBwGj9Jlw33ImPtvFviGYvseOtDM7hkSKB7+Tv3SM=",
+        version = "v2.0.5",
     )
     go_repository(
         name = "com_github_googleapis_gnostic",
@@ -906,8 +906,8 @@ def go_repositories():
     go_repository(
         name = "com_github_prometheus_client_golang",
         importpath = "github.com/prometheus/client_golang",
-        sum = "h1:9iH4JKXLzFbOAdtqv/a+j8aewx2Y8lAjAydhbaScPF8=",
-        version = "v0.9.3",
+        sum = "h1:Y8E/JaaPbmFSW2V81Ab/d8yZFYQQGbni1b1jPcG9Y6A=",
+        version = "v0.9.4",
     )
     go_repository(
         name = "com_github_prometheus_client_model",
@@ -924,8 +924,8 @@ def go_repositories():
     go_repository(
         name = "com_github_prometheus_procfs",
         importpath = "github.com/prometheus/procfs",
-        sum = "h1:Vb1OE5ZDNKF3yhna6/G+5pHqADNm4I8hUoHj7YQhbZk=",
-        version = "v0.0.1",
+        sum = "h1:CTwfnzjQ+8dS6MhHHu4YswVAD99sL2wjPqP+VkURmKE=",
+        version = "v0.0.3",
     )
     go_repository(
         name = "com_github_prometheus_tsdb",
@@ -1038,8 +1038,8 @@ def go_repositories():
     go_repository(
         name = "com_github_spf13_cobra",
         importpath = "github.com/spf13/cobra",
-        sum = "h1:S0tLZ3VOKl2Te0hpq8+ke0eSJPfCnNTPiDlsfwi1/NE=",
-        version = "v0.0.4",
+        sum = "h1:f0B+LkLX6DtmRH1isoNA9VTtNUK9K8xYd28JNNfOv/s=",
+        version = "v0.0.5",
     )
     go_repository(
         name = "com_github_spf13_jwalterweatherman",
@@ -1254,8 +1254,8 @@ def go_repositories():
     go_repository(
         name = "io_k8s_kubernetes",
         importpath = "k8s.io/kubernetes",
-        sum = "h1:Gdq2hPpttbaJBoClIanCE6WSu4IZReA54yhkZtvPUOo=",
-        version = "v1.14.2",
+        sum = "h1:/FQkOJpjc1jGA37s7Rt3U10VwIKW685ejrgOp4UDRFE=",
+        version = "v1.14.3",
     )
     go_repository(
         name = "io_k8s_repo_infra",
