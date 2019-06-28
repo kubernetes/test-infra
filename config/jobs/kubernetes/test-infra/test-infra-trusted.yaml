@@ -57,7 +57,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190627-9413fcb-0.27.0 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0 # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
@@ -109,7 +109,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190627-9413fcb-0.27.0 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0 # whatever image you use here must have bash 4.4+
         command:
         - boskos/push.sh
         env:
@@ -649,7 +649,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190627-9413fcb-0.27.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
       command:
       - hack/autodeps.sh
       args:
@@ -682,7 +682,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190627-9413fcb-0.27.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
       command:
       - hack/autodeps.sh
       args:
@@ -715,7 +715,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190627-9413fcb-0.27.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
       command:
       - bazel
       - run
