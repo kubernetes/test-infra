@@ -79,6 +79,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190627-02aaed0-master
+        resources:
+          requests:
+            cpu: "500m"
         command:
         - runner.sh
         args:
