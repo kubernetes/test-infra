@@ -83,7 +83,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-misc
     testgrid-tab-name: debian-unstable
-    testgrid-alert-email: kubernetes-patch-release-team@googlegroups.com
+    testgrid-alert-email: kubernetes-release-managers@googlegroups.com
 - interval: 1h
   name: ci-kubernetes-build
   labels:
