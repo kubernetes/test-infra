@@ -198,8 +198,8 @@ github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb h1:0D5F4qAGJbRqzyCIHsw
 github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb/go.mod h1:Vla75njaFJ8clLU1W44h34PjIkijhjHIYnZxMqCdxqo=
 github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 h1:LIwA5USOJ9W/0hwiRH1MugeThGBHGqv+USXcDKWHIVY=
 github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
-github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 h1:xvj06l8iSwiWpYgm8MbPp+naBg+pwfqmdXabzqPCn/8=
-github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3/go.mod h1:oHTiXerJ20+SfYcrdlBO7rzZRJWGwSTQ0iUY2jI6Gfc=
+github.com/jinzhu/now v1.0.1 h1:HjfetcXq097iXP0uoPCdnM4Efp5/9MsM0/M+XOTeR3M=
+github.com/jinzhu/now v1.0.1/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
