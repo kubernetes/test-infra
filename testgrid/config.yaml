@@ -3003,15 +3003,6 @@ dashboards:
   - name: Conformance - OpenStack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
     description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
-  - name: kubeadm-kind-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
-    description: "OWNER: sig-testing (kind); Uses kubetest to run e2e tests (+Conformance, -Serial|Alpha|Kubectl|Disruptive|Flaky|Feature) against a cluster created with sigs.k8s.io/kind"
-  - name: kubeadm-kinder-master-on-stable
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
-    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to run kubeadm-e2e and e2e tests (+Conformance, -Aggregator|Alpha|Kubectl|Disruptive|Flaky|Feature) against a cluster created using kinder's skew-master-on-stable workflow"
-  - name: kubeadm-kinder-upgrade-stable-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
-    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to run kubeadm-e2e and e2e tests (+Conformance, -Aggregator|Alpha|Kubectl|Disruptive|Flaky|Feature) against a cluster created using kinder's upgrade-stable-master workflow"
   - name: bazel-test-master
     test_group_name: post-kubernetes-bazel-test
     description: "OWNER: sig-testing; Runs kubernetes unit tests using bazel"
@@ -3146,12 +3137,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: periodic-bazel-test-1.14
     test_group_name: periodic-kubernetes-bazel-test-1-14
-  - name: kubeadm-kind-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
-  - name: kubeadm-kinder-1.14-on-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
-  - name: kubeadm-kinder-upgrade-1.13-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
   - name: aks-engine-azure-1-14-windows-release
     test_group_name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   - name: gce-windows-1.14
@@ -3163,12 +3148,6 @@ dashboards:
 
 - name: sig-release-1.13-all
   dashboard_tab:
-  - name: kubeadm-kind-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-13
-  - name: kubeadm-kinder-1.13-on-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
-  - name: kubeadm-kinder-upgrade-1.12-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
   - name: soak-gci-gce-1.13
     test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: kops-aws-1.13
@@ -3284,12 +3263,6 @@ dashboards:
 
 - name: sig-release-1.12-all
   dashboard_tab:
-  - name: kubeadm-kind-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-12
-  - name: kubeadm-kinder-1.12-on-1.11
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
-  - name: kubeadm-kinder-upgrade-1.11-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
   - name: soak-gci-gce-1.12
     test_group_name: ci-kubernetes-soak-gci-gce-stable3
   - name: gke-device-plugin-gpu-1.12
@@ -3890,93 +3863,6 @@ dashboards:
     test_group_name: periodic-kubernetes-e2e-manifest-lists
 
 - name: sig-cluster-lifecycle-kubeadm
-  dashboard_tab:
-# kubeadm-kind tests
-  - name: kubeadm-kind-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-12
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kind-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-13
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kind-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-1-14
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kind-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-kind-master
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 8
-    num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours
-# kubeadm-kinder tests
-  - name: kubeadm-kinder-upgrade-stable-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-stable-master
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 8
-    num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours
-  - name: kubeadm-kinder-upgrade-1.13-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-13-1-14
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kinder-upgrade-1.12-1.13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-12-1-13
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kinder-upgrade-1.11-1.12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-11-1-12
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kinder-master-on-stable
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-master-on-stable
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 8
-    num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours
-  - name: kubeadm-kinder-1-14-on-1-13
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kinder-1-13-on-1-12
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kinder-1-12-on-1-11
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-1-12-on-1-11
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
-  - name: kubeadm-kinder-external-etcd-master
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-external-etcd-master
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 8
-    num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours
-  - name: kubeadm-kinder-external-etcd-1.14
-    test_group_name: ci-kubernetes-e2e-kubeadm-kinder-external-etcd-1-14
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-cluster-lifecycle@googlegroups.com
-    alert_stale_results_hours: 24
-    num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for 24 hours
 
 - name: sig-cluster-lifecycle-multi-platform
   dashboard_tab:
