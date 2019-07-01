@@ -425,6 +425,7 @@ metadata:
   name: ing
   annotations:
     kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/priority: "6"
 spec:
   rules:
   - http:
