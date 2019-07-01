@@ -51,6 +51,7 @@ orgs:
       "my-org-branch":
         target_release: my-org-branch-default
         status_after_validation: "POST"
+        add_external_link: true
     repos:
       my-repo:
         branches:
@@ -62,7 +63,8 @@ orgs:
           "my-repo-branch":
             target_release: my-repo-branch
             statuses:
-            - MODIFIED`
+            - MODIFIED
+            add_external_link: true`
 	var config plugins.Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -78,17 +80,17 @@ orgs:
 		Description: "The bugzilla plugin ensures that pull requests reference a valid Bugzilla bug in their title.",
 		Config: map[string]string{
 			"some-org/some-repo": `The plugin has the following configuration:<ul>
-<li>by default, valid bugs must target the "global-default" release</li>
-<li>on the "global-branch" branch, valid bugs must be closed and target the "global-branch-default" release</li>
+<li>by default, valid bugs must target the "global-default" release.</li>
+<li>on the "global-branch" branch, valid bugs must be closed and target the "global-branch-default" release.</li>
 </ul>`,
 			"my-org/some-repo": `The plugin has the following configuration:<ul>
 <li>by default, valid bugs must be open and target the "my-org-default" release. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
-<li>on the "my-org-branch" branch, valid bugs must be open and target the "my-org-branch-default" release. After being linked to a pull request, bugs will be moved to the "POST" state.</li>
+<li>on the "my-org-branch" branch, valid bugs must be open and target the "my-org-branch-default" release. After being linked to a pull request, bugs will be moved to the "POST" state and updated to refer to the pull request using the external bug tracker.</li>
 </ul>`,
 			"my-org/my-repo": `The plugin has the following configuration:<ul>
 <li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
-<li>on the "my-org-branch" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "POST" state.</li>
-<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
+<li>on the "my-org-branch" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "POST" state and updated to refer to the pull request using the external bug tracker.</li>
+<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the "PRE" state and updated to refer to the pull request using the external bug tracker.</li>
 </ul>`,
 		},
 		Commands: []pluginhelp.Command{{
@@ -423,22 +425,24 @@ Instructions for interacting with me using PR comments are available [here](http
 }
 
 func TestHandle(t *testing.T) {
+	yes := true
 	open := true
 	updated := "UPDATED"
 	e := event{
 		org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 	}
 	var testCases = []struct {
-		name            string
-		labels          []string
-		missing         bool
-		bug             *bugzilla.Bug
-		bugError        bool
-		options         plugins.BugzillaBranchOptions
-		expectedLabels  []string
-		expectedErr     bool
-		expectedComment string
-		expectedBug     *bugzilla.Bug
+		name                 string
+		labels               []string
+		missing              bool
+		bug                  *bugzilla.Bug
+		bugError             bool
+		options              plugins.BugzillaBranchOptions
+		expectedLabels       []string
+		expectedErr          bool
+		expectedComment      string
+		expectedBug          *bugzilla.Bug
+		expectedExternalBugs []bugzilla.ExternalBug
 	}{
 		{
 			name: "no bug found leaves a comment",
@@ -566,6 +570,26 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
 		},
+		{
+			name:           "valid bug with external link removes invalid label, adds valid label, comments, makes an external bug link",
+			bug:            &bugzilla.Bug{ID: 123},
+			options:        plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
+			labels:         []string{"bugzilla/invalid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123). The bug has been updated to refer to the pull request using the external bug tracker.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug:          &bugzilla.Bug{ID: 123},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1"}},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -581,6 +605,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				EndpointString: "www.bugzilla",
 				Bugs:           map[int]bugzilla.Bug{},
 				BugErrors:      sets.NewInt(),
+				ExternalBugs:   map[int][]bugzilla.ExternalBug{},
 			}
 			if testCase.bug != nil {
 				bc.Bugs[e.bugId] = *testCase.bug
@@ -618,6 +643,11 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.expectedBug != nil {
 				if actual, expected := bc.Bugs[testCase.expectedBug.ID], *testCase.expectedBug; !reflect.DeepEqual(actual, expected) {
 					t.Errorf("%s: got incorrect bug after update: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+				}
+			}
+			if len(testCase.expectedExternalBugs) > 0 {
+				if actual, expected := bc.ExternalBugs[testCase.expectedBug.ID], testCase.expectedExternalBugs; !reflect.DeepEqual(actual, expected) {
+					t.Errorf("%s: got incorrect external bugs after update: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 				}
 			}
 		})

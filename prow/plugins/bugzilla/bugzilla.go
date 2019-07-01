@@ -105,10 +105,28 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 				conditions[len(conditions)-1] = fmt.Sprintf("and %s", conditions[len(conditions)-1])
 				message += strings.Join(conditions, ", ")
 			}
+			var updates []string
 			if opts[branch].StatusAfterValidation != nil {
-				message += fmt.Sprintf(". After being linked to a pull request, bugs will be moved to the %q state.", *opts[branch].StatusAfterValidation)
+				updates = append(updates, fmt.Sprintf("moved to the %q state", *opts[branch].StatusAfterValidation))
 			}
-			configInfoStrings = append(configInfoStrings, "<li>"+message+"</li>")
+			if opts[branch].AddExternalLink != nil && *opts[branch].AddExternalLink {
+				updates = append(updates, "updated to refer to the pull request using the external bug tracker")
+			}
+
+			if len(updates) > 0 {
+				message += ". After being linked to a pull request, bugs will be "
+			}
+			switch len(updates) {
+			case 0:
+			case 1:
+				message += updates[0]
+			case 2:
+				message += fmt.Sprintf("%s and %s", updates[0], updates[1])
+			default:
+				updates[len(updates)-1] = fmt.Sprintf("and %s", updates[len(updates)-1])
+				message += strings.Join(updates, ", ")
+			}
+			configInfoStrings = append(configInfoStrings, "<li>"+message+".</li>")
 		}
 		configInfoStrings = append(configInfoStrings, "</ul>")
 
@@ -334,6 +352,16 @@ Please contact an administrator to resolve this issue, then request a bug refres
 						*options.StatusAfterValidation, bc.Endpoint(), e.bugId, err))
 				}
 				response += fmt.Sprintf(" The bug has been moved to the %s state.", *options.StatusAfterValidation)
+			}
+			if options.AddExternalLink != nil && *options.AddExternalLink {
+				if err := bc.AddPullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number); err != nil {
+					log.WithError(err).Warn("Unexpected error adding external tracker bug to Bugzilla bug.")
+					return comment(fmt.Sprintf(`An error was encountered adding this pull request to the external tracker bugs on the Bugzilla server at %s for bug %d:
+> %v
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
+						bc.Endpoint(), e.bugId, err))
+				}
+				response += " The bug has been updated to refer to the pull request using the external bug tracker."
 			}
 		} else {
 			log.Debug("Invalid bug found.")

@@ -30,6 +30,7 @@ type Client interface {
 	Endpoint() string
 	GetBug(id int) (*Bug, error)
 	UpdateBug(id int, update BugUpdate) error
+	AddPullRequestAsExternalBug(id int, org, repo string, num int) error
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
@@ -85,7 +86,7 @@ func (c *client) UpdateBug(id int, update BugUpdate) error {
 	logger := c.logger.WithFields(logrus.Fields{"method": "UpdateBug", "id": id, "update": update})
 	body, err := json.Marshal(update)
 	if err != nil {
-		return fmt.Errorf("failed to marshal update payload: %v", update)
+		return fmt.Errorf("failed to marshal update payload: %v", err)
 	}
 	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), bytes.NewBuffer(body))
 	if err != nil {
@@ -146,4 +147,47 @@ func IsNotFound(err error) bool {
 		return false
 	}
 	return reqError.statusCode == http.StatusNotFound
+}
+
+// AddPullRequestAsExternalBug attempts to add a PR to the external tracker list.
+// External bugs are assumed to fall under the type identified by their hostname,
+// so we will provide https://github.com/ here for the URL identifier.
+// This will be done via JSONRPC:
+// https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#add-external-bug
+func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) error {
+	logger := c.logger.WithFields(logrus.Fields{"method": "AddExternalBug", "id": id, "org": org, "repo": repo, "num": num})
+	rpcPayload := struct {
+		// Version is the version of JSONRPC to use. All Bugzilla servers
+		// support 1.0. Some support 1.1 and some support 2.0
+		Version string `json:"jsonrpc"`
+		Method  string `json:"method"`
+		// Parameters must be specified in JSONRPC 1.0 as a structure in the first
+		// index of this slice
+		Parameters []AddExternalBugParameters `json:"parameters"`
+		ID         string                     `json:"id"`
+	}{
+		Version: "1.0", // some Bugzilla servers support 2.0 but all support 1.0
+		Method:  "ExternalBugs.add_external_bug",
+		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
+		Parameters: []AddExternalBugParameters{{
+			APIKey: string(c.getAPIKey()),
+			BugIDs: []int{id},
+			ExternalBugs: []NewExternalBugIdentifier{{
+				Type: "https://github.com/",
+				ID:   fmt.Sprintf("%s/%s/pull/%d", org, repo, num),
+			}},
+		}},
+	}
+	body, err := json.Marshal(rpcPayload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSONRPC payload: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/jsonrpc.cgi", c.endpoint), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	_, err = c.request(req, logger)
+	return err
 }
