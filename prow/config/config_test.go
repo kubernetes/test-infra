@@ -27,6 +27,7 @@ import (
 	"time"
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -439,6 +440,7 @@ func TestValidateAgent(t *testing.T) {
 	b := string(prowjobv1.KnativeBuildAgent)
 	jenk := string(prowjobv1.JenkinsAgent)
 	k := string(prowjobv1.KubernetesAgent)
+	x := string(prowjobv1.JenkinsXAgent)
 	ns := "default"
 	base := JobBase{
 		Agent:     k,
@@ -562,6 +564,43 @@ func TestValidateAgent(t *testing.T) {
 				j.ErrorOnEviction = true
 			},
 			pass: true,
+		},
+		{
+			name: "accept jenkins-x agent without any spec",
+			base: func(j *JobBase) {
+				j.Agent = x
+				j.Spec = nil
+				j.DecorationConfig = nil
+			},
+			pass: true,
+		},
+		{
+			name: "reject jenkins-x agent with spec",
+			base: func(j *JobBase) {
+				j.Agent = x
+				j.DecorationConfig = nil
+			},
+			pass: false,
+		},
+		{
+			name: "reject jenkins-x agent with build_spec",
+			base: func(j *JobBase) {
+				j.Agent = x
+				j.Spec = nil
+				j.BuildSpec = &buildv1alpha1.BuildSpec{}
+				j.DecorationConfig = nil
+			},
+			pass: false,
+		},
+		{
+			name: "reject jenkins-x agent with pipeline_run_spec",
+			base: func(j *JobBase) {
+				j.Agent = x
+				j.Spec = nil
+				j.PipelineRunSpec = &pipelinev1alpha1.PipelineRunSpec{}
+				j.DecorationConfig = nil
+			},
+			pass: false,
 		},
 	}
 

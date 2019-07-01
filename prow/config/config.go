@@ -1244,6 +1244,12 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("job pipeline_run_spec require agent: %s (found %q)", p, agent)
 	case agent == p && v.PipelineRunSpec == nil:
 		return fmt.Errorf("agent: %s jobs require a pipeline_run_spec", p)
+	case agent == x && v.Spec != nil:
+		return fmt.Errorf("agent: %s does not require a spec", agent)
+	case agent == x && v.BuildSpec != nil:
+		return fmt.Errorf("agent: %s does not require a build_spec", agent)
+	case agent == x && v.PipelineRunSpec != nil:
+		return fmt.Errorf("agent: %s does not require a pipeline_run_spec", agent)
 	case v.DecorationConfig != nil && agent != k && agent != b:
 		// TODO(fejta): only source decoration supported...
 		return fmt.Errorf("decoration requires agent: %s or %s (found %q)", k, b, agent)
