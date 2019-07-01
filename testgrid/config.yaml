@@ -1530,6 +1530,8 @@ test_groups:
   num_columns_recent: 3
 - name: ci-kind-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kind-build
+- name: ci-periodic-kind-integration-test-arm64
+  gcs_prefix: k8s-conformance-kind-arm64-openlab/periodic-logs/ci-kind-integration-test-arm64
 - name: ci-kubernetes-conformance-image-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-conformance-image-test
   num_columns_recent: 3
@@ -2101,6 +2103,9 @@ dashboards:
   - name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-12
+  - name: kind, v1.14 (dev, ARM64)
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.14 with a kubernetes-in-docker cluster on ARM64 platform
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-14-arm64
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
     test_group_name: ci-kubernetes-local-e2e
@@ -2301,6 +2306,9 @@ dashboards:
     test_group_name: ci-kubernetes-conformance-image-1-14-test
     alert_options:
       alert_mail_to_addresses: davanum@gmail.com
+  - name: kind, v1.14 (dev, ARM64)
+    description: Runs conformance tests using kubetest against latest kubernetes release-1.14 with a kubernetes-in-docker cluster on ARM64 platform
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-14-arm64
 
 - name: conformance-hack-local-up-cluster
   dashboard_tab:
