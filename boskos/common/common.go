@@ -24,6 +24,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	"sigs.k8s.io/yaml"
 )
 
@@ -58,6 +60,35 @@ type Item interface {
 	GetName() string
 }
 
+// Duration is a wrapper around time.Duration that parses times in either
+// 'integer number of nanoseconds' or 'duration string' formats and serializes
+// to 'duration string' format.
+type Duration struct {
+	*time.Duration
+}
+
+// UnmarshalJSON implement the JSON Unmarshaler interface in order to be able parse string to time.Duration.
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &d.Duration); err == nil {
+		// b was an integer number of nanoseconds.
+		return nil
+	}
+	// b was not an integer. Assume that it is a duration string.
+
+	var str string
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+
+	pd, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+	d.Duration = &pd
+	return nil
+}
+
 // Resource abstracts any resource type that can be tracked by boskos
 type Resource struct {
 	Type       string    `json:"type"`
@@ -67,13 +98,31 @@ type Resource struct {
 	LastUpdate time.Time `json:"lastupdate"`
 	// Customized UserData
 	UserData *UserData `json:"userdata"`
+	// Used to clean up dynamic resources
+	ExpirationDate *time.Time `json:"expiration-date,omitempty"`
 }
 
 // ResourceEntry is resource config format defined from config.yaml
 type ResourceEntry struct {
-	Type  string   `json:"type"`
-	State string   `json:"state"`
-	Names []string `json:"names,flow"`
+	Type     string    `json:"type"`
+	State    string    `json:"state"`
+	Names    []string  `json:"names,flow"`
+	MaxCount int       `json:"max-count,omitempty"`
+	MinCount int       `json:"min-count,omitempty"`
+	LifeSpan *Duration `json:"lifespan,omitempty"`
+}
+
+// DynamicResourceLifeCycle defines the life cycle of a dynamic resource.
+type DynamicResourceLifeCycle struct {
+	Type string `json:"type"`
+	// Initial state to be created as
+	InitialState string `json:"state"`
+	// Maximum resources expected
+	MaxCount int `json:"max-count"`
+	// Minimum Number of resources to be use a buffer
+	MinCount int `json:"min-count"`
+	// Lifespan of a resource, time after which the resource should be reset.
+	LifeSpan *time.Duration `json:"lifespan,omitempty"`
 }
 
 // BoskosConfig defines config used by boskos server
@@ -89,8 +138,17 @@ type Metric struct {
 	// TODO: implements state transition metrics
 }
 
+// IsInUse reports if the resource is owned by anything else than Boskos.
+func (r *Resource) IsInUse() bool {
+	return r.Owner != ""
+}
+
 // NewResource creates a new Boskos Resource.
 func NewResource(name, rtype, state, owner string, t time.Time) Resource {
+	// If no state defined, mark as Free
+	if state == "" {
+		state = Free
+	}
 	return Resource{
 		Name:       name,
 		Type:       rtype,
@@ -108,6 +166,21 @@ func NewResourcesFromConfig(e ResourceEntry) []Resource {
 		resources = append(resources, NewResource(name, e.Type, e.State, "", time.Time{}))
 	}
 	return resources
+}
+
+// NewDynamicResourceLifeCycleFromConfig parse the a ResourceEntry into a DynamicResourceLifeCycle
+func NewDynamicResourceLifeCycleFromConfig(e ResourceEntry) DynamicResourceLifeCycle {
+	var dur *time.Duration
+	if e.LifeSpan != nil {
+		dur = e.LifeSpan.Duration
+	}
+	return DynamicResourceLifeCycle{
+		Type:         e.Type,
+		MaxCount:     e.MaxCount,
+		MinCount:     e.MinCount,
+		LifeSpan:     dur,
+		InitialState: e.State,
+	}
 }
 
 // UserDataFromMap returns a UserData from a map
@@ -166,6 +239,9 @@ func (r *CommaSeparatedStrings) Type() string {
 
 // GetName implements the Item interface used for storage
 func (res Resource) GetName() string { return res.Name }
+
+// GetName implements the Item interface used for storage
+func (res DynamicResourceLifeCycle) GetName() string { return res.Type }
 
 // UnmarshalJSON implements JSON Unmarshaler interface
 func (ud *UserData) UnmarshalJSON(data []byte) error {
@@ -245,4 +321,18 @@ func ItemToResource(i Item) (Resource, error) {
 		return Resource{}, fmt.Errorf("cannot construct Resource from received object %v", i)
 	}
 	return res, nil
+}
+
+// ItemToDynamicResourceLifeCycle casts a Item back to a Resource
+func ItemToDynamicResourceLifeCycle(i Item) (DynamicResourceLifeCycle, error) {
+	res, ok := i.(DynamicResourceLifeCycle)
+	if !ok {
+		return DynamicResourceLifeCycle{}, fmt.Errorf("cannot construct Resource from received object %v", i)
+	}
+	return res, nil
+}
+
+// GenerateDynamicResourceName generates a unique name for dynamic resources
+func GenerateDynamicResourceName() string {
+	return uuid.New().String()
 }
