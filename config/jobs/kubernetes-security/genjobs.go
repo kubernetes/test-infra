@@ -144,13 +144,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaul
 	if j.Namespace != nil && *j.Namespace == podNamespace {
 		j.Namespace = nil
 	}
-	if j.DecorationConfig != nil {
-		if reflect.DeepEqual(j.DecorationConfig, defaultDecoration) {
-			j.DecorationConfig = nil
-		} else if reflect.DeepEqual(j.DecorationConfig.UtilityImages, defaultDecoration.UtilityImages) {
-			j.DecorationConfig.UtilityImages = nil
-		}
-	}
+
 	// Drop annotations to avoid confusing other tools
 	j.Annotations = nil
 
@@ -260,6 +254,16 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, defaul
 				},
 			},
 		)
+
+		// ensure decorated jobs upload to the private bucket
+		if j.Decorate {
+			j.DecorationConfig.GCSConfiguration.Bucket = "kubernetes-security-prow"
+		}
+
+		// de-dupe default utility images config so verify checks pass
+		if j.DecorationConfig != nil && reflect.DeepEqual(j.DecorationConfig.UtilityImages, defaultDecoration.UtilityImages) {
+			j.DecorationConfig.UtilityImages = nil
+		}
 	}
 	return j
 }
