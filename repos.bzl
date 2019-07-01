@@ -600,8 +600,8 @@ def go_repositories():
     go_repository(
         name = "com_github_jinzhu_now",
         importpath = "github.com/jinzhu/now",
-        sum = "h1:xvj06l8iSwiWpYgm8MbPp+naBg+pwfqmdXabzqPCn/8=",
-        version = "v0.0.0-20181116074157-8ec929ed50c3",
+        sum = "h1:HjfetcXq097iXP0uoPCdnM4Efp5/9MsM0/M+XOTeR3M=",
+        version = "v1.0.1",
     )
     go_repository(
         name = "com_github_jmespath_go_jmespath",
