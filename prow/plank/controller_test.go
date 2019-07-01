@@ -28,7 +28,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -1208,7 +1208,7 @@ func TestPeriodic(t *testing.T) {
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 	defer totServ.Close()
 	fc := &fkc{
-		prowjobs: []prowapi.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil)},
+		prowjobs: []prowapi.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil, nil)},
 	}
 	log := logrus.NewEntry(logrus.StandardLogger())
 	c := Controller{

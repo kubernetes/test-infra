@@ -189,6 +189,7 @@ func main() {
 
 	var pjs prowapi.ProwJobSpec
 	var labels map[string]string
+	var annotations map[string]string
 	var found bool
 	var needsBaseRef bool
 	var needsPR bool
@@ -212,6 +213,7 @@ func main() {
 					}},
 				})
 				labels = p.Labels
+				annotations = p.Annotations
 				found = true
 				needsBaseRef = true
 				needsPR = true
@@ -235,6 +237,7 @@ func main() {
 					BaseSHA: o.baseSha,
 				})
 				labels = p.Labels
+				annotations = p.Annotations
 				found = true
 				needsBaseRef = true
 				o.org = org
@@ -246,6 +249,7 @@ func main() {
 		if p.Name == o.jobName {
 			pjs = pjutil.PeriodicSpec(p)
 			labels = p.Labels
+			annotations = p.Annotations
 			found = true
 		}
 	}
@@ -262,7 +266,7 @@ func main() {
 			logrus.WithError(err).Fatal("Failed to default base ref")
 		}
 	}
-	pj := pjutil.NewProwJob(pjs, labels)
+	pj := pjutil.NewProwJob(pjs, labels, annotations)
 	b, err := yaml.Marshal(&pj)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error marshalling YAML.")
