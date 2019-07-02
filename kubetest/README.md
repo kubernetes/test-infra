@@ -220,7 +220,7 @@ right path, the command below does the same as above:
 
 [bootstrap.py]: /jenkins/bootstrap.py
 [boskos]: /boskos
-[e2e testing]: https://git.k8s.io/community/contributors/devel/e2e-tests.md
+[e2e testing]: https://git.k8s.io/community/contributors/devel/sig-testing/e2e-tests.md
 [extract_k8s.go]: /kubetest/extract_k8s.go
 [ginkgo]: https://github.com/onsi/ginkgo
 [kubekins-e2e]: /images/kubekins-e2e
