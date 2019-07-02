@@ -81,7 +81,7 @@ presubmits:
     - release-1.11
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190628-0b1fa57
+      - image: gcr.io/k8s-testimages/bootstrap:v20190702-38873b6
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
