@@ -1530,7 +1530,7 @@ test_groups:
   num_columns_recent: 3
 - name: ci-kind-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kind-build
-- name: ci-periodic-kind-integration-test-arm64
+- name: ci-kubernetes-kind-conformance-latest-1-14-arm64
   gcs_prefix: k8s-conformance-kind-arm64-openlab/periodic-logs/ci-kind-integration-test-arm64
 - name: ci-kubernetes-conformance-image-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-conformance-image-test
