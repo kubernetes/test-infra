@@ -226,7 +226,7 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 	if response.Result != nil {
 		for _, bug := range response.Result.Bugs {
 			if bug.ID == id {
-				changed = strings.Contains(bug.Changes.ExternalBugs.Added, pullIdentifier)
+				changed = changed || strings.Contains(bug.Changes.ExternalBugs.Added, pullIdentifier)
 			}
 		}
 	}

@@ -45,9 +45,8 @@ func (c *Fake) GetBug(id int) (*Bug, error) {
 	}
 	if bug, exists := c.Bugs[id]; exists {
 		return &bug, nil
-	} else {
-		return nil, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 	}
+	return nil, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 }
 
 // UpdateBug updates the bug, if registered, or an error, if set,
@@ -60,9 +59,8 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 		bug.Status = update.Status
 		c.Bugs[id] = bug
 		return nil
-	} else {
-		return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 	}
+	return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 }
 
 // AddPullRequestAsExternalBug adds an external bug to the Bugzilla bug,
@@ -73,21 +71,20 @@ func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (b
 		return false, errors.New("injected error adding external bug to bug")
 	}
 	if _, exists := c.Bugs[id]; exists {
-		pullIdenfitier := fmt.Sprintf("%s/%s/pull/%d", org, repo, num)
+		pullIdentifier := fmt.Sprintf("%s/%s/pull/%d", org, repo, num)
 		for _, bug := range c.ExternalBugs[id] {
-			if bug.BugzillaBugID == id && bug.ExternalBugID == pullIdenfitier {
+			if bug.BugzillaBugID == id && bug.ExternalBugID == pullIdentifier {
 				return false, nil
 			}
 		}
 		c.ExternalBugs[id] = append(c.ExternalBugs[id], ExternalBug{
 			TrackerID:     0, // impl detail of each bz server
 			BugzillaBugID: id,
-			ExternalBugID: pullIdenfitier,
+			ExternalBugID: pullIdentifier,
 		})
 		return true, nil
-	} else {
-		return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 	}
+	return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 }
 
 // the Fake is a Client
