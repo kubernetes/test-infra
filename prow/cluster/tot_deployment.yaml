@@ -43,7 +43,7 @@ spec:
     requests:
       storage: 1Gi
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -54,6 +54,9 @@ spec:
   replicas: 1  # one canonical source of build numbers
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: tot
   template:
     metadata:
       labels:
