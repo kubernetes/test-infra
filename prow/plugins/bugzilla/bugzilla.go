@@ -337,7 +337,21 @@ Once a valid bug is referenced in the title of this pull request, request a bug 
 				e.bugId, bc.Endpoint()))
 		}
 
-		valid, why := validateBug(*bug, options)
+		var dependents []bugzilla.Bug
+		if options.DependentBugStatuses != nil {
+			for _, id := range bug.DependsOn {
+				dependent, err := bc.GetBug(id)
+				if err != nil {
+					return comment(fmt.Sprintf(`An error was encountered searching the Bugzilla server at %s for dependent bug %d:
+> %v
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
+						bc.Endpoint(), id, err))
+				}
+				dependents = append(dependents, *dependent)
+			}
+		}
+
+		valid, why := validateBug(*bug, dependents, options, bc.Endpoint())
 		needsValidLabel, needsInvalidLabel = valid, !valid
 		if valid {
 			log.Debug("Valid bug found.")
@@ -419,7 +433,7 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 }
 
 // validateBug determines if the bug matches the options and returns a description of why not
-func validateBug(bug bugzilla.Bug, options plugins.BugzillaBranchOptions) (bool, []string) {
+func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.BugzillaBranchOptions, endpoint string) (bool, []string) {
 	valid := true
 	var errors []string
 	if options.IsOpen != nil && *options.IsOpen != bug.IsOpen {
@@ -454,6 +468,16 @@ func validateBug(bug bugzilla.Bug, options plugins.BugzillaBranchOptions) (bool,
 		if !validStatuses.Has(bug.Status) {
 			valid = false
 			errors = append(errors, fmt.Sprintf("expected the bug to be in one of the following states: %s, but it is %s instead", strings.Join(*options.Statuses, ", "), bug.Status))
+		}
+	}
+
+	if options.DependentBugStatuses != nil {
+		validStatuses := sets.NewString(*options.DependentBugStatuses...)
+		for _, bug := range dependents {
+			if !validStatuses.Has(bug.Status) {
+				valid = false
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", endpoint, bug.ID, strings.Join(*options.DependentBugStatuses, ", "), bug.Status))
+			}
 		}
 	}
 

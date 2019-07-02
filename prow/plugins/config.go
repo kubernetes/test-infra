@@ -1021,6 +1021,9 @@ type BugzillaBranchOptions struct {
 	TargetRelease *string `json:"target_release,omitempty"`
 	// Statuses determine which statuses a bug may have to be valid
 	Statuses *[]string `json:"statuses,omitempty"`
+	// DependentBugStatuses determine which statuses a bug's dependent bugs may have
+	// to deem the child bug valid
+	DependentBugStatuses *[]string `json:"dependent_bug_statuses,omitempty"`
 
 	// StatusAfterValidation is the status which the bug will be moved to after being
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
@@ -1040,11 +1043,13 @@ func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
 		(o.TargetRelease != nil && other.TargetRelease != nil && *o.TargetRelease == *other.TargetRelease)
 	statusesMatch := o.Statuses == nil && other.Statuses == nil ||
 		(o.Statuses != nil && other.Statuses != nil && sets.NewString(*o.Statuses...).Equal(sets.NewString(*other.Statuses...)))
+	dependentBugStatusesMatch := o.DependentBugStatuses == nil && other.DependentBugStatuses == nil ||
+		(o.DependentBugStatuses != nil && other.DependentBugStatuses != nil && sets.NewString(*o.DependentBugStatuses...).Equal(sets.NewString(*other.DependentBugStatuses...)))
 	statusesAfterValidationMatch := o.StatusAfterValidation == nil && other.StatusAfterValidation == nil ||
 		(o.StatusAfterValidation != nil && other.StatusAfterValidation != nil && *o.StatusAfterValidation == *other.StatusAfterValidation)
 	addExternalLinkMatch := o.AddExternalLink == nil && other.AddExternalLink == nil ||
 		(o.AddExternalLink != nil && other.AddExternalLink != nil && *o.AddExternalLink == *other.AddExternalLink)
-	return validateByDefaultMatch && isOpenMatch && targetReleaseMatch && statusesMatch && statusesAfterValidationMatch && addExternalLinkMatch
+	return validateByDefaultMatch && isOpenMatch && targetReleaseMatch && statusesMatch && dependentBugStatusesMatch && statusesAfterValidationMatch && addExternalLinkMatch
 }
 
 const BugzillaOptionsWildcard = `*`
@@ -1074,6 +1079,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	if parent.Statuses != nil {
 		output.Statuses = parent.Statuses
 	}
+	if parent.DependentBugStatuses != nil {
+		output.DependentBugStatuses = parent.DependentBugStatuses
+	}
 	if parent.StatusAfterValidation != nil {
 		output.StatusAfterValidation = parent.StatusAfterValidation
 	}
@@ -1093,6 +1101,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.Statuses != nil {
 		output.Statuses = child.Statuses
+	}
+	if child.DependentBugStatuses != nil {
+		output.DependentBugStatuses = child.DependentBugStatuses
 	}
 	if child.StatusAfterValidation != nil {
 		output.StatusAfterValidation = child.StatusAfterValidation
