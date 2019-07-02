@@ -261,8 +261,7 @@ type GitHubReporter struct {
 	// JobTypesToReport is used to determine which type of prowjob
 	// should be reported to github
 	//
-	// defaults to presubmit job only.
-	// Will default to both presubmit and postsubmit jobs by April.1st.2019
+	// defaults to both presubmit and postsubmit jobs.
 	JobTypesToReport []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
 }
 
@@ -955,8 +954,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	if len(c.GitHubReporter.JobTypesToReport) == 0 {
-		// TODO(krzyzacy): The default will be changed to presubmit + postsubmit by April.
-		c.GitHubReporter.JobTypesToReport = append(c.GitHubReporter.JobTypesToReport, prowapi.PresubmitJob)
+		c.GitHubReporter.JobTypesToReport = append(c.GitHubReporter.JobTypesToReport, prowapi.PresubmitJob, prowapi.PostsubmitJob)
 	}
 
 	// validate entries are valid job types
