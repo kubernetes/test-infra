@@ -92,9 +92,6 @@ func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
 }
 
 func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
-	if pjs.Refs == nil {
-		return nil
-	}
 	if pjs.Refs.BaseRef == "" {
 		if o.pullNumber != 0 {
 			pr, err := o.getPullRequest()
@@ -191,8 +188,6 @@ func main() {
 	var labels map[string]string
 	var annotations map[string]string
 	var found bool
-	var needsBaseRef bool
-	var needsPR bool
 	for fullRepoName, ps := range conf.Presubmits {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
@@ -215,8 +210,6 @@ func main() {
 				labels = p.Labels
 				annotations = p.Annotations
 				found = true
-				needsBaseRef = true
-				needsPR = true
 			}
 		}
 	}
@@ -237,7 +230,6 @@ func main() {
 				labels = p.Labels
 				annotations = p.Annotations
 				found = true
-				needsBaseRef = true
 			}
 		}
 	}
@@ -255,13 +247,11 @@ func main() {
 	if pjs.Refs != nil {
 		o.org = pjs.Refs.Org
 		o.repo = pjs.Refs.Repo
-	}
-	if needsPR {
-		if err := o.defaultPR(&pjs); err != nil {
-			logrus.WithError(err).Fatal("Failed to default PR")
+		if len(pjs.Refs.Pulls) != 0 {
+			if err := o.defaultPR(&pjs); err != nil {
+				logrus.WithError(err).Fatal("Failed to default PR")
+			}
 		}
-	}
-	if needsBaseRef {
 		if err := o.defaultBaseRef(&pjs); err != nil {
 			logrus.WithError(err).Fatal("Failed to default base ref")
 		}
