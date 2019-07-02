@@ -54,6 +54,54 @@ type options struct {
 	pullRequest  *github.PullRequest
 }
 
+func (o *options) genJobSpec(conf *config.Config, name string) (config.JobBase, prowapi.ProwJobSpec) {
+	for fullRepoName, ps := range conf.Presubmits {
+		org, repo, err := splitRepoName(fullRepoName)
+		if err != nil {
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
+			continue
+		}
+		for _, p := range ps {
+			if p.Name == o.jobName {
+				return p.JobBase, pjutil.PresubmitSpec(p, prowapi.Refs{
+					Org:     org,
+					Repo:    repo,
+					BaseRef: o.baseRef,
+					BaseSHA: o.baseSha,
+					Pulls: []prowapi.Pull{{
+						Author: o.pullAuthor,
+						Number: o.pullNumber,
+						SHA:    o.pullSha,
+					}},
+				})
+			}
+		}
+	}
+	for fullRepoName, ps := range conf.Postsubmits {
+		org, repo, err := splitRepoName(fullRepoName)
+		if err != nil {
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
+			continue
+		}
+		for _, p := range ps {
+			if p.Name == o.jobName {
+				return p.JobBase, pjutil.PostsubmitSpec(p, prowapi.Refs{
+					Org:     org,
+					Repo:    repo,
+					BaseRef: o.baseRef,
+					BaseSHA: o.baseSha,
+				})
+			}
+		}
+	}
+	for _, p := range conf.Periodics {
+		if p.Name == o.jobName {
+			return p.JobBase, pjutil.PeriodicSpec(p)
+		}
+	}
+	return config.JobBase{}, prowapi.ProwJobSpec{}
+}
+
 func (o *options) getPullRequest() (*github.PullRequest, error) {
 	if o.pullRequest != nil {
 		return o.pullRequest, nil
@@ -183,56 +231,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
-
-	var job config.JobBase
-	var pjs prowapi.ProwJobSpec
-	for fullRepoName, ps := range conf.Presubmits {
-		org, repo, err := splitRepoName(fullRepoName)
-		if err != nil {
-			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
-			continue
-		}
-		for _, p := range ps {
-			if p.Name == o.jobName {
-				job = p.JobBase
-				pjs = pjutil.PresubmitSpec(p, prowapi.Refs{
-					Org:     org,
-					Repo:    repo,
-					BaseRef: o.baseRef,
-					BaseSHA: o.baseSha,
-					Pulls: []prowapi.Pull{{
-						Author: o.pullAuthor,
-						Number: o.pullNumber,
-						SHA:    o.pullSha,
-					}},
-				})
-			}
-		}
-	}
-	for fullRepoName, ps := range conf.Postsubmits {
-		org, repo, err := splitRepoName(fullRepoName)
-		if err != nil {
-			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
-			continue
-		}
-		for _, p := range ps {
-			if p.Name == o.jobName {
-				job = p.JobBase
-				pjs = pjutil.PostsubmitSpec(p, prowapi.Refs{
-					Org:     org,
-					Repo:    repo,
-					BaseRef: o.baseRef,
-					BaseSHA: o.baseSha,
-				})
-			}
-		}
-	}
-	for _, p := range conf.Periodics {
-		if p.Name == o.jobName {
-			job = p.JobBase
-			pjs = pjutil.PeriodicSpec(p)
-		}
-	}
+	job, pjs := o.genJobSpec(conf, o.jobName)
 	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
