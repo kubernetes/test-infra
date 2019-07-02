@@ -13,7 +13,7 @@ periodics:
       path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190628-9455316-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190702-9adb196-master
         command:
         - runner.sh
         args:
