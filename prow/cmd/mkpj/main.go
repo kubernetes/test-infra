@@ -217,8 +217,6 @@ func main() {
 				found = true
 				needsBaseRef = true
 				needsPR = true
-				o.org = org
-				o.repo = repo
 			}
 		}
 	}
@@ -240,8 +238,6 @@ func main() {
 				annotations = p.Annotations
 				found = true
 				needsBaseRef = true
-				o.org = org
-				o.repo = repo
 			}
 		}
 	}
@@ -255,6 +251,10 @@ func main() {
 	}
 	if !found {
 		logrus.Fatalf("Job %s not found.", o.jobName)
+	}
+	if pjs.Refs != nil {
+		o.org = pjs.Refs.Org
+		o.repo = pjs.Refs.Repo
 	}
 	if needsPR {
 		if err := o.defaultPR(&pjs); err != nil {
