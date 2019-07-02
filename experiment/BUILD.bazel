@@ -16,7 +16,7 @@ py_binary(
         "//prow:configs",
         "//testgrid:config-yaml",
     ],
-    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
+    deps = [requirement("ruamel.yaml")],
 )
 
 py_binary(
@@ -25,7 +25,7 @@ py_binary(
     data = [
         "//testgrid:config-yaml",
     ],
-    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
+    deps = [requirement("ruamel.yaml")],
 )
 
 py_binary(
@@ -44,7 +44,7 @@ py_binary(
         "//experiment/config-rotator",
     ],
     deps = [
-        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
+        requirement("ruamel.yaml"),
         requirement("sh"),
     ],
 )
