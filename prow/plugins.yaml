@@ -636,6 +636,9 @@ plugins:
   kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
   - milestone
 
+  kubernetes-sigs/etcdadm:
+  - milestone
+
   kubernetes-sigs/contributor-playground:
   - require-sig
 
