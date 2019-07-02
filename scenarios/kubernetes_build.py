@@ -73,9 +73,12 @@ def check_build_exists(gcs, suffix):
         gcs = os.path.join(gcs, mode, version)
         try:
             check_no_stdout('gsutil', 'ls', gcs)
+            check_no_stdout('gsutil', 'ls', gcs + "/kubernetes.tar.gz")
+            check_no_stdout('gsutil', 'ls', gcs + "/bin")
             return True
         except subprocess.CalledProcessError as exc:
-            print >>sys.stderr, 'gcs path %s does not exist yet, continue' % gcs
+            print >>sys.stderr, (
+                'gcs path %s (or some files under it) does not exist yet, continue' % gcs)
     return False
 
 
