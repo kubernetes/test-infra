@@ -184,10 +184,8 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
 
+	var job config.JobBase
 	var pjs prowapi.ProwJobSpec
-	var labels map[string]string
-	var annotations map[string]string
-	var found bool
 	for fullRepoName, ps := range conf.Presubmits {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
@@ -196,6 +194,7 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
+				job = p.JobBase
 				pjs = pjutil.PresubmitSpec(p, prowapi.Refs{
 					Org:     org,
 					Repo:    repo,
@@ -207,9 +206,6 @@ func main() {
 						SHA:    o.pullSha,
 					}},
 				})
-				labels = p.Labels
-				annotations = p.Annotations
-				found = true
 			}
 		}
 	}
@@ -221,27 +217,23 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == o.jobName {
+				job = p.JobBase
 				pjs = pjutil.PostsubmitSpec(p, prowapi.Refs{
 					Org:     org,
 					Repo:    repo,
 					BaseRef: o.baseRef,
 					BaseSHA: o.baseSha,
 				})
-				labels = p.Labels
-				annotations = p.Annotations
-				found = true
 			}
 		}
 	}
 	for _, p := range conf.Periodics {
 		if p.Name == o.jobName {
+			job = p.JobBase
 			pjs = pjutil.PeriodicSpec(p)
-			labels = p.Labels
-			annotations = p.Annotations
-			found = true
 		}
 	}
-	if !found {
+	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
 	if pjs.Refs != nil {
@@ -256,7 +248,7 @@ func main() {
 			logrus.WithError(err).Fatal("Failed to default base ref")
 		}
 	}
-	pj := pjutil.NewProwJob(pjs, labels, annotations)
+	pj := pjutil.NewProwJob(pjs, job.Labels, job.Annotations)
 	b, err := yaml.Marshal(&pj)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error marshalling YAML.")
