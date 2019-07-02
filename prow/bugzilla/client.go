@@ -163,7 +163,7 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		Method  string `json:"method"`
 		// Parameters must be specified in JSONRPC 1.0 as a structure in the first
 		// index of this slice
-		Parameters []AddExternalBugParameters `json:"parameters"`
+		Parameters []AddExternalBugParameters `json:"params"`
 		ID         string                     `json:"id"`
 	}{
 		Version: "1.0", // some Bugzilla servers support 2.0 but all support 1.0

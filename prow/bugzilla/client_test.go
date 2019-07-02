@@ -195,7 +195,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 			Method  string `json:"method"`
 			// Parameters must be specified in JSONRPC 1.0 as a structure in the first
 			// index of this slice
-			Parameters []AddExternalBugParameters `json:"parameters"`
+			Parameters []AddExternalBugParameters `json:"params"`
 			ID         string                     `json:"id"`
 		}
 		raw, err := ioutil.ReadAll(r.Body)
@@ -210,7 +210,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 			return
 		}
 		if payload.Parameters[0].BugIDs[0] == 1705243 {
-			if actual, expected := string(raw), `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","parameters":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`; actual != expected {
+			if actual, expected := string(raw), `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`; actual != expected {
 				t.Errorf("got incorrect JSONRPC payload: %v", diff.ObjectReflectDiff(expected, actual))
 			}
 		} else {
