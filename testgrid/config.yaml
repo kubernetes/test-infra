@@ -1921,12 +1921,16 @@ test_groups:
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.1
 - name: osd-stage-4.2
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.2
+- name: osd-upgrade-stage-4.1-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-stage-4.1-4.1
 
 # OpenShift Dedicated production
 - name: osd-prod-4.1
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.1
 - name: osd-prod-4.2
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.2
+- name: osd-upgrade-prod-4.1-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-prod-4.1-4.1
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
@@ -6592,6 +6596,10 @@ dashboards:
     description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 staging cluster.
     test_group_name: osd-stage-4.2
     base_options: width=10
+  - name: osd-upgrade-stage-4.1-4.1
+    description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in staging.
+    test_group_name: osd-upgrade-stage-4.1-4.1
+    base_options: width=10
 
 # OpenShift Dedicated production dashboard
 - name: redhat-osd-prod
@@ -6603,6 +6611,10 @@ dashboards:
   - name: osd-prod-4.2
     description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 production cluster.
     test_group_name: osd-prod-4.2
+    base_options: width=10
+  - name: osd-upgrade-prod-4.1-4.1
+    description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in production.
+    test_group_name: osd-upgrade-prod-4.1-4.1
     base_options: width=10
 
 #Docker node conformance dashboard
