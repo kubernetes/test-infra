@@ -1,6 +1,8 @@
 # Announcements
 
 New features added to each component:
+ - *July 2, 2019* prow defaults to report status for both presubmit and postsubmit
+   jobs on GitHub now.
  - *June 17, 2019* It is now possible to configure the channel for the Slack reporter
    directly on jobs via the `.reporter_config.slack.channel` config option
  - *May 13, 2019* New `plank` config `pod_running_timeout` is added and
