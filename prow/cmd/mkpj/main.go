@@ -54,6 +54,54 @@ type options struct {
 	pullRequest  *github.PullRequest
 }
 
+func (o *options) genJobSpec(conf *config.Config, name string) (config.JobBase, prowapi.ProwJobSpec) {
+	for fullRepoName, ps := range conf.Presubmits {
+		org, repo, err := splitRepoName(fullRepoName)
+		if err != nil {
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
+			continue
+		}
+		for _, p := range ps {
+			if p.Name == o.jobName {
+				return p.JobBase, pjutil.PresubmitSpec(p, prowapi.Refs{
+					Org:     org,
+					Repo:    repo,
+					BaseRef: o.baseRef,
+					BaseSHA: o.baseSha,
+					Pulls: []prowapi.Pull{{
+						Author: o.pullAuthor,
+						Number: o.pullNumber,
+						SHA:    o.pullSha,
+					}},
+				})
+			}
+		}
+	}
+	for fullRepoName, ps := range conf.Postsubmits {
+		org, repo, err := splitRepoName(fullRepoName)
+		if err != nil {
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
+			continue
+		}
+		for _, p := range ps {
+			if p.Name == o.jobName {
+				return p.JobBase, pjutil.PostsubmitSpec(p, prowapi.Refs{
+					Org:     org,
+					Repo:    repo,
+					BaseRef: o.baseRef,
+					BaseSHA: o.baseSha,
+				})
+			}
+		}
+	}
+	for _, p := range conf.Periodics {
+		if p.Name == o.jobName {
+			return p.JobBase, pjutil.PeriodicSpec(p)
+		}
+	}
+	return config.JobBase{}, prowapi.ProwJobSpec{}
+}
+
 func (o *options) getPullRequest() (*github.PullRequest, error) {
 	if o.pullRequest != nil {
 		return o.pullRequest, nil
@@ -92,9 +140,6 @@ func (o *options) defaultPR(pjs *prowapi.ProwJobSpec) error {
 }
 
 func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
-	if pjs.Refs == nil {
-		return nil
-	}
 	if pjs.Refs.BaseRef == "" {
 		if o.pullNumber != 0 {
 			pr, err := o.getPullRequest()
@@ -186,87 +231,23 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
-
-	var pjs prowapi.ProwJobSpec
-	var labels map[string]string
-	var annotations map[string]string
-	var found bool
-	var needsBaseRef bool
-	var needsPR bool
-	for fullRepoName, ps := range conf.Presubmits {
-		org, repo, err := splitRepoName(fullRepoName)
-		if err != nil {
-			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
-			continue
-		}
-		for _, p := range ps {
-			if p.Name == o.jobName {
-				pjs = pjutil.PresubmitSpec(p, prowapi.Refs{
-					Org:     org,
-					Repo:    repo,
-					BaseRef: o.baseRef,
-					BaseSHA: o.baseSha,
-					Pulls: []prowapi.Pull{{
-						Author: o.pullAuthor,
-						Number: o.pullNumber,
-						SHA:    o.pullSha,
-					}},
-				})
-				labels = p.Labels
-				annotations = p.Annotations
-				found = true
-				needsBaseRef = true
-				needsPR = true
-				o.org = org
-				o.repo = repo
-			}
-		}
-	}
-	for fullRepoName, ps := range conf.Postsubmits {
-		org, repo, err := splitRepoName(fullRepoName)
-		if err != nil {
-			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
-			continue
-		}
-		for _, p := range ps {
-			if p.Name == o.jobName {
-				pjs = pjutil.PostsubmitSpec(p, prowapi.Refs{
-					Org:     org,
-					Repo:    repo,
-					BaseRef: o.baseRef,
-					BaseSHA: o.baseSha,
-				})
-				labels = p.Labels
-				annotations = p.Annotations
-				found = true
-				needsBaseRef = true
-				o.org = org
-				o.repo = repo
-			}
-		}
-	}
-	for _, p := range conf.Periodics {
-		if p.Name == o.jobName {
-			pjs = pjutil.PeriodicSpec(p)
-			labels = p.Labels
-			annotations = p.Annotations
-			found = true
-		}
-	}
-	if !found {
+	job, pjs := o.genJobSpec(conf, o.jobName)
+	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
-	if needsPR {
-		if err := o.defaultPR(&pjs); err != nil {
-			logrus.WithError(err).Fatal("Failed to default PR")
+	if pjs.Refs != nil {
+		o.org = pjs.Refs.Org
+		o.repo = pjs.Refs.Repo
+		if len(pjs.Refs.Pulls) != 0 {
+			if err := o.defaultPR(&pjs); err != nil {
+				logrus.WithError(err).Fatal("Failed to default PR")
+			}
 		}
-	}
-	if needsBaseRef {
 		if err := o.defaultBaseRef(&pjs); err != nil {
 			logrus.WithError(err).Fatal("Failed to default base ref")
 		}
 	}
-	pj := pjutil.NewProwJob(pjs, labels, annotations)
+	pj := pjutil.NewProwJob(pjs, job.Labels, job.Annotations)
 	b, err := yaml.Marshal(&pj)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error marshalling YAML.")
