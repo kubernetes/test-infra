@@ -27,10 +27,8 @@ package ghcache
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"path"
-	"strconv"
 	"strings"
 	"time"
 
@@ -42,6 +40,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
+	"k8s.io/test-infra/ghproxy/ghmetrics"
 )
 
 type CacheResponseMode string
@@ -99,33 +98,10 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 	Help: "How many pending requests are waiting to be sent to GitHub servers.",
 })
 
-// ghTokenUsageGaugeVec provides the 'github_token_usage' gauge that
-// enables keeping track of GitHub calls and quotas.
-var ghTokenUsageGaugeVec = prometheus.NewGaugeVec(
-	prometheus.GaugeOpts{
-		Name: "github_token_usage",
-		Help: "How many GitHub token requets have been used up.",
-	},
-	[]string{"remaining", "until-reset"},
-)
-
-// ghRequestsGauge provides the 'github_requests' gauge that keeps track
-// of the number of GitHub requests by API path.
-var ghRequestsGauge = prometheus.NewGaugeVec(
-	prometheus.GaugeOpts{
-		Name: "github_requests",
-		Help: "GitHub requests by API path.",
-	},
-	[]string{"path", "status", "duration"},
-)
-
 func init() {
 	prometheus.MustRegister(cacheCounter)
 	prometheus.MustRegister(outboundConcurrencyGauge)
 	prometheus.MustRegister(pendingOutboundConnectionsGauge)
-
-	prometheus.MustRegister(ghTokenUsageGaugeVec)
-	prometheus.MustRegister(ghRequestsGauge)
 }
 
 func cacheResponseMode(headers http.Header) CacheResponseMode {
@@ -199,8 +175,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
 
-	githubTokenMetrics(resp.Header, reqStartTime)
-	ghRequestsGauge.With(prometheus.Labels{"path": getFirstPathFragment(req.URL.Path), "status": string(resp.StatusCode), "duration": roundTripTime.String()}).Inc()
+	ghmetrics.GithubTokenMetrics(resp.Header, reqStartTime)
+	ghmetrics.GithubRequestMetrics(req.URL.Path, string(resp.StatusCode), roundTripTime.String())
 
 	return resp, nil
 }
@@ -243,36 +219,4 @@ func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurren
 		logrus.WithError(err).Fatal("Error connecting to Redis")
 	}
 	return NewFromCache(delegate, rediscache.NewWithClient(conn), maxConcurrency)
-}
-
-// githubMetricCollection publishes the rate limits of the github api to
-// `github_token_usage` on prometheus.
-func githubTokenMetrics(headers http.Header, now time.Time) {
-	remaining := headers.Get("X-RateLimit-Remaining")
-	timeUntilReset := timeUntilFromUnix(headers.Get("X-RateLimit-Reset"), now)
-
-	ghTokenUsageGaugeVec.With(prometheus.Labels{"remaining": remaining, "until-reset": timeUntilReset.String()}).Inc()
-}
-
-// timeUntilFromUnix takes a unix timestamp and returns a `time.Duration`
-// from the given time until the passed unix timestamps point in time.
-func timeUntilFromUnix(reset string, now time.Time) time.Duration {
-	timestamp, err := strconv.ParseInt(reset, 10, 64)
-	if err != nil {
-		logrus.WithField("timestamp", reset).Info("Couldn't convert unix timestamp")
-	}
-	resetTime := time.Unix(timestamp, 0)
-	return resetTime.Sub(now)
-}
-
-// getFirstPathFragment returns the first fragment of a path, of a
-// `*url.URL.Path`. e.g. `/repo/kubernetes/test-infra/` will return `repo`
-func getFirstPathFragment(path string) string {
-	if len(path) > 1 {
-		if path[0] == '/' {
-			return fmt.Sprintf("/%s", strings.Split(path[:1], "/")[0])
-		}
-		return fmt.Sprintf("/%s", strings.Split(path, "/")[0])
-	}
-	return path
 }
