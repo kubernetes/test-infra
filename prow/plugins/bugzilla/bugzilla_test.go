@@ -436,6 +436,7 @@ func TestHandle(t *testing.T) {
 		labels               []string
 		missing              bool
 		bug                  *bugzilla.Bug
+		externalBugExists    bool
 		bugError             bool
 		options              plugins.BugzillaBranchOptions
 		expectedLabels       []string
@@ -590,6 +591,27 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug:          &bugzilla.Bug{ID: 123},
 			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1"}},
 		},
+		{
+			name:              "valid bug with already existing external link removes invalid label, adds valid label, comments to say nothing changed",
+			bug:               &bugzilla.Bug{ID: 123},
+			externalBugExists: true,
+			options:           plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
+			labels:            []string{"bugzilla/invalid-bug"},
+			expectedLabels:    []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug:          &bugzilla.Bug{ID: 123},
+			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1"}},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -612,6 +634,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			if testCase.bugError {
 				bc.BugErrors.Insert(e.bugId)
+			}
+			if testCase.externalBugExists {
+				bc.ExternalBugs[e.bugId] = []bugzilla.ExternalBug{{
+					BugzillaBugID: e.bugId,
+					ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", e.org, e.repo, e.number),
+				}}
 			}
 			e.missing = testCase.missing
 			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))

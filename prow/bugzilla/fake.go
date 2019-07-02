@@ -68,19 +68,25 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 // AddPullRequestAsExternalBug adds an external bug to the Bugzilla bug,
 // if registered, or an error, if set, or responds with an error that
 // matches IsNotFound
-func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) error {
+func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
 	if c.BugErrors.Has(id) {
-		return errors.New("injected error adding external bug to bug")
+		return false, errors.New("injected error adding external bug to bug")
 	}
 	if _, exists := c.Bugs[id]; exists {
+		pullIdenfitier := fmt.Sprintf("%s/%s/pull/%d", org, repo, num)
+		for _, bug := range c.ExternalBugs[id] {
+			if bug.BugzillaBugID == id && bug.ExternalBugID == pullIdenfitier {
+				return false, nil
+			}
+		}
 		c.ExternalBugs[id] = append(c.ExternalBugs[id], ExternalBug{
 			TrackerID:     0, // impl detail of each bz server
 			BugzillaBugID: id,
-			ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", org, repo, num),
+			ExternalBugID: pullIdenfitier,
 		})
-		return nil
+		return true, nil
 	} else {
-		return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+		return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 	}
 }
 

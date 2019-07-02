@@ -354,14 +354,17 @@ Please contact an administrator to resolve this issue, then request a bug refres
 				response += fmt.Sprintf(" The bug has been moved to the %s state.", *options.StatusAfterValidation)
 			}
 			if options.AddExternalLink != nil && *options.AddExternalLink {
-				if err := bc.AddPullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number); err != nil {
+				changed, err := bc.AddPullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number)
+				if err != nil {
 					log.WithError(err).Warn("Unexpected error adding external tracker bug to Bugzilla bug.")
 					return comment(fmt.Sprintf(`An error was encountered adding this pull request to the external tracker bugs on the Bugzilla server at %s for bug %d:
 > %v
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
 						bc.Endpoint(), e.bugId, err))
 				}
-				response += " The bug has been updated to refer to the pull request using the external bug tracker."
+				if changed {
+					response += " The bug has been updated to refer to the pull request using the external bug tracker."
+				}
 			}
 		} else {
 			log.Debug("Invalid bug found.")
