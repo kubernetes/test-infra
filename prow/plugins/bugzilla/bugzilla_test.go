@@ -108,11 +108,13 @@ orgs:
 }
 
 func TestDigestPR(t *testing.T) {
+	yes := true
 	var testCases = []struct {
-		name        string
-		pre         github.PullRequestEvent
-		expected    *event
-		expectedErr bool
+		name              string
+		pre               github.PullRequestEvent
+		validateByDefault *bool
+		expected          *event
+		expectedErr       bool
 	}{
 		{
 			name: "unrelated event gets ignored",
@@ -150,6 +152,33 @@ func TestDigestPR(t *testing.T) {
 					Number: 1,
 					Title:  "fixing a typo",
 				},
+			},
+		},
+		{
+			name: "unrelated title gets handled when validating by default",
+			pre: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "org",
+							},
+							Name: "repo",
+						},
+						Ref: "branch",
+					},
+					Number:  1,
+					Title:   "fixing a typo",
+					HTMLURL: "http.com",
+					User: github.User{
+						Login: "user",
+					},
+				},
+			},
+			validateByDefault: &yes,
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 1, missing: true, bugId: 0, body: "fixing a typo", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -284,7 +313,7 @@ func TestDigestPR(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			event, err := digestPR(logrus.WithField("testCase", testCase.name), testCase.pre)
+			event, err := digestPR(logrus.WithField("testCase", testCase.name), testCase.pre, testCase.validateByDefault)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

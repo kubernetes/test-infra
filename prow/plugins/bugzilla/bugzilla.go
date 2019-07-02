@@ -167,19 +167,19 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	event, err := digestPR(pc.Logger, pre)
+	options := pc.PluginConfig.Bugzilla.OptionsForBranch(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name, pre.PullRequest.Base.Ref)
+	event, err := digestPR(pc.Logger, pre, options.ValidateByDefault)
 	if err != nil {
 		return err
 	}
 	if event != nil {
-		options := pc.PluginConfig.Bugzilla.OptionsForBranch(event.org, event.repo, event.baseRef)
 		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger)
 	}
 	return nil
 }
 
 // digestPR determines if any action is necessary and creates the objects for handle() if it is
-func digestPR(log *logrus.Entry, pre github.PullRequestEvent) (*event, error) {
+func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault *bool) (*event, error) {
 	// These are the only actions indicating the PR title may have changed.
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
@@ -213,10 +213,10 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent) (*event, error) {
 	}
 
 	// when exiting early from errors trying to find out if the PR previously referenced a bug,
-	// we want to handle the event only if a bug is currently referenced. Only when we know the
-	// PR previously referenced a bug can we handle events where the PR currently does not
+	// we want to handle the event only if a bug is currently referenced or we are validating by
+	// default
 	var intermediate *event
-	if !e.missing {
+	if !e.missing || (validateByDefault != nil && *validateByDefault) {
 		intermediate = e
 	}
 
