@@ -1141,6 +1141,9 @@ test_groups:
 - name: istio-kind-simpleTest-master
   gcs_prefix: istio-prow/logs/istio-kind-simpleTest-master
   num_failures_to_alert: 1
+- name: integ-conformance-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-conformance-local-postsubmit-tests-master
+  num_failures_to_alert: 1
 - name: integ-framework-local-postsubmit-tests-master
   gcs_prefix: istio-prow/logs/integ-framework-local-postsubmit-tests-master
   num_failures_to_alert: 1
@@ -1161,6 +1164,9 @@ test_groups:
   num_failures_to_alert: 1
 - name: integ-telemetry-local-postsubmit-tests-master
   gcs_prefix: istio-prow/logs/integ-telemetry-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-conformance-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-conformance-k8s-postsubmit-tests-master
   num_failures_to_alert: 1
 - name: integ-framework-k8s-postsubmit-tests-master
   gcs_prefix: istio-prow/logs/integ-framework-k8s-postsubmit-tests-master
@@ -5871,6 +5877,10 @@ dashboards:
     test_group_name: istio-kind-simpleTest-master
     alert_options:
       alert_mail_to_addresses: angwar@google.com
+  - name: integ-conformance-local-postsubmit-tests
+    test_group_name: integ-conformance-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: integ-framework-local-postsubmit-tests
     test_group_name: integ-framework-local-postsubmit-tests-master
     alert_options:
@@ -5897,6 +5907,10 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: integ-telemetry-local-postsubmit-tests
     test_group_name: integ-telemetry-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-conformance-k8s-postsubmit-tests
+    test_group_name: integ-conformance-k8s-postsubmit-tests-master
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: integ-framework-k8s-postsubmit-tests
