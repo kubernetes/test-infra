@@ -48,7 +48,6 @@ presubmits:
             - ./...
   - name: pull-release-verify
     always_run: true
-    optional: true
     decorate: true
     path_alias: k8s.io/release
     labels:
