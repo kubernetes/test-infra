@@ -457,6 +457,7 @@ func TestHandle(t *testing.T) {
 	yes := true
 	open := true
 	updated := "UPDATED"
+	verified := []string{"VERIFIED"}
 	e := event{
 		org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 	}
@@ -464,12 +465,11 @@ func TestHandle(t *testing.T) {
 		name                 string
 		labels               []string
 		missing              bool
-		bug                  *bugzilla.Bug
 		externalBugExists    bool
-		bugError             bool
+		bugs                 []bugzilla.Bug
+		bugErrors            []int
 		options              plugins.BugzillaBranchOptions
 		expectedLabels       []string
-		expectedErr          bool
 		expectedComment      string
 		expectedBug          *bugzilla.Bug
 		expectedExternalBugs []bugzilla.ExternalBug
@@ -490,8 +490,8 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		},
 		{
-			name:     "error fetching bug leaves a comment",
-			bugError: true,
+			name:      "error fetching bug leaves a comment",
+			bugErrors: []int{123},
 			expectedComment: `org/repo#1:@user: An error was encountered searching the Bugzilla server at www.bugzilla for bug 123:
 > injected error getting bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
@@ -508,7 +508,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "valid bug removes invalid label, adds valid label and comments",
-			bug:            &bugzilla.Bug{ID: 123},
+			bugs:           []bugzilla.Bug{{ID: 123}},
 			options:        plugins.BugzillaBranchOptions{}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
@@ -526,7 +526,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "invalid bug adds invalid label, removes valid label and comments",
-			bug:            &bugzilla.Bug{ID: 123},
+			bugs:           []bugzilla.Bug{{ID: 123}},
 			options:        plugins.BugzillaBranchOptions{IsOpen: &open},
 			labels:         []string{"bugzilla/valid-bug"},
 			expectedLabels: []string{"bugzilla/invalid-bug"},
@@ -564,7 +564,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and updates status",
-			bug:            &bugzilla.Bug{ID: 123},
+			bugs:           []bugzilla.Bug{{ID: 123}},
 			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
@@ -583,7 +583,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and does not update status when it is already correct",
-			bug:            &bugzilla.Bug{ID: 123, Status: updated},
+			bugs:           []bugzilla.Bug{{ID: 123, Status: updated}},
 			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
@@ -602,7 +602,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:           "valid bug with external link removes invalid label, adds valid label, comments, makes an external bug link",
-			bug:            &bugzilla.Bug{ID: 123},
+			bugs:           []bugzilla.Bug{{ID: 123}},
 			options:        plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
@@ -622,7 +622,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		},
 		{
 			name:              "valid bug with already existing external link removes invalid label, adds valid label, comments to say nothing changed",
-			bug:               &bugzilla.Bug{ID: 123},
+			bugs:              []bugzilla.Bug{{ID: 123}},
 			externalBugExists: true,
 			options:           plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
 			labels:            []string{"bugzilla/invalid-bug"},
@@ -641,6 +641,43 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug:          &bugzilla.Bug{ID: 123},
 			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1"}},
 		},
+		{
+			name:      "failure to fetch dependent bug results in a comment",
+			bugs:      []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}},
+			bugErrors: []int{124},
+			options:   plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
+			expectedComment: `org/repo#1:@user: An error was encountered searching the Bugzilla server at www.bugzilla for dependent bug 124:
+> injected error getting bug
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:           "valid bug with dependent bugs removes invalid label, adds valid label, comments",
+			bugs:           []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}, {ID: 124, Status: "VERIFIED"}},
+			options:        plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
+			labels:         []string{"bugzilla/invalid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -658,12 +695,10 @@ Instructions for interacting with me using PR comments are available [here](http
 				BugErrors:      sets.NewInt(),
 				ExternalBugs:   map[int][]bugzilla.ExternalBug{},
 			}
-			if testCase.bug != nil {
-				bc.Bugs[e.bugId] = *testCase.bug
+			for _, bug := range testCase.bugs {
+				bc.Bugs[bug.ID] = bug
 			}
-			if testCase.bugError {
-				bc.BugErrors.Insert(e.bugId)
-			}
+			bc.BugErrors.Insert(testCase.bugErrors...)
 			if testCase.externalBugExists {
 				bc.ExternalBugs[e.bugId] = []bugzilla.ExternalBug{{
 					BugzillaBugID: e.bugId,
@@ -672,10 +707,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			e.missing = testCase.missing
 			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
-			if err == nil && testCase.expectedErr {
-				t.Errorf("%s: expected an error but got none", testCase.name)
-			}
-			if err != nil && !testCase.expectedErr {
+			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
 
@@ -787,11 +819,12 @@ func TestValidateBug(t *testing.T) {
 	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
 	updated := "UPDATED"
 	var testCases = []struct {
-		name    string
-		bug     bugzilla.Bug
-		options plugins.BugzillaBranchOptions
-		valid   bool
-		why     []string
+		name       string
+		bug        bugzilla.Bug
+		dependents []bugzilla.Bug
+		options    plugins.BugzillaBranchOptions
+		valid      bool
+		why        []string
 	}{
 		{
 			name:    "no requirements means a valid bug",
@@ -865,27 +898,44 @@ func TestValidateBug(t *testing.T) {
 			why:     []string{"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
 		},
 		{
-			name:    "matching all requirements means a valid bug",
-			bug:     bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED"},
-			options: plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, Statuses: &modified},
+			name:    "dependent status requirement with no dependent bugs means a valid bug",
+			bug:     bugzilla.Bug{DependsOn: []int{}},
+			options: plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
 			valid:   true,
 		},
 		{
-			name:    "matching no requirements means an invalid bug",
-			bug:     bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED"},
-			options: plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, Statuses: &verified},
-			valid:   false,
+			name:       "not matching dependent bug status requirement means an invalid bug",
+			bug:        bugzilla.Bug{DependsOn: []int{1}},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
+			options:    plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
+			valid:      false,
+			why:        []string{"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
+		},
+		{
+			name:       "matching all requirements means a valid bug",
+			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
+			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, Statuses: &modified, DependentBugStatuses: &modified},
+			valid:      true,
+		},
+		{
+			name:       "matching no requirements means an invalid bug",
+			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
+			options:    plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, Statuses: &verified, DependentBugStatuses: &verified},
+			valid:      false,
 			why: []string{
 				"expected the bug to be open, but it isn't",
 				"expected the bug to target the \"v2\" release, but it targets \"v1\" instead",
 				"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead",
+				"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			valid, why := validateBug(testCase.bug, testCase.options)
+			valid, why := validateBug(testCase.bug, testCase.dependents, testCase.options, "bugzilla.com")
 			if valid != testCase.valid {
 				t.Errorf("%s: didn't validate bug correctly, expected %t got %t", testCase.name, testCase.valid, valid)
 			}
