@@ -75,8 +75,3 @@ var _ clientset.Interface = &Clientset{}
 func (c *Clientset) ProwV1() prowv1.ProwV1Interface {
 	return &fakeprowv1.FakeProwV1{Fake: &c.Fake}
 }
-
-// Prow retrieves the ProwV1Client
-func (c *Clientset) Prow() prowv1.ProwV1Interface {
-	return &fakeprowv1.FakeProwV1{Fake: &c.Fake}
-}

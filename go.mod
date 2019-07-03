@@ -7,7 +7,7 @@ require (
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
-	github.com/Azure/go-autorest v10.15.5+incompatible
+	github.com/Azure/go-autorest v11.1.0+incompatible
 	github.com/Microsoft/go-winio v0.4.12 // indirect
 	github.com/NYTimes/gziphandler v0.0.0-20160419202541-63027b26b87e
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -27,9 +27,10 @@ require (
 	github.com/docker/go-connections v0.3.0 // indirect
 	github.com/docker/go-units v0.3.3 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
-	github.com/evanphx/json-patch v4.2.0+incompatible
+	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
+	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/go-openapi/jsonpointer v0.0.0-20170102174223-779f45308c19 // indirect
 	github.com/go-openapi/jsonreference v0.0.0-20161105162150-36d33bfe519e // indirect
 	github.com/go-openapi/spec v0.0.0-20171219195406-fa03337d7da5
@@ -38,7 +39,6 @@ require (
 	github.com/gobuffalo/envy v1.6.15 // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7 // indirect
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.1
 	github.com/gomodule/redigo v1.7.0
@@ -47,7 +47,6 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
-	github.com/googleapis/gnostic v0.1.0 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
@@ -55,7 +54,6 @@ require (
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
-	github.com/imdario/mergo v0.0.0-20180119215619-163f41321a19 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
@@ -74,6 +72,7 @@ require (
 	github.com/mattn/go-zglob v0.0.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.3.0
 	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
 	github.com/pkg/errors v0.8.1
@@ -91,7 +90,7 @@ require (
 	golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 	golang.org/x/net v0.0.0-20190403144856-b630fd6fe46b
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
-	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
+	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/tools v0.0.0-20190404132500-923d25813098
@@ -100,17 +99,17 @@ require (
 	google.golang.org/grpc v1.19.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.2.2
-	k8s.io/api v0.0.0-20181128191700-6db15a15d2d3
-	k8s.io/apiextensions-apiserver v0.0.0-20181128195303-1f84094d7e8e
-	k8s.io/apimachinery v0.0.0-20181128191346-49ce2735e507
-	k8s.io/client-go v9.0.0+incompatible
-	k8s.io/code-generator v0.0.0-20190301173042-b1289fc74931
+	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
+	k8s.io/apiextensions-apiserver v0.0.0-20190409022649-727a075fdec8
+	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
+	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	k8s.io/code-generator v0.0.0-20190704094409-6c2a4329ac29
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
-	k8s.io/klog v0.1.0
-	k8s.io/kube-openapi v0.0.0-20180711000925-0cf8f7e6ed1d // indirect
+	k8s.io/klog v0.3.0
 	k8s.io/kubernetes v1.14.3 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
+	sigs.k8s.io/controller-runtime v0.2.0-beta.4
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4
 )
