@@ -172,6 +172,55 @@ func TestUpdateBug(t *testing.T) {
 }
 
 func TestAddPullRequestAsExternalBug(t *testing.T) {
+	var testCases = []struct {
+		name            string
+		id              int
+		expectedPayload string
+		response        string
+		expectedError   bool
+		expectedChanged bool
+	}{
+		{
+			name:            "update succeeds, makes a change",
+			id:              1705243,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705243}]}}`,
+			expectedError:   false,
+			expectedChanged: true,
+		},
+		{
+			name:            "update succeeds, makes a change as part of multiple changes reported",
+			id:              1705243,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705243},{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/2","removed":""}},"id":1705243}]}}`,
+			expectedError:   false,
+			expectedChanged: true,
+		},
+		{
+			name:            "update succeeds, makes no change",
+			id:              1705244,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705244],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"bugs":[]}}`,
+			expectedError:   false,
+			expectedChanged: false,
+		},
+		{
+			name:            "update fails, makes no change",
+			id:              1705246,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705246],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":{"code": 100400,"message":"Invalid params for JSONRPC 1.0."},"id":"identifier","result":null}`,
+			expectedError:   true,
+			expectedChanged: false,
+		},
+		{
+			name:            "get unrelated JSONRPC response",
+			id:              1705247,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705247],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"oops","result":{"bugs":[]}}`,
+			expectedError:   true,
+			expectedChanged: false,
+		},
+	}
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Error("did not correctly set content-type header for JSON")
@@ -209,27 +258,45 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		if payload.Parameters[0].BugIDs[0] == 1705243 {
-			if actual, expected := string(raw), `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`; actual != expected {
-				t.Errorf("got incorrect JSONRPC payload: %v", diff.ObjectReflectDiff(expected, actual))
+		for _, testCase := range testCases {
+			if payload.Parameters[0].BugIDs[0] == testCase.id {
+				if actual, expected := string(raw), testCase.expectedPayload; actual != expected {
+					t.Errorf("%s: got incorrect JSONRPC payload: %v", testCase.name, diff.ObjectReflectDiff(expected, actual))
+				}
+				if _, err := w.Write([]byte(testCase.response)); err != nil {
+					t.Fatalf("%s: failed to send JSONRPC response: %v", testCase.name, err)
+				}
+				return
 			}
-		} else {
-			http.Error(w, "404 Not Found", http.StatusNotFound)
 		}
+		http.Error(w, "404 Not Found", http.StatusNotFound)
 	}))
 	defer testServer.Close()
 	client := clientForUrl(testServer.URL)
 
-	// this should run an update
-	if err := client.AddPullRequestAsExternalBug(1705243, "org", "repo", 1); err != nil {
-		t.Errorf("expected no error, but got one: %v", err)
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			changed, err := client.AddPullRequestAsExternalBug(testCase.id, "org", "repo", 1)
+			if !testCase.expectedError && err != nil {
+				t.Errorf("%s: expected no error, but got one: %v", testCase.name, err)
+			}
+			if testCase.expectedError && err == nil {
+				t.Errorf("%s: expected an error, but got none", testCase.name)
+			}
+			if testCase.expectedChanged != changed {
+				t.Errorf("%s: got incorrect state change", testCase.name)
+			}
+		})
 	}
 
 	// this should 404
-	err := client.AddPullRequestAsExternalBug(1, "org", "repo", 1)
+	changed, err := client.AddPullRequestAsExternalBug(1, "org", "repo", 1)
 	if err == nil {
 		t.Error("expected an error, but got none")
 	} else if !IsNotFound(err) {
 		t.Errorf("expected a not found error, got %v", err)
+	}
+	if changed {
+		t.Error("expected not to change state, but did")
 	}
 }
