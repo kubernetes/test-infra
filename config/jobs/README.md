@@ -67,7 +67,7 @@ files here. eg:
 ## Job Examples
 
 A presubmit job named "pull-community-verify" that will run against all PRs to
-kuberentes/community's master branch. It will run `make verify` in a checkout
+kubernetes/community's master branch. It will run `make verify` in a checkout
 of kubernetes/community at the PR's HEAD. It will report back to the PR via a
 status context named `pull-kubernetes-community`. Its logs and results are going
 to end up in GCS under `kubernetes-jenkins/pr-logs/pull/community`.

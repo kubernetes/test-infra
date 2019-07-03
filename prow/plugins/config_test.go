@@ -261,7 +261,7 @@ func TestSetCherryPickUnapprovedDefaults(t *testing.T) {
 
 To approve the cherry-pick, please ping the *kubernetes/patch-release-team* in a comment when ready.
 
-See also [Kuberentes Patch Releases](https://github.com/kubernetes/sig-release/blob/master/releases/patch-releases.md)`
+See also [Kubernetes Patch Releases](https://github.com/kubernetes/sig-release/blob/master/releases/patch-releases.md)`
 
 	testcases := []struct {
 		name string
