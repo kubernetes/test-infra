@@ -73,6 +73,34 @@ that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs. If unspecified, the default configuration makes
 `/test <job-name>` trigger the job.
 
+## Presets
+
+[`Presets`] can be used to define commonly reused values for a subset of fields
+for PodSpecs and BuildSpecs. The subset of fields chosen was inspired by
+[PodPresets] which at time of writing are still in alpha. A preset config looks
+like:
+
+```yaml
+presets:
+- labels:                  # a job with these labels/values will have the preset applied
+    preset-foo-bar: "true" #   key:value pair must be unique among presets
+  env:                     # list of valid Kuberentes EnvVars
+  - name: FOO
+    value: BAR
+  volumes:                 # list of valid Kuberentes Volumes
+  - name: foo
+    emptyDir: {}
+  - name: bar
+    secret:
+      secretName: bar
+  volumeMounts:            # list of valid Kubernetes VolumeMounts
+  - name: foo
+    mountPath: /etc/foo
+  - name: bar
+    mountPath: /etc/bar
+    readOnly: true
+```
+
 ## Standard Triggering and Execution Behavior for Jobs
 
 When configuring jobs, it is necessary to keep in mind the set of rules Prow has
@@ -88,7 +116,7 @@ rules for protecting those contexts on branches.
  1. jobs that run unconditionally and automatically. All jobs that set
      `always_run: true` fall into this set.
  2. jobs that run conditionally, but automatically. All jobs that set
-    `run_if_changed` to some value fall into this set. 
+    `run_if_changed` to some value fall into this set.
  3. jobs that run conditionally, but not automatically. All jobs that set
     `always_run: false` and do not set `run_if_changed` to any value fall
     into this set and require a human to trigger them with a command.
@@ -109,10 +137,10 @@ contains one or more of the following phrases:
    will be triggered unconditionally.
  - `/retest` : When posting `/retest`, two types of jobs will be triggered:
    - all jobs that have run and failed will run unconditionally
-   - any not-yet-executed automatically run jobs will run conditionally 
+   - any not-yet-executed automatically run jobs will run conditionally
  - `/test all` : When posting `/test all`, all automatically run jobs will run
    conditionally.
-   
+
 Note: is is possible to configure a job's `trigger` to match any of the above keywords
 (`/retest` and/or `/test all`) but this behavior is not suggested as it will confuse
 developers that expect consistent behavior from these commands. More generally, it is
@@ -143,13 +171,13 @@ Tide will treat jobs in the following manner for merging:
  - conditionally run jobs with required status contexts are required to have passed on
    a pull request to merge if the job currently matches the pull request.
  - jobs with optional status contexts are ignored when merging
- 
+
 In order to set a job's context to be optional, set `optional: true` on the job. If it
 is required to not post the results of the job to GitHub whatsoever, the job may be set
-to be optional and silent by setting `skip_report: true`. It is valid to set both of 
+to be optional and silent by setting `skip_report: true`. It is valid to set both of
 these options at the same time.
 
-#### Protecting Status Contexts 
+#### Protecting Status Contexts
 
 The branch protection rules will only enforce the presence of jobs that run unconditionally
 and have required status contexts. As conditionally-run jobs may or may not post a status
@@ -208,3 +236,6 @@ Batch Job:
 ## Testing a new job
 
 See ["How to test a ProwJob"](/prow/build_test_update.md#How-to-test-a-ProwJob).
+
+[`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
+[PodPresets]: https://kubernetes.io/docs/concepts/workloads/pods/podpreset/

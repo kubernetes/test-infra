@@ -608,7 +608,7 @@ func TestBatch(t *testing.T) {
 				SHA:    "qwe",
 			},
 		},
-	}), nil)
+	}), nil, nil)
 	pj.ObjectMeta.Name = "known_name"
 	pj.ObjectMeta.Namespace = "prowjobs"
 	fakeProwJobClient := fake.NewSimpleClientset(&pj)

@@ -430,10 +430,12 @@ func TestGetLatestProwJobs(t *testing.T) {
 
 func TestNewProwJob(t *testing.T) {
 	var testCases = []struct {
-		name           string
-		spec           prowapi.ProwJobSpec
-		labels         map[string]string
-		expectedLabels map[string]string
+		name                string
+		spec                prowapi.ProwJobSpec
+		labels              map[string]string
+		expectedLabels      map[string]string
+		annotations         map[string]string
+		expectedAnnotations map[string]string
 	}{
 		{
 			name: "periodic job, no extra labels",
@@ -446,6 +448,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.CreatedByProw:     "true",
 				kube.ProwJobAnnotation: "job",
 				kube.ProwJobTypeLabel:  "periodic",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
 			},
 		},
 		{
@@ -462,6 +467,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.ProwJobAnnotation: "job",
 				kube.ProwJobTypeLabel:  "periodic",
 				"extra":                "stuff",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
 			},
 		},
 		{
@@ -486,6 +494,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.RepoLabel:         "repo",
 				kube.PullLabel:         "1",
 			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+			},
 		},
 		{
 			name: "non-github presubmit job",
@@ -509,6 +520,9 @@ func TestNewProwJob(t *testing.T) {
 				kube.RepoLabel:         "repo",
 				kube.PullLabel:         "1",
 			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+			},
 		}, {
 			name: "job with name too long to fit in a label",
 			spec: prowapi.ProwJobSpec{
@@ -531,16 +545,44 @@ func TestNewProwJob(t *testing.T) {
 				kube.RepoLabel:         "repo",
 				kube.PullLabel:         "1",
 			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
+			},
+		},
+		{
+			name: "periodic job, extra labels, extra annotations",
+			spec: prowapi.ProwJobSpec{
+				Job:  "job",
+				Type: prowapi.PeriodicJob,
+			},
+			labels: map[string]string{
+				"extra": "stuff",
+			},
+			annotations: map[string]string{
+				"extraannotation": "foo",
+			},
+			expectedLabels: map[string]string{
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "periodic",
+				"extra":                "stuff",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+				"extraannotation":      "foo",
+			},
 		},
 	}
-
 	for _, testCase := range testCases {
-		pj := NewProwJob(testCase.spec, testCase.labels)
+		pj := NewProwJob(testCase.spec, testCase.labels, testCase.annotations)
 		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
 		if actual, expected := pj.Labels, testCase.expectedLabels; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJob labels created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if actual, expected := pj.Annotations, testCase.expectedAnnotations; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJob annotations created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
 	}
 }
@@ -580,7 +622,7 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		pj := NewProwJobWithAnnotation(testCase.spec, nil, testCase.annotations)
+		pj := NewProwJob(testCase.spec, nil, testCase.annotations)
 		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}

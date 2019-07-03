@@ -23,19 +23,21 @@ if [[ $# -lt 1 ]]; then
 fi
 
 # Note: this currently requires your project to be whitelisted
-# TODO(fejta): make this available to all prow/k8s users
+# Contact fejta on #sig-testing or #prow on kubernetes slack to get on the
+# whitelist.
 # More info: https://cloud.google.com/remote-build-execution/docs/overview
 
 proj=$1
 pool=${2:-}
-workers=200
-disk=600
-machine=n1-standard-2
+workers=${3:-200}
+disk=${4:-600}
+machine=${5:-n1-standard-2}
+bot=${6:-pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com}
 
 users=()
 groups=()
 bots=(
-  "pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com"
+  "$bot"
 )
 
 log() {

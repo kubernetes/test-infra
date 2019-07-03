@@ -1022,7 +1022,7 @@ func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, 
 			} else {
 				spec = pjutil.BatchSpec(ps, refs)
 			}
-			pj := pjutil.NewProwJob(spec, ps.Labels)
+			pj := pjutil.NewProwJob(spec, ps.Labels, ps.Annotations)
 			start := time.Now()
 			if _, err := c.prowJobClient.Create(&pj); err != nil {
 				c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")

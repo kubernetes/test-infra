@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -30,6 +31,7 @@ type Client interface {
 	Endpoint() string
 	GetBug(id int) (*Bug, error)
 	UpdateBug(id int, update BugUpdate) error
+	AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
@@ -85,7 +87,7 @@ func (c *client) UpdateBug(id int, update BugUpdate) error {
 	logger := c.logger.WithFields(logrus.Fields{"method": "UpdateBug", "id": id, "update": update})
 	body, err := json.Marshal(update)
 	if err != nil {
-		return fmt.Errorf("failed to marshal update payload: %v", update)
+		return fmt.Errorf("failed to marshal update payload: %v", err)
 	}
 	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), bytes.NewBuffer(body))
 	if err != nil {
@@ -146,4 +148,87 @@ func IsNotFound(err error) bool {
 		return false
 	}
 	return reqError.statusCode == http.StatusNotFound
+}
+
+// AddPullRequestAsExternalBug attempts to add a PR to the external tracker list.
+// External bugs are assumed to fall under the type identified by their hostname,
+// so we will provide https://github.com/ here for the URL identifier. We return
+// any error as well as whether a change was actually made.
+// This will be done via JSONRPC:
+// https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#add-external-bug
+func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
+	logger := c.logger.WithFields(logrus.Fields{"method": "AddExternalBug", "id": id, "org": org, "repo": repo, "num": num})
+	pullIdentifier := fmt.Sprintf("%s/%s/pull/%d", org, repo, num)
+	rpcPayload := struct {
+		// Version is the version of JSONRPC to use. All Bugzilla servers
+		// support 1.0. Some support 1.1 and some support 2.0
+		Version string `json:"jsonrpc"`
+		Method  string `json:"method"`
+		// Parameters must be specified in JSONRPC 1.0 as a structure in the first
+		// index of this slice
+		Parameters []AddExternalBugParameters `json:"params"`
+		ID         string                     `json:"id"`
+	}{
+		Version: "1.0", // some Bugzilla servers support 2.0 but all support 1.0
+		Method:  "ExternalBugs.add_external_bug",
+		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
+		Parameters: []AddExternalBugParameters{{
+			APIKey: string(c.getAPIKey()),
+			BugIDs: []int{id},
+			ExternalBugs: []NewExternalBugIdentifier{{
+				Type: "https://github.com/",
+				ID:   pullIdentifier,
+			}},
+		}},
+	}
+	body, err := json.Marshal(rpcPayload)
+	if err != nil {
+		return false, fmt.Errorf("failed to marshal JSONRPC payload: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/jsonrpc.cgi", c.endpoint), bytes.NewBuffer(body))
+	if err != nil {
+		return false, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.request(req, logger)
+	if err != nil {
+		return false, err
+	}
+	var response struct {
+		Error *struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+		} `json:"error,omitempty"`
+		ID     string `json:"id"`
+		Result *struct {
+			Bugs []struct {
+				ID      int `json:"id"`
+				Changes struct {
+					ExternalBugs struct {
+						Added   string `json:"added"`
+						Removed string `json:"removed"`
+					} `json:"ext_bz_bug_map.ext_bz_bug_id"`
+				} `json:"changes"`
+			} `json:"bugs"`
+		} `json:"result,omitempty"`
+	}
+	if err := json.Unmarshal(resp, &response); err != nil {
+		return false, fmt.Errorf("failed to unmarshal JSONRPC response: %v", err)
+	}
+	if response.Error != nil {
+		return false, fmt.Errorf("JSONRPC error %d: %v", response.Error.Code, response.Error.Message)
+	}
+	if response.ID != rpcPayload.ID {
+		return false, fmt.Errorf("JSONRPC returned mismatched identifier, expected %s but got %s", rpcPayload.ID, response.ID)
+	}
+	changed := false
+	if response.Result != nil {
+		for _, bug := range response.Result.Bugs {
+			if bug.ID == id {
+				changed = changed || strings.Contains(bug.Changes.ExternalBugs.Added, pullIdentifier)
+			}
+		}
+	}
+	return changed, nil
 }

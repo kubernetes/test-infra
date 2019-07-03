@@ -181,7 +181,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	if periodicJob == nil {
 		err := fmt.Errorf("failed to find associated periodic job %q", pe.Name)
 		l.WithError(err).Errorf("failed to create job %q", pe.Name)
-		prowJob = pjutil.NewProwJobWithAnnotation(prowapi.ProwJobSpec{}, nil, pe.Annotations)
+		prowJob = pjutil.NewProwJob(prowapi.ProwJobSpec{}, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
@@ -192,7 +192,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	}
 
 	// Adds annotations
-	prowJob = pjutil.NewProwJobWithAnnotation(prowJobSpec, periodicJob.Labels, pe.Annotations)
+	prowJob = pjutil.NewProwJob(prowJobSpec, periodicJob.Labels, pe.Annotations)
 	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
 		for _, c := range prowJob.Spec.PodSpec.Containers {

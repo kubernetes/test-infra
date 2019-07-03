@@ -301,7 +301,7 @@ py_binary(
         requirement("singledispatch"),
         requirement("six"),
         requirement("wrapt"),
-        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
+        requirement("ruamel.yaml"),
     ],
 )
 

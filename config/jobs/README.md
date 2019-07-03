@@ -52,8 +52,8 @@ eg:
 
 ## Job Presets
 
-Many jobs require common secrets, configmaps, environment variables, volumes,
-etc. Prow supports the use of presets to define and patch these in. Some are
+Prow supports [Presets](/prow/jobs.md#presets) to define and patch in common
+env vars and volumes used for credentials or common job config. Some are
 defined centrally in [`prow/config.yaml`], while others can be defined in
 files here. eg:
 

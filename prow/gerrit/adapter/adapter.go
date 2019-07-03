@@ -344,7 +344,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			labels[client.GerritReportLabel] = client.CodeReview
 		}
 
-		pj := pjutil.NewProwJobWithAnnotation(jSpec.spec, labels, annotations)
+		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {

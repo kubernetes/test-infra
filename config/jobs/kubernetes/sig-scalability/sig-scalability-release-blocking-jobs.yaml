@@ -33,7 +33,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190628-9455316-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190702-9adb196-master
       resources:
         requests:
           cpu: 6
@@ -88,7 +88,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190628-9455316-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190702-9adb196-master
       resources:
         requests:
           cpu: 6
@@ -114,7 +114,7 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190628-9455316-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190702-9adb196-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -139,6 +139,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-proxy.yaml
       - --test-cmd-name=ClusterLoaderV2

@@ -72,7 +72,7 @@ func handlePE(c Client, pe github.PushEvent) error {
 			labels[k] = v
 		}
 		labels[github.EventGUID] = pe.GUID
-		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels)
+		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels, j.Annotations)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.ProwJobClient.Create(&pj); err != nil {
 			return err

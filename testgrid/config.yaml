@@ -1141,6 +1141,9 @@ test_groups:
 - name: istio-kind-simpleTest-master
   gcs_prefix: istio-prow/logs/istio-kind-simpleTest-master
   num_failures_to_alert: 1
+- name: integ-conformance-local-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-conformance-local-postsubmit-tests-master
+  num_failures_to_alert: 1
 - name: integ-framework-local-postsubmit-tests-master
   gcs_prefix: istio-prow/logs/integ-framework-local-postsubmit-tests-master
   num_failures_to_alert: 1
@@ -1161,6 +1164,9 @@ test_groups:
   num_failures_to_alert: 1
 - name: integ-telemetry-local-postsubmit-tests-master
   gcs_prefix: istio-prow/logs/integ-telemetry-local-postsubmit-tests-master
+  num_failures_to_alert: 1
+- name: integ-conformance-k8s-postsubmit-tests-master
+  gcs_prefix: istio-prow/logs/integ-conformance-k8s-postsubmit-tests-master
   num_failures_to_alert: 1
 - name: integ-framework-k8s-postsubmit-tests-master
   gcs_prefix: istio-prow/logs/integ-framework-k8s-postsubmit-tests-master
@@ -1923,12 +1929,16 @@ test_groups:
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.1
 - name: osd-stage-4.2
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.2
+- name: osd-upgrade-stage-4.1-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-stage-4.1-4.1
 
 # OpenShift Dedicated production
 - name: osd-prod-4.1
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.1
 - name: osd-prod-4.2
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.2
+- name: osd-upgrade-prod-4.1-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-prod-4.1-4.1
 
 # Docker node conformance test group
 - name: ce18.09-ubuntu16.04-k8s1.13.x-conformance
@@ -2055,6 +2065,20 @@ test_groups:
 - name: pull-release-notes-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-release-notes-test
   num_columns_recent: 30
+
+# CEL Conformance Tests
+- name: cel-go-conformance-tests
+  gcs_prefix: cel-conformance/test-logs
+  open_test_template: # The URL template to visit after clicking on a cell
+    url:
+  file_bug_template: # The URL template to visit when filing a bug
+    url: https://github.com/google/cel-go/issues/new
+  results_text: # Text to show in the about menu as a link to another view of the results
+  results_url_template: # The URL template to visit after clicking
+    url:
+  code_search_path: github.com/google/cel-go/search # URL for regression search links.
+  code_search_url_template: # The URL template to visit when searching for changelists
+    url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
 
 #
 # Start dashboards
@@ -5875,6 +5899,10 @@ dashboards:
     test_group_name: istio-kind-simpleTest-master
     alert_options:
       alert_mail_to_addresses: angwar@google.com
+  - name: integ-conformance-local-postsubmit-tests
+    test_group_name: integ-conformance-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: integ-framework-local-postsubmit-tests
     test_group_name: integ-framework-local-postsubmit-tests-master
     alert_options:
@@ -5901,6 +5929,10 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: integ-telemetry-local-postsubmit-tests
     test_group_name: integ-telemetry-local-postsubmit-tests-master
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: integ-conformance-k8s-postsubmit-tests
+    test_group_name: integ-conformance-k8s-postsubmit-tests-master
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: integ-framework-k8s-postsubmit-tests
@@ -6600,6 +6632,10 @@ dashboards:
     description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 staging cluster.
     test_group_name: osd-stage-4.2
     base_options: width=10
+  - name: osd-upgrade-stage-4.1-4.1
+    description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in staging.
+    test_group_name: osd-upgrade-stage-4.1-4.1
+    base_options: width=10
 
 # OpenShift Dedicated production dashboard
 - name: redhat-osd-prod
@@ -6611,6 +6647,10 @@ dashboards:
   - name: osd-prod-4.2
     description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 production cluster.
     test_group_name: osd-prod-4.2
+    base_options: width=10
+  - name: osd-upgrade-prod-4.1-4.1
+    description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in production.
+    test_group_name: osd-upgrade-prod-4.1-4.1
     base_options: width=10
 
 #Docker node conformance dashboard
@@ -6665,6 +6705,11 @@ dashboards:
 
 - name: sig-contribex-slack-infra
 
+- name: google-cel
+  dashboard_tab:
+  - name: cel-go
+    test_group_name: cel-go-conformance-tests
+
 #
 # Start dashboard groups
 #
@@ -6696,6 +6741,7 @@ dashboard_groups:
 - name: google
   dashboard_names:
   - google-aws
+  - google-cel
   - google-gce
   - google-gce-compute-image-tools
   - google-gci

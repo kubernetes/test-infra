@@ -29,7 +29,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190628-9455316-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190702-9adb196-master
         resources:
           requests:
             memory: "6Gi"
@@ -48,14 +48,13 @@ presubmits:
             - ./...
   - name: pull-release-verify
     always_run: true
-    optional: true
     decorate: true
     path_alias: k8s.io/release
     labels:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190628-9455316-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190702-9adb196-master
           command:
             - runner.sh
           args:

@@ -42,7 +42,7 @@ func (o *BugzillaOptions) AddFlags(fs *flag.FlagSet) {
 // Validate validates Bugzilla options.
 func (o *BugzillaOptions) Validate(dryRun bool) error {
 	if o.endpoint == "" {
-		logrus.Warn("empty -bugzilla-endpoint, will not create Bugzilla client")
+		logrus.Info("empty -bugzilla-endpoint, will not create Bugzilla client")
 		return nil
 	}
 
@@ -51,7 +51,7 @@ func (o *BugzillaOptions) Validate(dryRun bool) error {
 	}
 
 	if o.ApiKeyPath == "" {
-		logrus.Warn("empty -bugzilla-api-key-path, will use anonymous Bugzilla client")
+		logrus.Info("empty -bugzilla-api-key-path, will use anonymous Bugzilla client")
 	}
 
 	return nil

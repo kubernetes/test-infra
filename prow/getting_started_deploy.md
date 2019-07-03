@@ -51,7 +51,7 @@ The will help you through the following steps:
 * Deploying prow into that cluster
 * Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/oauth/secret`
 
-See the [Next Steps][#next-steps] section after running this utility.
+See the [Next Steps](#next-steps) section after running this utility.
 
 ## Manual deployment
 

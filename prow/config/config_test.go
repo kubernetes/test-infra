@@ -1819,9 +1819,9 @@ func TestValidGitHubReportType(t *testing.T) {
 		expectTypes []prowapi.ProwJobType
 	}{
 		{
-			name:        "empty config should default to report for presubmit only",
+			name:        "empty config should default to report for both presubmit and postsubmit",
 			prowConfig:  ``,
-			expectTypes: []prowapi.ProwJobType{prowapi.PresubmitJob},
+			expectTypes: []prowapi.ProwJobType{prowapi.PresubmitJob, prowapi.PostsubmitJob},
 		},
 		{
 			name: "reject unsupported job types",
