@@ -19,7 +19,8 @@ rules:
       - list
       # Required when deck runs with `--rerun-creates-job=true`
       # **Warning:** Only use this for non-public deck instances, this allows
-      # anyone with access to your Deck instance to create new Prowjobs
+      # anyone with access to your Deck instance to create new Prowjobs.
+      # Additionally, there is not yet protection against CSRF. Use with caution
       # - create
 ---
 kind: Role

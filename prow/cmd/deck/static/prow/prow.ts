@@ -650,9 +650,15 @@ function redraw(fz: FuzzySearch): void {
         max = 2 * 3600;
     }
     drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now, max);
-    if (rerunStatus != null) {
+    if (rerunStatus === "error") {
         modal.style.display = "block";
-        rerunCommand.innerHTML = `Nice try! The direct rerun feature hasn't been implemented yet, so that button does nothing.`;
+        rerunCommand.innerHTML = "You don't have permission to rerun that job";
+    } else if (rerunStatus === "success") {
+        modal.style.display = "block";
+        rerunCommand.innerHTML = "Job successfully triggered. Wait 30 seconds and refresh the page for the job to show up";
+    } else if (rerunStatus != null) {
+        modal.style.display = "block";
+        rerunCommand.innerHTML = "Nice try! The direct rerun feature hasn't been implemented yet, so that button does nothing.";
     }
 
 }
@@ -661,7 +667,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
     const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
     const i = icon.create("refresh", "Show instructions for rerunning this job");
-    const login = getCookieByName("github_login");
+    const login = getCookieByName("access-token-session");
     i.onclick = () => {
         modal.style.display = "block";
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
@@ -671,7 +677,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
         rerunElement.appendChild(copyButton);
         const runButton = document.createElement('a');
-        runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Run</button>";
+        runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
         if (login === "") {
             runButton.href = `/github-login?dest=%2F?rerun=work_in_progress`;
         } else {

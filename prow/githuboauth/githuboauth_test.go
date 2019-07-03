@@ -252,6 +252,28 @@ func (fgc *fakeGetter) GetGitHubClient(accessToken string, dryRun bool) GitHubCl
 	return &fakeGitHubClient{login: fgc.login}
 }
 
+func TestGetLogin(t *testing.T) {
+	cookie := sessions.NewCookieStore([]byte("secret-key"))
+	mockConfig := getMockConfig(cookie)
+	mockLogger := logrus.WithField("uni-test", "githuboauth")
+	mockAgent := NewAgent(mockConfig, mockLogger)
+	mockToken := &oauth2.Token{}
+	mockRequest := httptest.NewRequest(http.MethodGet, "/someurl", nil)
+	mockSession, err := sessions.GetRegistry(mockRequest).Get(cookie, "access-token-session")
+	if err != nil {
+		t.Fatalf("Error with getting mock session: %v", err)
+	}
+	mockSession.Values["access-token"] = mockToken
+
+	login, err := mockAgent.GetLogin(mockRequest, &fakeGetter{"correct-login"})
+	if err != nil {
+		t.Fatalf("Error getting login: %v", err)
+	}
+	if login != "correct-login" {
+		t.Fatalf("Incorrect login: %s", login)
+	}
+}
+
 func TestHandleRedirectWithInvalidState(t *testing.T) {
 	gob.Register(&oauth2.Token{})
 	cookie := sessions.NewCookieStore([]byte("secret-key"))
