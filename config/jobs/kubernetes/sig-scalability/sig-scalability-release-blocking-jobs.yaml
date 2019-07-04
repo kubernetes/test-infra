@@ -1,6 +1,6 @@
 periodics:
 # This is a sig-release-master-blocking job.
-- cron: '1 3 * * *' # Run daily at 19:01PST (03:01 UTC)
+- cron: '1 12 * * *' # Run daily at 4:01PST (12:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-correctness
   cluster: scalability
   labels:
@@ -40,7 +40,7 @@ periodics:
           memory: "16Gi"
 
 # This is a sig-release-master-blocking job.
-- cron: '1 8 * * *' # Run daily at 00:01PST (8:01 UTC)
+- cron: '1 17 * * *' # Run daily at 9:01PST (17:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
