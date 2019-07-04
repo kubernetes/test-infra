@@ -309,26 +309,6 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gke-network-policy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-network-policy
   alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gke-large-performance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gke-large-performance-regional
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance-regional
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gke-scale-correctness
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gke-scale-performance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-performance
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
   num_failures_to_alert: 1
@@ -4669,17 +4649,6 @@ dashboards:
 
 - name: sig-scalability-gce
 
-- name: sig-scalability-gke
-  dashboard_tab:
-  - name: gke-large-performance
-    test_group_name: ci-kubernetes-e2e-gke-large-performance
-  - name: gke-large-performance-regional
-    test_group_name: ci-kubernetes-e2e-gke-large-performance-regional
-  - name: gke-scale-correctness
-    test_group_name: ci-kubernetes-e2e-gke-scale-correctness
-  - name: gke-scale-performance
-    test_group_name: ci-kubernetes-e2e-gke-scale-performance
-
 - name: sig-scalability-kubemark
   dashboard_tab:
   - name: kubemark-100
@@ -6975,7 +6944,6 @@ dashboard_groups:
 - name: sig-scalability
   dashboard_names:
   - sig-scalability-gce
-  - sig-scalability-gke
   - sig-scalability-node
   - sig-scalability-kubemark
   - sig-scalability-perf-tests
