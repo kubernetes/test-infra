@@ -46,7 +46,7 @@ presets:
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
   - name: KUBE_MASTER_NODE_LABELS
-    value: "kubernetes.io/node-exporter=true"
+    value: "node.kubernetes.io/node-exporter-ready=true"
 ### kubemark-gce-big
 - labels:
     preset-e2e-kubemark-gce-big: "true"
@@ -122,7 +122,7 @@ presets:
   - name: ENABLE_PROMETHEUS_SERVER
     value: "true"
   - name: KUBE_MASTER_NODE_LABELS
-    value: "kubernetes.io/node-exporter=true"
+    value: "node.kubernetes.io/node-exporter-ready=true"
 
 ###### Scalability Envs
 ### Common env variables for all scalability-related suites.
