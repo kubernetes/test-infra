@@ -71,7 +71,7 @@ func handleRepos(path string) string {
 		}
 	}
 	if result["owner"] == "" || result["repo"] == "" {
-		logrus.WithField("path", path).Info("Not handling /repos/.. path correctly")
+		logrus.WithField("path", path).Warning("Not handling /repos/.. path correctly")
 		return "/repos"
 	}
 	rest := result["rest"]
@@ -91,7 +91,7 @@ func handleRepos(path string) string {
 	case "merges", "stargazers", "notifications", "hooks":
 		return fmt.Sprintf("%s%s", sanitizedPath, rest)
 	default:
-		logrus.WithField("sanitizedPath", sanitizedPath).WithField("rest", rest).Info("Path not handled")
+		logrus.WithField("sanitizedPath", sanitizedPath).WithField("rest", rest).Warning("Path not handled")
 		return fmt.Sprintf("%s%s", sanitizedPath, rest)
 	}
 }
