@@ -51,7 +51,7 @@ presubmits:
         - ./scripts/ci-test.sh
         resources:
           requests:
-            cpu: 3
+            cpu: "10000m"
             memory: "6Gi"
   - name: pull-cluster-api-vendor-in-sync
     decorate: true
@@ -86,5 +86,5 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 4
+            cpu: "4000m"
             memory: "6Gi"
