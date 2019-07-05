@@ -8,9 +8,13 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-      command:
-      - runner.sh
-      - ./scripts/ci-build.sh
+      args:
+      - "--repo=sigs.k8s.io/cluster-api"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=execute"
+      - "--"
+      - "./scripts/ci-build.sh"
 - name: ci-cluster-api-test
   interval: 1h
   decorate: true
@@ -21,8 +25,12 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
       args:
-      - runner.sh
-      - ./scripts/ci-test.sh
+      - "--repo=sigs.k8s.io/cluster-api"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=execute"
+      - "--"
+      - "./scripts/ci-test.sh"
       resources:
         requests:
           cpu: 3
