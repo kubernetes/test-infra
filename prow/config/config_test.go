@@ -455,10 +455,11 @@ func TestValidateAgent(t *testing.T) {
 		pass bool
 	}{
 		{
-			name: "reject unknown agent",
+			name: "accept unknown agent",
 			base: func(j *JobBase) {
 				j.Agent = "random-agent"
 			},
+			pass: true,
 		},
 		{
 			name: "spec requires kubernetes agent",
