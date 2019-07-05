@@ -2,34 +2,32 @@ periodics:
 - name: ci-cluster-api-build
   interval: 1h
   decorate: true
-  path_alias: sigs.k8s.io/cluster-api
   labels:
     preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+      command:
       - "./scripts/ci-build.sh"
 - name: ci-cluster-api-test
   interval: 1h
   decorate: true
-  path_alias: sigs.k8s.io/cluster-api
   labels:
     preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+      command:
       - "./scripts/ci-test.sh"
       resources:
         requests:
