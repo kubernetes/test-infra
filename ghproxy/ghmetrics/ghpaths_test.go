@@ -110,3 +110,120 @@ func Test_handleRepos(t *testing.T) {
 		})
 	}
 }
+
+/*
+	/repos/:owner/:repo/collaborators
+	/repos/:owner/:repo/collaborators/:collaborator
+
+	/repos/:owner/:repo/comments
+	/repos/:owner/:repo/comments/:var
+
+	/repos/:owner/:repo/commits
+	/repos/:owner/:repo/commits/:var
+
+	/repos/:owner/:repo/compare/:base...:head
+
+	/repos/:owner/:repo/contents
+	/repos/:owner/:repo/contents/:path
+
+	/repos/:owner/:repo/deployments
+
+	/repos/:owner/:repo/downloads
+
+	/repos/:owner/:repo/events
+
+	/repos/:owner/:repo/forks
+
+	/repos/:owner/:repo/topics
+
+	/repos/:owner/:repo/vulnerability-alerts
+
+	/repos/:owner/:repo/automated-security-fixes
+
+	/repos/:owner/:repo/contributors
+
+	/repos/:owner/:repo/languages
+
+	/repos/:owner/:repo/teams
+
+	/repos/:owner/:repo/tags
+
+	/repos/:owner/:repo/transfer
+
+	/repositories
+*/
+
+var (
+	// GitHub API v3
+	basePath = `api.github.com`
+	/*
+
+	 */
+
+	// User API
+	userAPI             = `/user`
+	userEmails          = userAPI + `/emails`
+	userEmailVisibility = userAPI + `/email/visibility`
+	userPublicEmails    = userAPI + `/public_emails`
+	userFollowers       = userAPI + `/followers`
+	userFollowing       = userAPI + `/following`
+	userFollowingUser   = userFollowing + `/:username`
+	userStarred         = userAPI + `/starred`
+	userIssues          = userAPI + `/issues`
+	userKeys            = userAPI + `/keys`
+	userSingleKey       = userKeys + `/:key_id`
+	usersAPI            = `/users`
+	usersReposAPI       = usersAPI + `/:username/repos`
+	usersHovercard      = usersAPI + `/:username/hovercard`
+	usersFollowers      = usersAPI + `/:username/followers`
+	usersFollowing      = usersAPI + `/:username/following`
+	usersFollowingUsers = usersFollowers + `/:target_user`
+
+	// Orgs API
+	orgsAPI              = `/orgs/:org`
+	orgsRepos            = orgsAPI + `/repos`
+	orgsIssues           = orgsAPI + `/issues`
+	orgsCredentialAuths  = orgsAPI + `/credential-authorizations`
+	orgsCredentialAuthID = orgsCredentialAuths + `/:credential_id`
+
+	// Issues API
+	issuesAPI = `/issues`
+
+	// Search API
+	searchAPI          = `/search`
+	searchRepositories = searchAPI + `/repositories`
+	searchCommits      = searchAPI + `/commits`
+	searchCode         = searchAPI + `/code`
+	searchIssues       = searchAPI + `/issues`
+	searchUsers        = searchAPI + `/users`
+	searchTopics       = searchAPI + `/topics`
+	searchLabels       = searchAPI + `/labels`
+
+	// Emoji API
+	emojiAPI = `/emojis`
+
+	// Events API
+	eventsAPI = `/events`
+
+	// Feeds API
+	feedsAPI = `/feeds`
+
+	// Gists API
+	gistsAPI     = `/gists`
+	publicGists  = gistsAPI + `/public`
+	starredGists = gistsAPI + `/starred`
+
+	// Hub API
+	hubAPI = `/hub`
+
+	// Notification API
+	notificationAPI                = `/notifications`
+	notificationThread             = notificationAPI + `/threads/:thread_id`
+	notificationThreadSubscription = notificationThread + `/subscription`
+
+	// Rate Limit API
+	rateLimitAPI = `/rate_limit`
+
+	// Teams API
+	teamsAPI = `/teams`
+)

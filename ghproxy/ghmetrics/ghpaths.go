@@ -44,7 +44,7 @@ func getSimplifiedPath(path string) string {
 	case "repositories", "emojis", "events", "feeds", "hub", "rate_limits", "teams", "licenses":
 		return path
 	default:
-		logrus.WithField("path", path).Info("Path not handled")
+		logrus.WithField("path", path).Warning("Path not handled")
 		return path
 	}
 }
@@ -79,32 +79,14 @@ func handleRepos(path string) string {
 	if rest == "" || rest == "/" {
 		return sanitizedPath
 	}
-	switch getFirstFragment(rest) {
-	case "issues":
-		return fmt.Sprintf("%s%s", sanitizedPath, handlePrefixedVarAndConstant("/issues", rest))
-	case "keys":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/keys", handleConstantAndVar(rest))
-	case "labels":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/labels", handleConstantAndVar(rest))
-	case "milestones":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/milestones", handleConstantAndVar(rest))
-	case "pulls":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/pulls", handleConstantAndVar(rest))
-	case "releases":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/releases", handleConstantAndVar(rest))
-	case "statuses":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/statuses", handleConstantAndVar(rest))
-	case "subscribers":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/subscribers", handleConstantAndVar(rest))
-	case "branches":
-		return fmt.Sprintf("%s%s", sanitizedPath, handlePrefixedVarAndConstant("/branches", rest))
-	case "assignees":
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/assignees", handleConstantAndVar(rest))
+	switch fragment := getFirstFragment(rest); fragment {
+	case "issues", "branches":
+		return fmt.Sprintf("%s%s", sanitizedPath, handlePrefixedVarAndConstant(fmt.Sprintf("/%s", fragment), rest))
+	case "keys", "labels", "milestones", "pulls", "releases", "statuses", "subscribers", "assignees", "archive":
+		// archive is a special path that might need better handling
+		return fmt.Sprintf("%s/%s%s", sanitizedPath, fragment, handleConstantAndVar(rest))
 	case "git":
-		return fmt.Sprintf("%s%s", sanitizedPath, handlePrefixedConstantAndVar("/git", rest))
-
-	case "archive": // special path
-		return fmt.Sprintf("%s%s%s", sanitizedPath, "/archive", handleConstantAndVar(rest))
+		return fmt.Sprintf("%s%s", sanitizedPath, handlePrefixedConstantAndVar(fmt.Sprintf("/%s", fragment), rest))
 
 	case "merges", "stargazers", "notifications", "hooks":
 		return fmt.Sprintf("%s%s", sanitizedPath, rest)
@@ -118,9 +100,7 @@ func handlePrefixedVarAndConstant(prefix, path string) string {
 	pathTrimmed := strings.Replace(path, prefix, "", 1)
 	fragment := getFirstFragment(pathTrimmed)
 	switch fragment {
-	case "comments":
-		return fmt.Sprintf("%s/%s%s", prefix, fragment, handleConstantAndVar(pathTrimmed))
-	case "events":
+	case "comments", "events":
 		return fmt.Sprintf("%s/%s%s", prefix, fragment, handleConstantAndVar(pathTrimmed))
 	}
 

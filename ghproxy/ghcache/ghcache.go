@@ -175,8 +175,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
 
-	ghmetrics.GithubTokenMetrics(resp.Header, reqStartTime)
-	ghmetrics.GithubRequestMetrics(req.URL.Path, string(resp.StatusCode), roundTripTime.String())
+	ghmetrics.CollectGithubTokenMetrics(resp.Header, reqStartTime)
+	ghmetrics.CollectGithubRequestMetrics(req.URL.Path, string(resp.StatusCode), roundTripTime.String())
 
 	return resp, nil
 }

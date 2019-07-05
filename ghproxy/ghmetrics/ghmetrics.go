@@ -34,18 +34,18 @@ func init() {
 	prometheus.MustRegister(ghRequestsGauge)
 }
 
-// GithubTokenMetrics publishes the rate limits of the github api to
+// CollectGithubTokenMetrics publishes the rate limits of the github api to
 // `github_token_usage` on prometheus.
-func GithubTokenMetrics(headers http.Header, now time.Time) {
+func CollectGithubTokenMetrics(headers http.Header, now time.Time) {
 	remaining := headers.Get("X-RateLimit-Remaining")
 	timeUntilReset := timeUntilFromUnix(headers.Get("X-RateLimit-Reset"), now)
 
 	ghTokenUsageGaugeVec.With(prometheus.Labels{"remaining": remaining, "until_reset": timeUntilReset.String()}).Inc()
 }
 
-// GithubRequestMetrics publishes the number of requests by API path to
+// CollectGithubRequestMetrics publishes the number of requests by API path to
 // `github_requests` on prometheus.
-func GithubRequestMetrics(path, statusCode, roundTripTime string) {
+func CollectGithubRequestMetrics(path, statusCode, roundTripTime string) {
 	ghRequestsGauge.With(prometheus.Labels{"path": getSimplifiedPath(path), "status": statusCode, "duration": roundTripTime}).Inc()
 }
 
