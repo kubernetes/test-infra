@@ -1,29 +1,29 @@
 periodics:
 - name: ci-cluster-api-build
   interval: 1h
+  decorate: true
+  path_alias: sigs.k8s.io/cluster-api
   labels:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./scripts/ci-build.sh"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      command:
+      - runner.sh
+      - ./scripts/ci-build.sh
 - name: ci-cluster-api-test
   interval: 1h
+  decorate: true
+  path_alias: sigs.k8s.io/cluster-api
   labels:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
       args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
-      - "./scripts/ci-test.sh"
+      - runner.sh
+      - ./scripts/ci-test.sh
+      resources:
+        requests:
+          cpu: 3
+          memory: "6Gi"
