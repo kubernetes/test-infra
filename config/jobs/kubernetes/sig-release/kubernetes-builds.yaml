@@ -108,6 +108,52 @@ periodics:
           requests:
             cpu: 4
             memory: "8Gi"
+
+# ci-kubernetes-build-canary builds and publishes artifacts to a canary GCS bucket using the tooling
+# on the master branch of kubernetes/release. The goal here is to allow Release Engineering to improve
+# the current toolset without impacting CI for the entire project.
+#
+# While this job should closely mirror the configuration of ci-kubernetes-build, it should differ in a few ways:
+# - runs on CI ref of kubernetes/kubernetes
+# - runs on master branch of kubernetes/release
+# - publishes artifacts to a different GCS bucket
+# - alerts Release Managers instead of the Release Team
+#
+# ref: kubernetes/release/issues/816
+#
+- interval: 1h
+  name: ci-kubernetes-build-canary
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta" # should this be the same?
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: build-canary
+    testgrid-alert-email: "kubernetes-release-managers@googlegroups.com"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
+        args:
+          - --repo=k8s.io/kubernetes
+          - --repo=k8s.io/release=aa5d55925f060febb18df86a8f5b4c815ed560d9 # known commit where k/release is broken
+          - --root=/go/src
+          - --timeout=180
+          - --scenario=kubernetes_build
+          - --
+          - --allow-dup
+          - --extra-publish-file=k8s-master
+          - --hyperkube
+          - --registry=gcr.io/kubernetes-ci-images # do we need to change this?
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+            memory: "8Gi"
 - interval: 1h
   name: ci-kubernetes-cross-build
   labels:
