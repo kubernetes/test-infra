@@ -182,7 +182,7 @@ func (p *protector) protect() {
 	}
 
 	// Some repos with presubmits might not be listed in the branch-protection
-	for repo := range p.cfg.Presubmits {
+	for repo := range p.cfg.GetStaticPresubmitsForAllRepos() {
 		if p.completedRepos[repo] == true {
 			continue
 		}

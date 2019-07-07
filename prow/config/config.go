@@ -65,7 +65,7 @@ type JobConfig struct {
 	// Presets apply to all job types.
 	Presets []Preset `json:"presets,omitempty"`
 	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
-	Presubmits  map[string][]Presubmit  `json:"presubmits,omitempty"`
+	presubmits  map[string][]Presubmit  `json:"presubmits,omitempty"`
 	Postsubmits map[string][]Postsubmit `json:"postsubmits,omitempty"`
 
 	// Periodics are not associated with any repo.
@@ -74,14 +74,15 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
-	Tide             Tide             `json:"tide,omitempty"`
-	Plank            Plank            `json:"plank,omitempty"`
-	Sinker           Sinker           `json:"sinker,omitempty"`
-	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
-	Gerrit           Gerrit           `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
-	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
+	Tide             Tide                                 `json:"tide,omitempty"`
+	Plank            Plank                                `json:"plank,omitempty"`
+	Sinker           Sinker                               `json:"sinker,omitempty"`
+	Deck             Deck                                 `json:"deck,omitempty"`
+	BranchProtection BranchProtection                     `json:"branch-protection,omitempty"`
+	Gerrit           Gerrit                               `json:"gerrit,omitempty"`
+	GitHubReporter   GitHubReporter                       `json:"github_reporter,omitempty"`
+	SlackReporter    *SlackReporter                       `json:"slack_reporter,omitempty"`
+	Inrepoconfig     map[string]InrepoconfigConfiguration `json:"inrepoconfig,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -717,6 +718,23 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	}
 }
 
+func finalizePresubmits(c *Config, presubmits []Presubmit) error {
+	setPresubmitDecorationDefaults(c, presubmits)
+	c.defaultPresubmitFields(vs)
+	if err := SetPresubmitRegexes(vs); err != nil {
+		return fmt.Errorf("could not set regex: %v", err)
+	}
+
+	for i := range presubmits {
+		ps := presubmits[i]
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
@@ -733,9 +751,9 @@ func (c *Config) finalizeJobConfig() error {
 			return errors.New("no default GCS credentials secret provided for plank")
 		}
 
-		for _, vs := range c.Presubmits {
-			for i := range vs {
-				setPresubmitDecorationDefaults(c, &vs[i])
+		for _, vs := range c.presubmits {
+			if err := finalizePresubmits(c, vs); err != nil {
+				return err
 			}
 		}
 
@@ -751,12 +769,6 @@ func (c *Config) finalizeJobConfig() error {
 	}
 
 	// Ensure that regexes are valid and set defaults.
-	for _, vs := range c.Presubmits {
-		c.defaultPresubmitFields(vs)
-		if err := SetPresubmitRegexes(vs); err != nil {
-			return fmt.Errorf("could not set regex: %v", err)
-		}
-	}
 	for _, js := range c.Postsubmits {
 		c.defaultPostsubmitFields(js)
 		if err := SetPostsubmitRegexes(js); err != nil {
@@ -765,12 +777,6 @@ func (c *Config) finalizeJobConfig() error {
 	}
 
 	c.defaultPeriodicFields(c.Periodics)
-
-	for _, v := range c.AllPresubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
-			return err
-		}
-	}
 
 	for _, v := range c.AllPostsubmits(nil) {
 		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
@@ -831,6 +837,27 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
 }
 
+func (c *Config) validatePresubmits(repo string, additionalPresubmits ...Presubmit) error {
+	var validPresubmits []Presubmit
+	for _, presubmit := range append(c.presubmits[repo], additionalPresubmits...) {
+		if err := validateJobBase(presubmit.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
+			return fmt.Errorf("invalid presubmit job %s: %v", presubmit.Name, err)
+		}
+
+		if err := validateTriggering(presubmit); err != nil {
+			return err
+		}
+
+		for _, validatedPresubmit := range validPresubmits {
+			if validatedPresubmit.Brancher.Intersects(presubmit.Brancher) {
+				return fmt.Errorf("duplicated presubmit job: %s", presubmit.Name)
+			}
+		}
+	}
+
+	return nil
+}
+
 // validateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
@@ -842,22 +869,7 @@ func (c *Config) validateJobConfig() error {
 	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
 	validPresubmits := map[orgRepoJobName][]Presubmit{}
 	for repo, jobs := range c.Presubmits {
-		for _, job := range jobs {
-			repoJobName := orgRepoJobName{repo, job.Name}
-			for _, existingJob := range validPresubmits[repoJobName] {
-				if existingJob.Brancher.Intersects(job.Brancher) {
-					return fmt.Errorf("duplicated presubmit job: %s", job.Name)
-				}
-			}
-			validPresubmits[repoJobName] = append(validPresubmits[repoJobName], job)
-		}
-	}
-
-	for _, v := range c.AllPresubmits(nil) {
-		if err := validateJobBase(v.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
-		}
-		if err := validateTriggering(v); err != nil {
+		if err := c.validatePresubmits(repo, jobs); err != nil {
 			return err
 		}
 	}

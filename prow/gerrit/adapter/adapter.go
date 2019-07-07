@@ -281,8 +281,8 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			}
 		}
 	case client.New:
-		presubmits := c.config().Presubmits[cloneURI.String()]
-		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		presubmits := c.config().GetStaticPresubmits[cloneURI.String()]
+		presubmits = append(presubmits, c.config().GetStaticPresubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 
 		var filters []pjutil.Filter
 		var latestReport *reporter.JobReport

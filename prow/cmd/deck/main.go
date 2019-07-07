@@ -536,12 +536,14 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 	}
 	sg := spyglass.New(ja, cfg, c, o.gcsCredentialsFile, context.Background())
 	sg.Start()
+	// construct github client
+	// construct git client
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
 	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, cfg, o)))
 	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, c)))
-	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c)))
+	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c, gitClient, gitHubClient)))
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -696,10 +698,10 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client) h
 // The url must look like this:
 //
 // /pr-history?org=<org>&repo=<repo>&pr=<pr number>
-func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gc *git.Client, ghc *github.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient)
+		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient, gc, ghc)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
 			logrus.WithField("url", r.URL).Info(msg)

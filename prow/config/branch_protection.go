@@ -249,7 +249,8 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) 
 	policy := b.Policy
 
 	// Automatically require contexts from prow which must always be present
-	if prowContexts, _, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
+	inrepoconfigEnabled := c.Config.InRepoConfigConfiguration(org, repo).Enabled
+	if prowContexts, _, _ := BranchRequirements(org, repo, branch, c.Presubmits, inrepoconfigEnabled); len(prowContexts) > 0 {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies {
@@ -298,9 +299,9 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) 
 //  - contexts that are always required to be present
 //  - contexts that are required, _if_ present
 //  - contexts that are always optional
-func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) ([]string, []string, []string) {
+func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit, inrepoconfigEnabled bool) ([]string, []string, []string) {
 	jobs, ok := presubmits[org+"/"+repo]
-	if !ok {
+	if !ok && !inrepoconfigEnabled {
 		return nil, nil, nil
 	}
 	var required, requiredIfPresent, optional []string
@@ -322,6 +323,11 @@ func BranchRequirements(org, repo, branch string, presubmits map[string][]Presub
 		} else {
 			optional = append(optional, j.Context)
 		}
+	}
+
+	if inrepoconfigEnabled {
+		// Managed by trigger
+		required = append(required, "prow-config-parsing")
 	}
 	return required, requiredIfPresent, optional
 }

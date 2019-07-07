@@ -159,21 +159,21 @@ func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.Delta) {
 
 func (c *Controller) reconcile(delta config.Delta) error {
 	var errors []error
-	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.Presubmits, delta.After.Presubmits)); err != nil {
+	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.GetStaticPresubmitsForAllRepos(), delta.After.GetStaticPresubmitsForAllRepos())); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)
 		}
 	}
 
-	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.Presubmits, delta.After.Presubmits)); err != nil {
+	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.GetStaticPresubmitsForAllRepos(), delta.After.GetStaticPresubmitsForAllRepos())); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)
 		}
 	}
 
-	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.Presubmits, delta.After.Presubmits)); err != nil {
+	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.GetStaticPresubmitsForAllRepos(), delta.After.GetStaticPresubmitsForAllRepos())); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)

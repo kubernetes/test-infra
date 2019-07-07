@@ -30,13 +30,15 @@ import (
 )
 
 func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
-	if len(c.Config.Presubmits[pr.PullRequest.Base.Repo.FullName]) == 0 {
-		return nil
-	}
-
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
+
+	if !c.Config.InRepoConfigConfiguration(org, repo).Enabled &&
+		len(c.Config.GetStaticPresubmits[pr.PullRequest.Base.Repo.FullName]) == 0 {
+		return nil
+	}
+
 	switch pr.Action {
 	case github.PullRequestActionOpened:
 		// When a PR is opened, if the author is in the org then build it.
@@ -226,9 +228,13 @@ func TrustedPullRequest(ghc githubClient, trigger plugins.Trigger, author, org, 
 func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
 	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number)
-	toTest, toSkip, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
+	baseSHA, presubmits, err := c.Presubmits(c, pr)
 	if err != nil {
 		return err
 	}
-	return RunAndSkipJobs(c, pr, toTest, toSkip, eventGUID, elideSkippedContexts)
+	toTest, toSkip, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, presubmits, c.Logger)
+	if err != nil {
+		return err
+	}
+	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, eventGUID, elideSkippedContexts)
 }

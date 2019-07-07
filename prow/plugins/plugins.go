@@ -190,6 +190,31 @@ func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
 	return a.commentPruner, nil
 }
 
+func (a *Agent) Presubmits(pr *github.PullRequest) (string, []config.Presubmit, error) {
+	baseSHA, presubmits, err := a.presubmits(pr)
+	if err != nil {
+		// log error
+		// Render error comment and create it on Github if it doesn't exist already
+		return "", nil, err
+	}
+	// Check if error comment exists on Github and if yes, remove it
+	return baseSHA, presubmits, nil
+}
+
+func (a *Agent) presubmits(pr *github.PullRequest) (string, []config.Presubmit, error) {
+	org, repo := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name
+	baseSHA, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to fetch baseSHA: %v", err)
+	}
+	presubmits, err := a.Config.Presubmits(a.GitClient, org, repo, baseSHA, []string{pr.Head.SHA})
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to get presubmits: %v", err)
+	}
+
+	return baseSHA, presubmits, nil
+}
+
 // ClientAgent contains the various clients that are attached to the Agent.
 type ClientAgent struct {
 	GitHubClient     github.Client

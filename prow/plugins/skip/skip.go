@@ -62,12 +62,12 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc *plugins.Agent, e github.GenericCommentEvent) error {
 	honorOkToTest := trigger.HonorOkToTest(pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name))
-	return handle(pc.GitHubClient, pc.Logger, &e, pc.Config.Presubmits[e.Repo.FullName], honorOkToTest)
+	return handle(pc.GitHubClient, pc.Logger, &e, pc, honorOkToTest)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, presubmits []config.Presubmit, honorOkToTest bool) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, pc plugins.Agent, honorOkToTest bool) error {
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
@@ -98,6 +98,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 	statuses := combinedStatus.Statuses
 
+	presubmits, err := (&pc).Presubmits(pr)
+	if err != nil {
+		return err
+	}
 	filteredPresubmits, _, err := trigger.FilterPresubmits(honorOkToTest, gc, e.Body, pr, presubmits, log)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get combined status for PR #%d in %s/%s: %v", number, org, repo, err)

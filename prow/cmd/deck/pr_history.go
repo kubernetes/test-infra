@@ -32,6 +32,7 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -201,11 +202,31 @@ func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
 }
 
 // getGCSDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
-func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[string]sets.String, error) {
+func getGCSDirsForPR(config *config.Config, org, repo string, pr int, gc *git.Client, ghc *github.Client) (map[string]sets.String, error) {
 	toSearch := make(map[string]sets.String)
 	fullRepo := org + "/" + repo
-	presubmits, ok := config.Presubmits[fullRepo]
-	if !ok {
+
+	var baseSHA string
+	var headSHAs []string
+	pr, err := ghc.GetPullRequest(org, repo, pr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch PR: %v", err)
+	}
+	if pr.Merged {
+		baseSHA = *MergeSHA
+	} else {
+		baseSHA, err = ghc.GetRef(org, repo, "heads/"+pr.Base.Ref)
+		if err != nil {
+			return nil, err
+		}
+		headSHAs = []string{pr.Head.SHA}
+	}
+	presubmits, err := config.Presubmits(gc, org, repo, baseSHA, headSHAs)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(presubmits) == 0 {
 		return toSearch, fmt.Errorf("couldn't find presubmits for %q in config", fullRepo)
 	}
 
@@ -238,7 +259,7 @@ func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[strin
 	return toSearch, nil
 }
 
-func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client) (prHistoryTemplate, error) {
+func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client, gc *git.Client, ghc *github.Client) (prHistoryTemplate, error) {
 	start := time.Now()
 	template := prHistoryTemplate{}
 
@@ -249,7 +270,7 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
 	template.Link = githubPRLink(org, repo, pr) // TODO(ibzib) support Gerrit :/
 
-	toSearch, err := getGCSDirsForPR(config, org, repo, pr)
+	toSearch, err := getGCSDirsForPR(config, org, repo, pr, gc, ghc)
 	if err != nil {
 		return template, fmt.Errorf("failed to list GCS directories for PR %s: %v", template.Name, err)
 	}

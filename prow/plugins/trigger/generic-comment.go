@@ -110,11 +110,16 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		}
 	}
 
-	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, c.Config.Presubmits[gc.Repo.FullName], c.Logger)
+	baseSHA, presubmits, err := c.Presubmits(c, pr)
 	if err != nil {
 		return err
 	}
-	return RunAndSkipJobs(c, pr, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
+
+	toTest, toSkip, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, presubmits, c.Logger)
+	if err != nil {
+		return err
+	}
+	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
 }
 
 func HonorOkToTest(trigger plugins.Trigger) bool {

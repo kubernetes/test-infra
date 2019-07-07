@@ -120,6 +120,7 @@ type Client struct {
 	ProwJobClient prowJobClient
 	Config        *config.Config
 	Logger        *logrus.Entry
+	Presubmits    func(pr *github.PullRequest) (string, []config.Presubmit, error)
 }
 
 type trustedUserClient interface {
@@ -133,6 +134,7 @@ func getClient(pc plugins.Agent) Client {
 		Config:        pc.Config,
 		ProwJobClient: pc.ProwJobClient,
 		Logger:        pc.Logger,
+		Presubmits:    (&pc).Presubmits,
 	}
 }
 
@@ -195,12 +197,12 @@ func skippedStatusFor(context string) github.Status {
 
 // RunAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
 // for the reporting jobs that are skipped
-func RunAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
+func RunAndSkipJobs(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
 	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
 		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
 		return err
 	}
-	runErr := runRequested(c, pr, requestedJobs, eventGUID)
+	runErr := runRequested(c, pr, baseSHA, requestedJobs, eventGUID)
 	var skipErr error
 	if !elideSkippedContexts {
 		skipErr = skipRequested(c, pr, skippedJobs)
@@ -227,11 +229,7 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 }
 
 // runRequested executes the config.Presubmits that are requested
-func runRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
-	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
-	if err != nil {
-		return err
-	}
+func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
 
 	var errors []error
 	for _, job := range requestedJobs {
@@ -259,4 +257,34 @@ func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presub
 		}
 	}
 	return errorutil.NewAggregate(errors...)
+}
+
+func getPresubmits(c Client, pr *github.PullRequest) (string, []Presubmit, error) {
+	inRepoConfigEnabled := c.Config.InRepoConfigConfiguration(org, repo).Enabled
+	// We do the status context handling here instead of in the  PluginAgent to avoid
+	// updating it once to Pending and then Success/Failed per plugin that accesses the
+	// Presubmit config
+	if inRepoConfigEnabled {
+		// Create GitHub status context "prow-config-parsing" with status "Pending"
+	}
+	baseSHA, presubmits, err := c.GetPresubmits(pr)
+	if err != nil {
+		if inRepoConfigEnabled {
+			// Update GitHub status context "prow-config-parsing" with status "Failed"
+		}
+		return "", nil, err
+	}
+
+	if inRepoConfigEnabled {
+		// * There is exactly one case where we need to retire a context: If it was removed
+		//   on the base branch but is failed on our PR. We handle it by:
+		//   * Iterating over all existing contexts that do not have a "Success" status
+		//   * Ignore "tide" and "prow-config-parsing" contexts
+		//   * Ignore contexts whose `target_url` does not start with c.Config.GetJobUrlPrefix()
+		//   * check if found context is in presubmits if not, retire it
+		//   TODO: Can we use this approach everywhere and use it to replace the status-reconciler?
+		// * Update GitHub status context "prow-config-parsing" with status "Success"
+	}
+
+	return baseSHA, presubmits, nil
 }
