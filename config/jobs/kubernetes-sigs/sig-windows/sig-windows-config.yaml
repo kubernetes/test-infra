@@ -230,6 +230,7 @@ periodics:
       - "--provider=skeleton"
       - "--build=bazel"
       - "--ginkgo-parallel=4"
+      - "--acsengine-location=westus2"
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
