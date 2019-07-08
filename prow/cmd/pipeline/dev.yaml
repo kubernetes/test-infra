@@ -31,9 +31,10 @@ metadata:
   name: prow-pipeline
 rules:
 - apiGroups:
-  - pipeline.tekton.dev
+  - tekton.dev
   resources:
   - pipelineruns
+  - pipelineresource
   verbs:
   - create
   - delete
