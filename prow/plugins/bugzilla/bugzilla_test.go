@@ -64,7 +64,8 @@ orgs:
             target_release: my-repo-branch
             statuses:
             - MODIFIED
-            add_external_link: true`
+            add_external_link: true
+            status_after_merge: MODIFIED`
 	var config plugins.Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -90,7 +91,7 @@ orgs:
 			"my-org/my-repo": `The plugin has the following configuration:<ul>
 <li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
 <li>on the "my-org-branch" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "POST" state and updated to refer to the pull request using the external bug tracker.</li>
-<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the "PRE" state and updated to refer to the pull request using the external bug tracker.</li>
+<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the "PRE" state, updated to refer to the pull request using the external bug tracker, and moved to the "MODIFIED" state when all linked pull requests are merged.</li>
 </ul>`,
 		},
 		Commands: []pluginhelp.Command{{
@@ -205,6 +206,33 @@ func TestDigestPR(t *testing.T) {
 			},
 			expected: &event{
 				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
+			},
+		},
+		{
+			name: "title referencing bug gets an event on PR merge",
+			pre: github.PullRequestEvent{
+				Action: github.PullRequestActionClosed,
+				PullRequest: github.PullRequest{
+					Merged: true,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "org",
+							},
+							Name: "repo",
+						},
+						Ref: "branch",
+					},
+					Number:  1,
+					Title:   "Bug 123: fixed it!",
+					HTMLURL: "http.com",
+					User: github.User{
+						Login: "user",
+					},
+				},
+			},
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 1, merged: true, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 			},
 		},
 		{
@@ -333,6 +361,7 @@ func TestDigestComment(t *testing.T) {
 		name            string
 		e               github.GenericCommentEvent
 		title           string
+		merged          bool
 		expected        *event
 		expectedComment string
 		expectedErr     bool
@@ -426,13 +455,37 @@ Instructions for interacting with me using PR comments are available [here](http
 				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user",
 			},
 		},
+		{
+			name: "title referencing bug in a merged PR gets an event",
+			e: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/bugzilla refresh",
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
+				Number: 1,
+				User: github.User{
+					Login: "user",
+				},
+				HTMLURL: "www.com",
+			},
+			title:  "Bug 123: oopsie doopsie",
+			merged: true,
+			expected: &event{
+				org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, merged: true, body: "/bugzilla refresh", htmlUrl: "www.com", login: "user",
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			client := fakegithub.FakeClient{
 				PullRequests: map[int]*github.PullRequest{
-					1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title},
+					1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
 				},
 				IssueComments: map[int][]github.IssueComment{},
 			}
@@ -456,16 +509,18 @@ Instructions for interacting with me using PR comments are available [here](http
 func TestHandle(t *testing.T) {
 	yes := true
 	open := true
-	updated := "UPDATED"
+	updated, modified := "UPDATED", "MODIFIED"
 	verified := []string{"VERIFIED"}
-	e := event{
+	base := &event{
 		org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 	}
 	var testCases = []struct {
 		name                 string
 		labels               []string
 		missing              bool
-		externalBugExists    bool
+		merged               bool
+		externalBugs         []bugzilla.ExternalBug
+		prs                  []github.PullRequest
 		bugs                 []bugzilla.Bug
 		bugErrors            []int
 		options              plugins.BugzillaBranchOptions
@@ -621,12 +676,15 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedExternalBugs: []bugzilla.ExternalBug{{BugzillaBugID: 123, ExternalBugID: "org/repo/pull/1"}},
 		},
 		{
-			name:              "valid bug with already existing external link removes invalid label, adds valid label, comments to say nothing changed",
-			bugs:              []bugzilla.Bug{{ID: 123}},
-			externalBugExists: true,
-			options:           plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
-			labels:            []string{"bugzilla/invalid-bug"},
-			expectedLabels:    []string{"bugzilla/valid-bug"},
+			name: "valid bug with already existing external link removes invalid label, adds valid label, comments to say nothing changed",
+			bugs: []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+			}},
+			options:        plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
+			labels:         []string{"bugzilla/invalid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
 
 <details>
@@ -678,16 +736,144 @@ In response to [this](http.com):
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
 		},
+		{
+			name:   "valid bug on merged PR with one external link migrates to new state and comments",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
+			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. The [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+		},
+		{
+			name:   "valid bug on merged PR with many external links migrates to new state and comments",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}, {
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/22", base.org, base.repo),
+				Org:           base.org, Repo: base.repo, Num: 22,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: true}},
+			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. The [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+		},
+		{
+			name:   "valid bug on merged PR with unmerged external links does nothing",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}, {
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/22", base.org, base.repo),
+				Org:           base.org, Repo: base.repo, Num: 22,
+			}},
+			prs:         []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: false}},
+			options:     plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			expectedBug: &bugzilla.Bug{ID: 123},
+		},
+		{
+			name:   "valid bug on merged PR with one external link but no status after merge configured does nothing",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:         []github.PullRequest{{Number: base.number, Merged: true}},
+			options:     plugins.BugzillaBranchOptions{}, // no requirements --> always valid
+			expectedBug: &bugzilla.Bug{ID: 123},
+		},
+		{
+			name:    "valid bug on merged PR with one external link but no referenced bug in the title does nothing",
+			merged:  true,
+			missing: true,
+			bugs:    []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:         []github.PullRequest{{Number: base.number, Merged: true}},
+			options:     plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			expectedBug: &bugzilla.Bug{ID: 123},
+		},
+		{
+			name:      "valid bug on merged PR with one external link fails to update bug and comments",
+			merged:    true,
+			bugs:      []bugzilla.Bug{{ID: 123}},
+			bugErrors: []int{123},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
+			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			expectedComment: `org/repo#1:@user: An error was encountered searching the Bugzilla server at www.bugzilla for external trackers on bug 123:
+> injected error adding external bug to bug
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123},
+		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			e := *base // copy so parallel tests don't collide
 			gc := fakegithub.FakeClient{
 				IssueLabelsExisting: []string{},
 				IssueComments:       map[int][]github.IssueComment{},
+				PullRequests:        map[int]*github.PullRequest{},
 			}
 			for _, label := range testCase.labels {
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
+			}
+			for _, pr := range testCase.prs {
+				gc.PullRequests[pr.Number] = &pr
 			}
 			bc := bugzilla.Fake{
 				EndpointString: "www.bugzilla",
@@ -699,13 +885,11 @@ Instructions for interacting with me using PR comments are available [here](http
 				bc.Bugs[bug.ID] = bug
 			}
 			bc.BugErrors.Insert(testCase.bugErrors...)
-			if testCase.externalBugExists {
-				bc.ExternalBugs[e.bugId] = []bugzilla.ExternalBug{{
-					BugzillaBugID: e.bugId,
-					ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", e.org, e.repo, e.number),
-				}}
+			for _, externalBug := range testCase.externalBugs {
+				bc.ExternalBugs[externalBug.BugzillaBugID] = append(bc.ExternalBugs[externalBug.BugzillaBugID], externalBug)
 			}
 			e.missing = testCase.missing
+			e.merged = testCase.merged
 			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)

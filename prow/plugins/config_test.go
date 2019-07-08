@@ -435,10 +435,16 @@ func TestResolveBugzillaOptions(t *testing.T) {
 			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified, DependentBugStatuses: &modified, StatusAfterValidation: &post},
 		},
 		{
+			name:     "child overrides parent on status after mege",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified, StatusAfterValidation: &post, StatusAfterMerge: &post},
+			child:    BugzillaBranchOptions{StatusAfterMerge: &pre},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &modified, StatusAfterValidation: &post, StatusAfterMerge: &pre},
+		},
+		{
 			name:     "child overrides parent on all fields",
-			parent:   BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, Statuses: &verified, DependentBugStatuses: &verified, StatusAfterValidation: &post},
-			child:    BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, Statuses: &modified, DependentBugStatuses: &modified, StatusAfterValidation: &pre},
-			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, Statuses: &modified, DependentBugStatuses: &modified, StatusAfterValidation: &pre},
+			parent:   BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, Statuses: &verified, DependentBugStatuses: &verified, StatusAfterValidation: &post, StatusAfterMerge: &post},
+			child:    BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, Statuses: &modified, DependentBugStatuses: &modified, StatusAfterValidation: &pre, StatusAfterMerge: &pre},
+			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, Statuses: &modified, DependentBugStatuses: &modified, StatusAfterValidation: &pre, StatusAfterMerge: &pre},
 		},
 	}
 	for _, testCase := range testCases {
@@ -455,7 +461,7 @@ func TestOptionsForBranch(t *testing.T) {
 	yes, no := true, false
 	globalDefault, globalBranchDefault, orgDefault, orgBranchDefault, repoDefault, repoBranch := "global-default", "global-branch-default", "my-org-default", "my-org-branch-default", "my-repo-default", "my-repo-branch"
 	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
-	post, pre := "POST", "PRE"
+	post, pre, release, notabug := "POST", "PRE", "RELEASE_PENDING", "NOTABUG"
 
 	rawConfig := `default:
   "*":
@@ -482,11 +488,13 @@ orgs:
             statuses:
             - VERIFIED
             validate_by_default: false
+            status_after_merge: RELEASE_PENDING
           "my-repo-branch":
             target_release: my-repo-branch
             statuses:
             - MODIFIED
-            validate_by_default: true`
+            validate_by_default: true
+            status_after_merge: NOTABUG`
 	var config Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -530,14 +538,14 @@ orgs:
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "some-branch",
-			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified, StatusAfterValidation: &pre},
+			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified, StatusAfterValidation: &pre, StatusAfterMerge: &release},
 		},
 		{
 			name:     "branch on configured org and repo gets branch config",
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "my-repo-branch",
-			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, Statuses: &modified, StatusAfterValidation: &pre},
+			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, Statuses: &modified, StatusAfterValidation: &pre, StatusAfterMerge: &notabug},
 		},
 	}
 	for _, testCase := range testCases {
@@ -576,9 +584,9 @@ orgs:
 			org:  "my-org",
 			repo: "my-repo",
 			expected: map[string]BugzillaBranchOptions{
-				"*":              {ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified, StatusAfterValidation: &pre},
-				"my-repo-branch": {ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, Statuses: &modified, StatusAfterValidation: &pre},
-				"my-org-branch":  {ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified, StatusAfterValidation: &post},
+				"*":              {ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified, StatusAfterValidation: &pre, StatusAfterMerge: &release},
+				"my-repo-branch": {ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, Statuses: &modified, StatusAfterValidation: &pre, StatusAfterMerge: &notabug},
+				"my-org-branch":  {ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified, StatusAfterValidation: &post, StatusAfterMerge: &release},
 			},
 		},
 	}
