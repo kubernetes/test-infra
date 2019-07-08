@@ -1228,7 +1228,8 @@ func validateAgent(v JobBase, podNamespace string) error {
 	agent := v.Agent
 	switch {
 	case !agents.Has(agent):
-		return fmt.Errorf("agent must be one of %s (found %q)", strings.Join(agents.List(), ", "), agent)
+		logrus.Warningf("agent %s is unknown and cannot be validated: use at your own risk", agent)
+		return nil
 	case v.Spec != nil && agent != k:
 		return fmt.Errorf("job specs require agent: %s (found %q)", k, agent)
 	case agent == k && v.Spec == nil:
