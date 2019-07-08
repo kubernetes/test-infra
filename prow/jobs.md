@@ -84,10 +84,10 @@ like:
 presets:
 - labels:                  # a job with these labels/values will have the preset applied
     preset-foo-bar: "true" #   key:value pair must be unique among presets
-  env:                     # list of valid Kuberentes EnvVars
+  env:                     # list of valid Kubernetes EnvVars
   - name: FOO
     value: BAR
-  volumes:                 # list of valid Kuberentes Volumes
+  volumes:                 # list of valid Kubernetes Volumes
   - name: foo
     emptyDir: {}
   - name: bar
