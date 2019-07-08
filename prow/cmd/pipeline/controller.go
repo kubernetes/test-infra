@@ -603,14 +603,14 @@ func makePipelineRun(pj prowjobv1.ProwJob, pr *pipelinev1alpha1.PipelineResource
 		Name:  "build_id",
 		Value: buildID,
 	})
-	rb := pipelinev1alpha1.PipelineResourceBinding{
-		Name: pr.Name,
-		ResourceRef: pipelinev1alpha1.PipelineResourceRef{
-			Name:       pr.Name,
-			APIVersion: pr.APIVersion,
-		},
+	for _, res := range p.Spec.Resources {
+		if res.Name == "repo-source" {
+			res.ResourceRef = pipelinev1alpha1.PipelineResourceRef{
+				Name:       pr.Name,
+				APIVersion: pr.APIVersion,
+			}
+		}
 	}
-	p.Spec.Resources = append(p.Spec.Resources, rb)
 
 	return &p, nil
 }
