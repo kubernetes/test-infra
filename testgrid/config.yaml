@@ -4681,8 +4681,6 @@ dashboards:
 
 - name: sig-scalability-experiments
   dashboard_tab:
-  - name: gci-gce-scalability-killer
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-killer
   - name: gce-private-cluster-correctness
     test_group_name: ci-kubernetes-e2e-gce-private-cluster-correctness
 
