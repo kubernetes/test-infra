@@ -20,6 +20,7 @@ spec:
     spec:
       containers:
       - image: docker.io/nginx:1.17.0-alpine
+        name: nginx
         volumeMounts:
           - mountPath: /etc/nginx/
             name: grafana-nginx
