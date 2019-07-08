@@ -182,7 +182,27 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 	logrus.Infof("Created merge patch: %v", string(patch))
 
 	_, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Block until the update is in the lister to make sure that events from another controller
+	// that also does reporting dont trigger another report because our lister doesn't yet contain
+	// the updated Status
+	if err := wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
+		pj, err := c.informer.Lister().ProwJobs(newpj.Namespace).Get(newpj.Name)
+		if err != nil {
+			return false, err
+		}
+		if pj.Status.PrevReportStates != nil &&
+			newpj.Status.PrevReportStates[c.reporter.GetName()] == newpj.Status.State {
+			return true, nil
+		}
+		return false, nil
+	}); err != nil {
+		return fmt.Errorf("failed to wait for updated report status to be in lister: %v", err)
+	}
+	return nil
 }
 
 // processNextItem retrieves each queued item and takes the necessary handler action based off of if
