@@ -1003,14 +1003,6 @@ func TestMakePipelineRun(t *testing.T) {
 				Name:  "build_id",
 				Value: randomPipelineRunID,
 			})
-			rb := pipelinev1alpha1.PipelineResourceBinding{
-				Name: pr.Name,
-				ResourceRef: pipelinev1alpha1.PipelineResourceRef{
-					Name:       pr.Name,
-					APIVersion: pr.APIVersion,
-				},
-			}
-			expected.Spec.Resources = append(expected.Spec.Resources, rb)
 
 			if !equality.Semantic.DeepEqual(actual, &expected) {
 				t.Errorf("pipelineruns do not match:\n%s", diff.ObjectReflectDiff(&expected, actual))
