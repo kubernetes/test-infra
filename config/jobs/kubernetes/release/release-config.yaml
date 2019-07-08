@@ -66,17 +66,33 @@ presubmits:
 
 # package tests
 periodics:
-- name: periodic-kubernetes-e2e-packages-pushed
-  interval: 24h
+- name: periodic-release-verify-packages-debs
+  interval: 6h
   decorate: true
   extra_refs:
   - org: kubernetes
-    repo: kubeadm
+    repo: release
     base_ref: master
-    path_alias: k8s.io/kubeadm
+    path_alias: k8s.io/release
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: ubuntu:latest
       imagePullPolicy: Always
       command:
-      - ./tests/e2e/packages/verify_packages_published.sh
+      - make
+      - verify-published-debs
+- name: periodic-release-verify-packages-rpms
+  interval: 6h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: centos:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-rpms
