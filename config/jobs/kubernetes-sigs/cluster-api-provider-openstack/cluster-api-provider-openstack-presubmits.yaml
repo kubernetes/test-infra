@@ -23,7 +23,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-      test-tab-name: pr-make
+      testgrid-tab-name: pr-make
   - name: pull-cluster-api-provider-openstack-test
     always_run: true
     decorate: true
@@ -40,7 +40,7 @@ presubmits:
         - test
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-      test-tab-name: pr-test
+      testgrid-tab-name: pr-test
   - name: pull-cluster-api-provider-openstack-check
     always_run: true
     decorate: true
@@ -59,4 +59,4 @@ presubmits:
         - check
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
-      test-tab-name: pr-check
+      testgrid-tab-name: pr-check

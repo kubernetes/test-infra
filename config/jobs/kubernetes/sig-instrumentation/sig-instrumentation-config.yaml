@@ -22,7 +22,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gce-influxdb
+    testgrid-tab-name: gce-influxdb
 - interval: 30m
   name: ci-kubernetes-e2e-gce-prometheus
   labels:
@@ -45,7 +45,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gce-prometheus
+    testgrid-tab-name: gce-prometheus
 - interval: 30m
   name: ci-kubernetes-e2e-gce-stackdriver
   labels:
@@ -71,7 +71,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gce-stackdriver
+    testgrid-tab-name: gce-stackdriver
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-es-logging
   labels:
@@ -97,7 +97,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gci-gce-es-logging
+    testgrid-tab-name: gci-gce-es-logging
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-sd-logging
   labels:
@@ -123,7 +123,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gci-gce-sd-logging
+    testgrid-tab-name: gci-gce-sd-logging
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
   labels:
@@ -150,7 +150,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
-    test-tab-name: gke-sd-logging-gci-1.14
+    testgrid-tab-name: gke-sd-logging-gci-1.14
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
   labels:
@@ -177,7 +177,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
-    test-tab-name: gke-sd-logging-gci-latest
+    testgrid-tab-name: gke-sd-logging-gci-latest
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
   labels:
@@ -204,7 +204,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
-    test-tab-name: gke-sd-logging-gci-1.13
+    testgrid-tab-name: gke-sd-logging-gci-1.13
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
   labels:
@@ -231,7 +231,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
-    test-tab-name: gke-sd-logging-ubuntu-1.14
+    testgrid-tab-name: gke-sd-logging-ubuntu-1.14
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
   labels:
@@ -258,7 +258,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
-    test-tab-name: gke-sd-logging-ubuntu-latest
+    testgrid-tab-name: gke-sd-logging-ubuntu-latest
 - interval: 30m
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
   labels:
@@ -285,7 +285,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke-stackdriver
-    test-tab-name: gke-sd-logging-ubuntu-1.13
+    testgrid-tab-name: gke-sd-logging-ubuntu-1.13
 - interval: 30m
   name: ci-kubernetes-e2e-gke-stackdriver
   labels:
@@ -312,4 +312,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: google-gke-stackdriver
-    test-tab-name: gke-stackdriver
+    testgrid-tab-name: gke-stackdriver

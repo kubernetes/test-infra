@@ -32,4 +32,4 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      test-tab-name: ci-disruptive
+      testgrid-tab-name: ci-disruptive

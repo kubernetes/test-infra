@@ -13,7 +13,7 @@ presubmits:
         - "./hack/verify-bazel.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      test-tab-name: bazel-pr-verify
+      testgrid-tab-name: bazel-pr-verify
       testgrid-alert-email: foo+k8s-azure@agst.us
   - name: pull-cluster-api-provider-azure-bazel-test
     always_run: true
@@ -28,7 +28,7 @@ presubmits:
         - "./scripts/ci-bazel-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      test-tab-name: bazel-pr-test
+      testgrid-tab-name: bazel-pr-test
       testgrid-alert-email: foo+k8s-azure@agst.us
   - name: pull-cluster-api-provider-azure-bazel-build
     always_run: true
@@ -43,7 +43,7 @@ presubmits:
         - "./scripts/ci-bazel-build.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      test-tab-name: bazel-pr-build
+      testgrid-tab-name: bazel-pr-build
       testgrid-alert-email: foo+k8s-azure@agst.us
   - name: pull-cluster-api-provider-azure-verify-boilerplate
     always_run: true
@@ -58,5 +58,5 @@ presubmits:
         - "./hack/verify_boilerplate.py"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      test-tab-name: verify-boilerplate
+      testgrid-tab-name: verify-boilerplate
       testgrid-alert-email: foo+k8s-azure@agst.us

@@ -15,7 +15,7 @@ presubmits:
         - "export PATH=$PATH:$GOPATH/bin && make verify"
     annotations:
       testgrid-dashboards: sig-contribex-community
-      test-tab-name: pull-verify
+      testgrid-tab-name: pull-verify
   - name: pull-community-tempelis-check
     decorate: true
     branches:

@@ -16,7 +16,7 @@ periodics:
       - "./scripts/ci-build.sh"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    test-tab-name: build
+    testgrid-tab-name: build
 - name: ci-cluster-api-test
   interval: 1h
   decorate: true
@@ -38,4 +38,4 @@ periodics:
           memory: "6Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    test-tab-name: unit tests
+    testgrid-tab-name: unit tests

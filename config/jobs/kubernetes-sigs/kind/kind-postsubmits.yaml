@@ -18,6 +18,6 @@ postsubmits:
           value: "1"
     annotations:
       testgrid-dashboards: sig-testing-kind
-      test-tab-name: ci build
+      testgrid-tab-name: ci build
       testgrid-alert-email: bentheelder@google.com
       description: kind CI build

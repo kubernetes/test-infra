@@ -57,7 +57,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-build
+    testgrid-tab-name: containerd-build
 - name: ci-containerd-build-1-1
   interval: 30m
   labels:
@@ -77,7 +77,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-build-1.1
+    testgrid-tab-name: containerd-build-1.1
 - name: ci-containerd-build-1-2
   interval: 30m
   labels:
@@ -97,7 +97,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-build-1.2
+    testgrid-tab-name: containerd-build-1.2
 - interval: 1h
   name: ci-containerd-e2e-gci-gce
   labels:
@@ -128,7 +128,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-e2e-gci
+    testgrid-tab-name: containerd-e2e-gci
 - interval: 1h
   name: ci-containerd-e2e-gci-gce-1-1
   labels:
@@ -160,7 +160,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-e2e-gci-1.1
+    testgrid-tab-name: containerd-e2e-gci-1.1
 - interval: 1h
   name: ci-containerd-e2e-gci-gce-1-2
   labels:
@@ -192,7 +192,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-e2e-gci-1.2
+    testgrid-tab-name: containerd-e2e-gci-1.2
 - interval: 1h
   name: ci-containerd-e2e-ubuntu-gce
   labels:
@@ -223,7 +223,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-e2e-ubuntu
+    testgrid-tab-name: containerd-e2e-ubuntu
 - name: ci-containerd-node-e2e
   interval: 1h
   labels:
@@ -254,7 +254,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cri
-    test-tab-name: containerd-node-conformance
+    testgrid-tab-name: containerd-node-conformance
 - name: ci-containerd-node-e2e-1-1
   interval: 1h
   labels:
@@ -285,7 +285,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-node-e2e-1.1
+    testgrid-tab-name: containerd-node-e2e-1.1
 - name: ci-containerd-node-e2e-1-2
   interval: 1h
   labels:
@@ -316,7 +316,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-node-e2e-1.2
+    testgrid-tab-name: containerd-node-e2e-1.2
 - name: ci-containerd-node-e2e-features
   interval: 1h
   labels:
@@ -347,7 +347,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cri
-    test-tab-name: containerd-node-features
+    testgrid-tab-name: containerd-node-features
 - name: ci-containerd-node-e2e-features-1-1
   interval: 1h
   labels:
@@ -378,7 +378,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-node-e2e-features-1.1
+    testgrid-tab-name: containerd-node-e2e-features-1.1
 - name: ci-containerd-node-e2e-features-1-2
   interval: 1h
   labels:
@@ -409,7 +409,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-node-e2e-features-1.2
+    testgrid-tab-name: containerd-node-e2e-features-1.2
 - interval: 12h
   name: ci-containerd-soak-gci-gce
   labels:
@@ -442,7 +442,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: soak-gci-gce
+    testgrid-tab-name: soak-gci-gce
 - name: ci-cri-containerd-build
   interval: 30m
   labels:
@@ -460,7 +460,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: build
+    testgrid-tab-name: build
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   cron: "30 1-23/3 * * *"
   labels:
@@ -488,7 +488,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-device-plugin-gpu
+    testgrid-tab-name: e2e-gci-device-plugin-gpu
 - interval: 2h
   name: ci-cri-containerd-e2e-gce-multizone
   labels:
@@ -519,7 +519,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-multizone
+    testgrid-tab-name: e2e-gci-multizone
 - interval: 2h
   name: ci-cri-containerd-e2e-gce-stackdriver
   labels:
@@ -548,7 +548,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-stackdriver
+    testgrid-tab-name: e2e-gci-stackdriver
 - interval: 1h
   name: ci-cri-containerd-e2e-gci-gce
   labels:
@@ -577,7 +577,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci
+    testgrid-tab-name: e2e-gci
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-alpha-features
   labels:
@@ -607,7 +607,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-alpha-features
+    testgrid-tab-name: e2e-gci-alpha-features
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-es-logging
   labels:
@@ -635,7 +635,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-es-logging
+    testgrid-tab-name: e2e-gci-es-logging
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-flaky
   labels:
@@ -661,7 +661,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-flaky
+    testgrid-tab-name: e2e-gci-flaky
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-ingress
   labels:
@@ -690,7 +690,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-gce, sig-node-containerd
-    test-tab-name: e2e-gci-ingress
+    testgrid-tab-name: e2e-gci-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-ip-alias
@@ -721,7 +721,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-ip-alias
+    testgrid-tab-name: e2e-gci-ip-alias
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-proto
   labels:
@@ -749,7 +749,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-proto
+    testgrid-tab-name: e2e-gci-proto
 - interval: 1h
   name: ci-cri-containerd-e2e-gci-gce-reboot
   labels:
@@ -775,7 +775,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-reboot
+    testgrid-tab-name: e2e-gci-reboot
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-sd-logging
   labels:
@@ -803,7 +803,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-sd-logging
+    testgrid-tab-name: e2e-gci-sd-logging
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
   labels:
@@ -835,7 +835,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-sd-logging-k8s-resources
+    testgrid-tab-name: e2e-gci-sd-logging-k8s-resources
 - interval: 1h
   name: ci-cri-containerd-e2e-gci-gce-serial
   labels:
@@ -861,7 +861,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-serial
+    testgrid-tab-name: e2e-gci-serial
 - interval: 1h
   name: ci-cri-containerd-e2e-gci-gce-slow
   labels:
@@ -888,7 +888,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-slow
+    testgrid-tab-name: e2e-gci-slow
 - interval: 2h
   name: ci-cri-containerd-e2e-gci-gce-statefulset
   labels:
@@ -913,7 +913,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-gci-statefulset
+    testgrid-tab-name: e2e-gci-statefulset
 - interval: 1h
   name: ci-cri-containerd-e2e-ubuntu-gce
   labels:
@@ -942,7 +942,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: e2e-ubuntu
+    testgrid-tab-name: e2e-ubuntu
 - name: ci-cri-containerd-node-e2e
   interval: 1h
   labels:
@@ -973,7 +973,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: node-e2e
+    testgrid-tab-name: node-e2e
 - name: ci-cri-containerd-node-e2e-benchmark
   interval: 2h
   labels:
@@ -1004,7 +1004,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: node-e2e-benchmark
+    testgrid-tab-name: node-e2e-benchmark
 - name: ci-cri-containerd-node-e2e-features
   interval: 1h
   labels:
@@ -1035,7 +1035,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: node-e2e-features
+    testgrid-tab-name: node-e2e-features
 - name: ci-cri-containerd-node-e2e-flaky
   interval: 2h
   labels:
@@ -1066,7 +1066,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: node-e2e-flaky
+    testgrid-tab-name: node-e2e-flaky
 - name: ci-cri-containerd-node-e2e-serial
   interval: 4h30m
   labels:
@@ -1097,7 +1097,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: node-e2e-serial
+    testgrid-tab-name: node-e2e-serial
 - interval: 1h
   name: ci-containerd-e2e-shielded-gci-gce-1-2
   labels:
@@ -1130,7 +1130,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-e2e-shielded-gci-1.2
+    testgrid-tab-name: containerd-e2e-shielded-gci-1.2
 - interval: 1h
   name: ci-containerd-e2e-shielded-gci-gce-slow-1-2
   labels:
@@ -1161,7 +1161,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-e2e-shielded-gci-slow-1.2
+    testgrid-tab-name: containerd-e2e-shielded-gci-slow-1.2
 - interval: 1h
   name: ci-containerd-e2e-shielded-gci-gce-serial-1-2
   labels:
@@ -1191,7 +1191,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: containerd-e2e-shielded-gci-serial-1.2
+    testgrid-tab-name: containerd-e2e-shielded-gci-serial-1.2
 - interval: 1h
   name: ci-cos-containerd-e2e-gci-gce
   labels:
@@ -1222,7 +1222,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: image-validation-cos-e2e
+    testgrid-tab-name: image-validation-cos-e2e
 - interval: 1h
   name: ci-cos-containerd-e2e-ubuntu-gce
   labels:
@@ -1250,7 +1250,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: image-validation-ubuntu-e2e
+    testgrid-tab-name: image-validation-ubuntu-e2e
 - name: ci-cos-containerd-node-e2e
   interval: 1h
   labels:
@@ -1280,7 +1280,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: image-validation-node-e2e
+    testgrid-tab-name: image-validation-node-e2e
 - name: ci-cos-containerd-node-e2e-features
   interval: 1h
   labels:
@@ -1309,4 +1309,4 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-containerd
-    test-tab-name: image-validation-node-features
+    testgrid-tab-name: image-validation-node-features

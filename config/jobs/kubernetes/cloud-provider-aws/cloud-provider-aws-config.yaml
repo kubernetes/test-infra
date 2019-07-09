@@ -17,7 +17,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: sig-aws-cloud-provider-aws
-      test-tab-name: check
+      testgrid-tab-name: check
       description: aws cloud provider checks
   - name: pull-cloud-provider-aws-test
     always_run: true
@@ -35,5 +35,5 @@ presubmits:
         - test
     annotations:
       testgrid-dashboards: sig-aws-cloud-provider-aws
-      test-tab-name: test
+      testgrid-tab-name: test
       description: aws cloud provider tests

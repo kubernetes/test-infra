@@ -28,7 +28,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-1.12-1.13-cluster-upgrade
+    testgrid-tab-name: gce-gpu-1.12-1.13-cluster-upgrade
 - cron: "0 5-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
   labels:
@@ -58,7 +58,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-1.12-1.13-master-upgrade
+    testgrid-tab-name: gce-gpu-1.12-1.13-master-upgrade
 - cron: "0 1-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
   labels:
@@ -88,7 +88,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-1.13-1.14-cluster-upgrade
+    testgrid-tab-name: gce-gpu-1.13-1.14-cluster-upgrade
 - cron: "0 7-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
   labels:
@@ -118,7 +118,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-1.13-1.14-master-upgrade
+    testgrid-tab-name: gce-gpu-1.13-1.14-master-upgrade
 - cron: "0 3-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
   labels:
@@ -148,7 +148,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-1.13-master-cluster-upgrade
+    testgrid-tab-name: gce-gpu-1.13-master-cluster-upgrade
 - cron: "0 9-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
   labels:
@@ -178,7 +178,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-1.13-master-master-upgrade
+    testgrid-tab-name: gce-gpu-1.13-master-master-upgrade
 - cron: "0 10-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
   labels:
@@ -209,7 +209,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-1.14-1.13-cluster-downgrade
+    testgrid-tab-name: gce-gpu-1.14-1.13-cluster-downgrade
 - cron: "0 11-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   labels:
@@ -239,4 +239,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-gpu-master-1.13-cluster-downgrade
+    testgrid-tab-name: gce-gpu-master-1.13-cluster-downgrade

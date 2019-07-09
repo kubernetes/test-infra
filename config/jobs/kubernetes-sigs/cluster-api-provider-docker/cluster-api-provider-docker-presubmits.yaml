@@ -13,4 +13,4 @@ presubmits:
         - "./hack/verify-all.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-docker
-      test-tab-name: pr-verify
+      testgrid-tab-name: pr-verify

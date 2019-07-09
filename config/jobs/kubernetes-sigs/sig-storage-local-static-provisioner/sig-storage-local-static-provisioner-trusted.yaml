@@ -40,7 +40,7 @@ postsubmits:
   # A postsubmit job to build release image on release tags.
     annotations:
       testgrid-dashboards: sig-storage-local-static-provisioner
-      test-tab-name: master-canary-build
+      testgrid-tab-name: master-canary-build
       testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
       description: Canary image build against latest master
   - name: post-sig-storage-local-static-provisioner-build-release
@@ -81,5 +81,5 @@ postsubmits:
           secretName: sig-storage-local-static-provisioner-pusher
     annotations:
       testgrid-dashboards: sig-storage-local-static-provisioner
-      test-tab-name: release-build
+      testgrid-tab-name: release-build
       description: Release image build against tagged releases

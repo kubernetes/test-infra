@@ -35,5 +35,5 @@ presubmits:
         - --timeout=180m
     annotations:
       testgrid-dashboards: sig-aws-eks-presubmits
-      test-tab-name: k8s-eks-1-11-correctness
+      testgrid-tab-name: k8s-eks-1-11-correctness
       description: Kubernetes e2e correctness tests against EKS 1.11 build

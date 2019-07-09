@@ -643,7 +643,7 @@ periodics:
         secretName: oauth-token
   annotations:
     testgrid-dashboards: sig-testing-org
-    test-tab-name: ci-peribolos
+    testgrid-tab-name: ci-peribolos
     testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com
 - cron: "05 15 1-7 * 1"  # Run at 7:05 PST (15:05 UTC) on first monthly monday.
   name: ci-test-infra-autoupdate-minor
@@ -680,7 +680,7 @@ periodics:
         defaultMode: 0400
   annotations:
     testgrid-dashboards: sig-testing-maintenance
-    test-tab-name: autoupdate-minor
+    testgrid-tab-name: autoupdate-minor
     description: Monthly module update to latest minor versions
 - cron: "05 15 * * 1"  # Run at 7:05 PST (15:05 UTC) every Monday
   name: ci-test-infra-autoupdate-patch
@@ -717,7 +717,7 @@ periodics:
         defaultMode: 0400
   annotations:
     testgrid-dashboards: sig-testing-maintenance
-    test-tab-name: autoupdate-patch
+    testgrid-tab-name: autoupdate-patch
     description: Weekly module update to latest patched versions
 - cron: "05 15-23 * * 1-5"  # Run at 7:05-15:05 PST (15:05 UTC) Mon-Fri
   name: ci-test-infra-autobump-prow

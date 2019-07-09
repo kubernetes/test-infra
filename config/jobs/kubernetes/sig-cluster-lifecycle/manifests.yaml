@@ -17,4 +17,4 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-all
-    test-tab-name: periodic-manifest-lists
+    testgrid-tab-name: periodic-manifest-lists

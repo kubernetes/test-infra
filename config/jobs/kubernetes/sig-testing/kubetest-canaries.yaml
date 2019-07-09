@@ -26,7 +26,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: sig-testing-canaries
-      test-tab-name: pull-bazel-build
+      testgrid-tab-name: pull-bazel-build
   - name: pull-kubernetes-bazel-test-canary
     always_run: false
     labels:
@@ -53,7 +53,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: sig-testing-canaries
-      test-tab-name: pull-bazel-test
+      testgrid-tab-name: pull-bazel-test
   - name: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     labels:
@@ -80,7 +80,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: sig-testing-canaries
-      test-tab-name: pull-bazel-test-integration
+      testgrid-tab-name: pull-bazel-test-integration
 periodics:
 - name: ci-kubernetes-e2e-prow-canary
   interval: 1h
@@ -187,7 +187,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gke-canary
+    testgrid-tab-name: gke-canary
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-canary
   labels:
@@ -220,7 +220,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    test-tab-name: kops-aws-canary
+    testgrid-tab-name: kops-aws-canary
 - interval: 30m
   name: ci-kubernetes-e2e-kops-gce-canary
   labels:
@@ -249,7 +249,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
-    test-tab-name: kops-gce-canary
+    testgrid-tab-name: kops-gce-canary
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   labels:

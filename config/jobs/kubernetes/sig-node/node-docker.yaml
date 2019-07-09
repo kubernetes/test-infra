@@ -27,7 +27,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-cri
-    test-tab-name: docker-node-conformance
+    testgrid-tab-name: docker-node-conformance
 - name: ci-docker-node-features
   interval: 4h
   labels:
@@ -56,7 +56,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-node-cri
-    test-tab-name: docker-node-features
+    testgrid-tab-name: docker-node-features
 - name: ci-docker-node-legacy
   interval: 2h
   labels:
@@ -83,4 +83,4 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-cri
-    test-tab-name: docker-node-legacy
+    testgrid-tab-name: docker-node-legacy

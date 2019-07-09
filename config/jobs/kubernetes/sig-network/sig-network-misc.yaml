@@ -47,7 +47,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce, sig-network-gce
-    test-tab-name: gce-alpha-api
+    testgrid-tab-name: gce-alpha-api
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance
@@ -76,7 +76,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-gce
-    test-tab-name: gce-coredns-performance
+    testgrid-tab-name: gce-coredns-performance
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance
   labels:
@@ -104,7 +104,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-gce
-    test-tab-name: gce-kubedns-performance
+    testgrid-tab-name: gce-kubedns-performance
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-coredns
   labels:
@@ -156,7 +156,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-gce
-    test-tab-name: gce-coredns-performance-nodecache
+    testgrid-tab-name: gce-coredns-performance-nodecache
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
   labels:
@@ -185,7 +185,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-gce
-    test-tab-name: gce-kubedns-performance-nodecache
+    testgrid-tab-name: gce-kubedns-performance-nodecache
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
   labels:
@@ -236,7 +236,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-gce, sig-network-gce
-    test-tab-name: gci-gce-ingress
+    testgrid-tab-name: gci-gce-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh
 - interval: 60m
@@ -264,7 +264,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-gce
-    test-tab-name: gci-gce-ingress-manual-network
+    testgrid-tab-name: gci-gce-ingress-manual-network
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-ip-alias
@@ -294,7 +294,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce, google-gci
-    test-tab-name: ip-alias
+    testgrid-tab-name: ip-alias
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-ipvs
   labels:
@@ -420,7 +420,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke, sig-network-gke
-    test-tab-name: gci-gke-ingress
+    testgrid-tab-name: gci-gke-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gke-network-policy
@@ -450,7 +450,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-gke
-    test-tab-name: gci-gke-network-policy
+    testgrid-tab-name: gci-gke-network-policy
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 120m
   name: ci-kubernetes-e2e-gce-lb-finalizer

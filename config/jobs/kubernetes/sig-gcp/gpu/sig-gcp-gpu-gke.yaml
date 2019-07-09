@@ -27,7 +27,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gke-device-plugin-gpu
+    testgrid-tab-name: gke-device-plugin-gpu
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   cron: "30 0-23/2 * * *"
   labels:
@@ -56,7 +56,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gke-device-plugin-gpu-1.14
+    testgrid-tab-name: gke-device-plugin-gpu-1.14
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
   cron: "30 0-23/3 * * *"
   labels:
@@ -111,7 +111,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gke-device-plugin-gpu-p100
+    testgrid-tab-name: gke-device-plugin-gpu-p100
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   cron: "30 8-23/12 * * *" #expensive test
   labels:
@@ -140,7 +140,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gke-device-plugin-gpu-p100-1.14
+    testgrid-tab-name: gke-device-plugin-gpu-p100-1.14
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
   cron: "0 0-23/12 * * *" #expensive test
   labels:
@@ -195,7 +195,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-release-1.12-all
-    test-tab-name: gke-device-plugin-gpu-p100-1.12
+    testgrid-tab-name: gke-device-plugin-gpu-p100-1.12
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   cron: "0 1-23/6 * * *"
   labels:
@@ -224,7 +224,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-gcp-release-1.11
-    test-tab-name: gke-device-plugin-gpu-1.13
+    testgrid-tab-name: gke-device-plugin-gpu-1.13
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   cron: "0 2-23/12 * * *"
   labels:
@@ -253,7 +253,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-release-1.12-all
-    test-tab-name: gke-device-plugin-gpu-1.12
+    testgrid-tab-name: gke-device-plugin-gpu-1.12
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
   cron: "0 1-23/2 * * *"
   labels:

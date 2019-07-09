@@ -11,7 +11,7 @@ presubmits:
         - make
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
-      test-tab-name: build
+      testgrid-tab-name: build
   kubernetes/kubernetes:
   - name: pull-publishing-bot-validate
     always_run: false
@@ -36,4 +36,4 @@ presubmits:
         - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
-      test-tab-name: validate
+      testgrid-tab-name: validate

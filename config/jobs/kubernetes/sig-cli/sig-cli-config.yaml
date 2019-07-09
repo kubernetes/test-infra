@@ -22,7 +22,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: gce-serial
+    testgrid-tab-name: gce-serial
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
     description: kubectl gce serial e2e tests for master branch
 - interval: 2h
@@ -51,7 +51,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: gce
+    testgrid-tab-name: gce
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
     description: kubectl gce e2e tests for master branch
 - interval: 2h
@@ -82,7 +82,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: gke
+    testgrid-tab-name: gke
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
     description: kubectl gke e2e tests for master branch
 - interval: 2h
@@ -111,7 +111,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: gke-serial
+    testgrid-tab-name: gke-serial
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
     description: kubectl gke serial e2e tests for master branch
 - interval: 2h
@@ -140,7 +140,7 @@ periodics:
 # kubectl skew tests
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: aws
+    testgrid-tab-name: aws
     testgrid-alert-email: kubernetes-sig-cli-oncall@gmail.com
 - interval: 2h
   name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
@@ -169,7 +169,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gce-1.14-1.13-gci-kubectl-skew
+    testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew
 - interval: 2h
   name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
   labels:
@@ -196,7 +196,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gce-1.14-1.13-gci-kubectl-skew-serial
+    testgrid-tab-name: gce-1.14-1.13-gci-kubectl-skew-serial
 - interval: 1h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
   labels:
@@ -224,7 +224,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-latest-kubectl-stable1-gce
+    testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gce
     description: stable1 e2e tests run against a master gce cluster using a stable1 kubectl binary
 - interval: 1h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
@@ -252,7 +252,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-latest-kubectl-stable1-gce-serial
+    testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gce-serial
     description: stable1 serial tests run against a master gce cluster using a stable1 kubectl binary
 - interval: 1h
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
@@ -280,7 +280,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-stable1-kubectl-latest-gce
+    testgrid-tab-name: skew-cluster-stable1-kubectl-latest-gce
     description: stable1 e2e tests run against a stable1 gce cluster using a master kubectl binary
 - interval: 1h
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
@@ -307,7 +307,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-stable1-kubectl-latest-gce-serial
+    testgrid-tab-name: skew-cluster-stable1-kubectl-latest-gce-serial
     description: stable1 serial tests run against a stable1 gce cluster using a master kubectl binary
 - interval: 2h
   name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
@@ -335,7 +335,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gce-1.13-1.14-gci-kubectl-skew
+    testgrid-tab-name: gce-1.13-1.14-gci-kubectl-skew
 - interval: 2h
   name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
   labels:
@@ -361,7 +361,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gce-1.13-1.14-gci-kubectl-skew-serial
+    testgrid-tab-name: gce-1.13-1.14-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
   labels:
@@ -389,7 +389,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-1.13-1.12-gci-kubectl-skew
+    testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
   labels:
@@ -416,7 +416,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-1.13-1.12-gci-kubectl-skew-serial
+    testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
   labels:
@@ -443,7 +443,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-1.12-1.13-gci-kubectl-skew
+    testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
   labels:
@@ -469,7 +469,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
-    test-tab-name: gce-1.12-1.13-gci-kubectl-skew-serial
+    testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew-serial
 - interval: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
   labels:
@@ -500,7 +500,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gke-1.14-1.13-gci-kubectl-skew
+    testgrid-tab-name: gke-1.14-1.13-gci-kubectl-skew
 - interval: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
   labels:
@@ -530,7 +530,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gke-1.14-1.13-gci-kubectl-skew-serial
+    testgrid-tab-name: gke-1.14-1.13-gci-kubectl-skew-serial
 - interval: 1h
   name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
   labels:
@@ -561,7 +561,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-latest-kubectl-stable1-gke
+    testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gke
     description: stable1 e2e tests run against a master gke cluster using a stable1 kubectl binary
 - interval: 1h
   name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
@@ -592,7 +592,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-latest-kubectl-stable1-gke-serial
+    testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gke-serial
     description: stable1 serial tests run against a master gke cluster using a stable1 kubectl binary
 - interval: 1h
   name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
@@ -623,7 +623,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-stable1-kubectl-latest-gke
+    testgrid-tab-name: skew-cluster-stable1-kubectl-latest-gke
     description: stable1 e2e tests run against a stable1 gke cluster using a master kubectl binary
 - interval: 1h
   name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
@@ -653,7 +653,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-cli-master
-    test-tab-name: skew-cluster-stable1-kubectl-latest-gke-serial
+    testgrid-tab-name: skew-cluster-stable1-kubectl-latest-gke-serial
     description: stable1 serial tests run against a stable1 gke cluster using a master kubectl binary
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
@@ -685,7 +685,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gke-1.13-1.14-gci-kubectl-skew
+    testgrid-tab-name: gke-1.13-1.14-gci-kubectl-skew
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
   labels:
@@ -715,7 +715,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: gke-1.13-1.14-gci-kubectl-skew-serial
+    testgrid-tab-name: gke-1.13-1.14-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
   labels:
@@ -746,7 +746,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
-    test-tab-name: gke-1.13-1.12-gci-kubectl-skew
+    testgrid-tab-name: gke-1.13-1.12-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
   labels:
@@ -776,7 +776,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
-    test-tab-name: gke-1.13-1.12-gci-kubectl-skew-serial
+    testgrid-tab-name: gke-1.13-1.12-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
   labels:
@@ -807,7 +807,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
-    test-tab-name: gke-1.12-1.13-gci-kubectl-skew
+    testgrid-tab-name: gke-1.12-1.13-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
   labels:
@@ -836,4 +836,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
-    test-tab-name: gke-1.12-1.13-gci-kubectl-skew-serial
+    testgrid-tab-name: gke-1.12-1.13-gci-kubectl-skew-serial

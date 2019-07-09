@@ -36,7 +36,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-containerd-gke-alpha-cluster
+    testgrid-tab-name: cos-containerd-gke-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   labels:
@@ -67,7 +67,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-containerd-gke-1.14-alpha-cluster
+    testgrid-tab-name: cos-containerd-gke-1.14-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
   labels:
@@ -97,7 +97,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-containerd-gke-1.14-alpha-cluster-features
+    testgrid-tab-name: cos-containerd-gke-1.14-alpha-cluster-features
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
   labels:
@@ -128,7 +128,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-containerd-gke-1.14
+    testgrid-tab-name: cos-containerd-gke-1.14
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
   labels:
@@ -159,7 +159,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-containerd-gke-1.13
+    testgrid-tab-name: cos-containerd-gke-1.13
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
   labels:
@@ -190,7 +190,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-containerd-gke-1.13-alpha-cluster
+    testgrid-tab-name: cos-containerd-gke-1.13-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
   labels:
@@ -221,7 +221,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-containerd-gke-1.13-alpha-cluster-features
+    testgrid-tab-name: cos-containerd-gke-1.13-alpha-cluster-features
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
   labels:
@@ -251,7 +251,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-gke-1.14-alpha-cluster
+    testgrid-tab-name: cos-gke-1.14-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
   labels:
@@ -280,7 +280,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-gke-1.14-alpha-cluster-features
+    testgrid-tab-name: cos-gke-1.14-alpha-cluster-features
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
   labels:
@@ -310,7 +310,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-gke-1.13-alpha-cluster
+    testgrid-tab-name: cos-gke-1.13-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
   labels:
@@ -340,7 +340,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: cos-gke-1.13-alpha-cluster-features
+    testgrid-tab-name: cos-gke-1.13-alpha-cluster-features
 - interval: 12h
   name: ci-kubernetes-soak-gke-cos-containerd
   labels:
@@ -374,4 +374,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: google-soak
-    test-tab-name: gke-cos-containerd
+    testgrid-tab-name: gke-cos-containerd

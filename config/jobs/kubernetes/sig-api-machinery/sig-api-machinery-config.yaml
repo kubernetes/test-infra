@@ -23,4 +23,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gci-gce-proto
+    testgrid-tab-name: gci-gce-proto

@@ -16,7 +16,7 @@ presubmits:
         - ./...
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
-      test-tab-name: pr-test
+      testgrid-tab-name: pr-test
   - name: pull-structured-merge-diff-gofmt
     labels:
       preset-service-account: "true"
@@ -32,4 +32,4 @@ presubmits:
         - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
-      test-tab-name: pr-gofmt
+      testgrid-tab-name: pr-gofmt

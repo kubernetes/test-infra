@@ -29,7 +29,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
-    test-tab-name: autoscaling-vpa-actuation
+    testgrid-tab-name: autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   interval: 2h
   labels:
@@ -60,7 +60,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
-    test-tab-name: autoscaling-vpa-admission-controller
+    testgrid-tab-name: autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
   interval: 2h
   labels:
@@ -91,7 +91,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
-    test-tab-name: autoscaling-vpa-full
+    testgrid-tab-name: autoscaling-vpa-full
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   interval: 3h
   labels:
@@ -122,7 +122,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
-    test-tab-name: autoscaling-vpa-recommender
+    testgrid-tab-name: autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   interval: 2h
   labels:
@@ -153,7 +153,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-vpa
-    test-tab-name: autoscaling-vpa-updater
+    testgrid-tab-name: autoscaling-vpa-updater
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling
   labels:
@@ -188,7 +188,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-    test-tab-name: gci-gce-autoscaling
+    testgrid-tab-name: gci-gce-autoscaling
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
   labels:
@@ -213,7 +213,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
-    test-tab-name: gci-gce-autoscaling-hpa
+    testgrid-tab-name: gci-gce-autoscaling-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   labels:
@@ -248,7 +248,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-    test-tab-name: gci-gce-autoscaling-migs
+    testgrid-tab-name: gci-gce-autoscaling-migs
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
   labels:
@@ -273,7 +273,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
-    test-tab-name: gci-gce-autoscaling-migs-hpa
+    testgrid-tab-name: gci-gce-autoscaling-migs-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling
   labels:
@@ -302,7 +302,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-    test-tab-name: gci-gke-autoscaling
+    testgrid-tab-name: gci-gke-autoscaling
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
   labels:
@@ -331,7 +331,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
-    test-tab-name: gci-gke-autoscaling-hpa
+    testgrid-tab-name: gci-gke-autoscaling-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   labels:
@@ -360,4 +360,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-    test-tab-name: gci-gke-autoscaling-regional
+    testgrid-tab-name: gci-gke-autoscaling-regional

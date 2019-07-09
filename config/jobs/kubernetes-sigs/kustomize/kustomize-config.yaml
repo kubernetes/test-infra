@@ -29,5 +29,5 @@ periodics:
       - --timeout=120m
   annotations:
     testgrid-dashboards: sig-cli-misc
-    test-tab-name: kustomize-periodic-default-gke
+    testgrid-tab-name: kustomize-periodic-default-gke
     description: Periodic integration testing of kustomize.
