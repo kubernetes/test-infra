@@ -162,7 +162,7 @@ periodics:
         value: "5"
   annotations:
     testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
-    testgrid-tab-name: periodic-latest
+    testgrid-tab-name: vsphere-latest
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 - name: ci-cloud-provider-vsphere-conformance-stable-1-14
@@ -197,7 +197,7 @@ periodics:
         value: "5"
   annotations:
     testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
-    testgrid-tab-name: periodic-v1.14
+    testgrid-tab-name: vsphere-v1.14
     description: Runs conformance tests using kubetest against kubernetes from the release-1.14 branch with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 - name: ci-cloud-provider-vsphere-conformance-stable-1-13
@@ -232,7 +232,7 @@ periodics:
         value: "5"
   annotations:
     testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
-    testgrid-tab-name: periodic-v1.13
+    testgrid-tab-name: vsphere-v1.13
     description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 - name: ci-cloud-provider-vsphere-conformance-stable-1-12
@@ -265,14 +265,14 @@ periodics:
         value: "dryrun"
       - name: LOG_LEVEL
         value: "5"
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
+    testgrid-tab-name: vsphere-v1.12
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with cloud-provider-vsphere
+    testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 # Runs the e2e conformance suite against a cluster turned up with the
 # in-tree vSphere cloud provider. This job is duplicated for multiple versions
 # of Kubernetes.
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
-    testgrid-tab-name: periodic-v1.12
-    description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with cloud-provider-vsphere
-    testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 - name: ci-vsphere-conformance-latest
   interval: 12h
   decorate: true
@@ -303,7 +303,7 @@ periodics:
         value: ci/latest.txt
   annotations:
     testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
-    testgrid-tab-name: periodic-latest
+    testgrid-tab-name: in-tree-vsphere-latest
     description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
 - name: ci-vsphere-conformance-stable-1-14
@@ -336,7 +336,7 @@ periodics:
         value: release/stable-1.14.txt
   annotations:
     testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
-    testgrid-tab-name: periodic-v1.14
+    testgrid-tab-name: in-tree-vsphere-v1.14
     description: Runs conformance tests using kubetest against kubernetes from the release-1.14 branch with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
 - name: ci-vsphere-conformance-stable-1-13
@@ -369,7 +369,7 @@ periodics:
         value: release/stable-1.13.txt
   annotations:
     testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
-    testgrid-tab-name: periodic-v1.13
+    testgrid-tab-name: in-tree-vsphere-v1.13
     description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
 - name: ci-vsphere-conformance-stable-1-12
@@ -402,6 +402,6 @@ periodics:
         value: release/stable-1.12.txt
   annotations:
     testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
-    testgrid-tab-name: periodic-v1.12
+    testgrid-tab-name: in-tree-vsphere-v1.12
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
