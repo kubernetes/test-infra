@@ -1086,11 +1086,15 @@ func (c *client) CreateComment(org, repo string, number int, comment string) err
 // See https://developer.github.com/v3/issues/comments/#delete-a-comment
 func (c *client) DeleteComment(org, repo string, id int) error {
 	c.log("DeleteComment", org, repo, id)
-	_, err := c.request(&request{
+	rc, err := c.request(&request{
 		method:    http.MethodDelete,
 		path:      fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, id),
 		exitCodes: []int{204},
 	}, nil)
+	if rc == 404 {
+		c.log("DeleteComment: getting 404, the comment might already got deleted", org, repo, id)
+		return nil
+	}
 	return err
 }
 
