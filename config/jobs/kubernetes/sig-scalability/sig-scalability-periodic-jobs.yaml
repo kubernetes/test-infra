@@ -76,6 +76,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       # docker-in-docker needs privileged mode
@@ -124,6 +125,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=70m
       # docker-in-docker needs privilged mode
@@ -171,6 +173,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=700m
       # docker-in-docker needs privilged mode
@@ -221,6 +224,7 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/600_nodes/high_density_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
       # docker-in-docker needs privileged mode
