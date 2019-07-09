@@ -20,6 +20,9 @@ data:
         server {
             listen 80 default_server;
             server_name _;
+            if ($request_uri = '/healthy') {
+                return 200 'ok';
+            }
             if ($http_x_forwarded_proto != 'https') {
                 return 301 https://$host$request_uri;
             }
