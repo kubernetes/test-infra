@@ -3054,14 +3054,6 @@ dashboards:
     test_group_name: post-k8sio-cip
   - name: ci-k8sio-cip
     test_group_name: ci-k8sio-cip
-  - name: periodic-packages-pushed
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
-    alert_options:
-      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
-  - name: periodic-packages-install-deb
-    test_group_name: periodic-kubernetes-e2e-packages-install-deb
-    alert_options:
-      alert_mail_to_addresses: kubernetes-patch-release-team@googlegroups.com
   - name: release-cluster-up
     test_group_name: pull-release-cluster-up
     alert_options:
@@ -3855,11 +3847,6 @@ dashboards:
 
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
-# packages tests
-  - name: periodic-packages-pushed
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
-  - name: periodic-packages-install-deb
-    test_group_name: periodic-kubernetes-e2e-packages-install-deb
 # manifest list tests
   - name: periodic-manifest-lists
     test_group_name: periodic-kubernetes-e2e-manifest-lists

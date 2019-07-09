@@ -63,3 +63,44 @@ presubmits:
             - verify
           securityContext:
             privileged: true
+
+# package tests
+periodics:
+- name: periodic-release-verify-packages-debs
+  interval: 6h
+  annotations:
+    testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-debs
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: ubuntu:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-debs
+- name: periodic-release-verify-packages-rpms
+  interval: 6h
+  annotations:
+    testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-rpms
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: centos:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-rpms
