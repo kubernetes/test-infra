@@ -8,6 +8,10 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-experimental
         command:
+        - "runner.sh"
         - "./hack/verify-all.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
