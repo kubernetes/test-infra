@@ -23,6 +23,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-beta
   labels:
@@ -47,6 +50,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-release-1.14-all, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-1.14
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-channelalpha
   labels:
@@ -73,6 +79,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-channelalpha
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-ena-nvme
   labels:
@@ -100,6 +109,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-ena-nvme
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-ha-uswest2
   labels:
@@ -127,6 +139,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-ha-uswest2
 - interval: 4h
   name: ci-kubernetes-e2e-kops-aws-imagecentos7
   labels:
@@ -155,6 +170,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-imagecentos7
 - interval: 4h
   name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   labels:
@@ -182,6 +200,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-imageubuntu1604
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
   labels:
@@ -208,6 +229,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-networking-kopeio-vxlan
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-newrunner
   labels:
@@ -233,6 +257,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-newrunner
 - interval: 2h
   name: ci-kubernetes-e2e-kops-aws-stable1
   labels:
@@ -257,6 +284,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-1.13
 - interval: 4h
   name: ci-kubernetes-e2e-kops-aws-stable2
   labels:
@@ -281,6 +311,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-release-1.13-all, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-1.12
 - interval: 6h
   name: ci-kubernetes-e2e-kops-aws-stable3
   labels:
@@ -305,6 +338,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-1.11
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-updown
   labels:
@@ -330,6 +366,9 @@ periodics:
       - --timeout=30m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-updown
 - interval: 24h
   name: ci-kubernetes-e2e-kops-aws-weave
   labels:
@@ -355,6 +394,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    test-tab-name: kops-aws-weave
 - interval: 30m
   name: ci-kubernetes-e2e-kops-gce
   labels:
@@ -379,6 +421,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
+    test-tab-name: kops-gce
 - interval: 1h
   name: ci-kubernetes-e2e-kops-gce-channelalpha
   labels:
@@ -403,6 +448,9 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
+    test-tab-name: kops-gce-channelalpha
 - interval: 30m
   name: ci-kubernetes-e2e-kops-gce-ha
   labels:
@@ -426,3 +474,6 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+  annotations:
+    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
+    test-tab-name: kops-gce-ha

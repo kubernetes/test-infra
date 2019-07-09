@@ -30,6 +30,10 @@ periodics:
 # The -parallel form of the test includes Slow tests, but skips Serial and Disruptive.
 # The non -parallel form of the test includes Serial and Disruptive, so it must run serially;
 # we skip Slow tests though so that the runtime is reasonable.
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-new-gci-master-upgrade-cluster
+    description: Upgrade master and node, in gke(gci), from 1.14 to master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   labels:
@@ -58,6 +62,10 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-new-gci-master-upgrade-cluster-new
+    description: Upgrade master and node, in gke(gci), from 1.14 to master, and run skewed e2e tests; skipping slow tests as we run serially
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
   labels:
@@ -87,6 +95,10 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
+    description: Upgrade master and node, in gke(gci), from 1.14 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
   labels:
@@ -115,6 +127,10 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-new-gci-master-upgrade-cluster-parallel
+    description: Upgrade master and node, in gke(gci), from 1.14 to master, run parallel tests only
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
   labels:
@@ -142,6 +158,10 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-new-gci-master-upgrade-master
+    description: Upgrade master only, in gke(gci), from 1.14 to master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   labels:
@@ -169,6 +189,10 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-stable2 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-stable-gci-master-upgrade-master
+    description: Upgrade master only, in gke, from gci 1.13 to gci master
 - interval: 12h
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   labels:
@@ -197,6 +221,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable2 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    test-tab-name: gke-gci-1.13-gci-1.12-downgrade-cluster
 - interval: 12h
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
   labels:
@@ -226,6 +253,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable2 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    test-tab-name: gke-gci-1.13-gci-1.12-downgrade-cluster-parallel
 - interval: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
   labels:
@@ -254,6 +284,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
+    test-tab-name: gke-gci-1.12-gci-1.13-upgrade-cluster
 - interval: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
   labels:
@@ -282,6 +315,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
+    test-tab-name: gke-gci-1.12-gci-1.13-upgrade-cluster-new
 - interval: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
   labels:
@@ -310,6 +346,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
+    test-tab-name: gke-gci-1.12-gci-1.13-upgrade-master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
   labels:
@@ -338,6 +377,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
+    test-tab-name: gke-gci-1.11-gci-1.13-upgrade-cluster
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
   labels:
@@ -367,6 +409,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
+    test-tab-name: gke-gci-1.11-gci-1.13-upgrade-cluster-new
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
   labels:
@@ -395,6 +440,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew, sig-gcp-release-1.11
+    test-tab-name: gke-gci-1.11-gci-1.13-upgrade-master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
   labels:
@@ -423,6 +471,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    test-tab-name: gke-1.13-1.14-upgrade-cluster
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
   labels:
@@ -451,6 +502,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    test-tab-name: gke-1.13-1.14-upgrade-cluster-new
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
   labels:
@@ -479,6 +533,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    test-tab-name: gke-1.13-1.14-upgrade-master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
   labels:
@@ -507,6 +564,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    test-tab-name: gke-1.14-1.13-downgrade-cluster
 - interval: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
   labels:
@@ -536,6 +596,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    test-tab-name: gke-1.14-1.13-downgrade-cluster-parallel
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
   labels:
@@ -564,6 +627,10 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-master-gci-new-downgrade-cluster
+    description: Downgrade master and node, in gke(gci), from master to 1.14
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
   labels:
@@ -592,3 +659,7 @@ periodics:
       - --timeout=120m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+  annotations:
+    testgrid-dashboards: google-gke-upgrade
+    test-tab-name: gke-gci-master-gci-new-downgrade-cluster-parallel
+    description: Downgrade master and node, in gke(gci), from master to 1.14, run parallel tests only

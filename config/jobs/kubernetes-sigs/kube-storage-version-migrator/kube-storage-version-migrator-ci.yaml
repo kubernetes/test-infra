@@ -30,3 +30,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      test-tab-name: ci-disruptive

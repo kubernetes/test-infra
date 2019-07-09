@@ -3,7 +3,7 @@ presubmits:
   # conformance test using image against kubernetes master branch with `kind`
   - name: pull-kubernetes-conformance-image-test
     branches:
-      - master
+    - master
     always_run: false
     skip_report: false
     max_concurrency: 8
@@ -17,102 +17,112 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-          args:
-            - "--job=$(JOB_NAME)"
-            - "--root=/go/src"
-            - "--repo=k8s.io/test-infra=master"
-            - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
-            - "--service-account=/etc/service-account/service-account.json"
-            - "--upload=gs://kubernetes-jenkins/pr-logs"
-            - "--scenario=execute"
-            - "--"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/test-infra=master"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
             # the script must run from kubernetes, but we're checking out kind
-            - "bash"
-            - "--"
-            - "-c"
-            - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
+        - "bash"
+        - "--"
+        - "-c"
+        - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
           # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
+        securityContext:
+          privileged: true
+        resources:
+          requests:
               # these are both a bit below peak usage during build
               # this is mostly for building kubernetes
-              memory: "9000Mi"
+            memory: "9000Mi"
               # during the tests more like 3-20m is used
-              cpu: 2000m
+            cpu: 2000m
 
 periodics:
   # conformance test using image against kubernetes master branch with `kind`
-  - interval: 1h
-    name: ci-kubernetes-conformance-image-test
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-          args:
-            - "--job=$(JOB_NAME)"
-            - "--root=/go/src"
-            - "--repo=k8s.io/test-infra=master"
-            - "--repo=k8s.io/kubernetes=master"
-            - "--service-account=/etc/service-account/service-account.json"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            - "--scenario=execute"
-            - "--"
+- interval: 1h
+  name: ci-kubernetes-conformance-image-test
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/test-infra=master"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=execute"
+      - "--"
             # the script must run from kubernetes, but we're checking out kind
-            - "bash"
-            - "--"
-            - "-c"
-            - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
+      - "bash"
+      - "--"
+      - "-c"
+      - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
           # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
+      securityContext:
+        privileged: true
+      resources:
+        requests:
               # these are both a bit below peak usage during build
               # this is mostly for building kubernetes
-              memory: "9000Mi"
+          memory: "9000Mi"
               # during the tests more like 3-20m is used
-              cpu: 2000m
+          cpu: 2000m
   # conformance test using image against kubernetes 1.14 branch with `kind`
-  - interval: 1h
-    name: ci-kubernetes-conformance-image-1-14-test
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-          args:
-            - "--job=$(JOB_NAME)"
-            - "--root=/go/src"
-            - "--repo=k8s.io/test-infra=master"
-            - "--repo=k8s.io/kubernetes=release-1.14"
-            - "--service-account=/etc/service-account/service-account.json"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            - "--scenario=execute"
-            - "--"
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    test-tab-name: conformance-image, master (dev)
+    description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
+    testgrid-alert-email: davanum@gmail.com
+- interval: 1h
+  name: ci-kubernetes-conformance-image-1-14-test
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/test-infra=master"
+      - "--repo=k8s.io/kubernetes=release-1.14"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=execute"
+      - "--"
             # the script must run from kubernetes, but we're checking out kind
-            - "bash"
-            - "--"
-            - "-c"
-            - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
+      - "bash"
+      - "--"
+      - "-c"
+      - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
           # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
+      securityContext:
+        privileged: true
+      resources:
+        requests:
               # these are both a bit below peak usage during build
               # this is mostly for building kubernetes
-              memory: "9000Mi"
+          memory: "9000Mi"
               # during the tests more like 3-20m is used
-              cpu: 2000m
+          cpu: 2000m
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    test-tab-name: conformance-image, 1.14 (dev)
+    description: Runs conformance tests using image against kubernetes 1.14 branch with a kubernetes-in-docker cluster
+    testgrid-alert-email: davanum@gmail.com

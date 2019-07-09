@@ -105,16 +105,20 @@ postsubmits:
         args:
         - -c
         - |
-                set -o errexit
-                gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
-                ../test-infra/scenarios/kubernetes_bazel.py \
-                    --config=ci \
-                    "--build=//... -//vendor/..." \
-                    --release=//build/release-tars \
-                    --gcs=gs://kubernetes-release-dev/ci \
-                    --version-suffix=-bazel-rbe \
-                    --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
+          set -o errexit
+          gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+          ../test-infra/scenarios/kubernetes_bazel.py \
+              --config=ci \
+              "--build=//... -//vendor/..." \
+              --release=//build/release-tars \
+              --gcs=gs://kubernetes-release-dev/ci \
+              --version-suffix=-bazel-rbe \
+              --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
 
+    annotations:
+      testgrid-dashboards: sig-release-master-informing
+      test-tab-name: bazel-build-master
+      description: 'OWNER: sig-testing; Builds kubernetes at each bommit using bazel with RBE'
   - name: ci-kubernetes-bazel-test # TODO(fejta): delete after 1m (dup of post-kubernetes-bazel-test)
     decorate: true
     labels:
@@ -154,6 +158,9 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     annotations:
       fork-per-release: "true"
+      testgrid-dashboards: sig-release-master-informing
+      test-tab-name: bazel-test-master
+      description: 'OWNER: sig-testing; Runs kubernetes unit tests using bazel'
     extra_refs:
     - base_ref: master
       org: kubernetes
@@ -188,6 +195,8 @@ periodics:
     fork-per-release: "true"
     fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
     fork-per-release-periodic-interval: 6h
+    testgrid-dashboards: google-unit
+    test-tab-name: periodic-bazel-build-master
   extra_refs:
   - base_ref: master
     org: kubernetes
@@ -203,15 +212,15 @@ periodics:
       args:
       - -c
       - |
-              set -o errexit
-              gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
-              ../test-infra/scenarios/kubernetes_bazel.py \
-                  --config=ci \
-                  "--build=//... -//vendor/..." \
-                  --release=//build/release-tars \
-                  --gcs=gs://kubernetes-release-dev/ci \
-                  --version-suffix=-bazel \
-                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+        set -o errexit
+        gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+        ../test-infra/scenarios/kubernetes_bazel.py \
+            --config=ci \
+            "--build=//... -//vendor/..." \
+            --release=//build/release-tars \
+            --gcs=gs://kubernetes-release-dev/ci \
+            --version-suffix=-bazel \
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
 
 - name: periodic-kubernetes-bazel-build-canary
   interval: 1h
@@ -236,17 +245,21 @@ periodics:
       args:
       - -c
       - |
-              set -o errexit
-              gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
-              ../test-infra/scenarios/kubernetes_bazel.py \
-                  --config=ci \
-                  "--build=//... -//vendor/..." \
-                  --release=//build/release-tars \
-                  --gcs=gs://kubernetes-release-dev/ci \
-                  --version-suffix=-bazel \
-                  --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+        set -o errexit
+        gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+        ../test-infra/scenarios/kubernetes_bazel.py \
+            --config=ci \
+            "--build=//... -//vendor/..." \
+            --release=//build/release-tars \
+            --gcs=gs://kubernetes-release-dev/ci \
+            --version-suffix=-bazel \
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
 
 # periodic bazel test jobs
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    test-tab-name: bazel-build
+    description: run kubernetes-bazel-build with latest image
 - interval: 5m
   name: periodic-kubernetes-bazel-test-master
   decorate: true
@@ -256,6 +269,8 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 6h
+    testgrid-dashboards: google-unit
+    test-tab-name: periodic-bazel-test-master
   extra_refs:
   - base_ref: master
     org: kubernetes
@@ -306,3 +321,7 @@ periodics:
       - --
       - -//build/...
       - -//vendor/...
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    test-tab-name: bazel-test
+    description: run kubernetes-bazel-test with latest image

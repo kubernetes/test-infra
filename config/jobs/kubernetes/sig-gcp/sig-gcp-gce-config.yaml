@@ -162,6 +162,11 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
+    test-tab-name: gce-cos-master-default
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   labels:
@@ -188,6 +193,9 @@ periodics:
       - --timeout=70m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gce
+    test-tab-name: gci-gce-alpha-enabled-default
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-alpha-features
   labels:
@@ -213,6 +221,11 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, google-gce
+    test-tab-name: gce-cos-master-alpha-features
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with cluster/kube-up.sh
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-flaky
   labels:
@@ -234,6 +247,9 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gce
+    test-tab-name: gci-gce-flaky
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
   labels:
@@ -257,6 +273,9 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gce
+    test-tab-name: gci-gce-single-flake-attempt
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-reboot
   labels:
@@ -279,6 +298,10 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-master-informing, google-gce
+    test-tab-name: gce-cos-master-reboot
+    description: Uses kubetest to run a subset of e2e tests (+Feature:Reboot) against a cluster created with cluster/kube-up.sh
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-serial
   labels:
@@ -302,6 +325,11 @@ periodics:
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
+    test-tab-name: gce-cos-master-serial
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-slow
   labels:
@@ -325,6 +353,11 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
+    test-tab-name: gce-cos-master-slow
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: Uses kubetest to run e2e tests (+Slow, -Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh
 - interval: 30m
   name: ci-kubernetes-e2e-gce-multizone
   labels:
@@ -352,6 +385,9 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gce
+    test-tab-name: gce-multizone
 - interval: 12h
   name: ci-kubernetes-soak-gce-gci
   labels:
@@ -379,6 +415,9 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-soak
+    test-tab-name: gce-gci
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-beta
   labels:
@@ -406,6 +445,9 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.15-all
+    test-tab-name: soak-gci-gce-1.15
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-stable1
   labels:
@@ -433,6 +475,9 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    test-tab-name: soak-gci-gce-1.14
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-stable2
   labels:
@@ -459,6 +504,9 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all
+    test-tab-name: soak-gci-gce-1.13
 - interval: 12h
   name: ci-kubernetes-soak-gci-gce-stable3
   labels:
@@ -484,3 +532,6 @@ periodics:
       - --timeout=1400m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+  annotations:
+    testgrid-dashboards: sig-release-1.12-all
+    test-tab-name: soak-gci-gce-1.12

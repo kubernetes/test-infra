@@ -11,6 +11,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/examples.
   kubeflow/kubeflow:
   - name: kubeflow-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -21,6 +24,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for Kubeflow.
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -33,6 +39,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/pytorch-operator.
   kubeflow/reporting:
   - name: kubeflow-reporting-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -45,6 +54,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/reporting.
   kubeflow/website:
   - name: kubeflow-website-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -57,6 +69,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/website.
   kubeflow/testing:
   - name: kubeflow-testing-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -69,6 +84,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/testing.
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -79,6 +97,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/tf-operator.
   kubeflow/katib:
   - name: kubeflow-katib-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -91,6 +112,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/katib.
   kubeflow/experimental-kvc:
   - name: kubeflow-experimental-kvc-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -103,6 +127,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/experimental-kvc.
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -115,6 +142,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/experimental-seldon.
   kubeflow/experimental-beagle:
   - name: kubeflow-experimental-beagle-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -127,6 +157,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/experimental-beagle.
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -139,6 +172,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/caffe2-operator.
   kubeflow/kubebench:
   - name: kubeflow-kubebench-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -151,6 +187,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for kubeflow/kubebench.
   kubeflow/mpi-operator:
   - name: kubeflow-mpi-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -163,6 +202,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for kubeflow/mpi-operator.
   kubeflow/chainer-operator:
   - name: kubeflow-chainer-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -175,6 +217,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for kubeflow/chainer-operator.
   kubeflow/mxnet-operator:
   - name: kubeflow-mxnet-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -187,6 +232,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/mxnet-operator.
   kubeflow/arena:
   - name: kubeflow-arena-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -199,6 +247,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for kubeflow/arena.
   kubeflow/fairing:
   - name: kubeflow-fairing-presubmit
     always_run: true
@@ -211,6 +262,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for kubeflow/fairing.
   kubeflow/metadata:
   - name: kubeflow-metadata-presubmit
     always_run: true
@@ -223,6 +277,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for kubeflow/metadata.
   kubeflow/kfserving:
   - name: kubeflow-kfserving-presubmit
     always_run: true
@@ -235,6 +292,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/kfserving.
   kubeflow/manifests:
   - name: kubeflow-manifests-presubmit
     always_run: true         # Run for every PR, or only when requested.
@@ -247,6 +307,9 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmits for kubeflow/manifests.
   kubeflow/pipelines:
   - name: kubeflow-pipeline-e2e-test
     always_run: true
