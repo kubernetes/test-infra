@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -23,6 +23,9 @@ spec:
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: tide
   template:
     metadata:
       labels:

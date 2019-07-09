@@ -116,7 +116,7 @@ spec:
     type: string
     JSONPath: .status.state
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -130,6 +130,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: hook
   template:
     metadata:
       labels:
@@ -237,7 +240,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -245,6 +248,9 @@ metadata:
   labels:
     app: sinker
 spec:
+  selector:
+    matchLabels:
+      app: sinker
   replicas: 1
   template:
     metadata:
@@ -266,7 +272,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -280,6 +286,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: deck
   template:
     metadata:
       labels:
@@ -332,7 +341,7 @@ spec:
     targetPort: 8080
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -343,6 +352,9 @@ spec:
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: horologium
   template:
     metadata:
       labels:
@@ -364,7 +376,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -375,6 +387,9 @@ spec:
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: tide
   template:
     metadata:
       labels:
@@ -436,7 +451,7 @@ spec:
           serviceName: hook
           servicePort: 8888
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: statusreconciler
@@ -445,6 +460,9 @@ metadata:
     app: statusreconciler
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: statusreconciler
   template:
     metadata:
       labels:
