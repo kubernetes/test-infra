@@ -161,7 +161,9 @@ type User struct {
 }
 
 // NormLogin normalizes GitHub login strings
-var NormLogin = strings.ToLower
+func NormLogin(login string) string {
+	return strings.TrimPrefix(strings.ToLower(login), "@")
+}
 
 // PullRequestEventAction enumerates the triggers for this
 // webhook payload type. See also:
