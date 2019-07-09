@@ -14,6 +14,9 @@ presubmits:
         - "--scenario=execute"
         - "--"
         - "./scripts/ci-build.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      test-tab-name: pr-build
   - name: pull-cluster-api-provider-gcp-make
     always_run: true
     labels:
@@ -36,6 +39,9 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      test-tab-name: pr-make
   - name: pull-cluster-api-provider-gcp-test
     always_run: true
     labels:
@@ -50,3 +56,6 @@ presubmits:
         - "--scenario=execute"
         - "--"
         - "./scripts/ci-test.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      test-tab-name: pr-test

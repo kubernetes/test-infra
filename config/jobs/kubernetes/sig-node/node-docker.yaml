@@ -25,6 +25,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-cri
+    test-tab-name: docker-node-conformance
 - name: ci-docker-node-features
   interval: 4h
   labels:
@@ -51,6 +54,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-cri
+    test-tab-name: docker-node-features
 - name: ci-docker-node-legacy
   interval: 2h
   labels:
@@ -75,3 +81,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+  annotations:
+    testgrid-dashboards: sig-node-cri
+    test-tab-name: docker-node-legacy

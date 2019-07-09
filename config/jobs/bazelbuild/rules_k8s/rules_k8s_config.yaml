@@ -26,3 +26,5 @@ presubmits:
       - name: service-account
         secret:
           secretName: service-account
+    annotations:
+      testgrid-dashboards: google-rules_k8s

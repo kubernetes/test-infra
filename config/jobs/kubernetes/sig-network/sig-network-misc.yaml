@@ -45,6 +45,10 @@ periodics:
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gce, sig-network-gce
+    test-tab-name: gce-alpha-api
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance
   labels:
@@ -70,6 +74,9 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-network-gce
+    test-tab-name: gce-coredns-performance
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance
   labels:
@@ -95,6 +102,9 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-network-gce
+    test-tab-name: gce-kubedns-performance
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-coredns
   labels:
@@ -144,6 +154,9 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-network-gce
+    test-tab-name: gce-coredns-performance-nodecache
 - interval: 6h
   name: ci-kubernetes-e2e-gce-kubedns-performance-nodecache
   labels:
@@ -170,6 +183,9 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-network-gce
+    test-tab-name: gce-kubedns-performance-nodecache
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
   labels:
@@ -218,6 +234,11 @@ periodics:
       - --timeout=320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, google-gce, sig-network-gce
+    test-tab-name: gci-gce-ingress
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    description: Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   labels:
@@ -241,6 +262,10 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-network-gce
+    test-tab-name: gci-gce-ingress-manual-network
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-ip-alias
   labels:
@@ -267,6 +292,9 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gce, google-gci
+    test-tab-name: ip-alias
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-ipvs
   labels:
@@ -390,6 +418,10 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke, sig-network-gke
+    test-tab-name: gci-gke-ingress
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gke-network-policy
   labels:
@@ -416,6 +448,10 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-network-gke
+    test-tab-name: gci-gke-network-policy
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 120m
   name: ci-kubernetes-e2e-gce-lb-finalizer
   labels:

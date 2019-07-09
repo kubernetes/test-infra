@@ -61,6 +61,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    test-tab-name: node-kubelet-alpha
 - name: ci-kubernetes-node-kubelet-benchmark
   interval: 2h
   labels:
@@ -88,6 +91,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    test-tab-name: node-kubelet-benchmark
 - name: ci-kubernetes-node-kubelet-conformance
   interval: 2h
   labels:
@@ -119,6 +125,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    test-tab-name: node-kubelet-conformance
 - name: ci-kubernetes-node-kubelet-features
   interval: 1h
   labels:
@@ -127,6 +136,8 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-node-kubelet
+    test-tab-name: node-kubelet-features
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
@@ -176,6 +187,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    test-tab-name: node-kubelet-flaky
 - name: ci-kubernetes-node-kubelet-orphans
   interval: 12h
   labels:
@@ -203,6 +217,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    test-tab-name: node-kubelet-orphans
 - name: ci-kubernetes-node-kubelet-serial
   interval: 4h30m
   labels:
@@ -230,6 +247,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    test-tab-name: node-kubelet-serial
 - name: ci-kubernetes-node-kubelet-serial-cpu-manager
   interval: 4h
   labels:
@@ -256,3 +276,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+  annotations:
+    testgrid-dashboards: wg-resource-management
+    test-tab-name: kubelet-serial-gce-e2e-cpu-manager
+    testgrid-alert-email: balaji.warft@gmail.com, connor.p.d@gmail.com

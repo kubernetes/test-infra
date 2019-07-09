@@ -14,6 +14,10 @@ presubmits:
         args:
         - check
 
+    annotations:
+      testgrid-dashboards: presubmits-cloud-provider-alibaba
+      test-tab-name: check
+      description: alibaba cloud provider checks
   - name: pull-cloud-provider-alibaba-cloud-unit-test
     always_run: true
     branches:
@@ -27,3 +31,7 @@ presubmits:
         - make
         args:
         - unit-test
+    annotations:
+      testgrid-dashboards: presubmits-cloud-provider-alibaba
+      test-tab-name: unit-test
+      description: alibaba cloud provider unit test
