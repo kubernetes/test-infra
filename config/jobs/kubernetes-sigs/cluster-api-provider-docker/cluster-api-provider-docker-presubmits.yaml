@@ -6,6 +6,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-experimental
