@@ -71,7 +71,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke
+    testgrid-tab-name: gci-gke
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-features
   labels:
@@ -100,7 +100,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-alpha-features
+    testgrid-tab-name: gci-gke-alpha-features
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
   labels:
@@ -130,7 +130,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-alpha-enabled-default
+    testgrid-tab-name: gci-gke-alpha-enabled-default
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-flaky
   labels:
@@ -158,7 +158,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-flaky
+    testgrid-tab-name: gci-gke-flaky
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-multizone
   labels:
@@ -188,7 +188,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-multizone
+    testgrid-tab-name: gci-gke-multizone
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-reboot
   labels:
@@ -216,7 +216,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-reboot
+    testgrid-tab-name: gci-gke-reboot
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-serial
   labels:
@@ -244,7 +244,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-serial
+    testgrid-tab-name: gci-gke-serial
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-slow
   labels:
@@ -273,7 +273,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-slow
+    testgrid-tab-name: gci-gke-slow
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-updown
   labels:
@@ -301,7 +301,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gci-gke-updown
+    testgrid-tab-name: gci-gke-updown
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional
   labels:
@@ -330,7 +330,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gke-regional
+    testgrid-tab-name: gke-regional
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-serial
   labels:
@@ -357,7 +357,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gke-regional-serial
+    testgrid-tab-name: gke-regional-serial
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-slow
   labels:
@@ -385,7 +385,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gke
-    test-tab-name: gke-regional-slow
+    testgrid-tab-name: gke-regional-slow
 - interval: 1h
   name: ci-kubernetes-e2e-gke-gci-ci-master
   labels:
@@ -413,7 +413,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gci
-    test-tab-name: ci-gke-master
+    testgrid-tab-name: ci-gke-master
 - interval: 12h
   name: ci-kubernetes-soak-gke-gci
   labels:
@@ -445,7 +445,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-soak
-    test-tab-name: gke-gci
+    testgrid-tab-name: gke-gci
 - interval: 2h
   name: istio-periodic-e2e-gke-addon
   labels:
@@ -481,4 +481,4 @@ periodics:
       - --timeout=60m
   annotations:
     testgrid-dashboards: istio-gke
-    test-tab-name: istio-gke-addon
+    testgrid-tab-name: istio-gke-addon

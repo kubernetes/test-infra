@@ -35,7 +35,7 @@ periodics:
 #kubemark
   annotations:
     testgrid-dashboards: sig-scalability-node
-    test-tab-name: node-throughput
+    testgrid-tab-name: node-throughput
 - name: ci-kubernetes-kubemark-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes"
@@ -88,7 +88,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
-    test-tab-name: kubemark-100
+    testgrid-tab-name: kubemark-100
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes"
@@ -140,7 +140,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
-    test-tab-name: kubemark-500
+    testgrid-tab-name: kubemark-500
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
   - "perfDashPrefix: kubemark-5000Nodes"
@@ -195,7 +195,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
-    test-tab-name: kubemark-5000
+    testgrid-tab-name: kubemark-5000
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes-highDensity"
@@ -245,7 +245,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
-    test-tab-name: kubemark-100-high-density
+    testgrid-tab-name: kubemark-100-high-density
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
   labels:
@@ -264,7 +264,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-scalability-perf-tests
-    test-tab-name: kubemark-100-benchmark
+    testgrid-tab-name: kubemark-100-benchmark
 - name: ci-benchmark-scheduler-master
   tags:
   - "perfDashPrefix: scheduler-benchmark"
@@ -292,7 +292,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
-    test-tab-name: scheduler
+    testgrid-tab-name: scheduler
 - name: ci-benchmark-kube-dns-master
   interval: 2h
   tags:
@@ -327,7 +327,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
-    test-tab-name: kube-dns
+    testgrid-tab-name: kube-dns
 - name: ci-benchmark-microbenchmarks
   interval: 20m
   decorate: true
@@ -360,7 +360,7 @@ periodics:
 # Experimental config for testing private gce clusters.
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
-    test-tab-name: microbenchmarks
+    testgrid-tab-name: microbenchmarks
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
   # TODO(mm4tt): Lower the timeout once we know how long the test takes.
   interval: 6h
@@ -391,4 +391,4 @@ periodics:
       - --use-logexporter
   annotations:
     testgrid-dashboards: sig-scalability-experiments
-    test-tab-name: gce-private-cluster-correctness
+    testgrid-tab-name: gce-private-cluster-correctness

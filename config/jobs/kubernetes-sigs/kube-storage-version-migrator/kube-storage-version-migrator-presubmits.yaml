@@ -12,7 +12,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      test-tab-name: pr-test
+      testgrid-tab-name: pr-test
   - name: pull-kube-storage-version-migrator-manually-launched-e2e
     decorate: true
     always_run: true
@@ -42,7 +42,7 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      test-tab-name: pr-e2e-manually-launched
+      testgrid-tab-name: pr-e2e-manually-launched
   - name: pull-kube-storage-version-migrator-fully-automated-e2e
     decorate: true
     always_run: true
@@ -75,4 +75,4 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
-      test-tab-name: pr-e2e-fully-automated
+      testgrid-tab-name: pr-e2e-fully-automated

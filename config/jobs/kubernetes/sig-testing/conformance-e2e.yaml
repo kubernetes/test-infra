@@ -83,7 +83,7 @@ periodics:
   # conformance test using image against kubernetes 1.14 branch with `kind`
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    test-tab-name: conformance-image, master (dev)
+    testgrid-tab-name: conformance-image, master (dev)
     description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
     testgrid-alert-email: davanum@gmail.com
 - interval: 1h
@@ -123,6 +123,6 @@ periodics:
           cpu: 2000m
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
-    test-tab-name: conformance-image, 1.14 (dev)
+    testgrid-tab-name: conformance-image, 1.14 (dev)
     description: Runs conformance tests using image against kubernetes 1.14 branch with a kubernetes-in-docker cluster
     testgrid-alert-email: davanum@gmail.com

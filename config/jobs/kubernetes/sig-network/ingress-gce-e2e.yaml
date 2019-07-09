@@ -130,7 +130,7 @@ postsubmits:
 
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
-      test-tab-name: ingress-gce-image-push
+      testgrid-tab-name: ingress-gce-image-push
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 periodics:
 - name: ci-ingress-gce-e2e
@@ -162,7 +162,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-ingress-gce-e2e
-    test-tab-name: ingress-gce-e2e
+    testgrid-tab-name: ingress-gce-e2e
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - name: ci-ingress-gce-e2e-multi-zone
   interval: 3h
@@ -194,7 +194,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-ingress-gce-e2e
-    test-tab-name: ingress-gce-e2e-multi-zone
+    testgrid-tab-name: ingress-gce-e2e-multi-zone
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - name: ci-ingress-gce-e2e-release-1-6
   interval: 90m
@@ -222,7 +222,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-ingress-gce-e2e
-    test-tab-name: ingress-gce-e2e-release-1.6
+    testgrid-tab-name: ingress-gce-e2e-release-1.6
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - name: ci-ingress-gce-e2e-scale
   interval: 6h
@@ -250,5 +250,5 @@ periodics:
       - --timeout=320m
   annotations:
     testgrid-dashboards: sig-network-ingress-gce-e2e
-    test-tab-name: ingress-gce-e2e-scale
+    testgrid-tab-name: ingress-gce-e2e-scale
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com

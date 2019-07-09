@@ -50,7 +50,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
-    test-tab-name: GCE, v1.12 (release)
+    testgrid-tab-name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-13
@@ -75,7 +75,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
-    test-tab-name: GCE, v1.13 (release)
+    testgrid-tab-name: GCE, v1.13 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on GCE
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-14
@@ -101,7 +101,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
-    test-tab-name: GCE, v1.14 (release)
+    testgrid-tab-name: GCE, v1.14 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-15
@@ -125,5 +125,5 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.15
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
-    test-tab-name: GCE, v1.15 (release)
+    testgrid-tab-name: GCE, v1.15 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.15 stable tag on GCE

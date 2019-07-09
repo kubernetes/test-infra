@@ -28,7 +28,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-    test-tab-name: gci-gke-autoscaling-gpu-k80
+    testgrid-tab-name: gci-gke-autoscaling-gpu-k80
 - cron: "0 2-23/4 * * *"
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
   labels:
@@ -58,7 +58,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-    test-tab-name: gci-gke-autoscaling-gpu-p100
+    testgrid-tab-name: gci-gke-autoscaling-gpu-p100
 - interval: 4h
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
   labels:
@@ -87,4 +87,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
-    test-tab-name: gci-gke-autoscaling-gpu-v100
+    testgrid-tab-name: gci-gke-autoscaling-gpu-v100

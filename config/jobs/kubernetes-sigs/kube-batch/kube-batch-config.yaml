@@ -21,4 +21,4 @@ presubmits:
         - verify
     annotations:
       testgrid-dashboards: presubmits-kube-batch
-      test-tab-name: verify
+      testgrid-tab-name: verify

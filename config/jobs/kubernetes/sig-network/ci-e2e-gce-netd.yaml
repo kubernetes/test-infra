@@ -942,7 +942,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-netd
-    test-tab-name: e2e-gci-gce-netd
+    testgrid-tab-name: e2e-gci-gce-netd
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
   name: ci-kubernetes-e2e-gci-gce-netd-calico
@@ -972,7 +972,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-netd
-    test-tab-name: e2e-gci-gce-netd-calico
+    testgrid-tab-name: e2e-gci-gce-netd-calico
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
   name: ci-kubernetes-e2e-ubuntu-gce-netd
@@ -1001,7 +1001,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-netd
-    test-tab-name: e2e-ubuntu-gce-netd
+    testgrid-tab-name: e2e-ubuntu-gce-netd
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
   name: ci-kubernetes-e2e-ubuntu-gce-netd-calico
@@ -1032,7 +1032,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-netd
-    test-tab-name: e2e-ubuntu-gce-netd-calico
+    testgrid-tab-name: e2e-ubuntu-gce-netd-calico
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-netd
@@ -1065,7 +1065,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-netd
-    test-tab-name: e2e-containerd-gce-netd
+    testgrid-tab-name: e2e-containerd-gce-netd
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-netd-calico
@@ -1101,7 +1101,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-network-netd
-    test-tab-name: e2e-containerd-gce-netd-calico
+    testgrid-tab-name: e2e-containerd-gce-netd-calico
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-calico
@@ -1133,5 +1133,5 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: sig-network-netd
-    test-tab-name: e2e-containerd-gce-calico
+    testgrid-tab-name: e2e-containerd-gce-calico
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com

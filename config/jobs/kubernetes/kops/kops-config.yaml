@@ -27,7 +27,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: bazel-build
+      testgrid-tab-name: bazel-build
   - name: pull-kops-bazel-test
     branches:
     - master
@@ -55,7 +55,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: bazel-test
+      testgrid-tab-name: bazel-test
   - name: pull-kops-e2e-kubernetes-aws
     branches:
     - master
@@ -98,7 +98,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: e2e
+      testgrid-tab-name: e2e
   - name: pull-kops-verify-bazel
     branches:
     - master
@@ -118,7 +118,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: verify-bazel
+      testgrid-tab-name: verify-bazel
   - name: pull-kops-verify-boilerplate
     branches:
     - master
@@ -138,7 +138,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: verify-boilerplate
+      testgrid-tab-name: verify-boilerplate
   - name: pull-kops-verify-gofmt
     branches:
     - master
@@ -164,7 +164,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: verify-gofmt
+      testgrid-tab-name: verify-gofmt
   - name: pull-kops-verify-govet
     branches:
     - master
@@ -185,7 +185,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: verify-govet
+      testgrid-tab-name: verify-govet
   - name: pull-kops-verify-packages
     branches:
     - master
@@ -205,7 +205,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-kops
-      test-tab-name: verify-packages
+      testgrid-tab-name: verify-packages
 periodics:
 - interval: 30m
   name: ci-kops-build
@@ -231,7 +231,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-misc
-    test-tab-name: kops-build
+    testgrid-tab-name: kops-build
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
 postsubmits:
   kubernetes/kops:

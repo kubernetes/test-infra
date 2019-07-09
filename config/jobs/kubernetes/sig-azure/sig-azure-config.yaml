@@ -75,5 +75,5 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-azure-master
-      test-tab-name: pr-k8s-e2e
+      testgrid-tab-name: pr-k8s-e2e
       description: Run e2e tests

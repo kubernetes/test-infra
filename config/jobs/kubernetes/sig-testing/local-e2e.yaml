@@ -75,5 +75,5 @@ periodics:
           cpu: 2000m
   annotations:
     testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster
-    test-tab-name: local-up-cluster, master (dev)
+    testgrid-tab-name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh

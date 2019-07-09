@@ -55,7 +55,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-unit
-    test-tab-name: build-master-fast
+    testgrid-tab-name: build-master-fast
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     description: 'Ends up running: make quick-release'
 - interval: 4h
@@ -82,7 +82,7 @@ periodics:
           memory: "8Gi"
   annotations:
     testgrid-dashboards: sig-release-misc
-    test-tab-name: debian-unstable
+    testgrid-tab-name: debian-unstable
     testgrid-alert-email: kubernetes-patch-release-team@googlegroups.com
 - interval: 1h
   name: ci-kubernetes-build
@@ -144,5 +144,5 @@ periodics:
           memory: "41Gi"
   annotations:
     testgrid-dashboards: sig-release-misc
-    test-tab-name: cross-build
+    testgrid-tab-name: cross-build
     testgrid-alert-email: kubernetes-release-team@googlegroups.com

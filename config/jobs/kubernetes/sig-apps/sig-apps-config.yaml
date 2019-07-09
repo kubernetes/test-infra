@@ -62,7 +62,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gce-taint-evict
+    testgrid-tab-name: gce-taint-evict
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-statefulset
   labels:
@@ -84,4 +84,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gci-gce-statefulset
+    testgrid-tab-name: gci-gce-statefulset

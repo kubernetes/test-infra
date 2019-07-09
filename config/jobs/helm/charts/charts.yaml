@@ -23,7 +23,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-misc
-      test-tab-name: charts
+      testgrid-tab-name: charts
 periodics:
 - interval: 1h
   name: ci-kubernetes-charts-gce
@@ -50,4 +50,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: sig-apps
-    test-tab-name: charts-gce
+    testgrid-tab-name: charts-gce

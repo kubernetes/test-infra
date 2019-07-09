@@ -61,7 +61,7 @@ postsubmits:
 
     annotations:
       testgrid-dashboards: sig-multicluster-kubemci
-      test-tab-name: kubemci-image-push
+      testgrid-tab-name: kubemci-image-push
 periodics:
 - interval: 6h
   name: ci-kubernetes-multicluster-ingress-test
@@ -98,7 +98,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-multicluster-kubemci
-    test-tab-name: ci-kubemci-unit-tests
+    testgrid-tab-name: ci-kubemci-unit-tests
 - interval: 60m
   name: ci-kubemci-ingress-conformance
   labels:
@@ -124,4 +124,4 @@ periodics:
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-multicluster-kubemci
-    test-tab-name: kubemci-ingress-conformance
+    testgrid-tab-name: kubemci-ingress-conformance

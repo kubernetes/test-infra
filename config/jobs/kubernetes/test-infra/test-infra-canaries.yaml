@@ -31,7 +31,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-testing-canaries
-    test-tab-name: echo-test
+    testgrid-tab-name: echo-test
     description: temporarily echoing things.
 - name: ci-test-infra-benchmark-demo
   interval: 20m
@@ -55,5 +55,5 @@ periodics:
       - ./experiment/dummybenchmarks/...
   annotations:
     testgrid-dashboards: sig-testing-canaries
-    test-tab-name: benchmark-demo
+    testgrid-tab-name: benchmark-demo
     description: Demoing JUnit golang benchmark results.

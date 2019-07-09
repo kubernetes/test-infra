@@ -16,7 +16,7 @@ presubmits:
         - ./scripts/ci-build.sh
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      test-tab-name: pr-build
+      testgrid-tab-name: pr-build
   - name: pull-cluster-api-make
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
@@ -40,7 +40,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      test-tab-name: pr-make
+      testgrid-tab-name: pr-make
   - name: pull-cluster-api-test
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
@@ -61,7 +61,7 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      test-tab-name: pr-test
+      testgrid-tab-name: pr-test
   - name: pull-cluster-api-vendor-in-sync
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
@@ -78,7 +78,7 @@ presubmits:
         - ./scripts/ci-is-vendor-in-sync.sh
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      test-tab-name: pr-vendor
+      testgrid-tab-name: pr-vendor
   - name: pull-cluster-api-integration
     labels:
       preset-dind-enabled: "true"
@@ -102,4 +102,4 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      test-tab-name: pr-integration
+      testgrid-tab-name: pr-integration

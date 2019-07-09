@@ -221,7 +221,7 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-release-1.14-all
-    test-tab-name: periodic-bazel-test-1.14
+    testgrid-tab-name: periodic-bazel-test-1.14
 - annotations:
     fork-per-release-periodic-interval: 6h 24h
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit

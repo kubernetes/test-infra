@@ -23,7 +23,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gce-ha-master
+    testgrid-tab-name: gce-ha-master
 - interval: 24h
   name: ci-kubernetes-e2e-gce-min-node-permissions
   labels:
@@ -50,4 +50,4 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
   annotations:
     testgrid-dashboards: google-gce
-    test-tab-name: gce-min-node-permissions
+    testgrid-tab-name: gce-min-node-permissions

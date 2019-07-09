@@ -30,7 +30,7 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: presubmits-poseidon
-      test-tab-name: e2e
+      testgrid-tab-name: e2e
   - name: pull-poseidon-bazel
     always_run: true
     labels:
@@ -57,7 +57,7 @@ presubmits:
             memory: "2Gi"
     annotations:
       testgrid-dashboards: presubmits-poseidon
-      test-tab-name: bazel
+      testgrid-tab-name: bazel
   - name: pull-poseidon-verify
     branches:
     - master
@@ -79,4 +79,4 @@ presubmits:
         - verify
     annotations:
       testgrid-dashboards: presubmits-poseidon
-      test-tab-name: verify
+      testgrid-tab-name: verify

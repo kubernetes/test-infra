@@ -172,7 +172,7 @@ def patch_prow_job(prowYaml, dashTab, dashboardName):
     if ("name" in dashTab
             and "testgrid-tab-name" not in annotation
             and dashTab["name"] != dashTab["test_group_name"]):
-        annotation["test-tab-name"] = dashTab["name"]
+        annotation["testgrid-tab-name"] = dashTab["name"]
 
     if ("alert_options" in dashTab
             and "alert_mail_to_addresses" in dashTab["alert_options"]

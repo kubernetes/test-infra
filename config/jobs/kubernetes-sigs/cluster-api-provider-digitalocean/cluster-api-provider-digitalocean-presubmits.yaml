@@ -13,7 +13,7 @@ presubmits:
         - compile
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      test-tab-name: build
+      testgrid-tab-name: build
   - name: pull-cluster-api-provider-digitalocean-test
     always_run: true
     decorate: true
@@ -27,7 +27,7 @@ presubmits:
         - test-unit
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      test-tab-name: test
+      testgrid-tab-name: test
   - name: pull-cluster-api-provider-digitalocean-verify
     always_run: true
     decorate: true
@@ -41,7 +41,7 @@ presubmits:
         - verify
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      test-tab-name: verify
+      testgrid-tab-name: verify
   - name: pull-cluster-api-provider-digitalocean-lint
     always_run: true
     decorate: true
@@ -55,4 +55,4 @@ presubmits:
         - lint
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-      test-tab-name: lint
+      testgrid-tab-name: lint

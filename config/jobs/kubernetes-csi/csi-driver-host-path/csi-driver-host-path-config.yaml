@@ -288,7 +288,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: 1-13-on-1-13
+    testgrid-tab-name: 1-13-on-1-13
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.13 sidecars
 - interval: 6h
@@ -328,7 +328,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: 1-13-on-1-14
+    testgrid-tab-name: 1-13-on-1-14
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14.x and 1.13 sidecars
 - interval: 6h
@@ -368,7 +368,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: 1-13-on-master
+    testgrid-tab-name: 1-13-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.13 sidecars
 - interval: 6h
@@ -408,7 +408,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: 1-14-on-1-13
+    testgrid-tab-name: 1-14-on-1-13
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.14 sidecars
 - interval: 6h
   name: ci-kubernetes-csi-1-14-on-kubernetes-1-14
@@ -447,7 +447,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: 1-14-on-1-14
+    testgrid-tab-name: 1-14-on-1-14
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14.x and 1.14 sidecars
 - interval: 6h
@@ -487,7 +487,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: 1-14-on-master
+    testgrid-tab-name: 1-14-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.14 sidecars
 - interval: 6h
@@ -527,7 +527,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: alpha-1-13-on-1-13
+    testgrid-tab-name: alpha-1-13-on-1-13
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI alpha tests with Kubernetes 1.13.x and 1.13 sidecars
 - interval: 6h
@@ -567,7 +567,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: alpha-1-14-on-1-14
+    testgrid-tab-name: alpha-1-14-on-1-14
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI alpha tests with Kubernetes 1.14.x and 1.14 sidecars
 - interval: 6h
@@ -613,7 +613,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: canary-on-1-13
+    testgrid-tab-name: canary-on-1-13
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.13.x and 1.14 sidecars
 - interval: 6h
@@ -659,7 +659,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: canary-on-1-14
+    testgrid-tab-name: canary-on-1-14
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14.x and 1.14 sidecars
 - interval: 6h
@@ -705,7 +705,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: canary-on-master
+    testgrid-tab-name: canary-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.14 sidecars
 - interval: 6h
@@ -751,6 +751,6 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-storage-csi
-    test-tab-name: alpha-canary-on-master
+    testgrid-tab-name: alpha-canary-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
     description: Kubernetes-CSI alpha tests with Kubernetes master and 1.14 sidecars
