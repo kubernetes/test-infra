@@ -86,7 +86,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	c.informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(obj)
-			logrus.WithField("prowjob", key).Infof("Add prowjob")
+			logrus.WithField("prowjob", key).Debug("Add prowjob")
 			if err != nil {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
@@ -95,7 +95,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
-			logrus.WithField("prowjob", key).Infof("Update prowjob")
+			logrus.WithField("prowjob", key).Debug("Update prowjob")
 			if err != nil {
 				logrus.WithError(err).Error("Cannot get key from object meta")
 				return
