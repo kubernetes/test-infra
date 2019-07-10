@@ -10,14 +10,14 @@ py_test(
         "coalesce.py",
         "coalesce_test.py",
     ],
-    python_version = "PY2",
+    python_version = "PY3",
 )
 
 py_test(
     name = "verify_boilerplate",
     srcs = ["verify_boilerplate.py"],
     data = ["//:all-srcs"],
-    python_version = "PY2",
+    python_version = "PY3",
     tags = ["lint"],
 )
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -49,8 +49,8 @@ class TestCoalesce(unittest.TestCase):
         return pkg
 
     def test_utf8(self):
-        uni_string = u'\u8a66\u3057'
-        pkg = self.make_result(name='coal', error=uni_string.encode('utf8'))
+        uni_string = '\u8a66\u3057'
+        pkg = self.make_result(name='coal', error=uni_string)
         result = coalesce.result(pkg)
         self.assertEqual(result.find('failure').text, uni_string)
 

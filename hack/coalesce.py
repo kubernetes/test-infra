@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -66,7 +66,7 @@ def result(pkg):
                 if status.tag == 'error' or status.tag == 'failure':
                     failure = ET.Element('failure')
                     with open(pkg + '/test.log') as fp:
-                        text = fp.read().decode('UTF-8', 'ignore')
+                        text = fp.read()
                         failure.text = sanitize(text)
                     elem.append(failure)
     return elem
@@ -85,7 +85,7 @@ def main():
     except OSError:
         pass
     with open(os.path.join(artifacts_dir, 'junit_bazel.xml'), 'w') as fp:
-        fp.write(ET.tostring(root, 'UTF-8'))
+        fp.write(ET.tostring(root, 'unicode'))
 
 
 if __name__ == '__main__':
