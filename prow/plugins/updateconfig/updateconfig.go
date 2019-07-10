@@ -23,7 +23,8 @@ import (
 	"path"
 	"unicode/utf8"
 
-	zglob "github.com/mattn/go-zglob"
+	"github.com/mattn/go-zglob"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -69,7 +70,7 @@ type githubClient interface {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater)
+	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater, pc.Metrics.ConfigMapGauges)
 }
 
 // FileGetter knows how to get the contents of a file by name
@@ -87,7 +88,7 @@ func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
 }
 
 // Update updates the configmap with the data from the identified files
-func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, logger *logrus.Entry) error {
+func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, metrics *prometheus.GaugeVec, logger *logrus.Entry) error {
 	cm, getErr := kc.Get(name, metav1.GetOptions{})
 	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
@@ -160,6 +161,16 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	if updateErr != nil {
 		return fmt.Errorf("%s config map err: %v", verb, updateErr)
 	}
+	if metrics != nil {
+		var size float64
+		for _, data := range cm.Data {
+			size += float64(len(data))
+		}
+		// in a strict sense this can race to update the value with other goroutines
+		// handling other events, but as events are serialized due to the fact that
+		// merges are serial in repositories, this is effectively not an issue here
+		metrics.WithLabelValues(cm.Name, cm.Namespace).Set(size)
+	}
 	return nil
 }
 
@@ -230,7 +241,7 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 	return toUpdate
 }
 
-func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater) error {
+func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -280,7 +291,7 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string
 			cm.Namespace = defaultNamespace
 		}
 		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc.ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, logger); err != nil {
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc.ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, metrics, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))

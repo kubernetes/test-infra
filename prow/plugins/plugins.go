@@ -19,6 +19,7 @@ package plugins
 import (
 	"errors"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"io/ioutil"
 	"sync"
 	"time"
@@ -142,6 +143,9 @@ type Agent struct {
 
 	OwnersClient *repoowners.Client
 
+	// Metrics exposes metrics that can be updated by plugins
+	Metrics *Metrics
+
 	// Config provides information about the jobs
 	// that we know how to run for repos.
 	Config *config.Config
@@ -155,7 +159,7 @@ type Agent struct {
 }
 
 // NewAgent bootstraps a new config.Agent struct from the passed dependencies.
-func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, logger *logrus.Entry) Agent {
+func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientAgent *ClientAgent, metrics *Metrics, logger *logrus.Entry) Agent {
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
 	return Agent{
@@ -166,6 +170,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		SlackClient:      clientAgent.SlackClient,
 		OwnersClient:     clientAgent.OwnersClient,
 		BugzillaClient:   clientAgent.BugzillaClient,
+		Metrics:          metrics,
 		Config:           prowConfig,
 		PluginConfig:     pluginConfig,
 		Logger:           logger,
@@ -417,4 +422,27 @@ func EventsForPlugin(name string) []string {
 		events = append(events, "GenericCommentEvent (any event for user text)")
 	}
 	return events
+}
+
+var configMapSizeGauges = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "prow_configmap_size_bytes",
+	Help: "Size of data fields in ConfigMaps updated automatically by Prow in bytes.",
+}, []string{"name", "namespace"})
+
+func init() {
+	prometheus.MustRegister(configMapSizeGauges)
+}
+
+// Metrics is a set of metrics that are gathered by plugins.
+// It is up the the consumers of these metrics to ensure that they
+// update the values in a thread-safe manner.
+type Metrics struct {
+	ConfigMapGauges *prometheus.GaugeVec
+}
+
+// NewMetrics returns a reference to the metrics plugins manage
+func NewMetrics() *Metrics {
+	return &Metrics{
+		ConfigMapGauges: configMapSizeGauges,
+	}
 }
