@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2015 The Kubernetes Authors.
 #
@@ -16,8 +16,6 @@
 
 # Verifies that all source files contain the necessary copyright boilerplate
 # snippet.
-
-from __future__ import print_function
 
 import argparse
 import datetime
@@ -98,7 +96,7 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
         (data, found) = con.subn("", data, 1)
 
     # remove shebang from the top of shell files
-    if extension == "sh" or extension == "py":
+    if extension in ("sh", "py"):
         she = regexs["shebang"]
         (data, found) = she.subn("", data, 1)
 
