@@ -3,7 +3,7 @@ variants:
     CONFIG: experimental
     GO_VERSION: 1.12.1
     K8S_RELEASE: stable
-    BAZEL_VERSION: 0.26.0
+    BAZEL_VERSION: 0.28.0
     UPGRADE_DOCKER: 'true'
   master:
     CONFIG: master
