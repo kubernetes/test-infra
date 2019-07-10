@@ -92,7 +92,7 @@ periodics:
     path_alias: k8s.io/release
   spec:
     containers:
-    - image: ubuntu:latest
+    - image: quay.io/k8s/release-tools:latest
       imagePullPolicy: Always
       command:
       - make
@@ -111,7 +111,7 @@ periodics:
     path_alias: k8s.io/release
   spec:
     containers:
-    - image: centos:latest
+    - image: quay.io/k8s/release-tools-centos:latest
       imagePullPolicy: Always
       command:
       - make
