@@ -69,7 +69,12 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/monitoring/mixins/dashboards_out:all-srcs",
+        "//prow/monitoring/mixins/grafana_dashboards:all-srcs",
+        "//prow/monitoring/mixins/vendor/grafonnet:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
