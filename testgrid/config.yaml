@@ -2051,6 +2051,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-gofmt
 - name: pull-ingress-nginx-golint
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-golint
+- name: pull-ingress-nginx-lualint
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-lualint
 - name: pull-ingress-nginx-test-lua
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-ingress-nginx-test-lua
 - name: pull-ingress-nginx-test
