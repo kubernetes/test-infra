@@ -6,11 +6,17 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
         command:
+        - "runner.sh"
         - "./hack/verify-all.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-docker
       testgrid-tab-name: pr-verify
