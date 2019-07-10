@@ -58,12 +58,13 @@ func getSimplifiedPath(path string) string {
 // getFirstFragment returns the first fragment of a path, of a
 // `*url.URL.Path`. e.g. `/repos/kubernetes/test-infra/` will return `repos`
 func getFirstFragment(path string) string {
-	re := regexp.MustCompile(`^/(?P<path>[^/]*).*$`)
-	fragment := re.FindStringSubmatch(path)
-	if len(fragment) < 2 {
-		return path
+	result := strings.Split(path, "/")
+	for _, str := range result {
+		if str != "" {
+			return str
+		}
 	}
-	return fragment[1]
+	return ""
 }
 
 func handleRepos(path string) string {

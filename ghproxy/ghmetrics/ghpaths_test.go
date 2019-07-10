@@ -349,3 +349,26 @@ func Test_handleVarAndConstant(t *testing.T) {
 		})
 	}
 }
+
+func Test_getFirstFragment(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "short path", args: args{path: "/short/path"}, want: "short"},
+		{name: "long path", args: args{path: "/this/is/a/very/long/path"}, want: "this"},
+		{name: "single fragment", args: args{path: "/short-path"}, want: "short-path"},
+		{name: "root", args: args{path: "/"}, want: ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getFirstFragment(tt.args.path); got != tt.want {
+				t.Errorf("getFirstFragment() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
