@@ -84,6 +84,10 @@ presubmits:
           privileged: true
 
 
+    annotations:
+      testgrid-dashboards: sig-windows
+      testgrid-tab-name: aks-engine-azure-windows-presubmit
+      description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 periodics:
 - interval: 6h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows
@@ -125,6 +129,10 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-windows
+    testgrid-tab-name: aks-engine-azure-windows-master
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 12h
   name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   labels:
@@ -165,6 +173,10 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all, sig-windows
+    testgrid-tab-name: aks-engine-azure-1-14-windows
+    description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
 - interval: 6h
   name: ci-kubernetes-e2e-aks-engine-azure-1-15-windows
   labels:
@@ -205,6 +217,10 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-release-1.15-all, sig-windows
+    testgrid-tab-name: aks-engine-azure-1-15-windows
+    description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
 - interval: 3h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
   labels:
@@ -245,3 +261,7 @@ periodics:
       - "--timeout=450m"
       securityContext:
         privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows
+    testgrid-tab-name: aks-engine-azure-windows-master-staging
+    description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"

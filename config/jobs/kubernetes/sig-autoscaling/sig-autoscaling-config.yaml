@@ -27,6 +27,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-tab-name: autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   interval: 2h
   labels:
@@ -55,6 +58,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-tab-name: autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
   interval: 2h
   labels:
@@ -83,6 +89,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-tab-name: autoscaling-vpa-full
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   interval: 3h
   labels:
@@ -111,6 +120,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-tab-name: autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   interval: 2h
   labels:
@@ -139,6 +151,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-vpa
+    testgrid-tab-name: autoscaling-vpa-updater
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling
   labels:
@@ -171,6 +186,9 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+    testgrid-tab-name: gci-gce-autoscaling
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
   labels:
@@ -193,6 +211,9 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-tab-name: gci-gce-autoscaling-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   labels:
@@ -225,6 +246,9 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+    testgrid-tab-name: gci-gce-autoscaling-migs
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
   labels:
@@ -247,6 +271,9 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-tab-name: gci-gce-autoscaling-migs-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling
   labels:
@@ -273,6 +300,9 @@ periodics:
       - --timeout=600m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+    testgrid-tab-name: gci-gke-autoscaling
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
   labels:
@@ -299,6 +329,9 @@ periodics:
       - --timeout=420m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-tab-name: gci-gke-autoscaling-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   labels:
@@ -325,3 +358,6 @@ periodics:
       - --test_args=--gce-multizone=true --ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=400m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+  annotations:
+    testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+    testgrid-tab-name: gci-gke-autoscaling-regional

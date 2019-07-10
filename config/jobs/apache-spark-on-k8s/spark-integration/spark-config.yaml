@@ -35,6 +35,9 @@ periodics:
           cpu: 6
           memory: "8Gi"
 
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic builds and testing of Apache Spark on default version of GKE.
 - interval: 2h
   name: spark-periodic-latest-gke
   labels:
@@ -70,3 +73,6 @@ periodics:
         requests:
           cpu: 6
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic builds and testing of Apache Spark running on the newest stable GKE.

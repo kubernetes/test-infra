@@ -13,6 +13,9 @@ periodics:
       - "--scenario=execute"
       - "--"
       - "./scripts/ci-build.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: build
 - name: ci-cluster-api-provider-gcp-test
   interval: 1h
   labels:
@@ -27,3 +30,6 @@ periodics:
       - "--scenario=execute"
       - "--"
       - "./scripts/ci-test.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: unit tests

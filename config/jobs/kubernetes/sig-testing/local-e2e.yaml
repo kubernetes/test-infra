@@ -73,3 +73,7 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster
+    testgrid-tab-name: local-up-cluster, master (dev)
+    description: Runs conformance tests using kubetest with hack/local-up-cluster.sh

@@ -25,6 +25,9 @@ presubmits:
           requests:
             memory: "2Gi"
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: bazel-build
   - name: pull-kops-bazel-test
     branches:
     - master
@@ -50,6 +53,9 @@ presubmits:
           requests:
             memory: "2Gi"
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: bazel-test
   - name: pull-kops-e2e-kubernetes-aws
     branches:
     - master
@@ -90,6 +96,9 @@ presubmits:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: e2e
   - name: pull-kops-verify-bazel
     branches:
     - master
@@ -107,6 +116,9 @@ presubmits:
         - --
         - ./hack/verify-bazel.sh
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-bazel
   - name: pull-kops-verify-boilerplate
     branches:
     - master
@@ -124,6 +136,9 @@ presubmits:
         - --
         - ./hack/verify-boilerplate.sh
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-boilerplate
   - name: pull-kops-verify-gofmt
     branches:
     - master
@@ -147,6 +162,9 @@ presubmits:
           requests:
             memory: "2Gi"
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-gofmt
   - name: pull-kops-verify-govet
     branches:
     - master
@@ -165,6 +183,9 @@ presubmits:
         - make
         - govet
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-govet
   - name: pull-kops-verify-packages
     branches:
     - master
@@ -182,6 +203,9 @@ presubmits:
         - --
         - ./hack/verify-packages.sh
 
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-packages
 periodics:
 - interval: 30m
   name: ci-kops-build
@@ -205,6 +229,10 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-release-misc
+    testgrid-tab-name: kops-build
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
@@ -231,3 +259,5 @@ postsubmits:
         resources:
           requests:
             memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops

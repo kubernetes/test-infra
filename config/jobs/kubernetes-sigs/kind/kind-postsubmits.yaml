@@ -14,5 +14,10 @@ postsubmits:
       # TODO(bentheelder): consider setting this at the cluster level instead
       dnsConfig:
         options:
-          - name: ndots
-            value: "1"
+        - name: ndots
+          value: "1"
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      testgrid-tab-name: ci build
+      testgrid-alert-email: bentheelder@google.com
+      description: kind CI build

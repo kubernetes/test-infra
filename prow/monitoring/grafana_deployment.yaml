@@ -21,6 +21,13 @@ spec:
       containers:
       - image: docker.io/nginx:1.17.0-alpine
         name: nginx
+        readinessProbe:
+          httpGet:
+            path: /healthy
+            port: 80
+        ports:
+          - containerPort: 80
+            name: nginx
         volumeMounts:
           - mountPath: /etc/nginx/
             name: grafana-nginx

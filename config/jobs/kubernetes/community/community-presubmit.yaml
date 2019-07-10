@@ -13,6 +13,9 @@ presubmits:
         - "-c"
         # Add GOPATH/bin back to PATH to workaround #9469
         - "export PATH=$PATH:$GOPATH/bin && make verify"
+    annotations:
+      testgrid-dashboards: sig-contribex-community
+      testgrid-tab-name: pull-verify
   - name: pull-community-tempelis-check
     decorate: true
     branches:
@@ -22,18 +25,18 @@ presubmits:
       testgrid-dashboards: sig-contribex-slack-infra
     spec:
       containers:
-        - image: gcr.io/k8s-tempelis/tempelis:v20190412-7c9b6e51
-          command:
-          - /tempelis
-          args:
-          - --config=communication/slack-config/
-          - --restrictions=communication/slack-config/restrictions.yaml
-          - --auth=/etc/slack-auth/auth.json
-          volumeMounts:
-            - name: tempelis-readonly-creds
-              mountPath: /etc/slack-auth
-              readOnly: true
-      volumes:
+      - image: gcr.io/k8s-tempelis/tempelis:v20190412-7c9b6e51
+        command:
+        - /tempelis
+        args:
+        - --config=communication/slack-config/
+        - --restrictions=communication/slack-config/restrictions.yaml
+        - --auth=/etc/slack-auth/auth.json
+        volumeMounts:
         - name: tempelis-readonly-creds
-          secret:
-            secretName: slack-tempelis-auth
+          mountPath: /etc/slack-auth
+          readOnly: true
+      volumes:
+      - name: tempelis-readonly-creds
+        secret:
+          secretName: slack-tempelis-auth

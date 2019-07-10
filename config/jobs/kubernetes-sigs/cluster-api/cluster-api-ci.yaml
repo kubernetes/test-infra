@@ -14,6 +14,9 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
       command:
       - "./scripts/ci-build.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: build
 - name: ci-cluster-api-test
   interval: 1h
   decorate: true
@@ -33,3 +36,6 @@ periodics:
         requests:
           cpu: 3
           memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: unit tests

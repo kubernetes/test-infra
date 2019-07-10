@@ -24,6 +24,9 @@ presubmits:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+      testgrid-tab-name: pull-bazel-build
   - name: pull-kubernetes-bazel-test-canary
     always_run: false
     labels:
@@ -48,6 +51,9 @@ presubmits:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+      testgrid-tab-name: pull-bazel-test
   - name: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     labels:
@@ -72,6 +78,9 @@ presubmits:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+      testgrid-tab-name: pull-bazel-test-integration
 periodics:
 - name: ci-kubernetes-e2e-prow-canary
   interval: 1h
@@ -176,6 +185,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gke-canary
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-canary
   labels:
@@ -206,6 +218,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-canary
 - interval: 30m
   name: ci-kubernetes-e2e-kops-gce-canary
   labels:
@@ -232,6 +247,9 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+  annotations:
+    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-gce-canary
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   labels:

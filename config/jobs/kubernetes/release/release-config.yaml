@@ -34,18 +34,26 @@ presubmits:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-cluster-up
+      testgrid-alert-email: kubernetes-patch-release-team@googlegroups.com
   - name: pull-release-unit
     always_run: true
     decorate: true
     path_alias: k8s.io/release
     spec:
       containers:
-        - image: golang:1.12
-          command:
-            - go
-          args:
-            - test
-            - ./...
+      - image: golang:1.12
+        command:
+        - go
+        args:
+        - test
+        - ./...
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-unit
+      testgrid-alert-email: kubernetes-patch-release-team@googlegroups.com
   - name: pull-release-verify
     always_run: true
     optional: true
@@ -55,11 +63,56 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-          command:
-            - runner.sh
-          args:
-            - make
-            - verify
-          securityContext:
-            privileged: true
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        securityContext:
+          privileged: true
+
+# package tests
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-verify
+      testgrid-alert-email: kubernetes-patch-release-team@googlegroups.com
+periodics:
+- name: periodic-release-verify-packages-debs
+  interval: 6h
+  annotations:
+    testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-debs
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: ubuntu:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-debs
+- name: periodic-release-verify-packages-rpms
+  interval: 6h
+  annotations:
+    testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-rpms
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: centos:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-rpms

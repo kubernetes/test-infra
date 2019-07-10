@@ -229,3 +229,14 @@ exports_files([
     commit = "42131df7167ec0b264c892c1f3c49ba9a72142da",
     remote = "https://github.com/operator-framework/community-operators.git",
 )
+
+http_archive(
+    name = "io_bazel_rules_jsonnet",
+    sha256 = "59bf1edb53bc6b5adb804fbfabd796a019200d4ef4dd5cc7bdee03acc7686806",
+    strip_prefix = "rules_jsonnet-0.1.0",
+    urls = ["https://github.com/bazelbuild/rules_jsonnet/archive/0.1.0.tar.gz"],
+)
+
+load("@io_bazel_rules_jsonnet//jsonnet:jsonnet.bzl", "jsonnet_repositories")
+
+jsonnet_repositories()

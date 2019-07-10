@@ -28,6 +28,9 @@ presubmits:
         - --timeout=60m
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-poseidon
+      testgrid-tab-name: e2e
   - name: pull-poseidon-bazel
     always_run: true
     labels:
@@ -52,6 +55,9 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+    annotations:
+      testgrid-dashboards: presubmits-poseidon
+      testgrid-tab-name: bazel
   - name: pull-poseidon-verify
     branches:
     - master
@@ -71,3 +77,6 @@ presubmits:
         - --
         - make
         - verify
+    annotations:
+      testgrid-dashboards: presubmits-poseidon
+      testgrid-tab-name: verify

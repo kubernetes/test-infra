@@ -59,6 +59,9 @@ postsubmits:
         securityContext:
           privileged: true
 
+    annotations:
+      testgrid-dashboards: sig-multicluster-kubemci
+      testgrid-tab-name: kubemci-image-push
 periodics:
 - interval: 6h
   name: ci-kubernetes-multicluster-ingress-test
@@ -93,6 +96,9 @@ periodics:
       secret:
         secretName: k8s-multicluster-ingress-coveralls-token
 
+  annotations:
+    testgrid-dashboards: sig-multicluster-kubemci
+    testgrid-tab-name: ci-kubemci-unit-tests
 - interval: 60m
   name: ci-kubemci-ingress-conformance
   labels:
@@ -116,3 +122,6 @@ periodics:
       - --timeout=90m
       image: gcr.io/k8s-testimages/e2e-kubemci:latest
       imagePullPolicy: Always
+  annotations:
+    testgrid-dashboards: sig-multicluster-kubemci
+    testgrid-tab-name: kubemci-ingress-conformance

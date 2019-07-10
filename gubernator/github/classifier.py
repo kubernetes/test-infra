@@ -325,6 +325,7 @@ def distill_events(events, distilled_events=None):
         'k8s-merge-robot',
         'k8s-oncall',
         'k8s-reviewable',
+        'istio-testing',
     ]
     skip_comments = get_skip_comments(events, bots)
 

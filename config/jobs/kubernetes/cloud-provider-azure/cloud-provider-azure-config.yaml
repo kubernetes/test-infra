@@ -46,6 +46,10 @@ presubmits:
         - test-check
 
   # pull-cloud-provider-azure-e2e runs kubernetes conformance tests.
+    annotations:
+      testgrid-dashboards: sig-azure-master
+      testgrid-tab-name: pr-cloud-provider-check
+      description: Run lint check tests for cloud-provider-azure
   - name: pull-cloud-provider-azure-e2e
     # Disable always_run because of https://github.com/kubernetes/test-infra/pull/11887
     # TODO(feiskyer): enable the tests after it's fixed and published in the image
@@ -95,6 +99,10 @@ presubmits:
           privileged: true
 
   # pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
+    annotations:
+      testgrid-dashboards: sig-azure-master
+      testgrid-tab-name: pr-cloud-provider-e2e
+      description: Run Kubernetes e2e tests for cloud-provider-azure
   - name: pull-cloud-provider-azure-e2e-ccm
     always_run: true
     branches:
@@ -140,6 +148,10 @@ presubmits:
         securityContext:
           privileged: true
 
+    annotations:
+      testgrid-dashboards: sig-azure-master
+      testgrid-tab-name: pr-cloud-provider-e2e-ccm
+      description: Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
   - name: pull-cloud-provider-azure-unit
     always_run: true
     branches:
@@ -158,6 +170,10 @@ presubmits:
         - make
         - test-unit
 
+    annotations:
+      testgrid-dashboards: sig-azure-master
+      testgrid-tab-name: pr-cloud-provider-unit
+      description: Run unit tests for cloud-provider-azure
 periodics:
 - interval: 8h
   # ci-cloud-provider-azure-master runs Azure specific tests periodically.
@@ -213,6 +229,10 @@ periodics:
       - name: REPO_NAME
         value: cloud-provider-azure
 
+  annotations:
+    testgrid-dashboards: sig-azure-master
+    testgrid-tab-name: cloud-provider-azure-master
+    description: Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
 - interval: 8h
   # ci-cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
   name: ci-cloud-provider-azure-autoscaling
@@ -269,6 +289,10 @@ periodics:
       - name: REPO_NAME
         value: cloud-provider-azure
 
+  annotations:
+    testgrid-dashboards: sig-azure-master
+    testgrid-tab-name: cloud-provider-azure-autoscaling
+    description: Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
 - interval: 8h
   # ci-cloud-provider-azure-conformance runs Kubernetes conformance tests periodically.
   name: ci-cloud-provider-azure-conformance
@@ -324,6 +348,10 @@ periodics:
       - name: REPO_NAME
         value: cloud-provider-azure
 
+  annotations:
+    testgrid-dashboards: sig-azure-master
+    testgrid-tab-name: cloud-provider-azure-conformance
+    description: Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
 - interval: 8h
   # ci-cloud-provider-azure-slow runs Kubernetes slow tests periodically.
   name: ci-cloud-provider-azure-slow
@@ -378,3 +406,7 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
+  annotations:
+    testgrid-dashboards: sig-azure-master
+    testgrid-tab-name: cloud-provider-azure-slow
+    description: Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"

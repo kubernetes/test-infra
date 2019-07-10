@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -26,6 +26,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: hook
   template:
     metadata:
       labels:
@@ -35,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190708-d639b3427
+        image: gcr.io/k8s-prow/hook:v20190709-f61ccfa42
         imagePullPolicy: Always
         args:
         - --dry-run=false

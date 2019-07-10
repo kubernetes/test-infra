@@ -25,6 +25,8 @@ presubmits:
           privileged: true
 
 
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
   - name: pull-npd-test
     branches:
     - master
@@ -45,6 +47,8 @@ presubmits:
           ./test/build.sh install-lib &&
           make test
 
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
   - name: pull-npd-e2e-node
     branches:
     - master
@@ -90,6 +94,8 @@ presubmits:
           privileged: true
 
 
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
   - name: pull-npd-e2e-kubernetes-gce-gci
     branches:
     - master
@@ -124,6 +130,8 @@ presubmits:
         securityContext:
           privileged: true
 
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
   - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
     branches:
     - master
@@ -158,6 +166,8 @@ presubmits:
         securityContext:
           privileged: true
 
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
   - name: pull-npd-e2e-kubernetes-gce-ubuntu
     branches:
     - master
@@ -192,6 +202,8 @@ presubmits:
         securityContext:
           privileged: true
 
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
   - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
     branches:
     - master
@@ -225,3 +237,5 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector

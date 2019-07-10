@@ -116,7 +116,7 @@ spec:
     type: string
     JSONPath: .status.state
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -130,6 +130,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: hook
   template:
     metadata:
       labels:
@@ -139,7 +142,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190708-d639b3427
+        image: gcr.io/k8s-prow/hook:v20190709-f61ccfa42
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -218,7 +221,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190708-d639b3427
+        image: gcr.io/k8s-prow/plank:v20190709-f61ccfa42
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -237,7 +240,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -245,6 +248,9 @@ metadata:
   labels:
     app: sinker
 spec:
+  selector:
+    matchLabels:
+      app: sinker
   replicas: 1
   template:
     metadata:
@@ -254,7 +260,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20190708-d639b3427
+        image: gcr.io/k8s-prow/sinker:v20190709-f61ccfa42
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -266,7 +272,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -280,6 +286,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: deck
   template:
     metadata:
       labels:
@@ -289,7 +298,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190708-d639b3427
+        image: gcr.io/k8s-prow/deck:v20190709-f61ccfa42
         args:
         - --config-path=/etc/config/config.yaml
         - --tide-url=http://tide/
@@ -332,7 +341,7 @@ spec:
     targetPort: 8080
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -343,6 +352,9 @@ spec:
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: horologium
   template:
     metadata:
       labels:
@@ -352,7 +364,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20190708-d639b3427
+        image: gcr.io/k8s-prow/horologium:v20190709-f61ccfa42
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -364,7 +376,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -375,6 +387,9 @@ spec:
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: tide
   template:
     metadata:
       labels:
@@ -383,7 +398,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190708-d639b3427
+        image: gcr.io/k8s-prow/tide:v20190709-f61ccfa42
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -436,7 +451,7 @@ spec:
           serviceName: hook
           servicePort: 8888
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: statusreconciler
@@ -445,6 +460,9 @@ metadata:
     app: statusreconciler
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: statusreconciler
   template:
     metadata:
       labels:
@@ -454,7 +472,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20190708-d639b3427
+        image: gcr.io/k8s-prow/status-reconciler:v20190709-f61ccfa42
         args:
         - --dry-run=false
         - --continue-on-error=true

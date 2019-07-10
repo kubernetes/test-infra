@@ -14,6 +14,9 @@ periodics:
         value: kubeflow
       - name: BRANCH_NAME
         value: v0.5-branch
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Kubeflow on the 0-5 release branch.
 - name: kubeflow-periodic-0-4-branch
   interval: 8h
   labels:
@@ -29,6 +32,9 @@ periodics:
         value: kubeflow
       - name: BRANCH_NAME
         value: v0.4-branch
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Kubeflow on the 0-4 release branch.
 - name: kubeflow-periodic-0-3-branch
   interval: 8h
   labels:
@@ -44,6 +50,9 @@ periodics:
         value: kubeflow
       - name: BRANCH_NAME
         value: v0.3-branch
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Kubeflow on the 0-3 release branch.
 - name: kubeflow-periodic-master
   interval: 4h
   labels:
@@ -59,6 +68,9 @@ periodics:
         value: kubeflow
       - name: BRANCH_NAME
         value: master
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Kubeflow on the latest master branch.
 - name: kubeflow-periodic-examples
   interval: 8h
   labels:
@@ -74,3 +86,6 @@ periodics:
         value: examples
       - name: BRANCH_NAME
         value: master
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Kubeflow examples

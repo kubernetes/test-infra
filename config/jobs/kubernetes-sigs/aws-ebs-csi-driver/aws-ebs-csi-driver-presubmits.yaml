@@ -13,6 +13,10 @@ presubmits:
         args:
         - make
         - verify
+    annotations:
+      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-tab-name: verify
+      description: aws ebs csi driver basic code verification
   - name: pull-aws-ebs-csi-driver-unit
     always_run: true
     decorate: true
@@ -26,6 +30,10 @@ presubmits:
         args:
         - make
         - test
+    annotations:
+      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-tab-name: unit-test
+      description: aws ebs csi driver unit test
   - name: pull-aws-ebs-csi-driver-sanity
     always_run: true
     decorate: true
@@ -39,6 +47,10 @@ presubmits:
         args:
         - make
         - test-sanity
+    annotations:
+      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-tab-name: sanity-test
+      description: aws ebs csi driver sanity test
   - name: pull-aws-ebs-csi-driver-integration
     always_run: true
     decorate: true
@@ -53,6 +65,10 @@ presubmits:
         args:
         - make
         - test-integration
+    annotations:
+      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-tab-name: integration-test
+      description: aws ebs csi driver integration test
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     always_run: true
     decorate: true
@@ -70,6 +86,10 @@ presubmits:
         - test-e2e-single-az
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-tab-name: e2e-test-single-az
+      description: aws ebs csi driver e2e test on single az
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     always_run: true
     decorate: true
@@ -87,3 +107,7 @@ presubmits:
         - test-e2e-multi-az
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-tab-name: e2e-test-multi-az
+      description: aws ebs csi driver e2e test on mutiple AZs

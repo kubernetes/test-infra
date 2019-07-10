@@ -58,6 +58,8 @@ presubmits:
           requests:
             cpu: 4
 
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
 periodics:
 - interval: 1h
   name: ci-kubernetes-integration-master

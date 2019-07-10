@@ -53,6 +53,11 @@ periodics:
           cpu: 4
           memory: "8Gi"
 
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-tab-name: build-master-fast
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    description: 'Ends up running: make quick-release'
 - interval: 4h
   name: ci-kubernetes-build-debian-unstable
   labels:
@@ -75,6 +80,10 @@ periodics:
         requests:
           cpu: 4
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-release-misc
+    testgrid-tab-name: debian-unstable
+    testgrid-alert-email: kubernetes-patch-release-team@googlegroups.com
 - interval: 1h
   name: ci-kubernetes-build
   labels:
@@ -89,25 +98,25 @@ periodics:
     testgrid-alert-email: "kubernetes-release-team@googlegroups.com"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
-        args:
-          - --repo=k8s.io/kubernetes
-          - --repo=k8s.io/release
-          - --root=/go/src
-          - --timeout=180
-          - --scenario=kubernetes_build
-          - --
-          - --allow-dup
-          - --extra-publish-file=k8s-master
-          - --hyperkube
-          - --registry=gcr.io/kubernetes-ci-images
+    - image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
+      args:
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=180
+      - --scenario=kubernetes_build
+      - --
+      - --allow-dup
+      - --extra-publish-file=k8s-master
+      - --hyperkube
+      - --registry=gcr.io/kubernetes-ci-images
         # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
-            memory: "8Gi"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
 - interval: 1h
   name: ci-kubernetes-cross-build
   labels:
@@ -133,3 +142,7 @@ periodics:
         requests:
           cpu: 7
           memory: "41Gi"
+  annotations:
+    testgrid-dashboards: sig-release-misc
+    testgrid-tab-name: cross-build
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com

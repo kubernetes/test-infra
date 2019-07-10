@@ -69,6 +69,9 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-features
   labels:
@@ -95,6 +98,9 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-alpha-features
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
   labels:
@@ -122,6 +128,9 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-alpha-enabled-default
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-flaky
   labels:
@@ -147,6 +156,9 @@ periodics:
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-flaky
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-multizone
   labels:
@@ -174,6 +186,9 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-multizone
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-reboot
   labels:
@@ -199,6 +214,9 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-reboot
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-serial
   labels:
@@ -224,6 +242,9 @@ periodics:
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-serial
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-slow
   labels:
@@ -250,6 +271,9 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-slow
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-updown
   labels:
@@ -275,6 +299,9 @@ periodics:
       - --timeout=30m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gci-gke-updown
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional
   labels:
@@ -301,6 +328,9 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gke-regional
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-serial
   labels:
@@ -325,6 +355,9 @@ periodics:
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gke-regional-serial
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-slow
   labels:
@@ -350,6 +383,9 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gke-regional-slow
 - interval: 1h
   name: ci-kubernetes-e2e-gke-gci-ci-master
   labels:
@@ -375,6 +411,9 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-gci
+    testgrid-tab-name: ci-gke-master
 - interval: 12h
   name: ci-kubernetes-soak-gke-gci
   labels:
@@ -404,6 +443,9 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-dashboards: google-soak
+    testgrid-tab-name: gke-gci
 - interval: 2h
   name: istio-periodic-e2e-gke-addon
   labels:
@@ -437,3 +479,6 @@ periodics:
       - --test-cmd-args=simple
       - --test-cmd-name=istio-addon
       - --timeout=60m
+  annotations:
+    testgrid-dashboards: istio-gke
+    testgrid-tab-name: istio-gke-addon

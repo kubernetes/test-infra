@@ -17,6 +17,9 @@ periodics:
       args:
       - test
       - ./...
+  annotations:
+    testgrid-dashboards: sig-api-machinery-structured-merge-diff
+    testgrid-tab-name: ci-test
 - name: ci-structured-merge-diff-gofmt
   interval: 12h
   labels:
@@ -34,3 +37,6 @@ periodics:
       - bash
       - -c
       - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
+  annotations:
+    testgrid-dashboards: sig-api-machinery-structured-merge-diff
+    testgrid-tab-name: ci-gofmt
