@@ -11,8 +11,34 @@ func Test_getSimplifiedPath(t *testing.T) {
 		args args
 		want string
 	}{
-		{"access root path should not fail, is not explicitly handled", args{"/"}, "/"},
-		{"repo branches protection (restrictions for users) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/users"}, "/repos/:owner/:repo/branches/:var/protection/restrictions/users"},
+		{name: "access root path should not fail, is not explicitly handled", args: args{path: "/"}, want: "/"},
+		{name: "repo branches protection (restrictions for users) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/users"}, want: "/repos/:owner/:repo/branches/:var/protection/restrictions/users"},
+		{name: "repositories", args: args{path: "/repositories"}, want: "/repositories"},
+
+		{name: "user", args: args{path: "/user"}, want: "/user"},
+		{name: "users", args: args{path: "/users"}, want: "/users"},
+		{name: "user by username", args: args{path: "/users/testUser"}, want: "/users/:username"},
+
+		{name: "orgs", args: args{path: "/orgs"}, want: "/orgs"},
+		{name: "org by orgname", args: args{path: "/orgs/testOrg"}, want: "/orgs/:orgname"},
+
+		{name: "issues", args: args{path: "/issues"}, want: "/issues"},
+		{name: "issues by id", args: args{path: "/issues/testId"}, want: "/issues/:var"},
+
+		{name: "search", args: args{path: "/search"}, want: "/search"},
+		{name: "search repositories", args: args{path: "/search/repositories"}, want: "/search/repositories"},
+		{name: "search commits", args: args{path: "/search/commits"}, want: "/search/commits"},
+		{name: "search code", args: args{path: "/search/code"}, want: "/search/code"},
+		{name: "search issues", args: args{path: "/search/issues"}, want: "/search/issues"},
+		{name: "search users", args: args{path: "/search/users"}, want: "/search/users"},
+		{name: "search topics", args: args{path: "/search/topics"}, want: "/search/topics"},
+		{name: "search labels", args: args{path: "/search/labels"}, want: "/search/labels"},
+
+		{name: "gists", args: args{path: "/gists"}, want: "/gists"},
+		{name: "gists public", args: args{path: "/gists/public"}, want: "/gists/public"},
+		{name: "gists starred", args: args{path: "/gists/starred"}, want: "/gists/starred"},
+
+		{name: "notifications", args: args{path: "/notifications"}, want: "/notifications"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -32,80 +58,293 @@ func Test_handleRepos(t *testing.T) {
 		args args
 		want string
 	}{
-		{"access root path should not fail, is not explicitly handled", args{"/"}, "/repos"},
-		{"access repos/ path should not fail, is not explicitly handled", args{"/repos"}, "/repos"},
-		{"access repos/ path should not fail, is not explicitly handled", args{"/repos/testOwner/testRepo/"}, "/repos/:owner/:repo"},
-		{"access repos/owner/repo/k8s path should not fail, is not explicitly handled", args{"/repos/testOwner/testRepo/k8s"}, "/repos/:owner/:repo/k8s"},
+		{name: "access root path should not fail, is not explicitly handled", args: args{path: "/"}, want: "/repos"},
+		{name: "access repos/ path should not fail, is not explicitly handled", args: args{path: "/repos"}, want: "/repos"},
+		{name: "access repos/ path should not fail, is not explicitly handled", args: args{path: "/repos/testOwner/testRepo/"}, want: "/repos/:owner/:repo"},
+		{name: "access repos/owner/repo/k8s path should not fail, is not explicitly handled", args: args{path: "/repos/testOwner/testRepo/k8s"}, want: "/repos/:owner/:repo/k8s"},
 
-		{"repo issues", args{"/repos/testOwner/testRepo/issues"}, "/repos/:owner/:repo/issues"},
-		{"repo issue by number", args{"/repos/testOwner/testRepo/issues/21342"}, "/repos/:owner/:repo/issues/:var"},
-		{"repo issue by number lock", args{"/repos/testOwner/testRepo/issues/21321/lock"}, "/repos/:owner/:repo/issues/:var/lock"},
-		{"repo issues comments", args{"/repos/testOwner/testRepo/issues/comments"}, "/repos/:owner/:repo/issues/comments"},
-		{"repo issues comment by number", args{"/repos/testOwner/testRepo/issues/comments/321"}, "/repos/:owner/:repo/issues/comments/:var"},
-		{"repo issues events", args{"/repos/testOwner/testRepo/issues/events"}, "/repos/:owner/:repo/issues/events"},
-		{"repo issues event by number", args{"/repos/testOwner/testRepo/issues/events/123"}, "/repos/:owner/:repo/issues/events/:var"},
+		{name: "repo issues", args: args{path: "/repos/testOwner/testRepo/issues"}, want: "/repos/:owner/:repo/issues"},
+		{name: "repo issue by number", args: args{path: "/repos/testOwner/testRepo/issues/21342"}, want: "/repos/:owner/:repo/issues/:var"},
+		{name: "repo issue by number lock", args: args{path: "/repos/testOwner/testRepo/issues/21321/lock"}, want: "/repos/:owner/:repo/issues/:var/lock"},
+		{name: "repo issues comments", args: args{path: "/repos/testOwner/testRepo/issues/comments"}, want: "/repos/:owner/:repo/issues/comments"},
+		{name: "repo issues comment by number", args: args{path: "/repos/testOwner/testRepo/issues/comments/321"}, want: "/repos/:owner/:repo/issues/comments/:var"},
+		{name: "repo issues events", args: args{path: "/repos/testOwner/testRepo/issues/events"}, want: "/repos/:owner/:repo/issues/events"},
+		{name: "repo issues event by number", args: args{path: "/repos/testOwner/testRepo/issues/events/123"}, want: "/repos/:owner/:repo/issues/events/:var"},
 
-		{"repo keys", args{"/repos/testOwner/testRepo/keys"}, "/repos/:owner/:repo/keys"},
-		{"repo key by id", args{"/repos/testOwner/testRepo/keys/421"}, "/repos/:owner/:repo/keys/:var"},
+		{name: "repo keys", args: args{path: "/repos/testOwner/testRepo/keys"}, want: "/repos/:owner/:repo/keys"},
+		{name: "repo key by id", args: args{path: "/repos/testOwner/testRepo/keys/421"}, want: "/repos/:owner/:repo/keys/:var"},
 
-		{"repo labels", args{"/repos/testOwner/testRepo/labels"}, "/repos/:owner/:repo/labels"},
-		{"repo label by name", args{"/repos/testOwner/testRepo/labels/testLabel"}, "/repos/:owner/:repo/labels/:var"},
+		{name: "repo labels", args: args{path: "/repos/testOwner/testRepo/labels"}, want: "/repos/:owner/:repo/labels"},
+		{name: "repo label by name", args: args{path: "/repos/testOwner/testRepo/labels/testLabel"}, want: "/repos/:owner/:repo/labels/:var"},
 
-		{"repo merges", args{"/repos/testOwner/testRepo/merges"}, "/repos/:owner/:repo/merges"},
+		{name: "repo merges", args: args{path: "/repos/testOwner/testRepo/merges"}, want: "/repos/:owner/:repo/merges"},
 
-		{"repo milestones", args{"/repos/testOwner/testRepo/milestones"}, "/repos/:owner/:repo/milestones"},
-		{"repo milestones by number", args{"/repos/testOwner/testRepo/milestones/421"}, "/repos/:owner/:repo/milestones/:var"},
+		{name: "repo milestones", args: args{path: "/repos/testOwner/testRepo/milestones"}, want: "/repos/:owner/:repo/milestones"},
+		{name: "repo milestones by number", args: args{path: "/repos/testOwner/testRepo/milestones/421"}, want: "/repos/:owner/:repo/milestones/:var"},
 
-		{"repo pulls", args{"/repos/testOwner/testRepo/pulls"}, "/repos/:owner/:repo/pulls"},
-		{"repo pulls by number", args{"/repos/testOwner/testRepo/pulls/421"}, "/repos/:owner/:repo/pulls/:var"},
+		{name: "repo pulls", args: args{path: "/repos/testOwner/testRepo/pulls"}, want: "/repos/:owner/:repo/pulls"},
+		{name: "repo pulls by number", args: args{path: "/repos/testOwner/testRepo/pulls/421"}, want: "/repos/:owner/:repo/pulls/:var"},
 
-		{"repo releases", args{"/repos/testOwner/testRepo/releases"}, "/repos/:owner/:repo/releases"},
-		{"repo releases by number", args{"/repos/testOwner/testRepo/releases/421"}, "/repos/:owner/:repo/releases/:var"},
+		{name: "repo releases", args: args{path: "/repos/testOwner/testRepo/releases"}, want: "/repos/:owner/:repo/releases"},
+		{name: "repo releases by number", args: args{path: "/repos/testOwner/testRepo/releases/421"}, want: "/repos/:owner/:repo/releases/:var"},
 
-		{"repo stargazers", args{"/repos/testOwner/testRepo/stargazers"}, "/repos/:owner/:repo/stargazers"},
+		{name: "repo stargazers", args: args{path: "/repos/testOwner/testRepo/stargazers"}, want: "/repos/:owner/:repo/stargazers"},
 
-		{"repo statuses", args{"/repos/testOwner/testRepo/statuses"}, "/repos/:owner/:repo/statuses"},
-		{"repo statuses by sha", args{"/repos/testOwner/testRepo/statuses/4u8dsaag89ewfdjkt9fdajdsa"}, "/repos/:owner/:repo/statuses/:var"},
+		{name: "repo statuses", args: args{path: "/repos/testOwner/testRepo/statuses"}, want: "/repos/:owner/:repo/statuses"},
+		{name: "repo statuses by sha", args: args{path: "/repos/testOwner/testRepo/statuses/4u8dsaag89ewfdjkt9fdajdsa"}, want: "/repos/:owner/:repo/statuses/:var"},
 
-		{"repo subscribers", args{"/repos/testOwner/testRepo/subscribers"}, "/repos/:owner/:repo/subscribers"},
+		{name: "repo subscribers", args: args{path: "/repos/testOwner/testRepo/subscribers"}, want: "/repos/:owner/:repo/subscribers"},
 
-		{"repo subscribers", args{"/repos/testOwner/testRepo/subscribers"}, "/repos/:owner/:repo/subscribers"},
+		{name: "repo subscribers", args: args{path: "/repos/testOwner/testRepo/subscribers"}, want: "/repos/:owner/:repo/subscribers"},
 
-		{"repo notifications", args{"/repos/testOwner/testRepo/notifications"}, "/repos/:owner/:repo/notifications"},
+		{name: "repo notifications", args: args{path: "/repos/testOwner/testRepo/notifications"}, want: "/repos/:owner/:repo/notifications"},
 
-		{"repo branches", args{"/repos/testOwner/testRepo/branches"}, "/repos/:owner/:repo/branches"},
-		{"repo branches by name", args{"/repos/testOwner/testRepo/branches/testBranch"}, "/repos/:owner/:repo/branches/:var"},
-		{"repo branches protection by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection"}, "/repos/:owner/:repo/branches/:var/protection"},
-		{"repo branches protection (required status checks) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/required_status_checks"}, "/repos/:owner/:repo/branches/:var/protection/required_status_checks"},
-		{"repo branches protection (required status checks, contexts) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/required_status_checks/contexts"}, "/repos/:owner/:repo/branches/:var/protection/required_status_checks/contexts"},
-		{"repo branches protection (required pull request reviews) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/required_pull_request_reviews"}, "/repos/:owner/:repo/branches/:var/protection/required_pull_request_reviews"},
-		{"repo branches protection (required signatures) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/required_signatures"}, "/repos/:owner/:repo/branches/:var/protection/required_signatures"},
-		{"repo branches protection (enforce admins) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/enforce_admins"}, "/repos/:owner/:repo/branches/:var/protection/enforce_admins"},
-		{"repo branches protection (restrictions) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/restrictions"}, "/repos/:owner/:repo/branches/:var/protection/restrictions"},
-		{"repo branches protection (restrictions for teams) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/teams"}, "/repos/:owner/:repo/branches/:var/protection/restrictions/teams"},
-		{"repo branches protection (restrictions for users) by name ", args{"/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/users"}, "/repos/:owner/:repo/branches/:var/protection/restrictions/users"},
+		{name: "repo branches", args: args{path: "/repos/testOwner/testRepo/branches"}, want: "/repos/:owner/:repo/branches"},
+		{name: "repo branches by name", args: args{path: "/repos/testOwner/testRepo/branches/testBranch"}, want: "/repos/:owner/:repo/branches/:var"},
+		{name: "repo branches protection by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection"}, want: "/repos/:owner/:repo/branches/:var/protection"},
+		{name: "repo branches protection (required status checks) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/required_status_checks"}, want: "/repos/:owner/:repo/branches/:var/protection/required_status_checks"},
+		{name: "repo branches protection (required status checks, contexts) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/required_status_checks/contexts"}, want: "/repos/:owner/:repo/branches/:var/protection/required_status_checks/contexts"},
+		{name: "repo branches protection (required pull request reviews) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/required_pull_request_reviews"}, want: "/repos/:owner/:repo/branches/:var/protection/required_pull_request_reviews"},
+		{name: "repo branches protection (required signatures) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/required_signatures"}, want: "/repos/:owner/:repo/branches/:var/protection/required_signatures"},
+		{name: "repo branches protection (enforce admins) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/enforce_admins"}, want: "/repos/:owner/:repo/branches/:var/protection/enforce_admins"},
+		{name: "repo branches protection (restrictions) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/restrictions"}, want: "/repos/:owner/:repo/branches/:var/protection/restrictions"},
+		{name: "repo branches protection (restrictions for teams) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/teams"}, want: "/repos/:owner/:repo/branches/:var/protection/restrictions/teams"},
+		{name: "repo branches protection (restrictions for users) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/users"}, want: "/repos/:owner/:repo/branches/:var/protection/restrictions/users"},
 
-		{"repo archive", args{"/repos/testOwner/testRepo/archive"}, "/repos/:owner/:repo/archive"},
-		{"repo archive ref", args{"/repos/testOwner/testRepo/archive/tar.gz"}, "/repos/:owner/:repo/archive/:var"},
+		{name: "repo archive", args: args{path: "/repos/testOwner/testRepo/archive"}, want: "/repos/:owner/:repo/archive"},
+		{name: "repo archive ref", args: args{path: "/repos/testOwner/testRepo/archive/tar.gz"}, want: "/repos/:owner/:repo/archive/:var"},
 
-		{"repo assignees", args{"/repos/testOwner/testRepo/assignees"}, "/repos/:owner/:repo/assignees"},
-		{"repo assignees by name", args{"/repos/testOwner/testRepo/assignees/testUser"}, "/repos/:owner/:repo/assignees/:var"},
+		{name: "repo assignees", args: args{path: "/repos/testOwner/testRepo/assignees"}, want: "/repos/:owner/:repo/assignees"},
+		{name: "repo assignees by name", args: args{path: "/repos/testOwner/testRepo/assignees/testUser"}, want: "/repos/:owner/:repo/assignees/:var"},
 
-		{"repo git commits", args{"/repos/testOwner/testRepo/git/commits"}, "/repos/:owner/:repo/git/commits"},
-		{"repo git commit by sha", args{"/repos/testOwner/testRepo/git/commits/4u8dsaag89ewfdjkt9fdajdsa"}, "/repos/:owner/:repo/git/commits/:var"},
-		{"repo git refs", args{"/repos/testOwner/testRepo/git/ref"}, "/repos/:owner/:repo/git/ref"},
-		{"repo git ref by sha", args{"/repos/testOwner/testRepo/git/ref/4u8dsaag89ewfdjkt9fdajdsa"}, "/repos/:owner/:repo/git/ref/:var"},
-		{"repo git tags", args{"/repos/testOwner/testRepo/git/tags"}, "/repos/:owner/:repo/git/tags"},
-		{"repo git tag by sha", args{"/repos/testOwner/testRepo/git/tags/4u8dsaag89ewfdjkt9fdajdsa"}, "/repos/:owner/:repo/git/tags/:var"},
-		{"repo git trees", args{"/repos/testOwner/testRepo/git/trees"}, "/repos/:owner/:repo/git/trees"},
-		{"repo git tree by sha", args{"/repos/testOwner/testRepo/git/trees/4u8dsaag89ewfdjkt9fdajdsa"}, "/repos/:owner/:repo/git/trees/:var"},
+		{name: "repo git commits", args: args{path: "/repos/testOwner/testRepo/git/commits"}, want: "/repos/:owner/:repo/git/commits"},
+		{name: "repo git commit by sha", args: args{path: "/repos/testOwner/testRepo/git/commits/4u8dsaag89ewfdjkt9fdajdsa"}, want: "/repos/:owner/:repo/git/commits/:var"},
+		{name: "repo git refs", args: args{path: "/repos/testOwner/testRepo/git/ref"}, want: "/repos/:owner/:repo/git/ref"},
+		{name: "repo git ref by sha", args: args{path: "/repos/testOwner/testRepo/git/ref/4u8dsaag89ewfdjkt9fdajdsa"}, want: "/repos/:owner/:repo/git/ref/:var"},
+		{name: "repo git tags", args: args{path: "/repos/testOwner/testRepo/git/tags"}, want: "/repos/:owner/:repo/git/tags"},
+		{name: "repo git tag by sha", args: args{path: "/repos/testOwner/testRepo/git/tags/4u8dsaag89ewfdjkt9fdajdsa"}, want: "/repos/:owner/:repo/git/tags/:var"},
+		{name: "repo git trees", args: args{path: "/repos/testOwner/testRepo/git/trees"}, want: "/repos/:owner/:repo/git/trees"},
+		{name: "repo git tree by sha", args: args{path: "/repos/testOwner/testRepo/git/trees/4u8dsaag89ewfdjkt9fdajdsa"}, want: "/repos/:owner/:repo/git/trees/:var"},
 
-		{"repo git tags", args{"/repos/testOwner/testRepo/hooks"}, "/repos/:owner/:repo/hooks"},
+		{name: "repo git tags", args: args{path: "/repos/testOwner/testRepo/hooks"}, want: "/repos/:owner/:repo/hooks"},
+
+		{name: "repo collaborators", args: args{path: "/repos/testOwner/testRepo/collaborators"}, want: "/repos/:owner/:repo/collaborators"},
+		{name: "repo collaborators by name", args: args{path: "/repos/testOwner/testRepo/collaborators/testCollaborator"}, want: "/repos/:owner/:repo/collaborators/:var"},
+
+		{name: "repo comments", args: args{path: "/repos/testOwner/testRepo/comments"}, want: "/repos/:owner/:repo/comments"},
+		{name: "repo comments by id", args: args{path: "/repos/testOwner/testRepo/comments/testComment"}, want: "/repos/:owner/:repo/comments/:var"},
+
+		{name: "repo commits", args: args{path: "/repos/testOwner/testRepo/commits"}, want: "/repos/:owner/:repo/commits"},
+		{name: "repo commits by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha"}, want: "/repos/:owner/:repo/commits/:var"},
+
+		// /compare/base...head
+		{name: "repo compare", args: args{path: "/repos/testOwner/testRepo/compare/testBase...testHead"}, want: "/repos/:owner/:repo/compare/:var"},
+
+		{name: "repo contents", args: args{path: "/repos/testOwner/testRepo/contents"}, want: "/repos/:owner/:repo/contents"},
+		{name: "repo contents by name", args: args{path: "/repos/testOwner/testRepo/contents/testContents"}, want: "/repos/:owner/:repo/contents/:var"},
+
+		{name: "repo deployments", args: args{path: "/repos/testOwner/testRepo/deployments"}, want: "/repos/:owner/:repo/deployments"},
+
+		{name: "repo downloads", args: args{path: "/repos/testOwner/testRepo/downloads"}, want: "/repos/:owner/:repo/downloads"},
+
+		{name: "repo events", args: args{path: "/repos/testOwner/testRepo/events"}, want: "/repos/:owner/:repo/events"},
+
+		{name: "repo forks", args: args{path: "/repos/testOwner/testRepo/forks"}, want: "/repos/:owner/:repo/forks"},
+
+		{name: "repo topics", args: args{path: "/repos/testOwner/testRepo/topics"}, want: "/repos/:owner/:repo/topics"},
+
+		{name: "repo vulnerability-alerts", args: args{path: "/repos/testOwner/testRepo/vulnerability-alerts"}, want: "/repos/:owner/:repo/vulnerability-alerts"},
+
+		{name: "repo automated-security-fixes", args: args{path: "/repos/testOwner/testRepo/automated-security-fixes"}, want: "/repos/:owner/:repo/automated-security-fixes"},
+
+		{name: "repo contributors", args: args{path: "/repos/testOwner/testRepo/contributors"}, want: "/repos/:owner/:repo/contributors"},
+
+		{name: "repo languages", args: args{path: "/repos/testOwner/testRepo/languages"}, want: "/repos/:owner/:repo/languages"},
+
+		{name: "repo teams", args: args{path: "/repos/testOwner/testRepo/teams"}, want: "/repos/:owner/:repo/teams"},
+
+		{name: "repo tags", args: args{path: "/repos/testOwner/testRepo/tags"}, want: "/repos/:owner/:repo/tags"},
+
+		{name: "repo transfer", args: args{path: "/repos/testOwner/testRepo/transfer"}, want: "/repos/:owner/:repo/transfer"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := handleRepos(tt.args.path); got != tt.want {
 				t.Errorf("handleRepos() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_handleUser(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "user", args: args{path: "/user"}, want: "/user"},
+
+		{name: "user email", args: args{path: "/user/emails"}, want: "/user/emails"},
+		{name: "user email visibility", args: args{path: "/user/email/visibility"}, want: "/user/email/visibility"},
+
+		{name: "user public emails", args: args{path: "/user/public_emails"}, want: "/user/public_emails"},
+
+		{name: "user followers", args: args{path: "/user/followers"}, want: "/user/followers"},
+
+		{name: "user following", args: args{path: "/user/following"}, want: "/user/following"},
+		{name: "user following user", args: args{path: "/user/following/testUser"}, want: "/user/following/:var"},
+
+		{name: "user starred", args: args{path: "/user/starred"}, want: "/user/starred"},
+
+		{name: "user issues", args: args{path: "/user/issues"}, want: "/user/issues"},
+
+		{name: "user keys", args: args{path: "/user/keys"}, want: "/user/keys"},
+		{name: "user keys by id", args: args{path: "/user/keys/testKey"}, want: "/user/keys/:var"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handleUser(tt.args.path); got != tt.want {
+				t.Errorf("handleUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_handleUsers(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "users", args: args{path: "/users"}, want: "/users"},
+		{name: "users", args: args{path: "/users/testUser"}, want: "/users/:username"},
+
+		{name: "users username repos", args: args{path: "/users/testUser/repos"}, want: "/users/:username/repos"},
+
+		{name: "users username hovercard", args: args{path: "/users/testUser/hovercard"}, want: "/users/:username/hovercard"},
+
+		{name: "users username followers", args: args{path: "/users/testUser/followers"}, want: "/users/:username/followers"},
+		{name: "users username follows user", args: args{path: "/users/testUser/followers/testTargetUser"}, want: "/users/:username/followers/:var"},
+
+		{name: "users username following", args: args{path: "/users/testUser/following"}, want: "/users/:username/following"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handleUsers(tt.args.path); got != tt.want {
+				t.Errorf("handleUsers() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_handleOrgs(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "orgs", args: args{path: "/orgs"}, want: "/orgs"},
+		{name: "orgs", args: args{path: "/orgs/testOrg"}, want: "/orgs/:orgname"},
+
+		{name: "orgs orgname repos", args: args{path: "/orgs/testOrg/repos"}, want: "/orgs/:orgname/repos"},
+
+		{name: "orgs orgname issues", args: args{path: "/orgs/testOrg/issues"}, want: "/orgs/:orgname/issues"},
+
+		{name: "orgs orgname credential-authorizations", args: args{path: "/orgs/testOrg/credential-authorizations"}, want: "/orgs/:orgname/credential-authorizations"},
+		{name: "orgs orgname credential-authorizations by id", args: args{path: "/orgs/testOrg/credential-authorizations/testId"}, want: "/orgs/:orgname/credential-authorizations/:var"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handleOrgs(tt.args.path); got != tt.want {
+				t.Errorf("handleOrgs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_handleNotifications(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "notifications", args: args{path: "/notifications"}, want: "/notifications"},
+		{name: "notifications threads", args: args{path: "/notifications/threads"}, want: "/notifications/threads"},
+		{name: "notifications thread by id", args: args{path: "/notifications/threads/testThreadId"}, want: "/notifications/threads/:var"},
+		{name: "notifications thread by id", args: args{path: "/notifications/threads/testThreadId/subscription"}, want: "/notifications/threads/:var/subscription"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handleNotifications(tt.args.path); got != tt.want {
+				t.Errorf("handleNotifications() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_handleConstantAndVar(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "constant and var", args: args{path: "/constant/personal-data"}, want: "/:var"},
+		{name: "constant and constant", args: args{path: "/constant/constant"}, want: "/:var"},
+		{name: "constant", args: args{path: "/constant"}, want: ""},
+		{name: "root", args: args{path: "/"}, want: ""},
+		{name: "nothing", args: args{path: ""}, want: ""},
+
+		{name: "constant and var not starting with /", args: args{path: "constant/personal-data"}, want: "/:var"},
+		{name: "constant and constant not starting with /", args: args{path: "constant/constant"}, want: "/:var"},
+		{name: "constant not starting with /", args: args{path: "constant"}, want: ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handleConstantAndVar(tt.args.path); got != tt.want {
+				t.Errorf("handleConstantAndVar() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_handleVarAndConstant(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "var and constant", args: args{path: "/personal-data/constant"}, want: "/:var"},
+		{name: "constant and constant", args: args{path: "/constant/constant"}, want: "/:var"},
+		{name: "only var", args: args{path: "/personal-data"}, want: "/:var"},
+		{name: "root", args: args{path: "/"}, want: ""},
+		{name: "nothing", args: args{path: ""}, want: ""},
+
+		{name: "var and constant not starting with /", args: args{path: "personal-data/constant"}, want: "/:var"},
+		{name: "constant and constant not starting with /", args: args{path: "constant/constant"}, want: "/:var"},
+		{name: "var not starting with /", args: args{path: "personal-data"}, want: ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := handleVarAndConstant(tt.args.path); got != tt.want {
+				t.Errorf("handleVarAndConstant() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -10,6 +10,10 @@ import (
 
 var (
 	reposRegex          = regexp.MustCompile(`^/repos/(?P<owner>[^/]*)/(?P<repo>[^/]*)(?P<rest>/.*)$`)
+	userRegex           = regexp.MustCompile(`^/user(?P<rest>/.*)?$`)
+	usersRegex          = regexp.MustCompile(`^/users/(?P<username>[^/]*)(?P<rest>/.*)?$`)
+	orgsRegex           = regexp.MustCompile(`^/orgs/(?P<orgname>[^/]*)(?P<rest>/.*)?$`)
+	notificationsRegex  = regexp.MustCompile(`^/notifications(?P<rest>/.*)?$`)
 	varAndConstantRegex = regexp.MustCompile(`^/(?P<var>[^/]*)(?P<path>/.*)?$`)
 	constantAndVarRegex = regexp.MustCompile(`^/(?P<path>[^/]*)(?P<var>/.*)?$`)
 )
@@ -21,27 +25,29 @@ func getSimplifiedPath(path string) string {
 		// /:owner/:repo
 		return handleRepos(path)
 	case "user":
-		// do some more
-		return path
+		// /user
+		return handleUser(path)
 	case "users":
-		// do some more
-		return path
+		// /users
+		return handleUsers(path)
 	case "orgs":
-		// do some more
-		return path
+		// /orgs
+		return handleOrgs(path)
 	case "issues":
-		// do some more
-		return path
+		// /issues
+		return fmt.Sprintf("/%s%s", fragment, handleConstantAndVar(path))
 	case "search":
-		// do some more
+		// do we care to handle search sub-paths differently?
+		// e.g.: /search/repositories, /search/commits, /search/code, /search/issues, /search/users, /search/topics, /search/labels
 		return path
 	case "gists":
-		// do some more
+		// do we care to handle gist sub-paths differently?
+		// e.g. /gists/public, /gists/starred
 		return path
 	case "notifications":
-		// do some more
-		return path
-	case "repositories", "emojis", "events", "feeds", "hub", "rate_limits", "teams", "licenses":
+		// /notifications
+		return handleNotifications(path)
+	case "repositories", "emojis", "events", "feeds", "hub", "rate_limit", "teams", "licenses":
 		return path
 	default:
 		logrus.WithField("path", path).Warning("Path not handled")
@@ -82,7 +88,7 @@ func handleRepos(path string) string {
 	switch fragment := getFirstFragment(rest); fragment {
 	case "issues", "branches":
 		return fmt.Sprintf("%s%s", sanitizedPath, handlePrefixedVarAndConstant(fmt.Sprintf("/%s", fragment), rest))
-	case "keys", "labels", "milestones", "pulls", "releases", "statuses", "subscribers", "assignees", "archive":
+	case "keys", "labels", "milestones", "pulls", "releases", "statuses", "subscribers", "assignees", "archive", "collaborators", "comments", "compare", "contents", "commits":
 		// archive is a special path that might need better handling
 		return fmt.Sprintf("%s/%s%s", sanitizedPath, fragment, handleConstantAndVar(rest))
 	case "git":
@@ -94,6 +100,120 @@ func handleRepos(path string) string {
 		logrus.WithField("sanitizedPath", sanitizedPath).WithField("rest", rest).Warning("Path not handled")
 		return fmt.Sprintf("%s%s", sanitizedPath, rest)
 	}
+}
+
+func handleUser(path string) string {
+	match := userRegex.FindStringSubmatch(path)
+	result := make(map[string]string)
+	for i, name := range userRegex.SubexpNames() {
+		if i != 0 && name != "" && i <= len(match) { // skip first and empty
+			if match[i] != "" {
+				result[name] = match[i]
+			}
+		}
+	}
+	rest := result["rest"]
+	sanitizedPath := fmt.Sprintf("/user")
+	if rest == "" || rest == "/" {
+		return sanitizedPath
+	}
+	switch fragment := getFirstFragment(rest); fragment {
+	case "following", "keys":
+		// archive is a special path that might need better handling
+		return fmt.Sprintf("%s/%s%s", sanitizedPath, fragment, handleConstantAndVar(rest))
+
+	case "emails", "public_emails", "followers", "starred", "issues", "email":
+		return fmt.Sprintf("%s%s", sanitizedPath, rest)
+	default:
+		logrus.WithField("sanitizedPath", sanitizedPath).WithField("rest", rest).Warning("Path not handled")
+		return fmt.Sprintf("%s%s", sanitizedPath, rest)
+	}
+}
+
+func handleUsers(path string) string {
+	match := usersRegex.FindStringSubmatch(path)
+	result := make(map[string]string)
+	for i, name := range usersRegex.SubexpNames() {
+		if i != 0 && name != "" && i <= len(match) { // skip first and empty
+			if match[i] != "" {
+				result[name] = match[i]
+			}
+		}
+	}
+	if result["username"] == "" {
+		logrus.WithField("path", path).Warning("Not handling /users/.. path correctly")
+		return "/users"
+	}
+	rest := result["rest"]
+	sanitizedPath := fmt.Sprintf("/users/%s", ":username")
+	if rest == "" || rest == "/" {
+		return sanitizedPath
+	}
+	switch fragment := getFirstFragment(rest); fragment {
+	case "followers":
+		return fmt.Sprintf("%s/%s%s", sanitizedPath, fragment, handleConstantAndVar(rest))
+
+	case "repos", "hovercard", "following":
+		return fmt.Sprintf("%s%s", sanitizedPath, rest)
+	default:
+		logrus.WithField("sanitizedPath", sanitizedPath).WithField("rest", rest).Warning("Path not handled")
+		return fmt.Sprintf("%s%s", sanitizedPath, rest)
+	}
+}
+
+func handleOrgs(path string) string {
+	match := orgsRegex.FindStringSubmatch(path)
+	result := make(map[string]string)
+	for i, name := range orgsRegex.SubexpNames() {
+		if i != 0 && name != "" && i <= len(match) { // skip first and empty
+			if match[i] != "" {
+				result[name] = match[i]
+			}
+		}
+	}
+	if result["orgname"] == "" {
+		logrus.WithField("path", path).Warning("Not handling /orgs/.. path correctly")
+		return "/orgs"
+	}
+	rest := result["rest"]
+	sanitizedPath := fmt.Sprintf("/orgs/%s", ":orgname")
+	if rest == "" || rest == "/" {
+		return sanitizedPath
+	}
+	switch fragment := getFirstFragment(rest); fragment {
+	case "credential-authorizations":
+		return fmt.Sprintf("%s/%s%s", sanitizedPath, fragment, handleConstantAndVar(rest))
+
+	case "repos", "issues":
+		return fmt.Sprintf("%s%s", sanitizedPath, rest)
+	default:
+		logrus.WithField("sanitizedPath", sanitizedPath).WithField("rest", rest).Warning("Path not handled")
+		return fmt.Sprintf("%s%s", sanitizedPath, rest)
+	}
+}
+
+func handleNotifications(path string) string {
+	match := notificationsRegex.FindStringSubmatch(path)
+	result := make(map[string]string)
+	for i, name := range notificationsRegex.SubexpNames() {
+		if i != 0 && name != "" && i <= len(match) { // skip first and empty
+			if match[i] != "" {
+				result[name] = match[i]
+			}
+		}
+	}
+
+	rest := result["rest"]
+	sanitizedPath := "/notifications"
+	if rest == "" || rest == "/" {
+		logrus.WithField("path", path).Warning("Not handling /notifications/.. path correctly")
+		return sanitizedPath
+	}
+
+	if strings.HasSuffix(rest, "/threads") {
+		return fmt.Sprintf("%s/%s", sanitizedPath, "threads")
+	}
+	return fmt.Sprintf("%s%s", sanitizedPath, handlePrefixedVarAndConstant("/threads", rest))
 }
 
 func handlePrefixedVarAndConstant(prefix, path string) string {
@@ -154,37 +274,21 @@ func handlePrefixedConstantAndVar(prefix, path string) string {
 }
 
 func handleConstantAndVar(path string) string {
-	match := constantAndVarRegex.FindStringSubmatch(path)
-	result := make(map[string]string)
-	for i, name := range constantAndVarRegex.SubexpNames() {
-		if i != 0 && name != "" && i <= len(match) { // skip first and empty
-			if name == "var" && match[i] != "" {
-				result[name] = ":var" // mask issue number
-			} else {
-				result[name] = match[i]
-			}
+	path = strings.TrimPrefix(path, "/")
+	if strings.Contains(path, "/") {
+		result := strings.Split(path, "/")
+
+		if len(result) > 1 {
+			return "/:var"
 		}
-	}
-	if result["var"] != "" {
-		return fmt.Sprintf("/%s", result["var"])
 	}
 	return ""
 }
 
 func handleVarAndConstant(path string) string {
-	match := varAndConstantRegex.FindStringSubmatch(path)
-	result := make(map[string]string)
-	for i, name := range varAndConstantRegex.SubexpNames() {
-		if i != 0 && name != "" && i <= len(match) { // skip first and empty
-			if name == "var" && match[i] != "" {
-				result[name] = ":var" // mask issue number
-			} else {
-				result[name] = match[i]
-			}
-		}
+	result := strings.Split(path, "/")
+	if len(result) > 1 && path != "/" {
+		return "/:var"
 	}
-	if result["var"] != "" {
-		return fmt.Sprintf("/%s", result["var"])
-	}
-	return result["constant"]
+	return ""
 }
