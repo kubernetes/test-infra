@@ -40,7 +40,12 @@ func CollectGithubTokenMetrics(headers http.Header, now time.Time) {
 	remaining := headers.Get("X-RateLimit-Remaining")
 	timeUntilReset := timeUntilFromUnix(headers.Get("X-RateLimit-Reset"), now)
 
-	ghTokenUsageGaugeVec.With(prometheus.Labels{"remaining": remaining, "until_reset": timeUntilReset.String()}).Inc()
+	remainingFloat, err := strconv.ParseFloat(remaining, 64)
+	if err != nil {
+		logrus.WithError(err).Warningf("Couldn't convert number of remaining token requests into gauge value (float)")
+	}
+
+	ghTokenUsageGaugeVec.With(prometheus.Labels{"remaining": remaining, "until_reset": timeUntilReset.String()}).Set(remainingFloat)
 }
 
 // CollectGithubRequestMetrics publishes the number of requests by API path to
