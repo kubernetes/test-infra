@@ -1104,8 +1104,11 @@ func handleLog(lc logClient) http.HandlerFunc {
 				// for a Pod or ProwJob that doesn't exit, it's not
 				// something an administrator wants to see in logs.
 				logger.Info(msg)
+			} else if strings.Contains(err.Error(), "terminated") {
+				logger.Info(msg)
 			} else {
 				logger.Warning(msg)
+
 			}
 			return
 		}
