@@ -177,7 +177,7 @@ def dist(a, b, limit=None):
 # to save some arithmetic.  The first round is always even, as p=abs(main).
 # Note that we rename the "f" function to "computeRow" to be Googley.
 
-class BerghelRoach(object):
+class BerghelRoach:
     def __init__(self, pattern):
         # The "pattern" string against which others are compared.
         self.pattern = pattern

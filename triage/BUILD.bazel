@@ -8,7 +8,6 @@ py_test(
         "summarize_test.py",
     ],
     python_version = "PY3",
-    deps = ["@six"],
 )
 
 py_test(
