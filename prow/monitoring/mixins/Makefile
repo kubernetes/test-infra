@@ -12,22 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# The targets defined here are only for local testing and debuging
+# There is no intention of using it in CI/CD pipeline for the moment
+
 SHELL=/bin/bash -o pipefail
 
-all: tide.json
+all:
+	for name in deck ghproxy hook plank prow sinker tide; do echo "Generating $${name}.json ..."; jsonnet -J vendor/ "grafana_dashboards/$${name}.jsonnet" > "./dashboards_out/$${name}.json"; done
 
-tide.json:
-	@echo "Generating tide.json ..."
-	jsonnet -J vendor/ grafana_dashboards/tide.jsonnet > ./dashboards_out/$@
+clean-vendor:
+	rm -rfv ./vendor
 
 clean:
-	rm -rfv ./vendor
+	rm -rfv ./dashboards_out/*.json
 
 install:
 	jb install
-
-validate-latest: clean install all
-	@echo "Generating sinker.json ..."
-	git status -s ../
-	test -z "$$(git status -s ../)"
-
