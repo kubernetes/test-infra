@@ -65,6 +65,23 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: golint
+
+  - name: pull-ingress-nginx-lualint
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/ingress-nginx
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: quay.io/kubernetes-ingress-controller/e2e:v06232019-5bb168152
+        command:
+        - ./hack/verify-lualint.sh
+
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: lualint
   - name: pull-ingress-nginx-test-lua
     always_run: true
     decorate: true
