@@ -109,7 +109,7 @@ container_pull(
 
 container_pull(
     name = "gcloud-base",
-    digest = "sha256:1dbdee42a553dd6a652d64df1902015ba36ef12d6c16df568a59843e410e270b",  # 2018/10/25
+    digest = "sha256:8e51eea50a45c6be2a735be97139f85a04c623ca448801a317a737c1d9917d00",  # 2019/07/10
     registry = "gcr.io",
     repository = "cloud-builders/gcloud",
     tag = "latest",
