@@ -248,6 +248,10 @@ repo_milestone:
     maintainers_id: 3058957
     maintainers_team: cluster-api-maintainers
     maintainers_friendly_name: Cluster API Maintainers
+  kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
+    maintainers_id: 3302228
+    maintainers_team: cluster-api-bootstrap-provider-kubeadm-maintainers
+    maintainers_friendly_name: Cluster API Bootstrap Provider Kubeadm Maintainers
   kubernetes-sigs/cluster-api-provider-aws:
     maintainers_id: 2830895
     maintainers_team: cluster-api-provider-aws-maintainers
