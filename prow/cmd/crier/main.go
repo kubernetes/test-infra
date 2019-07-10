@@ -73,10 +73,16 @@ func (o *options) validate() error {
 		return errors.New("required flag --config-path was unset")
 	}
 
+	// TODO(krzyzacy): gerrit && github report are actually stateful..
+	// Need a better design to re-enable parallel reporting
 	if o.gerritWorkers > 1 {
-		// TODO(krzyzacy): try to see how to handle racy better for gerrit aggregate report.
 		logrus.Warn("gerrit reporter only supports one worker")
 		o.gerritWorkers = 1
+	}
+
+	if o.githubWorkers > 1 {
+		logrus.Warn("github reporter only supports one worker (https://github.com/kubernetes/test-infra/issues/13306)")
+		o.githubWorkers = 1
 	}
 
 	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers <= 0 {

@@ -154,15 +154,15 @@ func TestGitHubOptions(t *testing.T) {
 		expectedTokenPath string
 	}{
 		{
-			name:              "github workers, sets workers",
+			name:              "github workers, only support single worker",
 			args:              []string{"--github-workers=5", "--github-token-path=tkpath", "--config-path=foo"},
-			expectedWorkers:   5,
+			expectedWorkers:   1,
 			expectedTokenPath: "tkpath",
 		},
 		{
 			name:              "github missing --github-token-path, uses default",
 			args:              []string{"--github-workers=5", "--config-path=foo"},
-			expectedWorkers:   5,
+			expectedWorkers:   1,
 			expectedTokenPath: "/etc/github/oauth",
 		},
 	}

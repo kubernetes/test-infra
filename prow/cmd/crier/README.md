@@ -36,7 +36,7 @@ You can check the reported result by [list the pubsub topic](https://cloud.googl
 
 ### [GitHub reporter](/prow/github/reporter)
 
-You can enable github reporter in crier by specifying `--github-workers=n` flag.
+You can enable github reporter in crier by specifying `--github-workers=1` flag. (We only support single worker for github, due to [#13306](https://github.com/kubernetes/test-infra/issues/13306))
 
 You also need to mount a github oauth token by specifying `--github-token-path` flag, which defaults to `/etc/github/oauth`.
 
