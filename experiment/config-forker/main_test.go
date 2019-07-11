@@ -19,6 +19,7 @@ package main
 import (
 	"reflect"
 	"testing"
+	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -783,4 +784,126 @@ func TestGeneratePostsubmits(t *testing.T) {
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(expected, result))
 	}
+}
+
+func TestFindMaster(t *testing.T) {
+  testingInput := []byte(`
+branch-protection:
+  allow_disabled_policies: true
+  orgs:
+    istio:
+      required_status_checks:
+        contexts:
+        - cla/google
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+      restrictions:
+        teams:
+        - repo-admins
+      repos:
+        api:
+          protect: false
+          branches:
+            <<: *blocked_branches
+            release-1.2:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "merges-blocked-needs-admin"
+            release-1.1:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "merges-blocked-needs-admin"
+            master:
+              protect: true
+        istio:
+          protect: false
+          branches:
+            <<: *blocked_branches
+            release-1.2:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "ci/circleci: codecov"
+                - "ci/circleci: shellcheck"
+                - "ci/circleci: lint"
+                - "ci/circleci: test"
+                - "ci/circleci: build"
+                - "ci/circleci: e2e-pilot-cloudfoundry-v1alpha3-v2"
+                - "merges-blocked-needs-admin"
+            master:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "ci/circleci: e2e-pilot-cloudfoundry-v1alpha3-v2"
+`)
+
+  output := findMaster(testingInput, "a")
+  correctOutput := []byte(`
+branch-protection:
+  allow_disabled_policies: true
+  orgs:
+    istio:
+      required_status_checks:
+        contexts:
+        - cla/google
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+      restrictions:
+        teams:
+        - repo-admins
+      repos:
+        api:
+          protect: false
+          branches:
+            <<: *blocked_branches
+            release-1.2:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "merges-blocked-needs-admin"
+            release-1.1:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "merges-blocked-needs-admin"
+            a:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "merges-blocked-needs-admin"
+            master:
+              protect: true
+        istio:
+          protect: false
+          branches:
+            <<: *blocked_branches
+            release-1.2:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "ci/circleci: codecov"
+                - "ci/circleci: shellcheck"
+                - "ci/circleci: lint"
+                - "ci/circleci: test"
+                - "ci/circleci: build"
+                - "ci/circleci: e2e-pilot-cloudfoundry-v1alpha3-v2"
+                - "merges-blocked-needs-admin"
+            a:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "merges-blocked-needs-admin"
+                - "ci/circleci: e2e-pilot-cloudfoundry-v1alpha3-v2"
+            master:
+              protect: true
+              required_status_checks:
+                contexts:
+                - "ci/circleci: e2e-pilot-cloudfoundry-v1alpha3-v2"
+`)
+  if strings.Compare(string(output), string(correctOutput)) != 0 {
+    t.Fail()
+  }
+
 }

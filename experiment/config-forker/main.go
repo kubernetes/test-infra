@@ -316,6 +316,8 @@ type options struct {
 	jobConfig  string
 	outputPath string
 	newVersion string
+	branchName string
+	rewriteConfig bool
 }
 
 func parseFlags() options {
@@ -323,21 +325,182 @@ func parseFlags() options {
 	flag.StringVar(&o.jobConfig, "job-config", "", "Path to the job config")
 	flag.StringVar(&o.outputPath, "output", "", "Path to the output yaml. if not specified, just validate.")
 	flag.StringVar(&o.newVersion, "version", "", "Version number to generate jobs for")
+	flag.StringVar(&o.branchName, "branch-name", "", "New branch name to be added to new config file if rewrite-config is true.")
+	flag.BoolVar(&o.rewriteConfig, "rewrite-config", false, "Whether or not to rewrite config file with new branch name.")
 	flag.Parse()
 	return o
 }
 
 func validateOptions(o options) error {
-	if o.jobConfig == "" {
-		return errors.New("--job-config must be specified")
+	if o.rewriteConfig {
+		if o.jobConfig == "" {
+			return errors.New("--job-config must be specified")
+		}
+		if o.newVersion == "" {
+			return errors.New("--version must be specified")
+		}
+		if match, err := regexp.MatchString(`^\d+\.\d+$`, o.newVersion); err != nil || !match {
+			return fmt.Errorf("%q doesn't look like a valid version number", o.newVersion)
+		}
+	} else {
+		if o.branchName == "" {
+			return errors.New("--branch-name must be specified")
+		}
 	}
-	if o.newVersion == "" {
-		return errors.New("--version must be specified")
-	}
-	if match, err := regexp.MatchString(`^\d+\.\d+$`, o.newVersion); err != nil || !match {
-		return fmt.Errorf("%q doesn't look like a valid version number", o.newVersion)
-	}
+
+
 	return nil
+}
+
+// Count the number of spaces before a valid character in a string.
+func countLeadingSpace(line string) int {
+    i := 0
+    for _, runeValue := range line {
+        if runeValue == ' ' {
+            i++
+        } else {
+            break
+        }
+    }
+    return i
+}
+
+// Add element to the slice at the indexed position and move all the strings from
+// the index one position to the right.
+func appendAtIndex(original []string, element string, index int) []string {
+    original = append(original, "")
+    copy(original[index + 1 : ], original[index : ])
+    original[index] = element
+
+    return original
+}
+
+// Copy the content of one slice to another.
+func copySlice(input []string) []string {
+    newSlice := []string{}
+
+    for _, element := range(input) {
+        newSlice = append(newSlice, element)
+    }
+
+    return newSlice
+}
+
+// Find index of master section in each branch split for the new branch and 
+// get content from master section with mandatory "merges-blocked-needs-admin" part.
+func getContentOfNewBranch(branchLines []string, newBranch string) (int, string){
+    if len(branchLines) < 2 {
+        return -1, ""
+    }
+    firstBranchLine := branchLines[1]
+    spacesForBranch := countLeadingSpace(firstBranchLine)
+    masterStart := -1
+    masterStop := -1
+        for j := 1; j < len(branchLines); j ++ {
+        line := branchLines[j]
+        if len(line) > spacesForBranch - 1 {
+            checkForMaster := string(line[spacesForBranch: ])
+            if strings.Contains(checkForMaster, "master:") {
+                masterStart = j + 1
+            }
+        }
+
+        if masterStart != -1 && masterStop == -1 && j > masterStart {
+            if countLeadingSpace(string(line)) <= spacesForBranch {
+                masterStop = j - 1
+            }
+        }
+    }
+
+    if masterStart != -1 && masterStop == -1 {
+        masterStop = len(branchLines) - 1
+    }
+
+    if masterStart != -1 && masterStop != -1 {
+        
+        contextStart := -1
+        contextStop := -1
+        contextStrings := -1
+
+        secondBranchSpaces := countLeadingSpace(branchLines[masterStart])
+
+        for m := 0; m < masterStop - masterStart + 1; m ++ {
+            masterLine := branchLines[m + masterStart]
+            if strings.Contains(masterLine, "contexts:") {
+                contextStart = m + 1
+                contextStrings = countLeadingSpace(masterLine)
+            }
+
+            if contextStart != -1 && contextStrings != -1 && contextStop == -1 && m > contextStart {
+
+                if strings.Compare(string(masterLine[contextStrings]), "-") != 0 {
+                    contextStop = m
+                }
+            }
+        }
+        
+        if contextStart != -1 && contextStop == -1 {
+            contextStop = masterStop - masterStart + 1
+        }
+        containsNeedsAdmin := false
+        newBranchSlice := copySlice(branchLines[masterStart : masterStop + 1])
+        if contextStart != -1 && contextStop != -1 {
+            for n := contextStart; n < contextStop; n ++ {
+                contextLine := branchLines[n + masterStart]
+
+                if strings.Contains(contextLine, "merges-blocked-needs-admin") {
+                    containsNeedsAdmin = true
+                    break
+                }
+            }
+
+            if !containsNeedsAdmin {
+                numSpaces := countLeadingSpace(newBranchSlice[contextStart])
+                stringAdmin := strings.Repeat(" ", numSpaces) + "- \"merges-blocked-needs-admin\""
+
+                newBranchSlice = appendAtIndex(newBranchSlice, stringAdmin, contextStop - 1)
+            }
+            
+        } else {
+
+            if len(string(newBranchSlice[len(newBranchSlice) - 1])) == countLeadingSpace(string(newBranchSlice[len(newBranchSlice) - 1])) {
+                newBranchSlice = newBranchSlice[:len(newBranchSlice)-1]
+            }
+            statusCheckString := strings.Repeat(" ", secondBranchSpaces) + "required_status_checks:"
+            contextsString := strings.Repeat(" ", secondBranchSpaces + 2) + "contexts:"
+            needsAdminString := strings.Repeat(" ", secondBranchSpaces + 2) + "- \"merges-blocked-needs-admin\""
+            newBranchSlice = append(newBranchSlice, statusCheckString, contextsString, needsAdminString)
+        }
+
+        newBranchLine := strings.Repeat(" ", spacesForBranch) + newBranch + ":"
+        newBranchSlice = appendAtIndex(newBranchSlice, newBranchLine, 0)
+        masterBranch := strings.Join(newBranchSlice, "\n")
+        return masterStart - 1, masterBranch
+    }
+    return -1, ""
+}
+
+// Convert read result into string and split it based on "branches:" to make it
+// simpler to find "master:" and its contents. Get output from getContentOfNewBranch().
+// Add new branch content before master section and rejoin the string.
+func findMaster(source []byte, newBranch string) string{
+    sourceString := string(source)
+    eachBranches := strings.Split(sourceString, "branches:")
+    for i := 0; i < len(eachBranches); i ++ {
+        branch := eachBranches[i]
+        branchLines := strings.Split(branch, "\n")
+        index, branchContent := getContentOfNewBranch(branchLines, newBranch)
+        if index == -1 {
+            continue
+        }
+        branchLines = appendAtIndex(branchLines, branchContent, index)
+
+        branchString := strings.Join(branchLines, "\n")
+        eachBranches[i] = branchString
+    }
+
+    resultString := strings.Join(eachBranches, "branches:")
+    return resultString
 }
 
 func main() {
@@ -345,32 +508,45 @@ func main() {
 	if err := validateOptions(o); err != nil {
 		log.Fatalln(err)
 	}
-	c, err := config.ReadJobConfig(o.jobConfig)
-	if err != nil {
-		log.Fatalf("Failed to load job config: %v\n", err)
-	}
 
-	newPresubmits, err := generatePresubmits(c, o.newVersion)
-	if err != nil {
-		log.Fatalf("Failed to generate presubmits: %v.\n", err)
-	}
-	newPeriodics, err := generatePeriodics(c, o.newVersion)
-	if err != nil {
-		log.Fatalf("Failed to generate periodics: %v.\n", err)
-	}
-	newPostsubmits, err := generatePostsubmits(c, o.newVersion)
-	if err != nil {
-		log.Fatalf("Failed to generate postsubmits: %v.\n", err)
-	}
+	var output []byte
 
-	output, err := yaml.Marshal(map[string]interface{}{
-		"periodics":   newPeriodics,
-		"presubmits":  newPresubmits,
-		"postsubmits": newPostsubmits,
-	})
-	if err != nil {
-		log.Fatalf("Failed to marshal new presubmits: %v\n", err)
+	if o.rewriteConfig {
+		c, err := config.ReadJobConfig(o.jobConfig)
+		if err != nil {
+			log.Fatalf("Failed to load job config: %v\n", err)
+		}
+
+		newPresubmits, err := generatePresubmits(c, o.newVersion)
+		if err != nil {
+			log.Fatalf("Failed to generate presubmits: %v.\n", err)
+		}
+		newPeriodics, err := generatePeriodics(c, o.newVersion)
+		if err != nil {
+			log.Fatalf("Failed to generate periodics: %v.\n", err)
+		}
+		newPostsubmits, err := generatePostsubmits(c, o.newVersion)
+		if err != nil {
+			log.Fatalf("Failed to generate postsubmits: %v.\n", err)
+		}
+
+		output, err = yaml.Marshal(map[string]interface{}{
+			"periodics":   newPeriodics,
+			"presubmits":  newPresubmits,
+			"postsubmits": newPostsubmits,
+		})
+		if err != nil {
+			log.Fatalf("Failed to marshal new presubmits: %v\n", err)
+		}
+	} else {
+		source, err := ioutil.ReadFile(o.jobConfig)
+		if err != nil {
+			log.Fatalf("Failed to load job config: %v\n", err)
+		}
+		resultedConfigString := findMaster(source, o.branchName)
+    	output = []byte(resultedConfigString)
 	}
+	
 
 	if o.outputPath != "" {
 		if err := ioutil.WriteFile(o.outputPath, output, 0666); err != nil {
