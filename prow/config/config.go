@@ -719,7 +719,6 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 }
 
 func finalizePresubmits(c *Config, presubmits []Presubmit) error {
-	setPresubmitDecorationDefaults(c, presubmits)
 	c.defaultPresubmitFields(vs)
 	if err := SetPresubmitRegexes(vs); err != nil {
 		return fmt.Errorf("could not set regex: %v", err)
@@ -727,6 +726,7 @@ func finalizePresubmits(c *Config, presubmits []Presubmit) error {
 
 	for i := range presubmits {
 		ps := presubmits[i]
+		setPresubmitDecorationDefaults(c, ps)
 		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
 			return err
 		}
@@ -751,12 +751,6 @@ func (c *Config) finalizeJobConfig() error {
 			return errors.New("no default GCS credentials secret provided for plank")
 		}
 
-		for _, vs := range c.presubmits {
-			if err := finalizePresubmits(c, vs); err != nil {
-				return err
-			}
-		}
-
 		for _, js := range c.Postsubmits {
 			for i := range js {
 				setPostsubmitDecorationDefaults(c, &js[i])
@@ -765,6 +759,12 @@ func (c *Config) finalizeJobConfig() error {
 
 		for i := range c.Periodics {
 			setPeriodicDecorationDefaults(c, &c.Periodics[i])
+		}
+	}
+
+	for _, vs := range c.presubmits {
+		if err := finalizePresubmits(c, vs); err != nil {
+			return err
 		}
 	}
 
