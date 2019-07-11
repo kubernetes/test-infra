@@ -334,19 +334,9 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 	} else {
 		log = log.WithField("bugId", e.bugId)
 
-		bug, err := bc.GetBug(e.bugId)
-		if err != nil && !bugzilla.IsNotFound(err) {
-			log.WithError(err).Warn("Unexpected error searching for Bugzilla bug.")
-			return comment(fmt.Sprintf(`An error was encountered searching the Bugzilla server at %s for bug %d:
-> %v
-Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
-				bc.Endpoint(), e.bugId, err))
-		}
-		if bugzilla.IsNotFound(err) || bug == nil {
-			log.Debug("No bug found.")
-			return comment(fmt.Sprintf(`No Bugzilla bug with ID %d exists in the tracker at %s.
-Once a valid bug is referenced in the title of this pull request, request a bug refresh with <code>/bugzilla refresh</code>.`,
-				e.bugId, bc.Endpoint()))
+		bug, err := getBug(bc, e.bugId, log, comment)
+		if err != nil || bug == nil {
+			return err
 		}
 
 		var dependents []bugzilla.Bug
@@ -505,6 +495,27 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 	if e.missing {
 		return nil
 	}
+	if options.Statuses != nil || options.StatusAfterValidation != nil {
+		// we should only migrate if we can be fairly certain that the bug
+		// is not in a state that required human intervention to get to.
+		// For instance, if a bug is closed after a PR merges it should not
+		// be possible for /bugzilla refresh to move it back to the post-merge
+		// state.
+		bug, err := getBug(bc, e.bugId, log, comment)
+		if err != nil || bug == nil {
+			return err
+		}
+		validStatuses := sets.NewString()
+		if options.Statuses != nil {
+			validStatuses.Insert(*options.Statuses...)
+		}
+		if options.StatusAfterValidation != nil {
+			validStatuses.Insert(*options.StatusAfterValidation)
+		}
+		if !validStatuses.Has(bug.Status) {
+			return comment(fmt.Sprintf("The "+bugLink+" is in an unrecognized state (%s) and will not be moved to the %s state.", bc.Endpoint(), e.bugId, bug.Status, *options.StatusAfterMerge))
+		}
+	}
 
 	prs, err := bc.GetExternalBugPRsOnBug(e.bugId)
 	if err != nil {
@@ -548,4 +559,22 @@ Please contact an administrator to resolve this issue, then request a bug refres
 		return comment(fmt.Sprintf("All pull requests linked via external trackers have merged. The "+bugLink+" has been moved to the %s state.", bc.Endpoint(), e.bugId, *options.StatusAfterMerge))
 	}
 	return nil
+}
+
+func getBug(bc bugzilla.Client, bugId int, log *logrus.Entry, comment func(string) error) (*bugzilla.Bug, error) {
+	bug, err := bc.GetBug(bugId)
+	if err != nil && !bugzilla.IsNotFound(err) {
+		log.WithError(err).Warn("Unexpected error searching for Bugzilla bug.")
+		return nil, comment(fmt.Sprintf(`An error was encountered searching the Bugzilla server at %s for bug %d:
+> %v
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
+			bc.Endpoint(), bugId, err))
+	}
+	if bugzilla.IsNotFound(err) || bug == nil {
+		log.Debug("No bug found.")
+		return nil, comment(fmt.Sprintf(`No Bugzilla bug with ID %d exists in the tracker at %s.
+Once a valid bug is referenced in the title of this pull request, request a bug refresh with <code>/bugzilla refresh</code>.`,
+			bugId, bc.Endpoint()))
+	}
+	return bug, nil
 }

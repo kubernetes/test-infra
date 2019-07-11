@@ -859,6 +859,30 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 			expectedBug: &bugzilla.Bug{ID: 123},
 		},
+		{
+			name:   "valid bug on merged PR with merged external links but unknown status does not migrate to new state and comments",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "CLOSED"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
+			options: plugins.BugzillaBranchOptions{StatusAfterValidation: &updated, StatusAfterMerge: &modified}, // no requirements --> always valid
+			expectedComment: `org/repo#1:@user: The [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123) is in an unrecognized state (CLOSED) and will not be moved to the MODIFIED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED"},
+		},
 	}
 
 	for _, testCase := range testCases {
