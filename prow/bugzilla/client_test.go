@@ -190,16 +190,16 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		},
 		{
 			name:            "update succeeds, makes a change as part of multiple changes reported",
-			id:              1705243,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
-			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705243},{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/2","removed":""}},"id":1705243}]}}`,
+			id:              1705244,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705244],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705244},{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/2","removed":""}},"id":1705244}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
 		},
 		{
 			name:            "update succeeds, makes no change",
-			id:              1705244,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705244],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			id:              1705245,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705245],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"bugs":[]}}`,
 			expectedError:   false,
 			expectedChanged: false,
@@ -298,5 +298,198 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 	}
 	if changed {
 		t.Error("expected not to change state, but did")
+	}
+}
+
+func TestIdentifierForPull(t *testing.T) {
+	var testCases = []struct {
+		name      string
+		org, repo string
+		num       int
+		expected  string
+	}{
+		{
+			name:     "normal works as expected",
+			org:      "organization",
+			repo:     "repository",
+			num:      1234,
+			expected: "organization/repository/pull/1234",
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := IdentifierForPull(testCase.org, testCase.repo, testCase.num), testCase.expected; actual != expected {
+			t.Errorf("%s: got incorrect identifier, expected %s but got %s", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestPullFromIdentifier(t *testing.T) {
+	var testCases = []struct {
+		name                      string
+		identifier                string
+		expectedOrg, expectedRepo string
+		expectedNum               int
+		expectedErr               bool
+		expectedNotPullErr        bool
+	}{
+		{
+			name:         "normal works as expected",
+			identifier:   "organization/repository/pull/1234",
+			expectedOrg:  "organization",
+			expectedRepo: "repository",
+			expectedNum:  1234,
+		},
+		{
+			name:        "wrong number of parts fails",
+			identifier:  "organization/repository",
+			expectedErr: true,
+		},
+		{
+			name:               "not a pull fails but in an identifiable way",
+			identifier:         "organization/repository/issue/1234",
+			expectedErr:        true,
+			expectedNotPullErr: true,
+		},
+		{
+			name:        "not a number fails",
+			identifier:  "organization/repository/pull/abcd",
+			expectedErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		org, repo, num, err := PullFromIdentifier(testCase.identifier)
+		if testCase.expectedErr && err == nil {
+			t.Errorf("%s: expected an error but got none", testCase.name)
+		}
+		if !testCase.expectedErr && err != nil {
+			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+		}
+		if testCase.expectedNotPullErr && !IsIdentifierNotForPullErr(err) {
+			t.Errorf("%s: expected a notForPull error but got: %T", testCase.name, err)
+		}
+		if org != testCase.expectedOrg {
+			t.Errorf("%s: got incorrect org, expected %s but got %s", testCase.name, testCase.expectedOrg, org)
+		}
+		if repo != testCase.expectedRepo {
+			t.Errorf("%s: got incorrect repo, expected %s but got %s", testCase.name, testCase.expectedRepo, repo)
+		}
+		if num != testCase.expectedNum {
+			t.Errorf("%s: got incorrect num, expected %d but got %d", testCase.name, testCase.expectedNum, num)
+		}
+	}
+}
+
+func TestGetExternalBugPRsOnBug(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		id            int
+		response      string
+		expectedError bool
+		expectedPRs   []ExternalBug
+	}{
+		{
+			name:          "no external bugs returns empty list",
+			id:            1705243,
+			response:      `{"bugs":[{"external_bugs":[]}],"faults":[]}`,
+			expectedError: false,
+		},
+		{
+			name:          "one external bug pointing to PR is found",
+			id:            1705244,
+			response:      `{"bugs":[{"external_bugs":[{"bug_id": 1705244,"ext_bz_bug_id":"org/repo/pull/1","type":{"url":"https://github.com/"}}]}],"faults":[]}`,
+			expectedError: false,
+			expectedPRs:   []ExternalBug{{Type: ExternalBugType{URL: "https://github.com/"}, BugzillaBugID: 1705244, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}},
+		},
+		{
+			name:          "multiple external bugs pointing to PRs are found",
+			id:            1705245,
+			response:      `{"bugs":[{"external_bugs":[{"bug_id": 1705245,"ext_bz_bug_id":"org/repo/pull/1","type":{"url":"https://github.com/"}},{"bug_id": 1705245,"ext_bz_bug_id":"org/repo/pull/2","type":{"url":"https://github.com/"}}]}],"faults":[]}`,
+			expectedError: false,
+			expectedPRs:   []ExternalBug{{Type: ExternalBugType{URL: "https://github.com/"}, BugzillaBugID: 1705245, ExternalBugID: "org/repo/pull/1", Org: "org", Repo: "repo", Num: 1}, {Type: ExternalBugType{URL: "https://github.com/"}, BugzillaBugID: 1705245, ExternalBugID: "org/repo/pull/2", Org: "org", Repo: "repo", Num: 2}},
+		},
+		{
+			name:          "external bugs pointing to issues are ignored",
+			id:            1705246,
+			response:      `{"bugs":[{"external_bugs":[{"bug_id": 1705246,"ext_bz_bug_id":"org/repo/issues/1","type":{"url":"https://github.com/"}}]}],"faults":[]}`,
+			expectedError: false,
+		},
+		{
+			name:          "external bugs pointing to other Bugzilla bugs are ignored",
+			id:            1705247,
+			response:      `{"bugs":[{"external_bugs":[{"bug_id": 3,"ext_bz_bug_id":"org/repo/pull/1","type":{"url":"https://github.com/"}}]}],"faults":[]}`,
+			expectedError: false,
+		},
+		{
+			name:          "external bugs pointing to other trackers are ignored",
+			id:            1705248,
+			response:      `{"bugs":[{"external_bugs":[{"bug_id": 1705248,"ext_bz_bug_id":"something","type":{"url":"https://bugs.tracker.com/"}}]}],"faults":[]}`,
+			expectedError: false,
+		},
+		{
+			name:          "external bugs pointing to invalid pulls cause an error",
+			id:            1705249,
+			response:      `{"bugs":[{"external_bugs":[{"bug_id": 1705249,"ext_bz_bug_id":"org/repo/pull/c","type":{"url":"https://github.com/"}}]}],"faults":[]}`,
+			expectedError: true,
+		},
+	}
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("include_fields") != "external_bugs" {
+			t.Error("did not get external bugs passed in include_fields query parameter")
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if r.Method != http.MethodGet {
+			t.Errorf("incorrect method to get a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to get a bug: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/")); err != nil {
+			t.Errorf("malformed bug id: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		} else {
+			for _, testCase := range testCases {
+				if id == testCase.id {
+					if _, err := w.Write([]byte(testCase.response)); err != nil {
+						t.Fatalf("%s: failed to send response: %v", testCase.name, err)
+					}
+					return
+				}
+			}
+		}
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			prs, err := client.GetExternalBugPRsOnBug(testCase.id)
+			if !testCase.expectedError && err != nil {
+				t.Errorf("%s: expected no error, but got one: %v", testCase.name, err)
+			}
+			if testCase.expectedError && err == nil {
+				t.Errorf("%s: expected an error, but got none", testCase.name)
+			}
+			if actual, expected := prs, testCase.expectedPRs; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect prs: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
 	}
 }

@@ -150,12 +150,21 @@ type BugUpdate struct {
 // See API documentation at:
 // https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html
 type ExternalBug struct {
-	// TrackerID is an internal field to the Bugzilla server identifying the tracker
-	TrackerID int `json:"ext_bz_id"`
+	// Type holds more metadata for the external bug tracker
+	Type ExternalBugType `json:"type"`
 	// BugzillaBugID is the ID of the Bugzilla bug this external bug is linked to
 	BugzillaBugID int `json:"bug_id"`
 	// ExternalBugID is a unique identifier for the bug under the tracker
 	ExternalBugID string `json:"ext_bz_bug_id"`
+	// The following fields are parsed from the external bug identifier
+	Org, Repo string
+	Num       int
+}
+
+// ExternalBugType holds identifying metadata for a tracker
+type ExternalBugType struct {
+	// URL is the identifying URL for this tracker
+	URL string `json:"url"`
 }
 
 // AddExternalBugParameters are the parameters required to add an external

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -30,6 +31,7 @@ import (
 type Client interface {
 	Endpoint() string
 	GetBug(id int) (*Bug, error)
+	GetExternalBugPRsOnBug(id int) ([]ExternalBug, error)
 	UpdateBug(id int, update BugUpdate) error
 	AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 }
@@ -79,6 +81,57 @@ func (c *client) GetBug(id int) (*Bug, error) {
 		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
 	}
 	return parsedResponse.Bugs[0], nil
+}
+
+// GetExternalBugPRsOnBug retrieves external bugs on a Bug from the server
+// and returns any that reference a Pull Request in GitHub
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
+func (c *client) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
+	logger := c.logger.WithFields(logrus.Fields{"method": "GetExternalBugPRsOnBug", "id": id})
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), nil)
+	if err != nil {
+		return nil, err
+	}
+	values := req.URL.Query()
+	values.Add("include_fields", "external_bugs")
+	req.URL.RawQuery = values.Encode()
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	var parsedResponse struct {
+		Bugs []struct {
+			ExternalBugs []ExternalBug `json:"external_bugs"`
+		} `json:"bugs"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	if len(parsedResponse.Bugs) != 1 {
+		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
+	}
+	var prs []ExternalBug
+	for _, bug := range parsedResponse.Bugs[0].ExternalBugs {
+		if bug.BugzillaBugID != id {
+			continue
+		}
+		if bug.Type.URL != "https://github.com/" {
+			// TODO: skuznets: figure out how to honor the endpoints given to the GitHub client to support enterprise here
+			continue
+		}
+		org, repo, num, err := PullFromIdentifier(bug.ExternalBugID)
+		if IsIdentifierNotForPullErr(err) {
+			continue
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not parse external identifier %q as pull: %v", bug.ExternalBugID, err)
+		}
+		bug.Org = org
+		bug.Repo = repo
+		bug.Num = num
+		prs = append(prs, bug)
+	}
+	return prs, nil
 }
 
 // UpdateBug updates the fields of a bug on the server
@@ -158,7 +211,7 @@ func IsNotFound(err error) bool {
 // https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#add-external-bug
 func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
 	logger := c.logger.WithFields(logrus.Fields{"method": "AddExternalBug", "id": id, "org": org, "repo": repo, "num": num})
-	pullIdentifier := fmt.Sprintf("%s/%s/pull/%d", org, repo, num)
+	pullIdentifier := IdentifierForPull(org, repo, num)
 	rpcPayload := struct {
 		// Version is the version of JSONRPC to use. All Bugzilla servers
 		// support 1.0. Some support 1.1 and some support 2.0
@@ -231,4 +284,37 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		}
 	}
 	return changed, nil
+}
+
+func IdentifierForPull(org, repo string, num int) string {
+	return fmt.Sprintf("%s/%s/pull/%d", org, repo, num)
+}
+
+func PullFromIdentifier(identifier string) (org, repo string, num int, err error) {
+	parts := strings.Split(identifier, "/")
+	if len(parts) != 4 {
+		return "", "", 0, fmt.Errorf("invalid pull identifier with %d parts: %q", len(parts), identifier)
+	}
+	if parts[2] != "pull" {
+		return "", "", 0, &identifierNotForPull{identifier: identifier}
+	}
+	number, err := strconv.Atoi(parts[3])
+	if err != nil {
+		return "", "", 0, fmt.Errorf("invalid pull identifier: could not parse %s as number: %v", parts[3], err)
+	}
+
+	return parts[0], parts[1], number, nil
+}
+
+type identifierNotForPull struct {
+	identifier string
+}
+
+func (i identifierNotForPull) Error() string {
+	return fmt.Sprintf("identifier %q is not for a pull request", i.identifier)
+}
+
+func IsIdentifierNotForPullErr(err error) bool {
+	_, ok := err.(*identifierNotForPull)
+	return ok
 }

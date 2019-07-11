@@ -112,6 +112,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			if opts[branch].AddExternalLink != nil && *opts[branch].AddExternalLink {
 				updates = append(updates, "updated to refer to the pull request using the external bug tracker")
 			}
+			if opts[branch].StatusAfterMerge != nil {
+				updates = append(updates, fmt.Sprintf("moved to the %q state when all linked pull requests are merged", *opts[branch].StatusAfterMerge))
+			}
 
 			if len(updates) > 0 {
 				message += ". After being linked to a pull request, bugs will be "
@@ -180,10 +183,11 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 
 // digestPR determines if any action is necessary and creates the objects for handle() if it is
 func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault *bool) (*event, error) {
-	// These are the only actions indicating the PR title may have changed.
+	// These are the only actions indicating the PR title may have changed or that the PR merged
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
-		pre.Action != github.PullRequestActionEdited {
+		pre.Action != github.PullRequestActionEdited &&
+		!(pre.Action == github.PullRequestActionClosed && pre.PullRequest.Merged) {
 		return nil, nil
 	}
 
@@ -196,7 +200,7 @@ func digestPR(log *logrus.Entry, pre github.PullRequestEvent, validateByDefault 
 	)
 
 	// Make sure the PR title is referencing a bug
-	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
+	e := &event{org: org, repo: repo, baseRef: baseRef, number: number, merged: pre.PullRequest.Merged, body: title, htmlUrl: pre.PullRequest.HTMLURL, login: pre.PullRequest.User.Login}
 	mat := titleMatch.FindStringSubmatch(title)
 	if mat == nil {
 		// in the case that the title used to reference a bug and no longer does we
@@ -282,7 +286,7 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 		return nil, err
 	}
 
-	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login}
+	e := &event{org: org, repo: repo, baseRef: pr.Base.Ref, number: number, merged: pr.Merged, body: gce.Body, htmlUrl: gce.HTMLURL, login: gce.User.Login}
 	mat := titleMatch.FindStringSubmatch(pr.Title)
 	if mat == nil {
 		e.missing = true
@@ -302,13 +306,21 @@ func digestComment(gc githubClient, log *logrus.Entry, gce github.GenericComment
 type event struct {
 	org, repo, baseRef   string
 	number, bugId        int
-	missing              bool
+	missing, merged      bool
 	body, htmlUrl, login string
 }
 
-func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
-	comment := func(body string) error {
+func (e *event) comment(gc githubClient) func(body string) error {
+	return func(body string) error {
 		return gc.CreateComment(e.org, e.repo, e.number, plugins.FormatResponseRaw(e.body, e.htmlUrl, e.login, body))
+	}
+}
+
+func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+	comment := e.comment(gc)
+	// merges follow a different pattern from the normal validation
+	if e.merged {
+		return handleMerge(e, gc, bc, options, log)
 	}
 
 	var needsValidLabel, needsInvalidLabel bool
@@ -482,4 +494,58 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 	}
 
 	return valid, errors
+}
+
+func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+	comment := e.comment(gc)
+
+	if options.StatusAfterMerge == nil {
+		return nil
+	}
+	if e.missing {
+		return nil
+	}
+
+	prs, err := bc.GetExternalBugPRsOnBug(e.bugId)
+	if err != nil {
+		log.WithError(err).Warn("Unexpected error listing external tracker bugs for Bugzilla bug.")
+		return comment(fmt.Sprintf(`An error was encountered searching the Bugzilla server at %s for external trackers on bug %d:
+> %v
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
+			bc.Endpoint(), e.bugId, err))
+	}
+	shouldMigrate := true
+	for _, item := range prs {
+		var merged bool
+		if e.org == item.Org && e.repo == item.Repo && e.number == item.Num {
+			merged = e.merged
+		} else {
+			pr, err := gc.GetPullRequest(item.Org, item.Repo, item.Num)
+			if err != nil {
+				log.WithError(err).Warn("Unexpected error checking merge state of related pull request.")
+				return comment(fmt.Sprintf(`An error was encountered checking the state of a related pull request at https://github.com/%s/%s/pull/%d for bug %d:
+> %v
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
+					item.Org, item.Repo, item.Num, e.bugId, err))
+			}
+			merged = pr.Merged
+		}
+		// only update Bugzilla bug status if all PRs have merged
+		shouldMigrate = shouldMigrate && merged
+		if !shouldMigrate {
+			break
+		}
+	}
+
+	if shouldMigrate {
+		if err := bc.UpdateBug(e.bugId, bugzilla.BugUpdate{Status: *options.StatusAfterMerge}); err != nil {
+			log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
+			return comment(fmt.Sprintf(`An error was encountered updating the bug to the %s state on the Bugzilla server at %s for bug %d:
+> %v
+Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.`,
+				*options.StatusAfterMerge, bc.Endpoint(), e.bugId, err))
+		}
+		return comment(fmt.Sprintf("All pull requests linked via external trackers have merged. The "+bugLink+" has been moved to the %s state.", bc.Endpoint(), e.bugId, *options.StatusAfterMerge))
+	}
+	return nil
 }

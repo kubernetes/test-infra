@@ -1032,6 +1032,9 @@ type BugzillaBranchOptions struct {
 	// AddExternalLink determines whether the pull request will be added to the Bugzilla
 	// bug using the ExternalBug tracker API after being validated
 	AddExternalLink *bool `json:"add_external_link,omitempty"`
+	// StatusAfterMerge is the status which the bug will be moved to after all pull requests
+	// in the external bug tracker have been merged.
+	StatusAfterMerge *string `json:"status_after_merge,omitempty"`
 }
 
 func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
@@ -1049,7 +1052,9 @@ func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
 		(o.StatusAfterValidation != nil && other.StatusAfterValidation != nil && *o.StatusAfterValidation == *other.StatusAfterValidation)
 	addExternalLinkMatch := o.AddExternalLink == nil && other.AddExternalLink == nil ||
 		(o.AddExternalLink != nil && other.AddExternalLink != nil && *o.AddExternalLink == *other.AddExternalLink)
-	return validateByDefaultMatch && isOpenMatch && targetReleaseMatch && statusesMatch && dependentBugStatusesMatch && statusesAfterValidationMatch && addExternalLinkMatch
+	statusAfterMergeMatch := o.StatusAfterMerge == nil && other.StatusAfterMerge == nil ||
+		(o.StatusAfterMerge != nil && other.StatusAfterMerge != nil && *o.StatusAfterMerge == *other.StatusAfterMerge)
+	return validateByDefaultMatch && isOpenMatch && targetReleaseMatch && statusesMatch && dependentBugStatusesMatch && statusesAfterValidationMatch && addExternalLinkMatch && statusAfterMergeMatch
 }
 
 const BugzillaOptionsWildcard = `*`
@@ -1088,6 +1093,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	if parent.AddExternalLink != nil {
 		output.AddExternalLink = parent.AddExternalLink
 	}
+	if parent.StatusAfterMerge != nil {
+		output.StatusAfterMerge = parent.StatusAfterMerge
+	}
 
 	//override with the child
 	if child.ValidateByDefault != nil {
@@ -1110,6 +1118,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 	if child.AddExternalLink != nil {
 		output.AddExternalLink = child.AddExternalLink
+	}
+	if child.StatusAfterMerge != nil {
+		output.StatusAfterMerge = child.StatusAfterMerge
 	}
 
 	return output
