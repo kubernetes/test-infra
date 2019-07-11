@@ -27,6 +27,7 @@ package ghcache
 
 import (
 	"context"
+	"crypto/sha256"
 	"net/http"
 	"path"
 	"strings"
@@ -156,6 +157,16 @@ type upstreamTransport struct {
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	etag := req.Header.Get("if-none-match")
+
+	// get authorization header to convert to sha256
+	authHeader := req.Header.Get("Authorization")
+	hasher := sha256.New()
+	hasher.Write([]byte(authHeader))
+	authHeaderHash := string(hasher.Sum(nil))
+	if authHeader == "" {
+		logrus.Warnf("Couldn't retrieve 'Authorization' header, %s is the hash of an empty string", authHeaderHash)
+	}
+
 	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.
 	resp, err := u.delegate.RoundTrip(req)
@@ -175,8 +186,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
 
-	ghmetrics.CollectGithubTokenMetrics(resp.Header, reqStartTime)
-	ghmetrics.CollectGithubRequestMetrics(req.URL.Path, string(resp.StatusCode), roundTripTime.String())
+	ghmetrics.CollectGithubTokenMetrics(authHeaderHash, resp.Header, reqStartTime)
+	ghmetrics.CollectGithubRequestMetrics(authHeaderHash, req.URL.Path, string(resp.StatusCode), roundTripTime.String())
 
 	return resp, nil
 }
