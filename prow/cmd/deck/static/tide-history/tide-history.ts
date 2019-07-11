@@ -2,6 +2,7 @@ import moment from "moment";
 import {JobState} from "../api/prow";
 import {HistoryData, Record} from "../api/tide-history";
 import {cell} from "../common/common";
+import {getParameterByName} from "../common/urls";
 
 declare const tideHistory: HistoryData;
 
@@ -11,13 +12,6 @@ interface FilteredRecord extends Record {
   // The following are not initially present and are instead populated based on the 'History' map key while filtering.
   repo: string;
   branch: string;
-}
-
-// http://stackoverflow.com/a/5158301/3694
-function getParameterByName(name: string): string | null {
-  const match = RegExp(`[?&]${name}=([^&/]*)`).exec(
-    window.location.search);
-  return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
 interface Options {
@@ -124,7 +118,7 @@ window.onload = (): void => {
   redraw();
 };
 
-function addOptions(options: string[], selectID: string): string | null {
+function addOptions(options: string[], selectID: string): string | undefined {
   const sel = document.getElementById(selectID)! as HTMLSelectElement;
   while (sel.length > 1) {
     sel.removeChild(sel.lastChild!);

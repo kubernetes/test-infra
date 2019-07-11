@@ -1,19 +1,13 @@
 import moment from "moment";
 import {Job, JobState, JobType} from "../api/prow";
 import {cell, getCookieByName, icon} from "../common/common";
+import {getParameterByName} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
 
 declare const allBuilds: Job[];
 declare const spyglass: boolean;
 declare const rerunCreatesJob: boolean;
-
-// http://stackoverflow.com/a/5158301/3694
-function getParameterByName(name: string): string | null {
-    const match = RegExp(`[?&]${name}=([^&/]*)`).exec(
-        window.location.search);
-    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-}
 
 function shortenBuildRefs(buildRef: string): string {
     return buildRef && buildRef.replace(/:[0-9a-f]*/g, '');
@@ -360,7 +354,7 @@ function addOptionFuzzySearch(fz: FuzzySearch, data: string[], id: string,
     }
 }
 
-function addOptions(options: string[], selectID: string): string | null {
+function addOptions(options: string[], selectID: string): string | undefined {
     const sel = document.getElementById(selectID)! as HTMLSelectElement;
     while (sel.length > 1) {
         sel.removeChild(sel.lastChild!);
