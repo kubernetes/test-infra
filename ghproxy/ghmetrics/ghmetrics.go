@@ -17,7 +17,7 @@ var ghTokenUntilResetGaugeVec = prometheus.NewGaugeVec(
 		Name: "github_token_reset",
 		Help: "Last reported GitHub token reset time.",
 	},
-	[]string{"token_hash", "until_reset"},
+	[]string{"token_hash"},
 )
 
 // ghTokenUsageGaugeVec provides the 'github_token_usage' gauge that
@@ -27,7 +27,7 @@ var ghTokenUsageGaugeVec = prometheus.NewGaugeVec(
 		Name: "github_token_usage",
 		Help: "How many GitHub token requets have been used up.",
 	},
-	[]string{"token_hash", "remaining"},
+	[]string{"token_hash"},
 )
 
 // ghRequestsGauge provides the 'github_requests' gauge that keeps track
@@ -41,6 +41,7 @@ var ghRequestsGauge = prometheus.NewGaugeVec(
 )
 
 var muxTokenUsage, muxRequestMetrics sync.Mutex
+var lastGitHubResponse time.Time
 
 func init() {
 	prometheus.MustRegister(ghTokenUntilResetGaugeVec)
@@ -50,19 +51,25 @@ func init() {
 
 // CollectGithubTokenMetrics publishes the rate limits of the github api to
 // `github_token_usage` on prometheus.
-func CollectGithubTokenMetrics(tokenHash string, headers http.Header, now time.Time) {
+func CollectGithubTokenMetrics(tokenHash string, headers http.Header, reqStartTime, responseTime time.Time) {
 	remaining := headers.Get("X-RateLimit-Remaining")
-	timeUntilReset := timeUntilFromUnix(headers.Get("X-RateLimit-Reset"), now)
+	timeUntilReset := timestampStringToTime(headers.Get("X-RateLimit-Reset"))
+	durationUntilReset := timeUntilReset.Sub(reqStartTime)
 
 	remainingFloat, err := strconv.ParseFloat(remaining, 64)
 	if err != nil {
-		logrus.WithError(err).Warningf("Couldn't convert number of remaining token requests into gauge value (float)")
+		logrus.WithError(err).Infof("Couldn't convert number of remaining token requests into gauge value (float)")
 	}
 
 	muxTokenUsage.Lock()
 	defer muxTokenUsage.Unlock()
-	ghTokenUntilResetGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "until_reset": timeUntilReset.String()}).Set(float64(timeUntilReset.Nanoseconds()))
-	ghTokenUsageGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "remaining": remaining}).Set(remainingFloat)
+	if lastGitHubResponse.After(responseTime) {
+		logrus.WithField("lastGitHubResponse", lastGitHubResponse).WithField("responseTime", responseTime).Info("Previously pushed metrics of a newer response, skipping old metrics")
+	} else {
+		lastGitHubResponse = responseTime
+		ghTokenUntilResetGaugeVec.With(prometheus.Labels{"token_hash": tokenHash}).Set(float64(durationUntilReset.Nanoseconds()))
+		ghTokenUsageGaugeVec.With(prometheus.Labels{"token_hash": tokenHash}).Set(remainingFloat)
+	}
 }
 
 // CollectGithubRequestMetrics publishes the number of requests by API path to
@@ -73,13 +80,12 @@ func CollectGithubRequestMetrics(tokenHash, path, statusCode, roundTripTime stri
 	ghRequestsGauge.With(prometheus.Labels{"token_hash": tokenHash, "path": getSimplifiedPath(path), "status": statusCode, "duration": roundTripTime}).Inc()
 }
 
-// timeUntilFromUnix takes a unix timestamp and returns a `time.Duration`
+// timeUntilFromUnix takes a unix timestamp and returns a `time.Time`
 // from the given time until the passed unix timestamps point in time.
-func timeUntilFromUnix(reset string, now time.Time) time.Duration {
-	timestamp, err := strconv.ParseInt(reset, 10, 64)
+func timestampStringToTime(futureTimestamp string) time.Time {
+	timestamp, err := strconv.ParseInt(futureTimestamp, 10, 64)
 	if err != nil {
-		logrus.WithField("timestamp", reset).Info("Couldn't convert unix timestamp")
+		logrus.WithField("timestamp", futureTimestamp).Info("Couldn't convert unix timestamp")
 	}
-	resetTime := time.Unix(timestamp, 0)
-	return resetTime.Sub(now)
+	return time.Unix(timestamp, 0)
 }

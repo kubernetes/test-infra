@@ -174,7 +174,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		logrus.WithField("cache-key", req.URL.String()).WithError(err).Error("Error from upstream (GitHub).")
 		return nil, err
 	}
-	roundTripTime := time.Now().Sub(reqStartTime)
+	responseTime := time.Now()
+	roundTripTime := responseTime.Sub(reqStartTime)
 
 	if resp.StatusCode >= 400 {
 		// Don't store errors. They can't be revalidated to save API tokens.
@@ -186,7 +187,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("X-Conditional-Request", etag)
 	}
 
-	ghmetrics.CollectGithubTokenMetrics(authHeaderHash, resp.Header, reqStartTime)
+	ghmetrics.CollectGithubTokenMetrics(authHeaderHash, resp.Header, reqStartTime, responseTime)
 	ghmetrics.CollectGithubRequestMetrics(authHeaderHash, req.URL.Path, string(resp.StatusCode), roundTripTime.String())
 
 	return resp, nil
