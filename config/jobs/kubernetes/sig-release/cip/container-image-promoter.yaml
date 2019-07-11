@@ -15,6 +15,7 @@ presubmits:
         args:
         - /app/cip-docker-image.binary
         - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml
+        - k8s.gcr.io/k8s-staging-cluster-api-aws/manifest.yaml
         - k8s.gcr.io/k8s-staging-coredns/manifest.yaml
         - k8s.gcr.io/k8s-staging-csi/manifest.yaml
         env:
