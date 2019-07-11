@@ -1159,7 +1159,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 	if err != nil {
 		return nil, err
 	}
-	for _, ps := range c.config().GetPresubmits(c.gc, sp.org, sp.repo, sp.sha, headRefs) {
+	for _, ps := range presubmits {
 		if !ps.ContextRequired() {
 			continue
 		}
