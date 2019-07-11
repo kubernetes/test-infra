@@ -436,8 +436,8 @@ test_groups:
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
 
 # EKS e2e results
-- name: pull-kubernetes-e2e-aws-eks-1-11-correctness
-  gcs_prefix: kubernetes-jenkins/logs/pull-kubernetes-e2e-aws-eks-1-11-correctness
+- name: pull-kubernetes-e2e-aws-eks-1-13-correctness
+  gcs_prefix: kubernetes-jenkins/logs/pull-kubernetes-e2e-aws-eks-1-13-correctness
 
 # prow jobs
 - name: ci-test-infra-branchprotector
@@ -4724,8 +4724,8 @@ dashboards:
 # EKS dashboard
 - name: conformance-eks
   dashboard_tab:
-  - name: periodic-v1.11
-    test_group_name: ci-kubernetes-e2e-aws-eks-1-11-conformance
+  - name: periodic-v1.13
+    test_group_name: ci-kubernetes-e2e-aws-eks-1-13-conformance
     description: Runs conformance tests on a Kubernetes cluster provided by AWS EKS (https://docs.aws.amazon.com/eks)"
     alert_mail_to_addresses: k8s-oss-test-alerts@amazon.com
 
