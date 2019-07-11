@@ -838,7 +838,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 }
 
 func (c *Config) validatePresubmits(repo string, additionalPresubmits ...Presubmit) error {
-	var validPresubmits []Presubmit
+	var validPresubmits map[string][]Presubmit
 	for _, presubmit := range append(c.presubmits[repo], additionalPresubmits...) {
 		if err := validateJobBase(presubmit.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
 			return fmt.Errorf("invalid presubmit job %s: %v", presubmit.Name, err)
@@ -848,11 +848,13 @@ func (c *Config) validatePresubmits(repo string, additionalPresubmits ...Presubm
 			return err
 		}
 
-		for _, validatedPresubmit := range validPresubmits {
+		for _, validatedPresubmit := range validPresubmits[presubmit.Name] {
 			if validatedPresubmit.Brancher.Intersects(presubmit.Brancher) {
 				return fmt.Errorf("duplicated presubmit job: %s", presubmit.Name)
 			}
 		}
+
+		validPresubmits[job.Name] = append(validPresubmits[presubmit.Name], presubmit)
 	}
 
 	return nil
@@ -868,8 +870,8 @@ func (c *Config) validateJobConfig() error {
 	// Validate presubmits.
 	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
 	validPresubmits := map[orgRepoJobName][]Presubmit{}
-	for repo, jobs := range c.Presubmits {
-		if err := c.validatePresubmits(repo, jobs); err != nil {
+	for repo, _ := range c.Presubmits {
+		if err := c.validatePresubmits(repo); err != nil {
 			return err
 		}
 	}
