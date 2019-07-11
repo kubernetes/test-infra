@@ -533,6 +533,7 @@ postsubmits:
         args:
         - /app/cip-docker-image.binary
         - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
+        - k8s.gcr.io/k8s-staging-cluster-api-aws/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
         - k8s.gcr.io/k8s-staging-coredns/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
         - k8s.gcr.io/k8s-staging-csi/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
         env:
