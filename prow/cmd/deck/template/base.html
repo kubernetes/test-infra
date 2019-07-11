@@ -13,6 +13,11 @@
 
     gtag('config', {{googleAnalytics}});
   </script>
+  {{else}}
+  <!-- Use noop gtag function if analytics are not enabled. -->
+  <script>
+    function gtag() {}
+  </script>
   {{end}}
   {{if .MobileFriendly}}
     <meta name="viewport" content="width=device-width, initial-scale=1">
