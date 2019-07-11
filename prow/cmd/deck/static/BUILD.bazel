@@ -173,6 +173,7 @@ ts_library(
     name = "spyglass_lens",
     srcs = ["spyglass/lens.ts"],
     deps = [
+        ":common",
         ":spyglass_common",
     ],
 )

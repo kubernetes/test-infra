@@ -1,4 +1,4 @@
-import { isTransitMessage } from "./common";
+import {isTransitMessage, serialiseHashes} from "./common";
 
 declare const src: string;
 declare const lensArtifacts: {[index: string]: string[]};
@@ -10,6 +10,7 @@ function loadLenses(): void {
   for (const lensIndex of lensIndexes) {
     const frame = document.querySelector<HTMLIFrameElement>(`#iframe-${lensIndex}`)!;
     let url = urlForLensRequest(frame.dataset.lensName!, Number(frame.dataset.lensIndex!), 'iframe');
+    url += `&topURL=${escape(location.href.split('#')[0])}&lensIndex=${lensIndex}`;
     const hash = hashes[lensIndex];
     if (hash) {
       url += hash;
@@ -61,10 +62,6 @@ function parseHash(): {[index: string]: string} {
     result[index] = '#' + unescape(hash);
   }
   return result;
-}
-
-function serialiseHashes(hashes: {[index: string]: string}): string {
-  return Object.keys(hashes).map((i) => `${i}:${escape(hashes[i].substr(1))}`).join(';');
 }
 
 window.addEventListener('message', async (e) => {

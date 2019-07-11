@@ -59,3 +59,7 @@ export function isTransitMessage(data: any): data is TransitMessage {
 export function isUpdateHashMessage(data: any): data is UpdateHash {
   return isBaseMessage(data) && data.type === 'updateHash';
 }
+
+export function serialiseHashes(hashes: {[index: string]: string}): string {
+  return Object.keys(hashes).map((i) => `${i}:${escape(hashes[i].substr(1))}`).join(';');
+}

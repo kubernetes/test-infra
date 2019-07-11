@@ -1,4 +1,5 @@
-import {isBaseMessage, isResponse, isTransitMessage, isUpdateHashMessage, Message, Response, UpdateHash} from './common';
+import {parseQuery} from '../common/urls';
+import {isResponse, isTransitMessage, isUpdateHashMessage, Message, Response, serialiseHashes} from './common';
 
 export interface Spyglass {
   /**
@@ -32,6 +33,14 @@ export interface Spyglass {
    * the visible content changes, so Spyglass can ensure that all content is visible.
    */
   contentUpdated(): void;
+  /**
+   * Returns a top-level URL that will cause your lens to be loaded with the
+   * specified fragment. This is useful to construct copyable links, but generally
+   * should not be used for immediate navigation.
+   * @param fragment The fragment you want. If not prefixed with a #, one will
+   *                 be assumed.
+   */
+  makeFragmentLink(fragment: string): string;
 }
 
 class SpyglassImpl implements Spyglass {
@@ -79,6 +88,16 @@ class SpyglassImpl implements Spyglass {
     clearTimeout(this.pendingUpdateTimer);
     // to be honest I have zero understanding of why this helps, but apparently it does.
     this.pendingUpdateTimer = setTimeout(() => this.updateHeight(), 0);
+  }
+
+  public makeFragmentLink(fragment: string): string {
+    const q = parseQuery(location.search.substr(1));
+    const topURL = q.topURL!;
+    const lensIndex = q.lensIndex!;
+    if (fragment[0] !== '#') {
+      fragment = '#' + fragment;
+    }
+    return `${topURL}#${serialiseHashes({[lensIndex]: fragment})}`;
   }
 
   private updateHeight(): void {
