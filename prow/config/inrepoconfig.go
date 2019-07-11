@@ -20,10 +20,10 @@ func (c *ProwConfig) InRepoConfigConfiguration(org, repo string) InrepoconfigCon
 }
 
 // This is for callers who want the Presubmits for all repos and don't know which
-// repos exist. Even if inrepoconfig is enabled, this wont return presubmits
-// in prow.yaml. This should only be used by components that do something with
-// Presubmits but do not get triggered by PullRequests, e.G. Branchprotector and
-// the config parsing
+// repos exist. If anyhow possible, this should not be used because it will not
+// return all Presubmits if `inrepoconfig` is enabled/prow.yaml
+// This is needed for some components that do need Presubmits but do not have a
+// Pull Request at hand, e.G. `branchprotector`.
 func (c *Config) GetStaticPresubmitsForAllRepos() map[string][]Presubmit {
 	return c.presubmits
 }
