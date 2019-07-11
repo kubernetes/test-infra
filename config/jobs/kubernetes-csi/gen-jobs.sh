@@ -21,7 +21,7 @@
 base="$(dirname $0)"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190604-0afdebd-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix.
@@ -171,8 +171,8 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.13 1.14; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-            for kubernetes in 1.13.3 1.14.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+        for deployment in 1.13 1.14 1.15; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+            for kubernetes in 1.13.3 1.14.0 1.15; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
                 # Once we have more than two supported Kubernetes releases we should limit this to the most
@@ -185,7 +185,7 @@ EOF
                     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
     always_run: $(pull_alwaysrun "$tests")
-    optional: $(pull_optional "$tests")
+    optional: $(if [ "$kubernetes" = "1.15" ]; then echo true; else pull_optional "$tests"; fi)
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -390,6 +390,7 @@ for tests in non-alpha alpha; do
                 continue
             fi
             actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
+            alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
             cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: $(job_name "ci" "" "$tests" "$deployment" "$kubernetes")
@@ -403,6 +404,11 @@ for tests in non-alpha alpha; do
     preset-dind-enabled: "true"
     preset-bazel-remote-cache-enabled: "$(if [ "$kubernetes" = "master" ]; then echo true; else echo false; fi)"
     preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-storage-csi
+    testgrid-tab-name: ${alpha_testgrid_prefix}${deployment}-on-${kubernetes}
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+    description: Kubernetes-CSI ${tests} tests with Kubernetes ${kubernetes} and ${deployment} sidecars
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
@@ -434,11 +440,17 @@ done
 # release.
 for kubernetes in 1.13.3 1.14.0 master; do
     actual="${kubernetes/master/latest}"
+    k8s_minor="${kubernetes}"
+    if [ "$k8s_minor" != "master" ]; then
+      k8s_minor="$(echo "${k8s_minor}" | sed -e 's/\([0-9]*\)\.\([0-9]*\).*/\1\.\2/')"
+    fi
+
     for tests in non-alpha alpha; do
         # Alpha with latest sidecars only on master.
         if [ "$tests" = "alpha" ] && [ "$kubernetes" != "master" ]; then
             continue
         fi
+        alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
         cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: $(job_name "ci" "" "$tests" "canary" "$kubernetes")
@@ -452,6 +464,11 @@ for kubernetes in 1.13.3 1.14.0 master; do
     preset-dind-enabled: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-storage-csi
+    testgrid-tab-name: ${alpha_testgrid_prefix}canary-on-${k8s_minor}
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+    description: Kubernetes-CSI $tests tests with Kubernetes ${k8s_minor} and canary sidecars
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
