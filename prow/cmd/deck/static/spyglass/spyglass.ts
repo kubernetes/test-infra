@@ -1,14 +1,20 @@
 import { isTransitMessage } from "./common";
 
 declare const src: string;
-declare const lensArtifacts: {[key: string]: string[]};
+declare const lensArtifacts: {[index: string]: string[]};
 declare const lensIndexes: number[];
 
 // Loads views for this job
 function loadLenses(): void {
+  const hashes = parseHash();
   for (const lensIndex of lensIndexes) {
     const frame = document.querySelector<HTMLIFrameElement>(`#iframe-${lensIndex}`)!;
-    frame.src = urlForLensRequest(frame.dataset.lensName!, Number(frame.dataset.lensIndex!), 'iframe');
+    let url = urlForLensRequest(frame.dataset.lensName!, Number(frame.dataset.lensIndex!), 'iframe');
+    const hash = hashes[lensIndex];
+    if (hash) {
+      url += hash;
+    }
+    frame.src = url;
   }
 }
 
@@ -32,6 +38,33 @@ function frameForMessage(e: MessageEvent): HTMLIFrameElement {
     }
   }
   throw new Error("MessageEvent from unknown frame!?");
+}
+
+function updateHash(index: number, hash: string): void {
+  const currentHash = parseHash();
+  if (hash !== '') {
+    currentHash[index] = hash;
+  } else {
+    delete currentHash[index];
+  }
+  location.hash = serialiseHashes(currentHash);
+}
+
+function parseHash(): {[index: string]: string} {
+  const parts = location.hash.substr(1).split(';');
+  const result: {[index: string]: string} = {};
+  for (const part of parts) {
+    if (part === '') {
+      continue;
+    }
+    const [index, hash] = part.split(':');
+    result[index] = '#' + unescape(hash);
+  }
+  return result;
+}
+
+function serialiseHashes(hashes: {[index: string]: string}): string {
+  return Object.keys(hashes).map((i) => `${i}:${escape(hashes[i].substr(1))}`).join(';');
 }
 
 window.addEventListener('message', async (e) => {
@@ -77,10 +110,46 @@ window.addEventListener('message', async (e) => {
         respond(await req.text());
         break;
       }
+      case "updateHash": {
+        updateHash(index, message.hash);
+        respond('');
+        break;
+      }
+      case "showOffset": {
+        const container = document.getElementsByTagName('main')[0]!;
+        let containerOffset = 0;
+        let parent: HTMLElement = frame;
+        // figure out our cumulative offset from the root container <main> by
+        // looping through our parents until we get to it or run out of parents.
+        while (parent) {
+          containerOffset += parent.offsetTop;
+          if (parent.offsetParent instanceof HTMLElement && parent.offsetParent !== container) {
+            parent = parent.offsetParent;
+          } else {
+            break;
+          }
+        }
+        if (!parent) {
+          console.error("Couldn't find parent for frame!", container, frame);
+        }
+        container.scrollTop = containerOffset + message.top;
+        break;
+      }
       default:
         console.warn(`Unrecognised message type "${message.type}" from lens "${lens}":`, data);
         break;
     }
+  }
+});
+
+window.addEventListener('hashchange', (e) => {
+  const hashes = parseHash();
+  for (const index of Object.keys(hashes)) {
+    const iframe = document.querySelector<HTMLIFrameElement>(`#iframe-${index}`);
+    if (!iframe || !iframe.contentWindow) {
+      continue;
+    }
+    iframe.contentWindow.postMessage({type: 'hashUpdate', hash: hashes[index]}, '*');
   }
 });
 

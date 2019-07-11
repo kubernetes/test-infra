@@ -2,7 +2,7 @@ export interface BaseMessage {
   type: string;
 }
 
-function isBaseMessage(data: any): data is BaseMessage {
+export function isBaseMessage(data: any): data is BaseMessage {
   return typeof data.type === 'string';
 }
 
@@ -26,6 +26,16 @@ export interface UpdatePageMessage extends BaseMessage {
   data: string;
 }
 
+export interface UpdateHash extends BaseMessage {
+  type: 'updateHash';
+  hash: string;
+}
+
+export interface ShowOffset extends BaseMessage {
+  type: 'showOffset';
+  top: number;
+}
+
 export interface Response extends BaseMessage {
   type: 'response';
   data: string;
@@ -35,7 +45,7 @@ export function isResponse(data: any): data is Response {
   return isBaseMessage(data) && data.type === 'response';
 }
 
-export type Message = ContentUpdatedMessage | RequestMessage | RequestPageMessage | UpdatePageMessage | Response;
+export type Message = ContentUpdatedMessage | RequestMessage | RequestPageMessage | UpdatePageMessage | UpdateHash | ShowOffset | Response;
 
 export interface TransitMessage {
   id: number;
@@ -44,4 +54,8 @@ export interface TransitMessage {
 
 export function isTransitMessage(data: any): data is TransitMessage {
   return typeof data.id === 'number' && data.message && typeof data.message.type === 'string';
+}
+
+export function isUpdateHashMessage(data: any): data is UpdateHash {
+  return isBaseMessage(data) && data.type === 'updateHash';
 }

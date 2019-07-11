@@ -28,6 +28,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
@@ -1015,6 +1016,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	// Migrate the old `viewers` format to the new `lenses` format.
+	var oldLenses []LensFileConfig
 	for regex, viewers := range c.Deck.Spyglass.Viewers {
 		for _, viewer := range viewers {
 			lfc := LensFileConfig{
@@ -1023,9 +1025,12 @@ func parseProwConfig(c *Config) error {
 					Name: viewer,
 				},
 			}
-			c.Deck.Spyglass.Lenses = append(c.Deck.Spyglass.Lenses, lfc)
+			oldLenses = append(oldLenses, lfc)
 		}
 	}
+	// Ensure the ordering is stable, because these are referenced by index elsewhere.
+	sort.Slice(oldLenses, func(i, j int) bool { return oldLenses[i].Lens.Name < oldLenses[j].Lens.Name })
+	c.Deck.Spyglass.Lenses = append(c.Deck.Spyglass.Lenses, oldLenses...)
 
 	// Parse and cache all our regexes upfront
 	c.Deck.Spyglass.RegexCache = make(map[string]*regexp.Regexp)
