@@ -719,7 +719,7 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 }
 
 func finalizePresubmits(c *Config, presubmits []Presubmit) error {
-	c.defaultPresubmitFields(vs)
+	c.defaultPresubmitFields(presubmits)
 	if err := SetPresubmitRegexes(vs); err != nil {
 		return fmt.Errorf("could not set regex: %v", err)
 	}
