@@ -2834,6 +2834,8 @@ dashboards:
   dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
 
+- name: sig-cluster-lifecycle-etcdadm
+
 - name: sig-multicluster-kubemci
   dashboard_tab: []
 - name: sig-instrumentation
@@ -4987,6 +4989,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
   - sig-cluster-lifecycle-cluster-api-provider-docker
   - sig-cluster-lifecycle-kops
+  - sig-cluster-lifecycle-etcdadm
 
 - name: sig-contribex
   dashboard_names:
