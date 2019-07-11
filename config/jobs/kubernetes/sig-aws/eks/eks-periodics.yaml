@@ -1,11 +1,11 @@
 periodics:
-# Kubernetes e2e correctness tests against EKS 1.11 build.
-- interval: 3h
-  name: ci-kubernetes-e2e-aws-eks-1-11-correctness
+# Kubernetes e2e correctness tests against EKS 1.13 build.
+- interval: 6h
+  name: ci-kubernetes-e2e-aws-eks-1-13-correctness
   labels:
     preset-service-account: "true"
     preset-aws-credential-aws-oss-testing: "true"
-    preset-kubernetes-e2e-aws-eks-1-11: "true"
+    preset-kubernetes-e2e-aws-eks-1-13: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
@@ -19,21 +19,21 @@ periodics:
       - --deployment=eks
       - --provider=eks
       - --gce-ssh=
-      - --extract=ci/latest-1.11
+      - --extract=ci/latest-1.13
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
 
-# Kubernetes conformance e2e tests against EKS 1.11 build.
+# Kubernetes conformance e2e tests against EKS 1.13 build.
   annotations:
     testgrid-dashboards: sig-aws-eks-periodics
-    description: Kubernetes e2e correctness tests against EKS 1.11 build
-- interval: 3h
-  name: ci-kubernetes-e2e-aws-eks-1-11-conformance
+    description: Kubernetes e2e correctness tests against EKS 1.13 build
+- interval: 6h
+  name: ci-kubernetes-e2e-aws-eks-1-13-conformance
   labels:
     preset-service-account: "true"
     preset-aws-credential-aws-oss-testing: "true"
-    preset-kubernetes-e2e-aws-eks-1-11: "true"
+    preset-kubernetes-e2e-aws-eks-1-13: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
@@ -47,21 +47,21 @@ periodics:
       - --deployment=eks
       - --provider=eks
       - --gce-ssh=
-      - --extract=ci/latest-1.11
+      - --extract=ci/latest-1.13
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\] --minStartupPods=8
       - --timeout=180m
 
-# Kubernetes performance e2e tests against EKS 1.11 build.
+# Kubernetes performance e2e tests against EKS 1.13 build.
   annotations:
     testgrid-dashboards: sig-aws-eks-periodics
-    description: Kubernetes conformance e2e tests against EKS 1.11 build
+    description: Kubernetes conformance e2e tests against EKS 1.13 build
 - interval: 1h
-  name: ci-kubernetes-e2e-aws-eks-1-11-scalability
+  name: ci-kubernetes-e2e-aws-eks-1-13-scalability
   labels:
     preset-service-account: "true"
     preset-aws-credential-aws-oss-testing: "true"
-    preset-kubernetes-e2e-aws-eks-1-11: "true"
+    preset-kubernetes-e2e-aws-eks-1-13: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
@@ -81,4 +81,4 @@ periodics:
       - --timeout=300m
   annotations:
     testgrid-dashboards: sig-aws-eks-periodics
-    description: Kubernetes performance e2e tests against EKS 1.11 build
+    description: Kubernetes performance e2e tests against EKS 1.13 build
