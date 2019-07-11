@@ -2,3 +2,5 @@
 #vendor
 jsonnetfile.lock.json
 dashboards_out/*.json
+prometheus_out/*.json
+prometheus_out/*.yaml
