@@ -1096,7 +1096,8 @@ func handleLog(lc logClient) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logger := logger.WithError(err)
 			msg := "Log not found."
-			if strings.Contains(err.Error(), "PodInitializing") || strings.Contains(err.Error(), "not found") {
+			if strings.Contains(err.Error(), "PodInitializing") || strings.Contains(err.Error(), "not found") ||
+				strings.Contains(err.Error(), "terminated") {
 				// PodInitializing is really common and not something
 				// that has any actionable items for administrators
 				// monitoring logs, so we should log it as information.
