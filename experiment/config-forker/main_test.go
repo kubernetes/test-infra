@@ -18,8 +18,8 @@ package main
 
 import (
 	"reflect"
-	"testing"
 	"strings"
+	"testing"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -787,7 +787,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 }
 
 func TestFindMaster(t *testing.T) {
-  testingInput := []byte(`
+	testingInput := []byte(`
 branch-protection:
   allow_disabled_policies: true
   orgs:
@@ -839,8 +839,8 @@ branch-protection:
                 - "ci/circleci: e2e-pilot-cloudfoundry-v1alpha3-v2"
 `)
 
-  output := findMaster(testingInput, "a")
-  correctOutput := []byte(`
+	output := findMaster(testingInput, "a")
+	correctOutput := []byte(`
 branch-protection:
   allow_disabled_policies: true
   orgs:
@@ -902,8 +902,8 @@ branch-protection:
                 contexts:
                 - "ci/circleci: e2e-pilot-cloudfoundry-v1alpha3-v2"
 `)
-  if strings.Compare(string(output), string(correctOutput)) != 0 {
-    t.Fail()
-  }
+	if strings.Compare(string(output), string(correctOutput)) != 0 {
+		t.Fail()
+	}
 
 }
