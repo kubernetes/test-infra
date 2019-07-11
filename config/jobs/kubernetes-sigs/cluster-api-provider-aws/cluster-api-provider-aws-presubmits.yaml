@@ -1,18 +1,5 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
-  - name: pull-cluster-api-provider-aws-bazel-verify
-    always_run: true
-    optional: false
-    decorate: true
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-experimental
-        command:
-        - "./hack/verify-bazel.sh"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: bazel-pr-verify
   - name: pull-cluster-api-provider-aws-bazel-test
     always_run: true
     optional: false
@@ -73,7 +60,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: bazel-pr-integration
-  - name: pull-cluster-api-provider-aws-verify-boilerplate
+  - name: pull-cluster-api-provider-aws-verify
     always_run: true
     optional: false
     decorate: true
@@ -82,7 +69,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-experimental
         command:
-        - "./hack/verify_boilerplate.py"
+        - "runner.sh"
+        - "make"
+        - "verify"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: verify-boilerplate
+      testgrid-tab-name: verify

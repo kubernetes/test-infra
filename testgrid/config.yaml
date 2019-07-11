@@ -618,10 +618,8 @@ test_groups:
 - name: ci-cluster-api-provider-aws-bazel-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-aws-bazel-e2e
   num_columns_recent: 20
-- name: pull-cluster-api-provider-aws-bazel-verify
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-verify
-- name: pull-cluster-api-provider-aws-verify-boilerplate
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-verify-boilerplate
+- name: pull-cluster-api-provider-aws-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-verify
 - name: pull-cluster-api-provider-aws-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-bazel-build
 - name: pull-cluster-api-provider-aws-bazel-test
