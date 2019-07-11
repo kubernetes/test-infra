@@ -70,12 +70,17 @@ A presubmit job named "pull-community-verify" that will run against all PRs to
 kubernetes/community's master branch. It will run `make verify` in a checkout
 of kubernetes/community at the PR's HEAD. It will report back to the PR via a
 status context named `pull-kubernetes-community`. Its logs and results are going
-to end up in GCS under `kubernetes-jenkins/pr-logs/pull/community`.
+to end up in GCS under `kubernetes-jenkins/pr-logs/pull/community`. Historical
+results will display in testgrid on the `sig-contribex-community` dashboard
+under the `pull-verify` tab
 
 ```yaml
 presubmits:
   kubernetes/community:
   - name: pull-community-verify  # convention: (job type)-(repo name)-(suite name)
+    annotations:
+      testgrid-dashboards: sig-contribex-community
+      testgrid-tab-name: pull-verify
     branches:
     - master
     decorate: true
@@ -96,7 +101,10 @@ run every 4 hours against kubernetes-sigs/cluster-api-provider-aws's master
 branch. It will run `./scripts/ci-aws-cred-test.sh` in a checkout of the repo
 located at `sigs.k8s.io/cluster-api-provider-aws`. The presets it's using will
 ensure it has aws credentials and aws ssh keys in well known locations. Its
-logs and results are going to end up in GCS under `kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-test-creds`.
+logs and results are going to end up in GCS under 
+`kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-test-creds`.
+Historical results will display in testgrid on the `sig-cluster-lifecycle-cluster-api-provider-aws`
+dashboard under the `test-creds` tab
 
 It's using the `kubekins-e2e` image which [isn't recommended](#job-images),
 but works for now.
@@ -104,6 +112,9 @@ but works for now.
 ```yaml
 periodics:
 - name: periodic-cluster-api-provider-aws-test-creds
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-tab-name: test-creds
   decorate: true
   interval: 4h
   labels:
