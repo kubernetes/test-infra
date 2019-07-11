@@ -34,14 +34,14 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
+	"gocloud.dev/blob"
+
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
-	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,6 +63,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/prstatus"
 	"k8s.io/test-infra/prow/spyglass"
+	"k8s.io/test-infra/testgrid/util/objectstorage"
 
 	// Import standard spyglass viewers
 
@@ -524,12 +525,17 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 }
 
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
-	var c *storage.Client
+	var c *blob.Bucket
 	var err error
+
+	bktName := cfg().Plank.DefaultDecorationConfig.GCSConfiguration.Bucket
+
 	if o.gcsCredentialsFile == "" {
-		c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
+		c, err = objectstorage.ClientWithCreds(context.Background(), bktName)
+		// c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
 	} else {
-		c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+		c, err = objectstorage.ClientWithCreds(context.Background(), bktName)
+		// c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
 	}
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
@@ -678,7 +684,7 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 //
 // Example:
 // - /job-history/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
-func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client) http.HandlerFunc {
+func handleJobHistory(o options, cfg config.Getter, gcsClient *blob.Bucket) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		tmpl, err := getJobHistory(r.URL, cfg(), gcsClient)
@@ -696,7 +702,7 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client) h
 // The url must look like this:
 //
 // /pr-history?org=<org>&repo=<repo>&pr=<pr number>
-func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, gcsClient *blob.Bucket) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient)

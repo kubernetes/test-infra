@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"path"
@@ -26,13 +27,14 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"gocloud.dev/blob"
 	"k8s.io/apimachinery/pkg/util/sets"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/osupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+	"k8s.io/test-infra/testgrid/util/objectstorage"
 )
 
 var pullCommitRe = regexp.MustCompile(`^[-\w]+:\w{40},\d+:(\w{40})$`)
@@ -218,7 +220,7 @@ func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[strin
 			gcsConfig = config.Plank.DefaultDecorationConfig.GCSConfiguration
 		}
 
-		gcsPath, _, _ := gcsupload.PathsForJob(gcsConfig, &downwardapi.JobSpec{
+		gcsPath, _, _ := osupload.PathsForJob(gcsConfig, &downwardapi.JobSpec{
 			Type: v1.PresubmitJob,
 			Job:  presubmit.Name,
 			Refs: &v1.Refs{
@@ -238,7 +240,7 @@ func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[strin
 	return toSearch, nil
 }
 
-func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client) (prHistoryTemplate, error) {
+func getPRHistory(url *url.URL, config *config.Config, gcsClient *blob.Bucket) (prHistoryTemplate, error) {
 	start := time.Now()
 	template := prHistoryTemplate{}
 
@@ -259,7 +261,11 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 	jobCommitBuilds := make(map[string]map[string][]buildData)
 
 	for bucketName, gcsPaths := range toSearch {
-		bucket := gcsBucket{bucketName, gcsClient.Bucket(bucketName)}
+		bkt, err := objectstorage.ClientWithCreds(context.Background(), bucketName)
+		if err != nil {
+			return template, fmt.Errorf("failed to open Object storage bucket %s: %v", bucketName, err)
+		}
+		bucket := gcsBucket{bucketName, bkt}
 		for gcsPath := range gcsPaths {
 			jobPrefixes, err := bucket.listSubDirs(gcsPath)
 			if err != nil {

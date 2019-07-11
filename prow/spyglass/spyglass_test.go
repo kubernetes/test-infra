@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/osupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"os"
 	"reflect"
@@ -1068,7 +1068,7 @@ func TestGCSPathRoundTrip(t *testing.T) {
 		fakeGCSClient := fakeGCSServer.Client()
 
 		sg := New(fakeJa, fakeConfigAgent.Config, fakeGCSClient, "", context.Background())
-		gcspath, _, _ := gcsupload.PathsForJob(
+		gcspath, _, _ := osupload.PathsForJob(
 			&prowapi.GCSConfiguration{Bucket: "test-bucket", PathStrategy: tc.pathStrategy},
 			&downwardapi.JobSpec{
 				Job:     "test-job",

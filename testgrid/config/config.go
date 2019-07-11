@@ -24,10 +24,8 @@ import (
 	"os"
 	"strings"
 
-	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
-
-	"k8s.io/test-infra/testgrid/util/gcs"
+	"gocloud.dev/blob"
 )
 
 func read(r io.Reader) (*Configuration, error) {
@@ -45,12 +43,8 @@ func read(r io.Reader) (*Configuration, error) {
 // ReadGCS reads the config from gcs and unmarshals it into a Configuration struct.
 //
 // Configuration is defined in config.Proto
-func ReadGCS(ctx context.Context, obj *storage.ObjectHandle) (*Configuration, error) {
-	r, err := obj.NewReader(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open config: %v", err)
-	}
-	return read(r)
+func ReadGCS(ctx context.Context, obj *blob.Reader) (*Configuration, error) {
+	return read(obj)
 }
 
 // ReadPath reads the config from the specified local file path.
@@ -65,13 +59,13 @@ func ReadPath(path string) (*Configuration, error) {
 // Read will read the Configuration proto message from a local or gs:// path.
 //
 // The ctx and client are only relevant when path refers to GCS.
-func Read(path string, ctx context.Context, client *storage.Client) (*Configuration, error) {
+func Read(path string, ctx context.Context, client *blob.Bucket) (*Configuration, error) {
 	if strings.HasPrefix(path, "gs://") {
-		var gcsPath gcs.Path
-		if err := gcsPath.Set(path); err != nil {
+		r, err := client.NewReader(ctx, path, nil)
+		if err != nil {
 			return nil, fmt.Errorf("bad gcs path: %v", err)
 		}
-		return ReadGCS(ctx, client.Bucket(gcsPath.Bucket()).Object(gcsPath.Object()))
+		return ReadGCS(ctx, r)
 	}
 	return ReadPath(path)
 }

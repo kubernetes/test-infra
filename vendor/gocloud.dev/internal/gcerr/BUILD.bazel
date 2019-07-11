@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "errorcode_string.go",
+        "gcerr.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/gocloud.dev/internal/gcerr",
+    importpath = "gocloud.dev/internal/gcerr",
+    visibility = ["//vendor/gocloud.dev:__subpackages__"],
+    deps = [
+        "//vendor/gocloud.dev/internal/retry:go_default_library",
+        "//vendor/golang.org/x/xerrors:go_default_library",
+        "//vendor/google.golang.org/grpc/codes:go_default_library",
+        "//vendor/google.golang.org/grpc/status:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

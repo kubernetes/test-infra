@@ -22,8 +22,8 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"gocloud.dev/blob"
 
 	"k8s.io/test-infra/prow/config"
 	tgconf "k8s.io/test-infra/testgrid/config"
@@ -35,7 +35,7 @@ type TestGrid struct {
 	c      *tgconf.Configuration
 	conf   config.Getter
 	ctx    context.Context
-	client *storage.Client
+	client *blob.Bucket
 }
 
 // Start synchronously requests the testgrid config, then continues to update it periodically.

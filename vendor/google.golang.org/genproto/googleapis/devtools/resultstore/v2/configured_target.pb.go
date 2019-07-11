@@ -58,7 +58,7 @@ func (m *ConfiguredTarget) Reset()         { *m = ConfiguredTarget{} }
 func (m *ConfiguredTarget) String() string { return proto.CompactTextString(m) }
 func (*ConfiguredTarget) ProtoMessage()    {}
 func (*ConfiguredTarget) Descriptor() ([]byte, []int) {
-	return fileDescriptor_configured_target_56b34c80e2f1e864, []int{0}
+	return fileDescriptor_configured_target_b74dc45116856d73, []int{0}
 }
 func (m *ConfiguredTarget) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConfiguredTarget.Unmarshal(m, b)
@@ -144,7 +144,7 @@ func (m *ConfiguredTarget_Id) Reset()         { *m = ConfiguredTarget_Id{} }
 func (m *ConfiguredTarget_Id) String() string { return proto.CompactTextString(m) }
 func (*ConfiguredTarget_Id) ProtoMessage()    {}
 func (*ConfiguredTarget_Id) Descriptor() ([]byte, []int) {
-	return fileDescriptor_configured_target_56b34c80e2f1e864, []int{0, 0}
+	return fileDescriptor_configured_target_b74dc45116856d73, []int{0, 0}
 }
 func (m *ConfiguredTarget_Id) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConfiguredTarget_Id.Unmarshal(m, b)
@@ -203,7 +203,7 @@ func (m *ConfiguredTestAttributes) Reset()         { *m = ConfiguredTestAttribut
 func (m *ConfiguredTestAttributes) String() string { return proto.CompactTextString(m) }
 func (*ConfiguredTestAttributes) ProtoMessage()    {}
 func (*ConfiguredTestAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_configured_target_56b34c80e2f1e864, []int{1}
+	return fileDescriptor_configured_target_b74dc45116856d73, []int{1}
 }
 func (m *ConfiguredTestAttributes) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ConfiguredTestAttributes.Unmarshal(m, b)
@@ -251,10 +251,10 @@ func init() {
 }
 
 func init() {
-	proto.RegisterFile("google/devtools/resultstore/v2/configured_target.proto", fileDescriptor_configured_target_56b34c80e2f1e864)
+	proto.RegisterFile("google/devtools/resultstore/v2/configured_target.proto", fileDescriptor_configured_target_b74dc45116856d73)
 }
 
-var fileDescriptor_configured_target_56b34c80e2f1e864 = []byte{
+var fileDescriptor_configured_target_b74dc45116856d73 = []byte{
 	// 488 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0xdf, 0x8a, 0x13, 0x31,
 	0x14, 0xc6, 0xe9, 0x5f, 0xb7, 0x67, 0x5d, 0xdb, 0xcd, 0xd5, 0x58, 0x41, 0x4a, 0x95, 0xa5, 0xab,

@@ -68,7 +68,7 @@ func (m *CreateInvocationRequest) Reset()         { *m = CreateInvocationRequest
 func (m *CreateInvocationRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateInvocationRequest) ProtoMessage()    {}
 func (*CreateInvocationRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{0}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{0}
 }
 func (m *CreateInvocationRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateInvocationRequest.Unmarshal(m, b)
@@ -142,7 +142,7 @@ func (m *UpdateInvocationRequest) Reset()         { *m = UpdateInvocationRequest
 func (m *UpdateInvocationRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateInvocationRequest) ProtoMessage()    {}
 func (*UpdateInvocationRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{1}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{1}
 }
 func (m *UpdateInvocationRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateInvocationRequest.Unmarshal(m, b)
@@ -200,7 +200,7 @@ func (m *FinishInvocationRequest) Reset()         { *m = FinishInvocationRequest
 func (m *FinishInvocationRequest) String() string { return proto.CompactTextString(m) }
 func (*FinishInvocationRequest) ProtoMessage()    {}
 func (*FinishInvocationRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{2}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{2}
 }
 func (m *FinishInvocationRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FinishInvocationRequest.Unmarshal(m, b)
@@ -250,7 +250,7 @@ func (m *FinishInvocationResponse) Reset()         { *m = FinishInvocationRespon
 func (m *FinishInvocationResponse) String() string { return proto.CompactTextString(m) }
 func (*FinishInvocationResponse) ProtoMessage()    {}
 func (*FinishInvocationResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{3}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{3}
 }
 func (m *FinishInvocationResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FinishInvocationResponse.Unmarshal(m, b)
@@ -313,7 +313,7 @@ func (m *CreateTargetRequest) Reset()         { *m = CreateTargetRequest{} }
 func (m *CreateTargetRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateTargetRequest) ProtoMessage()    {}
 func (*CreateTargetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{4}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{4}
 }
 func (m *CreateTargetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateTargetRequest.Unmarshal(m, b)
@@ -387,7 +387,7 @@ func (m *UpdateTargetRequest) Reset()         { *m = UpdateTargetRequest{} }
 func (m *UpdateTargetRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateTargetRequest) ProtoMessage()    {}
 func (*UpdateTargetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{5}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{5}
 }
 func (m *UpdateTargetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateTargetRequest.Unmarshal(m, b)
@@ -445,7 +445,7 @@ func (m *FinishTargetRequest) Reset()         { *m = FinishTargetRequest{} }
 func (m *FinishTargetRequest) String() string { return proto.CompactTextString(m) }
 func (*FinishTargetRequest) ProtoMessage()    {}
 func (*FinishTargetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{6}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{6}
 }
 func (m *FinishTargetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FinishTargetRequest.Unmarshal(m, b)
@@ -495,7 +495,7 @@ func (m *FinishTargetResponse) Reset()         { *m = FinishTargetResponse{} }
 func (m *FinishTargetResponse) String() string { return proto.CompactTextString(m) }
 func (*FinishTargetResponse) ProtoMessage()    {}
 func (*FinishTargetResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{7}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{7}
 }
 func (m *FinishTargetResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FinishTargetResponse.Unmarshal(m, b)
@@ -559,7 +559,7 @@ func (m *CreateConfiguredTargetRequest) Reset()         { *m = CreateConfiguredT
 func (m *CreateConfiguredTargetRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateConfiguredTargetRequest) ProtoMessage()    {}
 func (*CreateConfiguredTargetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{8}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{8}
 }
 func (m *CreateConfiguredTargetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateConfiguredTargetRequest.Unmarshal(m, b)
@@ -634,7 +634,7 @@ func (m *UpdateConfiguredTargetRequest) Reset()         { *m = UpdateConfiguredT
 func (m *UpdateConfiguredTargetRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateConfiguredTargetRequest) ProtoMessage()    {}
 func (*UpdateConfiguredTargetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{9}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{9}
 }
 func (m *UpdateConfiguredTargetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateConfiguredTargetRequest.Unmarshal(m, b)
@@ -692,7 +692,7 @@ func (m *FinishConfiguredTargetRequest) Reset()         { *m = FinishConfiguredT
 func (m *FinishConfiguredTargetRequest) String() string { return proto.CompactTextString(m) }
 func (*FinishConfiguredTargetRequest) ProtoMessage()    {}
 func (*FinishConfiguredTargetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{10}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{10}
 }
 func (m *FinishConfiguredTargetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FinishConfiguredTargetRequest.Unmarshal(m, b)
@@ -742,7 +742,7 @@ func (m *FinishConfiguredTargetResponse) Reset()         { *m = FinishConfigured
 func (m *FinishConfiguredTargetResponse) String() string { return proto.CompactTextString(m) }
 func (*FinishConfiguredTargetResponse) ProtoMessage()    {}
 func (*FinishConfiguredTargetResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{11}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{11}
 }
 func (m *FinishConfiguredTargetResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FinishConfiguredTargetResponse.Unmarshal(m, b)
@@ -806,7 +806,7 @@ func (m *CreateActionRequest) Reset()         { *m = CreateActionRequest{} }
 func (m *CreateActionRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateActionRequest) ProtoMessage()    {}
 func (*CreateActionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{12}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{12}
 }
 func (m *CreateActionRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateActionRequest.Unmarshal(m, b)
@@ -881,7 +881,7 @@ func (m *UpdateActionRequest) Reset()         { *m = UpdateActionRequest{} }
 func (m *UpdateActionRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateActionRequest) ProtoMessage()    {}
 func (*UpdateActionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{13}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{13}
 }
 func (m *UpdateActionRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateActionRequest.Unmarshal(m, b)
@@ -952,7 +952,7 @@ func (m *CreateConfigurationRequest) Reset()         { *m = CreateConfigurationR
 func (m *CreateConfigurationRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateConfigurationRequest) ProtoMessage()    {}
 func (*CreateConfigurationRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{14}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{14}
 }
 func (m *CreateConfigurationRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateConfigurationRequest.Unmarshal(m, b)
@@ -1026,7 +1026,7 @@ func (m *UpdateConfigurationRequest) Reset()         { *m = UpdateConfigurationR
 func (m *UpdateConfigurationRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateConfigurationRequest) ProtoMessage()    {}
 func (*UpdateConfigurationRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{15}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{15}
 }
 func (m *UpdateConfigurationRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateConfigurationRequest.Unmarshal(m, b)
@@ -1095,7 +1095,7 @@ func (m *CreateFileSetRequest) Reset()         { *m = CreateFileSetRequest{} }
 func (m *CreateFileSetRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateFileSetRequest) ProtoMessage()    {}
 func (*CreateFileSetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{16}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{16}
 }
 func (m *CreateFileSetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateFileSetRequest.Unmarshal(m, b)
@@ -1169,7 +1169,7 @@ func (m *UpdateFileSetRequest) Reset()         { *m = UpdateFileSetRequest{} }
 func (m *UpdateFileSetRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateFileSetRequest) ProtoMessage()    {}
 func (*UpdateFileSetRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_resultstore_upload_6e83fc95b9ff09ba, []int{17}
+	return fileDescriptor_resultstore_upload_c44d7b55c8a904a0, []int{17}
 }
 func (m *UpdateFileSetRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateFileSetRequest.Unmarshal(m, b)
@@ -2104,10 +2104,10 @@ var _ResultStoreUpload_serviceDesc = grpc.ServiceDesc{
 }
 
 func init() {
-	proto.RegisterFile("google/devtools/resultstore/v2/resultstore_upload.proto", fileDescriptor_resultstore_upload_6e83fc95b9ff09ba)
+	proto.RegisterFile("google/devtools/resultstore/v2/resultstore_upload.proto", fileDescriptor_resultstore_upload_c44d7b55c8a904a0)
 }
 
-var fileDescriptor_resultstore_upload_6e83fc95b9ff09ba = []byte{
+var fileDescriptor_resultstore_upload_c44d7b55c8a904a0 = []byte{
 	// 1348 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x99, 0xcf, 0x6f, 0xdc, 0x44,
 	0x14, 0xc7, 0x35, 0xbb, 0x6d, 0x69, 0x5e, 0x12, 0x48, 0x27, 0x51, 0x12, 0x19, 0x92, 0x46, 0x0e,

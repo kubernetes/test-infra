@@ -57,7 +57,7 @@ func (x TargetType) String() string {
 	return proto.EnumName(TargetType_name, int32(x))
 }
 func (TargetType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_target_b8fdf1dcefa00c81, []int{0}
+	return fileDescriptor_target_3c0ccbffe81e229a, []int{0}
 }
 
 // Indicates how big the user indicated the test action was.
@@ -99,7 +99,7 @@ func (x TestSize) String() string {
 	return proto.EnumName(TestSize_name, int32(x))
 }
 func (TestSize) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_target_b8fdf1dcefa00c81, []int{1}
+	return fileDescriptor_target_3c0ccbffe81e229a, []int{1}
 }
 
 // Each Target represents data for a given target in a given Invocation.
@@ -142,7 +142,7 @@ func (m *Target) Reset()         { *m = Target{} }
 func (m *Target) String() string { return proto.CompactTextString(m) }
 func (*Target) ProtoMessage()    {}
 func (*Target) Descriptor() ([]byte, []int) {
-	return fileDescriptor_target_b8fdf1dcefa00c81, []int{0}
+	return fileDescriptor_target_3c0ccbffe81e229a, []int{0}
 }
 func (m *Target) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Target.Unmarshal(m, b)
@@ -240,7 +240,7 @@ func (m *Target_Id) Reset()         { *m = Target_Id{} }
 func (m *Target_Id) String() string { return proto.CompactTextString(m) }
 func (*Target_Id) ProtoMessage()    {}
 func (*Target_Id) Descriptor() ([]byte, []int) {
-	return fileDescriptor_target_b8fdf1dcefa00c81, []int{0, 0}
+	return fileDescriptor_target_3c0ccbffe81e229a, []int{0, 0}
 }
 func (m *Target_Id) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Target_Id.Unmarshal(m, b)
@@ -295,7 +295,7 @@ func (m *TargetAttributes) Reset()         { *m = TargetAttributes{} }
 func (m *TargetAttributes) String() string { return proto.CompactTextString(m) }
 func (*TargetAttributes) ProtoMessage()    {}
 func (*TargetAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_target_b8fdf1dcefa00c81, []int{1}
+	return fileDescriptor_target_3c0ccbffe81e229a, []int{1}
 }
 func (m *TargetAttributes) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TargetAttributes.Unmarshal(m, b)
@@ -349,7 +349,7 @@ func (m *TestAttributes) Reset()         { *m = TestAttributes{} }
 func (m *TestAttributes) String() string { return proto.CompactTextString(m) }
 func (*TestAttributes) ProtoMessage()    {}
 func (*TestAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_target_b8fdf1dcefa00c81, []int{2}
+	return fileDescriptor_target_3c0ccbffe81e229a, []int{2}
 }
 func (m *TestAttributes) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TestAttributes.Unmarshal(m, b)
@@ -386,10 +386,10 @@ func init() {
 }
 
 func init() {
-	proto.RegisterFile("google/devtools/resultstore/v2/target.proto", fileDescriptor_target_b8fdf1dcefa00c81)
+	proto.RegisterFile("google/devtools/resultstore/v2/target.proto", fileDescriptor_target_3c0ccbffe81e229a)
 }
 
-var fileDescriptor_target_b8fdf1dcefa00c81 = []byte{
+var fileDescriptor_target_3c0ccbffe81e229a = []byte{
 	// 628 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0xed, 0x6a, 0xdb, 0x4a,
 	0x10, 0xbd, 0xb2, 0x65, 0x47, 0x1e, 0xe7, 0x3a, 0xba, 0x0b, 0x97, 0xaa, 0x09, 0x14, 0xe3, 0x96,

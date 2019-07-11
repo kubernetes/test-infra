@@ -24,7 +24,7 @@ import (
 	"io"
 	"testing"
 
-	"cloud.google.com/go/storage"
+	"gocloud.dev/blob"
 )
 
 type ByteReadCloser struct {
@@ -52,12 +52,12 @@ func (rc *ByteReadCloser) Read(p []byte) (int, error) {
 }
 
 type fakeArtifactHandle struct {
-	oAttrs         *storage.ObjectAttrs
+	oAttrs         *blob.Attributes
 	contents       []byte
 	incompleteRead bool
 }
 
-func (h *fakeArtifactHandle) Attrs(ctx context.Context) (*storage.ObjectAttrs, error) {
+func (h *fakeArtifactHandle) Attributes(ctx context.Context) (*blob.Attributes, error) {
 	if bytes.Equal(h.contents, []byte("no attrs")) {
 		return nil, fmt.Errorf("error getting attrs")
 	}
@@ -155,7 +155,7 @@ func TestReadTail(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
+			oAttrs: &blob.Attributes{
 				Bucket:          "foo-bucket",
 				Name:            "build-log.txt",
 				Size:            int64(len(tc.contents)),
@@ -234,7 +234,7 @@ func TestReadAtMost(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
+			oAttrs: &blob.ObjectAttrs{
 				Bucket:          "foo-bucket",
 				Name:            "build-log.txt",
 				Size:            int64(len(tc.contents)),
@@ -330,9 +330,9 @@ func TestReadAt(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
+			oAttrs: &blob.Attributes{
 				Bucket:          "foo-bucket",
-				Name:            "build-log.txt",
+				key:             "build-log.txt",
 				Size:            int64(len(tc.contents)),
 				ContentEncoding: tc.encoding,
 			},
@@ -394,7 +394,7 @@ func TestReadAll(t *testing.T) {
 	for _, tc := range testCases {
 		artifact := NewGCSArtifact(context.Background(), &fakeArtifactHandle{
 			contents: tc.contents,
-			oAttrs: &storage.ObjectAttrs{
+			oAttrs: &blob.ObjectAttrs{
 				Bucket: "foo-bucket",
 				Name:   "build-log.txt",
 				Size:   int64(len(tc.contents)),
@@ -428,7 +428,7 @@ func TestSize_GCS(t *testing.T) {
 			name: "Test size simple",
 			handle: &fakeArtifactHandle{
 				contents: startedContent,
-				oAttrs: &storage.ObjectAttrs{
+				oAttrs: &blob.ObjectAttrs{
 					Bucket: "foo-bucket",
 					Name:   "started.json",
 					Size:   int64(len(startedContent)),
@@ -441,7 +441,7 @@ func TestSize_GCS(t *testing.T) {
 			name: "Test size from attrs error",
 			handle: &fakeArtifactHandle{
 				contents: []byte("no attrs"),
-				oAttrs: &storage.ObjectAttrs{
+				oAttrs: &blob.ObjectAttrs{
 					Bucket: "foo-bucket",
 					Name:   "started.json",
 					Size:   8,

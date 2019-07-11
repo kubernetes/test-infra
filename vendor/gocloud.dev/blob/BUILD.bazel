@@ -1,0 +1,39 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["blob.go"],
+    importmap = "k8s.io/test-infra/vendor/gocloud.dev/blob",
+    importpath = "gocloud.dev/blob",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/go.opencensus.io/stats:go_default_library",
+        "//vendor/go.opencensus.io/stats/view:go_default_library",
+        "//vendor/go.opencensus.io/tag:go_default_library",
+        "//vendor/gocloud.dev/blob/driver:go_default_library",
+        "//vendor/gocloud.dev/gcerrors:go_default_library",
+        "//vendor/gocloud.dev/internal/gcerr:go_default_library",
+        "//vendor/gocloud.dev/internal/oc:go_default_library",
+        "//vendor/gocloud.dev/internal/openurl:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/gocloud.dev/blob/driver:all-srcs",
+        "//vendor/gocloud.dev/blob/fileblob:all-srcs",
+        "//vendor/gocloud.dev/blob/gcsblob:all-srcs",
+        "//vendor/gocloud.dev/blob/s3blob:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

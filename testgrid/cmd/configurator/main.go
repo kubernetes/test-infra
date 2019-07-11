@@ -28,8 +28,11 @@ import (
 	"strings"
 	"time"
 
+	"gocloud.dev/blob"
 	prowConfig "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/pod-utils/objectstorage"
 	"k8s.io/test-infra/testgrid/util/gcs"
+	"k8s.io/test-infra/testgrid/util/objectstorage"
 
 	"cloud.google.com/go/storage"
 )
@@ -156,19 +159,19 @@ func readConfig(paths []string) (*Config, error) {
 	return &c, nil
 }
 
-func write(ctx context.Context, client *storage.Client, path string, bytes []byte, worldReadable bool) error {
+func write(ctx context.Context, client *blob.Bucket, path string, bytes []byte, worldReadable bool) error {
 	u, err := url.Parse(path)
 	if err != nil {
 		return fmt.Errorf("invalid url %s: %v", path, err)
 	}
-	if u.Scheme != "gs" {
+	if u.Scheme != "gs" && u.Scheme != "s3" {
 		return ioutil.WriteFile(path, bytes, 0644)
 	}
-	var p gcs.Path
+	var p objectstorage.Path
 	if err = p.SetURL(u); err != nil {
 		return err
 	}
-	return gcs.Upload(ctx, client, p, bytes, worldReadable)
+	return objectstorage.Upload(ctx, client, p, bytes, worldReadable)
 }
 
 func doOneshot(ctx context.Context, client *storage.Client, opt options, prowConfigAgent *prowConfig.Agent) error {

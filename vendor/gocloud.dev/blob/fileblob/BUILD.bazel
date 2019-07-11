@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "attrs.go",
+        "fileblob.go",
+    ],
+    importmap = "k8s.io/test-infra/vendor/gocloud.dev/blob/fileblob",
+    importpath = "gocloud.dev/blob/fileblob",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/gocloud.dev/blob:go_default_library",
+        "//vendor/gocloud.dev/blob/driver:go_default_library",
+        "//vendor/gocloud.dev/gcerrors:go_default_library",
+        "//vendor/gocloud.dev/internal/escape:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -43,10 +43,13 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
+        "//prow/pod-utils/objectstorage:go_default_library",
         "//testgrid/config:go_default_library",
         "//testgrid/util/gcs:go_default_library",
+        "//testgrid/util/objectstorage:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/gocloud.dev/blob:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

@@ -119,7 +119,7 @@ func (x Language) String() string {
 	return proto.EnumName(Language_name, int32(x))
 }
 func (Language) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_common_6eb107e91fbe3d1c, []int{0}
+	return fileDescriptor_common_c40fe7cfb3b2f2fd, []int{0}
 }
 
 // Status of a resource.
@@ -203,7 +203,7 @@ func (x Status) String() string {
 	return proto.EnumName(Status_name, int32(x))
 }
 func (Status) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_common_6eb107e91fbe3d1c, []int{1}
+	return fileDescriptor_common_c40fe7cfb3b2f2fd, []int{1}
 }
 
 // Describes the status of a resource in both enum and string form.
@@ -223,7 +223,7 @@ func (m *StatusAttributes) Reset()         { *m = StatusAttributes{} }
 func (m *StatusAttributes) String() string { return proto.CompactTextString(m) }
 func (*StatusAttributes) ProtoMessage()    {}
 func (*StatusAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_6eb107e91fbe3d1c, []int{0}
+	return fileDescriptor_common_c40fe7cfb3b2f2fd, []int{0}
 }
 func (m *StatusAttributes) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StatusAttributes.Unmarshal(m, b)
@@ -272,7 +272,7 @@ func (m *Property) Reset()         { *m = Property{} }
 func (m *Property) String() string { return proto.CompactTextString(m) }
 func (*Property) ProtoMessage()    {}
 func (*Property) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_6eb107e91fbe3d1c, []int{1}
+	return fileDescriptor_common_c40fe7cfb3b2f2fd, []int{1}
 }
 func (m *Property) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Property.Unmarshal(m, b)
@@ -322,7 +322,7 @@ func (m *Timing) Reset()         { *m = Timing{} }
 func (m *Timing) String() string { return proto.CompactTextString(m) }
 func (*Timing) ProtoMessage()    {}
 func (*Timing) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_6eb107e91fbe3d1c, []int{2}
+	return fileDescriptor_common_c40fe7cfb3b2f2fd, []int{2}
 }
 func (m *Timing) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Timing.Unmarshal(m, b)
@@ -380,7 +380,7 @@ func (m *Dependency) Reset()         { *m = Dependency{} }
 func (m *Dependency) String() string { return proto.CompactTextString(m) }
 func (*Dependency) ProtoMessage()    {}
 func (*Dependency) Descriptor() ([]byte, []int) {
-	return fileDescriptor_common_6eb107e91fbe3d1c, []int{3}
+	return fileDescriptor_common_c40fe7cfb3b2f2fd, []int{3}
 }
 func (m *Dependency) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Dependency.Unmarshal(m, b)
@@ -548,10 +548,10 @@ func init() {
 }
 
 func init() {
-	proto.RegisterFile("google/devtools/resultstore/v2/common.proto", fileDescriptor_common_6eb107e91fbe3d1c)
+	proto.RegisterFile("google/devtools/resultstore/v2/common.proto", fileDescriptor_common_c40fe7cfb3b2f2fd)
 }
 
-var fileDescriptor_common_6eb107e91fbe3d1c = []byte{
+var fileDescriptor_common_c40fe7cfb3b2f2fd = []byte{
 	// 704 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x94, 0xdf, 0x6e, 0xe3, 0x44,
 	0x14, 0xc6, 0xd7, 0x49, 0xeb, 0x3a, 0x27, 0xfd, 0x73, 0x98, 0x2d, 0x28, 0xf4, 0x02, 0xaa, 0x5c,

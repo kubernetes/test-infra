@@ -57,7 +57,7 @@ func (m *Invocation) Reset()         { *m = Invocation{} }
 func (m *Invocation) String() string { return proto.CompactTextString(m) }
 func (*Invocation) ProtoMessage()    {}
 func (*Invocation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_invocation_3b0cc1029ea97db2, []int{0}
+	return fileDescriptor_invocation_3c3642aab1b671da, []int{0}
 }
 func (m *Invocation) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Invocation.Unmarshal(m, b)
@@ -153,7 +153,7 @@ func (m *Invocation_Id) Reset()         { *m = Invocation_Id{} }
 func (m *Invocation_Id) String() string { return proto.CompactTextString(m) }
 func (*Invocation_Id) ProtoMessage()    {}
 func (*Invocation_Id) Descriptor() ([]byte, []int) {
-	return fileDescriptor_invocation_3b0cc1029ea97db2, []int{0, 0}
+	return fileDescriptor_invocation_3c3642aab1b671da, []int{0, 0}
 }
 func (m *Invocation_Id) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Invocation_Id.Unmarshal(m, b)
@@ -191,7 +191,7 @@ func (m *WorkspaceContext) Reset()         { *m = WorkspaceContext{} }
 func (m *WorkspaceContext) String() string { return proto.CompactTextString(m) }
 func (*WorkspaceContext) ProtoMessage()    {}
 func (*WorkspaceContext) Descriptor() ([]byte, []int) {
-	return fileDescriptor_invocation_3b0cc1029ea97db2, []int{1}
+	return fileDescriptor_invocation_3c3642aab1b671da, []int{1}
 }
 func (m *WorkspaceContext) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WorkspaceContext.Unmarshal(m, b)
@@ -236,7 +236,7 @@ func (m *WorkspaceInfo) Reset()         { *m = WorkspaceInfo{} }
 func (m *WorkspaceInfo) String() string { return proto.CompactTextString(m) }
 func (*WorkspaceInfo) ProtoMessage()    {}
 func (*WorkspaceInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_invocation_3b0cc1029ea97db2, []int{2}
+	return fileDescriptor_invocation_3c3642aab1b671da, []int{2}
 }
 func (m *WorkspaceInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WorkspaceInfo.Unmarshal(m, b)
@@ -312,7 +312,7 @@ func (m *CommandLine) Reset()         { *m = CommandLine{} }
 func (m *CommandLine) String() string { return proto.CompactTextString(m) }
 func (*CommandLine) ProtoMessage()    {}
 func (*CommandLine) Descriptor() ([]byte, []int) {
-	return fileDescriptor_invocation_3b0cc1029ea97db2, []int{3}
+	return fileDescriptor_invocation_3c3642aab1b671da, []int{3}
 }
 func (m *CommandLine) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CommandLine.Unmarshal(m, b)
@@ -394,7 +394,7 @@ func (m *InvocationAttributes) Reset()         { *m = InvocationAttributes{} }
 func (m *InvocationAttributes) String() string { return proto.CompactTextString(m) }
 func (*InvocationAttributes) ProtoMessage()    {}
 func (*InvocationAttributes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_invocation_3b0cc1029ea97db2, []int{4}
+	return fileDescriptor_invocation_3c3642aab1b671da, []int{4}
 }
 func (m *InvocationAttributes) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_InvocationAttributes.Unmarshal(m, b)
@@ -464,7 +464,7 @@ func (m *InvocationContext) Reset()         { *m = InvocationContext{} }
 func (m *InvocationContext) String() string { return proto.CompactTextString(m) }
 func (*InvocationContext) ProtoMessage()    {}
 func (*InvocationContext) Descriptor() ([]byte, []int) {
-	return fileDescriptor_invocation_3b0cc1029ea97db2, []int{5}
+	return fileDescriptor_invocation_3c3642aab1b671da, []int{5}
 }
 func (m *InvocationContext) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_InvocationContext.Unmarshal(m, b)
@@ -509,10 +509,10 @@ func init() {
 }
 
 func init() {
-	proto.RegisterFile("google/devtools/resultstore/v2/invocation.proto", fileDescriptor_invocation_3b0cc1029ea97db2)
+	proto.RegisterFile("google/devtools/resultstore/v2/invocation.proto", fileDescriptor_invocation_3c3642aab1b671da)
 }
 
-var fileDescriptor_invocation_3b0cc1029ea97db2 = []byte{
+var fileDescriptor_invocation_3c3642aab1b671da = []byte{
 	// 697 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x55, 0x71, 0x6b, 0x13, 0x31,
 	0x14, 0xa7, 0xed, 0xda, 0xad, 0xaf, 0xab, 0x74, 0x71, 0xca, 0x59, 0x50, 0x6a, 0x15, 0xe9, 0x18,

@@ -31,6 +31,7 @@ filegroup(
         "//testgrid/state:all-srcs",
         "//testgrid/summary:all-srcs",
         "//testgrid/util/gcs:all-srcs",
+        "//testgrid/util/objectstorage:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

@@ -28,7 +28,7 @@ import (
 	"strconv"
 	"strings"
 
-	"cloud.google.com/go/storage"
+	"gocloud.dev/blob"
 	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -77,7 +77,7 @@ type ExtraLink struct {
 }
 
 // New constructs a Spyglass object from a JobAgent, a config.Agent, and a storage Client.
-func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, gcsCredsFile string, ctx context.Context) *Spyglass {
+func New(ja *jobs.JobAgent, cfg config.Getter, c *blob.Bucket, gcsCredsFile string, ctx context.Context) *Spyglass {
 	return &Spyglass{
 		JobAgent:              ja,
 		config:                cfg,
@@ -148,11 +148,8 @@ func (s *Spyglass) ResolveSymlink(src string) (string, error) {
 		if len(parts) != 2 {
 			return "", fmt.Errorf("gcs path should have both a bucket and a path")
 		}
-		bucketName := parts[0]
 		prefix := parts[1]
-		bkt := s.client.Bucket(bucketName)
-		obj := bkt.Object(prefix + ".txt")
-		reader, err := obj.NewReader(context.Background())
+		reader, err := s.client.NewReader(context.Background(), prefix+".txt", nil)
 		if err != nil {
 			return src, nil
 		}

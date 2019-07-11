@@ -1,0 +1,36 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["gcsblob.go"],
+    importmap = "k8s.io/test-infra/vendor/gocloud.dev/blob/gcsblob",
+    importpath = "gocloud.dev/blob/gcsblob",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/google/wire:go_default_library",
+        "//vendor/gocloud.dev/blob:go_default_library",
+        "//vendor/gocloud.dev/blob/driver:go_default_library",
+        "//vendor/gocloud.dev/gcerrors:go_default_library",
+        "//vendor/gocloud.dev/gcp:go_default_library",
+        "//vendor/gocloud.dev/internal/escape:go_default_library",
+        "//vendor/gocloud.dev/internal/useragent:go_default_library",
+        "//vendor/google.golang.org/api/googleapi:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

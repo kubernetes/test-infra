@@ -9,9 +9,8 @@ go_library(
     importpath = "k8s.io/test-infra/testgrid/config",
     visibility = ["//visibility:public"],
     deps = [
-        "//testgrid/util/gcs:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/gocloud.dev/blob:go_default_library",
     ],
 )
 

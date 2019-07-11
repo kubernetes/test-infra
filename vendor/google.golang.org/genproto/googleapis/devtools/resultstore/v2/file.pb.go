@@ -50,7 +50,7 @@ func (x File_HashType) String() string {
 	return proto.EnumName(File_HashType_name, int32(x))
 }
 func (File_HashType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_file_2161ebe42ad9f2b4, []int{0, 0}
+	return fileDescriptor_file_ce5c35947c0b9efa, []int{0, 0}
 }
 
 // The metadata for a file or an archive file entry.
@@ -103,7 +103,7 @@ func (m *File) Reset()         { *m = File{} }
 func (m *File) String() string { return proto.CompactTextString(m) }
 func (*File) ProtoMessage()    {}
 func (*File) Descriptor() ([]byte, []int) {
-	return fileDescriptor_file_2161ebe42ad9f2b4, []int{0}
+	return fileDescriptor_file_ce5c35947c0b9efa, []int{0}
 }
 func (m *File) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_File.Unmarshal(m, b)
@@ -213,7 +213,7 @@ func (m *ArchiveEntry) Reset()         { *m = ArchiveEntry{} }
 func (m *ArchiveEntry) String() string { return proto.CompactTextString(m) }
 func (*ArchiveEntry) ProtoMessage()    {}
 func (*ArchiveEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_file_2161ebe42ad9f2b4, []int{1}
+	return fileDescriptor_file_ce5c35947c0b9efa, []int{1}
 }
 func (m *ArchiveEntry) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ArchiveEntry.Unmarshal(m, b)
@@ -261,10 +261,10 @@ func init() {
 }
 
 func init() {
-	proto.RegisterFile("google/devtools/resultstore/v2/file.proto", fileDescriptor_file_2161ebe42ad9f2b4)
+	proto.RegisterFile("google/devtools/resultstore/v2/file.proto", fileDescriptor_file_ce5c35947c0b9efa)
 }
 
-var fileDescriptor_file_2161ebe42ad9f2b4 = []byte{
+var fileDescriptor_file_ce5c35947c0b9efa = []byte{
 	// 453 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0x61, 0x8b, 0xd3, 0x40,
 	0x10, 0x35, 0x4d, 0xed, 0xa5, 0xd3, 0xde, 0x11, 0x16, 0x94, 0xa8, 0x20, 0xb1, 0x20, 0x54, 0xd0,

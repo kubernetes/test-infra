@@ -22,8 +22,8 @@ import (
 	"io"
 	"io/ioutil"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"gocloud.dev/blob"
 
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -48,7 +48,7 @@ type GCSArtifact struct {
 }
 
 type artifactHandle interface {
-	Attrs(ctx context.Context) (*storage.ObjectAttrs, error)
+	Attributes(ctx context.Context, key string) (*blob.Attributes, error)
 	NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error)
 	NewReader(ctx context.Context) (io.ReadCloser, error)
 }
@@ -72,7 +72,7 @@ func fieldsFor(a *GCSArtifact) logrus.Fields {
 
 // Size returns the size of the artifact in GCS
 func (a *GCSArtifact) Size() (int64, error) {
-	attrs, err := a.handle.Attrs(a.ctx)
+	attrs, err := a.handle.Attributes(a.ctx, a.path)
 	if err != nil {
 		return 0, fmt.Errorf("error getting gcs attributes for artifact: %v", err)
 	}
@@ -242,9 +242,9 @@ func (a *GCSArtifact) ReadTail(n int64) ([]byte, error) {
 
 // gzipped returns whether the file is gzip-encoded in GCS
 func (a *GCSArtifact) gzipped() (bool, error) {
-	attrs, err := a.handle.Attrs(a.ctx)
+	attrs, err := a.handle.Attributes(a.ctx, a.path)
 	if err != nil {
 		return false, fmt.Errorf("error getting gcs attributes for artifact: %v", err)
 	}
-	return attrs.ContentEncoding == "gzip", nil
+	return attrs.ContentType == "gzip", nil
 }

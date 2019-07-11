@@ -1,0 +1,56 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "objectstorage.go",
+        "providers.go",
+        "read.go",
+    ],
+    importpath = "k8s.io/test-infra/testgrid/util/objectstorage",
+    visibility = [
+        "//prow/cmd/deck:__subpackages__",
+        "//prow/cmd/tide:__subpackages__",
+        "//prow/gcsupload:__subpackages__",
+        "//prow/osupload:__subpackages__",
+        "//prow/spyglass:__subpackages__",
+        "//testgrid:__subpackages__",
+    ],
+    deps = [
+        "//testgrid/metadata:go_default_library",
+        "//testgrid/metadata/junit:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/client:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/gocloud.dev/blob:go_default_library",
+        "//vendor/gocloud.dev/blob/fileblob:go_default_library",
+        "//vendor/gocloud.dev/blob/gcsblob:go_default_library",
+        "//vendor/gocloud.dev/blob/s3blob:go_default_library",
+        "//vendor/gocloud.dev/gcerrors:go_default_library",
+        "//vendor/gocloud.dev/gcp:go_default_library",
+        "//vendor/vbom.ml/util/sortorder:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "objectstorage_test.go",
+        "read_test.go",
+    ],
+    embed = [":go_default_library"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"path"
@@ -29,9 +30,9 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
+	"gocloud.dev/blob"
+
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/iterator"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -76,7 +77,7 @@ type storageBucket interface {
 // gcsBucket is our real implementation of storageBucket
 type gcsBucket struct {
 	name string
-	*storage.BucketHandle
+	*blob.Bucket
 }
 
 type jobHistoryTemplate struct {
@@ -90,8 +91,7 @@ type jobHistoryTemplate struct {
 }
 
 func (bucket gcsBucket) readObject(key string) ([]byte, error) {
-	obj := bucket.Object(key)
-	rc, err := obj.NewReader(context.Background())
+	rc, err := bucket.NewReader(context.Background(), key, nil)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to get reader for GCS object: %v", err)
 	}
@@ -165,20 +165,20 @@ func (bucket gcsBucket) listSubDirs(prefix string) ([]string, error) {
 		prefix += "/"
 	}
 	dirs := []string{}
-	it := bucket.Objects(context.Background(), &storage.Query{
+	it := bucket.List(&blob.ListOptions{
 		Prefix:    prefix,
 		Delimiter: "/",
 	})
 	for {
-		attrs, err := it.Next()
-		if err == iterator.Done {
+		lstObj, err := it.Next(context.Background())
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return dirs, err
 		}
-		if attrs.Prefix != "" {
-			dirs = append(dirs, attrs.Prefix)
+		if lstObj.IsDir {
+			dirs = append(dirs, lstObj.Key)
 		}
 	}
 	return dirs, nil
@@ -187,18 +187,18 @@ func (bucket gcsBucket) listSubDirs(prefix string) ([]string, error) {
 // Lists all GCS keys with given prefix.
 func (bucket gcsBucket) listAll(prefix string) ([]string, error) {
 	keys := []string{}
-	it := bucket.Objects(context.Background(), &storage.Query{
+	it := bucket.List(&blob.ListOptions{
 		Prefix: prefix,
 	})
 	for {
-		attrs, err := it.Next()
-		if err == iterator.Done {
+		lstObj, err := it.Next(context.Background())
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return keys, err
 		}
-		keys = append(keys, attrs.Name)
+		keys = append(keys, lstObj.Key)
 	}
 	return keys, nil
 }
@@ -345,7 +345,7 @@ func (a int64slice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a int64slice) Less(i, j int) bool { return a[i] < a[j] }
 
 // Gets job history from the GCS bucket specified in config.
-func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Client) (jobHistoryTemplate, error) {
+func getJobHistory(url *url.URL, config *config.Config, gcsClient *blob.Bucket) (jobHistoryTemplate, error) {
 	start := time.Now()
 	tmpl := jobHistoryTemplate{}
 
@@ -354,7 +354,7 @@ func getJobHistory(url *url.URL, config *config.Config, gcsClient *storage.Clien
 		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
 	}
 	tmpl.Name = root
-	bucket := gcsBucket{bucketName, gcsClient.Bucket(bucketName)}
+	bucket := gcsBucket{bucketName, gcsClient}
 
 	latest, err := readLatestBuild(bucket, root)
 	if err != nil {

@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["useragent.go"],
+    importmap = "k8s.io/test-infra/vendor/gocloud.dev/internal/useragent",
+    importpath = "gocloud.dev/internal/useragent",
+    visibility = ["//vendor/gocloud.dev:__subpackages__"],
+    deps = [
+        "//vendor/google.golang.org/api/option:go_default_library",
+        "//vendor/google.golang.org/grpc:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

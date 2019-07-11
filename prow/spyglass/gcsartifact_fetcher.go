@@ -29,12 +29,11 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/iterator"
+	"gocloud.dev/blob"
 
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"k8s.io/test-infra/testgrid/util/gcs"
+	"k8s.io/test-infra/testgrid/util/objectstorage"
 )
 
 const (
@@ -49,7 +48,7 @@ var (
 
 // GCSArtifactFetcher contains information used for fetching artifacts from GCS
 type GCSArtifactFetcher struct {
-	client       *storage.Client
+	client *blob.Bucket
 	gcsCredsFile string
 }
 
@@ -66,7 +65,7 @@ type gcsJobSource struct {
 }
 
 // NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
-func NewGCSArtifactFetcher(c *storage.Client, gcsCredsFile string) *GCSArtifactFetcher {
+func NewGCSArtifactFetcher(c *blob.Bucket, gcsCredsFile string) *GCSArtifactFetcher {
 	return &GCSArtifactFetcher{
 		client:       c,
 		gcsCredsFile: gcsCredsFile,
@@ -81,11 +80,11 @@ func fieldsForJob(src *gcsJobSource) logrus.Fields {
 
 // newGCSJobSource creates a new gcsJobSource from a given bucket and jobPrefix
 func newGCSJobSource(src string) (*gcsJobSource, error) {
-	gcsURL, err := url.Parse(fmt.Sprintf("gs://%s", src))
+	gcsURL, err := url.Parse(fmt.Sprintf("s3://%s", src))
 	if err != nil {
 		return &gcsJobSource{}, ErrCannotParseSource
 	}
-	gcsPath := &gcs.Path{}
+	gcsPath := &objectstorage.Path{}
 	err = gcsPath.SetURL(gcsURL)
 	if err != nil {
 		return &gcsJobSource{}, ErrCannotParseSource
@@ -99,7 +98,7 @@ func newGCSJobSource(src string) (*gcsJobSource, error) {
 	name := tokens[len(tokens)-2]
 	return &gcsJobSource{
 		source:     src,
-		linkPrefix: "gs://",
+		linkPrefix: "s3://",
 		bucket:     gcsPath.Bucket(),
 		jobPrefix:  path.Clean(gcsPath.Object()) + "/",
 		jobName:    name,
@@ -115,18 +114,17 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 	}
 
 	listStart := time.Now()
-	bucketName, prefix := extractBucketPrefixPair(src.jobPath())
+	_, prefix := extractBucketPrefixPair(src.jobPath())
 	artifacts := []string{}
-	bkt := af.client.Bucket(bucketName)
-	q := storage.Query{
-		Prefix:   prefix,
-		Versions: false,
+	bkt := af.client
+	q := blob.ListOptions{
+		Prefix: prefix,
 	}
-	objIter := bkt.Objects(context.Background(), &q)
+	objIter := bkt.List(&q)
 	wait := []time.Duration{16, 32, 64, 128, 256, 256, 512, 512}
 	for i := 0; ; {
-		oAttrs, err := objIter.Next()
-		if err == iterator.Done {
+		oAttrs, err := objIter.Next(context.Background())
+		if err == io.EOF {
 			break
 		}
 		if err != nil {
@@ -138,7 +136,7 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 			i++
 			continue
 		}
-		artifacts = append(artifacts, strings.TrimPrefix(oAttrs.Name, prefix))
+		artifacts = append(artifacts, strings.TrimPrefix(oAttrs.Key, prefix))
 		i = 0
 	}
 	logrus.WithField("duration", time.Since(listStart).String()).Infof("Listed %d artifacts.", len(artifacts))
@@ -150,7 +148,7 @@ func (af *GCSArtifactFetcher) signURL(bucket, obj string) (string, error) {
 	if af.gcsCredsFile == "" {
 		artifactLink := &url.URL{
 			Scheme: httpsScheme,
-			Host:   "storage.googleapis.com",
+			Host:   "s3.amazonaws.com",
 			Path:   path.Join(bucket, obj),
 		}
 		return artifactLink.String(), nil
@@ -174,24 +172,24 @@ func (af *GCSArtifactFetcher) signURL(bucket, obj string) (string, error) {
 	if auth.Type != "service_account" {
 		return "", fmt.Errorf("only service_account GCS auth is supported, got %q", auth.Type)
 	}
-	return storage.SignedURL(bucket, obj, &storage.SignedURLOptions{
-		Method:         "GET",
-		Expires:        time.Now().Add(10 * time.Minute),
-		GoogleAccessID: auth.ClientEmail,
-		PrivateKey:     []byte(auth.PrivateKey),
+	return af.client.SignedURL(context.Background(), obj, &blob.SignedURLOptions{
+		Expiry: 10 * time.Minute,
 	})
 }
 
 type gcsArtifactHandle struct {
-	*storage.ObjectHandle
+	*blob.Bucket
+	key string
 }
 
 func (h *gcsArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, error) {
-	return h.ObjectHandle.NewReader(ctx)
+	o := blob.ReaderOptions{}
+	return h.Bucket.NewReader(ctx, h.key, &o)
 }
 
 func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
-	return h.ObjectHandle.NewRangeReader(ctx, offset, length)
+	o := blob.ReaderOptions{}
+	return h.Bucket.NewRangeReader(ctx, h.key, offset, length, &o)
 }
 
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
@@ -204,14 +202,18 @@ func (af *GCSArtifactFetcher) artifact(key string, artifactName string, sizeLimi
 	}
 
 	bucketName, prefix := extractBucketPrefixPair(src.jobPath())
-	bkt := af.client.Bucket(bucketName)
 	objName := path.Join(prefix, artifactName)
-	obj := &gcsArtifactHandle{bkt.Object(objName)}
+	obj := &gcsArtifactHandle{
+		af.client,
+		objName,
+	}
 	signedURL, err := af.signURL(bucketName, objName)
 	if err != nil {
 		return nil, err
 	}
-	return NewGCSArtifact(context.Background(), obj, signedURL, artifactName, sizeLimit), nil
+
+	ctx := context.Background()
+	return NewGCSArtifact(ctx, obj, signedURL, objName, sizeLimit), nil
 }
 
 func extractBucketPrefixPair(gcsPath string) (string, string) {
