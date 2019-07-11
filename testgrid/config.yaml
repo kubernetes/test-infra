@@ -1948,6 +1948,14 @@ test_groups:
 - name: release-openshift-ocp-installer-e2e-aws-serial-4.2
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.2
 
+# OpenShift Dedicated integration
+- name: osd-int-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-int-4.1
+- name: osd-int-4.2
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-int-4.2
+- name: osd-upgrade-int-4.1-4.1
+  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-int-4.1-4.1
+
 # OpenShift Dedicated staging
 - name: osd-stage-4.1
   gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.1
@@ -4793,6 +4801,22 @@ dashboards:
     test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.2
     base_options: width=10
 
+# OpenShift Dedicated integration dashboard
+- name: redhat-osd-int
+  dashboard_tab:
+  - name: osd-int-4.1
+    description: Runs cluster acceptance tests on an OpenShift Dedicated 4.1 integration cluster.
+    test_group_name: osd-int-4.1
+    base_options: width=10
+  - name: osd-int-4.2
+    description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 integration cluster.
+    test_group_name: osd-int-4.2
+    base_options: width=10
+  - name: osd-upgrade-int-4.1-4.1
+    description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in integration.
+    test_group_name: osd-upgrade-int-4.1-4.1
+    base_options: width=10
+
 # OpenShift Dedicated staging dashboard
 - name: redhat-osd-stage
   dashboard_tab:
@@ -5112,6 +5136,7 @@ dashboard_groups:
 - name: redhat
   dashboard_names:
   - redhat-openshift-release-blocking
+  - redhat-osd-int
   - redhat-osd-stage
   - redhat-osd-prod
 
