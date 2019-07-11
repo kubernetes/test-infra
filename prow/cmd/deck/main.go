@@ -428,6 +428,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	}
 
 	// Enable Git OAuth feature if oauthURL is provided.
+	var goa *githuboauth.Agent
 	if o.oauthURL != "" {
 		githubOAuthConfigRaw, err := loadToken(o.githubOAuthConfigFile)
 		if err != nil {
@@ -457,7 +458,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		cookie := sessions.NewCookieStore(decodedSecret)
 		githubOAuthConfig.InitGitHubOAuthConfig(cookie)
 
-		goa := githuboauth.NewAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
+		goa = githuboauth.NewAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
 		oauthClient := githuboauth.NewClient(&oauth2.Config{
 			ClientID:     githubOAuthConfig.ClientID,
 			ClientSecret: githubOAuthConfig.ClientSecret,
@@ -494,8 +495,8 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
 		// Handles redirect from GitHub OAuth server.
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter()))
-		mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter())))
 	}
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter())))
 
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if o.redirectHTTPTo != "" {
@@ -1214,16 +1215,32 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			marshalJob(w, newPJ, l)
 		case http.MethodPost:
 			if !createProwJob {
-				http.Error(w, "Direct rerun feature is not yet enabled", http.StatusMethodNotAllowed)
+				http.Error(w, "Direct rerun feature is not enabled. Enable with the '--rerun-creates-job' flag.", http.StatusMethodNotAllowed)
 				return
 			}
-			login, err := goa.GetLogin(r, ghc)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Error retrieving GitHub login: %v", err), http.StatusInternalServerError)
-				l.WithError(err).Errorf("Error retrieving GitHub login")
-				return
+			authConfig := cfg()
+			var allowed bool
+			if authConfig.AllowAnyone {
+				// Skip getting the users login via GH oauth if anyone is allowed to rerun
+				// jobs so that GH oauth doesn't need to be set up for private Prows.
+				allowed = true
+			} else {
+				if goa == nil {
+					msg := "GitHub oauth must be configured to rerun jobs unless 'allow_anyone: true' is specified."
+					http.Error(w, msg, http.StatusInternalServerError)
+					l.Error(msg)
+					return
+				}
+				login, err := goa.GetLogin(r, ghc)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Error retrieving GitHub login: %v", err), http.StatusInternalServerError)
+					l.WithError(err).Errorf("Error retrieving GitHub login")
+					return
+				}
+				allowed = canTriggerJob(login, authConfig)
 			}
-			if !canTriggerJob(login, cfg()) {
+
+			if !allowed {
 				http.Redirect(w, r, "/?rerun=error", http.StatusFound)
 				return
 			}
