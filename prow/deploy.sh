@@ -88,4 +88,6 @@ for s in {5..1}; do
     sleep 1s
 done
 bazel run //prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+bazel run //prow/monitoring:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+bazel run //prow/monitoring/mixins/dashboards_out:grafana-configmaps.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 echo "$(color-green SUCCESS)"

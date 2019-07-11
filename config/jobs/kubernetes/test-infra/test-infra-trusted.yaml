@@ -29,7 +29,7 @@ postsubmits:
   kubernetes/test-infra:
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
-    run_if_changed: 'prow/cluster/'
+    run_if_changed: '^prow/(cluster|monitoring)/'
     decorate: true
     branches:
     - master
