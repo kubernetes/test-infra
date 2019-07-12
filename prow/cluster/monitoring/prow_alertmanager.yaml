@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: prow
+  namespace: prow-monitoring
+spec:
+  replicas: 3
+  baseImage: docker.io/prom/alertmanager
+  listenLocal: false
+  nodeSelector: {}
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: alertmanager
+  version: v0.15.2

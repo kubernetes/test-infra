@@ -1,7 +1,7 @@
 load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
 
 # Usage:
-#   bazel run //prow/cluster/monitoring:release.apply
+#   bazel run //prow/cluster/monitoring:production.apply
 
 release(
     "production",
@@ -16,6 +16,9 @@ release(
     component("grafana_expose", MULTI_KIND),
     component("grafana_configmaps", MULTI_KIND),
     component("grafana", "deployment"),
+    component("alertmanager_rbac", MULTI_KIND),
+    component("alertmanager_expose", MULTI_KIND),
+    component("prow", "alertmanager"),
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
@@ -48,15 +51,30 @@ k8s_object(
     template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
 )
 
+k8s_object(
+    name = "prow_prometheusrule",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    kind = None,
+    template = "//prow/cluster/monitoring/mixins/prometheus:prow_prometheusrule",
+)
+
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 
 k8s_objects(
-    name = "prometheus_operator_crd",
+    name = "prow_monitoring_objects",
     objects = [
         ":alertmanager_crd",
         ":prometheus_crd",
         ":prometheusrule_crd",
         ":servicemonitor_crd",
+        "//prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-deck",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-ghproxy",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-hook",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-plank",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-prow",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-sinker",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-tide",
     ],
 )
 
