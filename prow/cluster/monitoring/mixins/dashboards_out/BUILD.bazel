@@ -3,13 +3,13 @@ load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load("//def:configmap.bzl", "k8s_configmap")
 
 # Usage:
-#   bazel run //prow/monitoring/mixins/dashboards_out:grafana-configmaps.apply
+#   bazel run //prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply
 
 k8s_configmap(
     name = "grafana-dashboard-deck",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "deck.json": "//prow/monitoring/mixins/grafana_dashboards:deck",
+        "deck.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:deck",
     },
     namespace = "prow-monitoring",
 )
@@ -18,7 +18,7 @@ k8s_configmap(
     name = "grafana-dashboard-ghproxy",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "ghproxy.json": "//prow/monitoring/mixins/grafana_dashboards:ghproxy",
+        "ghproxy.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:ghproxy",
     },
     namespace = "prow-monitoring",
 )
@@ -27,7 +27,7 @@ k8s_configmap(
     name = "grafana-dashboard-hook",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "hook.json": "//prow/monitoring/mixins/grafana_dashboards:hook",
+        "hook.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:hook",
     },
     namespace = "prow-monitoring",
 )
@@ -36,7 +36,7 @@ k8s_configmap(
     name = "grafana-dashboard-plank",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "plank.json": "//prow/monitoring/mixins/grafana_dashboards:plank",
+        "plank.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:plank",
     },
     namespace = "prow-monitoring",
 )
@@ -45,7 +45,7 @@ k8s_configmap(
     name = "grafana-dashboard-prow",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "prow.json": "//prow/monitoring/mixins/grafana_dashboards:prow",
+        "prow.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:prow",
     },
     namespace = "prow-monitoring",
 )
@@ -54,7 +54,7 @@ k8s_configmap(
     name = "grafana-dashboard-sinker",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "sinker.json": "//prow/monitoring/mixins/grafana_dashboards:sinker",
+        "sinker.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:sinker",
     },
     namespace = "prow-monitoring",
 )
@@ -63,7 +63,7 @@ k8s_configmap(
     name = "grafana-dashboard-tide",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
-        "tide.json": "//prow/monitoring/mixins/grafana_dashboards:tide",
+        "tide.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:tide",
     },
     namespace = "prow-monitoring",
 )
