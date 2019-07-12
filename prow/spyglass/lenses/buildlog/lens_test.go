@@ -172,7 +172,7 @@ func TestGroupLines(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := groupLines(highlightLines(test.lines, 0, defaultErrRE))
+			got := groupLines(highlightLines(test.lines, 0, "", defaultErrRE))
 			if len(got) != len(test.groups) {
 				t.Fatalf("Expected %d groups, got %d", len(test.groups), len(got))
 			}

@@ -77,11 +77,12 @@ type SubLine struct {
 
 // LogLine represents a line displayed in the LogArtifactView.
 type LogLine struct {
-	Number      int
-	Length      int
-	Highlighted bool
-	Skip        bool
-	SubLines    []SubLine
+	ArtifactName string
+	Number       int
+	Length       int
+	Highlighted  bool
+	Skip         bool
+	SubLines     []SubLine
 }
 
 // LineGroup holds multiple lines that can be collapsed/expanded as a block
@@ -164,7 +165,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 			logrus.WithError(err).Info("Error reading log.")
 			continue
 		}
-		av.LineGroups = groupLines(highlightLines(lines, 0, highlightRe))
+		av.LineGroups = groupLines(highlightLines(lines, 0, av.ArtifactName, highlightRe))
 		av.ViewAll = true
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
@@ -194,7 +195,7 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 		return fmt.Sprintf("failed to retrieve log lines: %v", err)
 	}
 
-	logLines := highlightLines(lines, request.StartLine, getHighlightRegex(rawConfig))
+	logLines := highlightLines(lines, request.StartLine, request.Artifact, getHighlightRegex(rawConfig))
 	return executeTemplate(resourceDir, "line group", logLines)
 }
 
@@ -234,7 +235,7 @@ func logLines(artifact lenses.Artifact, offset, length int64) ([]string, error) 
 	return strings.Split(string(b), "\n"), nil
 }
 
-func highlightLines(lines []string, startLine int, highlightRegex *regexp.Regexp) []LogLine {
+func highlightLines(lines []string, startLine int, artifact string, highlightRegex *regexp.Regexp) []LogLine {
 	// mark highlighted lines
 	logLines := make([]LogLine, 0, len(lines))
 	for i, text := range lines {
@@ -251,11 +252,12 @@ func highlightLines(lines []string, startLine int, highlightRegex *regexp.Regexp
 		}
 		subLines = append(subLines, SubLine{false, text})
 		logLines = append(logLines, LogLine{
-			Length:      length + 1, // counting the "\n"
-			SubLines:    subLines,
-			Number:      startLine + i + 1,
-			Highlighted: len(subLines) > 1,
-			Skip:        true,
+			Length:       length + 1, // counting the "\n"
+			SubLines:     subLines,
+			Number:       startLine + i + 1,
+			Highlighted:  len(subLines) > 1,
+			ArtifactName: artifact,
+			Skip:         true,
 		})
 	}
 	return logLines
