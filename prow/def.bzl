@@ -168,7 +168,7 @@ def component(cmd, *kinds, **kwargs):
 #   k8s_objects(name = "deployment", objects=[":hook_deployment", ":plank_deployment"])
 #   k8s_objects(name = "service", objects=[":hook_service"])
 #   k8s_objects(name = "staging", objects=[":hook_deployment", ":hook_service", ":plank_deployment"])
-def release(name, *components, v = []):
+def release(name, *components):
     targets = {}
     objs = []
     for cs in components:
@@ -185,5 +185,4 @@ def release(name, *components, v = []):
     k8s_objects(
         name = name,
         objects = objs,
-        visibility = v,
     )

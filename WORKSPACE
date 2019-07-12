@@ -240,15 +240,3 @@ http_archive(
 load("@io_bazel_rules_jsonnet//jsonnet:jsonnet.bzl", "jsonnet_repositories")
 
 jsonnet_repositories()
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "com_github_atlassian_bazel_tools",
-    strip_prefix = "bazel-tools-6fbc36c639a8f376182bb0057dd557eb2440d4ed",
-    urls = ["https://github.com/atlassian/bazel-tools/archive/6fbc36c639a8f376182bb0057dd557eb2440d4ed.tar.gz"],
-)
-
-load("@com_github_atlassian_bazel_tools//:multirun/deps.bzl", "multirun_dependencies")
-
-multirun_dependencies()
