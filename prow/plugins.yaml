@@ -496,6 +496,7 @@ plugins:
   - override
 
   kubernetes/release:
+  - blockade
   - milestone
   - override
 
