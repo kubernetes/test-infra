@@ -79,6 +79,7 @@ k8s_objects(
         ":grafana-dashboard-sinker",
         ":grafana-dashboard-tide",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
