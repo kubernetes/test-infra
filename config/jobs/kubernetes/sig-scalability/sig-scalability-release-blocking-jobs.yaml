@@ -84,6 +84,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
