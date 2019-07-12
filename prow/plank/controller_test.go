@@ -17,6 +17,7 @@ limitations under the License.
 package plank
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -27,6 +28,7 @@ import (
 	"text/template"
 	"time"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -141,6 +143,33 @@ func (f *fkc) ReplaceProwJob(name string, job prowapi.ProwJob) (prowapi.ProwJob,
 		if f.prowjobs[i].ObjectMeta.Name == name {
 			f.prowjobs[i] = job
 			return job, nil
+		}
+	}
+	return prowapi.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
+}
+
+func (f *fkc) PatchProwJob(name string, patch []byte) (prowapi.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
+	for i := range f.prowjobs {
+		if f.prowjobs[i].ObjectMeta.Name == name {
+			pjData, err := json.Marshal(f.prowjobs[i])
+			if err != nil {
+				return prowapi.ProwJob{}, fmt.Errorf("error marshal pj %s: %v", name, err)
+			}
+
+			mergedPj, err := jsonpatch.MergePatch(pjData, patch)
+			if err != nil {
+				return prowapi.ProwJob{}, fmt.Errorf("error merge patch %s for pj %s: %v", string(patch), name, err)
+			}
+
+			var newPJ prowapi.ProwJob
+			if err := json.Unmarshal(mergedPj, &newPJ); err != nil {
+				return prowapi.ProwJob{}, fmt.Errorf("error unmarshal pj %s: %v", name, err)
+			}
+
+			f.prowjobs[i] = newPJ
+			return newPJ, nil
 		}
 	}
 	return prowapi.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
