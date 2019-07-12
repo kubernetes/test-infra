@@ -16,7 +16,6 @@ release(
     component("grafana_expose", MULTI_KIND),
     component("grafana_configmaps", MULTI_KIND),
     component("grafana", "deployment"),
-    v = ["//visibility:public"],
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
@@ -59,7 +58,6 @@ k8s_objects(
         ":prometheusrule_crd",
         ":servicemonitor_crd",
     ],
-    visibility = ["//visibility:public"],
 )
 
 filegroup(
