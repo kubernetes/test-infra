@@ -21,6 +21,8 @@ presubmits:
         args:
         - ./.prow.sh
         env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.15.0"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -48,6 +50,8 @@ presubmits:
         args:
         - ./.prow.sh
         env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.15.0"
         - name: CSI_PROW_TESTS
           value: "unit"
         # docker-in-docker needs privileged mode
@@ -75,6 +79,8 @@ presubmits:
         args:
         - ./.prow.sh
         env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.15.0"
         - name: CSI_PROW_TESTS
           value: "serial-alpha parallel-alpha"
         # docker-in-docker needs privileged mode
