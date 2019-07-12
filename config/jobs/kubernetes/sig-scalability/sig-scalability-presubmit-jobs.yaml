@@ -311,6 +311,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
         - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
         - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-proxy.yaml
+        - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -367,6 +368,7 @@ presubmits:
             - --test-cmd-args=--testconfig=testing/density/config.yaml
             - --test-cmd-args=--testconfig=testing/load/config.yaml
             - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+            - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
           image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master

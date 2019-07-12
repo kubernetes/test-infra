@@ -80,6 +80,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       # docker-in-docker needs privileged mode
