@@ -42,6 +42,18 @@ release(
 
 component("starter", MULTI_KIND)
 
+load("@com_github_atlassian_bazel_tools//:multirun/def.bzl", "command", "multirun")
+
+multirun(
+    name = "deploy_all",
+    commands = [
+        ":production.apply",
+        "//prow/cluster/monitoring:prometheus_operator_crd.apply",
+        "//prow/cluster/monitoring:production.apply",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply",
+    ],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -51,7 +63,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/cluster/monitoring:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

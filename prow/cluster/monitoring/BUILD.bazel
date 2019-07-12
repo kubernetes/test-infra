@@ -1,7 +1,7 @@
 load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
 
 # Usage:
-#   bazel run //prow/monitoring:release.apply
+#   bazel run //prow/cluster/monitoring:release.apply
 
 release(
     "production",
@@ -71,9 +71,9 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//prow/monitoring/mixins/dashboards_out:all-srcs",
-        "//prow/monitoring/mixins/grafana_dashboards:all-srcs",
-        "//prow/monitoring/mixins/vendor/grafonnet:all-srcs",
+        "//prow/cluster/monitoring/mixins/dashboards_out:all-srcs",
+        "//prow/cluster/monitoring/mixins/grafana_dashboards:all-srcs",
+        "//prow/cluster/monitoring/mixins/vendor/grafonnet:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

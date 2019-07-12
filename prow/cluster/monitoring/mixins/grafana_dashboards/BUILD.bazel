@@ -6,7 +6,7 @@ jsonnet_to_json(
     outs = ["deck.json"],
     imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
@@ -15,7 +15,7 @@ jsonnet_to_json(
     outs = ["ghproxy.json"],
     imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
@@ -24,7 +24,7 @@ jsonnet_to_json(
     outs = ["hook.json"],
     imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
@@ -33,7 +33,7 @@ jsonnet_to_json(
     outs = ["plank.json"],
     imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
@@ -42,7 +42,7 @@ jsonnet_to_json(
     outs = ["prow.json"],
     imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
@@ -51,7 +51,7 @@ jsonnet_to_json(
     outs = ["tide.json"],
     imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
@@ -60,7 +60,7 @@ jsonnet_to_json(
     outs = ["sinker.json"],
     imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = ["//prow/monitoring/mixins/vendor/grafonnet"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 filegroup(
