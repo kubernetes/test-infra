@@ -87,8 +87,5 @@ for s in {5..1}; do
     echo -n $'\r'"in $s..."
     sleep 1s
 done
-bazel run //prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-bazel run //prow/cluster/monitoring:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-bazel run //prow/cluster/monitoring:prometheus_operator_crd.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-bazel run //prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+bazel run //prow/cluster:deploy_all --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 echo "$(color-green SUCCESS)"
