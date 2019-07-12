@@ -143,6 +143,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-proxy.yaml
+      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
