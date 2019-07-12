@@ -972,8 +972,8 @@ func TestHandleConfig(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Fatalf("Bad error code: %d", rr.Code)
 	}
-	if h := rr.Header().Get("Content-Type"); h != "application/x-yaml" {
-		t.Fatalf("Bad Content-Type, expected: 'application/x-yaml', got: %v", h)
+	if h := rr.Header().Get("Content-Type"); h != "text/plain" {
+		t.Fatalf("Bad Content-Type, expected: 'text/plain', got: %v", h)
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
