@@ -34,6 +34,7 @@ export interface UpdateHash extends BaseMessage {
 export interface ShowOffset extends BaseMessage {
   type: 'showOffset';
   top: number;
+  left: number;
 }
 
 export interface Response extends BaseMessage {
