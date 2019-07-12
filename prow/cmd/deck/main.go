@@ -1178,7 +1178,7 @@ func marshalJob(w http.ResponseWriter, pj prowapi.ProwJob, l *logrus.Entry) {
 		l.WithError(err).Error("Error marshaling job.")
 		return
 	}
-	w.Header().Set("Content-Type", "application/x-yaml")
+	w.Header().Set("Content-Type", "text/plain")
 	if _, err := w.Write(b); err != nil {
 		l.WithError(err).Error("Error writing log.")
 	}
@@ -1269,7 +1269,7 @@ func handleConfig(cfg config.Getter) http.HandlerFunc {
 			http.Error(w, "Failed to marhshal config.", http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/x-yaml")
+		w.Header().Set("Content-Type", "text/plain")
 		buff := bytes.NewBuffer(b)
 		_, err = buff.WriteTo(w)
 		if err != nil {
