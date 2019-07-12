@@ -83,4 +83,26 @@ dashboard.new(
     x: 12,
     y: 13,
   })
+.addPanel(
+    (graphPanel.new(
+        'configmap capacities',
+        description='prow_configmap_size_bytes / 1048576',
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+        legend_values=true,
+        legend_current=true,
+        legend_sort='current',
+        legend_sortDesc=true,
+        formatY1='percentunit',
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'prow_configmap_size_bytes / 1048576',
+        legendFormat='{{namespace}}/{{name}}',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 12,
+    y: 13,
+  })
 + dashboardConfig
