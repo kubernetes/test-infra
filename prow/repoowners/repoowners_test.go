@@ -50,7 +50,7 @@ labels:
 - bob
 reviewers:
 - alice
-- CJWagner
+- "@CJWagner"
 - jakub
 required_reviewers:
 - ben
@@ -223,7 +223,7 @@ labels:
 				"OWNERS": []byte(`approvers:
 - cjwagner
 reviewers:
-- Alice
+- "@Alice"
 - bob
 
 required_reviewers:
