@@ -49,8 +49,9 @@ type options struct {
 }
 
 const (
-	reasonPodAged     = "aged"
-	reasonPodOrphaned = "orphaned"
+	reasonPodAged           = "aged"
+	reasonPodOrphaned       = "orphaned"
+	reasonPodProwJobAborted = "prowjob-aborted"
 
 	reasonProwJobAged         = "aged"
 	reasonProwJobAgedPeriodic = "aged-periodic"
@@ -248,13 +249,17 @@ func (c *controller) clean() {
 	}
 	metrics.prowJobsCreated = len(prowJobs.Items)
 
-	// Only delete pod if its prowjob is marked as finished
+	// Only delete pod if its prowjob is marked as finished or aborted
 	isExist := sets.NewString()
 	isFinished := sets.NewString()
+	isAborted := sets.NewString()
 
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge.Duration
 	for _, prowJob := range prowJobs.Items {
 		isExist.Insert(prowJob.ObjectMeta.Name)
+		if prowJob.Status.State == prowapi.AbortedState {
+			isAborted.Insert(prowJob.ObjectMeta.Name)
+		}
 		// Handle periodics separately.
 		if prowJob.Spec.Type == prowapi.PeriodicJob {
 			continue
@@ -334,6 +339,12 @@ func (c *controller) clean() {
 				reason = reasonPodOrphaned
 				clean = true
 			}
+			if isAborted.Has(pod.ObjectMeta.Name) {
+				// prowjob is in aborted state, the result of this pod doesn't matter anymore
+				// so free up the resources it occupies
+				reason = reasonPodProwJobAborted
+				clean = true
+			}
 
 			if !clean {
 				continue
@@ -341,7 +352,7 @@ func (c *controller) clean() {
 
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+				c.logger.WithField("pod", pod.ObjectMeta.Name).WithField("reason", reason).Info("Deleted old pod.")
 				metrics.podsRemoved[reason]++
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
