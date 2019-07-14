@@ -113,6 +113,11 @@ type JobBase struct {
 	ReporterConfig *prowapi.ReporterConfig `json:"reporter_config,omitempty"`
 	// RerunAuthConfig specifies who can rerun the job
 	RerunAuthConfig *prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	// Hidden defines if the job is hidden. If set to `true`, only Deck instances
+	// that have the flag `--hiddenOnly=true or `--show-hidden=true` set will show it.
+	// Presubmits and Postsubmits can also be set to hidden by
+	// adding their repository in Decks `hidden_repo` setting.
+	Hidden bool `json:"hidden,omitempty"`
 
 	UtilityConfig
 }

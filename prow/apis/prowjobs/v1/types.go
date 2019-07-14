@@ -165,6 +165,13 @@ type ProwJobSpec struct {
 
 	// RerunAuthConfig holds information about which users can rerun the job
 	RerunAuthConfig RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+
+	// Hidden specifies if the Job is considered hidden.
+	// Hidden jobs are only shown by deck instances that have the
+	// `--hiddenOnly=true` or `--show-hidden=true` flag set.
+	// Presubmits and Postsubmits can also be set to hidden by
+	// adding their repository in Decks `hidden_repo` setting.
+	Hidden bool `json:"hidden,omitempty"`
 }
 
 type GitHubTeamSlug struct {

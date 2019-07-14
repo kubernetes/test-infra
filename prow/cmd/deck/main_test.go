@@ -826,6 +826,21 @@ func TestListProwJobs(t *testing.T) {
 			expected:    sets.NewString("first", "second"),
 			showHidden:  true,
 		},
+		{
+			name: "setting pj.Spec.Hidden hides it",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden"
+					in.Spec.Hidden = true
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "shown"
+					return in
+				},
+			},
+			expected: sets.NewString("shown"),
+		},
 	}
 
 	for _, testCase := range testCases {
