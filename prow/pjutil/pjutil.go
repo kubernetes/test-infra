@@ -177,6 +177,7 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 
 		ReporterConfig:  jb.ReporterConfig,
 		RerunAuthConfig: rerunAuthConfig,
+		Hidden:          jb.Hidden,
 	}
 }
 

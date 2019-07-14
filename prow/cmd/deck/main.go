@@ -421,17 +421,15 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 
 	var filtered []prowapi.ProwJob
 	for _, item := range prowJobList.Items {
-		if item.Spec.Refs == nil && len(item.Spec.ExtraRefs) == 0 {
-			// periodic jobs with no refs cannot be filtered
-			filtered = append(filtered, item)
-			continue
-		}
-
 		refs := item.Spec.Refs
 		if refs == nil {
-			refs = &item.Spec.ExtraRefs[0]
+			if len(item.Spec.ExtraRefs) > 0 {
+				refs = &item.Spec.ExtraRefs[0]
+			} else {
+				refs = &prowapi.Refs{}
+			}
 		}
-		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org)
+		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) || item.Spec.Hidden
 		if shouldHide && c.showHidden {
 			filtered = append(filtered, item)
 		} else if shouldHide == c.hiddenOnly {
