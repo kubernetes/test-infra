@@ -111,6 +111,7 @@ filegroup(
         "//vendor/github.com/googleapis/gnostic/extensions:all-srcs",
         "//vendor/github.com/gophercloud/gophercloud:all-srcs",
         "//vendor/github.com/gorilla/context:all-srcs",
+        "//vendor/github.com/gorilla/csrf:all-srcs",
         "//vendor/github.com/gorilla/mux:all-srcs",
         "//vendor/github.com/gorilla/securecookie:all-srcs",
         "//vendor/github.com/gorilla/sessions:all-srcs",
