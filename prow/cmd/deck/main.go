@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -315,13 +316,16 @@ func main() {
 			logrus.WithError(err).Fatal("Could not read cookie secret file")
 		}
 		decodedSecret, err := base64.StdEncoding.DecodeString(string(cookieSecretRaw))
-		csrfToken = decodedSecret
 		if err != nil {
 			logrus.WithError(err).Fatal("Error decoding cookie secret")
 		}
+		if len(decodedSecret) == 32 {
+			csrfToken = decodedSecret
+		}
 		if len(decodedSecret) > 32 {
 			logrus.Warning("Cookie secret should be exactly 32 bytes. Consider truncating the existing cookie to that length")
-			csrfToken = decodedSecret[:32]
+			hash := sha256.Sum256(decodedSecret)
+			csrfToken = hash[:]
 		}
 		if len(decodedSecret) < 32 {
 			if o.rerunCreatesJob {
