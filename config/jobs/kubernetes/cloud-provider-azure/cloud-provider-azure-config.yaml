@@ -50,6 +50,7 @@ presubmits:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-check
       description: Run lint check tests for cloud-provider-azure
+      testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e
     # Disable always_run because of https://github.com/kubernetes/test-infra/pull/11887
     # TODO(feiskyer): enable the tests after it's fixed and published in the image
@@ -97,12 +98,12 @@ presubmits:
         - "--timeout=420m"
         securityContext:
           privileged: true
-
-  # pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e
       description: Run Kubernetes e2e tests for cloud-provider-azure
+      testgrid-num-columns-recent: '30'
+# pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm
     always_run: true
     branches:
@@ -147,11 +148,11 @@ presubmits:
         - "--timeout=420m"
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e-ccm
       description: Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+      testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-unit
     always_run: true
     branches:
@@ -169,11 +170,11 @@ presubmits:
         - --
         - make
         - test-unit
-
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-unit
       description: Run unit tests for cloud-provider-azure
+      testgrid-num-columns-recent: '30'
 periodics:
 - interval: 8h
   # ci-cloud-provider-azure-master runs Azure specific tests periodically.
@@ -228,7 +229,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
-
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-master
@@ -288,7 +288,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
-
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-autoscaling
@@ -347,7 +346,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
-
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-conformance

@@ -371,7 +371,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
-	"kubernetes-sigs/kube-storage-version-migrator",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",
 	"kubernetes-sigs/service-catalog",
 	"kubernetes-sigs/sig-storage-local-static-provisioner",

@@ -35,40 +35,44 @@ presubmits:
         resources:
           requests:
             cpu: 4
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-verify
     always_run: true
     decorate: true
     branches:
-      - release-1.14
+    - release-1.14
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.14
-          imagePullPolicy: Always
-          command:
-            - runner.sh
-          args:
-            - ./hack/jenkins/verify-dockerized.sh
-          env:
-            - name: KUBE_FORCE_VERIFY_CHECKS
-              value: "n"
-            - name: EXCLUDE_TYPECHECK
-              value: "y"
-            - name: EXCLUDE_GODEP
-              value: "y"
-            - name: KUBE_VERIFY_GIT_BRANCH
-              value: master
-            - name: REPO_DIR
-              value: /workspace/k8s.io/kubernetes
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.14
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/verify-dockerized.sh
+        env:
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "n"
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
           # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 4
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
   - name: pull-kubernetes-verify
     always_run: true
     labels:

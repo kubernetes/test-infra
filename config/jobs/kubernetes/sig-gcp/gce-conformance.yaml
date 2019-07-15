@@ -7,6 +7,9 @@ periodics:
     testgrid-dashboards: sig-release-master-informing, conformance-all, conformance-gce
     testgrid-tab-name: GCE, master (dev)
     description: Runs conformance tests using kubetest against kubernetes master on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -47,11 +50,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.12
-
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.12 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-13
   labels:
@@ -72,11 +77,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.13
-
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.13 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-14
   labels:
@@ -97,12 +104,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.14
-
-
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.14 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-15
   labels:
@@ -127,3 +135,6 @@ periodics:
     testgrid-dashboards: conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.15 (release)
     description: Runs conformance tests using kubetest against kubernetes release 1.15 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'

@@ -17,6 +17,7 @@ presubmits:
       testgrid-dashboards: sig-aws-ebs-csi-driver
       testgrid-tab-name: verify
       description: aws ebs csi driver basic code verification
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-unit
     always_run: true
     decorate: true
@@ -34,6 +35,7 @@ presubmits:
       testgrid-dashboards: sig-aws-ebs-csi-driver
       testgrid-tab-name: unit-test
       description: aws ebs csi driver unit test
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-sanity
     always_run: true
     decorate: true
@@ -51,6 +53,7 @@ presubmits:
       testgrid-dashboards: sig-aws-ebs-csi-driver
       testgrid-tab-name: sanity-test
       description: aws ebs csi driver sanity test
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-integration
     always_run: true
     decorate: true
@@ -69,6 +72,7 @@ presubmits:
       testgrid-dashboards: sig-aws-ebs-csi-driver
       testgrid-tab-name: integration-test
       description: aws ebs csi driver integration test
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     always_run: true
     decorate: true
@@ -90,6 +94,7 @@ presubmits:
       testgrid-dashboards: sig-aws-ebs-csi-driver
       testgrid-tab-name: e2e-test-single-az
       description: aws ebs csi driver e2e test on single az
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     always_run: true
     decorate: true
@@ -111,3 +116,4 @@ presubmits:
       testgrid-dashboards: sig-aws-ebs-csi-driver
       testgrid-tab-name: e2e-test-multi-az
       description: aws ebs csi driver e2e test on mutiple AZs
+      testgrid-num-columns-recent: '30'

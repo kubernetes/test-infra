@@ -26,7 +26,10 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: "vendor vendor-licenses"
-
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-dependencies-canary
     path_alias: "k8s.io/kubernetes"
     decorate: true
@@ -57,7 +60,8 @@ presubmits:
           value: https://proxy.golang.org
         - name: GOSUMDB
           value: sum.golang.org
-
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-godeps
     run_if_changed: '^((build\/|Godeps\/|vendor\/|hack\/lib\/|hack\/.*godep|staging\/).*)$'
     path_alias: "k8s.io/kubernetes"
@@ -92,3 +96,7 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: "godeps staging-godeps godep-licenses"
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'

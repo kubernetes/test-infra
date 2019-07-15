@@ -42,7 +42,8 @@ presubmits:
             memory: "9000Mi"
               # during the tests more like 3-20m is used
             cpu: 2000m
-
+    annotations:
+      testgrid-create-test-group: 'true'
 periodics:
   # conformance test using image against kubernetes master branch with `kind`
 - interval: 1h
@@ -86,6 +87,7 @@ periodics:
     testgrid-tab-name: conformance-image, master (dev)
     description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
     testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '3'
 - interval: 1h
   name: ci-kubernetes-conformance-image-1-14-test
   labels:
@@ -126,3 +128,4 @@ periodics:
     testgrid-tab-name: conformance-image, 1.14 (dev)
     description: Runs conformance tests using image against kubernetes 1.14 branch with a kubernetes-in-docker cluster
     testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '3'

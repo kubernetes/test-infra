@@ -73,3 +73,5 @@ postsubmits:
         resources:
           requests:
             memory: "1Gi"
+    annotations:
+      testgrid-num-failures-to-alert: '2'

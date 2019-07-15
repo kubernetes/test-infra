@@ -27,6 +27,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
   - name: pull-npd-test
     branches:
     - master
@@ -49,6 +50,7 @@ presubmits:
 
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-node
     branches:
     - master
@@ -92,10 +94,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci
     branches:
     - master
@@ -129,9 +130,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
     branches:
     - master
@@ -165,9 +166,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu
     branches:
     - master
@@ -201,9 +202,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
     branches:
     - master
@@ -239,3 +240,4 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'

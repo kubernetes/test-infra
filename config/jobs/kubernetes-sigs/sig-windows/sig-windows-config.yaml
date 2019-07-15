@@ -82,12 +82,11 @@ presubmits:
         - "--timeout=450m"
         securityContext:
           privileged: true
-
-
     annotations:
       testgrid-dashboards: sig-windows
       testgrid-tab-name: aks-engine-azure-windows-presubmit
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+      testgrid-num-columns-recent: '30'
 periodics:
 - interval: 6h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows
@@ -128,7 +127,6 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-windows
     testgrid-tab-name: aks-engine-azure-windows-master
@@ -172,7 +170,6 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-release-1.14-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-14-windows
@@ -216,7 +213,6 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-release-1.15-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-15-windows

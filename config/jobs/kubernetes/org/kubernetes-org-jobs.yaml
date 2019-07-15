@@ -11,6 +11,9 @@ presubmits:
         args:
         - test
         - //...
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
   - name: pull-org-verify-all
     always_run: true
     decorate: true
@@ -19,3 +22,6 @@ presubmits:
       - image: launcher.gcr.io/google/bazel:0.26.0
         command:
         - ./hack/verify-all.sh
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'

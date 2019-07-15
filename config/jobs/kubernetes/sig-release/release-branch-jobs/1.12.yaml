@@ -3,6 +3,9 @@ periodics:
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     testgrid-dashboards: sig-release-1.12-informing, sig-release-1.12-all, conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.12 (dev)
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
   interval: 6h
   labels:
     preset-k8s-ssh: "true"
@@ -235,6 +238,7 @@ periodics:
     fork-per-release-cron: ""
     testgrid-dashboards: sig-release-1.12-blocking, sig-release-1.12-all, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-cos-1.12-scalability-100
+    testgrid-num-failures-to-alert: '1'
   cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"

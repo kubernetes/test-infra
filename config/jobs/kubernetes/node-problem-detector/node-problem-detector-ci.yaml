@@ -21,11 +21,12 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
-
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'
 - name: ci-npd-test
   interval: 2h
   decorate: true
@@ -47,10 +48,12 @@ periodics:
       - >-
         ./test/build.sh install-lib &&
         make test
-
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-node
   interval: 2h
   decorate: true
@@ -91,10 +94,12 @@ periodics:
         '--node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
         '--test_args=--nodes=8 --focus=NodeProblemDetector'
         --timeout=60m
-
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-gci
   interval: 2h
   decorate: true
@@ -126,10 +131,12 @@ periodics:
         --ginkgo-parallel=30
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
-
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-gci-custom-flags
   interval: 2h
   decorate: true
@@ -161,10 +168,12 @@ periodics:
         --ginkgo-parallel=30
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
-
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-ubuntu
   interval: 2h
   decorate: true
@@ -196,10 +205,12 @@ periodics:
         --ginkgo-parallel=30
         --test_args=--ginkgo.focus=NodeProblemDetector
         --timeout=60m
-
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
   interval: 2h
   decorate: true
@@ -234,3 +245,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'

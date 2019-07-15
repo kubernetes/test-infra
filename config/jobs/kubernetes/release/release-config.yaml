@@ -33,11 +33,11 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-
     annotations:
       testgrid-dashboards: sig-release-misc
       testgrid-tab-name: release-cluster-up
       testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+      testgrid-num-columns-recent: '30'
   - name: pull-release-unit
     always_run: true
     decorate: true
@@ -54,6 +54,7 @@ presubmits:
       testgrid-dashboards: sig-release-misc
       testgrid-tab-name: release-unit
       testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+      testgrid-num-columns-recent: '30'
   - name: pull-release-verify
     always_run: true
     optional: true
@@ -71,12 +72,12 @@ presubmits:
         - verify
         securityContext:
           privileged: true
-
-# package tests
     annotations:
       testgrid-dashboards: sig-release-misc
       testgrid-tab-name: release-verify
       testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+      testgrid-num-columns-recent: '30'
+# package tests
 periodics:
 - name: periodic-release-verify-packages-debs
   interval: 6h

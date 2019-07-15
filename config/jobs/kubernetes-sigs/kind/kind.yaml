@@ -46,12 +46,13 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-# conformance test against kubernetes master branch with `kind` ipv6
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes master branch with `kind` ipv6
 - interval: 1h
   name: ci-kubernetes-kind-conformance-ipv6
   labels:
@@ -98,13 +99,14 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-# conformance test against kubernetes master branch with `kind`, skipping
-# serial tests so it runs in ~20m
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: kind (IPv6), master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes master branch with `kind`, skipping
+# serial tests so it runs in ~20m
 - interval: 20m
   name: ci-kubernetes-kind-conformance-parallel
   labels:
@@ -140,12 +142,13 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-# conformance test against kubernetes master branch with `kind` ipv6
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes master branch with `kind` ipv6
 - interval: 20m
   name: ci-kubernetes-kind-conformance-parallel-ipv6
   labels:
@@ -195,12 +198,13 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-# conformance test against kubernetes release-1.12 branch with `kind`
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: kind (IPv6), master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes release-1.12 branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance-latest-1-12
   labels:
@@ -232,12 +236,13 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-# conformance test against kubernetes release-1.13 branch with `kind`
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes release-1.13 branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance-latest-1-13
   labels:
@@ -269,12 +274,13 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-# conformance test against kubernetes release-1.14 branch with `kind`
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: kind, v1.13 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.13 with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes release-1.14 branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance-latest-1-14
   labels:
@@ -311,3 +317,4 @@ periodics:
     testgrid-tab-name: kind, v1.14 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.14 with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'

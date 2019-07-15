@@ -2,6 +2,9 @@ periodics:
 - annotations:
     testgrid-dashboards: sig-release-1.15-informing, conformance-all, conformance-gce
     testgrid-tab-name: GCE, 1.15 (dev)
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
   interval: 6h
   labels:
     preset-k8s-ssh: "true"
@@ -30,6 +33,8 @@ periodics:
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-dashboards: sig-release-1.15-blocking
     testgrid-tab-name: gce-device-plugin-gpu-1.15
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
   cron: 0 0-23/2 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
@@ -156,6 +161,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com,cloud-kubernetes-scalability-oncall@google.com
     testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-cos-1.15-scalability-100
+    testgrid-num-failures-to-alert: '1'
   cron: 0 */6 * * *
   labels:
     preset-e2e-scalability-common: "true"
@@ -605,6 +611,10 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.15
         name: ""
         resources: {}
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - always_run: false
     branches:
     - release-1.15
@@ -718,6 +728,9 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-create-test-group: 'true'
   - always_run: true
     branches:
     - release-1.15

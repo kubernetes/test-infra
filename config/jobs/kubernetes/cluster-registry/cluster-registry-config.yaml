@@ -20,6 +20,8 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-cluster-registry-verify-gosrc
     always_run: true
     labels:
@@ -41,3 +43,5 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+    annotations:
+      testgrid-create-test-group: 'true'

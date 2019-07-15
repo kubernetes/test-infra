@@ -50,11 +50,11 @@ periodics:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       command:
-        - "timeout"
+      - "timeout"
       args:
-        - "-t"
-        - "10800"
-        - "/update_summaries.sh"
+      - "-t"
+      - "10800"
+      - "/update_summaries.sh"
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -63,7 +63,9 @@ periodics:
     - name: service
       secret:
         secretName: triage-service-account
-
+  annotations:
+    testgrid-num-failures-to-alert: '18'
+    testgrid-alert-stale-results-hours: '12'
 - name: metrics-bigquery
   interval: 24h
   spec:
@@ -130,3 +132,6 @@ periodics:
     - name: influxdb
       secret:
         secretName: velodrome-influxdb
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'

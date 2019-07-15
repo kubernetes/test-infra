@@ -44,7 +44,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: google-gce, sig-network-gce
     testgrid-tab-name: gce-alpha-api
@@ -73,7 +72,6 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-coredns-performance
@@ -101,7 +99,6 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-kubedns-performance
@@ -153,7 +150,6 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-coredns-performance-nodecache
@@ -182,7 +178,6 @@ periodics:
       - --timeout=60m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-kubedns-performance-nodecache
@@ -233,12 +228,12 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-release-master-blocking, google-gce, sig-network-gce
     testgrid-tab-name: gci-gce-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh
+    testgrid-alert-stale-results-hours: '24'
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   labels:
@@ -261,11 +256,11 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gci-gce-ingress-manual-network
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-ip-alias
   labels:
@@ -291,7 +286,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: google-gce, google-gci
     testgrid-tab-name: ip-alias
@@ -320,7 +314,9 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '24'
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-kube-dns
   labels:
@@ -417,11 +413,11 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: google-gke, sig-network-gke
     testgrid-tab-name: gci-gke-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gke-network-policy
   labels:
@@ -447,11 +443,11 @@ periodics:
       - --gke-create-command=container clusters create --enable-network-policy
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-gke
     testgrid-tab-name: gci-gke-network-policy
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 120m
   name: ci-kubernetes-e2e-gce-lb-finalizer
   labels:

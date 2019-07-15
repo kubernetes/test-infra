@@ -3,6 +3,9 @@ periodics:
     description: Runs conformance tests using kubetest against kubernetes release 1.13 branch on GCE
     testgrid-dashboards: sig-release-1.13-informing, sig-release-1.13-all, conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.13 (dev)
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
   interval: 6h
   labels:
     preset-k8s-ssh: "true"
@@ -208,6 +211,8 @@ periodics:
     fork-per-release-cron: 0 8-23/24 * * *
     testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all
     testgrid-tab-name: gce-device-gpu-plugin-1.13
+    testgrid-num-failures-to-alert: '2'
+    testgrid-alert-stale-results-hours: '24'
   cron: 0 8-23/12 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
@@ -235,6 +240,7 @@ periodics:
     fork-per-release-cron: 0 8-20/12 * * *
     testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-cos-1.13-scalability-100
+    testgrid-num-failures-to-alert: '1'
   cron: 0 4-16/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
@@ -379,6 +385,10 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - always_run: false
     branches:
     - release-1.13
@@ -419,6 +429,8 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-create-test-group: 'true'
   - always_run: true
     branches:
     - release-1.13
@@ -461,6 +473,8 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-create-test-group: 'true'
   - always_run: false
     branches:
     - release-1.13
@@ -503,6 +517,8 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-create-test-group: 'true'
   - always_run: true
     branches:
     - release-1.13
@@ -536,6 +552,10 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - always_run: true
     branches:
     - release-1.13
@@ -561,6 +581,10 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - always_run: true
     branches:
     - release-1.13
@@ -592,6 +616,10 @@ presubmits:
             memory: 6Gi
         securityContext:
           privileged: true
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - always_run: true
     branches:
     - release-1.13
@@ -610,6 +638,10 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.13
         name: main
         resources: {}
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - always_run: true
     branches:
     - release-1.13
@@ -667,6 +699,8 @@ presubmits:
             memory: 6Gi
         securityContext:
           privileged: true
+    annotations:
+      testgrid-create-test-group: 'true'
   - always_run: false
     branches:
     - release-1.13
@@ -711,3 +745,7 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'

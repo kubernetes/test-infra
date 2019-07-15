@@ -43,7 +43,8 @@ presubmits:
         - "make"
         args:
         - "check"
-
+    annotations:
+      testgrid-create-test-group: 'true'
   # Builds the CCM and CSI binaries.
   - name: pull-cloud-provider-vsphere-build
     decorate: true
@@ -60,8 +61,9 @@ presubmits:
         - "make"
         args:
         - "build"
-
-  # Executes the unit tests.
+    annotations:
+      testgrid-create-test-group: 'true'
+    # Executes the unit tests.
   - name: pull-cloud-provider-vsphere-unit-test
     decorate: true
     branches:
@@ -77,7 +79,8 @@ presubmits:
         - "make"
         args:
         - "unit-test"
-
+    annotations:
+      testgrid-create-test-group: 'true'
   # Executes the integration tests.
   - name: pull-cloud-provider-vsphere-integration-test
     decorate: true
@@ -99,7 +102,8 @@ presubmits:
         - "integration-test"
         securityContext:
           privileged: true
-
+    annotations:
+      testgrid-create-test-group: 'true'
 postsubmits:
   kubernetes/cloud-provider-vsphere:
 
@@ -124,7 +128,8 @@ postsubmits:
         - "deploy"
         securityContext:
           privileged: true
-
+    annotations:
+      testgrid-num-columns-recent: '20'
 periodics:
 
 # Runs the e2e conformance suite against a cluster turned up with the
@@ -165,6 +170,9 @@ periodics:
     testgrid-tab-name: vsphere-latest
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
 - name: ci-cloud-provider-vsphere-conformance-stable-1-14
   interval: 12h
   decorate: true
@@ -200,6 +208,9 @@ periodics:
     testgrid-tab-name: vsphere-v1.14
     description: Runs conformance tests using kubetest against kubernetes from the release-1.14 branch with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
 - name: ci-cloud-provider-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
@@ -235,6 +246,9 @@ periodics:
     testgrid-tab-name: vsphere-v1.13
     description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
 - name: ci-cloud-provider-vsphere-conformance-stable-1-12
   interval: 12h
   decorate: true
@@ -270,6 +284,9 @@ periodics:
     testgrid-tab-name: vsphere-v1.12
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
 # Runs the e2e conformance suite against a cluster turned up with the
 # in-tree vSphere cloud provider. This job is duplicated for multiple versions
 # of Kubernetes.
@@ -306,6 +323,9 @@ periodics:
     testgrid-tab-name: in-tree-vsphere-latest
     description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
 - name: ci-vsphere-conformance-stable-1-14
   interval: 12h
   decorate: true
@@ -339,6 +359,9 @@ periodics:
     testgrid-tab-name: in-tree-vsphere-v1.14
     description: Runs conformance tests using kubetest against kubernetes from the release-1.14 branch with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
 - name: ci-vsphere-conformance-stable-1-13
   interval: 12h
   decorate: true
@@ -372,6 +395,9 @@ periodics:
     testgrid-tab-name: in-tree-vsphere-v1.13
     description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
 - name: ci-vsphere-conformance-stable-1-12
   interval: 12h
   decorate: true
@@ -405,3 +431,6 @@ periodics:
     testgrid-tab-name: in-tree-vsphere-v1.12
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
     testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'

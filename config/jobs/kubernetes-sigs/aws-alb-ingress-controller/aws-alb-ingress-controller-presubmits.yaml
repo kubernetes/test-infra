@@ -17,6 +17,7 @@ presubmits:
       testgrid-dashboards: sig-aws-alb-ingress-controller
       testgrid-tab-name: lint
       description: aws alb ingress controller code lint
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-alb-ingress-controller-unit-test
     always_run: true
     decorate: true
@@ -42,6 +43,7 @@ presubmits:
       testgrid-dashboards: sig-aws-alb-ingress-controller
       testgrid-tab-name: unit test
       description: aws alb ingress controller unit tests
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-alb-ingress-controller-e2e-test
     always_run: true
     decorate: true
@@ -64,3 +66,4 @@ presubmits:
       testgrid-dashboards: sig-aws-alb-ingress-controller
       testgrid-tab-name: e2e test
       description: aws alb ingress controller e2e tests
+      testgrid-num-columns-recent: '30'

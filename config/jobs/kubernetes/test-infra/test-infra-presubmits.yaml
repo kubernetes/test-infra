@@ -14,7 +14,9 @@ presubmits:
       - name: third
         image: busybox
         args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
-
+    annotations:
+      testgrid-num-columns-recent: '20'
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-build-smoke-fail
     agent: knative-build
     decorate: true
@@ -29,7 +31,9 @@ presubmits:
       - name: third
         image: busybox
         args: ["exit", "1"]
-
+    annotations:
+      testgrid-num-columns-recent: '20'
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-bazel
     branches:
     - master
@@ -48,7 +52,8 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
-
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-gubernator
     branches:
     - master
@@ -64,7 +69,8 @@ presubmits:
         env:
         - name: WORKSPACE
           value: "/workspace"
-
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-verify-file-perms
     branches:
     - master
@@ -77,7 +83,8 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-experimental
         command:
         - ./hack/verify-file-perms.sh
-
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-yamllint
     always_run: true
     decorate: true
@@ -89,3 +96,5 @@ presubmits:
         - -c
         - config/jobs/.yamllint.conf
         - config/jobs
+    annotations:
+      testgrid-create-test-group: 'true'

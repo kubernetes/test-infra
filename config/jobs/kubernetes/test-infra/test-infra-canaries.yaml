@@ -18,7 +18,8 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
-
+    annotations:
+      testgrid-create-test-group: 'true'
 # Testing to make sure things still update.
 periodics:
 - interval: 10m
@@ -28,7 +29,6 @@ periodics:
     containers:
     - image: alpine
       command: ["/bin/date"]
-
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: echo-test

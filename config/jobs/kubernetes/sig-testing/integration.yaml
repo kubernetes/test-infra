@@ -24,7 +24,10 @@ presubmits:
         resources:
           requests:
             cpu: 4
-
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   # TODO(krzyzacy): add branches once this works
   # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
   - name: pull-kubernetes-integration-podutil
@@ -57,9 +60,10 @@ presubmits:
         resources:
           requests:
             cpu: 4
-
     annotations:
       testgrid-dashboards: sig-testing-canaries
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
 periodics:
 - interval: 1h
   name: ci-kubernetes-integration-master
