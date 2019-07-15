@@ -18,6 +18,7 @@ package plank
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -222,6 +223,10 @@ func (c *Controller) Sync() error {
 		}
 	}
 	pjs = k8sJobs
+	// Sort jobs so jobs started earlier get better chance picked up earlier
+	sort.Slice(pjs, func(i, j int) bool {
+		return pjs[i].CreationTimestamp.Before(&pjs[j].CreationTimestamp)
+	})
 
 	var syncErrs []error
 	if err := c.terminateDupes(pjs, pm); err != nil {
