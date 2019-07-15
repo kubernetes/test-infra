@@ -959,6 +959,16 @@ func TestValidateJobBase(t *testing.T) {
 			},
 			pass: true,
 		},
+		{
+			name: "invalid rerun_permissions",
+			base: JobBase{
+				RerunPermissions: &prowapi.RerunPermissions{
+					AllowAnyone: true,
+					GitHubUsers: []string{"user"},
+				},
+			},
+			pass: false,
+		},
 	}
 
 	for _, tc := range cases {

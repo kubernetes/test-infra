@@ -171,7 +171,8 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		BuildSpec:       jb.BuildSpec,
 		PipelineRunSpec: jb.PipelineRunSpec,
 
-		ReporterConfig: jb.ReporterConfig,
+		ReporterConfig:   jb.ReporterConfig,
+		RerunPermissions: jb.RerunPermissions,
 	}
 }
 

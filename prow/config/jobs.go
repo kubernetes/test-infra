@@ -111,6 +111,8 @@ type JobBase struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 	// ReporterConfig provides the option to configure reporting on job level
 	ReporterConfig *prowapi.ReporterConfig `json:"reporter_config,omitempty"`
+	// RerunPermissions specifies who can rerun the job
+	RerunPermissions *prowapi.RerunPermissions `json:"rerun_permissions,omitempty"`
 
 	UtilityConfig
 }
