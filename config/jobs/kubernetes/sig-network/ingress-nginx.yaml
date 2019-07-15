@@ -294,3 +294,4 @@ periodics:
   annotations:
     testgrid-dashboards: sig-network-ingress-nginx
     testgrid-tab-name: ci-e2e
+    testgrid-num-columns-recent: '20'

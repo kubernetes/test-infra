@@ -52,6 +52,7 @@ periodics:
     testgrid-tab-name: conformance, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
 - interval: 1h
   name: ci-kubernetes-kind-conformance-ipv6
   labels:
@@ -105,6 +106,7 @@ periodics:
     testgrid-tab-name: kind (IPv6), master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
 - interval: 20m
   name: ci-kubernetes-kind-conformance-parallel
   labels:
@@ -146,6 +148,7 @@ periodics:
     testgrid-tab-name: conformance, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
 - interval: 20m
   name: ci-kubernetes-kind-conformance-parallel-ipv6
   labels:
@@ -201,6 +204,7 @@ periodics:
     testgrid-tab-name: kind (IPv6), master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
 - interval: 1h
   name: ci-kubernetes-kind-conformance-latest-1-12
   labels:
@@ -238,6 +242,7 @@ periodics:
     testgrid-tab-name: kind, v1.12 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.12 with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
 - interval: 1h
   name: ci-kubernetes-kind-conformance-latest-1-13
   labels:
@@ -275,6 +280,7 @@ periodics:
     testgrid-tab-name: kind, v1.13 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.13 with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
 - interval: 1h
   name: ci-kubernetes-kind-conformance-latest-1-14
   labels:
@@ -311,3 +317,4 @@ periodics:
     testgrid-tab-name: kind, v1.14 (dev)
     description: Runs conformance tests using kubetest against latest kubernetes release-1.14 with a kubernetes-in-docker cluster
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'

@@ -239,6 +239,7 @@ periodics:
     testgrid-tab-name: gci-gce-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh
+    testgrid-alert-stale-results-hours: '24'
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   labels:
@@ -266,6 +267,7 @@ periodics:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gci-gce-ingress-manual-network
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-ip-alias
   labels:
@@ -321,6 +323,9 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
 
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '24'
 - interval: 60m
   name: ci-kubernetes-e2e-gci-gce-kube-dns
   labels:
@@ -422,6 +427,7 @@ periodics:
     testgrid-dashboards: google-gke, sig-network-gke
     testgrid-tab-name: gci-gke-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gke-network-policy
   labels:
@@ -452,6 +458,7 @@ periodics:
     testgrid-dashboards: sig-network-gke
     testgrid-tab-name: gci-gke-network-policy
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 120m
   name: ci-kubernetes-e2e-gce-lb-finalizer
   labels:

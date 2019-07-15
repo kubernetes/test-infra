@@ -19,6 +19,8 @@ presubmits:
         - "check"
 
   # Builds the CSI binary
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-vsphere-csi-driver-build
     decorate: true
     branches:
@@ -36,6 +38,8 @@ presubmits:
         - "build"
 
   # Executes the unit tests.
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-vsphere-csi-driver-unit-test
     decorate: true
     branches:
@@ -52,6 +56,8 @@ presubmits:
         args:
         - "unit-test"
 
+    annotations:
+      testgrid-create-test-group: 'true'
 postsubmits:
   kubernetes-sigs/vsphere-csi-driver:
 
@@ -76,3 +82,5 @@ postsubmits:
         - "deploy"
         securityContext:
           privileged: true
+    annotations:
+      testgrid-num-columns-recent: '20'

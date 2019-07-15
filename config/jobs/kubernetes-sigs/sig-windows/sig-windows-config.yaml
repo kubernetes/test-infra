@@ -88,6 +88,7 @@ presubmits:
       testgrid-dashboards: sig-windows
       testgrid-tab-name: aks-engine-azure-windows-presubmit
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+      testgrid-num-columns-recent: '30'
 periodics:
 - interval: 6h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows

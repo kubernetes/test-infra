@@ -24,6 +24,8 @@ periodics:
     testgrid-tab-name: gce-device-plugin-gpu-master
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     description: "Uses kubetest to run e2e tests (+Feature:GPUDevicePlugin) against a cluster created with cluster/kube-up.sh"
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
   spec:
     containers:
     - args:

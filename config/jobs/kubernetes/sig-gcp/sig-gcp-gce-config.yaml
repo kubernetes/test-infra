@@ -135,6 +135,8 @@ presubmits:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-create-test-group: 'true'
 periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce

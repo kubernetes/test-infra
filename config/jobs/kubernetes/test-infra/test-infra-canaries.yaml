@@ -20,6 +20,8 @@ presubmits:
         - //...
 
 # Testing to make sure things still update.
+    annotations:
+      testgrid-create-test-group: 'true'
 periodics:
 - interval: 10m
   name: ci-test-infra-canary-echo-test

@@ -50,6 +50,7 @@ presubmits:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-check
       description: Run lint check tests for cloud-provider-azure
+      testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e
     # Disable always_run because of https://github.com/kubernetes/test-infra/pull/11887
     # TODO(feiskyer): enable the tests after it's fixed and published in the image
@@ -103,6 +104,7 @@ presubmits:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e
       description: Run Kubernetes e2e tests for cloud-provider-azure
+      testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm
     always_run: true
     branches:
@@ -152,6 +154,7 @@ presubmits:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e-ccm
       description: Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+      testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-unit
     always_run: true
     branches:
@@ -174,6 +177,7 @@ presubmits:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-unit
       description: Run unit tests for cloud-provider-azure
+      testgrid-num-columns-recent: '30'
 periodics:
 - interval: 8h
   # ci-cloud-provider-azure-master runs Azure specific tests periodically.

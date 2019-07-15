@@ -112,6 +112,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-scalability-100
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com,cloud-kubernetes-scalability-oncall@google.com
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 100-node cluster created with cluster/kube-up.sh"
+    testgrid-num-failures-to-alert: '2'
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master

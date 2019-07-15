@@ -17,6 +17,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-test
+      testgrid-num-columns-recent: '30'
   - name: pull-structured-merge-diff-gofmt
     labels:
       preset-service-account: "true"
@@ -33,3 +34,4 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-gofmt
+      testgrid-num-columns-recent: '30'

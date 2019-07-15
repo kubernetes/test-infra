@@ -49,6 +49,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-storage-slow-rbe
     always_run: false
     optional: true
@@ -100,6 +102,8 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-slow
         - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|gcePD-external --minStartupPods=8
         - --timeout=80m
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-csi-serial
     always_run: false
     optional: true
@@ -145,6 +149,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-iscsi
     always_run: false
     optional: true
@@ -184,6 +190,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-iscsi-serial
     always_run: false
     optional: true
@@ -223,6 +231,8 @@ presubmits:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-create-test-group: 'true'
 periodics:
 - interval: 24h
   name: ci-kubernetes-e2e-gce-iscsi
@@ -259,6 +269,8 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
+  annotations:
+    testgrid-num-columns-recent: '20'
 - interval: 24h
   name: ci-kubernetes-e2e-gce-iscsi-serial
   labels:
@@ -293,3 +305,5 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
+  annotations:
+    testgrid-num-columns-recent: '20'

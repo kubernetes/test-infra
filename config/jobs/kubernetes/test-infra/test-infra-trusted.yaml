@@ -26,6 +26,8 @@ postsubmits:
       - name: github
         secret:
           secretName: oauth-token
+    annotations:
+      testgrid-num-failures-to-alert: '1'
   kubernetes/test-infra:
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
@@ -646,6 +648,7 @@ periodics:
     testgrid-dashboards: sig-testing-org
     testgrid-tab-name: ci-peribolos
     testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
 - cron: "05 15 1-7 * 1"  # Run at 7:05 PST (15:05 UTC) on first monthly monday.
   name: ci-test-infra-autoupdate-minor
   cluster: test-infra-trusted
@@ -838,6 +841,9 @@ periodics:
     - name: oauth
       secret:
         secretName: oauth-token
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'
 - cron: "17 * * * *"  # Every hour at 17 minutes past the hour
   name: ci-test-infra-label-sync
   cluster: test-infra-trusted
@@ -874,6 +880,9 @@ periodics:
         name: label-config
 # ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
 # away from the intent of the manifest.
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'
 - interval: 24h
   cluster: test-infra-trusted
   max_concurrency: 1

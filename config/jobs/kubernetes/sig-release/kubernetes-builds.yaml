@@ -27,6 +27,8 @@ presubmits:
             cpu: 7
             memory: "41Gi"
 
+    annotations:
+      testgrid-create-test-group: 'true'
 periodics:
 - interval: 5m
   name: ci-kubernetes-build-fast

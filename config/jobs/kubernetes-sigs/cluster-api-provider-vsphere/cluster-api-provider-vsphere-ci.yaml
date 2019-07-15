@@ -27,3 +27,4 @@ periodics:
     testgrid-tab-name: periodic-e2e
     testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@vmware.co
     description: Runs periodic e2e tests
+    testgrid-num-columns-recent: '20'

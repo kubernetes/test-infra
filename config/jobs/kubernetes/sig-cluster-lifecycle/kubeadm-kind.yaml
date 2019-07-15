@@ -422,6 +422,10 @@ presubmits:
           path: /sys/fs/cgroup
           type: Directory
 
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-kind
     optional: true
     always_run: false

@@ -90,6 +90,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100
+    testgrid-num-failures-to-alert: '1'
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes"
@@ -142,6 +143,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-500
+    testgrid-num-failures-to-alert: '1'
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
   - "perfDashPrefix: kubemark-5000Nodes"
@@ -198,6 +200,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000
+    testgrid-num-failures-to-alert: '1'
+    testgrid-num-columns-recent: '3'
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes-highDensity"
@@ -248,6 +252,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-high-density
+    testgrid-num-failures-to-alert: '1'
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
   labels:

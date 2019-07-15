@@ -41,6 +41,8 @@ presubmits:
             # during the tests more like 3-20m is used
             cpu: 2000m
 
+    annotations:
+      testgrid-create-test-group: 'true'
 periodics:
 - name: ci-kubernetes-local-e2e
   interval: 60m
@@ -77,3 +79,5 @@ periodics:
     testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster
     testgrid-tab-name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'

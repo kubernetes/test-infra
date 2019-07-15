@@ -31,6 +31,7 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-poseidon
       testgrid-tab-name: e2e
+      testgrid-num-columns-recent: '20'
   - name: pull-poseidon-bazel
     always_run: true
     labels:

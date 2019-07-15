@@ -489,6 +489,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-device-plugin-gpu
+    testgrid-num-failures-to-alert: '8'
+    testgrid-alert-stale-results-hours: '24'
 - interval: 2h
   name: ci-cri-containerd-e2e-gce-multizone
   labels:

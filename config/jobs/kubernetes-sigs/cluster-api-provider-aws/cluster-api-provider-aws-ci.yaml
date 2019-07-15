@@ -78,3 +78,4 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: bazel-ci-e2e
+      testgrid-num-columns-recent: '20'

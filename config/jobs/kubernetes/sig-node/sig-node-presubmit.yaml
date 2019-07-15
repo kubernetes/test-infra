@@ -38,7 +38,7 @@ presubmits:
     always_run: false
     optional: true
     skip_branches:
-      - release-\d+\.\d+ # per-release image
+    - release-\d+\.\d+   # per-release image
     annotations:
       fork-per-release: "true"
     labels:
@@ -50,31 +50,31 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=105
-            - --scenario=kubernetes_e2e
-            - --
-            - --build=bazel
-            - --cluster=
-            - --extract=local
-            - --env=KUBE_CONTAINER_RUNTIME=containerd
-            - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-            - --gcp-node-image=gci
-            - --gcp-zone=us-west1-b
-            - --ginkgo-parallel=30
-            - --provider=gce
-            - --runtime-config=batch/v2alpha1=true
-            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
-            - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
-            - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-          resources:
-            requests:
-              memory: "6Gi"
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=105
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+        - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+        resources:
+          requests:
+            memory: "6Gi"
   - name: pull-kubernetes-node-e2e-containerd
     branches:
     - master
@@ -108,6 +108,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-node-e2e-alpha
     branches:
     - master
@@ -140,3 +142,5 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
