@@ -129,6 +129,7 @@ go_library(
         "//prow/tide/history:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
+        "//vendor/github.com/gorilla/csrf:go_default_library",
         "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

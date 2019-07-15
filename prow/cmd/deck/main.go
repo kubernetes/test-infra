@@ -36,6 +36,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/NYTimes/gziphandler"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -93,6 +94,7 @@ type options struct {
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
 	rerunCreatesJob       bool
+	allowInsecure         bool
 }
 
 func (o *options) Validate() error {
@@ -139,6 +141,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
+	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	o.kubernetes.AddFlags(fs)
 	fs.Parse(args)
 	o.configPath = config.ConfigPath(o.configPath)
@@ -272,8 +275,6 @@ func main() {
 	mux.Handle("/tide-history", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "tide-history.html", nil)))
 	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "plugins.html", nil)))
 
-	indexHandler := handleSimpleTemplate(o, cfg, "index.html", struct{ SpyglassEnabled, ReRunCreatesJob bool }{o.spyglass, o.rerunCreatesJob})
-
 	runLocal := o.pregeneratedData != ""
 
 	var fallbackHandler func(http.ResponseWriter, *http.Request)
@@ -289,6 +290,10 @@ func main() {
 			fallbackHandler(w, r)
 			return
 		}
+		indexHandler := handleSimpleTemplate(o, cfg, "index.html", struct {
+			SpyglassEnabled bool
+			ReRunCreatesJob bool
+		}{o.spyglass, o.rerunCreatesJob})
 		indexHandler(w, r)
 	})
 
@@ -301,8 +306,47 @@ func main() {
 	// signal to the world that we're ready
 	health.ServeReady()
 
+	// cookie secret will be used for CSRF protection and should be exactly 32 bytes
+	// we sometimes accept different lengths to stay backwards compatible
+	var csrfToken []byte
+	if o.cookieSecretFile != "" {
+		cookieSecretRaw, err := loadToken(o.cookieSecretFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not read cookie secret file")
+		}
+		decodedSecret, err := base64.StdEncoding.DecodeString(string(cookieSecretRaw))
+		csrfToken = decodedSecret
+		if err != nil {
+			logrus.WithError(err).Fatal("Error decoding cookie secret")
+		}
+		if len(decodedSecret) > 32 {
+			logrus.Warning("Cookie secret should be exactly 32 bytes. Consider truncating the existing cookie to that length")
+			csrfToken = decodedSecret[:32]
+		}
+		if len(decodedSecret) < 32 {
+			if o.rerunCreatesJob {
+				logrus.Fatal("Cookie secret must be exactly 32 bytes")
+				return
+			}
+			logrus.Warning("Cookie secret should be exactly 32 bytes")
+		}
+	}
+
+	// if we allow direct reruns, we must protect against CSRF in all post requests using the cookie secret as a token
+	// for more information about CSRF, see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/csrf.md
+	if o.rerunCreatesJob && csrfToken == nil {
+		logrus.Fatal("Rerun creates job cannot be enabled without CSRF protection, which requires --cookie-secret to be exactly 32 bytes")
+		return
+	}
+
+	if csrfToken != nil {
+		CSRF := csrf.Protect(csrfToken, csrf.Path("/"), csrf.Secure(!o.allowInsecure))
+		logrus.WithError(http.ListenAndServe(":8080", CSRF(traceHandler(mux)))).Fatal("ListenAndServe returned.")
+		return
+	}
 	// setup done, actually start the server
 	logrus.WithError(http.ListenAndServe(":8080", traceHandler(mux))).Fatal("ListenAndServe returned.")
+
 }
 
 // localOnlyMain contains logic used only when running locally, and is mutually exclusive with
@@ -489,12 +533,14 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			&githubOAuthConfig,
 			logrus.WithField("client", "pr-status"))
 
+		secure := !o.allowInsecure
+
 		mux.Handle("/pr-data.js", handleNotCached(
 			prStatusAgent.HandlePrStatus(prStatusAgent)))
 		// Handles login request.
-		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
+		mux.Handle("/github-login", goa.HandleLogin(oauthClient, secure))
 		// Handles redirect from GitHub OAuth server.
-		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter()))
+		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter(), secure))
 	}
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter())))
 
@@ -725,7 +771,8 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options) 
 		setHeadersNoCaching(w)
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
-		page, err := renderSpyglass(sg, cfg, src, o)
+		csrfToken := csrf.Token(r)
+		page, err := renderSpyglass(sg, cfg, src, o, csrfToken)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			message := fmt.Sprintf("error rendering spyglass page: %v", err)
@@ -744,7 +791,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options) 
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o options) (string, error) {
+func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o options, csrfToken string) (string, error) {
 	renderStart := time.Now()
 
 	src = strings.TrimSuffix(src, "/")
@@ -913,7 +960,7 @@ lensesLoop:
 	}
 	t := template.New("spyglass.html")
 
-	if _, err := prepareBaseTemplate(o, cfg, t); err != nil {
+	if _, err := prepareBaseTemplate(o, cfg, csrfToken, t); err != nil {
 		return "", fmt.Errorf("error preparing base template: %v", err)
 	}
 	t, err = t.ParseFiles(path.Join(o.templateFilesLocation, "spyglass.html"))

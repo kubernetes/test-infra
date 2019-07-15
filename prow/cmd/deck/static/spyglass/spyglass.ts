@@ -3,6 +3,7 @@ import {isTransitMessage, serialiseHashes} from "./common";
 declare const src: string;
 declare const lensArtifacts: {[index: string]: string[]};
 declare const lensIndexes: number[];
+declare const csrfToken: string;
 
 // Loads views for this job
 function loadLenses(): void {
@@ -53,7 +54,7 @@ function updateHash(index: number, hash: string): void {
 
 function parseHash(): {[index: string]: string} {
   const parts = location.hash.substr(1).split(';');
-  const result: {[index: string]: string} = {};
+  const result: { [index: string]: string } = {};
   for (const part of parts) {
     if (part === '') {
       continue;
@@ -62,6 +63,10 @@ function parseHash(): {[index: string]: string} {
     result[index] = '#' + unescape(hash);
   }
   return result;
+}
+
+function getLensRequestOptions(reqBody: string): RequestInit {
+  return {body: reqBody, method: 'POST', headers: {'X-CSRF-Token': csrfToken}, credentials: 'same-origin'};
 }
 
 window.addEventListener('message', async (e) => {
@@ -88,13 +93,13 @@ window.addEventListener('message', async (e) => {
         break;
       case "request": {
         const req = await fetch(urlForLensRequest(lens, index, 'callback'),
-          {body: message.data, method: 'POST'});
+          getLensRequestOptions(message.data));
         respond(await req.text());
         break;
       }
       case "requestPage": {
         const req = await fetch(urlForLensRequest(lens, index, 'rerender'),
-          {body: message.data, method: 'POST'});
+          getLensRequestOptions(message.data));
         respond(await req.text());
         break;
       }
@@ -103,7 +108,7 @@ window.addEventListener('message', async (e) => {
         frame.style.visibility = 'visible';
         spinner.style.display = 'block';
         const req = await fetch(urlForLensRequest(lens, index, 'rerender'),
-          {body: message.data, method: 'POST'});
+          getLensRequestOptions(message.data));
         respond(await req.text());
         break;
       }

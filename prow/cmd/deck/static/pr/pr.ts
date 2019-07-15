@@ -8,6 +8,7 @@ import {getCookieByName, tidehistory} from '../common/common';
 
 declare const tideData: TideData;
 declare const allBuilds: Job[];
+declare const csrfToken: string;
 
 type UnifiedState = JobState | "expected" | "error" | "failure" | "pending" | "success";
 
@@ -115,6 +116,7 @@ function createXMLHTTPRequest(fulfillFn: (request: XMLHttpRequest) => any, error
     request.withCredentials = true;
     request.open("POST", url, true);
     request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    request.setRequestHeader("X-CSRF-Token", csrfToken);
 
     return request;
 }
