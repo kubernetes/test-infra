@@ -357,6 +357,20 @@ require_matching_label:
 
     Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md).
     The `<group-suffix>` in method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_.
+# kubernetes/test-infra wants needs-sig on issues only, and is piloting
+# a message that does not mention GitHub-teams-that-email because they're
+# deprecated (ref: kuberentes/community#2324) TODO(#13587): expand to k/k if we like this
+- missing_label: needs-sig
+  org: kubernetes
+  repo: test-infra
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no community group labels on this issue (`sig/*`, `wg/*`, `committee/*`). Please add one by using `/<group-type> <group-name>`, e.g.:
+
+    - `/sig scalability` to apply the `sig/scalability` label
+    - `/wg k8s-infra` to apply the `wg/k8s-infra` label
+    - `/committee product-security` to apply the `committee/product-security` label
 - missing_label: needs-priority
   org: kubernetes
   repo: kubernetes
@@ -509,6 +523,7 @@ plugins:
   - milestone
   - override
   - project
+  - require-matching-label
 
   kubernetes/utils:
   - override
