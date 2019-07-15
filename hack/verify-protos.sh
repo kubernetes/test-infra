@@ -43,9 +43,11 @@ cp -a "${TESTINFRA_ROOT}/." "${_tmpdir}"
   protoc=$2
   plugin=$3
   boiler=$4
+  grpc=$5
+  importmap=$6
 
   export BUILD_WORKSPACE_DIRECTORY=${_tmpdir}
-  "$update_protos" "$protoc" "$plugin" "$boiler"
+  "$update_protos" "$protoc" "$plugin" "$boiler" "$grpc" "$importmap"
 )
 
 # Ensure nothing changed
