@@ -34,6 +34,8 @@ fi
 protoc=$1
 plugin=$2
 boiler=$3
+grpc=$4
+importmap=$5
 dest=$BUILD_WORKSPACE_DIRECTORY
 
 genproto() {
@@ -41,7 +43,7 @@ genproto() {
   base=$(basename "$1")
   out=$dest/$dir/${base%.proto}.pb.go
   rm -f "$out" # mac will complain otherwise
-  "$protoc" "--plugin=$plugin" "--proto_path=$dir" "--go_out=$dest/$dir" "$1"
+  "$protoc" "--plugin=$plugin" "--proto_path=${dir}" "--proto_path=${dest}" "--go_out=${grpc},${importmap}:$dest/$dir" "$1"
   tmp=$(mktemp)
   mv "$out" "$tmp"
   cat "$boiler" "$tmp" > "$out"
@@ -53,3 +55,4 @@ for p in $(find . -not '(' -path './vendor' -prune ')' -not '(' -path './node_mo
   genproto "$p"
 done
 echo
+

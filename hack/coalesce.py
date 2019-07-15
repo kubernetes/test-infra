@@ -65,7 +65,9 @@ def result(pkg):
             for status in case:
                 if status.tag == 'error' or status.tag == 'failure':
                     failure = ET.Element('failure')
-                    with open(pkg + '/test.log') as fp:
+                    # Pass the encoding parameter to avoid ascii decode error
+                    # for some platform.
+                    with open(pkg + '/test.log', encoding='utf-8') as fp:
                         text = fp.read()
                         failure.text = sanitize(text)
                     elem.append(failure)
@@ -84,7 +86,10 @@ def main():
         os.mkdir(artifacts_dir)
     except OSError:
         pass
-    with open(os.path.join(artifacts_dir, 'junit_bazel.xml'), 'w') as fp:
+    # Pass the encoding parameter to avoid ascii decode error for some
+    # platform.
+    artifact_path = os.path.join(artifacts_dir, 'junit_bazel.xml')
+    with open(artifact_path, 'w', encoding='utf-8') as fp:
         fp.write(ET.tostring(root, 'unicode'))
 
 

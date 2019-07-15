@@ -121,6 +121,17 @@ protoc = "@com_google_protobuf//:protoc"
 
 protoc_gen_go = "@com_github_golang_protobuf//protoc-gen-go"
 
+protoc_grpc = "plugins=grpc"
+
+# Use the protoc go_out plugin parameter to map the proto import path to the
+# Go package import path. Each mapping entry is prefixed with the keyword "M".
+# Reference the https://github.com/golang/protobuf "Parameters" section.
+proto_importmap = ",".join([
+    "Mtestgrid/config/config.proto=k8s.io/test-infra/testgrid/config",
+    "Mtestgrid/summary/summary.proto=k8s.io/test-infra/testgrid/summary",
+    "Mtestgrid/cmd/summarizer/response/types.proto=k8s.io/test-infra/testgrid/cmd/summarizer/response",
+])
+
 sh_binary(
     name = "update-protos",
     srcs = ["update-protos.sh"],
@@ -128,6 +139,8 @@ sh_binary(
         "$(location %s)" % protoc,
         "$(location %s)" % protoc_gen_go,
         "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        protoc_grpc,
+        proto_importmap,
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",
@@ -146,6 +159,8 @@ sh_test(
         "$(location %s)" % protoc,
         "$(location %s)" % protoc_gen_go,
         "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        protoc_grpc,
+        proto_importmap,
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",
