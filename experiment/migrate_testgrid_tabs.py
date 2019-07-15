@@ -16,8 +16,8 @@
 
 """Migrates information from Testgrid's Config.yaml to a subdirectory of Prow Jobs
 
-Only moves Dashboard Tabs
-Skips any Dashboard Tab Configuration that contains unusual keys, even if they're incorrect keys.
+Moves Dashboard Tabs and redundant Test Groups
+Skips any Configuration that contains unusual keys, even if they're incorrect keys.
 """
 
 import re
@@ -38,70 +38,124 @@ PROW_BLACKLIST = [
 ]
 MAX_WIDTH = 2000000000
 
+
 def main(testgrid_config, prow_dir):
-    with open(testgrid_config, "r") as confFile:
-        config = ruamel.yaml.load(confFile,
+    with open(testgrid_config, "r") as config_fp:
+        config = ruamel.yaml.load(config_fp,
                                   Loader=ruamel.yaml.RoundTripLoader,
                                   preserve_quotes=True)
 
     for dashboard in config["dashboards"]:
         if "dashboard_tab" in dashboard:
-            for dashTab in dashboard["dashboard_tab"][:]:
-                if assert_tab_keys(dashTab):
-                    move_tab(dashboard, dashTab, prow_dir)
+            for dash_tab in dashboard["dashboard_tab"][:]:
+                if assert_tab_keys(dash_tab):
+                    move_tab(dashboard, dash_tab, prow_dir)
 
-    with open(testgrid_config, "w") as confFile:
-        ruamel.yaml.dump(config, confFile,
+    if "test_groups" in config:
+        for test_group in config["test_groups"][:]:
+            if assert_group_keys(test_group):
+                move_group(config, test_group, prow_dir)
+
+    with open(testgrid_config, "w") as config_fp:
+        ruamel.yaml.dump(config, config_fp,
                          Dumper=ruamel.yaml.RoundTripDumper, width=MAX_WIDTH)
-        confFile.truncate()
+        config_fp.truncate()
 
 
-def move_tab(dashboard, dashTab, prow_dir):
-    """Moves a given dashboard to the matching prow job in prow_dir, if possible"""
-    dashboardName = dashboard["name"]
-    prowJobName = dashTab["test_group_name"]
-    prowJobFileName = find_prow_job(prowJobName, prow_dir)
-    if prowJobFileName == "":
+def move_tab(dashboard, dash_tab, prow_dir):
+    """Moves a given tab to the matching prow job in prow_dir, if possible"""
+    dashboard_name = dashboard["name"]
+    prow_job_name = dash_tab["test_group_name"]
+    prow_job_file_name = find_prow_job(prow_job_name, prow_dir)
+    if prow_job_file_name == "":
         return
 
     # Matching file found; patch and delete
-    print("Patching {0} in {1}".format(prowJobName, prowJobFileName))
+    print("Patching tab {0} in {1}".format(prow_job_name, prow_job_file_name))
 
-    with open(prowJobFileName, "r") as prowJobFile:
-        prowConfig = ruamel.yaml.load(prowJobFile,
-                                      Loader=ruamel.yaml.RoundTripLoader,
-                                      preserve_quotes=True)
+    with open(prow_job_file_name, "r") as job_fp:
+        prow_config = ruamel.yaml.load(job_fp,
+                                       Loader=ruamel.yaml.RoundTripLoader,
+                                       preserve_quotes=True)
 
     # For each presubmits, postsubmits, periodic:
     # presubmits -> <any repository> -> [{name: prowjob}]
-    if "presubmits" in prowConfig:
-        for _, jobs in prowConfig["presubmits"].items():
+    if "presubmits" in prow_config:
+        for _, jobs in prow_config["presubmits"].items():
             for job in jobs:
-                if prowJobName == job["name"]:
-                    job = patch_prow_job(job, dashTab, dashboardName)
+                if prow_job_name == job["name"]:
+                    job = patch_prow_job_with_tab(job, dash_tab, dashboard_name)
 
     # postsubmits -> <any repository> -> [{name: prowjob}]
-    if "postsubmits" in prowConfig:
-        for _, jobs in prowConfig["postsubmits"].items():
+    if "postsubmits" in prow_config:
+        for _, jobs in prow_config["postsubmits"].items():
             for job in jobs:
-                if prowJobName == job["name"]:
-                    job = patch_prow_job(job, dashTab, dashboardName)
+                if prow_job_name == job["name"]:
+                    job = patch_prow_job_with_tab(job, dash_tab, dashboard_name)
 
     # periodics -> [{name: prowjob}]
-    if "periodics" in prowConfig:
-        for job in prowConfig["periodics"]:
-            if prowJobName == job["name"]:
-                job = patch_prow_job(job, dashTab, dashboardName)
+    if "periodics" in prow_config:
+        for job in prow_config["periodics"]:
+            if prow_job_name == job["name"]:
+                job = patch_prow_job_with_tab(job, dash_tab, dashboard_name)
 
     # Dump ProwConfig to prowJobFile
-    with open(prowJobFileName, "w") as prowJobFile:
-        ruamel.yaml.dump(prowConfig, prowJobFile,
+    with open(prow_job_file_name, "w") as job_fp:
+        ruamel.yaml.dump(prow_config, job_fp,
                          Dumper=ruamel.yaml.RoundTripDumper, width=MAX_WIDTH)
-        prowJobFile.truncate()
+        job_fp.truncate()
 
     # delete tab
-    dashboard["dashboard_tab"].remove(dashTab)
+    dashboard["dashboard_tab"].remove(dash_tab)
 
+
+def move_group(config, group, prow_dir):
+    """Moves a given test group to the first matching prow job in prow_dir, if possible"""
+    prow_job_name = group["name"]
+    prow_job_file_name = find_prow_job(prow_job_name, prow_dir)
+    if prow_job_file_name == "":
+        return
+
+    # Matching file found; patch and delete
+    print("Patching group {0} in {1}".format(prow_job_name, prow_job_file_name))
+
+    with open(prow_job_file_name, "r") as job_fp:
+        prow_config = ruamel.yaml.load(job_fp,
+                                       Loader=ruamel.yaml.RoundTripLoader,
+                                       preserve_quotes=True)
+
+    # For each presubmit, postsubmit, and periodic
+    # presubmits -> <any repository> -> [{name: prowjob}]
+    # An annotation must be forced, or else the testgroup will not be generated
+    if "presubmits" in prow_config:
+        for _, jobs in prow_config["presubmits"].items():
+            for job in jobs:
+                if prow_job_name == job["name"]:
+                    job = patch_prow_job_with_group(job, group, force_group_creation=True)
+                    break
+
+    # postsubmits -> <any repository> -> [{name: prowjob}]
+    if "postsubmits" in prow_config:
+        for _, jobs in prow_config["postsubmits"].items():
+            for job in jobs:
+                if prow_job_name == job["name"]:
+                    job = patch_prow_job_with_group(job, group)
+                    break
+
+    # periodics -> [{name: prowjob}]
+    if "periodics" in prow_config:
+        for job in prow_config["periodics"]:
+            if prow_job_name == job["name"]:
+                job = patch_prow_job_with_group(job, group)
+                break
+
+    # Dump ProwConfig to prowJobFile
+    with open(prow_job_file_name, "w") as job_fp:
+        ruamel.yaml.dump(prow_config, job_fp,
+                         Dumper=ruamel.yaml.RoundTripDumper, width=MAX_WIDTH)
+        job_fp.truncate()
+
+    config["test_groups"].remove(group)
 
 def assert_tab_keys(tab):
     """Asserts if a dashboard tab is able to be migrated.
@@ -116,10 +170,22 @@ def assert_tab_keys(tab):
         return False
 
     if "alert_options" in tab:
-        alertKeys = tab["alert_options"].keys()
-        if len(alertKeys) != 1 or "alert_mail_to_addresses" not in alertKeys:
+        alert_keys = tab["alert_options"].keys()
+        if len(alert_keys) != 1 or "alert_mail_to_addresses" not in alert_keys:
             return False
 
+    return True
+
+def assert_group_keys(group):
+    """Asserts if a testgroup is able to be migrated.
+
+    To be migratable, the group must only contain whitelisted keys
+    """
+    whitelist = ["name", "gcs_prefix", "alert_stale_results_hours",
+                 "num_failures_to_alert", "num_columns_recent"]
+
+    if [k for k in group.keys() if k not in whitelist]:
+        return False
     return True
 
 
@@ -142,55 +208,88 @@ def find_prow_job(name, path):
     return ""
 
 
-def patch_prow_job(prowYaml, dashTab, dashboardName):
+def patch_prow_job_with_tab(prow_yaml, dash_tab, dashboard_name):
     """Updates a Prow YAML object.
 
     Assumes a valid prow yaml and a compatible dashTab
     Will create a new annotation or amend an existing one
     """
-    if "annotations" in prowYaml:
+    if "annotations" in prow_yaml:
         # There exists an annotation; amend it
-        annotation = prowYaml["annotations"]
-        if "testgrid-dashboards" in prowYaml["annotations"]:
+        annotation = prow_yaml["annotations"]
+        if "testgrid-dashboards" in prow_yaml["annotations"]:
             # Existing annotation includes a testgrid annotation
             # The dashboard name must come first if it's a sig-release-master-* dashboard
-            if dashboardName.startswith("sig-release-master"):
-                annotation["testgrid-dashboards"] = (dashboardName
+            if dashboard_name.startswith("sig-release-master"):
+                annotation["testgrid-dashboards"] = (dashboard_name
                                                      + ", "
                                                      + annotation["testgrid-dashboards"])
             else:
-                annotation["testgrid-dashboards"] += (", " + dashboardName)
+                annotation["testgrid-dashboards"] += (", " + dashboard_name)
         else:
             #Existing annotation is non-testgrid-related
-            annotation["testgrid-dashboards"] = dashboardName
+            annotation["testgrid-dashboards"] = dashboard_name
 
     else:
         # There is no annotation; construct it
-        annotation = {"testgrid-dashboards": dashboardName}
+        annotation = {"testgrid-dashboards": dashboard_name}
 
     # Append optional annotations
-    if ("name" in dashTab
+    if ("name" in dash_tab
             and "testgrid-tab-name" not in annotation
-            and dashTab["name"] != dashTab["test_group_name"]):
-        annotation["testgrid-tab-name"] = dashTab["name"]
+            and dash_tab["name"] != dash_tab["test_group_name"]):
+        annotation["testgrid-tab-name"] = dash_tab["name"]
 
-    if ("alert_options" in dashTab
-            and "alert_mail_to_addresses" in dashTab["alert_options"]
+    if ("alert_options" in dash_tab
+            and "alert_mail_to_addresses" in dash_tab["alert_options"]
             and "testgrid-alert-email" not in annotation):
-        annotation["testgrid-alert-email"] = dashTab["alert_options"]["alert_mail_to_addresses"]
+        annotation["testgrid-alert-email"] = dash_tab["alert_options"]["alert_mail_to_addresses"]
 
     opt_arguments = [("description", "description"),
                      ("num_failures_to_alert", "testgrid-num-failures-to-alert"),
                      ("alert_stale_results_hours", "testgrid-alert-stale-results-hours"),
                      ("num_columns_recent", "testgrid-num-columns-recent")]
 
-    for tabName, annotationName in opt_arguments:
-        if (tabName in dashTab and annotationName not in annotation):
+    for tab_arg, annotation_arg in opt_arguments:
+        if (tab_arg in dash_tab and annotation_arg not in annotation):
             # Numeric arguments need to be coerced into strings to be parsed correctly
-            annotation[annotationName] = str(dashTab[tabName])
+            annotation[annotation_arg] = str(dash_tab[tab_arg])
 
-    prowYaml["annotations"] = annotation
-    return prowYaml
+    prow_yaml["annotations"] = annotation
+    return prow_yaml
+
+
+def patch_prow_job_with_group(prow_yaml, test_group, force_group_creation=False):
+    """Updates a prow YAML object
+
+    Assumes a valid prow yaml and a compatible test group
+    Will amend existing annotations or create one if there is data to migrate
+    If there is no migratable data, an annotation will be forced only if specified
+    """
+    if "annotations" in prow_yaml:
+        # There exists an annotation; amend it
+        annotation = prow_yaml["annotations"]
+    else:
+        annotation = {}
+
+    # migrate info
+    opt_arguments = [("num_failures_to_alert", "testgrid-num-failures-to-alert"),
+                     ("alert_stale_results_hours", "testgrid-alert-stale-results-hours"),
+                     ("num_columns_recent", "testgrid-num-columns-recent")]
+
+    for group_arg, annotation_arg in opt_arguments:
+        if (group_arg in test_group and annotation_arg not in annotation):
+            # Numeric arguments need to be coerced into strings to be parsed correctly
+            annotation[annotation_arg] = str(test_group[group_arg])
+
+    if force_group_creation and "testgrid-dashboards" not in annotation:
+        annotation["testgrid-create-test-group"] = "true"
+
+    if not any(annotation):
+        return prow_yaml
+
+    prow_yaml["annotations"] = annotation
+    return prow_yaml
 
 
 if __name__ == '__main__':
