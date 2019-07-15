@@ -3,7 +3,7 @@
 
 ## Introduction
 
-Mason creates and update virtual resources from existing physical resources. As an example, in order to create
+Mason creates and updates virtual resources from existing physical resources. As an example, in order to create
 a GKE cluster you need a GCP Project. Mason will construct virtual resources based on the configuration of a
 given resource type. Each configuration defines its physical resources requirement. Mason will acquire those
 resources from Boskos and pass them to the specific implementation that will turn them into a virtual resource.
@@ -68,7 +68,7 @@ func main() {
 
   // Registering Masonable Converters
   if err := mason.RegisterConfigConverter(gcp.ResourceConfigType, gcp.ConfigConverter); err != nil {
-    logrus.WithError(err).Panicf("unable tp register config converter")
+    logrus.WithError(err).Panicf("unable to register config converter")
   }
   if err := mason.UpdateConfigs(*configPath); err != nil {
     logrus.WithError(err).Panicf("failed to update mason config")
