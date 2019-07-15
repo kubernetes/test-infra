@@ -878,11 +878,11 @@ periodics:
     - name: config
       configMap:
         name: label-config
-# ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
-# away from the intent of the manifest.
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
+# ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
+# away from the intent of the manifest.
 - interval: 24h
   cluster: test-infra-trusted
   max_concurrency: 1

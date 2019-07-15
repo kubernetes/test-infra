@@ -421,7 +421,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'

@@ -18,10 +18,9 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
-
-# Testing to make sure things still update.
     annotations:
       testgrid-create-test-group: 'true'
+# Testing to make sure things still update.
 periodics:
 - interval: 10m
   name: ci-test-infra-canary-echo-test
@@ -30,7 +29,6 @@ periodics:
     containers:
     - image: alpine
       command: ["/bin/date"]
-
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: echo-test

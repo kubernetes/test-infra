@@ -10,7 +10,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/examples.
@@ -24,7 +23,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for Kubeflow.
@@ -40,7 +38,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/pytorch-operator.
@@ -56,7 +53,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/reporting.
@@ -72,7 +68,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/website.
@@ -88,7 +83,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/testing.
@@ -102,7 +96,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/tf-operator.
@@ -118,7 +111,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/katib.
@@ -134,7 +126,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/experimental-kvc.
@@ -150,7 +141,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/experimental-seldon.
@@ -166,7 +156,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/experimental-beagle.
@@ -182,7 +171,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/caffe2-operator.
@@ -198,7 +186,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/kubebench.
@@ -214,7 +201,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/mpi-operator.
@@ -230,7 +216,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/chainer-operator.
@@ -246,7 +231,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/mxnet-operator.
@@ -262,7 +246,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/arena.
@@ -278,7 +261,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/fairing.
@@ -294,7 +276,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmit tests for kubeflow/metadata.
@@ -310,7 +291,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/kfserving.
@@ -326,7 +306,6 @@ presubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
-
     annotations:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/manifests.

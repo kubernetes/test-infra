@@ -263,6 +263,8 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+
+# Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
 
@@ -276,7 +278,7 @@ test_groups:
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
 
-# EKS e2e results
+#ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
 - name: ppc64le-unit
@@ -290,7 +292,6 @@ test_groups:
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-aws-v1.13.2
 - name: arm64-conformance-vexxhost-cluster
   gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64-vexxhost-multi-node
-# kubernetes org jobs
 - name: pull-kubernetes-e2e-gce-100-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60
@@ -329,7 +330,7 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/osconfig-staging
 - name: osconfig-stable
   gcs_prefix: compute-image-tools-test/logs/osconfig-stable
-# Cluster registry
+# RHEL node e2e tests on AWS (contact: aos-pod@redhat.com)
 - name: ci-kubernetes-conformance-node-e2e-containerized-rhel
   gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-containerized-rhel
 - name: ci-kubernetes-conformance-node-e2e-rhel
@@ -848,6 +849,9 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-kind-conformance-latest-1-14-arm64
   gcs_prefix: k8s-conformance-kind-arm64-openlab/periodic-logs/ci-kind-integration-test-arm64
+# cloud-provider-openstack e2e conformance tests
+# name format: PR trigger ci-presubmit-${zuul-job-name}
+#              periodic strigger ci-periodic-${zuul-job-name}
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: k8s-conformance-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
   alert_stale_results_hours: 24
@@ -1093,6 +1097,7 @@ test_groups:
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
 
+# Flannel CNI on Windows test groups
 - name: ci-kubernetes-e2e-flannel-l2bridge-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-flannel-l2bridge-master-windows
 - name: ci-kubernetes-e2e-flannel-overlay-master-windows
@@ -1106,11 +1111,11 @@ test_groups:
 - name: ci-kubernetes-e2e-ovn-ovs-master-windows
   gcs_prefix: k8s-ovn/ci-kubernetes-e2e-ovn-ovs-master-windows
 
-# Release Engineering test groups
+# Pivotal Windows test groups
 - name: ci-kubernetes-e2e-windows-cfcr
   gcs_prefix: pivotal-e2e-results/kubo-windows-2019
 
-# bazelbuild/rules_k8s tests
+# Alibaba Cloud Provider Test Groups
 - name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.12
   gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.12
 
@@ -1136,7 +1141,7 @@ test_groups:
 - name: cloud-provider-oci-oke-e2e-conformance-stable-v1.10
   gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.10
 
-# kube-storage-version-migrator
+# OpenShift
 - name: release-openshift-origin-installer-e2e-aws-4.1
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.1
 - name: release-openshift-origin-installer-e2e-aws-serial-4.1
@@ -1196,7 +1201,7 @@ test_groups:
 - name: ee19.03-ubuntu16.04-k8s1.14.x-conformance
   gcs_prefix: k8s-conformance-docker/ci-kube-node-e2e-docker/ee19.03-ubuntu16.04-k8s1.14.x
 
-# node-problem-detector
+# CEL Conformance Tests
 - name: cel-go-conformance-tests
   gcs_prefix: cel-conformance/test-logs
   open_test_template: # The URL template to visit after clicking on a cell
@@ -1345,7 +1350,6 @@ dashboards:
       alert_mail_to_addresses: cncf_ci_dashboard_ww_grp@oracle.com
 
 - name: conformance-gce
-  dashboard_tab: []
 - name: conformance-kind
   dashboard_tab:
   - name: kind, v1.14 (dev, ARM64)
@@ -1353,11 +1357,8 @@ dashboards:
     test_group_name: ci-kubernetes-kind-conformance-latest-1-14-arm64
 
 - name: conformance-hack-local-up-cluster
-  dashboard_tab: []
 - name: conformance-vsphere
-  dashboard_tab: []
 - name: vmware-conformance
-  dashboard_tab: []
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
   - name: presubmit-master
@@ -1392,11 +1393,8 @@ dashboards:
       alert_mail_to_addresses: davanum+testgrid@gmail.com
 
 - name: conformance-cloud-provider-vsphere
-  dashboard_tab: []
 - name: vmware-conformance-cloud-provider
-  dashboard_tab: []
 - name: vmware-cluster-api-provider-vsphere
-  dashboard_tab: []
 - name: conformance-alibaba-cloud-provider
   dashboard_tab:
   - name: Alibaba Cloud Provider, v1.12
@@ -1462,9 +1460,7 @@ dashboards:
 - name: cos-cos2-k8sstable3
 
 - name: google-aws
-  dashboard_tab: []
 - name: google-gce
-  dashboard_tab: []
 - name: google-gce-compute-image-tools
   dashboard_tab:
   - name: ci-daisy-e2e
@@ -1559,9 +1555,7 @@ dashboards:
         value: <test-url>
 
 - name: google-kops-gce
-  dashboard_tab: []
 - name: google-gci
-  dashboard_tab: []
 - name: google-gke
   dashboard_tab:
   - name: gke-cos-1.11-ingress
@@ -1597,49 +1591,32 @@ dashboards:
   - name: gke-cos-1.13-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
 - name: google-gke-stackdriver
-  dashboard_tab: []
 - name: google-gke-upgrade
-  dashboard_tab: []
 - name: google-soak
-  dashboard_tab: []
 - name: google-unit
-  dashboard_tab: []
 - name: google-windows
-  dashboard_tab: []
 - name: sig-release-master-blocking
-  dashboard_tab: []
 - name: sig-release-master-informing
   dashboard_tab:
   - name: Conformance - OpenStack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
     description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
 - name: sig-release-misc
-  dashboard_tab: []
 - name: sig-release-1.15-blocking
 - name: sig-release-1.15-informing
 - name: sig-release-1.15-all
-  dashboard_tab: []
 - name: sig-release-1.14-all
-  dashboard_tab: []
 - name: sig-release-1.14-blocking
 - name: sig-release-1.14-informing
-
 - name: sig-release-1.13-all
-  dashboard_tab: []
 - name: sig-release-1.13-blocking
 - name: sig-release-1.13-informing
-
 - name: sig-cluster-lifecycle-upgrade-skew
-  dashboard_tab: []
 - name: sig-contribex-community
-  dashboard_tab: []
 - name: sig-release-1.12-all
-  dashboard_tab: []
 - name: sig-release-1.12-blocking
 - name: sig-release-1.12-informing
-
 - name: sig-release-publishing-bot
-  dashboard_tab: []
 - name: wg-resource-management
   dashboard_tab:
   - name: gce-device-plugin-gpu
@@ -1851,7 +1828,6 @@ dashboards:
     description: apps gke serial e2e tests for master branch
 
 - name: sig-big-data
-  dashboard_tab: []
 - name: sig-autoscaling-cluster-autoscaler
   dashboard_tab:
   - name: gke-ubuntu1-k8sbeta-autoscaling
@@ -1872,21 +1848,13 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling
 
 - name: sig-autoscaling-hpa
-  dashboard_tab: []
 - name: sig-autoscaling-vpa
-  dashboard_tab: []
 - name: sig-aws-alb-ingress-controller
-  dashboard_tab: []
 - name: sig-aws-cloud-provider-aws
-  dashboard_tab: []
 - name: presubmits-cloud-provider-alibaba
-  dashboard_tab: []
 - name: sig-aws-ebs-csi-driver
-  dashboard_tab: []
 - name: sig-aws-eks-presubmits
-  dashboard_tab: []
 - name: sig-aws-eks-periodics
-  dashboard_tab: []
 - name: sig-cli-master
   dashboard_tab:
   - name: soak-gce-gci
@@ -1900,9 +1868,7 @@ dashboards:
     base_options: include-filter-by-regex=kubectl%7COverall
     description: unit, integration and cmd tests for master branch
 - name: sig-cli-misc
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-all
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-kubeadm
 
 - name: sig-cluster-lifecycle-multi-platform
@@ -1917,31 +1883,20 @@ dashboards:
     test_group_name: periodic-multi-platform-kubeadm-packet-arm64
 
 - name: sig-cluster-lifecycle-cluster-api
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
-  dashboard_tab: []
 - name: sig-gcp-compute-persistent-disk-csi-driver
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-provider-docker
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
 
 - name: sig-cluster-lifecycle-etcdadm
 
 - name: sig-multicluster-kubemci
-  dashboard_tab: []
 - name: sig-instrumentation
   dashboard_tab:
   - name: gci-gce
@@ -2157,11 +2112,8 @@ dashboards:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
 - name: sig-network-ingress-gce-e2e
-  dashboard_tab: []
 - name: sig-network-ingress-nginx
-  dashboard_tab: []
 - name: sig-network-netd
-  dashboard_tab: []
 - name: sig-node-cri-o
   dashboard_tab:
   - name: crio-e2e-fedora
@@ -2188,11 +2140,9 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-containerd-gce
     base_options: width=10
 - name: sig-node-cri
-  dashboard_tab: []
 - name: sig-node-cri-1.12
 
 - name: sig-node-cadvisor
-  dashboard_tab: []
 - name: sig-node-kubelet
   dashboard_tab:
   - name: conformance-node-rhel
@@ -2216,19 +2166,13 @@ dashboards:
     description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
 
 - name: sig-node-node-problem-detector
-  dashboard_tab: []
 - name: sig-scalability-gce
 
 - name: sig-scalability-kubemark
-  dashboard_tab: []
 - name: sig-scalability-node
-  dashboard_tab: []
 - name: sig-scalability-perf-tests
-  dashboard_tab: []
 - name: sig-scalability-benchmarks
-  dashboard_tab: []
 - name: sig-scalability-experiments
-  dashboard_tab: []
 - name: sig-scheduling
   dashboard_tab:
   - name: gce
@@ -2377,7 +2321,6 @@ dashboards:
     base_options: include-filter-by-regex=sig-storage
     description: E2E tests against default kubernetes on GKE
 - name: sig-storage-csi
-  dashboard_tab: []
 - name: sig-testing-maintenance
   dashboard_tab:
   - name: boskos-config-upload
@@ -2605,7 +2548,6 @@ dashboards:
       url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
 
 - name: sig-testing-kind
-  dashboard_tab: []
 - name: sig-gcp-master
   dashboard_tab:
   - name: gci-gke
@@ -2951,17 +2893,11 @@ dashboards:
     base_options: width=10
 
 - name: presubmits-misc
-  dashboard_tab: []
 - name: presubmits-kops
-  dashboard_tab: []
 - name: presubmits-poseidon
-  dashboard_tab: []
 - name: presubmits-kube-batch
-  dashboard_tab: []
 - name: presubmits-node-problem-detector
-  dashboard_tab: []
 - name: google-rules_k8s
-  dashboard_tab: []
 - name: istio-presubmits
   dashboard_tab:
   - name: unit-tests
@@ -3506,9 +3442,7 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
 
 - name: istio-gke
-  dashboard_tab: []
 - name: sig-cluster-lifecycle-kops
-  dashboard_tab: []
 - name: gardener-aws
   dashboard_tab:
   - name: Gardener, v1.15 AWS
@@ -3803,9 +3737,7 @@ dashboards:
       alert_mail_to_addresses: gardener-oq@listserv.sap.com
 
 - name: sig-api-machinery-kube-storage-version-migrator
-  dashboard_tab: []
 - name: sig-api-machinery-structured-merge-diff
-  dashboard_tab: []
 - name: conformance-arm
   dashboard_tab:
   - name: Periodic Arm64 conformance test on AWS
@@ -3857,7 +3789,6 @@ dashboards:
 
 # sig-azure dashboard
 - name: sig-azure-master
-  dashboard_tab: []
 - name: redhat-openshift-release-blocking
   dashboard_tab:
   - name: redhat-release-openshift-origin-installer-e2e-aws-4.1

@@ -63,7 +63,6 @@ periodics:
     - name: service
       secret:
         secretName: triage-service-account
-
   annotations:
     testgrid-num-failures-to-alert: '18'
     testgrid-alert-stale-results-hours: '12'

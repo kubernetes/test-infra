@@ -14,7 +14,6 @@ presubmits:
         args:
         - make
         - check
-
     annotations:
       testgrid-dashboards: sig-aws-cloud-provider-aws
       testgrid-tab-name: check

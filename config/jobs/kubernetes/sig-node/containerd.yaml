@@ -54,7 +54,6 @@ periodics:
       - --scenario=execute
       - --
       - /go/src/github.com/containerd/cri/test/containerd/build.sh
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build
@@ -74,7 +73,6 @@ periodics:
       - --
       - --env=DEPLOY_DIR=containerd/release-1.1
       - /go/src/github.com/containerd/cri/test/containerd/build.sh
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build-1.1
@@ -94,7 +92,6 @@ periodics:
       - --
       - --env=DEPLOY_DIR=containerd/release-1.2
       - /go/src/github.com/containerd/cri/test/containerd/build.sh
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build-1.2
@@ -125,7 +122,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-gci
@@ -157,7 +153,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190513-95c7cbe-1.11
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-gci-1.1
@@ -188,8 +183,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.12
-
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-gci-1.2
@@ -220,7 +213,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-ubuntu
@@ -251,7 +243,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cri
     testgrid-tab-name: containerd-node-conformance
@@ -282,7 +273,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-1.1
@@ -313,7 +303,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-1.2
@@ -344,7 +333,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd, sig-node-cri
     testgrid-tab-name: containerd-node-features
@@ -375,7 +363,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-features-1.1
@@ -406,7 +393,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-e2e-features-1.2
@@ -439,7 +425,6 @@ periodics:
       - --timeout=1200m
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: soak-gci-gce
@@ -457,7 +442,6 @@ periodics:
       - --scenario=execute
       - --
       - ./test/build.sh
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: build
@@ -485,7 +469,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-device-plugin-gpu
@@ -518,7 +501,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-multizone
@@ -547,7 +529,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-stackdriver
@@ -576,7 +557,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci
@@ -606,7 +586,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|VolumeSubpathEnvExpansion|RunAsGroup|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-alpha-features
@@ -634,7 +613,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Elasticsearch\] --minStartupPods=8
       - --timeout=90m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-es-logging
@@ -660,7 +638,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-flaky
@@ -689,7 +666,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-gce, sig-node-containerd
     testgrid-tab-name: e2e-gci-ingress
@@ -720,7 +696,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-ip-alias
@@ -748,7 +723,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-proto
@@ -774,7 +748,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-reboot
@@ -802,7 +775,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-sd-logging
@@ -834,7 +806,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
       - --timeout=1320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-sd-logging-k8s-resources
@@ -860,7 +831,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-serial
@@ -887,7 +857,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-slow
@@ -912,7 +881,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-gci-statefulset
@@ -941,7 +909,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-ubuntu
@@ -972,7 +939,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e
@@ -1003,7 +969,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-benchmark
@@ -1034,7 +999,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-features
@@ -1065,7 +1029,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-flaky
@@ -1096,7 +1059,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-serial
@@ -1129,7 +1091,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.13
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-shielded-gci-1.2
@@ -1160,7 +1121,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.13
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-shielded-gci-slow-1.2
@@ -1190,7 +1150,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-1.13
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-shielded-gci-serial-1.2
@@ -1220,8 +1179,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-cos-e2e
@@ -1249,7 +1206,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-ubuntu-e2e
@@ -1279,7 +1235,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-node-e2e

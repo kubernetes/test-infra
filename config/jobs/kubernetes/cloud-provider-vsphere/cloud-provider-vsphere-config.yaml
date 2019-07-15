@@ -43,10 +43,9 @@ presubmits:
         - "make"
         args:
         - "check"
-
-  # Builds the CCM and CSI binaries.
     annotations:
       testgrid-create-test-group: 'true'
+  # Builds the CCM and CSI binaries.
   - name: pull-cloud-provider-vsphere-build
     decorate: true
     branches:
@@ -62,10 +61,9 @@ presubmits:
         - "make"
         args:
         - "build"
-
-  # Executes the unit tests.
     annotations:
       testgrid-create-test-group: 'true'
+    # Executes the unit tests.
   - name: pull-cloud-provider-vsphere-unit-test
     decorate: true
     branches:
@@ -81,10 +79,9 @@ presubmits:
         - "make"
         args:
         - "unit-test"
-
-  # Executes the integration tests.
     annotations:
       testgrid-create-test-group: 'true'
+  # Executes the integration tests.
   - name: pull-cloud-provider-vsphere-integration-test
     decorate: true
     labels:
@@ -105,7 +102,6 @@ presubmits:
         - "integration-test"
         securityContext:
           privileged: true
-
     annotations:
       testgrid-create-test-group: 'true'
 postsubmits:
@@ -132,7 +128,6 @@ postsubmits:
         - "deploy"
         securityContext:
           privileged: true
-
     annotations:
       testgrid-num-columns-recent: '20'
 periodics:
@@ -289,12 +284,12 @@ periodics:
     testgrid-tab-name: vsphere-v1.12
     description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with cloud-provider-vsphere
     testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-# Runs the e2e conformance suite against a cluster turned up with the
-# in-tree vSphere cloud provider. This job is duplicated for multiple versions
-# of Kubernetes.
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '16'
     testgrid-num-columns-recent: '20'
+# Runs the e2e conformance suite against a cluster turned up with the
+# in-tree vSphere cloud provider. This job is duplicated for multiple versions
+# of Kubernetes.
 - name: ci-vsphere-conformance-latest
   interval: 12h
   decorate: true

@@ -13,7 +13,6 @@ presubmits:
         - make
         args:
         - check
-
     annotations:
       testgrid-dashboards: presubmits-cloud-provider-alibaba
       testgrid-tab-name: check

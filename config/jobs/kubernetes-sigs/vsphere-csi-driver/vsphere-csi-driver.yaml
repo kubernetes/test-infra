@@ -17,10 +17,9 @@ presubmits:
         - "make"
         args:
         - "check"
-
-  # Builds the CSI binary
     annotations:
       testgrid-create-test-group: 'true'
+  # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
     decorate: true
     branches:
@@ -36,10 +35,9 @@ presubmits:
         - "make"
         args:
         - "build"
-
-  # Executes the unit tests.
     annotations:
       testgrid-create-test-group: 'true'
+  # Executes the unit tests.
   - name: pull-vsphere-csi-driver-unit-test
     decorate: true
     branches:
@@ -55,7 +53,6 @@ presubmits:
         - "make"
         args:
         - "unit-test"
-
     annotations:
       testgrid-create-test-group: 'true'
 postsubmits:

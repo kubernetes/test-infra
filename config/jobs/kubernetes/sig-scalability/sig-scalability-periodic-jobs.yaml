@@ -86,7 +86,6 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100
@@ -139,7 +138,6 @@ periodics:
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-500
@@ -196,7 +194,6 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
-
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-5000
@@ -248,7 +245,6 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-scalability-kubemark
     testgrid-tab-name: kubemark-100-high-density
@@ -268,7 +264,6 @@ periodics:
       - --scenario=execute
       - --
       - ./benchmark/runner.sh
-
   annotations:
     testgrid-dashboards: sig-scalability-perf-tests
     testgrid-tab-name: kubemark-100-benchmark
@@ -296,7 +291,6 @@ periodics:
         value: /go
       - name: KUBE_TIMEOUT
         value: --timeout 40m
-
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler
@@ -331,7 +325,6 @@ periodics:
       - --test-cmd-args=/workspace/_artifacts
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
-
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: kube-dns

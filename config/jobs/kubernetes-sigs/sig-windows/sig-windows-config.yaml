@@ -82,8 +82,6 @@ presubmits:
         - "--timeout=450m"
         securityContext:
           privileged: true
-
-
     annotations:
       testgrid-dashboards: sig-windows
       testgrid-tab-name: aks-engine-azure-windows-presubmit
@@ -129,7 +127,6 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-windows
     testgrid-tab-name: aks-engine-azure-windows-master
@@ -173,7 +170,6 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-release-1.14-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-14-windows
@@ -217,7 +213,6 @@ periodics:
       - "--timeout=620m"
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-release-1.15-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-15-windows

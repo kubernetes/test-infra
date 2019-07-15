@@ -94,8 +94,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
@@ -132,7 +130,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
@@ -169,7 +166,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
@@ -206,7 +202,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'

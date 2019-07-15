@@ -98,13 +98,12 @@ presubmits:
         - "--timeout=420m"
         securityContext:
           privileged: true
-
-  # pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e
       description: Run Kubernetes e2e tests for cloud-provider-azure
       testgrid-num-columns-recent: '30'
+# pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm
     always_run: true
     branches:
@@ -149,7 +148,6 @@ presubmits:
         - "--timeout=420m"
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e-ccm
@@ -172,7 +170,6 @@ presubmits:
         - --
         - make
         - test-unit
-
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-unit
@@ -232,7 +229,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
-
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-master
@@ -292,7 +288,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
-
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-autoscaling
@@ -351,7 +346,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
-
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-conformance

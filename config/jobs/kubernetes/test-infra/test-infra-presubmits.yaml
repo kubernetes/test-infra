@@ -14,7 +14,6 @@ presubmits:
       - name: third
         image: busybox
         args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
-
     annotations:
       testgrid-num-columns-recent: '20'
       testgrid-create-test-group: 'true'
@@ -32,7 +31,6 @@ presubmits:
       - name: third
         image: busybox
         args: ["exit", "1"]
-
     annotations:
       testgrid-num-columns-recent: '20'
       testgrid-create-test-group: 'true'
@@ -54,7 +52,6 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
-
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-test-infra-gubernator
@@ -72,7 +69,6 @@ presubmits:
         env:
         - name: WORKSPACE
           value: "/workspace"
-
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-test-infra-verify-file-perms
@@ -87,7 +83,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-experimental
         command:
         - ./hack/verify-file-perms.sh
-
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-test-infra-yamllint

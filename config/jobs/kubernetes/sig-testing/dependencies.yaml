@@ -26,7 +26,6 @@ presubmits:
         # Space separated list of the checks to run
         - name: WHAT
           value: "vendor vendor-licenses"
-
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
@@ -61,7 +60,6 @@ presubmits:
           value: https://proxy.golang.org
         - name: GOSUMDB
           value: sum.golang.org
-
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-godeps

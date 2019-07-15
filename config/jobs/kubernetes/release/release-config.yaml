@@ -33,7 +33,6 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-
     annotations:
       testgrid-dashboards: sig-release-misc
       testgrid-tab-name: release-cluster-up
@@ -73,13 +72,12 @@ presubmits:
         - verify
         securityContext:
           privileged: true
-
-# package tests
     annotations:
       testgrid-dashboards: sig-release-misc
       testgrid-tab-name: release-verify
       testgrid-alert-email: kubernetes-release-managers@googlegroups.com
       testgrid-num-columns-recent: '30'
+# package tests
 periodics:
 - name: periodic-release-verify-packages-debs
   interval: 6h

@@ -40,7 +40,6 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-
     annotations:
       testgrid-create-test-group: 'true'
 periodics:

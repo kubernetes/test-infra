@@ -939,7 +939,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-gci-gce-netd
@@ -970,7 +969,6 @@ periodics:
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
-
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-gci-gce-netd-calico
@@ -1000,7 +998,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-ubuntu-gce-netd
@@ -1032,7 +1029,6 @@ periodics:
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
-
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-ubuntu-gce-netd-calico
@@ -1066,7 +1062,6 @@ periodics:
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
-
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-containerd-gce-netd
@@ -1103,7 +1098,6 @@ periodics:
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
-
   annotations:
     testgrid-dashboards: sig-network-netd
     testgrid-tab-name: e2e-containerd-gce-netd-calico
