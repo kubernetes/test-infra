@@ -40,7 +40,7 @@ import (
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 var (
@@ -222,9 +222,13 @@ func (c *Cluster) populateApiModelTemplate() error {
 	}
 
 	// set default distro so we do not use prebuilt os image
-	v.Properties.MasterProfile.Distro = "ubuntu"
+	if v.Properties.MasterProfile.Distro == "" {
+		v.Properties.MasterProfile.Distro = "ubuntu"
+	}
 	for _, agentPool := range v.Properties.AgentPoolProfiles {
-		agentPool.Distro = "ubuntu"
+		if agentPool.Distro == "" {
+			agentPool.Distro = "ubuntu"
+		}
 	}
 	// replace APIModel template properties from flags
 	if c.location != "" {
