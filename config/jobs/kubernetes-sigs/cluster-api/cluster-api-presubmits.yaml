@@ -10,7 +10,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-41e2a9e-master
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -34,7 +34,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-41e2a9e-master
         resources:
           requests:
             memory: "6Gi"
@@ -51,7 +51,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-41e2a9e-master
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -72,7 +72,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-41e2a9e-master
         command:
         - runner.sh
         - ./scripts/ci-is-vendor-in-sync.sh
@@ -89,7 +89,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-41e2a9e-master
         command:
         - runner.sh
         - ./scripts/ci-integration.sh
