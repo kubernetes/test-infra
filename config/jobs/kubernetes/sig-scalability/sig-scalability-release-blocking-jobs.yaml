@@ -69,6 +69,9 @@ periodics:
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
+      # TODO(https://github.com/kubernetes/kubernetes/issues/80209): Delete these 2 envs when impact is assessed
+      - --env=MASTER_ROOT_DISK_SIZE=1000GB # doubling the default (500GB)
+      - --env=MASTER_DISK_SIZE=400GB # doubling the default (200GB)
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
