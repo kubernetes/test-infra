@@ -41,6 +41,14 @@ export interface Spyglass {
    *                 be assumed.
    */
   makeFragmentLink(fragment: string): string;
+
+  /**
+   * Scrolls the parent window so that the specified coordinates are visible.
+   *
+   * @param x The x coordinate relative to the lens document to scroll to.
+   * @param y The y coordinate relative to the lens document to scroll to.
+   */
+  scrollTo(x: number, y: number): Promise<void>;
 }
 
 class SpyglassImpl implements Spyglass {
@@ -98,6 +106,10 @@ class SpyglassImpl implements Spyglass {
       fragment = '#' + fragment;
     }
     return `${topURL}#${serialiseHashes({[lensIndex]: fragment})}`;
+  }
+
+  public async scrollTo(x: number, y: number): Promise<void> {
+    await this.postMessage({type: 'showOffset', left: x, top: y});
   }
 
   private updateHeight(): void {
@@ -174,7 +186,7 @@ class SpyglassImpl implements Spyglass {
       }
     }
     const top = el.getBoundingClientRect().top + window.pageYOffset;
-    this.postMessage({type: 'showOffset', top}).then();
+    this.scrollTo(0, top).then();
   }
 
   // We need to fix up anchor links (i.e. links that only set the fragment)

@@ -114,12 +114,13 @@ window.addEventListener('message', async (e) => {
       }
       case "showOffset": {
         const container = document.getElementsByTagName('main')[0]!;
-        let containerOffset = 0;
+        const containerOffset = {left: 0, top: 0};
         let parent: HTMLElement = frame;
         // figure out our cumulative offset from the root container <main> by
         // looping through our parents until we get to it or run out of parents.
         while (parent) {
-          containerOffset += parent.offsetTop;
+          containerOffset.top += parent.offsetTop;
+          containerOffset.left += parent.offsetLeft;
           if (parent.offsetParent instanceof HTMLElement && parent.offsetParent !== container) {
             parent = parent.offsetParent;
           } else {
@@ -129,7 +130,8 @@ window.addEventListener('message', async (e) => {
         if (!parent) {
           console.error("Couldn't find parent for frame!", container, frame);
         }
-        container.scrollTop = containerOffset + message.top;
+        container.scrollTop = containerOffset.top + message.top;
+        container.scrollLeft = containerOffset.left + message.left;
         break;
       }
       default:
