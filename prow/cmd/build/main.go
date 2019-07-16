@@ -117,7 +117,7 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	resyncInterval := 30 * time.Minute
 	// We construct a manager because it has a client whose Reader interface is backed by its cache, which
 	// is really nice to use, but the corresponding code is not exported.
-	mgr, err := manager.New(&cfg, manager.Options{SyncPeriod: &resyncInterval})
+	mgr, err := manager.New(&cfg, manager.Options{SyncPeriod: &resyncInterval, MetricsBindAddress: "0"})
 	if err != nil {
 		return nil, err
 	}
