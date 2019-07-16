@@ -17,7 +17,19 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-files=$(find . -name "*.sh" \! -perm /a+x)
+# BSD sed doesn't have --version, and needs + instead of /
+# GNU sed deprecated and removed +
+desired_perm="/111"
+# we're not actually running a search so SC2185 doesn't apply
+# shellcheck disable=SC2185
+if ! find --version >/dev/null 2>&1; then
+  desired_perm="+111"
+fi
+
+# find all files named *.sh (approximate shell script detection ...)
+# - ignoring .git
+# - that are not executable by all
+files=$(find . -type f -name '*.sh' -not -perm "${desired_perm}" -not -path './.git/*')
 if [[ -n "${files}" ]]; then
   echo "${files}"
   echo
