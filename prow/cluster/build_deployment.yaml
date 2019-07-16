@@ -18,7 +18,7 @@ spec:
       # serviceAccountName: prow-build # build_rbac.yaml
       containers:
       - name: build
-        image: gcr.io/k8s-prow/build:v20190716-c91993165
+        image: gcr.io/k8s-prow/build:v20190716-e6df33ccc
         args:
         - --all-contexts
         - --config=/etc/prow-config/config.yaml
