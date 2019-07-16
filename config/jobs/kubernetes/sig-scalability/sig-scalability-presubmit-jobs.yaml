@@ -295,7 +295,6 @@ presubmits:
         - --gcp-project=k8s-presubmit-scale
         - --gcp-zone=us-east1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-perf-tests-clusterloader2
         - --tear-down-previous
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -353,7 +352,6 @@ presubmits:
             - --kubemark
             - --kubemark-nodes=500
             - --provider=gce
-            - --stage=gs://kubernetes-release-pull/ci/pull-perf-tests-clusterloader2-kubemark
             - --tear-down-previous
             - --test=false
             - --test_args=--ginkgo.focus=xxxx
