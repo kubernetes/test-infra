@@ -655,7 +655,10 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
     const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
     const i = icon.create("refresh", "Show instructions for rerunning this job");
-    const login = getCookieByName("access-token-session");
+
+    // we actually want to know whether the "access-token-session" cookie exists, but we can't always
+    // access it from the frontend. "github_login" should be set whenever "access-token-session" is
+    const login = getCookieByName("github_login");
     i.onclick = () => {
         modal.style.display = "block";
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
