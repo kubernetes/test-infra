@@ -121,13 +121,13 @@ func NewAgent(config *config.GitHubOAuthConfig, logger *logrus.Entry) *Agent {
 
 // HandleLogin handles GitHub login request from front-end. It starts a new git oauth session and
 // redirect user to GitHub OAuth end-point for authentication.
-func (ga *Agent) HandleLogin(client OAuthClient) http.HandlerFunc {
+func (ga *Agent) HandleLogin(client OAuthClient, secure bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		destPage := r.URL.Query().Get("dest")
 		stateToken := xsrftoken.Generate(ga.gc.ClientSecret, "", "")
 		state := hex.EncodeToString([]byte(stateToken))
 		oauthSession, err := ga.gc.CookieStore.New(r, oauthSessionCookie)
-		oauthSession.Options.Secure = true
+		oauthSession.Options.Secure = secure
 		oauthSession.Options.HttpOnly = true
 		if err != nil {
 			ga.serverError(w, "Creating new OAuth session", err)
@@ -200,7 +200,7 @@ func (ga *Agent) HandleLogout(client OAuthClient) http.HandlerFunc {
 // HandleRedirect handles the redirection from GitHub. It exchanges the code from redirect URL for
 // user access token. The access token is then saved to the cookie and the page is redirected to
 // the final destination in the config, which should be the front-end.
-func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) http.HandlerFunc {
+func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter, secure bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		finalRedirectURL, err := r.URL.Parse(r.URL.Query().Get("dest"))
 		//This check prevents someone from specifying a different host to redirect to.
@@ -260,7 +260,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) h
 
 		// New session that stores the token.
 		session, err := ga.gc.CookieStore.New(r, tokenSession)
-		session.Options.Secure = true
+		session.Options.Secure = secure
 		session.Options.HttpOnly = true
 		if err != nil {
 			ga.serverError(w, "Create new session", err)
@@ -283,7 +283,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) h
 			Value:   *user.Login,
 			Path:    "/",
 			Expires: time.Now().Add(time.Hour * 24 * 30),
-			Secure:  true,
+			Secure:  secure,
 		})
 		http.Redirect(w, r, finalRedirectURL.String(), http.StatusFound)
 	}

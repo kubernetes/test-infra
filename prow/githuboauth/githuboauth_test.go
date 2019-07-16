@@ -105,7 +105,7 @@ func TestHandleLogin(t *testing.T) {
 	mockRequest := httptest.NewRequest(http.MethodGet, "/mock-login?dest="+dest+"?rerun="+rerunStatus, nil)
 	mockResponse := httptest.NewRecorder()
 
-	handleLoginFn := mockAgent.HandleLogin(mockOAuthClient)
+	handleLoginFn := mockAgent.HandleLogin(mockOAuthClient, false)
 	handleLoginFn.ServeHTTP(mockResponse, mockRequest)
 	result := mockResponse.Result()
 	if result.StatusCode != http.StatusFound {
@@ -294,7 +294,7 @@ func TestHandleRedirectWithInvalidState(t *testing.T) {
 	}
 	mockSession.Values[stateKey] = mockStateToken
 
-	handleLoginFn := mockAgent.HandleRedirect(mockOAuthClient, &fakeGetter{""})
+	handleLoginFn := mockAgent.HandleRedirect(mockOAuthClient, &fakeGetter{""}, false)
 	handleLoginFn.ServeHTTP(mockResponse, mockRequest)
 	result := mockResponse.Result()
 
@@ -328,7 +328,7 @@ func TestHandleRedirectWithValidState(t *testing.T) {
 	}
 	mockSession.Values[stateKey] = mockStateToken
 
-	handleLoginFn := mockAgent.HandleRedirect(mockOAuthClient, &fakeGetter{mockLogin})
+	handleLoginFn := mockAgent.HandleRedirect(mockOAuthClient, &fakeGetter{mockLogin}, false)
 	handleLoginFn.ServeHTTP(mockResponse, mockRequest)
 	result := mockResponse.Result()
 	if result.StatusCode != http.StatusFound {

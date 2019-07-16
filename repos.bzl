@@ -1425,3 +1425,9 @@ def go_repositories():
         sum = "h1:lHNQverf0+Gm1TbSbVIDWVXOhZ2FpZopxRqpr2uIjs4=",
         version = "v2.0.0",
     )
+    go_repository(
+        name = "com_github_gorilla_csrf",
+        importpath = "github.com/gorilla/csrf",
+        sum = "h1:60oN1cFdncCE8tjwQ3QEkFND5k37lQPcRjnlvm7CIJ0=",
+        version = "v1.6.0",
+    )

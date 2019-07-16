@@ -8,6 +8,7 @@ import {JobHistogram, JobSample} from './histogram';
 declare const allBuilds: Job[];
 declare const spyglass: boolean;
 declare const rerunCreatesJob: boolean;
+declare const csrfToken: string;
 
 function shortenBuildRefs(buildRef: string): string {
     return buildRef && buildRef.replace(/:[0-9a-f]*/g, '');
@@ -654,7 +655,6 @@ function redraw(fz: FuzzySearch): void {
         modal.style.display = "block";
         rerunCommand.innerHTML = "Nice try! The direct rerun feature hasn't been implemented yet, so that button does nothing.";
     }
-
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
@@ -680,6 +680,11 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = `${url}`;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = 'gorilla.csrf.Token';
+                    tokenInput.value = csrfToken;
+                    form.append(tokenInput);
                     c.appendChild(form);
                     form.submit();
                 };

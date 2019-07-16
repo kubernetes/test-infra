@@ -48,6 +48,7 @@ require (
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
+	github.com/gorilla/csrf v1.6.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
