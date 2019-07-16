@@ -28,14 +28,14 @@ import (
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
-	"k8s.io/test-infra/boskos/storage"
 )
 
 var fakeNow = now()
 
 func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
 	resourceClient := crds.NewTestResourceClient()
-	s := ranch.NewTestingStorage(crds.NewCRDStorage(resourceClient), storage.NewMemoryStorage(), func() time.Time { return fakeNow })
+	dRLCClient := crds.NewTestDRLCClient()
+	s := ranch.NewTestingStorage(crds.NewCRDStorage(resourceClient), crds.NewCRDStorage(dRLCClient), func() time.Time { return fakeNow })
 	for _, r := range resources {
 		s.AddResource(r)
 	}
@@ -776,16 +776,5 @@ func TestDefault(t *testing.T) {
 		if rr.Code != tc.code {
 			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
 		}
-	}
-}
-
-func TestConfig(t *testing.T) {
-	config, err := ranch.ParseConfig("resources.yaml")
-	if err != nil {
-		t.Errorf("parseConfig error: %v", err)
-	}
-
-	if err = ranch.ValidateConfig(config); err != nil {
-		t.Errorf("invalid config: %v", err)
 	}
 }

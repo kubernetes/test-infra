@@ -26,6 +26,7 @@ prow_push(
         "{STABLE_PROW_REPO}/boskos/aws-janitor": "//maintenance/aws-janitor:image",
         "{STABLE_PROW_REPO}/boskos/boskos": "//boskos:image",
         "{STABLE_PROW_REPO}/boskos/fake-mason": "//boskos/mason/fake-mason:image",
+        "{STABLE_PROW_REPO}/boskos/cleaner": "//boskos/cleaner/cmd:image",
         "{STABLE_PROW_REPO}/boskos/janitor": "//boskos/janitor:image",
         "{STABLE_PROW_REPO}/boskos/metrics": "//boskos/metrics:image",
         "{STABLE_PROW_REPO}/boskos/reaper": "//boskos/reaper:image",
@@ -58,7 +59,6 @@ go_library(
         "//boskos/common:go_default_library",
         "//boskos/crds:go_default_library",
         "//boskos/ranch:go_default_library",
-        "//boskos/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -81,6 +81,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//boskos/cleaner:all-srcs",
         "//boskos/client:all-srcs",
         "//boskos/common:all-srcs",
         "//boskos/crds:all-srcs",

@@ -24,6 +24,9 @@ import (
 	"syscall"
 	"time"
 
+	"k8s.io/test-infra/boskos/crds"
+	"k8s.io/test-infra/boskos/ranch"
+
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/boskos/client"
@@ -32,7 +35,6 @@ import (
 )
 
 const (
-	defaultUpdatePeriod      = time.Minute
 	defaultCleanerCount      = 15
 	defaultBoskosRetryPeriod = 15 * time.Second
 	defaultBoskosSyncPeriod  = 10 * time.Minute
@@ -41,9 +43,9 @@ const (
 )
 
 var (
-	boskosURL    = flag.String("boskos-url", "http://boskos", "Boskos Server URL")
-	cleanerCount = flag.Int("cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
-	configPath   = flag.String("config", "", "Path to persistent volume to load configs")
+	boskosURL         = flag.String("boskos-url", "http://boskos", "Boskos Server URL")
+	cleanerCount      = flag.Int("cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
+	kubeClientOptions crds.KubernetesClientOptions
 )
 
 func configConverter(in string) (mason.Masonable, error) {
@@ -58,25 +60,29 @@ func (m *fakeMasonAgent) Construct(context.Context, common.Resource, common.Type
 }
 
 func main() {
+	kubeClientOptions.AddFlags(flag.CommandLine)
+	flag.Parse()
+	kubeClientOptions.Validate()
+
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+
+	dc, err := kubeClientOptions.Client(crds.DRLCType)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a DynamicResourceLifeCycle CRD client")
+	}
+
+	dRLCStorage := crds.NewCRDStorage(dc)
+	st, _ := ranch.NewStorage(nil, dRLCStorage, "")
+
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	client := client.NewClient(defaultOwner, *boskosURL)
-	mason := mason.NewMason(*cleanerCount, client, defaultBoskosRetryPeriod, defaultBoskosSyncPeriod)
+	mason := mason.NewMason(*cleanerCount, client, defaultBoskosRetryPeriod, defaultBoskosSyncPeriod, st)
 
 	// Registering Masonable Converters
 	if err := mason.RegisterConfigConverter(resourceName, configConverter); err != nil {
 		logrus.WithError(err).Fatalf("unable tp register config converter")
 	}
-	if err := mason.UpdateConfigs(*configPath); err != nil {
-		logrus.WithError(err).Fatalf("failed to update mason config")
-	}
-	go func() {
-		for range time.NewTicker(defaultUpdatePeriod).C {
-			if err := mason.UpdateConfigs(*configPath); err != nil {
-				logrus.WithError(err).Warning("failed to update mason config")
-			}
-		}
-	}()
 
 	mason.Start()
 	defer mason.Stop()

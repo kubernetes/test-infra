@@ -31,12 +31,16 @@ import (
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
-	"k8s.io/test-infra/boskos/storage"
+)
+
+const (
+	defaultSyncPeriod = 10 * time.Minute
 )
 
 var (
 	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
+	syncPeriod        = flag.Duration("sync-period", defaultSyncPeriod, "Period at which to sync config")
 	kubeClientOptions crds.KubernetesClientOptions
 )
 
@@ -49,12 +53,16 @@ func main() {
 
 	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
-		logrus.WithError(err).Fatal("unable to create a CRD client")
+		logrus.WithError(err).Fatal("unable to create a Resource CRD client")
+	}
+	dc, err := kubeClientOptions.Client(crds.DRLCType)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a DynamicResourceLifeCycle CRD client")
 	}
 
 	resourceStorage := crds.NewCRDStorage(rc)
-	lfStorage := storage.NewMemoryStorage()
-	storage, err := ranch.NewStorage(resourceStorage, lfStorage, *storagePath)
+	dRLCStorage := crds.NewCRDStorage(dc)
+	storage, err := ranch.NewStorage(resourceStorage, dRLCStorage, *storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create storage")
 	}
@@ -71,7 +79,7 @@ func main() {
 
 	go func() {
 		logTick := time.NewTicker(time.Minute).C
-		configTick := time.NewTicker(time.Minute * 10).C
+		configTick := time.NewTicker(*syncPeriod).C
 		for {
 			select {
 			case <-logTick:

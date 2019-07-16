@@ -24,8 +24,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
-
 	"sigs.k8s.io/yaml"
 )
 
@@ -40,6 +38,10 @@ const (
 	Cleaning = "cleaning"
 	// Leased state defines a resource being leased in order to make a new resource
 	Leased = "leased"
+	// ToBeDeleted is used for resources about to be deleted, they will be verified by a cleaner which mark them as tombstone
+	ToBeDeleted = "toBeDeleted"
+	// Tombstone is the state in which a resource can safely be deleted
+	Tombstone = "tombstone"
 	// Other is used to agglomerate unspecified states for metrics reporting
 	Other = "other"
 )
@@ -104,25 +106,14 @@ type Resource struct {
 
 // ResourceEntry is resource config format defined from config.yaml
 type ResourceEntry struct {
-	Type     string    `json:"type"`
-	State    string    `json:"state"`
-	Names    []string  `json:"names,flow"`
-	MaxCount int       `json:"max-count,omitempty"`
-	MinCount int       `json:"min-count,omitempty"`
-	LifeSpan *Duration `json:"lifespan,omitempty"`
-}
-
-// DynamicResourceLifeCycle defines the life cycle of a dynamic resource.
-type DynamicResourceLifeCycle struct {
-	Type string `json:"type"`
-	// Initial state to be created as
-	InitialState string `json:"state"`
-	// Maximum resources expected
-	MaxCount int `json:"max-count"`
-	// Minimum Number of resources to be use a buffer
-	MinCount int `json:"min-count"`
-	// Lifespan of a resource, time after which the resource should be reset.
-	LifeSpan *time.Duration `json:"lifespan,omitempty"`
+	Type     string        `json:"type"`
+	State    string        `json:"state"`
+	Names    []string      `json:"names,flow"`
+	MaxCount int           `json:"max-count,omitempty"`
+	MinCount int           `json:"min-count,omitempty"`
+	LifeSpan *Duration     `json:"lifespan,omitempty"`
+	Config   ConfigType    `json:"config,omitempty"`
+	Needs    ResourceNeeds `json:"needs,omitempty"`
 }
 
 // BoskosConfig defines config used by boskos server
@@ -168,21 +159,6 @@ func NewResourcesFromConfig(e ResourceEntry) []Resource {
 	return resources
 }
 
-// NewDynamicResourceLifeCycleFromConfig parse the a ResourceEntry into a DynamicResourceLifeCycle
-func NewDynamicResourceLifeCycleFromConfig(e ResourceEntry) DynamicResourceLifeCycle {
-	var dur *time.Duration
-	if e.LifeSpan != nil {
-		dur = e.LifeSpan.Duration
-	}
-	return DynamicResourceLifeCycle{
-		Type:         e.Type,
-		MaxCount:     e.MaxCount,
-		MinCount:     e.MinCount,
-		LifeSpan:     dur,
-		InitialState: e.State,
-	}
-}
-
 // UserDataFromMap returns a UserData from a map
 func UserDataFromMap(m UserDataMap) *UserData {
 	ud := &UserData{}
@@ -215,6 +191,29 @@ func (ut ResourceByName) Len() int           { return len(ut) }
 func (ut ResourceByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
 func (ut ResourceByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
 
+// ResourceByDeleteState helps sorting resources by state, putting Tombstone first, then ToBeDeleted,
+// and sorting alphabetacally by resource name
+type ResourceByDeleteState []Resource
+
+func (ut ResourceByDeleteState) Len() int      { return len(ut) }
+func (ut ResourceByDeleteState) Swap(i, j int) { ut[i], ut[j] = ut[j], ut[i] }
+func (ut ResourceByDeleteState) Less(i, j int) bool {
+	order := map[string]int{Tombstone: 0, ToBeDeleted: 1}
+	stateIndex := func(s string) int {
+		i, ok := order[s]
+		if ok {
+			return i
+		}
+		return 2
+	}
+	indexI := stateIndex(ut[i].State)
+	indexJ := stateIndex(ut[i].State)
+	if indexI == indexJ {
+		return ut[i].GetName() < ut[j].GetName()
+	}
+	return indexI < indexJ
+}
+
 // CommaSeparatedStrings is used to parse comma separated string flag into a list of strings
 type CommaSeparatedStrings []string
 
@@ -239,9 +238,6 @@ func (r *CommaSeparatedStrings) Type() string {
 
 // GetName implements the Item interface used for storage
 func (res Resource) GetName() string { return res.Name }
-
-// GetName implements the Item interface used for storage
-func (res DynamicResourceLifeCycle) GetName() string { return res.Type }
 
 // UnmarshalJSON implements JSON Unmarshaler interface
 func (ud *UserData) UnmarshalJSON(data []byte) error {
@@ -321,18 +317,4 @@ func ItemToResource(i Item) (Resource, error) {
 		return Resource{}, fmt.Errorf("cannot construct Resource from received object %v", i)
 	}
 	return res, nil
-}
-
-// ItemToDynamicResourceLifeCycle casts a Item back to a Resource
-func ItemToDynamicResourceLifeCycle(i Item) (DynamicResourceLifeCycle, error) {
-	res, ok := i.(DynamicResourceLifeCycle)
-	if !ok {
-		return DynamicResourceLifeCycle{}, fmt.Errorf("cannot construct Resource from received object %v", i)
-	}
-	return res, nil
-}
-
-// GenerateDynamicResourceName generates a unique name for dynamic resources
-func GenerateDynamicResourceName() string {
-	return uuid.New().String()
 }

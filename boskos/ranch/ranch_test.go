@@ -26,7 +26,6 @@ import (
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
-	"k8s.io/test-infra/boskos/storage"
 )
 
 var (
@@ -55,7 +54,7 @@ func fakeTime(t time.Time) time.Time {
 
 func MakeTestRanch(resources []common.Resource, dResources []common.DynamicResourceLifeCycle) *Ranch {
 	rs := crds.NewCRDStorage(crds.NewTestResourceClient())
-	lfs := storage.NewMemoryStorage()
+	lfs := crds.NewCRDStorage(crds.NewTestDRLCClient())
 	s, _ := NewStorage(rs, lfs, "")
 	s.now = func() time.Time {
 		return fakeNow
@@ -675,10 +674,34 @@ func TestSyncResources(t *testing.T) {
 			},
 		},
 		{
-			name: "delete",
+			name: "delete, lifecycle should not delete dynamic res until all associated resources are gone",
 			currentRes: []common.Resource{
 				common.NewResource("res", "t", "", "", startTime),
 				common.NewResource("dt_1", "dt", "", "", startTime),
+			},
+			currentLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+			config: &common.BoskosConfig{},
+			expectedRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
+		},
+		{
+			name: "delete, life cycle should be deleted as all resources are deleted",
+			currentRes: []common.Resource{
+				common.NewResource("dt_1", "dt", common.Tombstone, "", startTime),
 			},
 			currentLCs: []common.DynamicResourceLifeCycle{
 				{
@@ -707,12 +730,19 @@ func TestSyncResources(t *testing.T) {
 				common.NewResource("res", "t", common.Busy, "o", startTime),
 				common.NewResource("dt_1", "dt", common.Busy, "o", startTime),
 			},
+			expectedLCs: []common.DynamicResourceLifeCycle{
+				{
+					Type:     "dt",
+					MinCount: 1,
+					MaxCount: 2,
+				},
+			},
 		},
 		{
 			name: "append and delete",
 			currentRes: []common.Resource{
-				common.NewResource("res-1", "t", "", "", startTime),
-				common.NewResource("dt_1", "dt", "", "", startTime),
+				common.NewResource("res-1", "t", common.Tombstone, "", startTime),
+				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", startTime),
 				common.NewResource("dt_2", "dt", "", "", startTime),
 				common.NewResource("dt_3", "dt", "", "", startTime),
 			},
@@ -743,8 +773,9 @@ func TestSyncResources(t *testing.T) {
 			},
 			expectedRes: []common.Resource{
 				common.NewResource("res-2", "t", common.Free, "", fakeNow),
-				common.NewResource("dt_1", "dt", common.Free, "", fakeNow),
+				common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
 				common.NewResource("dt_2", "dt", common.Free, "", fakeNow),
+				common.NewResource("dt_3", "dt", common.Free, "", fakeNow),
 				common.NewResource("new-dynamic-res-1", "dt2", common.Free, "", fakeNow),
 			},
 			expectedLCs: []common.DynamicResourceLifeCycle{
@@ -765,7 +796,7 @@ func TestSyncResources(t *testing.T) {
 			currentRes: []common.Resource{
 				common.NewResource("res-1", "t", common.Busy, "o", startTime),
 				common.NewResource("dt_1", "dt", "", "", startTime),
-				common.NewResource("dt_2", "dt", "", "", startTime),
+				common.NewResource("dt_2", "dt", common.Tombstone, "", startTime),
 				common.NewResource("dt_3", "dt", common.Busy, "o", startTime),
 			},
 			currentLCs: []common.DynamicResourceLifeCycle{
@@ -816,7 +847,7 @@ func TestSyncResources(t *testing.T) {
 		{
 			name: "append/delete mixed type",
 			currentRes: []common.Resource{
-				common.NewResource("res-1", "t", "", "", startTime),
+				common.NewResource("res-1", "t", common.Tombstone, "", startTime),
 			},
 			config: &common.BoskosConfig{
 				Resources: []common.ResourceEntry{
@@ -843,7 +874,7 @@ func TestSyncResources(t *testing.T) {
 					startTime),
 				common.NewResource("dt_2", "dt", "", "", startTime),
 				setExpiration(
-					common.NewResource("dt_3", "dt", "", "", startTime),
+					common.NewResource("dt_3", "dt", common.Tombstone, "", startTime),
 					startTime),
 				common.NewResource("dt_4", "dt", "", "", startTime),
 			},
@@ -864,6 +895,9 @@ func TestSyncResources(t *testing.T) {
 				},
 			},
 			expectedRes: []common.Resource{
+				setExpiration(
+					common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+					startTime),
 				common.NewResource("dt_2", "dt", common.Free, "", fakeNow),
 				common.NewResource("dt_4", "dt", common.Free, "", fakeNow),
 			},
@@ -879,7 +913,7 @@ func TestSyncResources(t *testing.T) {
 			name: "delete expired resource / do not delete busy",
 			currentRes: []common.Resource{
 				setExpiration(
-					common.NewResource("dt_1", "dt", "", "", startTime),
+					common.NewResource("dt_1", "dt", common.Tombstone, "", startTime),
 					startTime),
 				common.NewResource("dt_2", "dt", "", "", startTime),
 				setExpiration(
@@ -926,7 +960,7 @@ func TestSyncResources(t *testing.T) {
 					startTime),
 				common.NewResource("dt_2", "dt", "", "", startTime),
 				setExpiration(
-					common.NewResource("dt_3", "dt", "", "", startTime),
+					common.NewResource("dt_3", "dt", common.Tombstone, "", startTime),
 					startTime),
 				common.NewResource("dt_4", "dt", "", "", startTime),
 			},
@@ -947,9 +981,11 @@ func TestSyncResources(t *testing.T) {
 				},
 			},
 			expectedRes: []common.Resource{
+				setExpiration(
+					common.NewResource("dt_1", "dt", common.ToBeDeleted, "", fakeNow),
+					startTime),
 				common.NewResource("new-dynamic-res-1", "dt", common.Free, "", fakeNow),
 				common.NewResource("dt_2", "dt", common.Free, "", fakeNow),
-				common.NewResource("new-dynamic-res-2", "dt", common.Free, "", fakeNow),
 				common.NewResource("dt_4", "dt", common.Free, "", fakeNow),
 			},
 			expectedLCs: []common.DynamicResourceLifeCycle{
@@ -973,7 +1009,7 @@ func TestSyncResources(t *testing.T) {
 		sort.Stable(common.ResourceByName(resources))
 		sort.Stable(common.ResourceByName(tc.expectedRes))
 		if !reflect.DeepEqual(resources, tc.expectedRes) {
-			t.Errorf("Test %v: \n got \t\t %v, \n expected %v", tc.name, resources, tc.expectedRes)
+			t.Errorf("Test %v: \n got \t\t%v, \n expected \t%v", tc.name, resources, tc.expectedRes)
 		}
 		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
 		sort.SliceStable(lfs, func(i, j int) bool {
@@ -987,7 +1023,7 @@ func TestSyncResources(t *testing.T) {
 			}
 		})
 		if !reflect.DeepEqual(lfs, tc.expectedLCs) {
-			t.Errorf("Test %v: \n got \t\t %v, \n expected %v", tc.name, lfs, tc.expectedLCs)
+			t.Errorf("Test %v: \n got \t\t%v, \n expected %v", tc.name, lfs, tc.expectedLCs)
 		}
 	}
 }

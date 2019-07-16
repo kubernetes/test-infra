@@ -18,7 +18,6 @@ package ranch
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"sort"
@@ -27,9 +26,6 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
-
-	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
 )
@@ -266,13 +262,21 @@ func (s *Storage) updateDynamicResources(lifecycle common.DynamicResourceLifeCyc
 	for _, r := range resources {
 		// We can only delete resources not in use
 		if !r.IsInUse() {
-			// Expired
-			if r.ExpirationDate != nil && s.now().After(*r.ExpirationDate) {
+			// deleting resources already marked for deletion, and not including them in the count.
+			if r.State == common.Tombstone || r.State == common.ToBeDeleted {
+				// those will be deleted, not counting
 				toDelete = append(toDelete, r)
 			} else {
-				notInUseRes = append(notInUseRes, r)
+				// Those resources will be deleted at next iteration counting
 				count++
+				// Expired
+				if r.ExpirationDate != nil && s.now().After(*r.ExpirationDate) {
+					toDelete = append(toDelete, r)
+				} else {
+					notInUseRes = append(notInUseRes, r)
+				}
 			}
+
 		} else {
 			count++
 		}
@@ -341,27 +345,44 @@ func (s *Storage) syncDynamicResources(newConfig, existingConfig []common.Dynami
 		}
 	}
 
-	if err := s.persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLCToDelete); err != nil {
+	if err := s.persistResources(resToUpdate, resToAdd, resToDelete, true); err != nil {
 		finalError = multierror.Append(finalError, err)
 	}
 
-	if err := s.persistResources(resToUpdate, resToAdd, resToDelete); err != nil {
+	if err := s.persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLCToDelete); err != nil {
 		finalError = multierror.Append(finalError, err)
 	}
 
 	return finalError
 }
 
-func (s *Storage) persistResources(resToUpdate, resToAdd, resToDelete []common.Resource) error {
+func (s *Storage) persistResources(resToUpdate, resToAdd, resToDelete []common.Resource, dynamic bool) error {
 	var finalError error
 
 	for _, r := range resToDelete {
 		// If currently busy, yield deletion to later cycles.
 		if !r.IsInUse() {
-			logrus.Infof("Deleting resource %s", r.Name)
-			if err := s.DeleteResource(r.Name); err != nil {
-				finalError = multierror.Append(finalError, err)
-				logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
+			if dynamic {
+				// Only delete resource in tombsone state and mark the other as to deleted
+				// This is necessary for dynamic resources that depends on other resources
+				// as they need to be released to prevent leak.
+				if r.State == common.Tombstone {
+					logrus.Infof("Deleting resource %s", r.Name)
+					if err := s.DeleteResource(r.Name); err != nil {
+						finalError = multierror.Append(finalError, err)
+						logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
+					}
+				} else {
+					r.State = common.ToBeDeleted
+					resToUpdate = append(resToUpdate, r)
+				}
+			} else {
+				// Static resources can be deleted right away.
+				logrus.Infof("Deleting resource %s", r.Name)
+				if err := s.DeleteResource(r.Name); err != nil {
+					finalError = multierror.Append(finalError, err)
+					logrus.WithError(err).Errorf("unable to delete resource %s", r.Name)
+				}
 			}
 		}
 	}
@@ -389,12 +410,23 @@ func (s *Storage) persistResources(resToUpdate, resToAdd, resToDelete []common.R
 
 func (s *Storage) persistDynamicResourceLifeCycles(dRLCToUpdate, dRLCToAdd, dRLCToDelelete []common.DynamicResourceLifeCycle) error {
 	var finalError error
+	remainingTypes := map[string]bool{}
+	updatedResources, err := s.GetResources()
+	if err != nil {
+		return err
+	}
+	for _, res := range updatedResources {
+		remainingTypes[res.Type] = true
+	}
 
 	for _, dRLC := range dRLCToDelelete {
-		logrus.Infof("Deleting resource type life cycle %s", dRLC.Type)
-		if err := s.DeleteDynamicResourceLifeCycle(dRLC.Type); err != nil {
-			finalError = multierror.Append(finalError, err)
-			logrus.WithError(err).Errorf("unable to delete resource type life cycle %s", dRLC.Type)
+		// Only delete a dynamic resource if all resources are gone
+		if !remainingTypes[dRLC.Type] {
+			logrus.Infof("Deleting resource type life cycle %s", dRLC.Type)
+			if err := s.DeleteDynamicResourceLifeCycle(dRLC.Type); err != nil {
+				finalError = multierror.Append(finalError, err)
+				logrus.WithError(err).Errorf("unable to delete resource type life cycle %s", dRLC.Type)
+			}
 		}
 	}
 
@@ -444,61 +476,5 @@ func (s *Storage) syncStaticResources(newConfig, existingResources []common.Reso
 			resToAdd = append(resToAdd, p)
 		}
 	}
-	return s.persistResources(resToUpdate, resToAdd, resToDelete)
-}
-
-// ValidateConfig ensure that provided config is within system limitations.
-func ValidateConfig(config *common.BoskosConfig) error {
-	if len(config.Resources) == 0 {
-		return fmt.Errorf("empty config")
-	}
-	resourceNames := map[string]bool{}
-
-	for _, e := range config.Resources {
-		if e.Type == "" {
-			return fmt.Errorf("empty resource type: %s", e.Type)
-		}
-		names := e.Names
-
-		if len(e.Names) == 0 {
-			if e.MaxCount == 0 {
-				return fmt.Errorf("max should be > 0")
-			}
-			if e.MinCount > e.MaxCount {
-				return fmt.Errorf("min should be <= max %v", e)
-			}
-			for i := 0; i < e.MaxCount; i++ {
-				name := common.GenerateDynamicResourceName()
-				names = append(names, name)
-			}
-		}
-		for _, name := range names {
-			errs := validation.IsQualifiedName(name)
-			if len(errs) != 0 {
-				return fmt.Errorf("resource name %s is not a qualified k8s object name, errs: %v", name, errs)
-			}
-
-			if _, ok := resourceNames[name]; ok {
-				return fmt.Errorf("duplicated resource name: %s", name)
-			}
-			resourceNames[name] = true
-		}
-	}
-	return nil
-}
-
-// ParseConfig reads in configPath and returns a list of resource objects
-// on success.
-func ParseConfig(configPath string) (*common.BoskosConfig, error) {
-	file, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return nil, err
-	}
-
-	var data common.BoskosConfig
-	err = yaml.Unmarshal(file, &data)
-	if err != nil {
-		return nil, err
-	}
-	return &data, nil
+	return s.persistResources(resToUpdate, resToAdd, resToDelete, false)
 }

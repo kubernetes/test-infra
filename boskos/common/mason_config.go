@@ -18,6 +18,9 @@ package common
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 // ResourceNeeds maps the type to count of resources types needed
@@ -34,37 +37,49 @@ type ConfigType struct {
 	Content string `json:"content,omitempty"`
 }
 
-// MasonConfig holds Mason config information
-type MasonConfig struct {
-	Configs []ResourcesConfig `json:"configs,flow,omitempty"`
-}
-
-// ResourcesConfig holds information to construct a resource.
-// The ResourcesConfig Name maps to the Resource Type
+// DynamicResourceLifeCycle defines the life cycle of a dynamic resource.
 // All Resource of a given type will be constructed using the same configuration
-type ResourcesConfig struct {
-	Name   string        `json:"name"`
-	Config ConfigType    `json:"config"`
-	Needs  ResourceNeeds `json:"needs"`
+type DynamicResourceLifeCycle struct {
+	Type string `json:"type"`
+	// Initial state to be created as
+	InitialState string `json:"state"`
+	// Minimum Number of resources to be use a buffer
+	MinCount int `json:"min-count"`
+	// Maximum resources expected
+	MaxCount int `json:"max-count"`
+	// Lifespan of a resource, time after which the resource should be reset.
+	LifeSpan *time.Duration `json:"lifespan,omitempty"`
+	// Config information about how to create the object
+	Config ConfigType `json:"config,omitempty"`
+	// Needs define the resource needs to create the object
+	Needs ResourceNeeds `json:"needs,omitempty"`
 }
 
-// ResourcesConfigByName helps sorting ResourcesConfig by name
-type ResourcesConfigByName []ResourcesConfig
+// DRLCByName helps sorting ResourcesConfig by name
+type DRLCByName []DynamicResourceLifeCycle
 
-func (ut ResourcesConfigByName) Len() int           { return len(ut) }
-func (ut ResourcesConfigByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
-func (ut ResourcesConfigByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
+func (ut DRLCByName) Len() int           { return len(ut) }
+func (ut DRLCByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
+func (ut DRLCByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
 
-// GetName implements the item interface for storage
-func (conf ResourcesConfig) GetName() string { return conf.Name }
+// GetName implements the Item interface used for storage
+func (res DynamicResourceLifeCycle) GetName() string { return res.Type }
 
-// ItemToResourcesConfig casts an Item object to a ResourcesConfig
-func ItemToResourcesConfig(i Item) (ResourcesConfig, error) {
-	conf, ok := i.(ResourcesConfig)
-	if !ok {
-		return ResourcesConfig{}, fmt.Errorf("cannot construct Resource from received object %v", i)
+// NewDynamicResourceLifeCycleFromConfig parse the a ResourceEntry into a DynamicResourceLifeCycle
+func NewDynamicResourceLifeCycleFromConfig(e ResourceEntry) DynamicResourceLifeCycle {
+	var dur *time.Duration
+	if e.LifeSpan != nil {
+		dur = e.LifeSpan.Duration
 	}
-	return conf, nil
+	return DynamicResourceLifeCycle{
+		Type:         e.Type,
+		MaxCount:     e.MaxCount,
+		MinCount:     e.MinCount,
+		LifeSpan:     dur,
+		InitialState: e.State,
+		Config:       e.Config,
+		Needs:        e.Needs,
+	}
 }
 
 // Copy returns a copy of the TypeToResources
@@ -74,4 +89,18 @@ func (t TypeToResources) Copy() TypeToResources {
 		n[k] = v
 	}
 	return n
+}
+
+// ItemToDynamicResourceLifeCycle casts a Item back to a Resource
+func ItemToDynamicResourceLifeCycle(i Item) (DynamicResourceLifeCycle, error) {
+	res, ok := i.(DynamicResourceLifeCycle)
+	if !ok {
+		return DynamicResourceLifeCycle{}, fmt.Errorf("cannot construct Resource from received object %v", i)
+	}
+	return res, nil
+}
+
+// GenerateDynamicResourceName generates a unique name for dynamic resources
+func GenerateDynamicResourceName() string {
+	return uuid.New().String()
 }
