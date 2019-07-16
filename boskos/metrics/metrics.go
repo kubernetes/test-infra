@@ -47,6 +47,8 @@ var (
 		common.Dirty,
 		common.Free,
 		common.Leased,
+		common.ToBeDeleted,
+		common.Tombstone,
 	}
 )
 

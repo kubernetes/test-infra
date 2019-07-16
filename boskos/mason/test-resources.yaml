@@ -10,3 +10,9 @@ resources:
   min-count: 1
   max-count: 4
   lifespan: 24h
+  needs:
+    type1: 1
+  config:
+    type: FakeConfig
+    content: "fakeContent"
+

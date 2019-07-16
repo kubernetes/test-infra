@@ -327,11 +327,11 @@ func (r *Ranch) LogStatus() {
 
 // SyncConfig updates resource list from a file
 func (r *Ranch) SyncConfig(configPath string) error {
-	config, err := ParseConfig(configPath)
+	config, err := common.ParseConfig(configPath)
 	if err != nil {
 		return err
 	}
-	if err := ValidateConfig(config); err != nil {
+	if err := common.ValidateConfig(config); err != nil {
 		return err
 	}
 	if err := r.Storage.SyncResources(config); err != nil {

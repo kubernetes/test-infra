@@ -32,6 +32,9 @@ reaper-deployment: get-cluster-credentials
 janitor-deployment: get-cluster-credentials
 	kubectl apply -f janitor/deployment.yaml
 
+cleaner-deployment: get-cluster-credentials
+	kubectl apply -f mason/cleaner/deployment.yaml
+
 metrics-deployment: get-cluster-credentials
 	kubectl apply -f metrics/deployment.yaml
 
@@ -45,4 +48,4 @@ update-config: get-cluster-credentials
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-.PHONY: boskos client reaper janitor janitor-aws metrics images server-image reaper-image janitor-image janitor-aws-image metrics-image server-deployment reaper-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials
+.PHONY: images server-deployment reaper-deployment cleaner-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials

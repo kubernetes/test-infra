@@ -33,10 +33,21 @@ resources:
     min-count: 1
     max-count: 2
     lifespan: 48h
+    needs:
+      aws-account: 1
+    config:
+      type: AWSClusterCreator
+      content: "..."
 ```
 
-Boskos will take care of creating and naming the resources (if the current count is below min-count) and deleting the resources if they are expired or over max-count.
+Boskos will take care of creating and naming the resources (if the current
+count is below min-count) and deleting the resources if they are expired or
+over max-count.
 
+All resource being deleted (due to config update or expiration) will be marked
+as `ToBeDeleted`. The cleaner component will mark them as `Tombstone` such that
+they can be safely deleted by Boskos. The cleaner will ensure that dynamic
+resources release other leased resources associated with it to prevent leaks.
 
 Type can be GCPProject, cluster, or even a dota2 server, anything that you
 want to be a group of resources. Name is a unique identifier of the resource.
@@ -199,6 +210,10 @@ resources and release leased resources as dirty (such that Janitor can pick it u
 brand new resources in order to convert them in the final resource states. Mason
 comes with its own client to ease usage. The mason client takes care of
 acquiring and release all the right resources from the User Data information.
+
+[`cleaner`] Mark resource with status `ToBeDeleted` as `Tombstone` such they can be
+safely deleted by Boskos. This is important for dynamic resources such that all
+associated resources can be released before deletion to prevent leak.
 
 [`Storage`] There could be multiple implementation on how resources and mason
 config are stored. Since we have multiple components with storage needs, we have

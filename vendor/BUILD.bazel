@@ -69,7 +69,6 @@ filegroup(
         "//vendor/github.com/bwmarrin/snowflake:all-srcs",
         "//vendor/github.com/client9/misspell:all-srcs",
         "//vendor/github.com/davecgh/go-spew/spew:all-srcs",
-        "//vendor/github.com/deckarep/golang-set:all-srcs",
         "//vendor/github.com/dgrijalva/jwt-go:all-srcs",
         "//vendor/github.com/djherbis/atime:all-srcs",
         "//vendor/github.com/docker/distribution/digestset:all-srcs",
