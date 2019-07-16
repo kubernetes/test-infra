@@ -1194,6 +1194,63 @@ func TestSyncPendingJob(t *testing.T) {
 	}
 }
 
+func TestOrderedJobs(t *testing.T) {
+	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
+	defer totServ.Close()
+	var pjs []prowapi.ProwJob
+
+	// Add 3 jobs with incrementing timestamp
+	for i := 0; i < 3; i++ {
+		job := pjutil.NewProwJob(pjutil.PeriodicSpec(config.Periodic{
+			JobBase: config.JobBase{
+				Name:    fmt.Sprintf("ci-periodic-job-%d", i),
+				Agent:   "kubernetes",
+				Cluster: "trusted",
+				Spec:    &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+			},
+		}), nil, nil)
+		job.ObjectMeta.CreationTimestamp = metav1.Time{
+			Time: time.Now(),
+		}
+		pjs = append(pjs, job)
+	}
+	expOut := []string{"ci-periodic-job-0", "ci-periodic-job-1", "ci-periodic-job-2"}
+
+	for _, orders := range [][]int{
+		{0, 1, 2},
+		{1, 2, 0},
+		{2, 0, 1},
+	} {
+		newPjs := make([]prowapi.ProwJob, 3)
+		for i := 0; i < len(pjs); i++ {
+			newPjs[i] = pjs[orders[i]]
+		}
+		fc := &fkc{
+			prowjobs: newPjs,
+		}
+
+		log := logrus.NewEntry(logrus.StandardLogger())
+		c := Controller{
+			kc:          fc,
+			ghc:         &fghc{},
+			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
+			log:         log,
+			config:      newFakeConfigAgent(t, 0).Config,
+			totURL:      totServ.URL,
+			pendingJobs: make(map[string]int),
+			lock:        sync.RWMutex{},
+		}
+		if err := c.Sync(); err != nil {
+			t.Fatalf("Error on first sync: %v", err)
+		}
+		for i, name := range expOut {
+			if c.pjs[i].Spec.Job != name {
+				t.Fatalf("Error in keeping order, want: '%s', got '%s'", name, c.pjs[i].Spec.Job)
+			}
+		}
+	}
+}
+
 // TestPeriodic walks through the happy path of a periodic job.
 func TestPeriodic(t *testing.T) {
 	per := config.Periodic{
