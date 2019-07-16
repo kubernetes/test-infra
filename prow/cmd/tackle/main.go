@@ -627,7 +627,7 @@ func clientConfig(context string) (*rest.Config, error) {
 
 func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 	for {
-		ings, err := kc.Extensions().Ingresses(ns).List(metav1.ListOptions{})
+		ings, err := kc.NetworkingV1beta1().Ingresses(ns).List(metav1.ListOptions{})
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not get ingresses")
 			time.Sleep(5 * time.Second)

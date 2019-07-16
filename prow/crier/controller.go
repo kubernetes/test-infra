@@ -181,7 +181,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 
 	logrus.Infof("Created merge patch: %v", string(patch))
 
-	_, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
+	_, err = c.pjclientset.ProwV1().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
 	if err != nil {
 		return err
 	}
@@ -283,7 +283,7 @@ func (c *Controller) processNextItem() bool {
 			// theoretically patch should not have this issue, but in case:
 			// it might be out-dated, try to re-fetch pj and try again
 
-			updatedPJ, err := c.pjclientset.Prow().ProwJobs(pjob.Namespace).Get(pjob.Name, metav1.GetOptions{})
+			updatedPJ, err := c.pjclientset.ProwV1().ProwJobs(pjob.Namespace).Get(pjob.Name, metav1.GetOptions{})
 			if err != nil {
 				logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to get prowjob from apiserver")
 				c.queue.Forget(key)

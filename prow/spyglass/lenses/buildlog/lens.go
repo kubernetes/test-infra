@@ -138,7 +138,7 @@ func getHighlightRegex(rawConfig json.RawMessage) *regexp.Regexp {
 
 	re, err := regexp.Compile(strings.Join(c.HighlightRegexes, "|"))
 	if err != nil {
-		logrus.WithError(err).Warn("Couldn't compile %q", c.HighlightRegexes)
+		logrus.WithError(err).Warnf("Couldn't compile %q", c.HighlightRegexes)
 		return defaultErrRE
 	}
 	return re
