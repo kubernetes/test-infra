@@ -18,7 +18,9 @@ presubmits:
         args:
         - "check"
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
   # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
     decorate: true
@@ -36,7 +38,9 @@ presubmits:
         args:
         - "build"
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
   # Executes the unit tests.
   - name: pull-vsphere-csi-driver-unit-test
     decorate: true
@@ -54,7 +58,9 @@ presubmits:
         args:
         - "unit-test"
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
 postsubmits:
   kubernetes-sigs/vsphere-csi-driver:
 
@@ -80,4 +86,6 @@ postsubmits:
         securityContext:
           privileged: true
     annotations:
+      testgrid-dashboards: vmware-postsubmits-vsphere-csi-driver
       testgrid-num-columns-recent: '20'
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
