@@ -7,6 +7,9 @@ are responsible for consuming them and rendering a view.
 A typical Spyglass page might look something like this:
 ![](spyglass-example.png)
 
+If you want to know how to write a Spyglass lens, check [the lens-writing guide](./write-a-lens.md).
+If you're interested in how Spyglass works, check [the architecture summary](./architecture.md).
+
 ## Configuration
 
 Using Spyglass on your Prow instance requires you to first enable Spyglass in `deck`, and then
