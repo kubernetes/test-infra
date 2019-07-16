@@ -283,14 +283,12 @@ presubmits:
       containers:
       - args:
         - --root=/go/src
-        - --repo=k8s.io/kubernetes=master
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=120
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
         - --cluster=
         - --extract=ci/latest
         - --gcp-nodes=100
@@ -338,7 +336,6 @@ presubmits:
       containers:
         - args:
             - --root=/go/src
-            - --repo=k8s.io/kubernetes=master
             - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
             - --repo=k8s.io/release
             - --service-account=/etc/service-account/service-account.json
@@ -346,7 +343,6 @@ presubmits:
             - --timeout=120
             - --scenario=kubernetes_e2e
             - --
-            - --build=bazel
             - --cluster=
             - --extract=ci/latest
             - --gcp-master-size=n1-standard-4
