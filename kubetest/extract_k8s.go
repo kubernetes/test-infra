@@ -41,7 +41,7 @@ const (
 	local               // local
 	gci                 // gci/FAMILY
 	gciCi               // gci/FAMILY/CI_VERSION
-	gke                 // gke(deprecated), gke-default, gke-latest
+	gke                 // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
 	ci                  // ci/latest, ci/latest-1.5
 	rc                  // release/latest, release/latest-1.5
 	stable              // release/stable, release/stable-1.5
@@ -72,17 +72,17 @@ func (l *extractStrategies) String() string {
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
-		`^(local)`:                            local,
-		`^gke-?(default|latest(-\d+.\d+)?)?$`: gke,
-		`^gci/([\w-]+)$`:                      gci,
-		`^gci/([\w-]+)/(.+)$`:                 gciCi,
-		`^ci/(.+)$`:                           ci,
-		`^release/(latest.*)$`:                rc,
-		`^release/(stable.*)$`:                stable,
-		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`:         version,
-		`^(gs://.*)$`:                         gcs,
-		`^(bazel/.*)$`:                        bazel,
-		`^ci-cross/(.+)$`:                     ciCross,
+		`^(local)`: local,
+		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+)?)?$`: gke,
+		`^gci/([\w-]+)$`:              gci,
+		`^gci/([\w-]+)/(.+)$`:         gciCi,
+		`^ci/(.+)$`:                   ci,
+		`^release/(latest.*)$`:        rc,
+		`^release/(stable.*)$`:        stable,
+		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`: version,
+		`^(gs://.*)$`:                 gcs,
+		`^(bazel/.*)$`:                bazel,
+		`^ci-cross/(.+)$`:             ciCross,
 	}
 
 	if len(*l) == 2 {
@@ -443,6 +443,15 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 			version, err := getLatestGKEVersion(project, zone, region, releasePrefix)
 			if err != nil {
 				return fmt.Errorf("failed to get latest gke version: %s", err)
+			}
+			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
+		}
+
+		if strings.HasPrefix(e.option, "channel") {
+			// get latest supported master version
+			version, err := getChannelGKEVersion(project, zone, region, e.ciVersion)
+			if err != nil {
+				return fmt.Errorf("failed to get gke version from channel %s: %s", e.ciVersion, err)
 			}
 			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
 		}
