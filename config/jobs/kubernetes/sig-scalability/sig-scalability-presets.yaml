@@ -18,9 +18,9 @@ presets:
   - name: ETCD_TEST_ARGS
     value: "--enable-pprof"
   # Increase throughput in Kubemark master components and turn on profiling.
-  - name: CONTROLLER_MANAGER_TEST_ARGS
+  - name: KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
-  - name: SCHEDULER_TEST_ARGS
+  - name: KUBEMARK_SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity
   - name: TEST_CLUSTER_LOG_LEVEL
