@@ -1598,6 +1598,8 @@ dashboards:
 - name: google-soak
 - name: google-unit
 - name: google-windows
+
+# SIG Release dashboards
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
   dashboard_tab:
@@ -1605,6 +1607,8 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
     description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
 - name: sig-release-misc
+- name: sig-release-publishing-bot
+- name: sig-release-orphaned
 - name: sig-release-1.15-blocking
 - name: sig-release-1.15-informing
 - name: sig-release-1.15-all
@@ -1614,12 +1618,14 @@ dashboards:
 - name: sig-release-1.13-all
 - name: sig-release-1.13-blocking
 - name: sig-release-1.13-informing
-- name: sig-cluster-lifecycle-upgrade-skew
-- name: sig-contribex-community
 - name: sig-release-1.12-all
 - name: sig-release-1.12-blocking
 - name: sig-release-1.12-informing
-- name: sig-release-publishing-bot
+
+- name: sig-cluster-lifecycle-upgrade-skew
+
+- name: sig-contribex-community
+
 - name: wg-resource-management
   dashboard_tab:
   - name: gce-device-plugin-gpu
@@ -4009,6 +4015,8 @@ dashboard_groups:
   - sig-release-master-blocking
   - sig-release-master-informing
   - sig-release-misc
+  - sig-release-publishing-bot
+  - sig-release-orphaned
   - sig-release-1.15-all
   - sig-release-1.15-blocking
   - sig-release-1.15-informing
@@ -4021,7 +4029,6 @@ dashboard_groups:
   - sig-release-1.12-all
   - sig-release-1.12-blocking
   - sig-release-1.12-informing
-  - sig-release-publishing-bot
 
 - name: sig-scalability
   dashboard_names:
