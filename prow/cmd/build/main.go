@@ -36,7 +36,7 @@ import (
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	"github.com/sirupsen/logrus"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
@@ -191,7 +191,7 @@ func main() {
 	for context, cfg := range configs {
 		var bc *buildConfig
 		bc, err = newBuildConfig(cfg, stop)
-		if apierrors.IsNotFound(err) {
+		if apimeta.IsNoMatchError(err) {
 			logrus.WithError(err).Warnf("Ignoring %s: knative build CRD not deployed", context)
 			continue
 		}
