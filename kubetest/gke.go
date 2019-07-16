@@ -334,6 +334,9 @@ func (g *gkeDeployer) Up() error {
 
 	if *gkeReleaseChannel != "" {
 		args = append(args, "--release-channel="+*gkeReleaseChannel)
+		if strings.EqualFold(*gkeReleaseChannel, "rapid") {
+			args = append(args, "--enable-autorepair")
+		}
 	} else {
 		// TODO(zmerlynn): The version should be plumbed through Extract
 		// or a separate flag rather than magic env variables.
