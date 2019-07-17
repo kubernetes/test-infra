@@ -546,6 +546,12 @@ type Refs struct {
 	// set, <root-dir>/src/github.com/org/repo will be
 	// used as the default.
 	PathAlias string `json:"path_alias,omitempty"`
+
+	// WorkDir defines if the location of the cloned
+	// repository will be used as the default working
+	// directory.
+	WorkDir bool `json:"workdir,omitempty"`
+
 	// CloneURI is the URI that is used to clone the
 	// repository. If unset, will default to
 	// `https://github.com/org/repo.git`.

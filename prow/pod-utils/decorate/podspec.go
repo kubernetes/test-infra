@@ -553,12 +553,21 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume, gcsVol)
 
 	if len(refs) > 0 {
-		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMount.MountPath, refs[0])
+		spec.Containers[0].WorkingDir = determineWorkDir(codeMount.MountPath, refs)
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
 
 	return nil
+}
+
+func determineWorkDir(baseDir string, refs []prowapi.Refs) string {
+	for _, ref := range refs {
+		if ref.WorkDir {
+			return clone.PathForRefs(baseDir, ref)
+		}
+	}
+	return clone.PathForRefs(baseDir, refs[0])
 }
 
 const (
