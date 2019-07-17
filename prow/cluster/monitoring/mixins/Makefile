@@ -17,14 +17,22 @@
 
 SHELL=/bin/bash -o pipefail
 
-all:
+all: grafana-dashboards prow_prometheusrule.yaml
+
+grafana-dashboards:
 	for name in deck ghproxy hook plank prow sinker tide; do echo "Generating $${name}.json ..."; jsonnet -J vendor/ "grafana_dashboards/$${name}.jsonnet" > "./dashboards_out/$${name}.json"; done
+
+prow_prometheusrule.yaml:
+	@echo "Generating prow_prometheusrule.yaml ..."
+	jsonnet  ./prometheus/prow_prometheusrule.jsonnet | gojsontoyaml > prometheus_out/$@
 
 clean-vendor:
 	rm -rfv ./vendor
 
 clean:
 	rm -rfv ./dashboards_out/*.json
+	rm -rfv ./prometheus_out/*.json
+	rm -rfv ./prometheus_out/*.yaml
 
 install:
 	jb install

@@ -4,7 +4,7 @@ This folder contains the manifest files for monitoring prow resources.
 
 ## Deploy
 
-TODO: The deployment has been integrated into our CI system, except `secret` objects.
+The deployment has been integrated into our CI system, except `secret` objects.
 Cluster admins need to create `secret`s  manually.
 
 ```
