@@ -74,3 +74,22 @@ Developing a new dashboard can be achieved by
     ```
 
 * Use the configMap above in [grafana_deployment.yaml](grafana_deployment.yaml).
+
+## Access components' Web page
+
+* For `grafana`, visit [monitoring.prow.k8s.io](https://monitoring.prow.k8s.io). Anonymous users are with read-only mode.
+Use `adm` and [password](https://github.com/kubernetes/test-infra/blob/master/prow/cluster/monitoring/grafana_deployment.yaml#L39-L45) to become admin.
+
+* For `prometheus` and `alertmanager`, there is no public domain configured based on the security
+concerns (no authorization out of the box).
+Cluster admins can use [k8s port-forward](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to
+access the web.
+
+    ```
+    $ kubectl -n prow-monitoring port-forward $( kubectl -n prow-monitoring get pods --selector app=prometheus -o jsonpath={.items[0].metadata.name} ) 9000
+    $ kubectl -n prow-monitoring port-forward $( kubectl -n prow-monitoring get pods --selector app=alertmanager -o jsonpath={.items[0].metadata.name} ) 9093
+    ```
+
+    Then, visit [127.0.0.1:9000](http://127.0.0.1:9000) for the `prometheus` pod and [127.0.0.1:9093](http://127.0.0.1:9093) for the `alertmanager` pod.
+
+    As a result of no public domain for those two components, some of the links on the UI do not work, eg, the links on the slack alerts.
