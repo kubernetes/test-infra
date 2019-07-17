@@ -62,15 +62,15 @@ Developing a new dashboard can be achieved by
 
     ```
     ### if you want to take a look at some json file, eg, hook.json
-    $ bazel build //prow/monitoring/mixins/grafana_dashboards:hook
-    $ cat bazel-bin/prow/monitoring/mixins/grafana_dashboards/hook.json
+    $ bazel build //prow/cluster/monitoring/mixins/grafana_dashboards:hook
+    $ cat bazel-bin/prow/cluster/monitoring/mixins/grafana_dashboards/hook.json
     ```
 
 * Add `bazel` target to [dashboards_out/BUILD.bazel](grafana_dashboards/BUILD.bazel) for generating the configMap with the json file above.
 
     ```
     ### if you want to apply the configMaps
-    $ bazel run //prow/monitoring/mixins/dashboards_out:grafana-configmaps.apply
+    $ bazel run //prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply
     ```
 
 * Use the configMap above in [grafana_deployment.yaml](grafana_deployment.yaml).
