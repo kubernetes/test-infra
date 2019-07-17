@@ -2357,27 +2357,6 @@ dashboards:
     test_group_name: periodic-test-infra-retester
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: stale
-    description: Adds lifecycle/stale to issues after 30d of inactivity
-    test_group_name: periodic-test-infra-stale
-  - name: rotten
-    description: Adds lifecycle/rotten to stale issues after 30d of inactivity
-    test_group_name: periodic-test-infra-rotten
-  - name: close
-    description: Closes rotten issues after 30d of inactivity
-    test_group_name: periodic-test-infra-close
-  - name: cla
-    description: Re-checks CLA context when CLA labels are missing
-    test_group_name: periodic-test-infra-cla
-  - name: api-review-help
-    description: Adds API review process description to kind/api-change PRs
-    test_group_name: periodic-api-review-help
-  - name: secping
-    description: files bugs for SECURITY_CONTACTS
-    test_group_name: periodic-secping
-  - name: enhancements-unfreeze
-    description: Prevents issues in `k/enhancements` from being marked as `lifecycle/frozen`
-    test_group_name: periodic-enhancements-unfreeze
   - name: issue-creator
     description: Creates github issues based on data from various 'IssueSource's.
     test_group_name: issue-creator
