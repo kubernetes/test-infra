@@ -6,7 +6,7 @@
         rules: [{
           alert: 'ServiceLostHA',
           expr: |||
-            sum(up{job=~"grafana|prometheus|alertmanager"}) by (job) <= 1
+            sum(up{job=~"prometheus|alertmanager"}) by (job) <= 1
           |||,
           'for': '5m',
           labels: { 
@@ -29,7 +29,7 @@
               message: 'The service %s has been down for 5 minutes.' % name,
             },
           }
-          for name in ['alertmanager', 'prometheus',]
+          for name in ['alertmanager', 'prometheus', 'grafana']
         ],
       },
     ],
