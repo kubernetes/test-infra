@@ -21,7 +21,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/test-infra/prow/pjutil"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -47,7 +49,7 @@ func (o *options) Validate() error {
 func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.prowJobPath, "prow-job", "", "ProwJob to decorate, - for stdin.")
-	flag.StringVar(&o.buildID, "build-id", "", "Build ID for the job run.")
+	flag.StringVar(&o.buildID, "build-id", "", "Build ID for the job run or 'snowflake' to generate one. Use 'snowflake' if tot is not used.")
 	flag.Parse()
 	return o
 }
@@ -80,6 +82,12 @@ func main() {
 
 	if o.buildID == "" && job.Status.BuildID != "" {
 		o.buildID = job.Status.BuildID
+	}
+
+	if strings.ToLower(o.buildID) == "snowflake" {
+		// No error possible since this won't use tot.
+		o.buildID, _ = pjutil.GetBuildID(job.Spec.Job, "")
+		logrus.WithField("build-id", o.buildID).Info("Generated build-id for job.")
 	}
 
 	if o.buildID == "" {
