@@ -267,8 +267,15 @@ periodics:
 - name: ci-ingress-nginx-e2e
   interval: 12h
   max_concurrency: 1
-  decorate: true
   path_alias: k8s.io/ingress-nginx
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  extra_refs:
+  - org: kubernetes
+    repo: ingress-nginx
+    base_ref: master
+  skip_submodules: true
   labels:
     preset-kind-volume-mounts: "true"
     preset-dind-enabled: "true"
