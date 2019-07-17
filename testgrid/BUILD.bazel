@@ -24,6 +24,7 @@ filegroup(
         "//testgrid/cmd/summarizer:all-srcs",
         "//testgrid/cmd/updater:all-srcs",
         "//testgrid/config:all-srcs",
+        "//testgrid/footnote:all-srcs",
         "//testgrid/images:all-srcs",
         "//testgrid/issue_state:all-srcs",
         "//testgrid/metadata:all-srcs",
