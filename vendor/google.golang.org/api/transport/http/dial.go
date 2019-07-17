@@ -22,6 +22,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ochttp"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/googleapi/transport"
@@ -49,17 +50,20 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*http.Client, 
 	return &http.Client{Transport: trans}, settings.Endpoint, nil
 }
 
-// NewTransport creates an http.RoundTripper for use communicating with a Google
+// NewTransportWithEndpoint creates an http.RoundTripper with proxy for use communicating with a Google
 // cloud service, configured with the given ClientOptions. Its RoundTrip method delegates to base.
-func NewTransport(ctx context.Context, base http.RoundTripper, opts ...option.ClientOption) (http.RoundTripper, error) {
+func NewTransportWithEndpoint(ctx context.Context, base http.RoundTripper, opts ...option.ClientOption) (http.RoundTripper, string, error) {
 	settings, err := newSettings(opts)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if settings.HTTPClient != nil {
-		return nil, errors.New("transport/http: WithHTTPClient passed to NewTransport")
+		return nil, "", errors.New("transport/http: WithHTTPClient passed to NewTransport")
 	}
-	return newTransport(ctx, base, settings)
+
+	newtr, err := newTransport(ctx, base, settings)
+
+	return newtr, settings.Endpoint, err
 }
 
 func newTransport(ctx context.Context, base http.RoundTripper, settings *internal.DialSettings) (http.RoundTripper, error) {
@@ -71,6 +75,9 @@ func newTransport(ctx context.Context, base http.RoundTripper, settings *interna
 		requestReason: settings.RequestReason,
 	}
 	trans = addOCTransport(trans)
+
+	logrus.Debugf("settings.NoAuth: %v, setting.APIKey: %v", settings.NoAuth, settings.APIKey)
+
 	switch {
 	case settings.NoAuth:
 		// Do nothing.
@@ -84,6 +91,8 @@ func newTransport(ctx context.Context, base http.RoundTripper, settings *interna
 		if err != nil {
 			return nil, err
 		}
+
+		logrus.Debugf("creds.TokenSource == nil: %v", creds.TokenSource == nil)
 		trans = &oauth2.Transport{
 			Base:   trans,
 			Source: creds.TokenSource,

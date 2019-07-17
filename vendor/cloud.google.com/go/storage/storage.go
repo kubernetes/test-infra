@@ -26,6 +26,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -34,12 +35,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"net"
 	"unicode/utf8"
 
 	"cloud.google.com/go/internal/optional"
 	"cloud.google.com/go/internal/trace"
 	"cloud.google.com/go/internal/version"
+	"golang.org/x/oauth2"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 	raw "google.golang.org/api/storage/v1"
@@ -136,15 +137,21 @@ func NewProxyClient(ctx context.Context, proxy string, opts ...option.ClientOpti
 
 	opts = append(o, opts...)
 
-	trans, err := htransport.NewTransport(ctx, proxyTr, opts...)
+	// added by CarlJi, to let oauth2 client be able to use http proxy
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Transport: proxyTr})
+	trans, ep, err := htransport.NewTransportWithEndpoint(ctx, proxyTr, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	hc := &http.Client{Transport:trans}
+	hc := &http.Client{Transport: trans}
 	rawService, err := raw.New(hc)
 	if err != nil {
 		return nil, fmt.Errorf("storage client: %v", err)
+	}
+
+	if ep != "" {
+		rawService.BasePath = ep
 	}
 
 	return &Client{
