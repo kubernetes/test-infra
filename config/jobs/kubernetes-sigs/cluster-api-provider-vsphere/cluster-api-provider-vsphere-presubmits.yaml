@@ -61,7 +61,8 @@ presets:
 presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: pull-cluster-api-provider-vsphere-verify-fmt
-    always_run: true
+    always_run: false
+    run_if_changed: '^((cmd|pkg|(vendor/github.com/mbenkmann/goformat/goformat)|(vendor/golang.org/x/tools/cmd/goimports))/)|hack/check-format\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -76,7 +77,8 @@ presubmits:
       description: Verifies the Golang sources have been formatted
 
   - name: pull-cluster-api-provider-vsphere-verify-lint
-    always_run: true
+    always_run: false
+    run_if_changed: '^((cmd|pkg|(vendor/golang.org/x/lint/golint))/)|hack/check-lint\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -91,7 +93,8 @@ presubmits:
       description: Verifies the Golang sources are linted
 
   - name: pull-cluster-api-provider-vsphere-verify-vet
-    always_run: true
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -106,7 +109,8 @@ presubmits:
       description: Vets the Golang sources have been vetted
 
   - name: pull-cluster-api-provider-vsphere-verify-markdown
-    always_run: true
+    always_run: false
+    run_if_changed: '.*\.md$'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -126,7 +130,8 @@ presubmits:
       description: Verifies the markdown has been linted
 
   - name: pull-cluster-api-provider-vsphere-verify-crds
-    always_run: true
+    always_run: false
+    run_if_changed: '^((config|pkg|vendor)/)|hack/verify-crds\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -141,7 +146,8 @@ presubmits:
       description: Verifies the CRDs have been updated
 
   - name: pull-cluster-api-provider-vsphere-test
-    always_run: true
+    always_run: false
+    run_if_changed: '^((cmd|config|hack|pkg|vendor)/)|Makefile|(scripts/(ci-test|fetch_ext_bins)\.sh)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     labels:
@@ -167,7 +173,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-service-account: "true"
       preset-cluster-api-provider-vsphere-e2e-creds: "true"
-    always_run: true
+    always_run: false
+    run_if_changed: '^((cmd|config|pkg|(scripts/e2e)|vendor)/)|Dockerfile'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 1
