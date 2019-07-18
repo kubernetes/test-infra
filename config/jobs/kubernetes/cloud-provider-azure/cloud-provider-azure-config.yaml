@@ -49,7 +49,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-check
-      description: Run lint check tests for cloud-provider-azure
+      description: "Run lint check tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e
     # Disable always_run because of https://github.com/kubernetes/test-infra/pull/11887
@@ -101,7 +101,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e
-      description: Run Kubernetes e2e tests for cloud-provider-azure
+      description: "Run Kubernetes e2e tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
 # pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm
@@ -151,7 +151,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-e2e-ccm
-      description: Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-unit
     always_run: true
@@ -173,7 +173,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-cloud-provider-unit
-      description: Run unit tests for cloud-provider-azure
+      description: "Run unit tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
 periodics:
 - interval: 8h
@@ -232,7 +232,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-master
-    description: Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)."
 - interval: 8h
   # ci-cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
   name: ci-cloud-provider-azure-autoscaling
@@ -291,7 +291,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-autoscaling
-    description: Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    description: "Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)."
 - interval: 8h
   # ci-cloud-provider-azure-conformance runs Kubernetes conformance tests periodically.
   name: ci-cloud-provider-azure-conformance
@@ -349,7 +349,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-conformance
-    description: Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)."
 - interval: 8h
   # ci-cloud-provider-azure-slow runs Kubernetes slow tests periodically.
   name: ci-cloud-provider-azure-slow
@@ -407,7 +407,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-slow
-    description: Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)."
 - interval: 24h
   # ci-cloud-provider-azure-serial runs Kubernetes serial tests periodically.
   name: ci-cloud-provider-azure-serial
@@ -465,4 +465,177 @@ periodics:
   annotations:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-serial
-    description: Runs Kubernetes serial tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)"
+    description: "Runs Kubernetes serial tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)."
+- interval: 8h
+  # ci-cloud-provider-azure-master-vmss runs Azure specific tests periodically on VMSS.
+  name: ci-cloud-provider-azure-master-vmss
+  labels:
+    preset-service-account: "true"
+    preset-cloudprovider-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: k8s.io/cloud-provider-azure
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=450
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --test=true
+      - --up=true
+      - --down=true
+      - --deployment=acsengine
+      - --build=bazel
+      - --provider=skeleton
+      - --ginkgo-parallel=30
+      - --test-ccm=True
+      - --acsengine-agentpoolcount=2
+      - --acsengine-admin-username=azureuser
+      - --acsengine-creds=$AZURE_CREDENTIALS
+      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-mastervmsize=Standard_DS2_v2
+      - --acsengine-agentvmsize=Standard_D4s_v3
+      - --acsengine-ccm=True
+      - --acsengine-location=eastus2
+      - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --timeout=420m
+      securityContext:
+        privileged: true
+      env:
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
+  annotations:
+    testgrid-dashboards: sig-azure-master
+    testgrid-tab-name: cloud-provider-azure-master-vmss
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure) on VMSS."
+- interval: 8h
+  # ci-cloud-provider-azure-conformance-vmss runs Kubernetes conformance tests periodically on VMSS.
+  name: ci-cloud-provider-azure-conformance-vmss
+  labels:
+    preset-service-account: "true"
+    preset-cloudprovider-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: k8s.io/cloud-provider-azure
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=450
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --test=true
+      - --up=true
+      - --down=true
+      - --deployment=acsengine
+      - --build=bazel
+      - --provider=skeleton
+      - --ginkgo-parallel=30
+      - --acsengine-agentpoolcount=2
+      - --acsengine-admin-username=azureuser
+      - --acsengine-creds=$AZURE_CREDENTIALS
+      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-mastervmsize=Standard_DS2_v2
+      - --acsengine-agentvmsize=Standard_D4s_v3
+      - --acsengine-ccm=True
+      - --acsengine-hyperkube=True
+      - --acsengine-location=eastus2
+      - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|\[Slow\]
+      - --timeout=420m
+      securityContext:
+        privileged: true
+      env:
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
+  annotations:
+    testgrid-dashboards: sig-azure-master
+    testgrid-tab-name: cloud-provider-azure-conformance-vmss
+    description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure) on VMSS."
+- interval: 8h
+  # ci-cloud-provider-azure-slow-vmss runs Kubernetes slow tests periodically on VMSS.
+  name: ci-cloud-provider-azure-slow-vmss
+  labels:
+    preset-service-account: "true"
+    preset-cloudprovider-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: k8s.io/cloud-provider-azure
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=450
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --gce-ssh=
+      - --test=true
+      - --up=true
+      - --down=true
+      - --deployment=acsengine
+      - --build=bazel
+      - --provider=skeleton
+      - --ginkgo-parallel=30
+      - --acsengine-agentpoolcount=2
+      - --acsengine-admin-username=azureuser
+      - --acsengine-creds=$AZURE_CREDENTIALS
+      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-mastervmsize=Standard_DS2_v2
+      - --acsengine-agentvmsize=Standard_D4s_v3
+      - --acsengine-ccm=True
+      - --acsengine-hyperkube=True
+      - --acsengine-location=eastus2
+      - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=420m
+      securityContext:
+        privileged: true
+      env:
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
+  annotations:
+    testgrid-dashboards: sig-azure-master
+    testgrid-tab-name: cloud-provider-azure-slow-vmss
+    description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure) on VMSS."
