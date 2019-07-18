@@ -439,8 +439,8 @@ periodics:
       - --down=true
       - --deployment=acsengine
       - --build=bazel
+      - --check-leaked-resources
       - --provider=skeleton
-      - --ginkgo-parallel=30
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
