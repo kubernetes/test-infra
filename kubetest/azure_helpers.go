@@ -45,6 +45,7 @@ type Properties struct {
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	ExtensionProfiles       []map[string]string      `json:"extensionProfiles,omitempty"`
+	CustomCloudProfile      *CustomCloudProfile      `json:"customCloudProfile,omitempty"`
 }
 
 type ServicePrincipalProfile struct {
@@ -110,6 +111,7 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
+	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
 }
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
@@ -146,6 +148,22 @@ type AzureClient struct {
 	subscriptionID    string
 	deploymentsClient resources.DeploymentsClient
 	groupsClient      resources.GroupsClient
+}
+
+type CustomCloudProfile struct {
+	PortalURL                  string                      `json:"portalURL,omitempty"`
+}
+
+type AzureStackMetadataEndpoints struct {
+	GalleryEndpoint string                            `json:"galleryEndpoint,omitempty"`
+	GraphEndpoint   string                            `json:"graphEndpoint,omitempty"`
+	PortalEndpoint  string                            `json:"portalEndpoint,omitempty"`
+	Authentication  *AzureStackMetadataAuthentication `json:"authentication,omitempty"`
+}
+
+type AzureStackMetadataAuthentication struct {
+	LoginEndpoint string   `json:"loginEndpoint,omitempty"`
+	Audiences     []string `json:"audiences,omitempty"`
 }
 
 func (az *AzureClient) ValidateDeployment(ctx context.Context, resourceGroupName, deploymentName string, template, params *map[string]interface{}) (valid resources.DeploymentValidateResult, err error) {

@@ -26,6 +26,7 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -65,9 +66,18 @@ var (
 	acsOrchestratorRelease = flag.String("acsengine-orchestratorRelease", "", "Orchestrator Profile for acs-engine")
 	acsWinZipBuildScript   = flag.String("acsengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for acs-engine")
 	acsNetworkPlugin       = flag.String("acsengine-networkPlugin", "azure", "Network pluging to use with acs-engine")
+	acsAzureEnv            = flag.String("acsengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
+	acsIdentitySystem      = flag.String("acsengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
+	acsCustomCloudURL      = flag.String("acsengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 )
 
+const (
+	// AzureStackCloud is a const string reference identifier for Azure Stack cloud
+	AzureStackCloud = "AzureStackCloud"
+	// ADFS Identity System for Azure Stack cloud
+	ADFSIdentitySystem = "adfs"
+)
 type Creds struct {
 	ClientID           string
 	ClientSecret       string
@@ -101,10 +111,91 @@ type Cluster struct {
 	acsCustomWinBinariesURL string
 	acsEngineBinaryPath     string
 	acsCustomCcmURL         string
+	azureEnvironment        string
+	azureIdentitySystem     string
+	azureCustomCloudURL     string
 	agentPoolCount          int
 	k8sVersion              string
 	networkPlugin           string
 	azureClient             *AzureClient
+}
+
+// IsAzureStackCloud return true if the cloud is AzureStack
+func (c *Cluster) isAzureStackCloud() bool {
+	return c.azureCustomCloudURL != "" && strings.EqualFold(c.azureEnvironment, AzureStackCloud)
+}
+
+// SetCustomCloudProfileEnvironment retrieves the endpoints from Azure Stack metadata endpoint and sets the values for azure.Environment
+func (c *Cluster) SetCustomCloudProfileEnvironment() error {
+	var environmentJSON string
+	if c.isAzureStackCloud() {
+
+		env := azure.Environment{}
+		env.Name = c.azureEnvironment
+		azsFQDNSuffix := strings.Replace(c.azureCustomCloudURL, fmt.Sprintf("https://portal.%s.", c.location), "", -1)
+		azsFQDNSuffix = strings.TrimSuffix(azsFQDNSuffix, "/")
+		env.ResourceManagerEndpoint = fmt.Sprintf("https://management.%s.%s/", c.location, azsFQDNSuffix)
+		metadataURL := fmt.Sprintf("%s/metadata/endpoints?api-version=1.0", strings.TrimSuffix(env.ResourceManagerEndpoint, "/"))
+
+		// Retrieve the metadata
+		httpClient := &http.Client{
+			Timeout: 30 * time.Second,
+		}
+		endpointsresp, err := httpClient.Get(metadataURL)
+		if err != nil || endpointsresp.StatusCode != 200 {
+			return fmt.Errorf("%s . apimodel invalid: failed to retrieve Azure Stack endpoints from %s", err, metadataURL)
+		}
+
+		body, err := ioutil.ReadAll(endpointsresp.Body)
+		if err != nil {
+			return fmt.Errorf("%s . apimodel invalid: failed to read the response from %s", err, metadataURL)
+		}
+
+		endpoints := AzureStackMetadataEndpoints{}
+		err = json.Unmarshal(body, &endpoints)
+		if err != nil {
+			return fmt.Errorf("%s . apimodel invalid: failed to parse the response from %s", err, metadataURL)
+		}
+
+		if endpoints.GraphEndpoint == "" || endpoints.Authentication == nil || endpoints.Authentication.LoginEndpoint == "" || len(endpoints.Authentication.Audiences) == 0 || endpoints.Authentication.Audiences[0] == "" {
+			return fmt.Errorf("%s . apimodel invalid: invalid response from %s", err, metadataURL)
+		}
+
+		env.GraphEndpoint = endpoints.GraphEndpoint
+		env.ServiceManagementEndpoint = endpoints.Authentication.Audiences[0]
+		env.GalleryEndpoint = endpoints.GalleryEndpoint
+		env.ActiveDirectoryEndpoint = endpoints.Authentication.LoginEndpoint
+		if strings.EqualFold(c.azureIdentitySystem, ADFSIdentitySystem) {
+			env.ActiveDirectoryEndpoint = strings.TrimSuffix(env.ActiveDirectoryEndpoint, "/")
+			env.ActiveDirectoryEndpoint = strings.TrimSuffix(env.ActiveDirectoryEndpoint, ADFSIdentitySystem)
+		}
+
+		env.ManagementPortalURL = endpoints.PortalEndpoint
+		env.ResourceManagerVMDNSSuffix = fmt.Sprintf("cloudapp.%s", azsFQDNSuffix)
+		env.StorageEndpointSuffix = fmt.Sprintf("%s.%s", c.location, azsFQDNSuffix)
+		env.KeyVaultDNSSuffix = fmt.Sprintf("vault.%s.%s", c.location, azsFQDNSuffix)
+
+		bytes, err := json.Marshal(env)
+		if err != nil {
+			return fmt.Errorf("Could not serialize Environment object - %s", err.Error())
+		}
+		environmentJSON = string(bytes)
+
+		// Create and update the file.
+		tmpFile, err := ioutil.TempFile("", "azurestackcloud.json")
+		tmpFileName := tmpFile.Name()
+		if err != nil {
+			return err
+		}
+
+		// Build content for the file
+		if err = ioutil.WriteFile(tmpFileName, []byte(environmentJSON), os.ModeAppend); err != nil {
+			return err
+		}
+
+		os.Setenv("AZURE_ENVIRONMENT_FILEPATH", tmpFileName)
+	}
+	return nil
 }
 
 func (c *Cluster) getAzCredentials() error {
@@ -122,6 +213,21 @@ func (c *Cluster) getAzCredentials() error {
 	return nil
 }
 
+func validateAzureStackCloudProfile() error {
+	if *acsLocation == "" {
+		return fmt.Errorf("no location specified for Azure Stack")
+	}
+
+	if *acsCustomCloudURL == "" {
+		return fmt.Errorf("no custom cloud portal URL specified for Azure Stack")
+	}
+
+	if !strings.HasPrefix(*acsCustomCloudURL, fmt.Sprintf("https://portal.%s.", *acsLocation)) {
+		return fmt.Errorf("custom cloud portal URL needs to start with https://portal.%s. ", *acsLocation)
+	}
+	return nil
+}
+
 func randomAcsEngineLocation() string {
 	var AzureLocations = []string{
 		"westeurope",
@@ -134,7 +240,12 @@ func randomAcsEngineLocation() string {
 }
 
 func checkParams() error {
-	if *acsLocation == "" {
+	
+	if strings.EqualFold(*acsAzureEnv, AzureStackCloud) {
+		if err := validateAzureStackCloudProfile(); err != nil {
+			return err
+		}
+	} else if *acsLocation == "" {
 		*acsLocation = randomAcsEngineLocation()
 	}
 	if *acsCredentialsFile == "" {
@@ -155,6 +266,7 @@ func checkParams() error {
 	if *acsTemplateURL == "" {
 		return fmt.Errorf("no ApiModel URL specified.")
 	}
+	
 	return nil
 }
 
@@ -185,12 +297,19 @@ func newAcsEngine() (*Cluster, error) {
 		agentPoolCount:          *acsAgentPoolCount,
 		k8sVersion:              *acsOrchestratorRelease,
 		networkPlugin:           *acsNetworkPlugin,
+		azureEnvironment:        *acsAzureEnv,
+		azureIdentitySystem:     *acsIdentitySystem,
+		azureCustomCloudURL:     *acsCustomCloudURL,
 		acsCustomHyperKubeURL:   "",
 		acsCustomWinBinariesURL: "",
 		acsCustomCcmURL:         "",
 		acsEngineBinaryPath:     "aks-engine", // use the one in path by default
 	}
 	c.getAzCredentials()
+	err = c.SetCustomCloudProfileEnvironment()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create custom cloud profile file: %v", err)
+	}
 	err = c.getARMClient(c.ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate ARM client: %v", err)
@@ -295,6 +414,11 @@ func (c *Cluster) populateApiModelTemplate() error {
 		v.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = &useCloudControllerManager
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage = c.acsCustomCcmURL
 	}
+
+	if c.isAzureStackCloud() {
+		v.Properties.CustomCloudProfile.PortalURL = c.azureCustomCloudURL
+	}
+	
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
 	err = ioutil.WriteFile(c.apiModelPath, apiModel, 0644)
@@ -384,14 +508,24 @@ func (c *Cluster) loadARMTemplates() error {
 
 func (c *Cluster) getARMClient(ctx context.Context) error {
 	// instantiate Azure Resource Manager Client
-	env, err := azure.EnvironmentFromName("AzurePublicCloud")
+	env, err := azure.EnvironmentFromName(c.azureEnvironment)
 	var client *AzureClient
-	if client, err = getAzureClient(env,
-		c.credentials.SubscriptionID,
-		c.credentials.ClientID,
-		c.credentials.TenantID,
-		c.credentials.ClientSecret); err != nil {
-		return fmt.Errorf("error trying to get Azure Client: %v", err)
+	if c.isAzureStackCloud() && strings.EqualFold(c.azureIdentitySystem, ADFSIdentitySystem) {
+		if client, err = getAzureClient(env,
+			c.credentials.SubscriptionID,
+			c.credentials.ClientID,
+			c.azureIdentitySystem,
+			c.credentials.ClientSecret); err != nil {
+			return fmt.Errorf("error trying to get ADFS Azure Client: %v", err)
+		}
+	} else {
+		if client, err = getAzureClient(env,
+			c.credentials.SubscriptionID,
+			c.credentials.ClientID,
+			c.credentials.TenantID,
+			c.credentials.ClientSecret); err != nil {
+			return fmt.Errorf("error trying to get Azure Client: %v", err)
+		}
 	}
 	c.azureClient = client
 	return nil
@@ -442,7 +576,7 @@ func (c *Cluster) dockerLogin() error {
 		passwordFile := os.Getenv("DOCKER_PASSWORD_FILE")
 		password, err := ioutil.ReadFile(passwordFile)
 		if err != nil {
-			return fmt.Errorf("error reading docker passoword file %v: %v", passwordFile, err)
+			return fmt.Errorf("error reading docker password file %v: %v", passwordFile, err)
 		}
 		pwd = strings.TrimSuffix(string(password), "\n")
 	} else {
