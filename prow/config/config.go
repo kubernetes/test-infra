@@ -847,6 +847,9 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
 		return nil // knative-build and jenkins jobs have no spec
 	}
+	if v.RerunPermissions != nil && v.RerunPermissions.AllowAnyone && (len(v.RerunPermissions.GitHubUsers) > 0 || len(v.RerunPermissions.GitHubTeams) > 0) {
+		return errors.New("allow anyone is set to true and permitted users or groups are specified")
+	}
 	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
 }
 

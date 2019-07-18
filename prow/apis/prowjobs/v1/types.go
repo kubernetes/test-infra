@@ -161,6 +161,18 @@ type ProwJobSpec struct {
 
 	// ReporterConfig holds reporter-specific configuration
 	ReporterConfig *ReporterConfig `json:"reporter_config,omitempty"`
+
+	// RerunPermissions holds information about which users can rerun the job
+	RerunPermissions *RerunPermissions `json:"rerun_permissions,omitempty"`
+}
+
+type RerunPermissions struct {
+	// If AllowAnyone is set to true, any user can rerun the job
+	AllowAnyone bool `json:"allow_anyone,omitempty"`
+	// GitHubTeams contains IDs of GitHub teams of users who can rerun the job
+	GitHubTeams []int `json:"github_teams,omitempty"`
+	// GitHubUsers contains names of individual users who can rerun the job
+	GitHubUsers []string `json:"github_users,omitempty"`
 }
 
 type ReporterConfig struct {
