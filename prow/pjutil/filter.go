@@ -25,7 +25,8 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
+// TestAllRe provides the regex for `/test all` or `/test <test_name>`.
+var TestAllRe = regexp.MustCompile(`(?m)^(\/test \b[a-zA-Z0-9-_]+\b)$`)
 
 // RetestRe provides the regex for `/retest`
 var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)

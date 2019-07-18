@@ -18,6 +18,8 @@ package trigger
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -43,12 +45,35 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	// Skip comments not germane to this plugin
 	if !pjutil.RetestRe.MatchString(gc.Body) && !pjutil.OkToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
 		matched := false
+		testList := []string{}
 		for _, presubmit := range c.Config.Presubmits[gc.Repo.FullName] {
+			testList = append(testList, presubmit.JobBase.Name)
 			matched = matched || presubmit.TriggerMatches(gc.Body)
 			if matched {
 				break
 			}
 		}
+
+		var TestAllWithTrailing = regexp.MustCompile(`(?m)^/test all.*$`)
+		var TestWithTrailing = regexp.MustCompile(`(?m)^/test .*$`)
+		var RetestWithTrailing = regexp.MustCompile(`(?m)^/retest.*$`)
+
+		if RetestWithTrailing.MatchString(gc.Body) {
+			resp := fmt.Sprintf("Cannot run /retest command with trailing words.")
+			c.Logger.Infof("Commenting \"%s\".", resp)
+			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
+		} else if TestAllWithTrailing.MatchString(gc.Body) {
+			resp := fmt.Sprintf("Cannot run `/test all` command can not having trailing words.")
+			c.Logger.Infof("Commenting \"%s\".", resp)
+			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
+		} else if TestWithTrailing.MatchString(gc.Body) && !matched {
+			command := gc.Body
+			testName := strings.Split(command, "/test ")[1]
+			resp := fmt.Sprintf("No test with name %s is found. Please select a test from %v.", testName, testList)
+			c.Logger.Infof("Commenting \"%s\".", resp)
+			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
+		}
+
 		if !matched {
 			c.Logger.Debug("Comment doesn't match any triggering regex, skipping.")
 			return nil

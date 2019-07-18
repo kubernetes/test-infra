@@ -672,7 +672,8 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldBuild: false,
+			ShouldBuild:  false,
+			ShouldReport: true,
 		},
 		{
 			name:   "/test all of run_if_changed job that has passed and needs to run",
