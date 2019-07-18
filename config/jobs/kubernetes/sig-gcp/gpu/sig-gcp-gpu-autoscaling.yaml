@@ -24,7 +24,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
@@ -54,7 +54,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
@@ -84,7 +84,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gke-autoscaling-gpu-v100

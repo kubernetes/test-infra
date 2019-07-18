@@ -7,7 +7,7 @@ periodics:
     preset-e2e-scalability-node: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -50,7 +50,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -103,7 +103,7 @@ periodics:
     preset-e2e-kubemark-gce-big: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -155,7 +155,7 @@ periodics:
     preset-e2e-kubemark-gce-scale: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -211,7 +211,7 @@ periodics:
     preset-e2e-kubemark-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -256,7 +256,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -277,7 +277,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=55
@@ -304,7 +304,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -370,7 +370,7 @@ periodics:
     preset-e2e-scalability-common: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190716-62fa903-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
       args:
       - --timeout=300
       - --bare
