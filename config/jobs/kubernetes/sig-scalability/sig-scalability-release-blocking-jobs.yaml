@@ -144,8 +144,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-proxy.yaml
-      # TODO(https://github.com/kubernetes/kubernetes/issues/80212): Clean up once we assess if it helps
-      #- --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
+      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/probes.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
