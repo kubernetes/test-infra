@@ -22,7 +22,7 @@ spec:
     alertmanagers:
       - namespace: prow-monitoring
         name: alertmanager
-        port: web
+        port: http
   enableAdminAPI: false
   ruleSelector:
     matchLabels:
