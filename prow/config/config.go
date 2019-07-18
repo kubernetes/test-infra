@@ -140,9 +140,15 @@ type ProwConfig struct {
 type OwnersDirBlacklist struct {
 	// Repos configures a directory blacklist per repo (or org)
 	Repos map[string][]string `json:"repos"`
-	// Default configures a default blacklist for repos (or orgs) not
-	// specifically configured
+	// Default configures a default blacklist for all repos (or orgs).
+	// Some directories like ".git", "_output" and "vendor/.*/OWNERS"
+	// are already preconfigured to be blacklisted, and need not be included here.
 	Default []string `json:"default"`
+	// By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
+	// are preconfigured to be blacklisted.
+	// If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
+	// to the blacklist.
+	IgnorePreconfiguredDefaults bool `json:"ignore_preconfigured_defaults,omitempty"`
 }
 
 // DirBlacklist returns regular expressions matching directories to ignore when
@@ -154,6 +160,11 @@ func (ownersDirBlacklist OwnersDirBlacklist) DirBlacklist(org, repo string) (bla
 	}
 	if bl, ok := ownersDirBlacklist.Repos[org+"/"+repo]; ok {
 		blacklist = append(blacklist, bl...)
+	}
+
+	preconfiguredDefaults := []string{"\\.git$", "_output$", "vendor/.*/.*"}
+	if !ownersDirBlacklist.IgnorePreconfiguredDefaults {
+		blacklist = append(blacklist, preconfiguredDefaults...)
 	}
 	return
 }

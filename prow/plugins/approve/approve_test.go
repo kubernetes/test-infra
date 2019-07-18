@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
-
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -133,6 +134,7 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 type fakeRepo struct {
 	approvers, leafApprovers map[string]sets.String
 	approverOwners           map[string]string
+	dirBlacklist             []*regexp.Regexp
 }
 
 func (fr fakeRepo) Approvers(path string) sets.String {
@@ -146,6 +148,40 @@ func (fr fakeRepo) FindApproverOwnersForFile(path string) string {
 }
 func (fr fakeRepo) IsNoParentOwners(path string) bool {
 	return false
+}
+
+func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range fr.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.SimpleConfig{}, err
+	}
+	full := new(repoowners.SimpleConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
+}
+
+func (fr fakeRepo) ParseFullConfig(path string) (repoowners.FullConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range fr.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.FullConfig{}, err
+	}
+	full := new(repoowners.FullConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
 }
 
 func TestHandle(t *testing.T) {
