@@ -68,12 +68,12 @@ func TestUploadToGcs(t *testing.T) {
 			count = count + 1
 		}
 
-		fail := func(obj *storage.ObjectHandle) error {
+		fail := func(_ dataWriter) error {
 			update()
 			return errors.New("fail")
 		}
 
-		success := func(obj *storage.ObjectHandle) error {
+		success := func(_ dataWriter) error {
 			update()
 			return nil
 		}

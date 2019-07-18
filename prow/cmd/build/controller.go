@@ -708,9 +708,11 @@ func decorateSteps(steps []coreapi.Container, dc prowjobv1.DecorationConfig, too
 
 // injectedSteps returns initial containers, a final container and an additional volume.
 func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injectedSource bool, toolsMount coreapi.VolumeMount, entries []wrapper.Options) ([]coreapi.Container, *coreapi.Container, *coreapi.Volume, error) {
-	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc)
+	// localMode parameter is false and outputMount is nil because we don't have a local decoration
+	// mode for "agent: build" jobs yet. (We need a mkpod equivalent for builds first.)
+	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc, false)
 
-	sidecar, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, encodedJobSpec, decorate.RequirePassingEntries, entries...)
+	sidecar, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, nil, encodedJobSpec, decorate.RequirePassingEntries, entries...)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("inject sidecar: %v", err)
 	}
@@ -719,14 +721,14 @@ func injectedSteps(encodedJobSpec string, dc prowjobv1.DecorationConfig, injecte
 	if injectedSource {
 		cloneLogMount = &logMount
 	}
-	initUpload, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, cloneLogMount, encodedJobSpec)
+	initUpload, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, cloneLogMount, nil, encodedJobSpec)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("inject initupload: %v", err)
 	}
 
 	placer := decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, toolsMount)
 
-	return []coreapi.Container{placer, *initUpload}, sidecar, &gcsVol, nil
+	return []coreapi.Container{placer, *initUpload}, sidecar, gcsVol, nil
 }
 
 // determineTimeout decides the timeout value used for build
@@ -753,14 +755,19 @@ func decorateBuild(spec *buildv1alpha1.BuildSpec, encodedJobSpec string, dc prow
 		return fmt.Errorf("decorate steps: %v", err)
 	}
 
-	befores, after, vol, err := injectedSteps(encodedJobSpec, dc, injectedSource, toolsMount, entries)
+	befores, after, gcsVol, err := injectedSteps(encodedJobSpec, dc, injectedSource, toolsMount, entries)
 	if err != nil {
 		return fmt.Errorf("add injected steps: %v", err)
 	}
 
 	spec.Steps = append(befores, spec.Steps...)
 	spec.Steps = append(spec.Steps, *after)
-	spec.Volumes = append(spec.Volumes, toolsVolume, *vol)
+	spec.Volumes = append(spec.Volumes, toolsVolume)
+	if gcsVol != nil {
+		// This check isn't strictly necessary until/unless we add a local mode for build jobs.
+		// /shrug
+		spec.Volumes = append(spec.Volumes, *gcsVol)
+	}
 	return nil
 }
 

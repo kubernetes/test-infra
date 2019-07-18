@@ -403,6 +403,10 @@ type GCSConfiguration struct {
 	// builtin's and the local system's defaults.  This maps extensions
 	// to media types, for example: MediaTypes["log"] = "text/plain"
 	MediaTypes map[string]string `json:"mediaTypes,omitempty"`
+
+	// LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to GCS.
+	// This option is useful for testing jobs that use the pod-utilities without actually uploading.
+	LocalOutputDir string `json:"local_output_dir,omitempty"`
 }
 
 // ApplyDefault applies the defaults for GCSConfiguration decorations. If a field has a zero value,
@@ -444,6 +448,9 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 		merged.MediaTypes[extension] = mediaType
 	}
 
+	if merged.LocalOutputDir == "" {
+		merged.LocalOutputDir = def.LocalOutputDir
+	}
 	return &merged
 }
 

@@ -46,9 +46,15 @@ func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc)
 
 	uploadTargets := o.assembleTargets(spec, extra)
 
-	if !o.DryRun {
-		ctx := context.Background()
-		gcsClient, err := storage.NewClient(ctx, option.WithCredentialsFile(o.GcsCredentialsFile))
+	if o.DryRun {
+		for destination := range uploadTargets {
+			logrus.WithField("dest", destination).Info("Would upload")
+		}
+		return nil
+	}
+
+	if o.LocalOutputDir == "" {
+		gcsClient, err := storage.NewClient(context.Background(), option.WithCredentialsFile(o.GcsCredentialsFile))
 		if err != nil {
 			return fmt.Errorf("could not connect to GCS: %v", err)
 		}
@@ -56,13 +62,13 @@ func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc)
 		if err := gcs.Upload(gcsClient.Bucket(o.Bucket), uploadTargets); err != nil {
 			return fmt.Errorf("failed to upload to GCS: %v", err)
 		}
+		logrus.Info("Finished upload to GCS")
 	} else {
-		for destination := range uploadTargets {
-			logrus.WithField("dest", destination).Info("Would upload")
+		if err := gcs.LocalExport(o.LocalOutputDir, uploadTargets); err != nil {
+			return fmt.Errorf("failed to copy files to %q: %v", o.LocalOutputDir, err)
 		}
+		logrus.Infof("Finished copying files to %q.", o.LocalOutputDir)
 	}
-
-	logrus.Info("Finished upload to GCS")
 	return nil
 }
 
@@ -71,21 +77,28 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 
 	uploadTargets := map[string]gcs.UploadFunc{}
 
-	// ensure that an alias exists for any
-	// job we're uploading artifacts for
-	if alias := gcs.AliasForSpec(spec); alias != "" {
-		fullBasePath := "gs://" + path.Join(o.Bucket, jobBasePath)
-		uploadTargets[alias] = gcs.DataUploadWithMetadata(strings.NewReader(fullBasePath), map[string]string{
-			"x-goog-meta-link": fullBasePath,
-		})
-	}
-
-	if latestBuilds := gcs.LatestBuildForSpec(spec, builder); len(latestBuilds) > 0 {
-		for _, latestBuild := range latestBuilds {
-			dir, filename := path.Split(latestBuild)
-			metadataFromFileName, attrs := gcs.AttributesFromFileName(filename)
-			uploadTargets[path.Join(dir, metadataFromFileName)] = gcs.DataUploadWithAttributes(strings.NewReader(spec.BuildID), attrs)
+	// Skip the alias and latest build files in local mode.
+	if o.LocalOutputDir == "" {
+		// ensure that an alias exists for any
+		// job we're uploading artifacts for
+		if alias := gcs.AliasForSpec(spec); alias != "" {
+			fullBasePath := "gs://" + path.Join(o.Bucket, jobBasePath)
+			uploadTargets[alias] = gcs.DataUploadWithMetadata(strings.NewReader(fullBasePath), map[string]string{
+				"x-goog-meta-link": fullBasePath,
+			})
 		}
+
+		if latestBuilds := gcs.LatestBuildForSpec(spec, builder); len(latestBuilds) > 0 {
+			for _, latestBuild := range latestBuilds {
+				dir, filename := path.Split(latestBuild)
+				metadataFromFileName, attrs := gcs.AttributesFromFileName(filename)
+				uploadTargets[path.Join(dir, metadataFromFileName)] = gcs.DataUploadWithAttributes(strings.NewReader(spec.BuildID), attrs)
+			}
+		}
+	} else {
+		// Remove the gcs path prefix in local mode so that items are rooted in the output dir without
+		// excessive directory nesting.
+		gcsPath = ""
 	}
 
 	for _, item := range o.Items {
