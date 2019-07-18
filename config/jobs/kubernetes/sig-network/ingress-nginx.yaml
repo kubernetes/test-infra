@@ -275,6 +275,7 @@ periodics:
   - org: kubernetes
     repo: ingress-nginx
     base_ref: master
+    path_alias: k8s.io/ingress-nginx
   skip_submodules: true
   labels:
     preset-kind-volume-mounts: "true"
