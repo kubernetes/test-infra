@@ -64,7 +64,7 @@ presubmits:
 postsubmits:
   kubernetes-sigs/vsphere-csi-driver:
 
-  # Deploys the CSI image
+  # Deploys the CSI image after all merges to master
   - name: post-vsphere-csi-driver-deploy
     decorate: true
     labels:
@@ -83,6 +83,31 @@ postsubmits:
         - "make"
         args:
         - "deploy"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-postsubmits-vsphere-csi-driver
+      testgrid-num-columns-recent: '20'
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+  # Deploys the CSI image for tagged releases
+  - name: post-vsphere-csi-driver-release
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^v(\d)+\.(\d)+\.(\d)+(-(alpha|beta|rc)\.(\d)+)?$
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+        command:
+        - "make"
+        args:
+        - "push-images"
         securityContext:
           privileged: true
     annotations:
