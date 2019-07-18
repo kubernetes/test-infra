@@ -44,7 +44,10 @@ presubmits:
         args:
         - "check"
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+
   # Builds the CCM and CSI binaries.
   - name: pull-cloud-provider-vsphere-build
     decorate: true
@@ -62,7 +65,9 @@ presubmits:
         args:
         - "build"
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
     # Executes the unit tests.
   - name: pull-cloud-provider-vsphere-unit-test
     decorate: true
@@ -80,7 +85,9 @@ presubmits:
         args:
         - "unit-test"
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
   # Executes the integration tests.
   - name: pull-cloud-provider-vsphere-integration-test
     decorate: true
@@ -103,7 +110,9 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
 postsubmits:
   kubernetes/cloud-provider-vsphere:
 
@@ -129,7 +138,10 @@ postsubmits:
         securityContext:
           privileged: true
     annotations:
+      testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       testgrid-num-columns-recent: '20'
+
 periodics:
 
 # Runs the e2e conformance suite against a cluster turned up with the
