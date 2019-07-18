@@ -6,6 +6,7 @@ jsonnet_library(
         "prometheus.libsonnet",
         "ci_absent_alerts.libsonnet",
         "prow_monitoring_absent_alerts.libsonnet",
+        "configmap_alerts.libsonnet",
     ],
 )
 
