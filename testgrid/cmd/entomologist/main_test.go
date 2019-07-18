@@ -18,7 +18,9 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"k8s.io/test-infra/prow/flagutil"
+	"os"
 	"reflect"
 	"strconv"
 	"testing"
@@ -30,6 +32,18 @@ import (
 
 func TestOptions(t *testing.T) {
 
+	tmpdir, err := ioutil.TempDir("", "tmpdir")
+	if err != nil {
+		t.Errorf("Unexpected error while creating temprorary dir: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+	fd, err := ioutil.TempFile("", "tmpfile")
+	if err != nil {
+		t.Errorf("Unexpected error while creating temprorary file: %v", err)
+	}
+	tmpfile := fd.Name()
+	defer os.Remove(tmpfile)
+
 	testCases := []struct {
 		name     string
 		args     []string
@@ -40,15 +54,15 @@ func TestOptions(t *testing.T) {
 			args: []string{},
 		},
 		{
-			name: "missing GCS credentials, reject",
+			name: "missing GCS credentials when GCS provided as output, reject",
 			args: []string{"--github-org=testorg", "--github-repo=testrepo", "--output=gs://foo/bar"},
 		},
 		{
-			name: "non-gcs output, reject",
-			args: []string{"--github-org=testorg", "--github-repo=testrepo", "--output=/usr/src/foo/bar"},
+			name: "missing output, reject",
+			args: []string{"--github-org=testorg", "--github-repo=testrepo"},
 		},
 		{
-			name: "required options",
+			name: "required options with gcs bucket output",
 			args: []string{
 				"--github-org=testorg",
 				"--github-repo=testrepo",
@@ -58,8 +72,36 @@ func TestOptions(t *testing.T) {
 			expected: &options{
 				organization:   "testorg",
 				repository:     "testrepo",
-				gcsPath:        "gs://foo/bar",
+				output:         "gs://foo/bar",
 				gcsCredentials: "/usr/foo/creds.json",
+			},
+		},
+		{
+			name: "required options with directory output",
+			args: []string{
+				"--github-org=testorg",
+				"--github-repo=testrepo",
+				"--output=" + tmpdir,
+			},
+			expected: &options{
+				organization:   "testorg",
+				repository:     "testrepo",
+				output:         tmpdir,
+				gcsCredentials: "",
+			},
+		},
+		{
+			name: "required options with file output",
+			args: []string{
+				"--github-org=testorg",
+				"--github-repo=testrepo",
+				"--output=" + tmpfile,
+			},
+			expected: &options{
+				organization:   "testorg",
+				repository:     "testrepo",
+				output:         tmpfile,
+				gcsCredentials: "",
 			},
 		},
 		{
@@ -76,7 +118,7 @@ func TestOptions(t *testing.T) {
 			expected: &options{
 				organization:   "testorg",
 				repository:     "testrepo",
-				gcsPath:        "gs://foo/bar",
+				output:         "gs://foo/bar",
 				gcsCredentials: "/usr/foo/creds.json",
 				oneshot:        true,
 			},
