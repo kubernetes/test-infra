@@ -395,6 +395,9 @@ test_groups:
 - name: istio-unit-tests-presubmit-master
   gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests-master
   days_of_results: 7
+- name: istio-racetest-presubmit-master
+  gcs_prefix: istio-prow/pr-logs/directory/istio-racetest-master
+  days_of_results: 7
 - name: integ-framework-local-presubmit-tests-master
   gcs_prefix: istio-prow/pr-logs/directory/integ-framework-local-presubmit-tests-master
   days_of_results: 7
@@ -2946,6 +2949,8 @@ dashboards:
   dashboard_tab:
   - name: unit-tests
     test_group_name: istio-unit-tests-presubmit-master
+  - name: race-tests
+    test_group_name: istio-racetest-presubmit-master
   - name: integ-framework-local-presubmit-tests
     test_group_name: integ-framework-local-presubmit-tests-master
   - name: integ-framework-k8s-presubmit-tests
