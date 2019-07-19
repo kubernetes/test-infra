@@ -21,6 +21,23 @@ presubmits:
       testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
+  # Runs 'shellcheck' on appropriate sources
+  - name: pull-vsphere-csi-driver-verify-shell
+    always_run: false
+    run_if_changed: '.*\.\w*sh$'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
+        command:
+        - /bin/shellcheck.sh
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-tab-name: pr-verify-shell
+      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      description: Verifies the shell scripts have been linted
+
   # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
     decorate: true
