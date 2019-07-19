@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/mail"
 	"os"
 	"regexp"
@@ -73,20 +72,12 @@ const (
 var cfg *config_pb.Configuration
 
 func TestMain(m *testing.M) {
-	//make sure we can parse config.yaml
-	c := Config{}
-	yamlFiles := []string{"../../config.yaml", "../../generated-test-config.yaml"}
-	for _, path := range yamlFiles {
-		yamlData, err := ioutil.ReadFile(path)
-		if err != nil {
-			fmt.Printf("IO Error : Cannot Open File %s", path)
-			os.Exit(1)
-		}
-
-		if err := c.Update(yamlData); err != nil {
-			fmt.Printf("Yaml2Proto - Conversion Error %v", err)
-			os.Exit(1)
-		}
+	//make sure we can parse configurations
+	yamlFiles := []string{"../../../config/testgrids"}
+	c, err := readConfig(yamlFiles)
+	if err != nil {
+		fmt.Printf("Could not read testgrid config: %v", err)
+		os.Exit(1)
 	}
 
 	pca := &prow_config.Agent{}
@@ -94,12 +85,11 @@ func TestMain(m *testing.M) {
 		fmt.Printf("Prow config agent error: %v", err)
 		os.Exit(1)
 	}
-	if err := applyProwjobAnnotations(&c, pca); err != nil {
+	if err := applyProwjobAnnotations(c, pca); err != nil {
 		fmt.Printf("Couldn't apply prowjob annotations: %v", err)
 		os.Exit(1)
 	}
 
-	var err error
 	cfg, err = c.Raw()
 	if err != nil {
 		fmt.Printf("Error validating config: %v", err)
@@ -399,9 +389,6 @@ func hasAnyPrefix(s string, prefixes []string) bool {
 }
 
 func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T) {
-	prowPath := "../../../prow/config.yaml"
-	jobPath := "../../../config/jobs"
-
 	jobs := make(map[string]bool)
 
 	prowConfig, err := prow_config.Load(prowPath, jobPath)
