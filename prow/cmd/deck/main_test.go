@@ -877,7 +877,7 @@ func Test_gatherOptions(t *testing.T) {
 			expected := &options{
 				configPath:            "yo",
 				githubOAuthConfigFile: "/etc/github/secret",
-				cookieSecretFile:      "/etc/cookie/secret",
+				cookieSecretFile:      "",
 				staticFilesLocation:   "/static",
 				templateFilesLocation: "/template",
 				spyglassFilesLocation: "/lenses",

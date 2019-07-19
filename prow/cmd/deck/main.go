@@ -106,6 +106,18 @@ func (o *options) Validate() error {
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
+
+	// TODO(Katharine): remove this handling after 2019-10-31
+	// We used to set a default value for --cookie-secret-file, but we also have code that
+	// assumes we don't. If it's not set, but it is required that it is, and a file exists
+	// at the old default, we set it back to that default and emit an error.
+	if o.cookieSecretFile == "" && o.oauthURL != "" {
+		if _, err := os.Stat("/etc/cookie/secret"); err == nil {
+			o.cookieSecretFile = "/etc/cookie/secret"
+			logrus.Error("You haven't set --cookie-secret-file, but you're assuming it is set to '/etc/cookie/secret'. Add --cookie-secret-file=/etc/cookie/secret to your deck instance's arguments. Your configuration will stop working at the end of October 2019.")
+		}
+	}
+
 	if o.oauthURL != "" {
 		if o.githubOAuthConfigFile == "" {
 			return errors.New("an OAuth URL was provided but required flag --github-oauth-config-file was unset")
@@ -129,7 +141,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
 	fs.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
 	fs.StringVar(&o.githubOAuthConfigFile, "github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
-	fs.StringVar(&o.cookieSecretFile, "cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
+	fs.StringVar(&o.cookieSecretFile, "cookie-secret", "", "Path to the file containing the cookie secret key.")
 	// use when behind a load balancer
 	fs.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
