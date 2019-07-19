@@ -5,6 +5,9 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-node
+    testgrid-tab-name: node-throughput
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -33,9 +36,6 @@ periodics:
       - --use-logexporter
 
 #kubemark
-  annotations:
-    testgrid-dashboards: sig-scalability-node
-    testgrid-tab-name: node-throughput
 - name: ci-kubernetes-kubemark-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes"
@@ -48,6 +48,10 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-100
+    testgrid-num-failures-to-alert: '1'
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -86,10 +90,7 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-  annotations:
-    testgrid-dashboards: sig-scalability-kubemark
-    testgrid-tab-name: kubemark-100
-    testgrid-num-failures-to-alert: '1'
+
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes"
@@ -101,6 +102,10 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-big: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-500
+    testgrid-num-failures-to-alert: '1'
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -138,10 +143,7 @@ periodics:
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
-  annotations:
-    testgrid-dashboards: sig-scalability-kubemark
-    testgrid-tab-name: kubemark-500
-    testgrid-num-failures-to-alert: '1'
+
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
   - "perfDashPrefix: kubemark-5000Nodes"
@@ -153,6 +155,11 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-5000
+    testgrid-num-failures-to-alert: '1'
+    testgrid-num-columns-recent: '3'
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -194,11 +201,7 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
-  annotations:
-    testgrid-dashboards: sig-scalability-kubemark
-    testgrid-tab-name: kubemark-5000
-    testgrid-num-failures-to-alert: '1'
-    testgrid-num-columns-recent: '3'
+
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes-highDensity"
@@ -209,6 +212,10 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-100-high-density
+    testgrid-num-failures-to-alert: '1'
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -245,15 +252,15 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-  annotations:
-    testgrid-dashboards: sig-scalability-kubemark
-    testgrid-tab-name: kubemark-100-high-density
-    testgrid-num-failures-to-alert: '1'
+
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-perf-tests
+    testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -264,9 +271,7 @@ periodics:
       - --scenario=execute
       - --
       - ./benchmark/runner.sh
-  annotations:
-    testgrid-dashboards: sig-scalability-perf-tests
-    testgrid-tab-name: kubemark-100-benchmark
+
 - name: ci-benchmark-scheduler-master
   tags:
   - "perfDashPrefix: scheduler-benchmark"
@@ -275,6 +280,9 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: scheduler
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -291,9 +299,7 @@ periodics:
         value: /go
       - name: KUBE_TIMEOUT
         value: --timeout 40m
-  annotations:
-    testgrid-dashboards: sig-scalability-benchmarks
-    testgrid-tab-name: scheduler
+
 - name: ci-benchmark-kube-dns-master
   interval: 2h
   tags:
@@ -302,6 +308,9 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: kube-dns
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -325,11 +334,12 @@ periodics:
       - --test-cmd-args=/workspace/_artifacts
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
-  annotations:
-    testgrid-dashboards: sig-scalability-benchmarks
-    testgrid-tab-name: kube-dns
+
 - name: ci-benchmark-microbenchmarks
   interval: 20m
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: microbenchmarks
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -358,9 +368,6 @@ periodics:
       - ../kubernetes/vendor/k8s.io/client-go/...
 
 # Experimental config for testing private gce clusters.
-  annotations:
-    testgrid-dashboards: sig-scalability-benchmarks
-    testgrid-tab-name: microbenchmarks
 - name: ci-kubernetes-e2e-gce-private-cluster-correctness
   # TODO(mm4tt): Lower the timeout once we know how long the test takes.
   interval: 6h
@@ -368,6 +375,9 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: gce-private-cluster-correctness
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190717-53dc8af-master
@@ -389,6 +399,3 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: gce-private-cluster-correctness
