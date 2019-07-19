@@ -32,6 +32,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/test-infra/prow/config"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
@@ -884,6 +885,49 @@ func TestMakeResources(t *testing.T) {
 		},
 		{
 			name: "return valid pipeline with valid prowjob",
+		},
+		{
+			name: "configure implicit git repository",
+			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
+				pj.Spec.Type = prowjobv1.PresubmitJob
+				pj.Spec.Refs = &prowjobv1.Refs{
+					CloneURI: "https://source.host/test/test.git",
+					BaseRef:  "feature-branch",
+					Pulls: []prowjobv1.Pull{
+						{
+							Number: 1,
+						},
+					},
+				}
+				pj.Spec.PipelineRunSpec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
+					{
+						Name:        "implicit git resource",
+						ResourceRef: pipelinev1alpha1.PipelineResourceRef{Name: config.ProwImplicitGitResource},
+					},
+				}
+				return pj
+			},
+			pipelineRun: func(pr pipelinev1alpha1.PipelineRun) pipelinev1alpha1.PipelineRun {
+				pr.Spec.Resources[0].ResourceRef = pipelinev1alpha1.PipelineResourceRef{
+					Name: pr.Name + "-implicit-ref",
+				}
+				pr.Spec.Params[3].Value = string(prowjobv1.PresubmitJob)
+				pr.Spec.Params = append(pr.Spec.Params,
+					pipelinev1alpha1.Param{Name: "PULL_BASE_REF", Value: "feature-branch"},
+					pipelinev1alpha1.Param{Name: "PULL_BASE_SHA", Value: ""},
+					pipelinev1alpha1.Param{Name: "PULL_NUMBER", Value: "1"},
+					pipelinev1alpha1.Param{Name: "PULL_PULL_SHA", Value: ""},
+					pipelinev1alpha1.Param{Name: "PULL_REFS", Value: "feature-branch,1:"},
+					pipelinev1alpha1.Param{Name: "REPO_NAME", Value: ""},
+					pipelinev1alpha1.Param{Name: "REPO_OWNER", Value: ""},
+				)
+				return pr
+			},
+			resources: func(pj prowjobv1.ProwJob) []pipelinev1alpha1.PipelineResource {
+				return []pipelinev1alpha1.PipelineResource{
+					*makePipelineGitResource("world-implicit-ref", *pj.Spec.Refs, pj),
+				}
+			},
 		},
 		{
 			name: "configure sources when extra refs are configured",
