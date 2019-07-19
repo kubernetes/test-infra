@@ -1,6 +1,10 @@
 # Announcements
 
 New features added to each component:
+ - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
+   If you set `--oauth-url` but not `--cookie-secret-file`, add
+   `--cookie-secret-file=/etc/cookie-secret` to your deck instance. The default value
+   will be removed at the end of October 2019.
  - *July 2, 2019* prow defaults to report status for both presubmit and postsubmit
    jobs on GitHub now.
  - *June 17, 2019* It is now possible to configure the channel for the Slack reporter
