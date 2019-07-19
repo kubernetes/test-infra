@@ -241,7 +241,7 @@ periodics:
       - "--deployment=acsengine"
       - "--provider=skeleton"
       - "--build=bazel"
-      - "--ginkgo-parallel=4"
+      - "--ginkgo-parallel=8"
       - "--acsengine-location=westus2"
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
@@ -252,8 +252,8 @@ periodics:
       - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
-      - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]"
+      - "--acsengine-agentpoolcount=3"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]"
       - "--timeout=450m"
       securityContext:
         privileged: true
