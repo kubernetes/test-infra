@@ -45,7 +45,9 @@ install_kind() {
     TMP_DIR=$(mktemp -d)
     # ensure bin dir
     mkdir -p "${TMP_DIR}/bin"
+    pushd "${TMP_DIR}"
     env "GOPATH=${TMP_DIR}" GO111MODULE="on" go get -u "sigs.k8s.io/kind@${STABLE_KIND_VERSION}"
+    popd
     PATH="${TMP_DIR}/bin:${PATH}"
     export PATH
 }
