@@ -38,6 +38,11 @@ release(
     component("tide", "service", "deployment"),
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),
+    component(
+        "tune-sysctls",
+        "daemonset",
+        cluster = BUILD_CLUSTER,
+    ),
 )
 
 component("starter", MULTI_KIND)
