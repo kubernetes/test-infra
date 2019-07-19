@@ -134,6 +134,8 @@ periodics:
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
+      # TODO(https://github.com/kubernetes/kubernetes/issues/80212): Turn off when the investigation is over or assess if it can stay
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
@@ -144,8 +146,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
       - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-kube-proxy.yaml
-      # TODO(https://github.com/kubernetes/kubernetes/issues/80212): Clean up once we assess if it helps
-      #- --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
+      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/probes.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
