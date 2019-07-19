@@ -19,6 +19,9 @@ spec:
       hostNetwork: true
       hostPID: true
       hostIPC: true
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
       containers:
       - name: setsysctls 
         command:
