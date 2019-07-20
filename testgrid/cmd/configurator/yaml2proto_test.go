@@ -126,9 +126,10 @@ test_groups:
 
 	for index, test := range tests {
 		c := Config{}
-		inputYaml := defaultYaml + "\n" + test.yaml
-
-		if err := c.Update([]byte(inputYaml)); err != nil {
+		if err := c.Update([]byte(defaultYaml)); err != nil {
+			t.Errorf("Unexpected error in Update(defaultYaml): %v", err)
+		}
+		if err := c.Update([]byte(test.yaml)); err != nil {
 			t.Errorf("Unexpected error in Update(test[%d].yaml): %v", index, err)
 		}
 		err := c.validate()

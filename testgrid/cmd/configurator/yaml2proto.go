@@ -124,10 +124,10 @@ func ReconcileDashboardTab(currentTab *config.DashboardTab, defaultTab *config.D
 	}
 }
 
-// updateDefaults reads the default configuration from yamlData and updates the
+// updateDefaults reads any default configuration from yamlData and updates the
 // defaultConfig in c.
 //
-// Returns an error if the defaultConfig is missing from yamlData
+// Returns an error if the defaultConfig remains unset.
 func (c *Config) updateDefaults(yamlData []byte) error {
 	newDefaults := &config.DefaultConfiguration{}
 	err := yaml.Unmarshal(yamlData, newDefaults)
@@ -135,24 +135,29 @@ func (c *Config) updateDefaults(yamlData []byte) error {
 		return err
 	}
 
-	if newDefaults == nil {
-		return errors.New("DefaultConfiguration is nil after unmarshalling")
+	if c.defaultConfig == nil {
+		c.defaultConfig = newDefaults
+	} else {
+		if newDefaults.DefaultTestGroup != nil {
+			c.defaultConfig.DefaultTestGroup = newDefaults.DefaultTestGroup
+		}
+		if newDefaults.DefaultDashboardTab != nil {
+			c.defaultConfig.DefaultDashboardTab = newDefaults.DefaultDashboardTab
+		}
 	}
 
-	if newDefaults.DefaultTestGroup == nil {
+	if c.defaultConfig.DefaultTestGroup == nil {
 		return MissingFieldError{"DefaultTestGroup"}
 	}
-
-	if newDefaults.DefaultDashboardTab == nil {
+	if c.defaultConfig.DefaultDashboardTab == nil {
 		return MissingFieldError{"DefaultDashboardTab"}
 	}
-
-	c.defaultConfig = newDefaults
 	return nil
 }
 
 // Update reads the config in yamlData and updates the config in c.
-// If yamlData does not contain any defaults, an error is returned without effect
+// If yamlData does not contain any defaults, the defaults from a
+// previous call to Update are used instead.
 func (c *Config) Update(yamlData []byte) error {
 	if err := c.updateDefaults(yamlData); err != nil {
 		return err

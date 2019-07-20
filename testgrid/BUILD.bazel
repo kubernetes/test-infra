@@ -1,4 +1,13 @@
 filegroup(
+    name = "config-yaml",
+    srcs = [
+        "config.yaml",
+        "generated-test-config.yaml",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],

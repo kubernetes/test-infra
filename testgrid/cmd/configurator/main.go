@@ -25,7 +25,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -33,7 +32,6 @@ import (
 	"k8s.io/test-infra/testgrid/util/gcs"
 
 	"cloud.google.com/go/storage"
-	"github.com/sirupsen/logrus"
 )
 
 type multiString []string
@@ -46,9 +44,6 @@ func (m *multiString) Set(v string) error {
 	*m = strings.Split(v, ",")
 	return nil
 }
-
-// How long Configurator waits between file checks in polling mode
-const pollingTime = time.Second
 
 type options struct {
 	creds              string
@@ -70,7 +65,7 @@ func gatherOptions() (options, error) {
 	flag.BoolVar(&o.printText, "print-text", false, "print generated proto in text format to stdout")
 	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
 	flag.BoolVar(&o.worldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
-	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files or directories")
+	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files")
 	flag.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
 	flag.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
 	flag.Parse()
@@ -90,49 +85,38 @@ func gatherOptions() (options, error) {
 	return o, nil
 }
 
-// announceChanges watches for changes in "paths" and writes them to the channel
+// announceChanges watches for changes to files and writes one of them to the channel
 func announceChanges(ctx context.Context, paths []string, channel chan []string) {
 	defer close(channel)
 	modified := map[string]time.Time{}
+	for _, p := range paths {
+		modified[p] = time.Time{} // Never seen
+	}
 
 	// TODO(fejta): consider waiting for a notification rather than polling
 	// but performance isn't that big a deal here.
 	for {
-		// Terminate
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-
 		var changed []string
-
-		// Check known files for deletions
-		for p := range modified {
-			_, accessErr := os.Stat(p)
-			if os.IsNotExist(accessErr) {
+		for p, last := range modified {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+			switch info, err := os.Stat(p); {
+			case os.IsNotExist(err) && !last.IsZero():
+				// File deleted
+				modified[p] = time.Time{}
 				changed = append(changed, p)
-				delete(modified, p)
+			case err != nil:
+				log.Printf("Error reading %s: %v", p, err)
+			default:
+				if t := info.ModTime(); t.After(last) {
+					changed = append(changed, p)
+					modified[p] = t
+				}
 			}
 		}
-
-		// Check given locations for new or modified files
-		err := walkForYAMLFiles(paths, func(path string, info os.FileInfo) error {
-			lastModTime, present := modified[path]
-
-			if t := info.ModTime(); !present || t.After(lastModTime) {
-				changed = append(changed, path)
-				modified[path] = t
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			logrus.WithError(err).Error("walk issue in announcer")
-			return
-		}
-
 		if len(changed) > 0 {
 			select {
 			case <-ctx.Done():
@@ -140,7 +124,7 @@ func announceChanges(ctx context.Context, paths []string, channel chan []string)
 			case channel <- changed:
 			}
 		} else {
-			time.Sleep(pollingTime)
+			time.Sleep(1 * time.Second)
 		}
 	}
 }
@@ -160,57 +144,16 @@ func announceProwChanges(ctx context.Context, pca *prowConfig.Agent, channel cha
 
 func readConfig(paths []string) (*Config, error) {
 	var c Config
-	err := walkForYAMLFiles(paths, func(path string, info os.FileInfo) error {
-		// Read YAML file and update config
-		b, err := ioutil.ReadFile(path)
+	for _, file := range paths {
+		b, err := ioutil.ReadFile(file)
 		if err != nil {
-			return fmt.Errorf("failed to read %s: %v", path, err)
+			return nil, fmt.Errorf("failed to read %s: %v", file, err)
 		}
 		if err = c.Update(b); err != nil {
-			return fmt.Errorf("failed to merge %s into config: %v", path, err)
+			return nil, fmt.Errorf("failed to merge %s into config: %v", file, err)
 		}
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
 	}
 	return &c, nil
-}
-
-// walks through paths and directories, calling the passed function on each YAML file
-// future modifications to what Configurator sees as a "config file" can be made here
-func walkForYAMLFiles(paths []string, callFunc func(path string, info os.FileInfo) error) error {
-	for _, path := range paths {
-		_, err := os.Stat(path)
-		if err != nil {
-			return fmt.Errorf("Failed status call on %s: %v", path, err)
-		}
-
-		err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				logrus.WithError(err).Errorf("walking path %q.", path)
-				// bad file should not stop us from parsing the directory
-				return nil
-			}
-
-			if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" {
-				return nil
-			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			return callFunc(path, info)
-		})
-
-		if err != nil {
-			return fmt.Errorf("Failed to walk through %s: %v", path, err)
-		}
-	}
-	return nil
 }
 
 func write(ctx context.Context, client *storage.Client, path string, bytes []byte, worldReadable bool) error {
