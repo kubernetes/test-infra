@@ -19,8 +19,8 @@ go_test(
     ],
     data = [
         "//config:prowjobs",
-        "//config:testgrids",
         "//prow:config.yaml",
+        "//testgrid:config-yaml",
     ],
     embed = [":go_default_library"],
     deps = [
@@ -47,7 +47,6 @@ go_library(
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

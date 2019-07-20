@@ -59,7 +59,7 @@ k8s_configmap(
     name = "testgrid-config",
     cluster = CLUSTER,
     data = {
-        "config.yaml": "//config:testgrids",
+        "config.yaml": "//testgrid:config-yaml",
     },
     labels = {
         "component": "config",

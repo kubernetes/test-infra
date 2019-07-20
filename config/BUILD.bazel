@@ -26,13 +26,6 @@ filegroup(
 )
 
 filegroup(
-    name = "testgrids",
-    srcs = glob([
-        "testgrids/**/*.yaml",
-    ]),
-)
-
-filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],
