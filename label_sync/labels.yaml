@@ -1231,3 +1231,29 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/krew:
+    labels:
+      - color: ee0000
+        description: P0 issues or PRs
+        name: priority/P0
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: ffaa00
+        description: P1 issues or PRs
+        name: priority/P1
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: eebb00
+        description: P2 issues or PRs
+        name: priority/P2
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: d2b48c
+        description: P3 issues or PRs
+        name: priority/P3
+        target: both
+        prowPlugin: label
+        addedBy: anyone
