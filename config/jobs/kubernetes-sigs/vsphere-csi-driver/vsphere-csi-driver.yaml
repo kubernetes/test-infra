@@ -35,8 +35,28 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
       testgrid-tab-name: pr-verify-shell
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       description: Verifies the shell scripts have been linted
+
+  # Runs 'mdlint' on appropriate sources
+  - name: pull-vsphere-csi-driver-verify-markdown
+    always_run: false
+    run_if_changed: '.*\.md$'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/mdlint:0.17.0
+        command:
+        - /nodejs/bin/node
+        args:
+        - /md/lint
+        - .
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-tab-name: pr-verify-markdown
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies the markdown has been linted
 
   # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
