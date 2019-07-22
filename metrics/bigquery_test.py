@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -24,7 +24,7 @@ import sys
 import tempfile
 import unittest
 
-import ruamel.yaml as yaml
+import yaml
 
 import bigquery
 
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     # Remove the --jq flag and its value so that unittest.main can parse the remaining args without
     # complaining about an unknown flag.
-    for i in range(len(sys.argv)):
+    for i in xrange(len(sys.argv)):
         if sys.argv[i].startswith('--jq'):
             arg = sys.argv.pop(i)
             if '=' not in arg:
