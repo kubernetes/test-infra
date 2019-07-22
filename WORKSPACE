@@ -5,11 +5,11 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "4598bf5a8b4f5ced82c782899438a7ba695165d47b3bf783ce774e89a8c6e617",
-    strip_prefix = "bazel-toolchains-0.27.0",
+    sha256 = "dcb58e7e5f0b4da54c6c5f8ebc65e63fcfb37414466010cf82ceff912162296e",
+    strip_prefix = "bazel-toolchains-0.28.2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.27.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/0.27.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.2.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.2.tar.gz",
     ],
 )
 
@@ -29,30 +29,29 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 
 versions.check(minimum_bazel_version = "0.27.0")
 
-# TODO(fejta): delete the com_google_protobuf rule once rules_go >= 0.18.4
-# This silences the shallow_since message (and increases cache hit rate)
-git_repository(
+http_archive(
     name = "com_google_protobuf",
-    commit = "582743bf40c5d3639a70f98f183914a2c0cd0680",  # v3.7.0, as of 2019-03-03
-    remote = "https://github.com/protocolbuffers/protobuf",
-    shallow_since = "1551387314 -0800",
+    sha256 = "2ee9dcec820352671eb83e081295ba43f7a4157181dad549024d7070d079cf65",
+    strip_prefix = "protobuf-3.9.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.9.0.tar.gz"],
 )
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "f04d2373bcaf8aa09bccb08a98a57e721306c8f6043a2a0ee610fd6853dcde3d",
+    sha256 = "8df59f11fb697743cbb3f26cfb8750395f30471e9eabde0d174c3aebc7a1cd39",
     urls = [
-        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/0.18.6/rules_go-0.18.6.tar.gz",
+        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/0.19.1/rules_go-0.19.1.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/0.19.1/rules_go-0.19.1.tar.gz",
     ],
 )
 
-git_repository(
+http_archive(
     name = "bazel_gazelle",
-    commit = "e530fae7ce5cfda701f450ab2d7c4619b87f4df9",
-    remote = "https://github.com/bazelbuild/bazel-gazelle",
-    shallow_since = "1554245619 -0400",
-    # tag = "latest" and matching go.mod
+    sha256 = "be9296bfd64882e3c08e3283c58fcb461fa6dd3c171764fcc4cf322f60615a9b",
+    urls = [
+        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/bazel-gazelle/releases/download/0.18.1/bazel-gazelle-0.18.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/0.18.1/bazel-gazelle-0.18.1.tar.gz",
+    ],
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
@@ -60,13 +59,17 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.12.6",
+    go_version = "1.12.7",
     nogo = "@//:nogo_vet",
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
 
 http_archive(
     name = "io_bazel_rules_docker",
@@ -79,17 +82,11 @@ load("@io_bazel_rules_docker//repositories:repositories.bzl", _container_reposit
 
 _container_repositories()
 
-load(
-    "@io_bazel_rules_docker//go:image.bzl",
-    _go_repositories = "repositories",
-)
+load("@io_bazel_rules_docker//go:image.bzl", _go_repositories = "repositories")
 
 _go_repositories()
 
-load(
-    "@io_bazel_rules_docker//container:container.bzl",
-    "container_pull",
-)
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
 container_pull(
     name = "distroless-base",
