@@ -85,7 +85,8 @@ func TestMain(m *testing.M) {
 		fmt.Printf("Prow config agent error: %v", err)
 		os.Exit(1)
 	}
-	if err := applyProwjobAnnotations(c, pca); err != nil {
+
+	if err := applyProwjobAnnotations(c, pca, true); err != nil {
 		fmt.Printf("Couldn't apply prowjob annotations: %v", err)
 		os.Exit(1)
 	}
