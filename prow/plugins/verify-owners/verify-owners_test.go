@@ -135,10 +135,13 @@ func IssueLabelsAddedContain(arr []string, str string) bool {
 	return false
 }
 
-func newFakeGitHubClient(files []string, pr int) *fakegithub.FakeClient {
+func newFakeGitHubClient(changed []string, removed []string, pr int) *fakegithub.FakeClient {
 	var changes []github.PullRequestChange
-	for _, file := range files {
+	for _, file := range changed {
 		changes = append(changes, github.PullRequestChange{Filename: file})
+	}
+	for _, file := range removed {
+		changes = append(changes, github.PullRequestChange{Filename: file, Status: github.PullRequestFileRemoved})
 	}
 	return &fakegithub.FakeClient{
 		PullRequestChanges: map[int][]github.PullRequestChange{pr: changes},
@@ -246,10 +249,23 @@ func makeFakeRepoOwnersClient() fakeRepoownersClient {
 	}
 }
 
+func addFilesToRepo(lg *localgit.LocalGit, paths []string, ownersFile string) error {
+	origFiles := map[string][]byte{}
+	for _, file := range paths {
+		if strings.Contains(file, "OWNERS") {
+			origFiles[file] = ownerFiles[ownersFile]
+		} else {
+			origFiles[file] = []byte("foo")
+		}
+	}
+	return lg.AddCommit("org", "repo", origFiles)
+}
+
 func TestHandle(t *testing.T) {
 	var tests = []struct {
 		name         string
 		filesChanged []string
+		filesRemoved []string
 		ownersFile   string
 		shouldLabel  bool
 	}{
@@ -337,6 +353,12 @@ func TestHandle(t *testing.T) {
 			ownersFile:   "noApproversFilters",
 			shouldLabel:  false,
 		},
+		{
+			name:         "OWNERS file was removed",
+			filesRemoved: []string{"pkg/OWNERS"},
+			ownersFile:   "valid",
+			shouldLabel:  false,
+		},
 	}
 	lg, c, err := localgit.New()
 	if err != nil {
@@ -359,20 +381,27 @@ func TestHandle(t *testing.T) {
 		if err := lg.Checkout("org", "repo", "master"); err != nil {
 			t.Fatalf("Switching to master branch: %v", err)
 		}
+		if len(test.filesRemoved) > 0 {
+			if err := addFilesToRepo(lg, test.filesRemoved, test.ownersFile); err != nil {
+				t.Fatalf("Adding base commit: %v", err)
+			}
+		}
+
 		if err := lg.CheckoutNewBranch("org", "repo", fmt.Sprintf("pull/%d/head", pr)); err != nil {
 			t.Fatalf("Checking out pull branch: %v", err)
 		}
-		pullFiles := map[string][]byte{}
-		for _, file := range test.filesChanged {
-			if strings.Contains(file, "OWNERS") {
-				pullFiles[file] = ownerFiles[test.ownersFile]
-			} else {
-				pullFiles[file] = []byte("foo")
+
+		if len(test.filesChanged) > 0 {
+			if err := addFilesToRepo(lg, test.filesChanged, test.ownersFile); err != nil {
+				t.Fatalf("Adding PR commit: %v", err)
 			}
 		}
-		if err := lg.AddCommit("org", "repo", pullFiles); err != nil {
-			t.Fatalf("Adding PR commit: %v", err)
+		if len(test.filesRemoved) > 0 {
+			if err := lg.RmCommit("org", "repo", test.filesRemoved); err != nil {
+				t.Fatalf("Adding PR commit (removing files): %v", err)
+			}
 		}
+
 		sha, err := lg.RevParse("org", "repo", "HEAD")
 		if err != nil {
 			t.Fatalf("Getting commit SHA: %v", err)
@@ -387,7 +416,7 @@ func TestHandle(t *testing.T) {
 			},
 			Repo: github.Repo{FullName: "org/repo"},
 		}
-		fghc := newFakeGitHubClient(test.filesChanged, pr)
+		fghc := newFakeGitHubClient(test.filesChanged, test.filesRemoved, pr)
 		fghc.PullRequests = map[int]*github.PullRequest{}
 		fghc.PullRequests[pr] = &github.PullRequest{
 			Base: github.PullRequestBranch{
@@ -821,7 +850,7 @@ func TestNonCollaborators(t *testing.T) {
 			},
 			Repo: github.Repo{FullName: "org/repo"},
 		}
-		fghc := newFakeGitHubClient(test.filesChanged, pr)
+		fghc := newFakeGitHubClient(test.filesChanged, nil, pr)
 		fghc.PullRequestChanges[pr] = changes
 
 		fghc.PullRequests = map[int]*github.PullRequest{}

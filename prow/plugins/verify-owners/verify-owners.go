@@ -129,7 +129,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 	// List modified OWNERS files.
 	var modifiedOwnersFiles []github.PullRequestChange
 	for _, change := range changes {
-		if filepath.Base(change.Filename) == ownersFileName {
+		if filepath.Base(change.Filename) == ownersFileName && change.Status != github.PullRequestFileRemoved {
 			modifiedOwnersFiles = append(modifiedOwnersFiles, change)
 		}
 	}

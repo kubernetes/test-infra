@@ -135,6 +135,17 @@ func (lg *LocalGit) AddCommit(org, repo string, files map[string][]byte) error {
 	return runCmd(lg.Git, rdir, "commit", "-m", "wow")
 }
 
+// RmCommit adds a commit that removes some files from the repo
+func (lg *LocalGit) RmCommit(org, repo string, files []string) error {
+	rdir := filepath.Join(lg.Dir, org, repo)
+	for _, f := range files {
+		if err := runCmd(lg.Git, rdir, "rm", f); err != nil {
+			return err
+		}
+	}
+	return runCmd(lg.Git, rdir, "commit", "-m", "remove some files")
+}
+
 // CheckoutNewBranch does git checkout -b.
 func (lg *LocalGit) CheckoutNewBranch(org, repo, branch string) error {
 	rdir := filepath.Join(lg.Dir, org, repo)
