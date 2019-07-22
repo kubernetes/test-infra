@@ -428,9 +428,6 @@ tide:
     - needs-sig
   - repos:
     - GoogleCloudPlatform/netd
-    - bazelbuild/bazel-toolchains
-    - bazelbuild/rules_docker
-    - bazelbuild/rules_k8s
     labels:
     - lgtm
     - approved
@@ -440,21 +437,8 @@ tide:
     - do-not-merge/hold
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
-  # Auto-merge PRs generated for automatic configs release by robot.
-  - repos:
-    - bazelbuild/bazel-toolchains
-    labels:
-    - automerge
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
 
   merge_method:
-    bazelbuild/bazel-toolchains: squash
-    bazelbuild/rules_docker: squash
-    bazelbuild/rules_k8s: squash
     helm/charts: squash
     kubeflow: squash
     kubernetes-client/csharp: squash
