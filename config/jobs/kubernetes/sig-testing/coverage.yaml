@@ -20,7 +20,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/release
   decoration_config:
-    timeout: 3h
+    timeout: 6h
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190719-7cdf877-master
@@ -39,7 +39,7 @@ periodics:
           --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
           --gcp-zone=us-west1-b \
           --provider=gce \
-          --timeout=150m \
+          --timeout=300m \
           --test_args="--ginkgo.focus=\[Conformance\]"
         cd ../test-infra
         bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
