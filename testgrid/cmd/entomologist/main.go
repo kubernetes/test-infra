@@ -51,7 +51,7 @@ type options struct {
 	github         flagutil.GitHubOptions
 	organization   string
 	repository     string
-	gcsPath        string
+	output         string
 	gcsCredentials string
 	oneshot        bool
 }
@@ -60,7 +60,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
 	fs.StringVar(&o.organization, "github-org", "", "GitHub organization")
 	fs.StringVar(&o.repository, "github-repo", "", "GitHub repository")
-	fs.StringVar(&o.gcsPath, "output", "", "GCS output (gs://bucket)")
+	fs.StringVar(&o.output, "output", "", "write proto to gs://bucket or /local/path")
 	fs.StringVar(&o.gcsCredentials, "gcs-credentials-file", "", "/path/to/service/account/credentials (as .json)")
 	fs.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring GitHub for changes")
 	o.github.AddFlags(fs)
@@ -78,10 +78,10 @@ func (o *options) validate() error {
 	if o.repository == "" {
 		return errors.New("--github-repo is required")
 	}
-	if o.gcsPath == "" || !strings.HasPrefix(o.gcsPath, "gs://") {
-		return errors.New("invalid or missing --output")
+	if o.output == "" {
+		return errors.New("--output is required")
 	}
-	if o.gcsCredentials == "" {
+	if strings.HasPrefix(o.output, "gs://") && o.gcsCredentials == "" {
 		return errors.New("--gcs-credentials-file required for write operations")
 	}
 	return o.github.Validate(false)
@@ -114,13 +114,28 @@ func main() {
 	defer cancelFunc()
 
 	client, _ := io.NewOpener(ctx, opt.gcsCredentials)
-	if client == nil {
-		logrus.Fatalf("Empty credentials (at %s) not allowed for write operation", opt.gcsCredentials)
-	}
 
-	// testgrid expects issue_state.proto files for an org/repo to be named this way
-	gcsFile := fmt.Sprintf("/bugs-%s-%s", opt.organization, opt.repository)
-	writer, _ := client.Writer(ctx, opt.gcsPath+gcsFile)
+	var outputFile string
+	if strings.HasPrefix(opt.output, "gs://") {
+		// testgrid expects issue_state.proto files for an org/repo to be named this way
+		outputFile = fmt.Sprintf("%s/bugs-%s-%s", opt.output, opt.organization, opt.repository)
+	} else {
+		fi, err := os.Stat(opt.output)
+		if err == nil && fi.Mode().IsRegular() {
+			outputFile = opt.output
+		} else if err == nil && fi.Mode().IsDir() {
+			outputFile = fmt.Sprintf("%s/bugs-%s-%s", opt.output, opt.organization, opt.repository)
+		} else {
+			// Try to create the file
+			fd, err := os.Create(opt.output)
+			defer fd.Close()
+			if err != nil {
+				logrus.Fatalf("Could not create file: %e", err)
+			}
+			outputFile = fd.Name()
+		}
+	}
+	writer, _ := client.Writer(ctx, outputFile)
 	defer writer.Close()
 
 	// kick off goroutines
@@ -133,7 +148,7 @@ func main() {
 		out, _ := proto.Marshal(issueState)
 		n, _ := writer.Write(out)
 
-		logrus.Infof("Sending %d characters to GCS", n)
+		logrus.Infof("Sending %d characters to %s", n, outputFile)
 	}
 
 	if opt.oneshot {
