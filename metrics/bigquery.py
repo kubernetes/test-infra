@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -30,22 +30,22 @@ import traceback
 
 import influxdb
 import requests
-import ruamel.yaml as yaml
+import yaml
 
 
 def check(cmd, **kwargs):
     """Logs and runs the command, raising on errors."""
-    print('Run:', ' '.join(pipes.quote(c) for c in cmd), end=' ', file=sys.stderr)
+    print >>sys.stderr, 'Run:', ' '.join(pipes.quote(c) for c in cmd),
     if hasattr(kwargs.get('stdout'), 'name'):
-        print(' > %s' % kwargs['stdout'].name, file=sys.stderr)
+        print >>sys.stderr, ' > %s' % kwargs['stdout'].name
     else:
-        print()
+        print
     # If 'stdin' keyword arg is a string run command and communicate string to stdin
     if 'stdin' in kwargs and isinstance(kwargs['stdin'], str):
         in_string = kwargs['stdin']
         kwargs['stdin'] = subprocess.PIPE
         proc = subprocess.Popen(cmd, **kwargs)
-        proc.communicate(input=in_string.encode('utf-8'))
+        proc.communicate(input=in_string)
         return
     subprocess.check_call(cmd, **kwargs)
 
@@ -71,7 +71,7 @@ class BigQuerier(object):
             raise ValueError('project', project)
         self.project = project
         if not bucket_path:
-            print('Not uploading results, no bucket specified.', file=sys.stderr)
+            print >>sys.stderr, 'Not uploading results, no bucket specified.'
         self.prefix = bucket_path
 
         self.influx = influx_client
@@ -87,7 +87,7 @@ class BigQuerier(object):
         ]
         with open(out_filename, 'w') as out_file:
             check(cmd, stdout=out_file)
-            print()  # bq doesn't output a trailing newline
+            print  # bq doesn't output a trailing newline
 
     def jq_upload(self, config, data_filename):
         """Filters a data file with jq and uploads the results to GCS."""
@@ -109,13 +109,13 @@ class BigQuerier(object):
             try:
                 points = json.load(points_file)
             except ValueError:
-                print("No influxdb points to upload.\n", file=sys.stderr)
+                print >>sys.stderr, "No influxdb points to upload.\n"
                 return
         if not self.influx:
-            print((
+            print >>sys.stderr, (
                 'Skipping influxdb upload of metric %s, no db configured.\n'
                 % config['metric']
-            ), file=sys.stderr)
+            )
             return
         points = [ints_to_floats(point) for point in points]
         self.influx.write_points(points, time_precision='s', batch_size=100)
@@ -140,7 +140,7 @@ class BigQuerier(object):
                     influxdb.client.InfluxDBClientError,
                     influxdb.client.InfluxDBServerError,
                 ):
-                print(traceback.format_exc(), file=sys.stderr)
+                print >>sys.stderr, traceback.format_exc()
                 consumer_error = True
         if consumer_error:
             raise ValueError('Error(s) were thrown by query result consumers.')
@@ -219,7 +219,7 @@ def make_influx_client():
 
 
 def ints_to_floats(point):
-    for key, val in point.items():
+    for key, val in point.iteritems():
         if key == 'time':
             continue
         if isinstance(val, int):
@@ -254,11 +254,11 @@ def main(configs, project, bucket_path, backfill_days):
                 IOError,
                 subprocess.CalledProcessError,
             ):
-            print(traceback.format_exc(), file=sys.stderr)
+            print >>sys.stderr, traceback.format_exc()
             errs.append(path)
 
     if errs:
-        print('Failed %d configs: %s' % (len(errs), ', '.join(errs)))
+        print 'Failed %d configs: %s' % (len(errs), ', '.join(errs))
         sys.exit(1)
 
 
