@@ -8,7 +8,7 @@ filters:
       - fejta
       - stevekuznetsov
     emeritus_approvers:
-      - spxtr	# 2018-09-17
+      - spxtr # 2018-09-17
     reviewers:
       - matthyx
       - alvaroaleman
