@@ -828,7 +828,7 @@ periodics:
       - /app/prow/cmd/branchprotector/app.binary
       args:
       - --config-path=prow/config.yaml
-      - --job-config-path=config
+      - --job-config-path=config/jobs
       - --github-token-path=/etc/github/oauth
       - --confirm
       - --github-endpoint=http://ghproxy.default.svc.cluster.local
