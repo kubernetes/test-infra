@@ -174,7 +174,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 				return err
 			}
 			if !ok {
-				resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
+				resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry-picks. You can still do the cherry-pick manually.", org, org)
 				s.log.WithFields(l.Data).Info(resp)
 				return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 			}
@@ -258,7 +258,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	// requestor -> target branch -> issue comment
 	requestorToComments := make(map[string]map[string]*github.IssueComment)
 
-	// first look for magic comments
+	// first look for our special comments
 	for i := range comments {
 		c := comments[i]
 		cherryPickMatches := cherryPickRe.FindAllStringSubmatch(c.Body, -1)
@@ -273,7 +273,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		requestorToComments[c.User.Login][targetBranch] = &c
 	}
 
-	// now look for magic labels
+	// now look for our special labels
 	labels, err := s.ghc.GetIssueLabels(org, repo, num)
 	if err != nil {
 		return err
@@ -283,10 +283,10 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		requestorToComments[pr.User.Login] = make(map[string]*github.IssueComment)
 	}
 
-	magicPrefix := "action/cherrypick-to-"
+	labelPrefix := "cherrypick/"
 	for _, label := range labels {
-		if strings.HasPrefix(label.Name, magicPrefix) {
-			requestorToComments[pr.User.Login][label.Name[len(magicPrefix):]] = nil
+		if strings.HasPrefix(label.Name, labelPrefix) {
+			requestorToComments[pr.User.Login][label.Name[len(labelPrefix):]] = nil // leave this nil which indicates a label-initiated cherry-pick
 		}
 	}
 
@@ -453,7 +453,7 @@ func (s *Server) createComment(org, repo string, num int, comment *github.IssueC
 	if comment != nil {
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(*comment, resp))
 	}
-	return s.ghc.CreateComment(org, repo, num, resp)
+	return s.ghc.CreateComment(org, repo, num, fmt.Sprintf("In response to a cherrypick label: %s", resp))
 }
 
 // ensureForkExists ensures a fork of org/repo exists for the bot.

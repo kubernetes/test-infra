@@ -2,7 +2,7 @@
 
 Cherrypicker is an external prow plugin that can also run as a standalone bot.
 It automates cherry-picking merged PRs into different branches. Cherrypicks are
-triggered from either comments or lebals in GitHub PRs that need to be cherrypicked.
+triggered from either comments or labels in GitHub PRs that need to be cherrypicked.
 
 For comments:
 
@@ -16,7 +16,7 @@ once the PR where the comment was made gets merged or is already merged.
 To use label, you need to apply labels that contain the name of the branch in the form:
 
 ```
-action/cherrypick-to-XXX
+cherrypick/XXX
 ```
 
 where XXX is the name of the branch.

@@ -386,7 +386,7 @@ func TestCherryPickPR(t *testing.T) {
 	}
 }
 
-func TestCherryPickPRWithLebals(t *testing.T) {
+func TestCherryPickPRWithLabels(t *testing.T) {
 	lg, c, err := localgit.New()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
@@ -434,13 +434,13 @@ func TestCherryPickPRWithLebals(t *testing.T) {
 		},
 		prLabels: []github.Label{
 			{
-				Name: "action/cherrypick-to-release-1.5",
+				Name: "cherrypick/release-1.5",
 			},
 			{
-				Name: "action/cherrypick-to-release-1.6",
+				Name: "cherrypick/release-1.6",
 			},
 			{
-				Name: "action/cherrypick-to-release-1.7",
+				Name: "cherrypick/release-1.7",
 			},
 		},
 		isMember:   true,
