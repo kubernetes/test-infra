@@ -32,6 +32,7 @@ import (
 type Ranch struct {
 	Storage       *Storage
 	resourcesLock sync.RWMutex
+	requestMgr    *RequestManager
 	//
 	now func() time.Time
 }
@@ -84,10 +85,11 @@ func (s StateNotMatch) Error() string {
 // In: config - path to resource file
 //     storage - path to where to save/restore the state data
 // Out: A Ranch object, loaded from config/storage, or error
-func NewRanch(config string, s *Storage) (*Ranch, error) {
+func NewRanch(config string, s *Storage, ttl time.Duration) (*Ranch, error) {
 	newRanch := &Ranch{
-		Storage: s,
-		now:     time.Now,
+		Storage:    s,
+		requestMgr: NewRequestManager(ttl),
+		now:        time.Now,
 	}
 	if config != "" {
 		if err := newRanch.SyncConfig(config); err != nil {
@@ -98,6 +100,11 @@ func NewRanch(config string, s *Storage) (*Ranch, error) {
 	return newRanch, nil
 }
 
+// typeState is used as keu
+type typeState struct {
+	rType, state string
+}
+
 // Acquire checks out a type of resource in certain state without an owner,
 // and move the checked out resource to the end of the resource list.
 // In: rtype - name of the target resource
@@ -106,9 +113,13 @@ func NewRanch(config string, s *Storage) (*Ranch, error) {
 //     owner - requester of the resource
 // Out: A valid Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
-func (r *Ranch) Acquire(rType, state, dest, owner string) (*common.Resource, error) {
+func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Resource, error) {
 	r.resourcesLock.Lock()
 	defer r.resourcesLock.Unlock()
+
+	// Finding Request Priority
+	ts := typeState{rType: rType, state: state}
+	rank := r.requestMgr.GetRank(ts, requestID)
 
 	resources, err := r.Storage.GetResources()
 	if err != nil {
@@ -117,22 +128,30 @@ func (r *Ranch) Acquire(rType, state, dest, owner string) (*common.Resource, err
 	}
 
 	foundType := false
+	// For request priority we need to go over all the list until a matching rank
+	matchingResoucesCount := 0
 	for idx := range resources {
 		res := resources[idx]
 		if rType == res.Type {
 			foundType = true
 			if state == res.State && res.Owner == "" {
-				res.Owner = owner
-				res.State = dest
-				updatedRes, err := r.Storage.UpdateResource(res)
-				if err != nil {
-					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
-					return nil, err
+				matchingResoucesCount++
+				if matchingResoucesCount >= rank {
+					res.Owner = owner
+					res.State = dest
+					updatedRes, err := r.Storage.UpdateResource(res)
+					if err != nil {
+						logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+						return nil, err
+					}
+					// Deleting this request since it has been fulfilled
+					r.requestMgr.Delete(ts, requestID)
+					return &updatedRes, nil
 				}
-				return &updatedRes, nil
 			}
 		}
 	}
+
 	if foundType {
 		return nil, &ResourceNotFound{rType}
 	}
@@ -338,6 +357,11 @@ func (r *Ranch) SyncConfig(configPath string) error {
 		return err
 	}
 	return nil
+}
+
+// StartRequestGC starts the GC of expired requests
+func (r *Ranch) StartRequestGC(gcPeriod time.Duration) {
+	r.requestMgr.StartGC(gcPeriod)
 }
 
 // Metric returns a metric object with metrics filled in
