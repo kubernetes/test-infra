@@ -61,7 +61,7 @@ postsubmits:
       fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
       testgrid-dashboards: sig-release-master-blocking, google-unit
       testgrid-tab-name: bazel-build-master
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       description: "Builds kubernetes using bazel"
     labels:
       preset-service-account: "true"
