@@ -31,6 +31,7 @@ import (
 
 	prowConfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/testgrid/util/gcs"
+	"sigs.k8s.io/yaml"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -58,6 +59,7 @@ type options struct {
 	printText          bool
 	validateConfigFile bool
 	worldReadable      bool
+	writeYAML          bool
 	prowConfig         string
 	prowJobConfig      string
 }
@@ -67,9 +69,10 @@ func gatherOptions() (options, error) {
 	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty)")
 	flag.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
 	flag.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
-	flag.BoolVar(&o.printText, "print-text", false, "print generated proto in text format to stdout")
+	flag.BoolVar(&o.printText, "print-text", false, "print generated info in text format to stdout")
 	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
 	flag.BoolVar(&o.worldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
+	flag.BoolVar(&o.writeYAML, "output-yaml", false, "Output to TestGrid YAML instead of config proto")
 	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files or directories")
 	flag.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
 	flag.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
@@ -79,7 +82,7 @@ func gatherOptions() (options, error) {
 	}
 
 	if !o.printText && !o.validateConfigFile && o.output == "" {
-		return o, errors.New("--print-text or --output=gs://path required")
+		return o, errors.New("--print-text, --validate-config-file, or --output required")
 	}
 	if o.validateConfigFile && o.output != "" {
 		return o, errors.New("--validate-config-file doesn't write the proto anywhere")
@@ -228,6 +231,18 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 	return gcs.Upload(ctx, client, p, bytes, worldReadable)
 }
 
+func marshallYAML(c *Config) ([]byte, error) {
+	defBytes, err := yaml.Marshal(c.defaultConfig)
+	if err != nil {
+		return nil, fmt.Errorf("could not write default config to yaml: %v", err)
+	}
+	conBytes, err := yaml.Marshal(c.config)
+	if err != nil {
+		return nil, fmt.Errorf("could not write config to yaml: %v", err)
+	}
+	return append(defBytes, conBytes...), nil
+}
+
 func doOneshot(ctx context.Context, client *storage.Client, opt options, prowConfigAgent *prowConfig.Agent) error {
 	// Ignore what changed for now and just recompute everything
 	c, err := readConfig(opt.inputs)
@@ -235,20 +250,32 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		return fmt.Errorf("could not read config: %v", err)
 	}
 
-	if err := applyProwjobAnnotations(c, prowConfigAgent); err != nil {
+	if err := applyProwjobAnnotations(c, prowConfigAgent, !opt.writeYAML); err != nil {
 		return fmt.Errorf("could not apply prowjob annotations: %v", err)
 	}
 
 	// Print proto if requested
 	if opt.printText {
-		if err := c.MarshalText(os.Stdout); err != nil {
+		if opt.writeYAML {
+			b, err := marshallYAML(c)
+			if err != nil {
+				return fmt.Errorf("could not print yaml config: %v", err)
+			}
+			os.Stdout.Write(b)
+		} else if err := c.MarshalText(os.Stdout); err != nil {
 			return fmt.Errorf("could not print config: %v", err)
 		}
 	}
 
 	// Write proto if requested
 	if opt.output != "" {
-		b, err := c.MarshalBytes()
+		var b []byte
+		var err error
+		if opt.writeYAML {
+			b, err = marshallYAML(c)
+		} else {
+			b, err = c.MarshalBytes()
+		}
 		if err == nil {
 			err = write(ctx, client, opt.output, b, opt.worldReadable)
 		}
