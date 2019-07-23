@@ -850,6 +850,12 @@ test_groups:
 - name: istio-release-upgrade-tests-1.0.2
   gcs_prefix: istio-prow/pr-logs/directory/release-upgrade-tests-1.0.1
   num_failures_to_alert: 1
+
+# Istio monitoring
+- name: istio-monitoring-verify-gcsweb
+  gcs_prefix: istio-prow/logs/monitoring-verify-gcsweb
+  num_failures_to_alert: 3
+
 - name: ci-kubernetes-kind-conformance-latest-1-14-arm64
   gcs_prefix: k8s-conformance-kind-arm64-openlab/periodic-logs/ci-kind-integration-test-arm64
 # cloud-provider-openstack e2e conformance tests
@@ -3379,6 +3385,13 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
 
+- name: istio-infrastructure
+  dashboard_tab:
+  - name: gcsweb
+    test_group_name: istio-monitoring-verify-gcsweb
+    alert_options:
+      alert_mail_to_addresses: istio-infra-oncall@google.com
+
 - name: istio-gke
 - name: sig-cluster-lifecycle-kops
 - name: gardener-aws
@@ -3917,6 +3930,7 @@ dashboard_groups:
 
 - name: istio
   dashboard_names:
+  - istio-infrastructure
   - istio-release
   - istio-gke
   - istio-postsubmits
