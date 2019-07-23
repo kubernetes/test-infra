@@ -3,12 +3,11 @@ presubmits:
 
   # Runs "gofmt", "go vet", and "golint" on the sources.
   - name: pull-vsphere-csi-driver-check
+    always_run: false
+    run_if_changed: '^(cmd|pkg)'
     decorate: true
-    branches:
-    - ^master$
     path_alias: sigs.k8s.io/vsphere-csi-driver
     skip_submodules: true
-    always_run: true
     skip_report: false
     spec:
       containers:
@@ -60,12 +59,11 @@ presubmits:
 
   # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
+    always_run: false
+    run_if_changed: '^(cmd|pkg|go.mod)'
     decorate: true
-    branches:
-    - ^master$
     path_alias: sigs.k8s.io/vsphere-csi-driver
     skip_submodules: true
-    always_run: true
     skip_report: false
     spec:
       containers:
@@ -80,12 +78,11 @@ presubmits:
 
   # Executes the unit tests.
   - name: pull-vsphere-csi-driver-unit-test
+    always_run: false
+    run_if_changed: '^(cmd|pkg|go.mod)'
     decorate: true
-    branches:
-    - ^master$
     path_alias: sigs.k8s.io/vsphere-csi-driver
     skip_submodules: true
-    always_run: true
     skip_report: false
     spec:
       containers:
