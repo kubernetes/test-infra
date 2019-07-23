@@ -65,7 +65,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/emptydir/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/emptydir/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_pod/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
@@ -103,7 +103,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/configmap/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/configmap/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_pod/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
@@ -141,7 +141,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/downwardapi/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/downwardapi/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_pod/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
@@ -179,7 +179,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/secret/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/secret/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_pod/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
@@ -218,7 +218,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/emptydir/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/emptydir/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_node/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
@@ -256,7 +256,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/configmap/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/configmap/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_node/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
@@ -294,7 +294,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/downwardapi/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/downwardapi/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_node/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
@@ -332,7 +332,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/secret/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/volume-types/secret/override.yaml
       - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/ephemeral-volumes/1_node/max_volumes_per_node/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
