@@ -36,6 +36,7 @@ type fghc struct {
 	comments   []string
 	prs        []string
 	prComments []github.IssueComment
+	prLabels   []github.Label
 	createdNum int
 	orgMembers []github.TeamMember
 }
@@ -90,6 +91,12 @@ func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueCo
 	f.Lock()
 	defer f.Unlock()
 	return f.prComments, nil
+}
+
+func (f *fghc) GetIssueLabels(org, repo string, number int) ([]github.Label, error) {
+	f.Lock()
+	defer f.Unlock()
+	return f.prLabels, nil
 }
 
 func (f *fghc) ListOrgMembers(org, role string) ([]github.TeamMember, error) {
@@ -311,6 +318,141 @@ func TestCherryPickPR(t *testing.T) {
 	pr := github.PullRequestEvent{
 		Action: github.PullRequestActionClosed,
 		PullRequest: github.PullRequest{
+			Base: github.PullRequestBranch{
+				Ref: "master",
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "foo",
+					},
+					Name: "bar",
+				},
+			},
+			Number:   2,
+			Merged:   true,
+			MergeSHA: new(string),
+			Title:    "This is a fix for Y",
+		},
+	}
+
+	botName := "ci-robot"
+
+	getSecret := func() []byte {
+		return []byte("sha=abcdefg")
+	}
+
+	s := &Server{
+		botName:        botName,
+		gc:             c,
+		push:           func(repo, newBranch string) error { return nil },
+		ghc:            ghc,
+		tokenGenerator: getSecret,
+		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+
+		prowAssignments: false,
+	}
+
+	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	var expectedFn = func(branch string) string {
+		expectedRepo := "foo/bar"
+		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
+		expectedBody := "This is an automated cherry-pick of #2"
+		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
+		return fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, branch, true)
+	}
+
+	if len(ghc.prs) != 2 {
+		t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
+	}
+
+	expectedBranches := []string{"release-1.5", "release-1.6"}
+	seenBranches := make(map[string]struct{})
+	for _, pr := range ghc.prs {
+		if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
+			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v", pr, expectedBranches)
+		}
+		if pr == expectedFn("release-1.5") {
+			seenBranches["release-1.5"] = struct{}{}
+		}
+		if pr == expectedFn("release-1.6") {
+			seenBranches["release-1.6"] = struct{}{}
+		}
+	}
+	if len(seenBranches) != 2 {
+		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
+	}
+}
+
+func TestCherryPickPRWithLebals(t *testing.T) {
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making localgit: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Cleaning up localgit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Cleaning up client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.5"); err != nil {
+		t.Fatalf("Checking out pull branch: %v", err)
+	}
+	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.6"); err != nil {
+		t.Fatalf("Checking out pull branch: %v", err)
+	}
+
+	ghc := &fghc{
+		orgMembers: []github.TeamMember{
+			{
+				Login: "approver",
+			},
+			{
+				Login: "merge-bot",
+			},
+			{
+				Login: "developer",
+			},
+		},
+		prComments: []github.IssueComment{
+			{
+				User: github.User{
+					Login: "developer",
+				},
+				Body: "a review comment",
+			},
+		},
+		prLabels: []github.Label{
+			{
+				Name: "action/cherrypick-to-release-1.5",
+			},
+			{
+				Name: "action/cherrypick-to-release-1.6",
+			},
+			{
+				Name: "action/cherrypick-to-release-1.7",
+			},
+		},
+		isMember:   true,
+		createdNum: 3,
+		patch:      patch,
+	}
+	pr := github.PullRequestEvent{
+		Action: github.PullRequestActionClosed,
+		PullRequest: github.PullRequest{
+			User: github.User{
+				Login: "developer",
+			},
 			Base: github.PullRequestBranch{
 				Ref: "master",
 				Repo: github.Repo{
