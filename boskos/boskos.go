@@ -34,13 +34,16 @@ import (
 )
 
 const (
-	defaultSyncPeriod = 10 * time.Minute
+	defaultSyncPeriod      = 10 * time.Minute
+	defaultRequestTTL      = 30 * time.Second
+	defaultRequestGCPeriod = time.Minute
 )
 
 var (
 	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
 	syncPeriod        = flag.Duration("sync-period", defaultSyncPeriod, "Period at which to sync config")
+	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before being removed from Priority queue")
 	kubeClientOptions crds.KubernetesClientOptions
 )
 
@@ -67,7 +70,7 @@ func main() {
 		logrus.WithError(err).Fatal("failed to create storage")
 	}
 
-	r, err := ranch.NewRanch(*configPath, storage)
+	r, err := ranch.NewRanch(*configPath, storage, *requestTTL)
 	if err != nil {
 		logrus.WithError(err).Fatalf("failed to create ranch! Config: %v", *configPath)
 	}
@@ -89,6 +92,8 @@ func main() {
 			}
 		}
 	}()
+
+	r.StartRequestGC(defaultRequestGCPeriod)
 
 	logrus.Info("Start Service")
 	logrus.WithError(boskos.ListenAndServe()).Fatal("ListenAndServe returned.")
@@ -153,6 +158,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		state := req.URL.Query().Get("state")
 		dest := req.URL.Query().Get("dest")
 		owner := req.URL.Query().Get("owner")
+		requestID := req.URL.Query().Get("request_id")
 		if rtype == "" || state == "" || dest == "" || owner == "" {
 			msg := fmt.Sprintf("Type: %v, state: %v, dest: %v, owner: %v, all of them must be set in the request.", rtype, state, dest, owner)
 			logrus.Warning(msg)
@@ -162,7 +168,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 
 		logrus.Infof("Request for a %v %v from %v, dest %v", state, rtype, owner, dest)
 
-		resource, err := r.Acquire(rtype, state, dest, owner)
+		resource, err := r.Acquire(rtype, state, dest, owner, requestID)
 
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")
