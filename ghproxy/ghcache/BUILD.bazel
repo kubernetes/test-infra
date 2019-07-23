@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/test-infra/ghproxy/ghcache",
     visibility = ["//visibility:public"],
     deps = [
+        "//ghproxy/ghmetrics:go_default_library",
         "//vendor/github.com/gomodule/redigo/redis:go_default_library",
         "//vendor/github.com/gregjones/httpcache:go_default_library",
         "//vendor/github.com/gregjones/httpcache/diskcache:go_default_library",
