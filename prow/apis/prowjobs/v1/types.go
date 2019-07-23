@@ -28,6 +28,7 @@ import (
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	prowgithub "k8s.io/test-infra/prow/github"
 )
 
 // ProwJobType specifies how the job is triggered.
@@ -162,17 +163,69 @@ type ProwJobSpec struct {
 	// ReporterConfig holds reporter-specific configuration
 	ReporterConfig *ReporterConfig `json:"reporter_config,omitempty"`
 
-	// RerunPermissions holds information about which users can rerun the job
-	RerunPermissions *RerunPermissions `json:"rerun_permissions,omitempty"`
+	// RerunAuthConfig holds information about which users can rerun the job
+	RerunAuthConfig RerunAuthConfig `json:"rerun_auth_config,omitempty"`
 }
 
-type RerunPermissions struct {
+type GitHubTeamSlug struct {
+	Slug string `json:"slug"`
+	Org  string `json:"org"`
+}
+
+type RerunAuthConfig struct {
 	// If AllowAnyone is set to true, any user can rerun the job
 	AllowAnyone bool `json:"allow_anyone,omitempty"`
 	// GitHubTeams contains IDs of GitHub teams of users who can rerun the job
-	GitHubTeams []int `json:"github_teams,omitempty"`
+	// If you know the name of a team and the org it belongs to,
+	// you can look up its ID using this command, where the team slug is the hyphenated name:
+	// curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams/<team slug>"
+	// or, to list all teams in a given org, use
+	// curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams"
+	GitHubTeamIDs []int `json:"github_team_ids,omitempty"`
+	// GitHubTeamSlugs contains slugs and orgs of teams of users who can rerun the job
+	GitHubTeamSlugs []GitHubTeamSlug `json:"github_team_slugs,omitempty"`
 	// GitHubUsers contains names of individual users who can rerun the job
 	GitHubUsers []string `json:"github_users,omitempty"`
+}
+
+// IsSpecifiedUser returns true if AllowAnyone is set to true or if the given user is
+// specified as a permitted GitHubUser
+func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient) (bool, error) {
+	if rac.AllowAnyone {
+		return true, nil
+	}
+	for _, u := range rac.GitHubUsers {
+		if prowgithub.NormLogin(u) == prowgithub.NormLogin(user) {
+			return true, nil
+		}
+	}
+	// if there is no client, no token was provided, so we cannot access the teams
+	if cli == nil {
+		return false, nil
+	}
+	for _, ght := range rac.GitHubTeamIDs {
+		member, err := cli.TeamHasMember(ght, user)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %v", ght, err)
+		}
+		if member {
+			return true, nil
+		}
+	}
+	for _, ghts := range rac.GitHubTeamSlugs {
+		team, err := cli.GetTeamBySlug(ghts.Slug, ghts.Org)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %v", ghts.Slug, ghts.Org, err)
+		}
+		member, err := cli.TeamHasMember(team.ID, user)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %v", team, err)
+		}
+		if member {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 type ReporterConfig struct {

@@ -156,6 +156,10 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 	if jb.Namespace != nil {
 		namespace = *jb.Namespace
 	}
+	var rerunAuthConfig prowapi.RerunAuthConfig
+	if jb.RerunAuthConfig != nil {
+		rerunAuthConfig = *jb.RerunAuthConfig
+	}
 	return prowapi.ProwJobSpec{
 		Job:             jb.Name,
 		Agent:           prowapi.ProwJobAgent(jb.Agent),
@@ -171,8 +175,8 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		BuildSpec:       jb.BuildSpec,
 		PipelineRunSpec: jb.PipelineRunSpec,
 
-		ReporterConfig:   jb.ReporterConfig,
-		RerunPermissions: jb.RerunPermissions,
+		ReporterConfig:  jb.ReporterConfig,
+		RerunAuthConfig: rerunAuthConfig,
 	}
 }
 

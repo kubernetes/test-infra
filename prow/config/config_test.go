@@ -1098,7 +1098,7 @@ func TestValidateJobBase(t *testing.T) {
 		{
 			name: "invalid rerun_permissions",
 			base: JobBase{
-				RerunPermissions: &prowapi.RerunPermissions{
+				RerunAuthConfig: &prowapi.RerunAuthConfig{
 					AllowAnyone: true,
 					GitHubUsers: []string{"user"},
 				},
@@ -2032,7 +2032,7 @@ func TestValidRerunAuthConfig(t *testing.T) {
 deck:
   rerun_auth_config:
     allow_anyone: false
-    authorized_users:
+    github_users:
     - someperson
     - someotherperson
 `,
@@ -2044,7 +2044,7 @@ deck:
 deck:
   rerun_auth_config:
     allow_anyone: true
-    authorized_users:
+    github_users:
     - someperson
     - anotherperson
 `,
@@ -2064,7 +2064,7 @@ deck:
 deck:
   rerun_auth_config:
     allow_anyone: true
-    authorized_users:
+    github_users:
 `,
 			expectError: false,
 		},

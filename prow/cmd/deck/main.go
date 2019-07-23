@@ -54,6 +54,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	prowgithub "k8s.io/test-infra/prow/github"
@@ -80,6 +81,7 @@ type options struct {
 	jobConfigPath         string
 	buildCluster          string
 	kubernetes            prowflagutil.ExperimentalKubernetesOptions
+	github                prowflagutil.GitHubOptions
 	tideURL               string
 	hookURL               string
 	oauthURL              string
@@ -96,10 +98,14 @@ type options struct {
 	gcsCredentialsFile    string
 	rerunCreatesJob       bool
 	allowInsecure         bool
+	dryRun                bool
 }
 
 func (o *options) Validate() error {
 	if err := o.kubernetes.Validate(false); err != nil {
+		return err
+	}
+	if err := o.github.Validate(o.dryRun); err != nil {
 		return err
 	}
 
@@ -155,7 +161,9 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
+	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
 	o.kubernetes.AddFlags(fs)
+	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
 	fs.Parse(args)
 	o.configPath = config.ConfigPath(o.configPath)
 	return o
@@ -189,7 +197,7 @@ var (
 	}
 )
 
-type authCfgGetter func() *config.RerunAuthConfig
+type authCfgGetter func() *prowapi.RerunAuthConfig
 
 type traceResponseWriter struct {
 	http.ResponseWriter
@@ -452,7 +460,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	}, podLogClients, cfg)
 	ja.Start()
 
-	cfgGetter := func() *config.RerunAuthConfig { return &cfg().Deck.RerunAuthConfig }
+	cfgGetter := func() *prowapi.RerunAuthConfig { return &cfg().Deck.RerunAuthConfig }
 
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
@@ -558,7 +566,21 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		// Handles redirect from GitHub OAuth server.
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter(), secure))
 	}
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter())))
+
+	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
+	var githubClient prowgithub.Client
+	secretAgent := &secret.Agent{}
+	if o.github.TokenPath != "" {
+		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+			logrus.WithError(err).Fatal("Error starting secrets agent.")
+		}
+		githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client.")
+		}
+	}
+
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter(), githubClient)))
 
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if o.redirectHTTPTo != "" {
@@ -1222,16 +1244,26 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 }
 
 // canTriggerJob determines whether the given user can trigger any job.
-func canTriggerJob(user string, cfg *config.RerunAuthConfig) bool {
-	if cfg.AllowAnyone {
-		return true
+func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient) (bool, error) {
+	auth, err := cfg.IsAuthorized(user, cli)
+	if auth {
+		return true, nil
 	}
-	for _, u := range cfg.AuthorizedUsers {
-		if prowgithub.NormLogin(u) == prowgithub.NormLogin(user) {
-			return true
-		}
+	if err != nil {
+		return false, err
 	}
-	return false
+	jobPermissions := pj.Spec.RerunAuthConfig
+	auth, err = jobPermissions.IsAuthorized(user, cli)
+	if auth {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if cli == nil {
+		logrus.Warning("No GitHub token was provided, so we cannot retrieve GitHub teams")
+	}
+	return false, nil
 }
 
 func marshalJob(w http.ResponseWriter, pj prowapi.ProwJob, l *logrus.Entry) {
@@ -1250,7 +1282,7 @@ func marshalJob(w http.ResponseWriter, pj prowapi.ProwJob, l *logrus.Entry) {
 // handleRerun triggers a rerun of the given job if that features is enabled, it receives a
 // POST request, and the user has the necessary permissions. Otherwise, it writes the config
 // for a new job but does not trigger it.
-func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.GitHubClientGetter) http.HandlerFunc {
+func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.GitHubClientGetter, cli prowgithub.RerunClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		l := logrus.WithField("prowjob", name)
@@ -1283,7 +1315,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			}
 			authConfig := cfg()
 			var allowed bool
-			if authConfig.AllowAnyone {
+			if authConfig.AllowAnyone || pj.Spec.RerunAuthConfig.AllowAnyone {
 				// Skip getting the users login via GH oauth if anyone is allowed to rerun
 				// jobs so that GH oauth doesn't need to be set up for private Prows.
 				allowed = true
@@ -1300,7 +1332,12 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 					l.WithError(err).Errorf("Error retrieving GitHub login")
 					return
 				}
-				allowed = canTriggerJob(login, authConfig)
+				allowed, err = canTriggerJob(login, newPJ, authConfig, cli)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Error checking if user can trigger job: %v", err), http.StatusInternalServerError)
+					l.WithError(err).Errorf("Error checking if user can trigger job")
+					return
+				}
 			}
 
 			if !allowed {
