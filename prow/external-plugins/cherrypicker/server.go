@@ -257,6 +257,8 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 
 	// requestor -> target branch -> issue comment
 	requestorToComments := make(map[string]map[string]*github.IssueComment)
+
+	// first look for magic comments
 	for i := range comments {
 		c := comments[i]
 		cherryPickMatches := cherryPickRe.FindAllStringSubmatch(c.Body, -1)
@@ -271,22 +273,25 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		requestorToComments[c.User.Login][targetBranch] = &c
 	}
 
-	if len(requestorToComments) == 0 {
-		// didn't find any magic comments so look for magic labels instead
+	// now look for magic labels
+	labels, err := s.ghc.GetIssueLabels(org, repo, num)
+	if err != nil {
+		return err
+	}
 
-		labels, err := s.ghc.GetIssueLabels(org, repo, num)
-		if err != nil {
-			return err
-		}
-
+	if requestorToComments[pr.User.Login] == nil {
 		requestorToComments[pr.User.Login] = make(map[string]*github.IssueComment)
+	}
 
-		magicPrefix := "action/cherrypick-to-"
-		for _, label := range labels {
-			if strings.HasPrefix(label.Name, magicPrefix) {
-				requestorToComments[pr.User.Login][label.Name[len(magicPrefix):]] = nil
-			}
+	magicPrefix := "action/cherrypick-to-"
+	for _, label := range labels {
+		if strings.HasPrefix(label.Name, magicPrefix) {
+			requestorToComments[pr.User.Login][label.Name[len(magicPrefix):]] = nil
 		}
+	}
+
+	if len(requestorToComments) == 0 {
+		return nil
 	}
 
 	// Figure out membership.
