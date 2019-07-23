@@ -187,6 +187,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=/workspace/_artifacts
