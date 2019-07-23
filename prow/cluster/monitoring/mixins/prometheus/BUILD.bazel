@@ -3,10 +3,10 @@ load("@io_bazel_rules_jsonnet//jsonnet:jsonnet.bzl", "jsonnet_library", "jsonnet
 jsonnet_library(
     name = "prom_lib",
     srcs = [
-        "prometheus.libsonnet",
         "ci_absent_alerts.libsonnet",
-        "prow_monitoring_absent_alerts.libsonnet",
         "configmap_alerts.libsonnet",
+        "prometheus.libsonnet",
+        "prow_monitoring_absent_alerts.libsonnet",
     ],
 )
 
@@ -14,10 +14,10 @@ jsonnet_to_json(
     name = "prow_prometheusrule",
     src = "prow_prometheusrule.jsonnet",
     outs = ["prow_prometheusrule.yaml"],
-    deps = [":prom_lib"],
     #uncomment the following line when https://github.com/bazelbuild/rules_jsonnet/issues/114 has a fix.
     #yaml_stream = True,
     visibility = ["//visibility:public"],
+    deps = [":prom_lib"],
 )
 
 filegroup(
