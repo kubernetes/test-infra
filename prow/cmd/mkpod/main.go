@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -36,11 +37,18 @@ import (
 type options struct {
 	prowJobPath string
 	buildID     string
+
+	localMode bool
+	outputDir string
 }
 
 func (o *options) Validate() error {
 	if o.prowJobPath == "" {
 		return errors.New("required flag --prow-job was unset")
+	}
+
+	if !o.localMode && o.outputDir != "" {
+		return errors.New("out-dir may only be specified in --local mode")
 	}
 
 	return nil
@@ -50,6 +58,8 @@ func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.prowJobPath, "prow-job", "", "ProwJob to decorate, - for stdin.")
 	flag.StringVar(&o.buildID, "build-id", "", "Build ID for the job run or 'snowflake' to generate one. Use 'snowflake' if tot is not used.")
+	flag.BoolVar(&o.localMode, "local", false, "Configures pod utils for local mode which avoids uploading to GCS and the need for credentials. Instead, files are copied to a directory on the host. Hint: This works great with kind!")
+	flag.StringVar(&o.outputDir, "out-dir", "", "Only allowed in --local mode. This is the directory to 'upload' to instead of GCS. If unspecified a temp dir is created.")
 	flag.Parse()
 	return o
 }
@@ -94,9 +104,31 @@ func main() {
 		logrus.Warning("No BuildID found in ProwJob status or given with --build-id, GCS interaction will be poor.")
 	}
 
-	pod, err := decorate.ProwJobToPod(job, o.buildID)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not decorate PodSpec.")
+	var pod *v1.Pod
+	var err error
+	if o.localMode {
+		outDir := o.outputDir
+		if outDir == "" {
+			prefix := strings.Join([]string{"prowjob-out", job.Spec.Job, o.buildID}, "-")
+			logrus.Infof("Creating temp directory for job output in %q with prefix %q.", os.TempDir(), prefix)
+			outDir, err = ioutil.TempDir("", prefix)
+			if err != nil {
+				logrus.WithError(err).Fatal("Could not create temp directory for job output.")
+			}
+		} else {
+			outDir = path.Join(outDir, o.buildID)
+		}
+		logrus.WithField("out-dir", outDir).Info("Pod-utils configured for local mode. Instead of uploading to GCS, files will be copied to an output dir on the host.")
+
+		pod, err = makeLocalPod(job, o.buildID, outDir)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not decorate PodSpec for local mode.")
+		}
+	} else {
+		pod, err = decorate.ProwJobToPod(job, o.buildID)
+		if err != nil {
+			logrus.WithError(err).Fatal("Could not decorate PodSpec.")
+		}
 	}
 
 	pod.GetObjectKind().SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("Pod"))
@@ -105,4 +137,48 @@ func main() {
 		logrus.WithError(err).Fatal("Could not marshal Pod YAML.")
 	}
 	fmt.Println(string(podYAML))
+}
+
+func makeLocalPod(pj prowapi.ProwJob, buildID, outDir string) (*v1.Pod, error) {
+	pod, err := decorate.ProwJobToPodLocal(pj, buildID, outDir)
+	if err != nil {
+		return nil, err
+	}
+
+	// Prompt for emptyDir or hostPath replacements for all volume sources besides those two.
+	volsToFix := nonLocalVolumes(pod.Spec.Volumes)
+	if len(volsToFix) > 0 {
+		prompt := `For each of the following volumes specify one of:
+ - 'empty' to use an emptyDir;
+ - a path on the host to use hostPath;
+ - '' (nothing) to use the existing volume source and assume it is available in the cluster`
+		fmt.Fprintln(os.Stderr, prompt)
+		for _, vol := range volsToFix {
+			fmt.Fprintf(os.Stderr, "Volume %q: ", vol.Name)
+
+			var choice string
+			fmt.Scanln(&choice)
+			choice = strings.TrimSpace(choice)
+			switch {
+			case choice == "":
+				// Leave the VolumeSource as is.
+			case choice == "empty" || strings.ToLower(choice) == "emptydir":
+				vol.VolumeSource = v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}
+			default:
+				vol.VolumeSource = v1.VolumeSource{HostPath: &v1.HostPathVolumeSource{Path: choice}}
+			}
+		}
+	}
+
+	return pod, nil
+}
+
+func nonLocalVolumes(vols []v1.Volume) []*v1.Volume {
+	var res []*v1.Volume
+	for i, vol := range vols {
+		if vol.HostPath == nil && vol.EmptyDir == nil {
+			res = append(res, &vols[i])
+		}
+	}
+	return res
 }
