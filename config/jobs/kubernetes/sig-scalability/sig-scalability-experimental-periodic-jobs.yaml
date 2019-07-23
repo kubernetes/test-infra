@@ -34,6 +34,9 @@ periodics:
 
 # max volumes per pod test cases for ephemeral volumes
 - name: ci-kubernetes-storage-scalability-max-emptydir-vol-per-pod
+  tags:
+  - "perfDashPrefix: storage-max-emptydir-vol-per-pod"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -72,6 +75,9 @@ periodics:
       - --use-logexporter
 
 - name: ci-kubernetes-storage-scalability-max-configmap-vol-per-pod
+  tags:
+  - "perfDashPrefix: storage-max-configmap-vol-per-pod"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -110,6 +116,9 @@ periodics:
       - --use-logexporter
 
 - name: ci-kubernetes-storage-scalability-max-downwardapi-vol-per-pod
+  tags:
+  - "perfDashPrefix: storage-max-downwardapi-vol-per-pod"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -148,6 +157,9 @@ periodics:
       - --use-logexporter
 
 - name: ci-kubernetes-storage-scalability-max-secret-vol-per-pod
+  tags:
+  - "perfDashPrefix: storage-max-secret-vol-per-pod"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -187,6 +199,9 @@ periodics:
 
 # max volumes per node test cases for ephemeral volumes
 - name: ci-kubernetes-storage-scalability-max-emptydir-vol-per-node
+  tags:
+  - "perfDashPrefix: storage-max-emptydir-vol-per-node"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -225,6 +240,9 @@ periodics:
       - --use-logexporter
 
 - name: ci-kubernetes-storage-scalability-max-configmap-vol-per-node
+  tags:
+  - "perfDashPrefix: storage-max-configmap-vol-per-node"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -263,6 +281,9 @@ periodics:
       - --use-logexporter
 
 - name: ci-kubernetes-storage-scalability-max-downwardapi-vol-per-node
+  tags:
+  - "perfDashPrefix: storage-max-downwardapi-vol-per-node"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -301,6 +322,9 @@ periodics:
       - --use-logexporter
 
 - name: ci-kubernetes-storage-scalability-max-secret-vol-per-node
+  tags:
+  - "perfDashPrefix: storage-max-secret-vol-per-node"
+  - "perfDashJobType: storage"
   interval: 1h
   labels:
     preset-service-account: "true"
