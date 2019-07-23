@@ -48,6 +48,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/config",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",

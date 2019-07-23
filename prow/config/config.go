@@ -46,6 +46,7 @@ import (
 	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -133,6 +134,31 @@ type ProwConfig struct {
 	// DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 	// no timeout is configured at the job level. This value is set to 24 hours.
 	DefaultJobTimeout *metav1.Duration `json:"default_job_timeout,omitempty"`
+}
+
+// PresubmitsStatic returns the presubmits in Prows main config.
+// **Warning:** This does not return dynamic Presubmits configured
+// inside the code repo, hence giving an incomplete view. Use
+// `GetPresubmits` instead if possible.
+func (c *Config) PresubmitsStatic() map[string][]Presubmit {
+	return c.Presubmits
+}
+
+// GetPresubmits will return all presumits for the given identifier.
+// Once https://github.com/kubernetes/test-infra/issues/13370 is resolved, it will
+// also return Presubmits that are versioned inside the tested repo, if that feature
+// is enabled.
+func (c *Config) GetPresubmits(gc *git.Client, identifier, baseSHA string, headRefs ...string) ([]Presubmit, error) {
+	if gc == nil {
+		return nil, errors.New("gitClient is nil")
+	}
+	if identifier == "" {
+		return nil, errors.New("no identifier for repo given")
+	}
+	if baseSHA == "" {
+		return nil, errors.New("baseSHA is empty")
+	}
+	return c.Presubmits[identifier], nil
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
