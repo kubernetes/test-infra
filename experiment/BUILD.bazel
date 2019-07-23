@@ -12,9 +12,9 @@ py_binary(
     data = [
         "test_config.yaml",
         "//config:prowjobs",
+        "//config:testgrids",
         "//jobs",
         "//prow:configs",
-        "//testgrid:config-yaml",
     ],
     deps = [requirement("ruamel.yaml")],
 )
@@ -23,7 +23,7 @@ py_binary(
     name = "fix_testgrid_config",
     srcs = ["fix_testgrid_config.py"],
     data = [
-        "//testgrid:config-yaml",
+        "//config:testgrids",
     ],
     deps = [requirement("ruamel.yaml")],
 )
