@@ -50,8 +50,10 @@ var muxTokenUsage, muxRequestMetrics sync.Mutex
 var lastGitHubResponse time.Time
 
 func init() {
+	logrus.Debug("ghproxy init: started")
 	prometheus.MustRegister(ghTokenUntilResetGaugeVec)
 	prometheus.MustRegister(ghTokenUsageGaugeVec)
+	logrus.Debug("ghproxy init: finished")
 }
 
 // CollectGitHubTokenMetrics publishes the rate limits of the github api to
@@ -75,8 +77,10 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 	if isAfter {
 		logrus.WithField("last-github-response", lastGitHubResponse).WithField("response-time", responseTime).Debug("Previously pushed metrics of a newer response, skipping old metrics")
 	} else {
+		logrus.Debug("ghproxy is publishing metrics samples")
 		ghTokenUntilResetGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion}).Set(float64(durationUntilReset.Nanoseconds()))
 		ghTokenUsageGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion}).Set(remainingFloat)
+		logrus.Debug("ghproxy is done with publishing metrics samples")
 	}
 }
 
