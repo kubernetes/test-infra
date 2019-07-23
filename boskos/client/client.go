@@ -41,6 +41,10 @@ import (
 	"k8s.io/test-infra/boskos/storage"
 )
 
+const (
+	acquireWait = 3 * time.Second
+)
+
 var (
 	// ErrNotFound is returned by Acquire() when no resources are available.
 	ErrNotFound = errors.New("resources not found")
@@ -149,7 +153,7 @@ func (c *Client) AcquireWait(ctx context.Context, rtype, state, dest string) (*c
 				select {
 				case <-ctx.Done():
 					return nil, err
-				case <-time.After(3 * time.Second):
+				case <-time.After(acquireWait):
 					continue
 				}
 			}
@@ -190,7 +194,7 @@ func (c *Client) AcquireByStateWait(ctx context.Context, state, dest string, nam
 				select {
 				case <-ctx.Done():
 					return nil, err
-				case <-time.After(3 * time.Second):
+				case <-time.After(acquireWait):
 					continue
 				}
 			}
@@ -348,6 +352,7 @@ func (c *Client) acquire(rtype, state, dest, requestID string) (*common.Resource
 	values.Set("type", rtype)
 	values.Set("state", state)
 	values.Set("owner", c.owner)
+	values.Set("dest", dest)
 	values.Set("request_id", requestID)
 	resp, err := c.httpPost("/acquire", values, "", nil)
 	if err != nil {

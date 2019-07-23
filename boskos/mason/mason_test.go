@@ -31,6 +31,7 @@ import (
 
 var (
 	errConstruct = fmt.Errorf("failed to construct")
+	testTTL      = time.Millisecond
 )
 
 const (
@@ -98,7 +99,7 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedReso
 	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
 	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), storage.NewMemoryStorage(), "")
-	r, _ := ranch.NewRanch("", s)
+	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for rtype, c := range tc {
 		for i := 0; i < c.count; i++ {
@@ -129,7 +130,7 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedReso
 }
 
 func (fb *fakeBoskos) Acquire(rtype, state, dest string) (*common.Resource, error) {
-	return fb.ranch.Acquire(rtype, state, dest, owner)
+	return fb.ranch.Acquire(rtype, state, dest, owner, "")
 }
 
 func (fb *fakeBoskos) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {

@@ -29,6 +29,7 @@ import (
 const (
 	testOwner      = "cleaner"
 	testWaitPeriod = time.Millisecond
+	testTTL        = time.Millisecond
 )
 
 type releasedResource struct {
@@ -43,7 +44,7 @@ type fakeBoskos struct {
 func createFakeBoskos(resources []common.Resource, dlrcs []common.DynamicResourceLifeCycle) (*ranch.Storage, boskosClient, chan releasedResource) {
 	names := make(chan releasedResource, 100)
 	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), storage.NewMemoryStorage(), "")
-	r, _ := ranch.NewRanch("", s)
+	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for _, lc := range dlrcs {
 		s.AddDynamicResourceLifeCycle(lc)
@@ -55,7 +56,7 @@ func createFakeBoskos(resources []common.Resource, dlrcs []common.DynamicResourc
 }
 
 func (fb *fakeBoskos) Acquire(rtype, state, dest string) (*common.Resource, error) {
-	return fb.ranch.Acquire(rtype, state, dest, testOwner)
+	return fb.ranch.Acquire(rtype, state, dest, testOwner, "")
 }
 
 func (fb *fakeBoskos) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {

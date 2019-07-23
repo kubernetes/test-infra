@@ -30,7 +30,10 @@ import (
 	"k8s.io/test-infra/boskos/ranch"
 )
 
-var fakeNow = now()
+var (
+	fakeNow = now()
+	testTTL = time.Millisecond
+)
 
 func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
 	resourceClient := crds.NewTestResourceClient()
@@ -39,7 +42,7 @@ func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
 	for _, r := range resources {
 		s.AddResource(r)
 	}
-	r, _ := ranch.NewRanch("", s)
+	r, _ := ranch.NewRanch("", s, testTTL)
 	return r
 }
 

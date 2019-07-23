@@ -218,8 +218,11 @@ func TestClientServerUpdate(t *testing.T) {
 		r := MakeTestRanch([]common.Resource{tc.resource})
 		boskos := makeTestBoskos(r)
 		client := client.NewClient(owner, boskos.URL)
-		client.Acquire(rType, initialState, finalState)
-		err := client.UpdateOne(resourceName, finalState, common.UserDataFromMap(tc.ud))
+		_, err := client.Acquire(rType, initialState, finalState)
+		if err != nil {
+			t.Errorf("failed to acquire resource")
+		}
+		err = client.UpdateOne(resourceName, finalState, common.UserDataFromMap(tc.ud))
 		boskos.Close()
 		if !reflect.DeepEqual(err, tc.err) {
 			t.Errorf("tc: %s - errors don't match, expected %v, received\n %v", tc.name, tc.err, err)

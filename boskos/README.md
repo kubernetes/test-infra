@@ -76,6 +76,13 @@ Use `/acquire` when you want to get hold of some resource.
 | `dest`  | `string` | destination state of the requested resource |
 | `owner` | `string` | requester of the resource                   |
 
+#### Optional Parameters
+
+| Name         | Type     | Description                                   |
+| ------------ | -------- | --------------------------------------------- |
+| `request_id` | `string` | request id to use to keep your priority rank  |
+
+
 Example: `/acquire?type=gce-project&state=free&dest=busy&owner=user`.
 
 On a successful request, `/acquire` will return HTTP 200 and a valid Resource JSON object.
