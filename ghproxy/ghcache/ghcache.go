@@ -28,6 +28,7 @@ package ghcache
 import (
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"net/http"
 	"path"
 	"strings"
@@ -160,12 +161,13 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 
 	// get authorization header to convert to sha256
 	authHeader := req.Header.Get("Authorization")
+	if authHeader == "" {
+		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
+		authHeader = "unknown"
+	}
 	hasher := sha256.New()
 	hasher.Write([]byte(authHeader))
-	authHeaderHash := string(hasher.Sum(nil))
-	if authHeader == "" {
-		logrus.Warnf("Couldn't retrieve 'Authorization' header, %s is the hash of an empty string", authHeaderHash)
-	}
+	authHeaderHash := fmt.Sprintf("%x", hasher.Sum(nil)) // use %x to make this a utf-8 string for use as a label
 
 	reqStartTime := time.Now()
 	// Don't modify request, just pass to delegate.
