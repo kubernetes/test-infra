@@ -358,6 +358,10 @@ func TestHandle(t *testing.T) {
 			filesRemoved: []string{"pkg/OWNERS"},
 			ownersFile:   "valid",
 			shouldLabel:  false,
+		}, {
+			name:         "OWNERS_ALIASES file was removed",
+			filesRemoved: []string{"OWNERS_ALIASES"},
+			shouldLabel:  false,
 		},
 	}
 	lg, c, err := localgit.New()
