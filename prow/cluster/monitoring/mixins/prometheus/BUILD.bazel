@@ -5,6 +5,7 @@ jsonnet_library(
     srcs = [
         "ci_absent_alerts.libsonnet",
         "configmap_alerts.libsonnet",
+        "hook_alert.libsonnet",
         "prometheus.libsonnet",
         "prow_monitoring_absent_alerts.libsonnet",
     ],
