@@ -116,6 +116,10 @@ type ResourceEntry struct {
 	Needs    ResourceNeeds `json:"needs,omitempty"`
 }
 
+func (re *ResourceEntry) IsDRLC() bool {
+	return len(re.Names) == 0
+}
+
 // BoskosConfig defines config used by boskos server
 type BoskosConfig struct {
 	Resources []ResourceEntry `json:"resources,flow"`
