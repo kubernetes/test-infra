@@ -645,15 +645,9 @@ function redraw(fz: FuzzySearch): void {
         max = 2 * 3600;
     }
     drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now, max);
-    if (rerunStatus === "error") {
+    if (rerunStatus === "gh_redirect") {
         modal.style.display = "block";
-        rerunCommand.innerHTML = "You don't have permission to rerun that job";
-    } else if (rerunStatus === "success") {
-        modal.style.display = "block";
-        rerunCommand.innerHTML = "Job successfully triggered. Wait 30 seconds and refresh the page for the job to show up";
-    } else if (rerunStatus != null) {
-        modal.style.display = "block";
-        rerunCommand.innerHTML = "Nice try! The direct rerun feature hasn't been implemented yet, so that button does nothing.";
+        rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
     }
 }
 
@@ -661,7 +655,10 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
     const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
     const i = icon.create("refresh", "Show instructions for rerunning this job");
-    const login = getCookieByName("access-token-session");
+
+    // we actually want to know whether the "access-token-session" cookie exists, but we can't always
+    // access it from the frontend. "github_login" should be set whenever "access-token-session" is
+    const login = getCookieByName("github_login");
     i.onclick = () => {
         modal.style.display = "block";
         rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
@@ -670,30 +667,30 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}"`);
         copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
         rerunElement.appendChild(copyButton);
-        const runButton = document.createElement('a');
-        runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
-        if (login === "") {
-            runButton.href = `/github-login?dest=%2F?rerun=work_in_progress`;
-        } else {
-            if (rerunCreatesJob) {
-                runButton.onclick = () => {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `${url}`;
-                    const tokenInput = document.createElement('input');
-                    tokenInput.type = 'hidden';
-                    tokenInput.name = 'gorilla.csrf.Token';
-                    tokenInput.value = csrfToken;
-                    form.append(tokenInput);
-                    c.appendChild(form);
-                    form.submit();
-                };
+        if (rerunCreatesJob) {
+            const runButton = document.createElement('a');
+            runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
+            if (login === "") {
+                runButton.href = `/github-login?dest=%2F?rerun=gh_redirect`;
             } else {
-                runButton.href = `/?rerun=work_in_progress`;
-                runButton.onclick = () => gtag("event", "troll_rerun_popup", {event_category: "engagement", transport_type: "beacon"});
+                runButton.onclick = async () => {
+                    gtag("event", "troll_rerun_popup", {
+                        event_category: "engagement",
+                        transport_type: "beacon",
+                    });
+                    const result = await fetch(url, {
+                        headers: {
+                            "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                            "X-CSRF-Token": csrfToken,
+                        },
+                        method: 'post',
+                    });
+                    const data = await result.text();
+                    rerunElement.innerHTML = data;
+                };
             }
+            rerunElement.appendChild(runButton);
         }
-        rerunElement.appendChild(runButton);
     };
     c.appendChild(i);
     c.classList.add("icon-cell");

@@ -1304,7 +1304,9 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			}
 
 			if !allowed {
-				http.Redirect(w, r, "/?rerun=error", http.StatusFound)
+				if _, err = w.Write([]byte("You don't have permission to rerun that job")); err != nil {
+					l.WithError(err).Error("Error writing to rerun response.")
+				}
 				return
 			}
 			if _, err := prowJobClient.Create(&newPJ); err != nil {
@@ -1312,7 +1314,9 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
 				return
 			}
-			http.Redirect(w, r, "/?rerun=success", http.StatusFound)
+			if _, err = w.Write([]byte("Job successfully triggered. Wait 30 seconds and refresh the page for the job to show up")); err != nil {
+				l.WithError(err).Error("Error writing to rerun response.")
+			}
 			return
 		default:
 			http.Error(w, fmt.Sprintf("bad verb %v", r.Method), http.StatusMethodNotAllowed)

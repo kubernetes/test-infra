@@ -291,7 +291,7 @@ func TestRerun(t *testing.T) {
 			allowAnyone:         false,
 			rerunCreatesJob:     true,
 			shouldCreateProwJob: true,
-			httpCode:            http.StatusFound,
+			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
 		},
 		{
@@ -301,7 +301,7 @@ func TestRerun(t *testing.T) {
 			allowAnyone:         false,
 			rerunCreatesJob:     true,
 			shouldCreateProwJob: false,
-			httpCode:            http.StatusFound,
+			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
 		},
 		{
@@ -321,7 +321,7 @@ func TestRerun(t *testing.T) {
 			allowAnyone:         true,
 			rerunCreatesJob:     true,
 			shouldCreateProwJob: true,
-			httpCode:            http.StatusFound,
+			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
 		},
 		{
