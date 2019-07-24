@@ -338,7 +338,7 @@ periodics:
       - --env=TEST_ETCD_VERSION=3.0.17
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -374,7 +374,7 @@ periodics:
       - --env=TEST_ETCD_VERSION=3.0.17
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
@@ -473,7 +473,7 @@ periodics:
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/latest
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -504,7 +504,7 @@ periodics:
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --extract=ci/latest
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -534,7 +534,7 @@ periodics:
       - --check-version-skew=false
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --extract=ci/latest
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
@@ -572,7 +572,7 @@ periodics:
       # In 1.11 influxdb is no longer deployed by default.
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/latest
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
       - --provider=gce
@@ -602,7 +602,7 @@ periodics:
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/latest
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -632,7 +632,7 @@ periodics:
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
       - --env=KUBE_ENABLE_CLUSTER_MONITORING=standalone
       - --extract=ci/latest
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
