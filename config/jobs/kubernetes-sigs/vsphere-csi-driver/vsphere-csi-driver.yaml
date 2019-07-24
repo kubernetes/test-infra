@@ -1,24 +1,59 @@
 presubmits:
   kubernetes-sigs/vsphere-csi-driver:
 
-  # Runs "gofmt", "go vet", and "golint" on the sources.
-  - name: pull-vsphere-csi-driver-check
+  - name: pull-vsphere-csi-driver-verify-fmt
     always_run: false
-    run_if_changed: '^(cmd|pkg)'
+    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
-    skip_submodules: true
-    skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190719-7cdf877-master
         command:
-        - "make"
+        - make
         args:
-        - "check"
+        - fmt
     annotations:
       testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-fmt
+      description: Verifies the Golang sources have been formatted
+
+  - name: pull-vsphere-csi-driver-verify-lint
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190719-7cdf877-master
+        command:
+        - make
+        args:
+        - lint
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-lint
+      description: Verifies the Golang sources are linted
+
+  - name: pull-vsphere-csi-driver-verify-vet
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190719-7cdf877-master
+        command:
+        - make
+        args:
+        - vet
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-vet
+      description: Vets the Golang sources have been vetted
 
   # Runs 'shellcheck' on appropriate sources
   - name: pull-vsphere-csi-driver-verify-shell
