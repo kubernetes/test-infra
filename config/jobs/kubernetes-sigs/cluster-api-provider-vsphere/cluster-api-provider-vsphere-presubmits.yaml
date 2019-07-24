@@ -203,6 +203,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-service-account: "true"
       preset-cluster-api-provider-vsphere-e2e-creds: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
     always_run: false
     run_if_changed: '^((cmd|config|pkg|(scripts/e2e)|vendor)/)|Dockerfile'
     decorate: true
