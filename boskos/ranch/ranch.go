@@ -100,8 +100,8 @@ func NewRanch(config string, s *Storage, ttl time.Duration) (*Ranch, error) {
 	return newRanch, nil
 }
 
-// typeState is used as keu
-type typeState struct {
+// acquireRequestPriorityKey is used as key for request priority cache.
+type acquireRequestPriorityKey struct {
 	rType, state string
 }
 
@@ -111,6 +111,7 @@ type typeState struct {
 //     state - current state of the requested resource
 //     dest - destination state of the requested resource
 //     owner - requester of the resource
+//     requestID - request ID to get a priority in the queue
 // Out: A valid Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
 func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Resource, error) {
@@ -118,7 +119,7 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 	defer r.resourcesLock.Unlock()
 
 	// Finding Request Priority
-	ts := typeState{rType: rType, state: state}
+	ts := acquireRequestPriorityKey{rType: rType, state: state}
 	rank := r.requestMgr.GetRank(ts, requestID)
 
 	resources, err := r.Storage.GetResources()

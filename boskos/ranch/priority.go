@@ -30,35 +30,74 @@ type request struct {
 	expiration time.Time
 }
 
-func newRequestQueue() *requestQueue {
-	return &requestQueue{
-		requestMap: map[string]request{},
+type requestNode struct {
+	id   string
+	next *requestNode
+}
+
+type requestLinkedList struct {
+	start, end *requestNode
+}
+
+func (l *requestLinkedList) Append(id string) {
+	if l.start == nil {
+		l.start = &requestNode{id: id}
+		l.end = l.start
+		return
+	}
+	l.end.next = &requestNode{id: id}
+	l.end = l.end.next
+}
+
+func (l *requestLinkedList) Delete(requestID string) {
+	previous := l.start
+	for n := l.start; n != nil; n = n.next {
+		if n.id == requestID {
+			if n == l.start {
+				l.start = l.start.next
+			}
+			if n == l.end {
+				l.end = previous
+			} else {
+				previous.next = n.next
+			}
+			return
+		}
+		previous = n
+	}
+}
+
+func (l *requestLinkedList) Range(f func(string) bool) {
+	for n := l.start; n != nil; n = n.next {
+		if b := f(n.id); !b {
+			break
+		}
 	}
 }
 
 // requestQueue is a simple FIFO queue for requests.
 type requestQueue struct {
 	lock        sync.RWMutex
-	requestList []string
+	requestList *requestLinkedList
 	requestMap  map[string]request
+}
+
+func newRequestQueue() *requestQueue {
+	return &requestQueue{
+		requestMap:  map[string]request{},
+		requestList: &requestLinkedList{},
+	}
 }
 
 // update updates expiration time is updated if already present,
 // add a new requestID at the end otherwise (FIFO)
 func (rq *requestQueue) update(requestID string, newExpiration time.Time) {
-	if requestID == "" {
-		// Nothing to do
-		return
-	}
 	rq.lock.Lock()
 	defer rq.lock.Unlock()
-	if rq.requestMap == nil {
-		rq.requestMap = map[string]request{}
-	}
 	req, exists := rq.requestMap[requestID]
 	if !exists {
 		req = request{id: requestID}
-		rq.requestList = append(rq.requestList, requestID)
+		rq.requestList.Append(requestID)
 		logrus.Infof("request id %s added", requestID)
 	}
 	// Update timestamp
@@ -72,36 +111,27 @@ func (rq *requestQueue) delete(requestID string) {
 	rq.lock.Lock()
 	defer rq.lock.Unlock()
 	delete(rq.requestMap, requestID)
-	index := -1
-	for i, id := range rq.requestList {
-		if id == requestID {
-			index = i
-			break
-		}
-	}
-	if index >= 0 {
-		rq.requestList = append(rq.requestList[0:index], rq.requestList[index+1:len(rq.requestList)]...)
-		logrus.Infof("request id %s deleted", requestID)
-	}
+	rq.requestList.Delete(requestID)
 }
 
 // cleanup checks for all expired  or marked for deletion items and delete them.
 func (rq *requestQueue) cleanup(now time.Time) {
 	rq.lock.Lock()
 	defer rq.lock.Unlock()
-	var newRequestList []string
+	newRequestList := &requestLinkedList{}
 	newRequestMap := map[string]request{}
-	for _, requestID := range rq.requestList {
+	rq.requestList.Range(func(requestID string) bool {
 		req := rq.requestMap[requestID]
 		// Checking expiration
 		if now.After(req.expiration) {
 			logrus.Infof("request id %s expired", req.id)
-			continue
+			return true
 		}
 		// Keeping
-		newRequestList = append(newRequestList, requestID)
+		newRequestList.Append(requestID)
 		newRequestMap[requestID] = req
-	}
+		return true
+	})
 	rq.requestMap = newRequestMap
 	rq.requestList = newRequestList
 }
@@ -109,28 +139,31 @@ func (rq *requestQueue) cleanup(now time.Time) {
 // getRank provides the rank of a given requestID following the order it was added (FIFO).
 // If requestID is an empty string, getRank assumes it is added last (lowest rank + 1).
 func (rq *requestQueue) getRank(requestID string, ttl time.Duration, now time.Time) int {
-	rq.update(requestID, now.Add(ttl))
+	if requestID != "" {
+		rq.update(requestID, now.Add(ttl))
+	}
 	rank := 1
 	rq.lock.RLock()
 	defer rq.lock.RUnlock()
-	for _, existingID := range rq.requestList {
+	rq.requestList.Range(func(existingID string) bool {
 		req := rq.requestMap[existingID]
 		if now.After(req.expiration) {
 			logrus.Infof("request id %s expired", req.id)
-			continue
+			return true
 		}
 		if requestID == existingID {
-			return rank
+			return false
 		}
 		rank++
-	}
+		return true
+	})
 	return rank
 }
 
 func (rq *requestQueue) isEmpty() bool {
 	rq.lock.Lock()
 	defer rq.lock.Unlock()
-	return len(rq.requestList) == 0
+	return len(rq.requestMap) == 0
 }
 
 // RequestManager facilitates management of RequestQueues for a set of (resource type, resource state) tuple.
@@ -170,10 +203,10 @@ func (rp *RequestManager) StartGC(gcPeriod time.Duration) {
 	ctx, stop := context.WithCancel(context.Background())
 	rp.stopGC = stop
 	tick := time.Tick(gcPeriod)
+	rp.wg.Add(1)
 	go func() {
 		logrus.Info("starting cleanup go routine")
 		defer logrus.Info("exiting cleanup go routine")
-		rp.wg.Add(1)
 		defer rp.wg.Done()
 		for {
 			select {

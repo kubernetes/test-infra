@@ -224,33 +224,35 @@ func TestAcquirePriority(t *testing.T) {
 	r.requestMgr.now = func() time.Time { return now }
 
 	// Setting Priority, this request will fail
-	r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1")
+	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err == nil {
+		t.Errorf("should fail as there are not resource available")
+	}
 	r.Storage.AddResource(res)
 	// Attempting to acquire this resource without priority
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, ""); err == nil {
-		t.Errorf("this should fail")
+		t.Errorf("should fail as there is only resource, and it is prioritizes to request_id_1")
 	}
-	// Attempting to acquire this resource without priority
+	// Attempting to acquire this resource with priority, which will set a place in the queue
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_2"); err == nil {
-		t.Errorf("this should fail")
+		t.Errorf("should fail as there is only resource, and it is prioritizes to request_id_1")
 	}
 	// Attempting with the first request
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err != nil {
-		t.Errorf("this should succeed. got %v", err)
+		t.Errorf("should succeed since the request priority should match its rank in the queue. got %v", err)
 	}
 	r.Release(res.Name, common.Free, "tester")
 	// Attempting with the first request
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, "request_id_1"); err == nil {
-		t.Errorf("this should not succeed since this request has already been fulfilled")
+		t.Errorf("should not succeed since this request has already been fulfilled")
 	}
 	// Attempting to acquire this resource without priority
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, ""); err == nil {
-		t.Errorf("this should fail")
+		t.Errorf("should fail as request_id_2 has rank 1 now")
 	}
 	r.requestMgr.cleanup(expiredFuture)
 	// Attempting to acquire this resource without priority
 	if _, err := r.Acquire(res.Type, res.State, common.Dirty, owner, ""); err != nil {
-		t.Errorf("request 2 expired, this should work now, got %v", err)
+		t.Errorf("request_id_2 expired, this should work now, got %v", err)
 	}
 }
 

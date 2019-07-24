@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	acquireWait = 3 * time.Second
+	acquireWait = 15 * time.Second
 )
 
 var (

@@ -43,7 +43,7 @@ var (
 	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
 	syncPeriod        = flag.Duration("sync-period", defaultSyncPeriod, "Period at which to sync config")
-	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before being removed from Priority queue")
+	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
 )
 
