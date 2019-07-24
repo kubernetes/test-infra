@@ -65,6 +65,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
