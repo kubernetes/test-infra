@@ -207,19 +207,6 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "prowjob-aborted",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodRunning,
-				StartTime: startTime(time.Now().Add(-10 * time.Second)),
-			},
-		},
 	}
 	deletedPods := sets.NewString(
 		"new-running-no-pj",
@@ -227,7 +214,6 @@ func TestClean(t *testing.T) {
 		"old-succeeded",
 		"old-pending-abort",
 		"old-running",
-		"prowjob-aborted",
 	)
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -369,16 +355,6 @@ func TestClean(t *testing.T) {
 			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
-			},
-		},
-		&prowv1.ProwJob{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "prowjob-aborted",
-				Namespace: "ns",
-			},
-			Status: prowv1.ProwJobStatus{
-				State:     prowv1.AbortedState,
-				StartTime: metav1.NewTime(time.Now().Add(-time.Second)),
 			},
 		},
 	}
