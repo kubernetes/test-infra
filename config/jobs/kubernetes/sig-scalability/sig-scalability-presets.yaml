@@ -50,15 +50,6 @@ presets:
     value: 1000
   - name: LOGROTATE_MAX_SIZE
     value: "5G"
-### kubemark-gce-big
-- labels:
-    preset-e2e-kubemark-gce-big: "true"
-  env:
-  # kubernetes env
-  ### e2e-env
-  # Increase throughput in Load test.
-  - name: LOAD_TEST_THROUGHPUT
-    value: "50"
 ### kubemark-gce-scale
 - labels:
     preset-e2e-kubemark-gce-scale: "true"
