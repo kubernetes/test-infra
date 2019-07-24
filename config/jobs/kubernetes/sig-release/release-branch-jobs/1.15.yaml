@@ -302,7 +302,7 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 2h 6h 24h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: verify-1.15
   decorate: true
@@ -342,7 +342,7 @@ periodics:
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-dashboards: sig-release-1.15-blocking, google-unit
       testgrid-tab-name: bazel-build-1.15
     branches:

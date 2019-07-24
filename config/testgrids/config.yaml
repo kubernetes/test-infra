@@ -2364,7 +2364,7 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
 - name: sig-testing-fejtabot
   dashboard_tab:
   - name: retester
@@ -2440,7 +2440,7 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
   - name: metrics-bigquery
     description: Runs BigQuery queries to generate data for metrics.
     test_group_name: metrics-bigquery
@@ -2452,7 +2452,7 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
   - name: ci-kubernetes-local-e2e
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
@@ -2481,14 +2481,14 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
   - name: label_sync
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
     test_group_name: ci-test-infra-label-sync
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com
+      alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
 
 - name: sig-testing-canaries
   dashboard_tab:

@@ -116,7 +116,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-release-master-blocking, google-unit
     testgrid-tab-name: verify-master
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: "Ends up running: make verify"
   decorate: true
   extra_refs:
