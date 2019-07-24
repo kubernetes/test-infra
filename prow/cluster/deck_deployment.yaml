@@ -52,6 +52,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --spyglass=true
+        - --rerun-creates-job
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/github
