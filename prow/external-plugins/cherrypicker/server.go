@@ -273,6 +273,8 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		requestorToComments[c.User.Login][targetBranch] = &c
 	}
 
+	foundCherryPickComments := len(requestorToComments) != 0
+
 	// now look for our special labels
 	labels, err := s.ghc.GetIssueLabels(org, repo, num)
 	if err != nil {
@@ -283,14 +285,16 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		requestorToComments[pr.User.Login] = make(map[string]*github.IssueComment)
 	}
 
+	foundCherryPickLabels := false
 	labelPrefix := "cherrypick/"
 	for _, label := range labels {
 		if strings.HasPrefix(label.Name, labelPrefix) {
 			requestorToComments[pr.User.Login][label.Name[len(labelPrefix):]] = nil // leave this nil which indicates a label-initiated cherry-pick
+			foundCherryPickLabels = true
 		}
 	}
 
-	if len(requestorToComments) == 0 {
+	if !foundCherryPickComments && !foundCherryPickLabels {
 		return nil
 	}
 
@@ -433,12 +437,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		return err
 	}
 	if !s.prowAssignments {
-		login := requestor
-		if comment != nil {
-			login = comment.User.Login
-		}
-
-		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{login}); err != nil {
+		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{requestor}); err != nil {
 			s.log.WithFields(l.Data).Warningf("Cannot assign to new PR: %v", err)
 			// Ignore returning errors on failure to assign as this is most likely
 			// due to users not being members of the org so that they can't be assigned
