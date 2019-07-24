@@ -63,7 +63,7 @@ postsubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-    run_if_changed: '^(testgrid/.*|config/jobs/.*)$'
+    run_if_changed: '^config/(jobs|testgrids)/.*$'
     decorate: true
     spec:
       containers:
