@@ -149,7 +149,7 @@ periodics:
   tags:
   - "perfDashPrefix: kubemark-5000Nodes"
   - "perfDashJobType: performance"
-  interval: 8h
+  interval: 12h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -168,7 +168,7 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
-      - --timeout=720
+      - --timeout=1100
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-5000
@@ -192,11 +192,10 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=700m
+      - --timeout=1080m
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
