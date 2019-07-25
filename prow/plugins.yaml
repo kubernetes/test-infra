@@ -264,6 +264,14 @@ repo_milestone:
     maintainers_id: 3063852
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
+  kubernetes-sigs/cluster-api-provider-docker:
+    maintainers_id: 3297612
+    maintainers_team: cluster-api-provider-docker-maintainers
+    maintainers_friendly_name: Cluster API Provider Docker Maintainers
+  kubernetes-sigs/cluster-api-provider-vsphere:
+    maintainers_id: 2850058
+    maintainers_team: cluster-api-provider-vsphere-maintainers
+    maintainers_friendly_name: Cluster API Provider vSphere Maintainers
   kubernetes/community:
     maintainers_id: 3169231
     maintainers_team: community-milestone-maintainers
