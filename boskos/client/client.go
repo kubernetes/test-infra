@@ -28,12 +28,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
-	"sync"
-
-	"github.com/hashicorp/go-multierror"
+	multierror "github.com/hashicorp/go-multierror"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
@@ -203,7 +202,7 @@ func (c *Client) ReleaseAll(dest string) error {
 	var allErrors error
 	for _, r := range resources {
 		c.storage.Delete(r.GetName())
-		err := c.release(r.GetName(), dest)
+		err := c.Release(r.GetName(), dest)
 		if err != nil {
 			allErrors = multierror.Append(allErrors, err)
 		}
@@ -220,7 +219,7 @@ func (c *Client) ReleaseOne(name, dest string) error {
 		return fmt.Errorf("no resource name %v", name)
 	}
 	c.storage.Delete(name)
-	if err := c.release(name, dest); err != nil {
+	if err := c.Release(name, dest); err != nil {
 		return err
 	}
 	return nil
@@ -387,7 +386,7 @@ func (c *Client) acquireByState(state, dest string, names []string) ([]common.Re
 	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
 
-func (c *Client) release(name, dest string) error {
+func (c *Client) Release(name, dest string) error {
 	resp, err := c.httpPost(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v",
 		c.url, name, dest, c.owner), "", nil)
 	if err != nil {
