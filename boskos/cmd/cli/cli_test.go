@@ -41,7 +41,7 @@ type response struct {
 	data []byte
 }
 
-func TestAcquire(t *testing.T) {
+func TestCommand(t *testing.T) {
 	var testCases = []struct {
 		name           string
 		args           []string
@@ -140,6 +140,58 @@ Global Flags:
 			expectedOutput: `failed to acquire a resource: resources already used by another user
 `,
 			expectedCode: 1,
+		},
+		{
+			name: "normal release sends a request and succeeds",
+			args: []string{"release", "--name=identifier", "--target-state=old"},
+			responses: map[string]response{
+				"/release": {
+					code: http.StatusOK,
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodPost,
+				url:    url.URL{Path: "/release", RawQuery: `dest=old&owner=test&name=identifier`},
+				body:   []byte{},
+			}},
+			expectedOutput: `released resource "identifier"
+`,
+		},
+		{
+			name:        "normal release without flags fails",
+			args:        []string{"release"},
+			expectedErr: true,
+			expectedOutput: `Error: required flag(s) "name", "target-state" not set
+Usage:
+  boskosctl release [flags]
+
+Flags:
+  -h, --help                  help for release
+      --name string           Name of the resource lease to release
+      --target-state string   Move resource to this state after releasing
+
+Global Flags:
+      --owner-name string   Name identifying the user of this client
+      --server-url string   URL of the Boskos server
+
+`,
+		},
+		{
+			name: "failed release sends a request and fails",
+			args: []string{"release", "--name=identifier", "--target-state=old"},
+			responses: map[string]response{
+				"/release": {
+					code: http.StatusNotFound,
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodPost,
+				url:    url.URL{Path: "/release", RawQuery: `dest=old&owner=test&name=identifier`},
+				body:   []byte{},
+			}},
+			expectedCode: 1,
+			expectedOutput: `failed to release resource "identifier": status 404 Not Found, statusCode 404 releasing identifier
+`,
 		},
 	}
 

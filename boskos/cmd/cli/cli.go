@@ -37,6 +37,11 @@ type options struct {
 	c *client.Client
 
 	acquire acquireOptions
+	release releaseOptions
+}
+
+func (o *options) initializeClient() {
+	o.c = client.NewClient(o.ownerName, o.serverURL)
 }
 
 type acquireOptions struct {
@@ -44,6 +49,11 @@ type acquireOptions struct {
 	requestedState string
 	targetState    string
 	timeout        time.Duration
+}
+
+type releaseOptions struct {
+	name        string
+	targetState string
 }
 
 // for test mocking
@@ -95,7 +105,7 @@ Examples:
   # Acquire one new "my-thing" and mark it old when leasing, block until successfully leased
   $ boskosctl acquire --type my-thing --state new --target-state old --timeout 30s`,
 		Run: func(cmd *cobra.Command, args []string) {
-			options.c = client.NewClient(options.ownerName, options.serverURL)
+			options.initializeClient()
 			acquireFunc := options.c.Acquire
 			if options.acquire.timeout != 0*time.Second {
 				acquireFunc = func(rtype, state, dest string) (resource *common.Resource, e error) {
@@ -139,6 +149,42 @@ Examples:
 	}
 	acquire.Flags().DurationVar(&options.acquire.timeout, "timeout", 0*time.Second, "If set, retry this long until the resource has been acquired")
 	root.AddCommand(acquire)
+
+	release := &cobra.Command{
+		Use:   "release",
+		Short: "Release resource leases",
+		Long: `Release a resource lease, blocking.
+
+Resources should have their leases released when they are finished
+with being used. Identify which resource lease to release by name
+and determine what state the resource should be in when the lease
+is released.
+
+Examples:
+
+  # Release a lease on "my-thing" and mark it dirty when releasing
+  $ boskosctl release --name my-thing --target-state dirty`,
+		Run: func(cmd *cobra.Command, args []string) {
+			options.initializeClient()
+			err := options.c.ReleaseOne(options.release.name, options.release.targetState)
+			if err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to release resource %q: %v\n", options.release.name, err)
+				exit(1)
+				return
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "released resource %q\n", options.release.name)
+		},
+		Args: cobra.NoArgs,
+	}
+	release.Flags().StringVar(&options.release.name, "name", "", "Name of the resource lease to release")
+	release.Flags().StringVar(&options.release.targetState, "target-state", "", "Move resource to this state after releasing")
+	for _, flag := range []string{"name", "target-state"} {
+		if err := release.MarkFlagRequired(flag); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+	root.AddCommand(release)
 
 	return root
 }
