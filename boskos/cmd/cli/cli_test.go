@@ -193,6 +193,58 @@ Global Flags:
 			expectedOutput: `failed to release resource "identifier": status 404 Not Found, statusCode 404 releasing identifier
 `,
 		},
+		{
+			name: "normal metrics sends a request and succeeds",
+			args: []string{"metrics", "--type=thing"},
+			responses: map[string]response{
+				"/metric": {
+					code: http.StatusOK,
+					data: []byte(`{"type":"thing","current":{"clean":1},"owner":{"":1}}`),
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodGet,
+				url:    url.URL{Path: "/metric", RawQuery: `type=thing`},
+				body:   []byte{},
+			}},
+			expectedOutput: `{"type":"thing","current":{"clean":1},"owner":{"":1}}
+`,
+		},
+		{
+			name:        "normal metrics without flags fails",
+			args:        []string{"metrics"},
+			expectedErr: true,
+			expectedOutput: `Error: required flag(s) "type" not set
+Usage:
+  boskosctl metrics [flags]
+
+Flags:
+  -h, --help          help for metrics
+      --type string   Type of resource to get metics for
+
+Global Flags:
+      --owner-name string   Name identifying the user of this client
+      --server-url string   URL of the Boskos server
+
+`,
+		},
+		{
+			name: "failed metrics sends a request and fails",
+			args: []string{"metrics", "--type=thing"},
+			responses: map[string]response{
+				"/metric": {
+					code: http.StatusNotFound,
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodGet,
+				url:    url.URL{Path: "/metric", RawQuery: `type=thing`},
+				body:   []byte{},
+			}},
+			expectedCode: 1,
+			expectedOutput: `failed to get metrics for resource "thing": status 404 Not Found, status code 404
+`,
+		},
 	}
 
 	for _, testCase := range testCases {
