@@ -212,6 +212,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190725-8880a53-master
+        resources:
+          requests:
+            cpu: "1000m"
         command:
         - runner.sh
         args:
@@ -243,6 +246,9 @@ postsubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190725-8880a53-master
+        resources:
+          requests:
+            cpu: "1000m"
         command:
         - runner.sh
         args:
@@ -273,6 +279,9 @@ postsubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190725-8880a53-master
+        resources:
+          requests:
+            cpu: "1000m"
         command:
         - runner.sh
         args:
