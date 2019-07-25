@@ -439,7 +439,6 @@ periodics:
       - --down=true
       - --deployment=acsengine
       - --build=bazel
-      - --check-leaked-resources
       - --provider=skeleton
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
