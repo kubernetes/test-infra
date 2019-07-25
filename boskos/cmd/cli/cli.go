@@ -38,6 +38,7 @@ type options struct {
 
 	acquire acquireOptions
 	release releaseOptions
+	metrics metricsOptions
 }
 
 func (o *options) initializeClient() {
@@ -54,6 +55,10 @@ type acquireOptions struct {
 type releaseOptions struct {
 	name        string
 	targetState string
+}
+
+type metricsOptions struct {
+	requestedType string
 }
 
 // for test mocking
@@ -185,6 +190,46 @@ Examples:
 		}
 	}
 	root.AddCommand(release)
+
+	metrics := &cobra.Command{
+		Use:   "metrics",
+		Short: "Get metrics on resource states",
+		Long: `Get metrics on resource states
+
+Metrics are provided for the current set of resources of a certain
+type, broken down by the states they are in and owners of current
+leases. Output is printed in JSON.
+
+Examples:
+
+  # Check metrics for "my-thing"
+  $ boskosctl metrics --type my-thing`,
+		Run: func(cmd *cobra.Command, args []string) {
+			options.initializeClient()
+			metric, err := options.c.Metric(options.metrics.requestedType)
+			if err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to get metrics for resource %q: %v\n", options.metrics.requestedType, err)
+				exit(1)
+				return
+			}
+			raw, err := json.Marshal(metric)
+			if err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to marshal metrics for resource %q: %v\n", options.metrics.requestedType, err)
+				exit(1)
+				return
+			}
+			fmt.Fprintln(cmd.OutOrStdout(), string(raw))
+		},
+		Args: cobra.NoArgs,
+	}
+	metrics.Flags().StringVar(&options.metrics.requestedType, "type", "", "Type of resource to get metics for")
+	for _, flag := range []string{"type"} {
+		if err := metrics.MarkFlagRequired(flag); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+	root.AddCommand(metrics)
 
 	return root
 }
