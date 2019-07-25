@@ -83,6 +83,7 @@ filegroup(
         ":package-srcs",
         "//boskos/cleaner:all-srcs",
         "//boskos/client:all-srcs",
+        "//boskos/cmd/cli:all-srcs",
         "//boskos/common:all-srcs",
         "//boskos/crds:all-srcs",
         "//boskos/janitor:all-srcs",
