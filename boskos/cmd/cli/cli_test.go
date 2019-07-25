@@ -61,6 +61,7 @@ Usage:
 
 Flags:
   -h, --help                  help for acquire
+      --request-id string     request id to acquire the resource in
       --state string          State to acquire the resource in
       --target-state string   Move resource to this state after acquiring
       --timeout duration      If set, retry this long until the resource has been acquired
@@ -122,7 +123,7 @@ Global Flags:
 		},
 		{
 			name: "retry acquire sends requests and times out",
-			args: []string{"acquire", "--state=new", "--type=thing", "--target-state=old", "--timeout=5s"},
+			args: []string{"acquire", "--state=new", "--type=thing", "--target-state=old", "--timeout=5s", "--request-id=testingRequest"},
 			responses: map[string]response{
 				"/acquire": {
 					code: http.StatusUnauthorized,
@@ -130,11 +131,11 @@ Global Flags:
 			},
 			expectedCalls: []request{{
 				method: http.MethodPost,
-				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing`},
+				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing&request_id=testingRequest`},
 				body:   []byte{},
 			}, {
 				method: http.MethodPost,
-				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing`},
+				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing&request_id=testingRequest`},
 				body:   []byte{},
 			}},
 			expectedOutput: `failed to acquire a resource: resources already used by another user

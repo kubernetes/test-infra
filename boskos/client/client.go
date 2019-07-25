@@ -41,10 +41,6 @@ import (
 	"k8s.io/test-infra/boskos/storage"
 )
 
-const (
-	acquireWait = 15 * time.Second
-)
-
 var (
 	// ErrNotFound is returned by Acquire() when no resources are available.
 	ErrNotFound = errors.New("resources not found")
@@ -121,7 +117,7 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 
 // AcquireWithPriority asks boskos for a resource of certain type in certain state, and set the resource to dest state.
 // Returns the resource on success.
-// Bosokos Priority are FIFO.
+// Boskos Priority are FIFO.
 func (c *Client) AcquireWithPriority(rtype, state, dest, requestID string) (*common.Resource, error) {
 	r, err := c.acquire(rtype, state, dest, requestID)
 	if err != nil {
@@ -139,11 +135,18 @@ func (c *Client) AcquireWithPriority(rtype, state, dest, requestID string) (*com
 // AcquireWait blocks until Acquire returns the specified resource or the
 // provided context is cancelled or its deadline exceeded.
 func (c *Client) AcquireWait(ctx context.Context, rtype, state, dest string) (*common.Resource, error) {
+	// request with FIFO priority
+	requestID := uuid.New().String()
+	return c.AcquireWaitWithPriority(ctx, rtype, state, dest, requestID)
+}
+
+// AcquireWaitWithPriority blocks until Acquire returns the specified resource or the
+// provided context is cancelled or its deadline exceeded. This allows you to pass in a request priority.
+// Boskos Priority are FIFO.
+func (c *Client) AcquireWaitWithPriority(ctx context.Context, rtype, state, dest, requestID string) (*common.Resource, error) {
 	if ctx == nil {
 		return nil, ErrContextRequired
 	}
-	// request with FIFO priority
-	requestID := uuid.New().String()
 	// Try to acquire the resource until available or the context is
 	// cancelled or its deadline exceeded.
 	for {
@@ -153,7 +156,7 @@ func (c *Client) AcquireWait(ctx context.Context, rtype, state, dest string) (*c
 				select {
 				case <-ctx.Done():
 					return nil, err
-				case <-time.After(acquireWait):
+				case <-time.After(3 * time.Second):
 					continue
 				}
 			}
@@ -194,7 +197,7 @@ func (c *Client) AcquireByStateWait(ctx context.Context, state, dest string, nam
 				select {
 				case <-ctx.Done():
 					return nil, err
-				case <-time.After(acquireWait):
+				case <-time.After(3 * time.Second):
 					continue
 				}
 			}
@@ -353,7 +356,9 @@ func (c *Client) acquire(rtype, state, dest, requestID string) (*common.Resource
 	values.Set("state", state)
 	values.Set("owner", c.owner)
 	values.Set("dest", dest)
-	values.Set("request_id", requestID)
+	if requestID != "" {
+		values.Set("request_id", requestID)
+	}
 	resp, err := c.httpPost("/acquire", values, "", nil)
 	if err != nil {
 		return nil, err

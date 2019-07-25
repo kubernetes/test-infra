@@ -146,7 +146,9 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 						return nil, err
 					}
 					// Deleting this request since it has been fulfilled
-					r.requestMgr.Delete(ts, requestID)
+					if requestID != "" {
+						r.requestMgr.Delete(ts, requestID)
+					}
 					return &updatedRes, nil
 				}
 			}
