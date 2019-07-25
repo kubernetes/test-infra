@@ -408,7 +408,7 @@ periodics:
     testgrid-dashboards: sig-azure-master
     testgrid-tab-name: cloud-provider-azure-slow
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure)."
-- interval: 24h
+- interval: 12h
   # ci-cloud-provider-azure-serial runs Kubernetes serial tests periodically.
   name: ci-cloud-provider-azure-serial
   labels:
