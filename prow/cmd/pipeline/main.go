@@ -150,6 +150,9 @@ func main() {
 		configs = map[string]rest.Config{
 			kube.DefaultClusterAlias: configs[kube.DefaultClusterAlias],
 		}
+	} else {
+		// the InClusterContext is always mapped to DefaultClusterAlias in the controller, so there is no need to watch for this config.
+		delete(configs, kube.InClusterContext)
 	}
 
 	stop := stopper()
