@@ -166,7 +166,7 @@ Examples:
   $ boskosctl release --name my-thing --target-state dirty`,
 		Run: func(cmd *cobra.Command, args []string) {
 			options.initializeClient()
-			err := options.c.ReleaseOne(options.release.name, options.release.targetState)
+			err := options.c.Release(options.release.name, options.release.targetState)
 			if err != nil {
 				fmt.Fprintf(cmd.ErrOrStderr(), "failed to release resource %q: %v\n", options.release.name, err)
 				exit(1)
