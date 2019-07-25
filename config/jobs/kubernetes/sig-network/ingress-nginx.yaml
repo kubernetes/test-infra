@@ -4,6 +4,8 @@ presubmits:
   - name: pull-ingress-nginx-boilerplate
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 10m
     path_alias: k8s.io/ingress-nginx
     labels:
       preset-dind-enabled: "true"
@@ -20,6 +22,8 @@ presubmits:
   - name: pull-ingress-nginx-codegen
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 10m
     path_alias: k8s.io/ingress-nginx
     labels:
       preset-dind-enabled: "true"
@@ -52,6 +56,8 @@ presubmits:
   - name: pull-ingress-nginx-golint
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 10m
     path_alias: k8s.io/ingress-nginx
     labels:
       preset-dind-enabled: "true"
@@ -85,6 +91,8 @@ presubmits:
   - name: pull-ingress-nginx-test-lua
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 10m
     path_alias: k8s.io/ingress-nginx
     labels:
       preset-dind-enabled: "true"
@@ -102,6 +110,8 @@ presubmits:
   - name: pull-ingress-nginx-test
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 10m
     path_alias: k8s.io/ingress-nginx
     labels:
       preset-dind-enabled: "true"
@@ -133,6 +143,8 @@ presubmits:
   - name: pull-ingress-nginx-e2e-1-12
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 25m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -166,6 +178,8 @@ presubmits:
   - name: pull-ingress-nginx-e2e-1-13
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 25m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -199,6 +213,8 @@ presubmits:
   - name: pull-ingress-nginx-e2e-1-14
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 25m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -232,6 +248,8 @@ presubmits:
   - name: pull-ingress-nginx-e2e-1-15
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 25m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -270,7 +288,7 @@ periodics:
   path_alias: k8s.io/ingress-nginx
   decorate: true
   decoration_config:
-    timeout: 3h
+    timeout: 25m
   extra_refs:
   - org: kubernetes
     repo: ingress-nginx
