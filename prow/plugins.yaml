@@ -236,6 +236,10 @@ slack:
     whitelist:
     - k8s-ci-robot
 
+milestone_applier:
+  kubernetes/test-infra:
+    master: v1.16
+
 repo_milestone:
   # Default maintainer
   '':
@@ -507,6 +511,7 @@ plugins:
   kubernetes/test-infra:
   - config-updater
   - milestone
+  - milestoneapplier
   - override
   - project
 
