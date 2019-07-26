@@ -20,8 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -48,7 +50,6 @@ func (o *options) initializeClient() {
 type acquireOptions struct {
 	requestedType  string
 	requestedState string
-	requestID      string
 	targetState    string
 	timeout        time.Duration
 }
@@ -64,6 +65,7 @@ type metricsOptions struct {
 
 // for test mocking
 var exit func(int)
+var randId func() string
 
 func command() *cobra.Command {
 	options := options{}
@@ -98,7 +100,9 @@ scripts with a simple interface.`,
 
 Resources can be leased by identifying which type of resource is needed
 and what state the resource should be in when leased. Resources will also
-transition to a new state upon being leased.
+transition to a new state upon being leased. If specifying a time-out,
+lease acquisition will be re-tried and lessees enter a first-come, first-
+serve queue for the resources in question.
 
 On a successful lease acquisition, the leased resource will be printed in
 JSON format for downstream consumption.
@@ -113,11 +117,6 @@ Examples:
 		Run: func(cmd *cobra.Command, args []string) {
 			options.initializeClient()
 			acquireFunc := options.c.Acquire
-			if options.acquire.requestID != "" {
-				acquireFunc = func(rtype, state, dest string) (resource *common.Resource, e error) {
-					return options.c.AcquireWithPriority(rtype, state, dest, options.acquire.requestID)
-				}
-			}
 			if options.acquire.timeout != 0*time.Second {
 				acquireFunc = func(rtype, state, dest string) (resource *common.Resource, e error) {
 					ctx := context.Background()
@@ -129,10 +128,7 @@ Examples:
 						<-sig
 						cancel()
 					}()
-					if options.acquire.requestID != "" {
-						return options.c.AcquireWaitWithPriority(ctx, rtype, state, dest, options.acquire.requestID)
-					}
-					return options.c.AcquireWait(ctx, rtype, state, dest)
+					return options.c.AcquireWaitWithPriority(ctx, rtype, state, dest, randId())
 				}
 			}
 			resource, err := acquireFunc(options.acquire.requestedType, options.acquire.requestedState, options.acquire.targetState)
@@ -153,7 +149,6 @@ Examples:
 	}
 	acquire.Flags().StringVar(&options.acquire.requestedType, "type", "", "Type of resource to acquire")
 	acquire.Flags().StringVar(&options.acquire.requestedState, "state", "", "State to acquire the resource in")
-	acquire.Flags().StringVar(&options.acquire.requestID, "request-id", "", "request id to acquire the resource in")
 	acquire.Flags().StringVar(&options.acquire.targetState, "target-state", "", "Move resource to this state after acquiring")
 	for _, flag := range []string{"type", "state", "target-state"} {
 		if err := acquire.MarkFlagRequired(flag); err != nil {
@@ -245,6 +240,9 @@ Examples:
 
 func main() {
 	exit = os.Exit
+	randId = func() string {
+		return strconv.Itoa(rand.Int())
+	}
 	if err := command().Execute(); err != nil {
 		fmt.Println(err)
 		exit(1)
