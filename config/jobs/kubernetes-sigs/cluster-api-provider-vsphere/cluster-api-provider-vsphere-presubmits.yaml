@@ -286,6 +286,7 @@ postsubmits:
         - runner.sh
         args:
         - ./hack/release.sh
+        - -l
         - -p
         - -k
         - /root/.capv/keyfile.json
