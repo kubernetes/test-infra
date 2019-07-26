@@ -30,6 +30,7 @@ prow_push(
         "{STABLE_PROW_REPO}/boskos/janitor": "//boskos/janitor:image",
         "{STABLE_PROW_REPO}/boskos/metrics": "//boskos/metrics:image",
         "{STABLE_PROW_REPO}/boskos/reaper": "//boskos/reaper:image",
+        "{STABLE_PROW_REPO}/boskos/cli": "//boskos/cmd/cli:image",
     }),
 )
 
