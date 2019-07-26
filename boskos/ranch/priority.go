@@ -91,7 +91,8 @@ func newRequestQueue() *requestQueue {
 
 // update updates expiration time is updated if already present,
 // add a new requestID at the end otherwise (FIFO)
-func (rq *requestQueue) update(requestID string, newExpiration time.Time) {
+func (rq *requestQueue) update(requestID string, newExpiration time.Time) bool {
+
 	rq.lock.Lock()
 	defer rq.lock.Unlock()
 	req, exists := rq.requestMap[requestID]
@@ -104,6 +105,7 @@ func (rq *requestQueue) update(requestID string, newExpiration time.Time) {
 	req.expiration = newExpiration
 	rq.requestMap[requestID] = req
 	logrus.Infof("request id %s set to expire at %v", requestID, newExpiration)
+	return !exists
 }
 
 // delete an element
@@ -138,9 +140,11 @@ func (rq *requestQueue) cleanup(now time.Time) {
 
 // getRank provides the rank of a given requestID following the order it was added (FIFO).
 // If requestID is an empty string, getRank assumes it is added last (lowest rank + 1).
-func (rq *requestQueue) getRank(requestID string, ttl time.Duration, now time.Time) int {
+func (rq *requestQueue) getRank(requestID string, ttl time.Duration, now time.Time) (int, bool) {
+	// not considering empty requestID as new
+	var new bool
 	if requestID != "" {
-		rq.update(requestID, now.Add(ttl))
+		new = rq.update(requestID, now.Add(ttl))
 	}
 	rank := 1
 	rq.lock.RLock()
@@ -157,7 +161,7 @@ func (rq *requestQueue) getRank(requestID string, ttl time.Duration, now time.Ti
 		rank++
 		return true
 	})
-	return rank
+	return rank, new
 }
 
 func (rq *requestQueue) isEmpty() bool {
@@ -228,8 +232,8 @@ func (rp *RequestManager) StopGC() {
 	}
 }
 
-// GetRank provides the rank of a given request
-func (rp *RequestManager) GetRank(key interface{}, id string) int {
+// GetRank provides the rank of a given request and whether request is new (was added)
+func (rp *RequestManager) GetRank(key interface{}, id string) (int, bool) {
 	rp.lock.Lock()
 	defer rp.lock.Unlock()
 	rq := rp.requests[key]
