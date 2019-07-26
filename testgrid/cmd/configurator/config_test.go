@@ -18,13 +18,13 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/mail"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
-
-	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -64,8 +64,9 @@ var (
 )
 
 const (
-	prowPath = "../../../prow/config.yaml"
-	jobPath  = "../../../config/jobs"
+	prowPath    = "../../../prow/config.yaml"
+	jobPath     = "../../../config/jobs"
+	defaultPath = "../../../config/testgrids/default.yaml"
 )
 
 // Shared testgrid config, loaded at TestMain.
@@ -74,8 +75,17 @@ var cfg *config_pb.Configuration
 func TestMain(m *testing.M) {
 	//make sure we can parse configurations
 	yamlFiles := []string{"../../../config/testgrids"}
-	c, err := readConfig(yamlFiles)
+
+	var c Config
+	b, err := ioutil.ReadFile(defaultPath)
 	if err != nil {
+		fmt.Printf("Could not read default config: %v", err)
+	}
+	if err := c.UpdateDefaults(b); err != nil {
+		fmt.Printf("Could not update defaults: %v", err)
+	}
+
+	if err := readToConfig(&c, yamlFiles); err != nil {
 		fmt.Printf("Could not read testgrid config: %v", err)
 		os.Exit(1)
 	}
@@ -86,7 +96,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	if err := applyProwjobAnnotations(c, pca, true); err != nil {
+	if err := applyProwjobAnnotations(&c, pca); err != nil {
 		fmt.Printf("Couldn't apply prowjob annotations: %v", err)
 		os.Exit(1)
 	}

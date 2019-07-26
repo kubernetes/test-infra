@@ -62,6 +62,7 @@ type options struct {
 	writeYAML          bool
 	prowConfig         string
 	prowJobConfig      string
+	defaultYAML        string
 }
 
 func gatherOptions() (options, error) {
@@ -76,6 +77,7 @@ func gatherOptions() (options, error) {
 	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files or directories")
 	flag.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
 	flag.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
+	flag.StringVar(&o.defaultYAML, "default", "", "path to default settings; required for proto outputs")
 	flag.Parse()
 	if len(o.inputs) == 0 || o.inputs[0] == "" {
 		return o, errors.New("--yaml must include at least one file")
@@ -89,6 +91,10 @@ func gatherOptions() (options, error) {
 	}
 	if (o.prowConfig == "") != (o.prowJobConfig == "") {
 		return o, errors.New("--prow-config and --prow-job-config must be specified together")
+	}
+	if o.defaultYAML == "" && !o.writeYAML {
+		logrus.Warnf("--default not explicitly specified; assuming %s", o.inputs[0])
+		o.defaultYAML = o.inputs[0]
 	}
 	return o, nil
 }
@@ -161,8 +167,7 @@ func announceProwChanges(ctx context.Context, pca *prowConfig.Agent, channel cha
 	}
 }
 
-func readConfig(paths []string) (*Config, error) {
-	var c Config
+func readToConfig(c *Config, paths []string) error {
 	err := walkForYAMLFiles(paths, func(path string, info os.FileInfo) error {
 		// Read YAML file and update config
 		b, err := ioutil.ReadFile(path)
@@ -176,10 +181,7 @@ func readConfig(paths []string) (*Config, error) {
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-	return &c, nil
+	return err
 }
 
 // walks through paths and directories, calling the passed function on each YAML file
@@ -232,32 +234,41 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 }
 
 func marshallYAML(c *Config) ([]byte, error) {
-	defBytes, err := yaml.Marshal(c.defaultConfig)
-	if err != nil {
-		return nil, fmt.Errorf("could not write default config to yaml: %v", err)
-	}
-	conBytes, err := yaml.Marshal(c.config)
+	bytes, err := yaml.Marshal(c.config)
 	if err != nil {
 		return nil, fmt.Errorf("could not write config to yaml: %v", err)
 	}
-	return append(defBytes, conBytes...), nil
+	return bytes, nil
 }
 
+// Ignores what changed for now and recomputes everything
 func doOneshot(ctx context.Context, client *storage.Client, opt options, prowConfigAgent *prowConfig.Agent) error {
-	// Ignore what changed for now and just recompute everything
-	c, err := readConfig(opt.inputs)
+
+	// Read Data Sources: Default, YAML configs, Prow Annotations
+	var c Config
+	if opt.defaultYAML != "" {
+		b, err := ioutil.ReadFile(opt.defaultYAML)
+		if err != nil {
+			return err
+		}
+		if err := c.UpdateDefaults(b); err != nil {
+			return err
+		}
+	}
+
+	err := readToConfig(&c, opt.inputs)
 	if err != nil {
 		return fmt.Errorf("could not read config: %v", err)
 	}
 
-	if err := applyProwjobAnnotations(c, prowConfigAgent, !opt.writeYAML); err != nil {
+	if err := applyProwjobAnnotations(&c, prowConfigAgent); err != nil {
 		return fmt.Errorf("could not apply prowjob annotations: %v", err)
 	}
 
 	// Print proto if requested
 	if opt.printText {
 		if opt.writeYAML {
-			b, err := marshallYAML(c)
+			b, err := marshallYAML(&c)
 			if err != nil {
 				return fmt.Errorf("could not print yaml config: %v", err)
 			}
@@ -272,7 +283,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		var b []byte
 		var err error
 		if opt.writeYAML {
-			b, err = marshallYAML(c)
+			b, err = marshallYAML(&c)
 		} else {
 			b, err = c.MarshalBytes()
 		}
