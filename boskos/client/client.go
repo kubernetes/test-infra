@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -33,6 +34,8 @@ import (
 	"time"
 
 	multierror "github.com/hashicorp/go-multierror"
+
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
@@ -109,7 +112,14 @@ func NewClient(owner string, url string) *Client {
 // Acquire asks boskos for a resource of certain type in certain state, and set the resource to dest state.
 // Returns the resource on success.
 func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
-	r, err := c.acquire(rtype, state, dest)
+	return c.AcquireWithPriority(rtype, state, dest, "")
+}
+
+// AcquireWithPriority asks boskos for a resource of certain type in certain state, and set the resource to dest state.
+// Returns the resource on success.
+// Boskos Priority are FIFO.
+func (c *Client) AcquireWithPriority(rtype, state, dest, requestID string) (*common.Resource, error) {
+	r, err := c.acquire(rtype, state, dest, requestID)
 	if err != nil {
 		return nil, err
 	}
@@ -125,13 +135,22 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 // AcquireWait blocks until Acquire returns the specified resource or the
 // provided context is cancelled or its deadline exceeded.
 func (c *Client) AcquireWait(ctx context.Context, rtype, state, dest string) (*common.Resource, error) {
+	// request with FIFO priority
+	requestID := uuid.New().String()
+	return c.AcquireWaitWithPriority(ctx, rtype, state, dest, requestID)
+}
+
+// AcquireWaitWithPriority blocks until Acquire returns the specified resource or the
+// provided context is cancelled or its deadline exceeded. This allows you to pass in a request priority.
+// Boskos Priority are FIFO.
+func (c *Client) AcquireWaitWithPriority(ctx context.Context, rtype, state, dest, requestID string) (*common.Resource, error) {
 	if ctx == nil {
 		return nil, ErrContextRequired
 	}
 	// Try to acquire the resource until available or the context is
 	// cancelled or its deadline exceeded.
 	for {
-		r, err := c.Acquire(rtype, state, dest)
+		r, err := c.AcquireWithPriority(rtype, state, dest, requestID)
 		if err != nil {
 			if err == ErrAlreadyInUse || err == ErrNotFound {
 				select {
@@ -331,9 +350,16 @@ func (c *Client) updateLocalResource(i common.Item, state string, data *common.U
 	return err
 }
 
-func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
-	resp, err := c.httpPost(fmt.Sprintf("%v/acquire?type=%v&state=%v&dest=%v&owner=%v",
-		c.url, rtype, state, dest, c.owner), "", nil)
+func (c *Client) acquire(rtype, state, dest, requestID string) (*common.Resource, error) {
+	values := url.Values{}
+	values.Set("type", rtype)
+	values.Set("state", state)
+	values.Set("owner", c.owner)
+	values.Set("dest", dest)
+	if requestID != "" {
+		values.Set("request_id", requestID)
+	}
+	resp, err := c.httpPost("/acquire", values, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -364,8 +390,12 @@ func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
 }
 
 func (c *Client) acquireByState(state, dest string, names []string) ([]common.Resource, error) {
-	resp, err := c.httpPost(fmt.Sprintf("%v/acquirebystate?state=%v&dest=%v&owner=%v&names=%v",
-		c.url, state, dest, c.owner, strings.Join(names, ",")), "", nil)
+	values := url.Values{}
+	values.Set("state", state)
+	values.Set("dest", dest)
+	values.Set("names", strings.Join(names, ","))
+	values.Set("owner", c.owner)
+	resp, err := c.httpPost("/acquirebystate", values, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -387,8 +417,11 @@ func (c *Client) acquireByState(state, dest string, names []string) ([]common.Re
 }
 
 func (c *Client) Release(name, dest string) error {
-	resp, err := c.httpPost(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v",
-		c.url, name, dest, c.owner), "", nil)
+	values := url.Values{}
+	values.Set("name", name)
+	values.Set("dest", dest)
+	values.Set("owner", c.owner)
+	resp, err := c.httpPost("/release", values, "", nil)
 	if err != nil {
 		return err
 	}
@@ -410,8 +443,11 @@ func (c *Client) update(name, state string, userData *common.UserData) error {
 		}
 		body = b
 	}
-	resp, err := c.httpPost(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v",
-		c.url, name, c.owner, state), "application/json", body)
+	values := url.Values{}
+	values.Set("name", name)
+	values.Set("owner", c.owner)
+	values.Set("state", state)
+	resp, err := c.httpPost("/update", values, "application/json", body)
 	if err != nil {
 		return err
 	}
@@ -425,8 +461,12 @@ func (c *Client) update(name, state string, userData *common.UserData) error {
 
 func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
 	rmap := make(map[string]string)
-	resp, err := c.httpPost(fmt.Sprintf("%v/reset?type=%v&state=%v&expire=%v&dest=%v",
-		c.url, rtype, state, expire.String(), dest), "", nil)
+	values := url.Values{}
+	values.Set("type", rtype)
+	values.Set("state", state)
+	values.Set("expire", expire.String())
+	values.Set("dest", dest)
+	resp, err := c.httpPost("/reset", values, "", nil)
 	if err != nil {
 		return rmap, err
 	}
@@ -447,7 +487,9 @@ func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (
 
 func (c *Client) metric(rtype string) (common.Metric, error) {
 	var metric common.Metric
-	resp, err := c.httpGet(fmt.Sprintf("%v/metric?type=%v", c.url, rtype))
+	values := url.Values{}
+	values.Set("type", rtype)
+	resp, err := c.httpGet("/metric", values)
 	if err != nil {
 		return metric, err
 	}
@@ -466,16 +508,22 @@ func (c *Client) metric(rtype string) (common.Metric, error) {
 	return metric, err
 }
 
-func (c *Client) httpGet(url string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func (c *Client) httpGet(action string, values url.Values) (*http.Response, error) {
+	u, _ := url.ParseRequestURI(c.url)
+	u.Path = action
+	u.RawQuery = values.Encode()
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
 	return c.http.Do(req)
 }
 
-func (c *Client) httpPost(url, contentType string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, url, body)
+func (c *Client) httpPost(action string, values url.Values, contentType string, body io.Reader) (*http.Response, error) {
+	u, _ := url.ParseRequestURI(c.url)
+	u.Path = action
+	u.RawQuery = values.Encode()
+	req, err := http.NewRequest(http.MethodPost, u.String(), body)
 	if err != nil {
 		return nil, err
 	}

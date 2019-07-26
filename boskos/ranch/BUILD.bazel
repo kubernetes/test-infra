@@ -8,7 +8,10 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["ranch_test.go"],
+    srcs = [
+        "priority_test.go",
+        "ranch_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//boskos/common:go_default_library",
@@ -19,6 +22,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
+        "priority.go",
         "ranch.go",
         "storage.go",
     ],
