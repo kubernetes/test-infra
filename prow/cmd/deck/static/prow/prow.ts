@@ -674,7 +674,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
                 runButton.href = `/github-login?dest=%2F?rerun=gh_redirect`;
             } else {
                 runButton.onclick = async () => {
-                    gtag("event", "troll_rerun_popup", {
+                    gtag("event", "rerun", {
                         event_category: "engagement",
                         transport_type: "beacon",
                     });
