@@ -246,6 +246,72 @@ Global Flags:
 			expectedOutput: `failed to get metrics for resource "thing": status 404 Not Found, status code 404
 `,
 		},
+		{
+			name: "normal heartbeat sends requests and succeeds",
+			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`},
+			responses: map[string]response{
+				"/update": {
+					code: http.StatusOK,
+					data: []byte(`{"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`),
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodPost,
+				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+				header: map[string][]string{"Content-Type": {"application/json"}},
+				body: []byte(`{}
+`),
+			}, {
+				method: http.MethodPost,
+				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+				header: map[string][]string{"Content-Type": {"application/json"}},
+				body: []byte(`{}
+`),
+			}},
+			expectedOutput: `heartbeat sent for resource "87527b0c-eac2-4f83-9a03-791b2239e093"
+heartbeat sent for resource "87527b0c-eac2-4f83-9a03-791b2239e093"
+reached timeout, stopping heartbeats for resource "87527b0c-eac2-4f83-9a03-791b2239e093"
+`,
+		},
+		{
+			name:        "normal heartbeat without flags fails",
+			args:        []string{"heartbeat"},
+			expectedErr: true,
+			expectedOutput: `Error: required flag(s) "resource" not set
+Usage:
+  boskosctl heartbeat [flags]
+
+Flags:
+  -h, --help               help for heartbeat
+      --period duration    Period to send heartbeats on (default 30s)
+      --resource string    JSON resource lease object to send heartbeat for
+      --timeout duration   How long to send heartbeats for (default 5h0m0s)
+
+Global Flags:
+      --owner-name string   Name identifying the user of this client
+      --server-url string   URL of the Boskos server
+
+`,
+		},
+		{
+			name: "failed heartbeat sends a request and fails",
+			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`},
+			responses: map[string]response{
+				"/update": {
+					code: http.StatusNotFound,
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodPost,
+				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+				header: map[string][]string{"Content-Type": {"application/json"}},
+				body: []byte(`{}
+`),
+			}},
+			expectedCode: 1,
+			expectedOutput: `failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
+`,
+		},
 	}
 
 	for _, testCase := range testCases {
