@@ -73,6 +73,7 @@ filegroup(
         "//experiment/manual-trigger:all-srcs",
         "//experiment/resultstore:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
+        "//experiment/tiny-oncall:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],

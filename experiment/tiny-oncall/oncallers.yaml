@@ -1,0 +1,18 @@
+# WARNING: when adding or removing oncallers, the current oncall will be shuffled.
+# This is undesirable. To mitigate this effect, when adding or removing entries, rotate the list
+# such that the current ISO week number mod the number of oncallers remains unchanged.
+# Check https://www.epochconverter.com/weeknumbersfor the current week number.
+oncallers:
+  - michelle192837
+  - cjwagner
+  - fejta
+  - Katharine
+  - krzyzacy
+  - stevekuznetsov
+generate_secondaries: true
+# Shadows are considered permanently scheduled as long as they are listed here.
+shadows:
+# The day of the week on which to switch over.
+change_day: 3  # wednesday
+# The hour of the day on which to switch over (in UTC).
+change_hour: 19
