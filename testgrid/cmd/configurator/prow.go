@@ -41,7 +41,7 @@ const minPresubmitNumColumnsRecent = 20
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
 
-func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, reconcile bool) error {
+func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string, reconcile bool) error {
 	tabName := j.Name
 	testGroupName := j.Name
 	description := j.Name
@@ -133,10 +133,22 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 			if d == nil {
 				return fmt.Errorf("couldn't find dashboard %q for job %q", dashboardName, j.Name)
 			}
+			if repo == "" {
+				if len(j.ExtraRefs) > 0 {
+					repo = fmt.Sprintf("%s/%s", j.ExtraRefs[0].Org, j.ExtraRefs[0].Repo)
+				}
+			}
+			var linkTemplate *config.LinkTemplate
+			if repo != "" {
+				linkTemplate = &config.LinkTemplate{
+					Url: fmt.Sprintf("https://github.com/%s/compare/<start-custom-0>...<end-custom-0>", repo),
+				}
+			}
 			dt := &config.DashboardTab{
-				Name:          tabName,
-				TestGroupName: testGroupName,
-				Description:   description,
+				Name:                  tabName,
+				TestGroupName:         testGroupName,
+				Description:           description,
+				CodeSearchUrlTemplate: linkTemplate,
 			}
 			if firstDashboard {
 				firstDashboard = false
@@ -161,18 +173,24 @@ func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent, recon
 	}
 	jobs := prowConfigAgent.Config().JobConfig
 	for _, j := range jobs.AllPeriodics() {
-		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, reconcileDefaults); err != nil {
+		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, "", reconcileDefaults); err != nil {
 			return err
 		}
 	}
-	for _, j := range jobs.AllPostsubmits(nil) {
-		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, reconcileDefaults); err != nil {
-			return err
+
+	for repo, js := range jobs.Postsubmits {
+		for _, j := range js {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo, reconcileDefaults); err != nil {
+				return err
+			}
 		}
 	}
-	for _, j := range jobs.AllPresubmits(nil) {
-		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, reconcileDefaults); err != nil {
-			return err
+
+	for repo, js := range jobs.Presubmits {
+		for _, j := range js {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo, reconcileDefaults); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
