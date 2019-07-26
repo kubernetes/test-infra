@@ -301,7 +301,7 @@ func (s *Storage) updateDynamicResources(lifecycle common.DynamicResourceLifeCyc
 	}
 
 	for i := count; i < lifecycle.MinCount; i++ {
-		res := common.NewResource(s.generateName(), lifecycle.Type, lifecycle.InitialState, "", s.now())
+		res := common.NewResourceFromNewDynamicResourceLifeCycle(s.generateName(), &lifecycle, s.now())
 		toAdd = append(toAdd, res)
 		count++
 	}

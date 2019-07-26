@@ -32,34 +32,47 @@ func TestRequestQueue(t *testing.T) {
 	rq := newRequestQueue()
 	count := 10
 	for i := 0; i < count; i++ {
-		rank := rq.getRank(fmt.Sprintf("request_%d", i), testTTL, now)
+		rank, new := rq.getRank(fmt.Sprintf("request_%d", i), testTTL, now)
 		if rank != i+1 {
 			t.Errorf("expected %d got %d", i+1, rank)
 		}
+		if !new {
+			t.Errorf("should be new")
+		}
 	}
-	if rank := rq.getRank("", testTTL, now); rank != count+1 {
+	rank, new := rq.getRank("", testTTL, now)
+	if rank != count+1 {
 		t.Errorf("expected %d got %d", count+1, rank)
+	}
+	if new {
+		t.Errorf("empty request id should not be considered as new")
 	}
 	for i := 0; i < count; i++ {
 		rq.delete(fmt.Sprintf("request_%d", i))
 		for j := i + 1; j < count; j++ {
-			rank := rq.getRank(fmt.Sprintf("request_%d", j), testTTL, now)
+			rank, new := rq.getRank(fmt.Sprintf("request_%d", j), testTTL, now)
 			if rank != j-i {
 				t.Errorf("expected %d got %d", j-i, rank)
 			}
+			if new {
+				t.Errorf("request id already exist")
+			}
 		}
-		if rank := rq.getRank("", testTTL, now); rank != count-i {
+		if rank, _ := rq.getRank("", testTTL, now); rank != count-i {
 			t.Errorf("expected %d got %d", count-i, rank)
 		}
 		rq.cleanup(now)
 		// cleanup should not impact result
 		for j := i + 1; j < count; j++ {
-			rank := rq.getRank(fmt.Sprintf("request_%d", j), testTTL, now)
+			rank, new := rq.getRank(fmt.Sprintf("request_%d", j), testTTL, now)
 			if rank != j-i {
 				t.Errorf("expected %d got %d", j-i, rank)
 			}
+			if new {
+				t.Errorf("request id already exist")
+			}
 		}
-		if rank := rq.getRank("", testTTL, now); rank != count-i {
+		if rank, _ := rq.getRank("", testTTL, now); rank != count-i {
 			t.Errorf("expected %d got %d", count-i, rank)
 		}
 	}
@@ -81,8 +94,8 @@ func TestRequestManager(t *testing.T) {
 	mgr.now = func() time.Time { return now }
 
 	// Getting Rank
-	rank := mgr.GetRank(key, id)
-	emptyRank := mgr.GetRank(key, "")
+	rank, _ := mgr.GetRank(key, id)
+	emptyRank, _ := mgr.GetRank(key, "")
 	if rank != expectedRank {
 		t.Errorf("expected rank %d got %d", expectedRank, rank)
 	}
@@ -92,7 +105,7 @@ func TestRequestManager(t *testing.T) {
 
 	// Deleting
 	mgr.Delete(key, id)
-	afterDeleteRank := mgr.GetRank(key, "")
+	afterDeleteRank, _ := mgr.GetRank(key, "")
 	if afterDeleteRank != expectedRankAfterDelete {
 		t.Errorf("expected empty rank %d got %d", expectedRankAfterDelete, afterDeleteRank)
 	}
@@ -102,7 +115,7 @@ func TestRequestManager(t *testing.T) {
 
 	// Starting cleanup
 	mgr.cleanup(expiredFuture)
-	afterDeleteRank = mgr.GetRank(key, "")
+	afterDeleteRank, _ = mgr.GetRank(key, "")
 	if afterDeleteRank != expectedRankAfterDelete {
 		t.Errorf("expected empty rank %d got %d", expectedRankAfterDelete, afterDeleteRank)
 	}
@@ -117,7 +130,7 @@ func TestRequestManager_GC(t *testing.T) {
 	mgr.StartGC(testGCPeriod)
 
 	// Getting Rank
-	rank := mgr.GetRank(key, id)
+	rank, _ := mgr.GetRank(key, id)
 	if rank != 1 {
 		t.Errorf("expected rank %d got %d", 1, rank)
 	}
@@ -126,7 +139,7 @@ func TestRequestManager_GC(t *testing.T) {
 	time.Sleep(2 * testGCPeriod)
 
 	// Checking
-	rank = mgr.GetRank(key, "")
+	rank, _ = mgr.GetRank(key, "")
 	if rank != 1 {
 		t.Errorf("expected empty rank %d got %d", 1, rank)
 	}

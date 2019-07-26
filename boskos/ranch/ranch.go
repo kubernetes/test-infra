@@ -120,7 +120,7 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 
 	// Finding Request Priority
 	ts := acquireRequestPriorityKey{rType: rType, state: state}
-	rank := r.requestMgr.GetRank(ts, requestID)
+	rank, new := r.requestMgr.GetRank(ts, requestID)
 
 	resources, err := r.Storage.GetResources()
 	if err != nil {
@@ -128,13 +128,13 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 		return nil, &ResourceNotFound{rType}
 	}
 
-	foundType := false
 	// For request priority we need to go over all the list until a matching rank
 	matchingResoucesCount := 0
+	typeCount := 0
 	for idx := range resources {
 		res := resources[idx]
 		if rType == res.Type {
-			foundType = true
+			typeCount++
 			if state == res.State && res.Owner == "" {
 				matchingResoucesCount++
 				if matchingResoucesCount >= rank {
@@ -155,7 +155,23 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 		}
 	}
 
-	if foundType {
+	if new {
+		// Checking if this a dynamic resource
+		lifeCycle, err := r.Storage.GetDynamicResourceLifeCycle(rType)
+		// Assuming error means no associated dynamic resource
+		if err == nil {
+			if typeCount < lifeCycle.MaxCount {
+				// Adding a new resource
+				res := common.NewResourceFromNewDynamicResourceLifeCycle(r.Storage.generateName(), &lifeCycle, r.now())
+				if err := r.Storage.AddResource(res); err != nil {
+					logrus.WithError(err).Warningf("unable to add a new resource of type %s", rType)
+				}
+				logrus.Infof("Added dynamic resource %s of type %s", res.Name, res.Type)
+			}
+		}
+	}
+
+	if typeCount > 0 {
 		return nil, &ResourceNotFound{rType}
 	}
 	return nil, &ResourceTypeNotFound{rType}

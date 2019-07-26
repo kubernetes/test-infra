@@ -278,6 +278,74 @@ func TestAcquireRoundRobin(t *testing.T) {
 	}
 }
 
+func TestAcquireOnDemand(t *testing.T) {
+	owner := "tester"
+	rType := "dr"
+	requestID1 := "req1234"
+	requestID2 := "req12345"
+	requestID3 := "req123456"
+	now := time.Now()
+	dRLCs := []common.DynamicResourceLifeCycle{
+		{
+			Type:         rType,
+			MinCount:     0,
+			MaxCount:     2,
+			InitialState: common.Dirty,
+		},
+	}
+	// Not adding any resources to start with
+	c := MakeTestRanch(nil, dRLCs)
+	c.now = func() time.Time { return now }
+	// First acquire should trigger a creation
+	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, requestID1); err == nil {
+		t.Errorf("should fail since there is not resource yet")
+	}
+	if resources, err := c.Storage.GetResources(); err != nil {
+		t.Error(err)
+	} else if len(resources) != 1 {
+		t.Errorf("A resource should have been created")
+	}
+	// Attempting to create another resource
+	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, requestID1); err == nil {
+		t.Errorf("should succeed since the created is dirty")
+	}
+	if resources, err := c.Storage.GetResources(); err != nil {
+		t.Error(err)
+	} else if len(resources) != 1 {
+		t.Errorf("No new resource should have been created")
+	}
+	// Creating another
+	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, requestID2); err == nil {
+		t.Errorf("should succeed since the created is dirty")
+	}
+	if resources, err := c.Storage.GetResources(); err != nil {
+		t.Error(err)
+	} else if len(resources) != 2 {
+		t.Errorf("Another resource should have been created")
+	}
+	// Attempting to create another
+	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, requestID3); err == nil {
+		t.Errorf("should fail since there is not resource yet")
+	}
+	resources, err := c.Storage.GetResources()
+	if err != nil {
+		t.Error(err)
+	} else if len(resources) != 2 {
+		t.Errorf("No other resource should have been created")
+	}
+	for _, res := range resources {
+		c.Storage.DeleteResource(res.Name)
+	}
+	if _, err := c.Acquire(rType, common.Free, common.Busy, owner, ""); err == nil {
+		t.Errorf("should fail since there is not resource yet")
+	}
+	if resources, err := c.Storage.GetResources(); err != nil {
+		t.Error(err)
+	} else if len(resources) != 0 {
+		t.Errorf("No new resource should have been created")
+	}
+}
+
 func TestRelease(t *testing.T) {
 	var lifespan = time.Minute
 	updatedRes := common.NewResource("res", "t", "d", "", fakeNow)
