@@ -526,20 +526,6 @@ func (c *Client) ReplaceProwJob(name string, job prowapi.ProwJob) (prowapi.ProwJ
 	return retJob, err
 }
 
-// PatchProwJob will patch name with job in the client's specified namespace with a merge patch.
-//
-// Analogous to kubectl patch prowjobs/NAME --namespace=client.namespace --patch=PATCH
-func (c *Client) PatchProwJob(name string, patch []byte) (prowapi.ProwJob, error) {
-	c.log("PatchProwJob", name, string(patch))
-	var retJob prowapi.ProwJob
-	err := c.request(&request{
-		method:      http.MethodPatch,
-		path:        fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
-		requestBody: &patch,
-	}, &retJob)
-	return retJob, err
-}
-
 // CreatePod creates a pod in the client's specified namespace.
 //
 // Analogous to kubectl create pod --namespace=client.namespace
