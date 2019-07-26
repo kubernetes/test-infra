@@ -30,3 +30,5 @@ cmd/tot/tot
 external-plugins/cherrypicker/cherrypicker
 external-plugins/needs-rebase/needs-rebase
 external-plugins/refresh/refresh
+pj.yaml
+pod.yaml
