@@ -38,9 +38,10 @@ type options struct {
 
 	c *client.Client
 
-	acquire acquireOptions
-	release releaseOptions
-	metrics metricsOptions
+	acquire   acquireOptions
+	release   releaseOptions
+	metrics   metricsOptions
+	heartbeat heartbeatOptions
 }
 
 func (o *options) initializeClient() {
@@ -61,6 +62,12 @@ type releaseOptions struct {
 
 type metricsOptions struct {
 	requestedType string
+}
+
+type heartbeatOptions struct {
+	resourceJSON string
+	period       time.Duration
+	timeout      time.Duration
 }
 
 // for test mocking
@@ -234,6 +241,87 @@ Examples:
 		}
 	}
 	root.AddCommand(metrics)
+
+	heartbeat := &cobra.Command{
+		Use:   "heartbeat",
+		Short: "Send a heartbeat for a resource reservation",
+		Long: `Send a heartbeat for a resource reservation
+
+When the Boskos reaper is deployed, resource lessees must send a
+heartbeat for every lease they hold or the leases will be revoked.
+This command will send a heartbeat at the provided period and is
+blocking.
+
+Examples:
+
+  # Acquire one clean "my-thing" and mark it dirty when leasing
+  $ resource="$( boskosctl acquire --type my-thing --state clean --target-state dirty )"
+  # Send periodic heartbeat for the lease in the background
+  $ boskosctl heartbeat --resource "${resource}" --period 30s &
+
+  # Send periodic heartbeat for the lease with custom period and timeout
+  $ boskosctl heartbeat --resource "${resource}" --period 3s --timeout 1h`,
+		Run: func(cmd *cobra.Command, args []string) {
+			options.initializeClient()
+			var resource common.Resource
+			if err := json.Unmarshal([]byte(options.heartbeat.resourceJSON), &resource); err != nil {
+				fmt.Fprintf(cmd.ErrOrStderr(), "failed to parse resource: %v\n", err)
+				exit(1)
+				return
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), options.heartbeat.timeout)
+			defer func() {
+				// the context wants to be cancelled but since we want to differentiate
+				// between a timeout and a SIGINT we don't have a good reason to cancel
+				// it in normal operation
+				cancel()
+			}()
+			sig := make(chan os.Signal, 1)
+			signal.Notify(sig, os.Interrupt)
+			go func() {
+				<-sig
+			}()
+
+			tick := time.Tick(options.heartbeat.period)
+			work := func() bool {
+				select {
+				case <-tick:
+					if err := options.c.Update(resource.Name, resource.State, resource.UserData); err != nil {
+						fmt.Fprintf(cmd.ErrOrStderr(), "failed to send heartbeat for resource %q: %v\n", resource.Name, err)
+						exit(1)
+						return true
+					}
+					fmt.Fprintf(cmd.OutOrStdout(), "heartbeat sent for resource %q\n", resource.Name)
+				case <-sig:
+					fmt.Fprintf(cmd.OutOrStdout(), "received interrupt, stopping heartbeats for resource %q\n", resource.Name)
+					return true
+				case <-ctx.Done():
+					fmt.Fprintf(cmd.OutOrStdout(), "reached timeout, stopping heartbeats for resource %q\n", resource.Name)
+					return true
+				}
+				return false
+			}
+
+			for {
+				done := work()
+				if done {
+					break
+				}
+			}
+		},
+		Args: cobra.NoArgs,
+	}
+	heartbeat.Flags().StringVar(&options.heartbeat.resourceJSON, "resource", "", "JSON resource lease object to send heartbeat for")
+	for _, flag := range []string{"resource"} {
+		if err := heartbeat.MarkFlagRequired(flag); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+	heartbeat.Flags().DurationVar(&options.heartbeat.period, "period", 30*time.Second, "Period to send heartbeats on")
+	heartbeat.Flags().DurationVar(&options.heartbeat.timeout, "timeout", 5*time.Hour, "How long to send heartbeats for")
+	root.AddCommand(heartbeat)
 
 	return root
 }

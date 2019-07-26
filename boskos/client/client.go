@@ -258,7 +258,7 @@ func (c *Client) UpdateAll(state string) error {
 	}
 	var allErrors error
 	for _, r := range resources {
-		if err := c.update(r.GetName(), state, nil); err != nil {
+		if err := c.Update(r.GetName(), state, nil); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 			continue
 		}
@@ -289,7 +289,7 @@ func (c *Client) SyncAll() error {
 			allErrors = multierror.Append(allErrors, err)
 			continue
 		}
-		if err := c.update(r.Name, r.State, nil); err != nil {
+		if err := c.Update(r.Name, r.State, nil); err != nil {
 			allErrors = multierror.Append(allErrors, err)
 			continue
 		}
@@ -309,7 +309,7 @@ func (c *Client) UpdateOne(name, state string, userData *common.UserData) error 
 	if err != nil {
 		return fmt.Errorf("no resource name %v", name)
 	}
-	if err := c.update(r.GetName(), state, userData); err != nil {
+	if err := c.Update(r.GetName(), state, userData); err != nil {
 		return err
 	}
 	return c.updateLocalResource(r, state, userData)
@@ -416,6 +416,7 @@ func (c *Client) acquireByState(state, dest string, names []string) ([]common.Re
 	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
 
+// Release a lease for a resource and set its state to the destination state
 func (c *Client) Release(name, dest string) error {
 	values := url.Values{}
 	values.Set("name", name)
@@ -433,7 +434,8 @@ func (c *Client) Release(name, dest string) error {
 	return nil
 }
 
-func (c *Client) update(name, state string, userData *common.UserData) error {
+// Update a resource on the server, setting the state and user data
+func (c *Client) Update(name, state string, userData *common.UserData) error {
 	var body io.Reader
 	if userData != nil {
 		b := new(bytes.Buffer)
