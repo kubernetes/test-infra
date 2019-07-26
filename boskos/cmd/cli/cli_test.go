@@ -61,7 +61,6 @@ Usage:
 
 Flags:
   -h, --help                  help for acquire
-      --request-id string     request id to acquire the resource in
       --state string          State to acquire the resource in
       --target-state string   Move resource to this state after acquiring
       --timeout duration      If set, retry this long until the resource has been acquired
@@ -122,8 +121,8 @@ Global Flags:
 `,
 		},
 		{
-			name: "retry acquire sends requests and times out",
-			args: []string{"acquire", "--state=new", "--type=thing", "--target-state=old", "--timeout=5s", "--request-id=testingRequest"},
+			name: "retry acquire sends requests with priority and times out",
+			args: []string{"acquire", "--state=new", "--type=thing", "--target-state=old", "--timeout=5s"},
 			responses: map[string]response{
 				"/acquire": {
 					code: http.StatusUnauthorized,
@@ -131,11 +130,11 @@ Global Flags:
 			},
 			expectedCalls: []request{{
 				method: http.MethodPost,
-				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing&request_id=testingRequest`},
+				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing&request_id=random`},
 				body:   []byte{},
 			}, {
 				method: http.MethodPost,
-				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing&request_id=testingRequest`},
+				url:    url.URL{Path: "/acquire", RawQuery: `dest=old&owner=test&state=new&type=thing&request_id=random`},
 				body:   []byte{},
 			}},
 			expectedOutput: `failed to acquire a resource: resources already used by another user
@@ -277,6 +276,9 @@ Global Flags:
 		var exitCode int
 		exit = func(i int) {
 			exitCode = i
+		}
+		randId = func() string {
+			return "random"
 		}
 
 		cmd := command()
