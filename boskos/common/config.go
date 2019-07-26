@@ -48,7 +48,7 @@ func ValidateConfig(config *BoskosConfig) error {
 		}
 
 		names := e.Names
-		if len(e.Names) == 0 {
+		if e.IsDRLC() {
 			// Dynamic Resource
 			if e.MaxCount == 0 {
 				return fmt.Errorf("max should be > 0")
