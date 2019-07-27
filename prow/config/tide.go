@@ -27,6 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -485,25 +486,42 @@ func parseTideContextPolicyOptions(org, repo, branch string, options TideContext
 	return option
 }
 
+// branchProtectionGitHubClient is the subset of the GitHub client
+// needed to access BranchProtection config
+type branchProtectionGitHubClient interface {
+	GetRef(org, repo, ref string) (string, error)
+}
+
 // GetTideContextPolicy parses the prow config to find context merge options.
 // If none are set, it will use the prow jobs configured and use the default github combined status.
 // Otherwise if set it will use the branch protection setting, or the listed jobs.
-func (c Config) GetTideContextPolicy(org, repo, branch string) (*TideContextPolicy, error) {
+func (c Config) GetTideContextPolicy(gitHubClient branchProtectionGitHubClient, gitClient *git.Client, org, repo, branch, headSHA string) (*TideContextPolicy, error) {
 	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.NewString(options.RequiredContexts...)
 	requiredIfPresent := sets.NewString(options.RequiredIfPresentContexts...)
 	optional := sets.NewString(options.OptionalContexts...)
 
+	baseSHAGetter := func() (string, error) {
+		return gitHubClient.GetRef(org, repo, "heads/"+branch)
+	}
+	headSHAGetter := func() (string, error) {
+		return headSHA, nil
+	}
+	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get presubmits: %v", err)
+	}
+
 	// automatically generate required and optional entries for Prow Jobs
-	prowRequired, prowRequiredIfPresent, prowOptional := BranchRequirements(org, repo, branch, c.Presubmits)
+	prowRequired, prowRequiredIfPresent, prowOptional := BranchRequirements(org, repo, branch, map[string][]Presubmit{org + "/" + repo: presubmits})
 	required.Insert(prowRequired...)
 	requiredIfPresent.Insert(prowRequiredIfPresent...)
 	optional.Insert(prowOptional...)
 
 	// Using Branch protection configuration
 	if options.FromBranchProtection != nil && *options.FromBranchProtection {
-		bp, err := c.GetBranchProtection(org, repo, branch)
+		bp, err := c.GetBranchProtection(org, repo, branch, map[string][]Presubmit{org + "/" + repo: presubmits})
 		if err != nil {
 			logrus.WithError(err).Warningf("Error getting branch protection for %s/%s+%s", org, repo, branch)
 		} else if bp != nil && bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {

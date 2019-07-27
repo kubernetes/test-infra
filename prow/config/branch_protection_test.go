@@ -811,7 +811,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := tc.config.GetBranchProtection("org", "repo", "branch")
+			actual, err := tc.config.GetBranchProtection("org", "repo", "branch", tc.config.Presubmits)
 			switch {
 			case err != nil:
 				if !tc.err {

@@ -35,6 +35,7 @@ import (
 
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/blockers"
 )
@@ -59,6 +60,7 @@ type statusController struct {
 	logger *logrus.Entry
 	config config.Getter
 	ghc    githubClient
+	gc     *git.Client
 
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
 	// updated the 'poolPRs' field with a freshly updated pool.
@@ -289,9 +291,12 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			return
 		}
 		cr, err := sc.config().GetTideContextPolicy(
+			sc.ghc,
+			sc.gc,
 			string(pr.Repository.Owner.Login),
 			string(pr.Repository.Name),
-			string(pr.BaseRef.Name))
+			string(pr.BaseRef.Name),
+			string(pr.HeadRefOID))
 		if err != nil {
 			log.WithError(err).Error("setting up context register")
 			return

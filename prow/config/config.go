@@ -146,7 +146,7 @@ type ProwConfig struct {
 // yet. See https://github.com/kubernetes/test-infra/issues/13370 for a current
 // status.
 func (pc *ProwConfig) InRepoConfigEnabled(identifier string) bool {
-	return false
+	return FakeInRepoConfig != nil
 }
 
 // RefGetter is used to retrieve a Git Reference. Its purpose is
@@ -244,6 +244,9 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 	return rg.baseSHA, nil
 }
 
+// FakeInRepoConfig can be used in tests. Its key is the headSHA.
+var FakeInRepoConfig map[string][]Presubmit
+
 // GetPresubmits will return all presumits for the given identifier.
 // Once https://github.com/kubernetes/test-infra/issues/13370 is resolved, it will
 // also return Presubmits that are versioned inside the tested repo, if that feature
@@ -259,9 +262,6 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		return c.Presubmits[identifier], nil
 	}
 
-	if gc == nil {
-		return nil, errors.New("gitClient is nil")
-	}
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
@@ -275,7 +275,11 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		headSHAs = append(headSHAs, headSHA)
 	}
 	// Pending implementation of https://github.com/kubernetes/test-infra/issues/13370
-	_, _ = baseSHA, headSHAs
+	// Currently, only a fake implementation exists for tests.
+	_ = baseSHA
+	if FakeInRepoConfig != nil {
+		return append(c.Presubmits[identifier], FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
+	}
 	return nil, errors.New("inrepoconfig is not yet implemented :/")
 }
 
