@@ -24,6 +24,7 @@ import (
 	clienttesting "k8s.io/client-go/testing"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
@@ -284,6 +285,7 @@ func TestHandlePullRequest(t *testing.T) {
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("namespace"),
 			Config:        &config.Config{},
 			Logger:        logrus.WithField("plugin", PluginName),
+			GitClient:     &git.Client{},
 		}
 
 		presubmits := map[string][]config.Presubmit{
