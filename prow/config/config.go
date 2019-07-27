@@ -161,6 +161,15 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier, baseSHA string, headR
 	return c.Presubmits[identifier], nil
 }
 
+// SetTestPresubmits allows to set the presubmits for identifier. It must be
+// used by testcode only
+func (jc *JobConfig) SetTestPresubmits(identifier string, presubmits []Presubmit) {
+	if jc.Presubmits == nil {
+		jc.Presubmits = map[string][]Presubmit{}
+	}
+	jc.Presubmits[identifier] = presubmits
+}
+
 // OwnersDirBlacklist is used to configure regular expressions matching directories
 // to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 type OwnersDirBlacklist struct {
