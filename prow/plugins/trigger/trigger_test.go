@@ -31,6 +31,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -320,9 +321,10 @@ func TestRunAndSkipJobs(t *testing.T) {
 			GitHubClient:  &fakeGitHubClient,
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			Logger:        logrus.WithField("testcase", testCase.name),
+			GitClient:     &git.Client{},
 		}
 
-		err := RunAndSkipJobs(client, pr, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
+		err := RunAndSkipJobs(client, pr, fakegithub.TestRef, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
@@ -437,7 +439,7 @@ func TestRunRequested(t *testing.T) {
 			Logger:        logrus.WithField("testcase", testCase.name),
 		}
 
-		err := runRequested(client, pr, testCase.requestedJobs, "event-guid")
+		err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid")
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
