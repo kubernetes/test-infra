@@ -566,21 +566,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			}
 		}
 
-		repoSet := make(map[string]bool)
-		for r := range cfg().Presubmits {
-			repoSet[r] = true
-		}
-		for _, q := range cfg().Tide.Queries {
-			for _, v := range q.Repos {
-				repoSet[v] = true
-			}
-		}
-		var repos []string
-		for k, v := range repoSet {
-			if v {
-				repos = append(repos, k)
-			}
-		}
+		repos := cfg().AllRepos.List()
 
 		prStatusAgent := prstatus.NewDashboardAgent(
 			repos,
