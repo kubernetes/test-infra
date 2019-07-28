@@ -11,7 +11,7 @@ filegroup(
 
 container_image(
     name = "asset-base",
-    base = "@alpine-base//image",
+    base = "@git-base//image",
     # With paths relative to the current directory.
     data_path = ".",
     # Add files under into the root directory.
@@ -66,6 +66,8 @@ go_test(
         "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
+        "//prow/git:go_default_library",
+        "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/githuboauth:go_default_library",
         "//prow/pluginhelp:go_default_library",
@@ -112,6 +114,7 @@ go_library(
         "//prow/errorutil:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/gcsupload:go_default_library",
+        "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/githuboauth:go_default_library",
         "//prow/kube:go_default_library",

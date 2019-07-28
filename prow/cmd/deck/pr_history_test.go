@@ -28,6 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
 type fakeBucket struct {
@@ -402,7 +405,12 @@ func TestGetGCSDirsForPR(t *testing.T) {
 		},
 	}
 	for _, tc := range cases {
-		toSearch, err := getGCSDirsForPR(tc.config, tc.org, tc.repo, tc.pr)
+		gitHubClient := &fakegithub.FakeClient{
+			PullRequests: map[int]*github.PullRequest{
+				123: {Number: 123},
+			},
+		}
+		toSearch, err := getGCSDirsForPR(tc.config, gitHubClient, &git.Client{}, tc.org, tc.repo, tc.pr)
 		if (err != nil) != tc.expErr {
 			t.Errorf("%s: unexpected error %v", tc.name, err)
 		}

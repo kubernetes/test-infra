@@ -32,6 +32,7 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -201,11 +202,16 @@ func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
 }
 
 // getGCSDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
-func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[string]sets.String, error) {
+func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient *git.Client, org, repo string, prNumber int) (map[string]sets.String, error) {
 	toSearch := make(map[string]sets.String)
 	fullRepo := org + "/" + repo
-	presubmits, ok := config.Presubmits[fullRepo]
-	if !ok {
+
+	prRefGetter := config.NewRefGetterForGitHubPullRequest(gitHubClient, org, repo, prNumber)
+	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get Presubmits for pull request %s/%s#%d: %v", org, repo, prNumber, err)
+	}
+	if len(presubmits) == 0 {
 		return toSearch, fmt.Errorf("couldn't find presubmits for %q in config", fullRepo)
 	}
 
@@ -215,7 +221,7 @@ func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[strin
 			gcsConfig = presubmit.DecorationConfig.GCSConfiguration
 		} else {
 			// for undecorated jobs assume the default
-			gcsConfig = config.Plank.DefaultDecorationConfig.GCSConfiguration
+			gcsConfig = c.Plank.DefaultDecorationConfig.GCSConfiguration
 		}
 
 		gcsPath, _, _ := gcsupload.PathsForJob(gcsConfig, &downwardapi.JobSpec{
@@ -225,7 +231,7 @@ func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[strin
 				Repo: repo,
 				Org:  org,
 				Pulls: []v1.Pull{
-					{Number: pr},
+					{Number: prNumber},
 				},
 			},
 		}, "")
@@ -238,7 +244,7 @@ func getGCSDirsForPR(config *config.Config, org, repo string, pr int) (map[strin
 	return toSearch, nil
 }
 
-func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client) (prHistoryTemplate, error) {
+func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient *git.Client) (prHistoryTemplate, error) {
 	start := time.Now()
 	template := prHistoryTemplate{}
 
@@ -249,7 +255,7 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
 	template.Link = githubPRLink(org, repo, pr) // TODO(ibzib) support Gerrit :/
 
-	toSearch, err := getGCSDirsForPR(config, org, repo, pr)
+	toSearch, err := getGCSDirsForPR(config, gitHubClient, gitClient, org, repo, pr)
 	if err != nil {
 		return template, fmt.Errorf("failed to list GCS directories for PR %s: %v", template.Name, err)
 	}
