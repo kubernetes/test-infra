@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"reflect"
 	"testing"
@@ -28,11 +29,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1fake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	pjfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
@@ -384,7 +386,11 @@ func TestClean(t *testing.T) {
 	}
 	deletedPodsTrusted := sets.NewString("old-failed-trusted")
 
-	fpjc := pjfake.NewSimpleClientset(prowJobs...)
+	if err := prowv1.AddToScheme(scheme.Scheme); err != nil {
+		t.Fatalf("failed to add prowv1 to scheme: %v", err)
+	}
+
+	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
 	var fpc []corev1.PodInterface
 	for _, fakeClient := range fkc {
@@ -393,14 +399,26 @@ func TestClean(t *testing.T) {
 	// Run
 	c := controller{
 		logger:        logrus.WithField("component", "sinker"),
-		prowJobClient: fpjc.ProwV1().ProwJobs("ns"),
+		prowJobClient: fpjc,
 		podClients:    fpc,
 		config:        newFakeConfigAgent().Config,
 	}
 	c.clean()
 	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
 	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
-	assertSetsEqual(deletedProwJobs, getDeletedObjectNames(fpjc.Fake.Actions()), t, "did not delete correct ProwJobs")
+
+	remainingProwJobs := &prowv1.ProwJobList{}
+	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
+		t.Fatalf("failed to get remaining prowjobs: %v", err)
+	}
+	actuallyDeletedProwJobs := sets.String{}
+	for _, initalProwJob := range prowJobs {
+		actuallyDeletedProwJobs.Insert(initalProwJob.(metav1.Object).GetName())
+	}
+	for _, remainingProwJob := range remainingProwJobs.Items {
+		actuallyDeletedProwJobs.Delete(remainingProwJob.Name)
+	}
+	assertSetsEqual(deletedProwJobs, actuallyDeletedProwJobs, t, "did not delete correct ProwJobs")
 }
 
 func getDeletedObjectNames(actions []clienttesting.Action) sets.String {
@@ -505,6 +523,7 @@ func TestFlags(t *testing.T) {
 				dryRun: flagutil.Bool{
 					Explicit: true,
 				},
+				namespace: "default",
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
