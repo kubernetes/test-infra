@@ -3,14 +3,14 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "deleg.go",
-        "log.go",
-        "null.go",
+        "doc.go",
+        "signal.go",
+        "signal_posix.go",
+        "signal_windows.go",
     ],
-    importmap = "k8s.io/test-infra/vendor/sigs.k8s.io/controller-runtime/pkg/log",
-    importpath = "sigs.k8s.io/controller-runtime/pkg/log",
+    importmap = "k8s.io/test-infra/vendor/sigs.k8s.io/controller-runtime/pkg/manager/signals",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/manager/signals",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/go-logr/logr:go_default_library"],
 )
 
 filegroup(
@@ -22,10 +22,7 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//vendor/sigs.k8s.io/controller-runtime/pkg/log/zap:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
