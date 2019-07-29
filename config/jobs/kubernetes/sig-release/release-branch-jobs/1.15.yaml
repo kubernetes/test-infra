@@ -158,7 +158,7 @@ periodics:
 - annotations:
     fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com,cloud-kubernetes-scalability-oncall@google.com
+    testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.15-blocking, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-cos-1.15-scalability-100
     testgrid-num-failures-to-alert: '1'
