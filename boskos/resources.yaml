@@ -532,3 +532,16 @@ resources:
   - capa-user-00
   state: dirty
   type: aws-account
+- names:
+    - k8s-presubmit-scale-1
+    - k8s-presubmit-scale-2
+    - k8s-presubmit-scale-3
+    - k8s-presubmit-scale-4
+    - k8s-presubmit-scale-5
+    - k8s-presubmit-scale-6
+    - k8s-presubmit-scale-7
+    - k8s-presubmit-scale-8
+    - k8s-presubmit-scale-9
+    - k8s-presubmit-scale-10
+  state: dirty
+  type: scalability-presubmit-project
