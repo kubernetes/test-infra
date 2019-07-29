@@ -443,3 +443,45 @@ periodics:
           - --test-cmd-name=ClusterLoaderV2
           - --timeout=40m
           - --use-logexporter
+
+  # cluster volume load scaling by number of nodes
+- name: ci-kubernetes-storage-scalability-cluster-load-persistent-volume-500-node
+  tags:
+    - "perfDashPrefix: storage-cluster-load-persistent-volume-500-node"
+    - "perfDashJobType: storage"
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-node: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: cluster-load-persistent-volume-500-node
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190726-d319b3f-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --repo=k8s.io/perf-tests=master
+          - --root=/go/src
+          - --timeout=60
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-leaked-resources
+          - --cluster=
+          - --extract=ci/latest
+          - --gcp-node-image=gci
+          - --gcp-nodes=500
+          - --provider=gce
+          - --test=false
+          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+          - --test-cmd-args=cluster-loader2
+          - --test-cmd-args=--nodes=500
+          - --test-cmd-args=--provider=gce
+          - --test-cmd-args=--report-dir=/workspace/_artifacts
+          - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/config.yaml
+          - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/volume-types/persistentvolume/override.yaml
+          - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/cluster_load_scale_by_nodes/override.yaml
+          - --test-cmd-name=ClusterLoaderV2
+          - --timeout=40m
+          - --use-logexporter
