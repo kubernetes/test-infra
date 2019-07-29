@@ -99,6 +99,7 @@ require (
 	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
 	google.golang.org/grpc v1.19.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
+	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
 	k8s.io/apiextensions-apiserver v0.0.0-20190409022649-727a075fdec8
 	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
