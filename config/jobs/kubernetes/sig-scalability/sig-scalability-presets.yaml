@@ -50,6 +50,15 @@ presets:
     value: 1000
   - name: LOGROTATE_MAX_SIZE
     value: "5G"
+  # Ensure good enough architecture for master machines.
+  - name: MASTER_MIN_CPU_ARCHITECTURE
+    value: "Intel Broadwell"
+  # Increase delete collection parallelism.
+  - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
+    value: --delete-collection-workers=16
+  # Dump full systemd journal on master and nodes.
+  - name: LOG_DUMP_SYSTEMD_JOURNAL
+    value: "true"
 ### kubemark-gce-scale
 - labels:
     preset-e2e-kubemark-gce-scale: "true"
