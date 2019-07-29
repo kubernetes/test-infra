@@ -25,8 +25,8 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"net/url"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -240,7 +240,6 @@ func randomAcsEngineLocation() string {
 }
 
 func checkParams() error {
-	
 	if strings.EqualFold(*acsAzureEnv, AzureStackCloud) {
 		if err := validateAzureStackCloudProfile(); err != nil {
 			return err
@@ -266,7 +265,6 @@ func checkParams() error {
 	if *acsTemplateURL == "" {
 		return fmt.Errorf("no ApiModel URL specified.")
 	}
-	
 	return nil
 }
 
@@ -418,7 +416,6 @@ func (c *Cluster) populateApiModelTemplate() error {
 	if c.isAzureStackCloud() {
 		v.Properties.CustomCloudProfile.PortalURL = c.azureCustomCloudURL
 	}
-	
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
 	err = ioutil.WriteFile(c.apiModelPath, apiModel, 0644)
