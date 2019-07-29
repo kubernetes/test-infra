@@ -78,6 +78,7 @@ const (
 	// ADFS Identity System for Azure Stack cloud
 	ADFSIdentitySystem = "adfs"
 )
+
 type Creds struct {
 	ClientID           string
 	ClientSecret       string
@@ -129,7 +130,6 @@ func (c *Cluster) isAzureStackCloud() bool {
 func (c *Cluster) SetCustomCloudProfileEnvironment() error {
 	var environmentJSON string
 	if c.isAzureStackCloud() {
-
 		env := azure.Environment{}
 		env.Name = c.azureEnvironment
 		azsFQDNSuffix := strings.Replace(c.azureCustomCloudURL, fmt.Sprintf("https://portal.%s.", c.location), "", -1)

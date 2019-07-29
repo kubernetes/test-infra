@@ -151,7 +151,7 @@ type AzureClient struct {
 }
 
 type CustomCloudProfile struct {
-	PortalURL                  string                      `json:"portalURL,omitempty"`
+	PortalURL string `json:"portalURL,omitempty"`
 }
 
 type AzureStackMetadataEndpoints struct {
