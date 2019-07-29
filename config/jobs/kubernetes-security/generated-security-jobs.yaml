@@ -3737,10 +3737,6 @@ presubmits:
         env:
         - name: WHAT
           value: vendor vendor-licenses
-        - name: GOPROXY
-          value: https://proxy.golang.org
-        - name: GOSUMDB
-          value: sum.golang.org
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190726-d319b3f-master
         name: main
         resources: {}
