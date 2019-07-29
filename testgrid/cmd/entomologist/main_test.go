@@ -62,6 +62,17 @@ func TestOptions(t *testing.T) {
 			args: []string{"--github-org=testorg", "--github-repo=testrepo"},
 		},
 		{
+			name: "both oneshot and poll-interval, reject",
+			args: []string{
+				"--github-org=testorg",
+				"--github-repo=testrepo",
+				"--output=gs://foo/bar",
+				"--gcs-credentials-file=/usr/foo/creds.json",
+				"--oneshot",
+				"--poll-interval=1h",
+			},
+		},
+		{
 			name: "required options with gcs bucket output",
 			args: []string{
 				"--github-org=testorg",
@@ -88,6 +99,7 @@ func TestOptions(t *testing.T) {
 				repository:     "testrepo",
 				output:         tmpdir,
 				gcsCredentials: "",
+				pollInterval:   "",
 			},
 		},
 		{
@@ -102,6 +114,7 @@ func TestOptions(t *testing.T) {
 				repository:     "testrepo",
 				output:         tmpfile,
 				gcsCredentials: "",
+				pollInterval:   "",
 			},
 		},
 		{
@@ -121,6 +134,27 @@ func TestOptions(t *testing.T) {
 				output:         "gs://foo/bar",
 				gcsCredentials: "/usr/foo/creds.json",
 				oneshot:        true,
+				pollInterval:   "",
+			},
+		},
+		{
+			name: "poll-time with many options",
+			args: []string{
+				"--github-org=testorg",
+				"--github-repo=testrepo",
+				"--github-endpoint=https://127.0.0.1:8888",
+				"--github-token-path=/usr/foo/tkpath",
+				"--output=gs://foo/bar",
+				"--gcs-credentials-file=/usr/foo/creds.json",
+				"--poll-interval=1h",
+			},
+			expected: &options{
+				organization:   "testorg",
+				repository:     "testrepo",
+				output:         "gs://foo/bar",
+				gcsCredentials: "/usr/foo/creds.json",
+				oneshot:        false,
+				pollInterval:   "1h",
 			},
 		},
 	}

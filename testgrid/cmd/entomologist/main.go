@@ -45,7 +45,7 @@ type githubClient interface {
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 }
 
-const defaultPollTime = 1 * time.Hour
+const defaultPollInterval = 1 * time.Hour
 
 type options struct {
 	github         flagutil.GitHubOptions
@@ -54,6 +54,7 @@ type options struct {
 	output         string
 	gcsCredentials string
 	oneshot        bool
+	pollInterval   string
 }
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
@@ -63,6 +64,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.output, "output", "", "write proto to gs://bucket or /local/path")
 	fs.StringVar(&o.gcsCredentials, "gcs-credentials-file", "", "/path/to/service/account/credentials (as .json)")
 	fs.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring GitHub for changes")
+	fs.StringVar(&o.pollInterval, "poll-interval", "", "How often the program polls GitHub for changes (e.g. '1h10m42s', default '1h')")
 	o.github.AddFlags(fs)
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -83,6 +85,9 @@ func (o *options) validate() error {
 	}
 	if strings.HasPrefix(o.output, "gs://") && o.gcsCredentials == "" {
 		return errors.New("--gcs-credentials-file required for write operations")
+	}
+	if o.oneshot && o.pollInterval != "" {
+		return errors.New("--oneshot and --poll-interval cannot be specified together")
 	}
 	return o.github.Validate(false)
 }
@@ -156,9 +161,19 @@ func main() {
 		return
 	}
 
+	var pollInterval time.Duration
+	if opt.pollInterval == "" {
+		pollInterval = defaultPollInterval
+	} else {
+		var err error
+		if pollInterval, err = time.ParseDuration(opt.pollInterval); err != nil {
+			logrus.Fatalf("Could not parse --poll-interval: %e", err)
+		}
+	}
+
 	stopCh := make(chan struct{})
 	defer close(stopCh)
-	wait.Until(poll, defaultPollTime, stopCh)
+	wait.Until(poll, pollInterval, stopCh)
 
 	sigTerm := make(chan os.Signal, 1)
 	signal.Notify(sigTerm, syscall.SIGTERM)
