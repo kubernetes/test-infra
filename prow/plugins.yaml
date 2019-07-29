@@ -239,6 +239,11 @@ slack:
 milestone_applier:
   kubernetes/test-infra:
     master: v1.16
+  kubernetes/kubernetes:
+    master: v1.16
+    release-1.15: v1.15
+    release-1.14: v1.14
+    release-1.13: v1.13
 
 repo_milestone:
   # Default maintainer
@@ -496,6 +501,7 @@ plugins:
   - cherry-pick-unapproved
   - mergecommitblocker
   - milestone
+  - milestoneapplier
   - milestonestatus
   - override
   - release-note
