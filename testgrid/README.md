@@ -106,13 +106,10 @@ Under **Options**
 If you need to add a new test that you want TestGrid to display, or otherwise change what is shown
 on https://testgrid.k8s.io, see [Testgrid Configuration](config.md).
 
-The site is configured by [`config.yaml`].
 Updates to the config are automatically tested and pushed to production.
 
 ## Contributing
 
 If you want to modify TestGrid beyond adding new tests or dashboards, see [Updating Testgrid](build_test_update.md).
 
-[`config.proto`]: ./config/config.proto
-[`config.yaml`]: ./config.yaml
 [video]: https://www.youtube.com/watch?v=jm2l2SLq_yE
