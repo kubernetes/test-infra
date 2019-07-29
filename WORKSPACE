@@ -105,6 +105,14 @@ container_pull(
 )
 
 container_pull(
+    name = "fedora-base",
+    digest = "sha256:b74e6841a4f44f9fd2a40ce7f533ef4996624666bf536f9a78dbc8ab30fd91b9",  # 2019/07/29
+    registry = "index.docker.io",
+    repository = "library/fedora",
+    tag = "30",
+)
+
+container_pull(
     name = "gcloud-base",
     digest = "sha256:8e51eea50a45c6be2a735be97139f85a04c623ca448801a317a737c1d9917d00",  # 2019/07/10
     registry = "gcr.io",
