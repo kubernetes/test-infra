@@ -19,6 +19,7 @@ package secret
 
 import (
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +33,8 @@ type Agent struct {
 }
 
 // Start creates goroutines to monitor the files that contain the secret value.
+// Additionally, Start wraps the current standard logger formatter with a
+// censoring formatter that removes secret occurrences from the logs.
 func (a *Agent) Start(paths []string) error {
 	secretsMap, err := LoadSecrets(paths)
 	if err != nil {
@@ -44,6 +47,8 @@ func (a *Agent) Start(paths []string) error {
 	for secretPath := range secretsMap {
 		go a.reloadSecret(secretPath)
 	}
+
+	logrus.SetFormatter(a.GetCensoringFormatter(logrus.StandardLogger().Formatter))
 
 	return nil
 }
@@ -102,5 +107,48 @@ func (a *Agent) setSecret(secretPath string, secretValue []byte) {
 func (a *Agent) GetTokenGenerator(secretPath string) func() []byte {
 	return func() []byte {
 		return a.GetSecret(secretPath)
+	}
+}
+
+type censoringFormatter struct {
+	agent    *Agent
+	delegate logrus.Formatter
+}
+
+func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	const censored = "CENSORED"
+	message := entry.Message
+	data := make(logrus.Fields, len(entry.Data))
+	for key, value := range entry.Data {
+		data[key] = value
+	}
+
+	for sKey := range f.agent.secretsMap {
+		secret := f.agent.GetSecret(sKey)
+		message = strings.ReplaceAll(message, string(secret), censored)
+
+		for key, value := range data {
+			if valueString, ok := value.(string); ok {
+				data[key] = strings.ReplaceAll(valueString, string(secret), censored)
+			}
+		}
+	}
+
+	return f.delegate.Format(&logrus.Entry{
+		Logger:  entry.Logger,
+		Data:    data,
+		Time:    entry.Time,
+		Level:   entry.Level,
+		Message: message,
+		Caller:  entry.Caller,
+	})
+}
+
+// GetCensoringFormatter returns a logrus Formatter that censors values of the
+// stored secrets from the logged message.
+func (a *Agent) GetCensoringFormatter(f logrus.Formatter) logrus.Formatter {
+	return censoringFormatter{
+		agent:    a,
+		delegate: f,
 	}
 }
