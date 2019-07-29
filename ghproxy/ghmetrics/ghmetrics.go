@@ -46,12 +46,23 @@ var ghTokenUsageGaugeVec = prometheus.NewGaugeVec(
 	[]string{"token_hash", "api_version"},
 )
 
+// ghRequestsGauge provides the 'github_requests' gauge that keeps track
+// of the number of GitHub requests by API path.
+var ghRequestsGauge = prometheus.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "github_requests",
+		Help: "GitHub requests by API path.",
+	},
+	[]string{"token_hash", "path", "status", "duration"},
+)
+
 var muxTokenUsage, muxRequestMetrics sync.Mutex
 var lastGitHubResponse time.Time
 
 func init() {
 	prometheus.MustRegister(ghTokenUntilResetGaugeVec)
 	prometheus.MustRegister(ghTokenUsageGaugeVec)
+	prometheus.MustRegister(ghRequestsGauge)
 }
 
 // CollectGitHubTokenMetrics publishes the rate limits of the github api to
@@ -78,6 +89,12 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 		ghTokenUntilResetGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion}).Set(float64(durationUntilReset.Nanoseconds()))
 		ghTokenUsageGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion}).Set(remainingFloat)
 	}
+}
+
+// CollectGitHubRequestMetrics publishes the number of requests by API path to
+// `github_requests` on prometheus.
+func CollectGitHubRequestMetrics(tokenHash, path, statusCode, roundTripTime string) {
+	ghRequestsGauge.With(prometheus.Labels{"token_hash": tokenHash, "path": GetSimplifiedPath(path), "status": statusCode, "duration": roundTripTime}).Inc()
 }
 
 // timestampStringToTime takes a unix timestamp and returns a `time.Time`

@@ -177,6 +177,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		return nil, err
 	}
 	responseTime := time.Now()
+	roundTripTime := responseTime.Sub(reqStartTime)
 
 	if resp.StatusCode >= 400 {
 		// Don't store errors. They can't be revalidated to save API tokens.
@@ -194,6 +195,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	}
 
 	ghmetrics.CollectGitHubTokenMetrics(authHeaderHash, apiVersion, resp.Header, reqStartTime, responseTime)
+	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, string(resp.StatusCode), roundTripTime.String())
 
 	return resp, nil
 }
