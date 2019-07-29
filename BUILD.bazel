@@ -119,6 +119,7 @@ filegroup(
         "//metrics:all-srcs",
         "//pkg/benchmarkjunit:all-srcs",
         "//pkg/flagutil:all-srcs",
+        "//pkg/genyaml:all-srcs",
         "//pkg/ghclient:all-srcs",
         "//pkg/io:all-srcs",
         "//prow:all-srcs",
