@@ -29,6 +29,34 @@ postsubmits:
     annotations:
       testgrid-num-failures-to-alert: '1'
   kubernetes/test-infra:
+  - name: post-test-infra-push-alpine-bash
+    cluster: test-infra-trusted
+    run_if_changed: '^images/alpine-bash/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "alpine-bash"
+    decorate: true
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190627-v0.1-98-gdda7ab9
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - images/alpine-bash/
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+      volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: 'prow/cluster/'
