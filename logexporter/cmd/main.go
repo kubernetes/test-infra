@@ -28,6 +28,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -77,17 +78,8 @@ func checkConfigValidity() error {
 	}
 	if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
 		return fmt.Errorf("Could not find the gcloud service account file: %v", err)
-	} else {
-		glog.Infof("Running gcloud auth activate-service-account --key-file=%s\n", *gcloudAuthFilePath)
-		cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath)
-		var stderr, stdout bytes.Buffer
-		cmd.Stderr, cmd.Stdout = &stderr, &stdout
-		err = cmd.Run()
-		glog.Infof("Stdout:\n%s\n", stdout.String())
-		glog.Infof("Stderr:\n%s\n", stderr.String())
-		if err != nil {
-			return fmt.Errorf("Failed to activate gcloud service account: %v", err)
-		}
+	} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
+		return fmt.Errorf("Failed to activate gcloud service account: %v", err)
 	}
 	return nil
 }
@@ -207,9 +199,8 @@ func uploadLogfilesToGCS(logDir string) error {
 	for uploadAttempt := 0; uploadAttempt < 3; uploadAttempt++ {
 		// Upload the files with compression (-z) and parallelism (-m) for speeding
 		// up, and set their ACL to make them publicly readable.
-		cmd := exec.Command("gsutil", "-m", "-q", "cp", "-a", "public-read", "-c",
-			"-z", "log,txt,xml", logDir+"/*", gcsLogPath)
-		if err = cmd.Run(); err != nil {
+		if err = runCommand("gsutil", "-m", "-q", "cp", "-a", "public-read", "-c",
+			"-z", "log,txt,xml", logDir+"/*", gcsLogPath); err != nil {
 			glog.Errorf("Attempt %v to upload to GCS failed: %v", uploadAttempt, err)
 			continue
 		}
@@ -234,6 +225,17 @@ func writeSuccessMarkerFile() error {
 		return fmt.Errorf("Failed to write marker file to GCS: %v", err)
 	}
 	return nil
+}
+
+func runCommand(name string, arg ...string) error {
+	glog.Infof("Running: %s %s", name, strings.Join(arg, " "))
+	cmd := exec.Command(name, arg...)
+	var stderr, stdout bytes.Buffer
+	cmd.Stderr, cmd.Stdout = &stderr, &stdout
+	err := cmd.Run()
+	glog.Infof("Stdout:\n%s\n", stdout.String())
+	glog.Infof("Stderr:\n%s\n", stderr.String())
+	return err
 }
 
 func main() {
