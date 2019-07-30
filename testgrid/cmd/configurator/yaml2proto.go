@@ -41,7 +41,7 @@ func (e MissingFieldError) Error() string {
 	return fmt.Sprintf("field missing or unset: %s", e.Field)
 }
 
-// ReconcileTestGroup sets unfilled currentTestGroup fields to the corresponding defaultTestGroup value.
+// ReconcileTestGroup sets unfilled currentTestGroup fields to the corresponding defaultTestGroup value, if present
 func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *config.TestGroup) {
 	if currentTestGroup.DaysOfResults == 0 {
 		currentTestGroup.DaysOfResults = defaultTestGroup.DaysOfResults
@@ -81,7 +81,7 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 	currentTestGroup.UseKubernetesClient = true
 }
 
-// ReconcileDashboardTab sets unfilled currentTab fields to the corresponding defaultTab value.
+// ReconcileDashboardTab sets unfilled currentTab fields to the corresponding defaultTab value, if present
 func ReconcileDashboardTab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab) {
 	if currentTab.BugComponent == 0 {
 		currentTab.BugComponent = defaultTab.BugComponent
@@ -124,11 +124,11 @@ func ReconcileDashboardTab(currentTab *config.DashboardTab, defaultTab *config.D
 	}
 }
 
-// updateDefaults reads any default configuration from yamlData and updates the
+// UpdateDefaults reads any default configuration from yamlData and updates the
 // defaultConfig in c.
 //
-// Returns an error if the defaultConfig remains unset.
-func (c *Config) updateDefaults(yamlData []byte) error {
+// Returns an error if the defaultConfig remains unset
+func (c *Config) UpdateDefaults(yamlData []byte) error {
 	newDefaults := &config.DefaultConfiguration{}
 	err := yaml.Unmarshal(yamlData, newDefaults)
 	if err != nil {
@@ -156,12 +156,8 @@ func (c *Config) updateDefaults(yamlData []byte) error {
 }
 
 // Update reads the config in yamlData and updates the config in c.
-// If yamlData does not contain any defaults, the defaults from a
-// previous call to Update are used instead.
+// If a default has been set, it will reconcile with those default settings
 func (c *Config) Update(yamlData []byte) error {
-	if err := c.updateDefaults(yamlData); err != nil {
-		return err
-	}
 
 	curConfig := &config.Configuration{}
 	if err := yaml.Unmarshal(yamlData, curConfig); err != nil {
@@ -173,14 +169,17 @@ func (c *Config) Update(yamlData []byte) error {
 	}
 
 	for _, testgroup := range curConfig.TestGroups {
-		ReconcileTestGroup(testgroup, c.defaultConfig.DefaultTestGroup)
+		if c.defaultConfig != nil {
+			ReconcileTestGroup(testgroup, c.defaultConfig.DefaultTestGroup)
+		}
 		c.config.TestGroups = append(c.config.TestGroups, testgroup)
 	}
 
 	for _, dashboard := range curConfig.Dashboards {
-		// validate dashboard tabs
-		for _, dashboardtab := range dashboard.DashboardTab {
-			ReconcileDashboardTab(dashboardtab, c.defaultConfig.DefaultDashboardTab)
+		if c.defaultConfig != nil {
+			for _, dashboardtab := range dashboard.DashboardTab {
+				ReconcileDashboardTab(dashboardtab, c.defaultConfig.DefaultDashboardTab)
+			}
 		}
 		c.config.Dashboards = append(c.config.Dashboards, dashboard)
 	}

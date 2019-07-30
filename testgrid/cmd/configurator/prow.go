@@ -41,7 +41,7 @@ const minPresubmitNumColumnsRecent = 20
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
 
-func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string, reconcile bool) error {
+func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string) error {
 	tabName := j.Name
 	testGroupName := j.Name
 	description := j.Name
@@ -71,7 +71,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 				Name:      testGroupName,
 				GcsPrefix: path.Join(prefix, prowGCS.RootForSpec(&downwardapi.JobSpec{Job: j.Name, Type: jobType})),
 			}
-			if reconcile {
+			if c.defaultConfig != nil {
 				ReconcileTestGroup(testGroup, c.defaultConfig.DefaultTestGroup)
 			}
 			c.config.TestGroups = append(c.config.TestGroups, testGroup)
@@ -156,7 +156,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 					dt.AlertOptions = &config.DashboardTabAlertOptions{AlertMailToAddresses: emails}
 				}
 			}
-			if reconcile {
+			if c.defaultConfig != nil {
 				ReconcileDashboardTab(dt, c.defaultConfig.DefaultDashboardTab)
 			}
 			d.DashboardTab = append(d.DashboardTab, dt)
@@ -166,21 +166,21 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	return nil
 }
 
-func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent, reconcileDefaults bool) error {
+func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent) error {
 	pc := prowConfigAgent.Config()
 	if pc == nil {
 		return nil
 	}
 	jobs := prowConfigAgent.Config().JobConfig
 	for _, j := range jobs.AllPeriodics() {
-		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, "", reconcileDefaults); err != nil {
+		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, ""); err != nil {
 			return err
 		}
 	}
 
 	for repo, js := range jobs.Postsubmits {
 		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo, reconcileDefaults); err != nil {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo); err != nil {
 				return err
 			}
 		}
@@ -188,7 +188,7 @@ func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent, recon
 
 	for repo, js := range jobs.Presubmits {
 		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo, reconcileDefaults); err != nil {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo); err != nil {
 				return err
 			}
 		}
