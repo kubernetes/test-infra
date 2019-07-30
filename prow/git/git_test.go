@@ -22,6 +22,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -416,7 +418,72 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestDiff(t *testing.T) {
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making local git repo: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Error cleaning LocalGit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Error cleaning Client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo("org", "repo"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.CheckoutNewBranch("org", "repo", "feature"); err != nil {
+		t.Fatalf("Checking out new branch: %v", err)
+	}
+	if err := lg.AddCommit("org", "repo", map[string][]byte{"foo.txt": []byte("feature's first commit: foo")}); err != nil {
+		t.Fatalf("Adding second commit in feature branch: %v", err)
+	}
+	if err := lg.AddCommit("org", "repo", map[string][]byte{"bar.txt": []byte("feature's second commit: bar")}); err != nil {
+		t.Fatalf("Adding third commit in feature branch: %v", err)
+	}
+
+	if err := lg.Checkout("org", "repo", "master"); err != nil {
+		t.Fatalf("Checking out master branch: %v", err)
+	}
+	if err := lg.AddCommit("org", "repo", map[string][]byte{"baz.txt": []byte("master's second commit: baz")}); err != nil {
+		t.Fatalf("Adding second commit in master branch: %v", err)
+	}
+
+	r, err := c.ClientFor("org", "repo")
+	if err != nil {
+		t.Fatalf("Cloning the first time: %v", err)
+	}
+	defer func() {
+		if err := r.Clean(); err != nil {
+			t.Errorf("Cleaning repo: %v", err)
+		}
+	}()
+
+	// Two-dot diff should show all files changed between master and feature branch
+	changes, err := r.Diff("master", "origin/feature")
+	if err != nil {
+		t.Fatalf("Two-dot diff: path:%s, %v", r.Directory(), err)
+	}
+	sort.Strings(changes)
+	expected := []string{"bar.txt", "baz.txt", "foo.txt"}
+	if !reflect.DeepEqual(changes, expected) {
+		t.Fatalf("Expected %v from two-dot diff, got: %v", expected, changes)
+	}
+
+	// DiffThreeDot should show changes introduced by the feature branch
+	changes, err = r.DiffThreeDot("master", "origin/feature")
+	if err != nil {
+		t.Fatalf("Three-dot diff: %v", err)
+	}
+	sort.Strings(changes)
+	expected = []string{"bar.txt", "foo.txt"}
+	if !reflect.DeepEqual(changes, expected) {
+		t.Fatalf("Expected %v from two-dot diff, got: %v", expected, changes)
+	}
 }
 
 func TestMerging(t *testing.T) {

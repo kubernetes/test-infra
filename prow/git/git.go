@@ -197,6 +197,13 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	}, nil
 }
 
+type diffType string
+
+const (
+	twoWayDiff   diffType = ".."
+	threeWayDiff diffType = "..."
+)
+
 // Repo is a clone of a git repository. Create with Client.Clone, and don't
 // forget to clean it up after.
 type Repo struct {
@@ -457,18 +464,11 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 	return b, err
 }
 
+// Diff performs a git diff to get all the changes between head and sha.
+// See also: DiffThreeDot
 func (r *Repo) Diff(head, sha string) (changes []string, err error) {
 	r.logger.Infof("Diff head with %s'.", sha)
-	output, err := r.gitCommand("diff", head, sha, "--name-only").CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
-	scan := bufio.NewScanner(bytes.NewReader(output))
-	scan.Split(bufio.ScanLines)
-	for scan.Scan() {
-		changes = append(changes, scan.Text())
-	}
-	return
+	return r.diff(head, sha, twoWayDiff)
 }
 
 // MergeCommitsExistBetween runs 'git log <target>..<head> --merged' to verify
@@ -490,4 +490,36 @@ func (i *Repo) ShowRef(commitlike string) (string, error) {
 		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
 	}
 	return strings.TrimSpace(string(out)), nil
+}
+
+// DiffThreeDot does a three dot diff to get all the changes introduced by a
+// commit/branch since it was last synced with the base branch.
+// For more details, see:
+// https://help.github.com/en/articles/about-comparing-branches-in-pull-requests
+func (r *Repo) DiffThreeDot(base, head string) ([]string, error) {
+	r.logger.Infof("Diff %s...%s'.", base, head)
+	return r.diff(base, head, threeWayDiff)
+}
+
+func (r *Repo) diff(base, head string, gitDiffType diffType) ([]string, error) {
+	diffArgs := []string{"diff"}
+	switch gitDiffType {
+	case twoWayDiff:
+		diffArgs = append(diffArgs, base, head)
+	case threeWayDiff:
+		diffArgs = append(diffArgs, base+"..."+head)
+	}
+	diffArgs = append(diffArgs, "--name-only")
+
+	output, err := r.gitCommand(diffArgs...).CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	scan := bufio.NewScanner(bytes.NewReader(output))
+	scan.Split(bufio.ScanLines)
+	var changes []string
+	for scan.Scan() {
+		changes = append(changes, scan.Text())
+	}
+	return changes, nil
 }

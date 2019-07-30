@@ -1605,6 +1605,90 @@ prow/git/v2/remote_test.go`),
 	}
 }
 
+func TestInteractor_DiffThreeDot(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		base, sha     string
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedOut   []string
+		expectedErr   bool
+	}{
+		{
+			name: "happy case",
+			base: "base",
+			sha:  "sha",
+			responses: map[string]execResponse{
+				"diff base...sha --name-only": {
+					out: []byte(`prow/git/v2/client_factory.go
+prow/git/v2/executor.go
+prow/git/v2/executor_test.go
+prow/git/v2/fakes.go
+prow/git/v2/interactor.go
+prow/git/v2/publisher.go
+prow/git/v2/publisher_test.go
+prow/git/v2/remote.go
+prow/git/v2/remote_test.go`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"diff", "base...sha", "--name-only"},
+			},
+			expectedOut: []string{
+				"prow/git/v2/client_factory.go",
+				"prow/git/v2/executor.go",
+				"prow/git/v2/executor_test.go",
+				"prow/git/v2/fakes.go",
+				"prow/git/v2/interactor.go",
+				"prow/git/v2/publisher.go",
+				"prow/git/v2/publisher_test.go",
+				"prow/git/v2/remote.go",
+				"prow/git/v2/remote_test.go",
+			},
+			expectedErr: false,
+		},
+		{
+			name: "failure case",
+			base: "base",
+			sha:  "sha",
+			responses: map[string]execResponse{
+				"diff base...sha --name-only": {
+					err: errors.New("oops"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"diff", "base...sha", "--name-only"},
+			},
+			expectedErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			i := interactor{
+				executor: &e,
+				logger:   logrus.WithField("test", testCase.name),
+			}
+			actualOut, actualErr := i.DiffThreeDot(testCase.base, testCase.sha)
+			if !reflect.DeepEqual(actualOut, testCase.expectedOut) {
+				t.Errorf("%s: got incorrect output: %v", testCase.name, diff.ObjectReflectDiff(actualOut, testCase.expectedOut))
+			}
+			if testCase.expectedErr && actualErr == nil {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+			if !testCase.expectedErr && actualErr != nil {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, actualErr)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
 func TestInteractor_MergeCommitsExistBetween(t *testing.T) {
 	var testCases = []struct {
 		name          string

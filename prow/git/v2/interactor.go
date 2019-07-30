@@ -62,6 +62,9 @@ type Interactor interface {
 	Config(key, value string) error
 	// Diff runs `git diff`
 	Diff(head, sha string) (changes []string, err error)
+	// DiffThreeDot performs a three dot diff to get all the changes introduced by a
+	// commit/branch since it was last synced with the base branch.
+	DiffThreeDot(base, sha string) (changes []string, err error)
 	// MergeCommitsExistBetween determines if merge commits exist between target and HEAD
 	MergeCommitsExistBetween(target, head string) (bool, error)
 	// ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
@@ -342,6 +345,25 @@ func (i *interactor) Config(key, value string) error {
 func (i *interactor) Diff(head, sha string) ([]string, error) {
 	i.logger.Infof("Finding the differences between %q and %q", head, sha)
 	out, err := i.executor.Run("diff", head, sha, "--name-only")
+	if err != nil {
+		return nil, err
+	}
+	var changes []string
+	scan := bufio.NewScanner(bytes.NewReader(out))
+	scan.Split(bufio.ScanLines)
+	for scan.Scan() {
+		changes = append(changes, scan.Text())
+	}
+	return changes, nil
+}
+
+// DiffThreeDot performs a three dot diff to get all the changes introduced by a
+// commit/branch since it was last synced with the base branch.
+// For more details, see:
+// https://help.github.com/en/articles/about-comparing-branches-in-pull-requests
+func (i *interactor) DiffThreeDot(base, sha string) ([]string, error) {
+	i.logger.Infof("Finding the three dot diff between %q and %q", base, sha)
+	out, err := i.executor.Run("diff", base+"..."+sha, "--name-only")
 	if err != nil {
 		return nil, err
 	}
