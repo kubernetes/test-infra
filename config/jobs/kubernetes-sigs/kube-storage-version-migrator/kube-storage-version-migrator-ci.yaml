@@ -11,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-dbac84b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
