@@ -524,6 +524,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to sig-usability.
+      name: sig/usability
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       name: sig/vmware
       description: Categorizes an issue or PR as relevant to sig-vmware.
       target: both
