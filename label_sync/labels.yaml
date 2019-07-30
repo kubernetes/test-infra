@@ -79,10 +79,12 @@ default:
       addedBy: humans
     - color: c0ff4a
       description: Denotes an issue or PR intended to be handled by the code of conduct committee. # (as of yet non-existent)
-      name: committee/conduct
+      name: committee/code-of-conduct
       target: both
       prowPlugin: label
       addedBy: anyone
+      previously:
+        - name: committee/conduct
     - color: c0ff4a
       description: Denotes an issue or PR intended to be handled by the steering committee.
       name: committee/steering
