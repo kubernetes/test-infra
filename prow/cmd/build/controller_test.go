@@ -1617,7 +1617,7 @@ func TestInjectedSteps(t *testing.T) {
 	dc := prowjobv1.DecorationConfig{
 		UtilityImages: &prowjobv1.UtilityImages{},
 	}
-	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc)
+	gcsVol, gcsMount, gcsOptions := decorate.GCSOptions(dc, false)
 	_, tm := tools()
 
 	cases := []struct {
@@ -1630,31 +1630,31 @@ func TestInjectedSteps(t *testing.T) {
 			name: "add logMount to init upload when using source",
 			src:  true,
 			expected: func(entries []wrapper.Options) ([]corev1.Container, *corev1.Container, *corev1.Volume, error) {
-				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, &logMount, ejs)
+				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, &logMount, nil, ejs)
 				if err != nil {
 					t.Fatalf("failed to create init upload: %v", err)
 				}
 				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
-				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, decorate.RequirePassingEntries, entries...)
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, nil, ejs, decorate.RequirePassingEntries, entries...)
 				if err != nil {
 					t.Fatalf("failed to create sidecar: %v", err)
 				}
-				return before, after, &gcsVol, nil
+				return before, after, gcsVol, nil
 			},
 		},
 		{
 			name: "do not add logMount to init upload when not using source",
 			expected: func(entries []wrapper.Options) ([]corev1.Container, *corev1.Container, *corev1.Volume, error) {
-				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, nil, ejs)
+				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, nil, nil, ejs)
 				if err != nil {
 					t.Fatalf("failed to create init upload: %v", err)
 				}
 				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
-				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, decorate.RequirePassingEntries, entries...)
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, nil, ejs, decorate.RequirePassingEntries, entries...)
 				if err != nil {
 					t.Fatalf("failed to create sidecar: %v", err)
 				}
-				return before, after, &gcsVol, nil
+				return before, after, gcsVol, nil
 			},
 		},
 		{
@@ -1674,16 +1674,16 @@ func TestInjectedSteps(t *testing.T) {
 				},
 			},
 			expected: func(entries []wrapper.Options) ([]corev1.Container, *corev1.Container, *corev1.Volume, error) {
-				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, nil, ejs)
+				iu, err := decorate.InitUpload(dc.UtilityImages.InitUpload, gcsOptions, gcsMount, nil, nil, ejs)
 				if err != nil {
 					t.Fatalf("failed to create init upload: %v", err)
 				}
 				before := []corev1.Container{decorate.PlaceEntrypoint(dc.UtilityImages.Entrypoint, tm), *iu}
-				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, ejs, decorate.RequirePassingEntries, entries...)
+				after, err := decorate.Sidecar(dc.UtilityImages.Sidecar, gcsOptions, gcsMount, logMount, nil, ejs, decorate.RequirePassingEntries, entries...)
 				if err != nil {
 					t.Fatalf("failed to create sidecar: %v", err)
 				}
-				return before, after, &gcsVol, nil
+				return before, after, gcsVol, nil
 			},
 		},
 	}
