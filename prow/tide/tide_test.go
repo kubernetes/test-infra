@@ -50,6 +50,34 @@ import (
 	"k8s.io/test-infra/prow/tide/history"
 )
 
+type fakeChangedFilesProvider struct {
+	changes       map[int][]string
+	changeLookups map[int]struct{}
+}
+
+func (f *fakeChangedFilesProvider) prChanges(pr *PullRequest) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		if len(f.changeLookups) == 0 {
+			f.changeLookups = make(map[int]struct{})
+		}
+		f.changeLookups[int(pr.Number)] = struct{}{}
+		return f.changes[int(pr.Number)], nil
+	}
+}
+
+func (f *fakeChangedFilesProvider) batchChanges(prs []PullRequest) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		result := sets.String{}
+		for _, pr := range prs {
+			changes, _ := f.prChanges(&pr)()
+			result.Insert(changes...)
+		}
+		return result.List(), nil
+	}
+}
+
+func (f *fakeChangedFilesProvider) prune() {}
+
 func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
 	if len(actual) != len(expected) {
 		t.Errorf("Wrong size for case %s. Got PRs %+v, wanted numbers %v.", test, actual, expected)
@@ -277,7 +305,7 @@ func TestAccumulateBatch(t *testing.T) {
 						},
 					}
 				},
-				changedFiles: &changedFilesAgent{},
+				changedFiles: &fakeChangedFilesProvider{},
 				logger:       logrus.WithField("test", test.name),
 			}
 			merges, pending := c.accumulateBatch(subpool{org: "org", repo: "repo", prs: pulls, pjs: pjs, log: logrus.WithField("test", test.name)})
@@ -917,9 +945,10 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		},
 	})
 	c := &Controller{
-		logger: logrus.WithField("component", "tide"),
-		gc:     gc,
-		config: ca.Config,
+		logger:       logrus.WithField("component", "tide"),
+		gc:           gc,
+		config:       ca.Config,
+		changedFiles: &fakeChangedFilesProvider{},
 	}
 	prs, presubmits, err := c.pickBatch(sp, map[int]contextChecker{
 		0: &config.TideContextPolicy{},
@@ -1655,10 +1684,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to construct sync controller: %v", err)
 			}
-			c.changedFiles = &changedFilesAgent{
-				ghc:             &fgc,
-				nextChangeCache: make(map[changeCacheKey][]string),
-			}
+			c.changedFiles = &fakeChangedFilesProvider{}
 			var batchPending []PullRequest
 			if tc.batchPending {
 				batchPending = []PullRequest{{}}
@@ -1990,12 +2016,9 @@ func TestSync(t *testing.T) {
 			prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 			logger:        logrus.WithField("controller", "sync"),
 			sc:            sc,
-			changedFiles: &changedFilesAgent{
-				ghc:             fgc,
-				nextChangeCache: make(map[changeCacheKey][]string),
-			},
-			mergeChecker: mergeChecker,
-			History:      hist,
+			mergeChecker:  mergeChecker,
+			changedFiles:  &fakeChangedFilesProvider{},
+			History:       hist,
 		}
 
 		if err := c.Sync(); err != nil {
@@ -2481,16 +2504,15 @@ func TestPresubmitsByPull(t *testing.T) {
 		Number:     githubql.Int(100),
 		HeadRefOID: githubql.String("sha"),
 	}
+
 	testcases := []struct {
-		name string
-
-		initialChangeCache map[changeCacheKey][]string
-		presubmits         []config.Presubmit
-		prs                []PullRequest
-		prowYAMLGetter     config.ProwYAMLGetter
-
-		expectedPresubmits  map[int][]config.Presubmit
-		expectedChangeCache map[changeCacheKey][]string
+		name                  string
+		presubmits            []config.Presubmit
+		prs                   []PullRequest
+		prowYAMLGetter        config.ProwYAMLGetter
+		changes               []string
+		expectedPresubmits    map[int][]config.Presubmit
+		expectedChangeLookups map[int]struct{}
 	}{
 		{
 			name: "no matching presubmits",
@@ -2505,8 +2527,11 @@ func TestPresubmitsByPull(t *testing.T) {
 					Reporter: config.Reporter{Context: "never"},
 				},
 			},
-			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
-			expectedPresubmits:  map[int][]config.Presubmit{},
+			changes: []string{"CHANGED"},
+			expectedChangeLookups: map[int]struct{}{
+				100: {},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{},
 		},
 		{
 			name:               "no presubmits",
@@ -2514,17 +2539,16 @@ func TestPresubmitsByPull(t *testing.T) {
 			expectedPresubmits: map[int][]config.Presubmit{},
 		},
 		{
-			name: "no matching presubmits (check cache eviction)",
+			name: "no matching presubmits (verify no lookup of changed files)",
 			presubmits: []config.Presubmit{
 				{
 					Reporter: config.Reporter{Context: "never"},
 				},
 			},
-			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits: map[int][]config.Presubmit{},
 		},
 		{
-			name: "no matching presubmits (check cache retention)",
+			name: "no matching presubmits (verify lookup of changed files)",
 			presubmits: []config.Presubmit{
 				{
 					Reporter: config.Reporter{Context: "always"},
@@ -2536,9 +2560,11 @@ func TestPresubmitsByPull(t *testing.T) {
 					Reporter: config.Reporter{Context: "never"},
 				},
 			},
-			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
-			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
-			expectedPresubmits:  map[int][]config.Presubmit{},
+			changes: []string{"FILE"},
+			expectedChangeLookups: map[int]struct{}{
+				100: {},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{},
 		},
 		{
 			name: "always_run",
@@ -2602,7 +2628,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			}}},
 		},
 		{
-			name: "run_if_changed (uncached)",
+			name: "run_if_changed (verify lookup of changes)",
 			presubmits: []config.Presubmit{
 				{
 					Reporter: config.Reporter{Context: "presubmit"},
@@ -2618,6 +2644,7 @@ func TestPresubmitsByPull(t *testing.T) {
 					Reporter: config.Reporter{Context: "never"},
 				},
 			},
+			changes: []string{"CHANGED"},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
 				Reporter: config.Reporter{Context: "presubmit"},
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
@@ -2627,40 +2654,13 @@ func TestPresubmitsByPull(t *testing.T) {
 				Reporter:  config.Reporter{Context: "always"},
 				AlwaysRun: true,
 			}}},
-			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
+			expectedChangeLookups: map[int]struct{}{
+				100: {},
+			},
 		},
 		{
-			name: "run_if_changed (cached)",
-			presubmits: []config.Presubmit{
-				{
-					Reporter: config.Reporter{Context: "presubmit"},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "^FIL.$",
-					},
-				},
-				{
-					Reporter:  config.Reporter{Context: "always"},
-					AlwaysRun: true,
-				},
-				{
-					Reporter: config.Reporter{Context: "never"},
-				},
-			},
-			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
-			expectedPresubmits: map[int][]config.Presubmit{100: {{
-				Reporter: config.Reporter{Context: "presubmit"},
-				RegexpChangeMatcher: config.RegexpChangeMatcher{
-					RunIfChanged: "^FIL.$",
-				},
-			},
-				{
-					Reporter:  config.Reporter{Context: "always"},
-					AlwaysRun: true,
-				}}},
-			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
-		},
-		{
-			name: "run_if_changed (cached) (skippable)",
+			name:    "run_if_changed (verify lookup of changed files) (skippable)",
+			changes: []string{"FILE"},
 			presubmits: []config.Presubmit{
 				{
 					Reporter: config.Reporter{Context: "presubmit"},
@@ -2676,12 +2676,13 @@ func TestPresubmitsByPull(t *testing.T) {
 					Reporter: config.Reporter{Context: "never"},
 				},
 			},
-			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits: map[int][]config.Presubmit{100: {{
 				Reporter:  config.Reporter{Context: "always"},
 				AlwaysRun: true,
 			}}},
-			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
+			expectedChangeLookups: map[int]struct{}{
+				100: {},
+			},
 		},
 		{
 			name: "inrepoconfig presubmits get only added to the corresponding pull",
@@ -2729,14 +2730,19 @@ func TestPresubmitsByPull(t *testing.T) {
 		},
 	}
 
+	lg, gc, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Error making local git: %v", err)
+	}
+	defer gc.Clean()
+	defer lg.Clean()
 	for _, tc := range testcases {
 		t.Logf("Starting test case: %q", tc.name)
 
-		if tc.initialChangeCache == nil {
-			tc.initialChangeCache = map[changeCacheKey][]string{}
-		}
-		if tc.expectedChangeCache == nil {
-			tc.expectedChangeCache = map[changeCacheKey][]string{}
+		changesProvider := fakeChangedFilesProvider{
+			changes: map[int][]string{
+				100: tc.changes,
+			},
 		}
 
 		cfg := &config.Config{}
@@ -2756,22 +2762,17 @@ func TestPresubmitsByPull(t *testing.T) {
 			prs:    append(tc.prs, samplePR),
 		}
 		c := &Controller{
-			config: cfgAgent.Config,
-			ghc:    &fgc{},
-			gc:     nil,
-			changedFiles: &changedFilesAgent{
-				ghc:             &fgc{},
-				changeCache:     tc.initialChangeCache,
-				nextChangeCache: make(map[changeCacheKey][]string),
-			},
+			config:       cfgAgent.Config,
+			ghc:          &fgc{},
+			gc:           gc,
 			mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
+			changedFiles: &changesProvider,
 			logger:       logrus.WithField("test", tc.name),
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
 			t.Fatalf("unexpected error from presubmitsByPull: %v", err)
 		}
-		c.changedFiles.prune()
 		// for equality we need to clear the compiled regexes
 		for _, jobs := range presubmits {
 			config.ClearCompiledRegexes(jobs)
@@ -2779,8 +2780,8 @@ func TestPresubmitsByPull(t *testing.T) {
 		if !equality.Semantic.DeepEqual(presubmits, tc.expectedPresubmits) {
 			t.Errorf("got incorrect presubmit mapping: %v\n", diff.ObjectReflectDiff(tc.expectedPresubmits, presubmits))
 		}
-		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
-			t.Errorf("got incorrect file change cache: %v", diff.ObjectReflectDiff(tc.expectedChangeCache, got))
+		if got := changesProvider.changeLookups; !reflect.DeepEqual(got, tc.expectedChangeLookups) {
+			t.Errorf("got incorrect file change lookups: %v", diff.ObjectReflectDiff(tc.expectedChangeLookups, got))
 		}
 	}
 }
@@ -3150,10 +3151,10 @@ func TestPresubmitsForBatch(t *testing.T) {
 	testCases := []struct {
 		name           string
 		prs            []PullRequest
-		changedFiles   *changedFilesAgent
 		jobs           []config.Presubmit
 		prowYAMLGetter config.ProwYAMLGetter
 		expected       []config.Presubmit
+		changedFiles   changedFilesProvider
 	}{
 		{
 			name: "All jobs get picked",
@@ -3212,12 +3213,10 @@ func TestPresubmitsForBatch(t *testing.T) {
 				},
 				Reporter: config.Reporter{Context: "foo"},
 			}},
-			changedFiles: &changedFilesAgent{
-				changeCache: map[changeCacheKey][]string{
-					{org: "org", repo: "repo", number: 1, sha: "sha"}: {"/very-important"},
-					{org: "org", repo: "repo", number: 2}:             {},
+			changedFiles: &fakeChangedFilesProvider{
+				changes: map[int][]string{
+					1: {"/very-important"},
 				},
-				nextChangeCache: map[changeCacheKey][]string{},
 			},
 			expected: []config.Presubmit{{
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
@@ -3284,20 +3283,8 @@ func TestPresubmitsForBatch(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			if tc.changedFiles == nil {
-				tc.changedFiles = &changedFilesAgent{
-					changeCache: map[changeCacheKey][]string{},
-				}
-				for _, pr := range tc.prs {
-					key := changeCacheKey{
-						org:    string(pr.Repository.Owner.Login),
-						repo:   string(pr.Repository.Name),
-						number: int(pr.Number),
-						sha:    string(pr.HeadRefOID),
-					}
-					tc.changedFiles.changeCache[key] = []string{}
-				}
+				tc.changedFiles = &fakeChangedFilesProvider{}
 			}
 
 			if err := config.SetPresubmitRegexes(tc.jobs); err != nil {
@@ -3339,7 +3326,29 @@ func TestPresubmitsForBatch(t *testing.T) {
 	}
 }
 
+type fakeGitRepo struct {
+	diff map[string][]string
+}
+
+func (f fakeGitRepo) DiffThreeDot(base, ref string) ([]string, error) {
+	return f.diff[ref], nil
+}
+
 func TestChangedFilesAgentBatchChanges(t *testing.T) {
+	changesProvider := &changedFilesAgent{
+		repoCache: map[repoCacheKey]gitRepo{
+			{
+				org:  "org",
+				repo: "repo",
+			}: fakeGitRepo{
+				diff: map[string][]string{
+					"sha":    {"foo"},
+					"sha256": {"foo", "bar"},
+				},
+			},
+		},
+	}
+
 	testCases := []struct {
 		name         string
 		prs          []PullRequest
@@ -3349,35 +3358,30 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 		{
 			name: "Single PR",
 			prs: []PullRequest{
-				getPR("org", "repo", 1),
+				getPR("org", "repo", 1, func(pr *PullRequest) {
+					pr.HeadRefOID = githubql.String("sha")
+				}),
 			},
-			changedFiles: &changedFilesAgent{
-				changeCache: map[changeCacheKey][]string{
-					{org: "org", repo: "repo", number: 1}: {"foo"},
-				},
-			},
-			expected: []string{"foo"},
+			changedFiles: changesProvider,
+			expected:     []string{"foo"},
 		},
 		{
 			name: "Multiple PRs, changes are de-duplicated",
 			prs: []PullRequest{
-				getPR("org", "repo", 1),
-				getPR("org", "repo", 2),
+				getPR("org", "repo", 1, func(pr *PullRequest) {
+					pr.HeadRefOID = githubql.String("sha")
+				}),
+				getPR("org", "repo", 2, func(pr *PullRequest) {
+					pr.HeadRefOID = githubql.String("sha256")
+				}),
 			},
-			changedFiles: &changedFilesAgent{
-				changeCache: map[changeCacheKey][]string{
-					{org: "org", repo: "repo", number: 1}: {"foo"},
-					{org: "org", repo: "repo", number: 2}: {"foo", "bar"},
-				},
-			},
-			expected: []string{"bar", "foo"},
+			changedFiles: changesProvider,
+			expected:     []string{"bar", "foo"},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.changedFiles.nextChangeCache = map[changeCacheKey][]string{}
-
 			result, err := tc.changedFiles.batchChanges(tc.prs)()
 			if err != nil {
 				t.Fatalf("fauked to get changed files: %v", err)

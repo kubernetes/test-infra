@@ -55,7 +55,6 @@ var sleep = time.Sleep
 type githubClient interface {
 	CreateStatus(string, string, string, github.Status) error
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
-	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetRef(string, string, string) (string, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
 	Merge(string, string, int, github.MergeDetails) error
@@ -67,6 +66,12 @@ type contextChecker interface {
 	IsOptional(string) bool
 	// MissingRequiredContexts tells if required contexts are missing from the list of contexts provided.
 	MissingRequiredContexts([]string) []string
+}
+
+type changedFilesProvider interface {
+	batchChanges([]PullRequest) config.ChangedFilesProvider
+	prChanges(*PullRequest) config.ChangedFilesProvider
+	prune()
 }
 
 // Controller knows how to sync PRs and PJs.
@@ -83,9 +88,7 @@ type Controller struct {
 	m     sync.Mutex
 	pools []Pool
 
-	// changedFiles caches the names of files changed by PRs.
-	// Cache entries expire if they are not used during a sync loop.
-	changedFiles *changedFilesAgent
+	changedFiles changedFilesProvider
 
 	mergeChecker *mergeChecker
 
@@ -302,8 +305,8 @@ func newSyncController(
 		gc:            gc,
 		sc:            sc,
 		changedFiles: &changedFilesAgent{
-			ghc:             ghcSync,
-			nextChangeCache: make(map[changeCacheKey][]string),
+			gc:        gc,
+			repoCache: make(map[repoCacheKey]gitRepo),
 		},
 		mergeChecker: mergeChecker,
 		History:      hist,
@@ -1286,70 +1289,58 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	return Wait, nil, nil
 }
 
-// changedFilesAgent queries and caches the names of files changed by PRs.
-// Cache entries expire if they are not used during a sync loop.
+type gitRepo interface {
+	DiffThreeDot(string, string) ([]string, error)
+}
+
+// changedFilesAgent uses git to get the names of files changed
+// by PRs. Each cloned repo is cached for one iteration of the sync loop.
 type changedFilesAgent struct {
-	ghc         githubClient
-	changeCache map[changeCacheKey][]string
-	// nextChangeCache caches file change info that is relevant this sync for use next sync.
-	// This becomes the new changeCache when prune() is called at the end of each sync.
-	nextChangeCache map[changeCacheKey][]string
+	gc git.ClientFactory
+	// repoCache caches cloned repos during this sync.
+	// This cache is destroyed when prune is called at the end of each sync.
+	repoCache map[repoCacheKey]gitRepo
 	sync.RWMutex
 }
 
-type changeCacheKey struct {
+type repoCacheKey struct {
 	org, repo string
-	number    int
-	sha       string
 }
 
-// prChanges gets the files changed by the PR, either from the cache or by
-// querying GitHub.
+// prChanges gets the files changed by the PR, using git client.
 func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvider {
 	return func() ([]string, error) {
-		cacheKey := changeCacheKey{
-			org:    string(pr.Repository.Owner.Login),
-			repo:   string(pr.Repository.Name),
-			number: int(pr.Number),
-			sha:    string(pr.HeadRefOID),
+		org := string(pr.Repository.Owner.Login)
+		repo := string(pr.Repository.Name)
+		cacheKey := repoCacheKey{
+			org:  org,
+			repo: repo,
 		}
 
 		c.RLock()
-		changedFiles, ok := c.changeCache[cacheKey]
-		if ok {
-			c.RUnlock()
-			c.Lock()
-			c.nextChangeCache[cacheKey] = changedFiles
-			c.Unlock()
-			return changedFiles, nil
-		}
-		if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
-			c.RUnlock()
-			return changedFiles, nil
-		}
+		gitRepo, ok := c.repoCache[cacheKey]
 		c.RUnlock()
+		if !ok {
+			r, err := c.gc.ClientFor(org, repo)
+			if err != nil {
+				return nil, fmt.Errorf("error cloning repo %s/%s %v", org, repo, err)
+			}
+			gitRepo = r
 
-		// We need to query the changes from GitHub.
-		changes, err := c.ghc.GetPullRequestChanges(
-			string(pr.Repository.Owner.Login),
-			string(pr.Repository.Name),
-			int(pr.Number),
-		)
+			c.Lock()
+			c.repoCache[cacheKey] = gitRepo
+			c.Unlock()
+		}
+
+		changedFiles, err := gitRepo.DiffThreeDot(string(pr.BaseRef.Name), string(pr.HeadRefOID))
 		if err != nil {
-			return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
+			return nil, fmt.Errorf("error running diff on repo %s/%s: %v", org, repo, err)
 		}
-		changedFiles = make([]string, 0, len(changes))
-		for _, change := range changes {
-			changedFiles = append(changedFiles, change.Filename)
-		}
-
-		c.Lock()
-		c.nextChangeCache[cacheKey] = changedFiles
-		c.Unlock()
 		return changedFiles, nil
 	}
 }
 
+// batchChanges returns the set of names of the files changed by PRs.
 func (c *changedFilesAgent) batchChanges(prs []PullRequest) config.ChangedFilesProvider {
 	return func() ([]string, error) {
 		result := sets.String{}
@@ -1366,12 +1357,12 @@ func (c *changedFilesAgent) batchChanges(prs []PullRequest) config.ChangedFilesP
 	}
 }
 
-// prune removes any cached file changes that were not used since the last prune.
+// prune removes any cached repositories to ensure they will be cloned
+// in the next Sync loop.
 func (c *changedFilesAgent) prune() {
 	c.Lock()
 	defer c.Unlock()
-	c.changeCache = c.nextChangeCache
-	c.nextChangeCache = make(map[changeCacheKey][]string)
+	c.repoCache = make(map[repoCacheKey]gitRepo)
 }
 
 func refGetterFactory(ref string) config.RefGetter {
