@@ -257,7 +257,7 @@ func TestGetLogin(t *testing.T) {
 	mockConfig := getMockConfig(cookie)
 	mockLogger := logrus.WithField("uni-test", "githuboauth")
 	mockAgent := NewAgent(mockConfig, mockLogger)
-	mockToken := &oauth2.Token{}
+	mockToken := &oauth2.Token{AccessToken: "tokentokentoken"}
 	mockRequest := httptest.NewRequest(http.MethodGet, "/someurl", nil)
 	mockSession, err := sessions.GetRegistry(mockRequest).Get(cookie, "access-token-session")
 	if err != nil {

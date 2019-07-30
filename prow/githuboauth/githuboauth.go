@@ -155,14 +155,9 @@ func (ga *Agent) GetLogin(r *http.Request, getter GitHubClientGetter) (string, e
 	if err != nil {
 		return "", err
 	}
-	val := session.Values[tokenKey]
-	if val == nil {
+	token, ok := session.Values[tokenKey].(*oauth2.Token)
+	if !ok || !token.Valid() {
 		return "", fmt.Errorf("Could not find GitHub token")
-	}
-	var token = &oauth2.Token{}
-	token, ok := val.(*oauth2.Token)
-	if !ok {
-		return "", fmt.Errorf("Unexpected GitHub token type")
 	}
 	ghc := getter.GetGitHubClient(token.AccessToken, false)
 	userInfo, err := ghc.GetUser("")
