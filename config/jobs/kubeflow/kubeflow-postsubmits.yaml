@@ -25,6 +25,18 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for Kubeflow.
+  kubeflow/kfctl:
+  - name: kubeflow-kfctl-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/kfctl.
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-postsubmit
     branches:
