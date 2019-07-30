@@ -635,7 +635,3 @@ presets:
       hostPath:
         path: /sys/fs/cgroup
         type: Directory
-# enable GOPROXY by default
-- env:
-  - name: GOPROXY
-    value: "https://proxy.golang.org"
