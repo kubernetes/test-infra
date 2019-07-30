@@ -156,7 +156,7 @@ presets:
   - name: MAX_PODS_PER_NODE
     value: "128"
   - name: KUBELET_TEST_ARGS
-    value: "--enable-debugging-handlers"
+    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
   - name: KUBEPROXY_TEST_ARGS
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
