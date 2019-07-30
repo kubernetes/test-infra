@@ -572,12 +572,7 @@ periodics:
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
-      # Four kinds of cases should be skipped:
-      # 1. ssh related cases
-      # 2. PSP related cases, reason: https://github.com/Azure/aks-engine/blob/master/parts/k8s/addons/kubernetesmasteraddons-pod-security-policy.yaml#L41
-      # 3. cases in which PV will be created, for these shall be failed since AzureDisk will be disabled when ccm is enabled
-      # 4. cases requiring node's public IP
-      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|\[Slow\]|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|Mount\spropagation\sshould\spropagate\smounts\sto\sthe\shost|PodSecurityPolicy|PVC\sProtection\sVerify|should\sprovide\sbasic\sidentity|should\sadopt\smatching\sorphans\sand\srelease|should\snot\sdeadlock\swhen\sa\spod's\spredecessor\sfails|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications\swith\sPVCs|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications|Services\sshould\sbe\sable\s/to\screate\sa\sfunctioning\sNodePort\sservice$
+      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|\[Slow\]
       - --timeout=420m
       securityContext:
         privileged: true
@@ -693,7 +688,12 @@ periodics:
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
-      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      # Four kinds of cases should be skipped:
+      # 1. ssh related cases
+      # 2. PSP related cases, reason: https://github.com/Azure/aks-engine/blob/master/parts/k8s/addons/kubernetesmasteraddons-pod-security-policy.yaml#L41
+      # 3. cases in which PV will be created, for these shall be failed since AzureDisk will be disabled when ccm is enabled
+      # 4. cases requiring node's public IP
+      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|Mount\spropagation\sshould\spropagate\smounts\sto\sthe\shost|PodSecurityPolicy|PVC\sProtection\sVerify|should\sprovide\sbasic\sidentity|should\sadopt\smatching\sorphans\sand\srelease|should\snot\sdeadlock\swhen\sa\spod's\spredecessor\sfails|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications\swith\sPVCs|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications|Services\sshould\sbe\sable\sto\screate\sa\sfunctioning\sNodePort\sservice$
       - --timeout=420m
       securityContext:
         privileged: true
