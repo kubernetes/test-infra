@@ -320,7 +320,7 @@ default:
       name: lifecycle/rotten
       target: both
       prowPlugin: lifecycle
-      addedBy: anyone or [@fejta-bot](https://github.com/fejta-bot) via [periodic-test-infra-rotten prowjob](https://prow.k8s.io/?job=periodic-test-infra-rotten)
+      addedBy: anyone or [@k8s-triage-robot](https://github.com/k8s-triage-robot) via [periodic-test-infra-rotten prowjob](https://prow.k8s.io/?job=periodic-test-infra-rotten)
     - color: "795548"
       description: Denotes an issue or PR has remained open with no activity and has become stale.
       name: lifecycle/stale
@@ -328,7 +328,7 @@ default:
         - name: stale
       target: both
       prowPlugin: lifecycle
-      addedBy: anyone or [@fejta-bot](https://github.com/fejta-bot) via [periodic-test-infra-stale prowjob](https://prow.k8s.io/?job=periodic-test-infra-stale)
+      addedBy: anyone or [@k8s-triage-robot](https://github.com/k8s-triage-robot) via [periodic-test-infra-stale prowjob](https://prow.k8s.io/?job=periodic-test-infra-stale)
     - color: ededed
       description: Indicates a PR lacks a `kind/foo` label and requires one.
       name: needs-kind
