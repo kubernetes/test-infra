@@ -28,6 +28,8 @@ function main() {
   mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=/output/${job}" > "${PWD}/pod.yaml"
 
   # Deploy pod and watch.
+  echo "Applying pod to the mkpod cluster. Configure kubectl for the mkpod cluster with:"
+  echo '>  export KUBECONFIG="$(kind get kubeconfig-path --name="mkpod")"'
   pod=$(kubectl apply -f "${PWD}/pod.yaml" | cut -d ' ' -f 1)
   kubectl get "${pod}" -w
 }
@@ -64,15 +66,18 @@ function parseArgs() {
 function ensureInstall() {
   # Install mkpj and mkpod if not already done.
   if ! command -v mkpj >/dev/null 2>&1; then
+    echo "Installing mkpj..."
     go get k8s.io/test-infra/prow/cmd/mkpj
   fi
   if ! command -v mkpod >/dev/null 2>&1; then
+    echo "Installing mkpod..."
     go get k8s.io/test-infra/prow/cmd/mkpod
   fi
 
   # Install kind and set up cluster if not already done.
   if ! command -v kind >/dev/null 2>&1; then
-    GO111MODULE="on" go get sigs.k8s.io/kind@v0.4.0 && kind create cluster
+    echo "Installing kind..."
+    GO111MODULE="on" go get sigs.k8s.io/kind@v0.4.0
   fi
   local found="false"
   for clust in $(kind get clusters); do
