@@ -1,6 +1,7 @@
 # Announcements
 
 New features added to each component:
+ - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`. 
  - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
    If you set `--oauth-url` but not `--cookie-secret-file`, add
    `--cookie-secret-file=/etc/cookie-secret` to your deck instance. The default value
