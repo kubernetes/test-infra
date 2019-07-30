@@ -118,7 +118,7 @@ func main() {
 		} else {
 			outDir = path.Join(outDir, o.buildID)
 		}
-		logrus.WithField("out-dir", outDir).Info("Pod-utils configured for local mode. Instead of uploading to GCS, files will be copied to an output dir on the host.")
+		logrus.WithField("out-dir", outDir).Info("Pod-utils configured for local mode. Instead of uploading to GCS, files will be copied to an output dir on the node.")
 
 		pod, err = makeLocalPod(job, o.buildID, outDir)
 		if err != nil {
