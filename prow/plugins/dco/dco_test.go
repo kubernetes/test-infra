@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type fakePruner struct{}
@@ -38,7 +39,8 @@ func strP(str string) *string {
 func TestHandlePullRequest(t *testing.T) {
 	var testcases = []struct {
 		// test settings
-		name string
+		name   string
+		config plugins.Dco
 
 		// PR settings
 		pullRequestEvent github.PullRequestEvent
@@ -59,14 +61,16 @@ func TestHandlePullRequest(t *testing.T) {
 		removedComment string
 	}{
 		{
-			name: "should not do anything on pull request edited",
+			name:   "should not do anything on pull request edited",
+			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionEdited,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
 		},
 		{
-			name: "should add 'no' label & status context and add a comment if no commits have sign off",
+			name:   "should add 'no' label & status context and add a comment if no commits have sign off",
+			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
@@ -97,7 +101,8 @@ Instructions for interacting with me using PR comments are available [here](http
 `,
 		},
 		{
-			name: "should add 'no' label & status context, remove old labels and add a comment if no commits have sign off",
+			name:   "should add 'no' label & status context, remove old labels and add a comment if no commits have sign off",
+			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
@@ -129,7 +134,8 @@ Instructions for interacting with me using PR comments are available [here](http
 `,
 		},
 		{
-			name: "should update comment if labels and status are up to date and sign off is failing",
+			name:   "should update comment if labels and status are up to date and sign off is failing",
+			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
@@ -160,7 +166,8 @@ Instructions for interacting with me using PR comments are available [here](http
 `,
 		},
 		{
-			name: "should mark the PR as failed if just one commit is missing sign-off",
+			name:   "should mark the PR as failed if just one commit is missing sign-off",
+			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
@@ -193,7 +200,8 @@ Instructions for interacting with me using PR comments are available [here](http
 `,
 		},
 		{
-			name: "should add label and update status context if all commits are signed-off",
+			name:   "should add label and update status context if all commits are signed-off",
+			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
@@ -209,7 +217,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedStatus: github.StatusSuccess,
 		},
 		{
-			name: "should add label and update status context and remove old labels if all commits are signed-off",
+			name:   "should add label and update status context and remove old labels if all commits are signed-off",
+			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
@@ -225,6 +234,271 @@ Instructions for interacting with me using PR comments are available [here](http
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusSuccess,
 		},
+		{
+			name: "should add label and update status context if an user is member of the trusted org (commit non-signed)",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: true,
+				TrustedOrg:             "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			expectedStatus: github.StatusSuccess,
+		},
+		{
+			name: "should add label and update status context if an user is member of the trusted org (one commit signed, one non-signed)",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: true,
+				TrustedOrg:             "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+				{
+					SHA:    "sha2",
+					Commit: github.GitCommit{Message: "Signed-off-by: someone"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			expectedStatus: github.StatusSuccess,
+		},
+		{
+			name: "should fail dco check as one unsigned commit is from member not from the trusted org",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: true,
+				TrustedOrg:             "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "Signed-off-by: someone"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+				{
+					SHA:    "sha2",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test-2",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha2](https://github.com///commits/sha2) not signed off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
+		},
+		{
+			name: "should add label and update status context as one unsigned commit is from member not from the trusted org",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: true,
+				TrustedOrg:             "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "Signed-off-by: someone"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+				{
+					SHA:    "sha2",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test-2",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  true,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
+			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha2](https://github.com///commits/sha2) not signed off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
+		},
+		{
+			name: "should fail dco check as skip feature is disabled",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: false,
+				TrustedOrg:             "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not signed off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
+		},
+		{
+			name: "should skip dco check as commit is from a collaborator",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers:       true,
+				SkipDCOCheckForCollaborators: true,
+				TrustedOrg:                   "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test-collaborator",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			expectedStatus: github.StatusSuccess,
+		},
+		{
+			name: "should fail dco check for a collaborator as skip dco for collaborators is disabled",
+			config: plugins.Dco{
+				SkipDCOCheckForCollaborators: false,
+				TrustedOrg:                   "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test-collaborator",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not signed off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -236,6 +510,10 @@ Instructions for interacting with me using PR comments are available [here](http
 				CommitMap: map[string][]github.RepositoryCommit{
 					"/#3": tc.commits,
 				},
+				OrgMembers: map[string][]string{
+					"kubernetes": {"test"},
+				},
+				Collaborators: []string{"test-collaborator"},
 			}
 			if tc.hasDCOYes {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
@@ -259,7 +537,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			fc.CombinedStatuses["sha"] = combinedStatus
 
-			if err := handlePullRequest(fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.pullRequestEvent); err != nil {
+			if err := handlePullRequest(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.pullRequestEvent); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""
@@ -322,7 +600,8 @@ Instructions for interacting with me using PR comments are available [here](http
 func TestHandleComment(t *testing.T) {
 	var testcases = []struct {
 		// test settings
-		name string
+		name   string
+		config plugins.Dco
 
 		// PR settings
 		commentEvent github.GenericCommentEvent
@@ -344,7 +623,8 @@ func TestHandleComment(t *testing.T) {
 		removedComment string
 	}{
 		{
-			name: "should not do anything if comment does not match /check-dco",
+			name:   "should not do anything if comment does not match /check-dco",
+			config: plugins.Dco{},
 			commentEvent: github.GenericCommentEvent{
 				IssueState: "open",
 				Action:     github.GenericCommentActionCreated,
@@ -357,7 +637,8 @@ func TestHandleComment(t *testing.T) {
 			},
 		},
 		{
-			name: "should add 'no' label & status context and add a comment if no commits have sign off",
+			name:   "should add 'no' label & status context and add a comment if no commits have sign off",
+			config: plugins.Dco{},
 			commentEvent: github.GenericCommentEvent{
 				IssueState: "open",
 				Action:     github.GenericCommentActionCreated,
@@ -393,6 +674,35 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>
 `,
 		},
+		{
+			name: "should succeed as skip dco is enabled",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: true,
+				TrustedOrg:             "kubernetes",
+			},
+			commentEvent: github.GenericCommentEvent{
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body:       "/check-dco",
+				IsPR:       true,
+				Number:     3,
+			},
+			pullRequests: map[int]*github.PullRequest{
+				3: {Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not a sign off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+			},
+			issueState: "open",
+
+			expectedStatus: github.StatusSuccess,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -403,6 +713,9 @@ Instructions for interacting with me using PR comments are available [here](http
 				IssueComments:    make(map[int][]github.IssueComment),
 				CommitMap: map[string][]github.RepositoryCommit{
 					"/#3": tc.commits,
+				},
+				OrgMembers: map[string][]string{
+					"kubernetes": {"test"},
 				},
 			}
 			if tc.hasDCOYes {
@@ -427,7 +740,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			fc.CombinedStatuses["sha"] = combinedStatus
 
-			if err := handleComment(fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.commentEvent); err != nil {
+			if err := handleComment(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.commentEvent); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""
