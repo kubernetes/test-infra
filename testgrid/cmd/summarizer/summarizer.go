@@ -21,7 +21,7 @@ import (
 	"net/url"
 
 	responsepb "k8s.io/test-infra/testgrid/cmd/summarizer/response"
-	summarypb "k8s.io/test-infra/testgrid/summary"
+	summarypb "k8s.io/test-infra/testgrid/data/summary"
 )
 
 // TableToSummary converts the input queryData collected from test results to

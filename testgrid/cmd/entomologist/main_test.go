@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/testgrid/issue_state"
+	"k8s.io/test-infra/testgrid/data/issue_state"
 )
 
 func TestOptions(t *testing.T) {

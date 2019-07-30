@@ -28,7 +28,7 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//testgrid/config:go_default_library",
+        "//testgrid/data/config:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
@@ -46,7 +46,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
-        "//testgrid/config:go_default_library",
+        "//testgrid/data/config:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

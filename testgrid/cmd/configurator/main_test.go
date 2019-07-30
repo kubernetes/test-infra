@@ -20,7 +20,7 @@ import (
 	"context"
 	"flag"
 	"io/ioutil"
-	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/data/config"
 	"os"
 	"reflect"
 	"testing"

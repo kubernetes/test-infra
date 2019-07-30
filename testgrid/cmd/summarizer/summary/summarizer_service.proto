@@ -16,7 +16,7 @@ limitations under the License.
 
 syntax = "proto3";
 
-import "testgrid/summary/summary.proto";
+import "testgrid/data/summary/summary.proto";
 import "testgrid/cmd/summarizer/response/types.proto";
 
 service SummarizerService {

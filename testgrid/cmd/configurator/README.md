@@ -56,6 +56,6 @@ configurator \
     --oneshot
 ```
 
-[`config.proto`]: /testgrid/config/config.proto
+[`config.proto`]: /testgrid/data/config/config.proto
 [`config.md`]: /testgrid/config.md
 [Prow]: /prow/README.md

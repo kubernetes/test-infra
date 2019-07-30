@@ -325,5 +325,5 @@ test_groups:
   short_text_metric: coverage
 ```
 
-[`config.proto`]: ./config/config.proto
+[`config.proto`]: ./data/config/config.proto
 [configuration]: /config/testgrids

@@ -32,9 +32,9 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/data/config"
+	"k8s.io/test-infra/testgrid/data/state"
 	"k8s.io/test-infra/testgrid/metadata/junit"
-	"k8s.io/test-infra/testgrid/state"
 	"k8s.io/test-infra/testgrid/util/gcs"
 
 	"cloud.google.com/go/storage"

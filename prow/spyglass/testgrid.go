@@ -26,7 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	tgconf "k8s.io/test-infra/testgrid/config"
+	tgconf "k8s.io/test-infra/testgrid/data/config"
 )
 
 // TestGrid manages a TestGrid configuration, and handles lookups of TestGrid configuration.

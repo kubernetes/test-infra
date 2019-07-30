@@ -37,7 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/testgrid/issue_state"
+	"k8s.io/test-infra/testgrid/data/issue_state"
 )
 
 type githubClient interface {

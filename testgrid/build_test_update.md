@@ -47,5 +47,5 @@ the [testgrid.k8s.io config].
 Run `bazel test //...` for repository-wide testing, such as ensuring that
 every job in our CI system appears somewhere in testgrid, etc.
 
-[`config.proto`]: ./config/config.proto
+[`config.proto`]: ./data/config/config.proto
 [testgrid.k8s.io config]: /config/testgrids

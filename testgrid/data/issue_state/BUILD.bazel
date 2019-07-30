@@ -16,8 +16,8 @@ filegroup(
 
 go_library(
     name = "go_default_library",
-    srcs = ["state.pb.go"],
-    importpath = "k8s.io/test-infra/testgrid/state",
+    srcs = ["issue_state.pb.go"],
+    importpath = "k8s.io/test-infra/testgrid/data/issue_state",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )

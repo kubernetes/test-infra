@@ -127,8 +127,8 @@ protoc_grpc = "plugins=grpc"
 # Go package import path. Each mapping entry is prefixed with the keyword "M".
 # Reference the https://github.com/golang/protobuf "Parameters" section.
 proto_importmap = ",".join([
-    "Mtestgrid/config/config.proto=k8s.io/test-infra/testgrid/config",
-    "Mtestgrid/summary/summary.proto=k8s.io/test-infra/testgrid/summary",
+    "Mtestgrid/data/config/config.proto=k8s.io/test-infra/testgrid/data/config",
+    "Mtestgrid/data/summary/summary.proto=k8s.io/test-infra/testgrid/data/summary",
     "Mtestgrid/cmd/summarizer/response/types.proto=k8s.io/test-infra/testgrid/cmd/summarizer/response",
 ])
 

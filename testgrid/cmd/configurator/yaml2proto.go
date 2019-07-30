@@ -22,7 +22,7 @@ import (
 	"io"
 
 	"github.com/golang/protobuf/proto"
-	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/data/config"
 	"sigs.k8s.io/yaml"
 )
 
@@ -215,7 +215,7 @@ func (c *Config) MarshalText(w io.Writer) error {
 	return proto.MarshalText(w, c.config)
 }
 
-// MarshalBytes returns the wire-encoded protobuf data for the parsed configuration.
+// MarshalBytes returns the wire-encoded data data for the parsed configuration.
 // Returns an error if config is invalid or encoding failed.
 func (c *Config) MarshalBytes() ([]byte, error) {
 	if err := c.validate(); err != nil {

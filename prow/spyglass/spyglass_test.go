@@ -38,7 +38,7 @@ import (
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	tgconf "k8s.io/test-infra/testgrid/config"
+	tgconf "k8s.io/test-infra/testgrid/data/config"
 )
 
 var (

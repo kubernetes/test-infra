@@ -19,7 +19,7 @@ package main
 import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/data/config"
 	"reflect"
 	"testing"
 )

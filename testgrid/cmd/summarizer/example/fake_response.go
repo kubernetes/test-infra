@@ -20,8 +20,8 @@ import (
 	"time"
 
 	responsepb "k8s.io/test-infra/testgrid/cmd/summarizer/response"
-	configpb "k8s.io/test-infra/testgrid/config"
-	summarypb "k8s.io/test-infra/testgrid/summary"
+	configpb "k8s.io/test-infra/testgrid/data/config"
+	summarypb "k8s.io/test-infra/testgrid/data/summary"
 )
 
 func fakeResponse() (*responsepb.Response, error) {

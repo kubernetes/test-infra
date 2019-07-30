@@ -17,8 +17,8 @@ limitations under the License.
 syntax = "proto3";
 option go_package = "response";
 
-import "testgrid/config/config.proto";
-import "testgrid/summary/summary.proto";
+import "testgrid/data/config/config.proto";
+import "testgrid/data/summary/summary.proto";
 
 // PhaseTimer times the duration of each update cycle.
 message PhaseTimer {

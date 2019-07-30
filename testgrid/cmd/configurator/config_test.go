@@ -29,7 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	prow_config "k8s.io/test-infra/prow/config"
-	config_pb "k8s.io/test-infra/testgrid/config"
+	config_pb "k8s.io/test-infra/testgrid/data/config"
 )
 
 type SQConfig struct {
