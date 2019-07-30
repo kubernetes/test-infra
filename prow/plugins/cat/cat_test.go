@@ -40,7 +40,7 @@ var category = flag.String("category", "", "Request a particular category if set
 var movieCat = flag.Bool("gif", false, "Specifically request a GIF image if set")
 var keyPath = flag.String("key-path", "", "Path to api key if set")
 
-func (c fakeClowder) readCat(category string, movieCat bool) (string, error) {
+func (c fakeClowder) readCat(category string, movieCat bool, grumpyRoot string) (string, error) {
 	if category == "error" {
 		return "", errors.New(string(c))
 	}
@@ -55,7 +55,7 @@ func TestRealCat(t *testing.T) {
 		meow.setKey(*keyPath, logrus.WithField("plugin", pluginName))
 	}
 
-	if cat, err := meow.readCat(*category, *movieCat); err != nil {
+	if cat, err := meow.readCat(*category, *movieCat, defaultGrumpyRoot); err != nil {
 		t.Errorf("Could not read cats from %#v: %v", meow, err)
 	} else {
 		fmt.Println(cat)
@@ -143,6 +143,13 @@ func TestUrl(t *testing.T) {
 }
 
 func TestGrumpy(t *testing.T) {
+	// fake server for images
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body := "binary image"
+		io.WriteString(w, body)
+	}))
+	defer ts.Close()
+
 	cases := []struct {
 		name     string
 		url      string
@@ -157,14 +164,14 @@ func TestGrumpy(t *testing.T) {
 			url:      "http://foo",
 			category: "bar",
 			movie:    false,
-			deny:     []string{grumpyURL},
+			deny:     []string{ts.URL + "/" + grumpyIMG},
 		},
 		{
 			name:     "category and movie",
 			url:      "http://foo",
 			category: "this",
 			movie:    true,
-			deny:     []string{grumpyURL},
+			deny:     []string{ts.URL + "/" + grumpyIMG},
 		},
 		{
 			name:     "grumpy cat no keyword",
@@ -172,7 +179,7 @@ func TestGrumpy(t *testing.T) {
 			category: "no",
 			key:      "that",
 			movie:    false,
-			require:  []string{grumpyURL},
+			require:  []string{ts.URL + "/" + grumpyIMG},
 		},
 		{
 			name:     "grumpy cat grumpy keyword",
@@ -180,7 +187,7 @@ func TestGrumpy(t *testing.T) {
 			category: "grumpy",
 			key:      "that",
 			movie:    false,
-			require:  []string{grumpyURL},
+			require:  []string{ts.URL + "/" + grumpyIMG},
 		},
 	}
 
@@ -189,7 +196,7 @@ func TestGrumpy(t *testing.T) {
 			url: tc.url,
 			key: tc.key,
 		}
-		url, _ := rc.readCat(tc.category, tc.movie)
+		url, _ := rc.readCat(tc.category, tc.movie, ts.URL+"/")
 		for _, r := range tc.require {
 			if !strings.Contains(url, r) {
 				t.Errorf("%s: %s does not contain %s", tc.name, url, r)
@@ -345,7 +352,7 @@ Available variants:
 	// run test for each case
 	for _, testcase := range testcases {
 		fakemeow := &realClowder{url: ts.URL + testcase.path}
-		cat, err := fakemeow.readCat(*category, *movieCat)
+		cat, err := fakemeow.readCat(*category, *movieCat, "")
 		if testcase.valid && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", testcase.name, err)
 		} else if !testcase.valid && err == nil {

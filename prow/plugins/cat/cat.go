@@ -45,8 +45,9 @@ var (
 )
 
 const (
-	pluginName = "cat"
-	grumpyURL  = "https://upload.wikimedia.org/wikipedia/commons/e/ee/Grumpy_Cat_by_Gage_Skidmore.jpg"
+	pluginName        = "cat"
+	defaultGrumpyRoot = "https://upload.wikimedia.org/wikipedia/commons/e/ee/"
+	grumpyIMG         = "Grumpy_Cat_by_Gage_Skidmore.jpg"
 )
 
 func init() {
@@ -75,7 +76,7 @@ type githubClient interface {
 }
 
 type clowder interface {
-	readCat(string, bool) (string, error)
+	readCat(string, bool, string) (string, error)
 }
 
 type realClowder struct {
@@ -138,11 +139,11 @@ func (c *realClowder) URL(category string, movieCat bool) string {
 	return uri
 }
 
-func (c *realClowder) readCat(category string, movieCat bool) (string, error) {
+func (c *realClowder) readCat(category string, movieCat bool, grumpyRoot string) (string, error) {
 	cats := make([]catResult, 0)
 	uri := c.URL(category, movieCat)
 	if grumpyKeywords.MatchString(category) {
-		cats = append(cats, catResult{grumpyURL})
+		cats = append(cats, catResult{grumpyRoot + grumpyIMG})
 	} else {
 		resp, err := http.Get(uri)
 		if err != nil {
@@ -207,7 +208,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	number := e.Number
 
 	for i := 0; i < 3; i++ {
-		resp, err := c.readCat(category, movieCat)
+		resp, err := c.readCat(category, movieCat, defaultGrumpyRoot)
 		if err != nil {
 			log.WithError(err).Error("Failed to get cat img")
 			continue
