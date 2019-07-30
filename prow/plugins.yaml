@@ -402,6 +402,7 @@ plugins:
   - override
   - size  # Auto-label size of PR
   - trigger  # Allow people to configure CI jobs to /test
+  - trivial # Mark PR as /trivial
   - verify-owners # Validates OWNERS file changes in PRs.
   - wip  # Auto-hold PRs with WIP in title
   - yuks # Let prow tell a /joke
@@ -462,6 +463,7 @@ plugins:
   - skip
   - slackevents
   - trigger
+  - trivial
   - verify-owners
   - welcome
   - wip
@@ -528,6 +530,7 @@ plugins:
   - milestoneapplier
   - override
   - project
+  - trivial
 
   kubernetes/utils:
   - override
@@ -557,6 +560,7 @@ plugins:
   - size
   - skip
   - trigger
+  - trivial
   - verify-owners
   - welcome
   - wip
@@ -584,6 +588,7 @@ plugins:
   - size
   - skip
   - trigger
+  - trivial
   - verify-owners
   - welcome
   - wip
@@ -639,6 +644,7 @@ plugins:
   - size
   - skip
   - trigger
+  - trivial
   - verify-owners
   - welcome
   - wip
@@ -685,6 +691,7 @@ plugins:
   - lifecycle
   - size
   - trigger
+  - trivial
 
   tensorflow/k8s:
   - trigger
