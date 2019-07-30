@@ -15,7 +15,7 @@ go_library(
 
 prow_image(
     name = "image",
-    base = "@fedora-base//image",
+    base = "@alpine-bash//image",
     visibility = ["//visibility:public"],
 )
 

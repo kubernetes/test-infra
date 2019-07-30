@@ -105,11 +105,11 @@ container_pull(
 )
 
 container_pull(
-    name = "fedora-base",
-    digest = "sha256:b74e6841a4f44f9fd2a40ce7f533ef4996624666bf536f9a78dbc8ab30fd91b9",  # 2019/07/29
-    registry = "index.docker.io",
-    repository = "library/fedora",
-    tag = "30",
+    name = "alpine-bash",
+    digest = "sha256:d520f733f3d648b81201b28b0f9894ad2940972c516e554958d0177470c6a881",  # 2019/07/29
+    registry = "gcr.io",
+    repository = "k8s-testimages/alpine-bash",
+    tag = "latest",
 )
 
 container_pull(
