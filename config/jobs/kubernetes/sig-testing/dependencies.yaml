@@ -20,7 +20,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190726-d319b3f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-dbac84b-master
         args:
         - make
         - verify
@@ -46,7 +46,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190726-d319b3f-1.15
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-dbac84b-1.15
         args:
         - make
         - verify
@@ -72,7 +72,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190726-d319b3f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-dbac84b-master
         args:
         - make
         - verify
@@ -108,7 +108,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190726-d319b3f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-dbac84b-master
         args:
         - make
         - verify
