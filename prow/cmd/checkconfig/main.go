@@ -210,7 +210,9 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
-		githubClient.Throttle(300, 100) // 300 hourly tokens, bursts of 100
+		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
+		// 404s are expected to happen, no point in retrying
+		githubClient.SetMax404Retries(0)
 
 		if err := verifyOwnersPresence(pcfg, githubClient); err != nil {
 			errs = append(errs, err)
