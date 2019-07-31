@@ -936,6 +936,12 @@ lensesLoop:
 		return "", fmt.Errorf("error determining jobName / buildID: %v", err)
 	}
 
+	prLink := ""
+	j, err := sg.JobAgent.GetProwJob(jobName, buildID)
+	if err == nil && j.Spec.Refs != nil && len(j.Spec.Refs.Pulls) > 0 {
+		prLink = j.Spec.Refs.Pulls[0].Link
+	}
+
 	announcement := ""
 	if cfg().Deck.Spyglass.Announcement != "" {
 		announcementTmpl, err := template.New("announcement").Parse(cfg().Deck.Spyglass.Announcement)
@@ -983,6 +989,7 @@ lensesLoop:
 		TestgridLink  string
 		JobName       string
 		BuildID       string
+		PRLink        string
 		ExtraLinks    []spyglass.ExtraLink
 	}
 	lTmpl := lensesTemplate{
@@ -998,6 +1005,7 @@ lensesLoop:
 		TestgridLink:  tgLink,
 		JobName:       jobName,
 		BuildID:       buildID,
+		PRLink:        prLink,
 		ExtraLinks:    extraLinks,
 	}
 	t := template.New("spyglass.html")
