@@ -16,6 +16,7 @@ py_binary(
         "//jobs",
         "//prow:configs",
     ],
+    python_version = "PY3",
     deps = [requirement("ruamel.yaml")],
 )
 
