@@ -72,7 +72,6 @@ Please see [CONTRIBUTING.MD](CONTRIBUTING.md)
 [`velodrome`]: /velodrome
 [`testgrid`]: /testgrid
 [testgrid.k8s.io]: https://testgrid.k8s.io
-[`testgrid/config.yaml`]: /testgrid/config.yaml
 [`triage`]: /triage
 [velodrome/bigquery-metrics]: http://velodrome.k8s.io/dashboard/db/bigquery-metrics?orgId=1
 [velodrome/monitoring]: http://velodrome.k8s.io/dashboard/db/monitoring?orgId=1

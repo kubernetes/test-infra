@@ -14,18 +14,21 @@ Testgrid is composed of:
 * A list of **dashboards**, or collections of dashboard tabs
 * A list of **dashboard groups** of related dashboards.
 
-Most of these objects are listed in [`config.yaml`]
+Most of these objects are simply listed in a [YAML config file][configuration] for Testgrid to consume.
 
 ## Prow Job Configuration
 
-If you just have a prowjob you want to appear in an existing dashboard, add annotations to that
-prowjob. You don't need to change a config file here.
+If you just have a [Prow job](/prow/jobs.md) configuration you want to appear in an existing
+dashboard, add annotations to that Prow job.
 
-Simply add this to your prowjob:
+If it's a Prow job in [the k8s.io instance](/config/jobs), you don't need to do anything else.
+
+
+Add this to your Prow job:
 
 ```yaml
 annotations:
-  testgrid-dashboards: dashboard-name      # a dashboard defined in config.yaml.
+  testgrid-dashboards: dashboard-name      # a dashboard already defined in a config.yaml.
   testgrid-tab-name: some-short-name       # optionally, a shorter name for the tab. If omitted, just uses the job name.
   testgrid-alert-email: me@me.com          # optionally, an alert email that will be applied to the tab created in the
                                            # first dashboard specified in testgrid-dashboards.
@@ -39,12 +42,13 @@ annotations:
 
 ```
 
-This functionality is provided by [Configurator](cmd/configurator).
+This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a _different_
+instance of Prow, you may want to invoke Configurator [differently](cmd/configurator#deserialization-options).
 
 If you need to create a new dashboard, or do anything more advanced, read on.
 
 ## Configuration
-Open [`config.yaml`] in your favorite editor and:
+Open or create a Testgrid config file [(example)][configuration] in your favorite editor and:
 1. Configure the test groups
 2. Add those testgroups to one or more tabs in one or more dashboards
 3. Consider using dashboard groups if multiple dashboards are needed.
@@ -113,13 +117,10 @@ dashboard_groups:
 
 ## Testing your configuration
 
-Run `bazel test //testgrid/...` to ensure the config is valid.
+Run `bazel test //testgrid/...` to ensure the configuration is valid.
 
 This finds common problems such as malformed yaml, a tab referring to a
 non-existent test group, a test group never appearing on any tab, etc.
-
-Run `bazel test //...` for slightly more advanced testing, such as ensuring that
-every job in our CI system appears somewhere in testgrid, etc.
 
 ## Advanced configuration
 See [`config.proto`] for an extensive list of configuration options. Here are some commonly-used ones.
@@ -325,4 +326,4 @@ test_groups:
 ```
 
 [`config.proto`]: ./config/config.proto
-[`config.yaml`]: ./config.yaml
+[configuration]: /config/testgrids
