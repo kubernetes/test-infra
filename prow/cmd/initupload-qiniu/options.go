@@ -23,6 +23,7 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/qiniu"
@@ -107,13 +108,19 @@ func (o Options) Run() error {
 	key := jobBasePath + "/started.json"
 	uploadTargets[key] = qiniu.DataUpload(key, bytes.NewReader(startedData))
 
-	qn, err := qiniu.NewUploader(o.Bucket, o.AccessKey, o.SecretKey)
-	if err != nil {
-		return fmt.Errorf("failed to init qiniu uploader: %v", err)
-	}
+	if o.DryRun {
+		for dest := range uploadTargets {
+			logrus.WithField("dest", dest).Info("Would upload")
+		}
+	} else {
+		qn, err := qiniu.NewUploader(o.Bucket, o.AccessKey, o.SecretKey)
+		if err != nil {
+			return fmt.Errorf("failed to init qiniu uploader: %v", err)
+		}
 
-	if err := qn.Upload(uploadTargets); err != nil {
-		return fmt.Errorf("failed to upload to Qiniu: %v", err)
+		if err := qn.Upload(uploadTargets); err != nil {
+			return fmt.Errorf("failed to upload to Qiniu: %v", err)
+		}
 	}
 
 	if failed {
