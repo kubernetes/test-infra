@@ -439,10 +439,13 @@ metadata:
   namespace: default
   name: ing
 spec:
+  backend: # specify the default backend for `ingress-gce` (https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#default_backend)
+    serviceName: deck
+    servicePort: 80
   rules:
   - http:
       paths:
-      - path: /* # Correct for GKE, need / on many other distros
+      - path: /
         backend:
           serviceName: deck
           servicePort: 80
