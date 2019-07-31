@@ -1580,8 +1580,6 @@ dashboards:
 
 - name: sig-cluster-lifecycle-upgrade-skew
 
-- name: sig-contribex-community
-
 - name: wg-resource-management
   dashboard_tab:
   - name: gce-device-plugin-gpu
@@ -3748,8 +3746,6 @@ dashboards:
     test_group_name: pull-release-notes-test
     base_options: width=10
 
-- name: sig-contribex-slack-infra
-
 - name: google-cel
   dashboard_tab:
   - name: cel-go
@@ -3864,11 +3860,6 @@ dashboard_groups:
   - sig-cluster-lifecycle-cluster-api-provider-docker
   - sig-cluster-lifecycle-kops
   - sig-cluster-lifecycle-etcdadm
-
-- name: sig-contribex
-  dashboard_names:
-  - sig-contribex-community
-  - sig-contribex-slack-infra
 
 - name: sig-multicluster
   dashboard_names:
