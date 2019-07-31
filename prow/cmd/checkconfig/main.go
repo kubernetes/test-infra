@@ -23,37 +23,39 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/plugins/bugzilla"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"sigs.k8s.io/yaml"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
+	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/blunderbuss"
+	"k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	"k8s.io/test-infra/prow/plugins/lgtm"
 	ownerslabel "k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	verifyowners "k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
-
-	"k8s.io/test-infra/prow/config"
-	_ "k8s.io/test-infra/prow/hook"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/lgtm"
 )
 
 type options struct {
@@ -64,6 +66,9 @@ type options struct {
 	warnings        flagutil.Strings
 	excludeWarnings flagutil.Strings
 	strict          bool
+	expensive       bool
+
+	github flagutil.GitHubOptions
 }
 
 func reportWarning(strict bool, errs errorutil.Aggregate) {
@@ -90,9 +95,10 @@ const (
 	missingTriggerWarning        = "missing-trigger"
 	validateURLsWarning          = "validate-urls"
 	unknownFieldsWarning         = "unknown-fields"
+	verifyOwnersFilePresence     = "verify-owners-presence"
 )
 
-var allWarnings = []string{
+var defaultWarnings = []string{
 	mismatchedTideWarning,
 	tideStrictBranchWarning,
 	mismatchedTideLenientWarning,
@@ -105,7 +111,20 @@ var allWarnings = []string{
 	unknownFieldsWarning,
 }
 
+var expensiveWarnings = []string{
+	verifyOwnersFilePresence,
+}
+
+func getAllWarnings() []string {
+	var all []string
+	all = append(all, defaultWarnings...)
+	all = append(all, expensiveWarnings...)
+
+	return all
+}
+
 func (o *options) Validate() error {
+	allWarnings := getAllWarnings()
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
@@ -126,13 +145,16 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{}
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
-	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
-	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
-	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	flag.Parse()
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	fs.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
+	fs.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
+	fs.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
+	fs.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
+	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
@@ -146,7 +168,11 @@ func main() {
 
 	// use all warnings by default
 	if len(o.warnings.Strings()) == 0 {
-		o.warnings = flagutil.NewStrings(allWarnings...)
+		if o.expensive {
+			o.warnings = flagutil.NewStrings(getAllWarnings()...)
+		} else {
+			o.warnings = flagutil.NewStrings(defaultWarnings...)
+		}
 	}
 
 	configAgent := config.Agent{}
@@ -169,6 +195,27 @@ func main() {
 	// detect them here but don't necessarily want to stop config re-load
 	// in all components on their failure.
 	var errs []error
+	if pcfg != nil && o.warningEnabled(verifyOwnersFilePresence) {
+		if o.github.TokenPath == "" {
+			logrus.Fatal("Cannot verify OWNERS file presence without a GitHub token")
+		}
+		secretAgent := &secret.Agent{}
+		if o.github.TokenPath != "" {
+			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+				logrus.WithError(err).Fatal("Error starting secrets agent.")
+			}
+		}
+
+		githubClient, err := o.github.GitHubClient(secretAgent, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client.")
+		}
+		githubClient.Throttle(300, 100) // 300 hourly tokens, bursts of 100
+
+		if err := verifyOwnersPresence(pcfg, githubClient); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if pcfg != nil && o.warningEnabled(mismatchedTideWarning) {
 		if err := validateTideRequirements(cfg, pcfg, true); err != nil {
 			errs = append(errs, err)
@@ -793,7 +840,11 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 	return errorutil.NewAggregate(queryErrors...)
 }
 
-func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+func pluginsWithOwnersFile() string {
+	return strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", ")
+}
+
+func orgReposUsingOwnersFile(cfg *plugins.Configuration) *orgRepoConfig {
 	// we do not know the set of repos that use OWNERS, but we
 	// can get a reasonable proxy for this by looking at where
 	// the `approve', `blunderbuss' and `owners-label' plugins
@@ -801,7 +852,62 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName, false)
 	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName, false)
 	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName, false)
-	ownersConfig := approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+	return approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+}
+
+type FileInRepoExistsChecker interface {
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
+	GetFile(org, repo, filepath, commit string) ([]byte, error)
+}
+
+func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker) error {
+	ownersConfig := orgReposUsingOwnersFile(cfg)
+
+	var missing []string
+	for org, excluded := range ownersConfig.orgExceptions {
+		repos, err := rc.GetRepos(org, false)
+		if err != nil {
+			return err
+		}
+
+		for _, repo := range repos {
+			if excluded.Has(repo.FullName) {
+				continue
+			}
+			if _, err := rc.GetFile(repo.Owner.Login, repo.Name, "OWNERS", ""); err != nil {
+				if _, nf := err.(*github.FileNotFound); nf {
+					missing = append(missing, repo.FullName)
+				} else {
+					return fmt.Errorf("got error: %v", err)
+				}
+			}
+		}
+	}
+
+	for repo := range ownersConfig.repos {
+		items := strings.Split(repo, "/")
+		if len(items) != 2 {
+			return fmt.Errorf("bad repository '%s', expected org/repo format", repo)
+		}
+		if _, err := rc.GetFile(items[0], items[1], "OWNERS", ""); err != nil {
+			if _, nf := err.(*github.FileNotFound); nf {
+				missing = append(missing, repo)
+			} else {
+				return fmt.Errorf("got error: %v", err)
+			}
+		}
+	}
+
+	if len(missing) > 0 {
+		return fmt.Errorf("the following orgs or repos enable at least one"+
+			" plugin that uses OWNERS files (%s), but its master branch does not contain"+
+			" a root level OWNERS file: %v", pluginsWithOwnersFile(), missing)
+	}
+	return nil
+}
+
+func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+	ownersConfig := orgReposUsingOwnersFile(cfg)
 	validateOwnersConfig := enabledOrgReposForPlugin(cfg, verifyowners.PluginName, false)
 
 	invalid := ownersConfig.difference(validateOwnersConfig).items()
@@ -809,8 +915,7 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 		return fmt.Errorf("the following orgs or repos "+
 			"enable at least one plugin that uses OWNERS files (%s) "+
 			"but do not enable the %s plugin to ensure validity of OWNERS files: %v",
-			strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "),
-			verifyowners.PluginName, invalid,
+			pluginsWithOwnersFile(), verifyowners.PluginName, invalid,
 		)
 	}
 	return nil
