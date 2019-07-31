@@ -1,12 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- andyzhangx
-- brendandburns
-- feiskyer
+- andrewsykim
+- cheftako
+- hogepodge
+reviewers:
 - justaugustus
-- karataliu
-- khenidak
 
 labels:
-- area/provider/azure
+- sig/cloud-provider
