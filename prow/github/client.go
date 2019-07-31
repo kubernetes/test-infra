@@ -168,6 +168,7 @@ type TeamClient interface {
 	RemoveTeamRepo(id int, org, repo string) error
 	ListTeamInvitations(id int) ([]OrgInvitation, error)
 	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	GetTeamBySlug(slug string, org string) (*Team, error)
 }
 
 // UserClient interface for user related API actions
@@ -192,6 +193,12 @@ type MilestoneClient interface {
 	ClearMilestone(org, repo string, num int) error
 	SetMilestone(org, repo string, issueNum, milestoneNum int) error
 	ListMilestones(org, repo string) ([]Milestone, error)
+}
+
+// RerunClient interface for job rerun access check related API actions
+type RerunClient interface {
+	TeamHasMember(teamID int, memberLogin string) (bool, error)
+	GetTeamBySlug(slug string, org string) (*Team, error)
 }
 
 // Client interface for GitHub API
@@ -3125,4 +3132,24 @@ func (c *client) TeamHasMember(teamID int, memberLogin string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// GetTeamBySlug returns information about that team
+//
+// See https://developer.github.com/v3/teams/#get-team-by-name
+func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
+	c.log("GetTeamBySlug", slug, org)
+	if c.fake {
+		return &Team{}, nil
+	}
+	var team Team
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/orgs/%s/teams/%s", org, slug),
+		exitCodes: []int{200},
+	}, &team)
+	if err != nil {
+		return nil, err
+	}
+	return &team, err
 }

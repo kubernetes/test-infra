@@ -378,16 +378,6 @@ type Spyglass struct {
 	TestGridRoot string `json:"testgrid_root,omitempty"`
 }
 
-// RerunAuthConfig holds information about who can trigger job reruns when we allow this feature.
-type RerunAuthConfig struct {
-	// AllowAnyone, if true, allows anyone to rerun any job. If false, only users listed in
-	// AuthorizedUsers can rerun any job.
-	AllowAnyone bool `json:"allow_anyone,omitempty"`
-	// AuthorizedUsers is a list of GitHub users who can rerun any job. If AllowAnyone is true,
-	// AuthorizedUsers should be empty.
-	AuthorizedUsers []string `json:"authorized_users,omitempty"`
-}
-
 // Deck holds config for deck.
 type Deck struct {
 	// Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck
@@ -403,9 +393,10 @@ type Deck struct {
 	Branding *Branding `json:"branding,omitempty"`
 	// GoogleAnalytics, if specified, include a Google Analytics tracking code on each page.
 	GoogleAnalytics string `json:"google_analytics,omitempty"`
-	// RerunAuthConfig specifies who will be able to trigger job reruns when we allow this feature.
-	// Currently, this does nothing.
-	RerunAuthConfig RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	// RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
+	// The permissions here apply to all jobs. GitHub teams are not yet supported
+	// for the global Deck config.
+	RerunAuthConfig prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
@@ -873,7 +864,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
 		return nil // knative-build and jenkins jobs have no spec
 	}
-	if v.RerunPermissions != nil && v.RerunPermissions.AllowAnyone && (len(v.RerunPermissions.GitHubUsers) > 0 || len(v.RerunPermissions.GitHubTeams) > 0) {
+	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0) {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
 	}
 	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
@@ -1058,8 +1049,8 @@ func parseProwConfig(c *Config) error {
 
 	// If a whitelist is specified, the user probably does not intend for anyone to be able
 	// to rerun any job.
-	if c.Deck.RerunAuthConfig.AllowAnyone && c.Deck.RerunAuthConfig.AuthorizedUsers != nil {
-		return fmt.Errorf("allow_anyone is set to true and whitelist is specified.")
+	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0) {
+		return fmt.Errorf("allow_anyone is set to true and authorized users or teams are specified.")
 	}
 
 	// Migrate the old `viewers` format to the new `lenses` format.

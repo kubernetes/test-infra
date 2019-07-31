@@ -748,6 +748,11 @@ func TestCreateRefs(t *testing.T) {
 func TestSpecFromJobBase(t *testing.T) {
 	permittedGroups := []int{1234, 5678}
 	permittedUsers := []string{"authorized_user", "another_authorized_user"}
+	rerunAuthConfig := prowapi.RerunAuthConfig{
+		AllowAnyone:   false,
+		GitHubTeamIDs: permittedGroups,
+		GitHubUsers:   permittedUsers,
+	}
 	testCases := []struct {
 		name    string
 		jobBase config.JobBase
@@ -779,24 +784,17 @@ func TestSpecFromJobBase(t *testing.T) {
 		{
 			name: "Verify rerun permissions gets copied",
 			jobBase: config.JobBase{
-				RerunPermissions: &prowapi.RerunPermissions{
-					AllowAnyone: false,
-					GitHubTeams: permittedGroups,
-					GitHubUsers: permittedUsers,
-				},
+				RerunAuthConfig: &rerunAuthConfig,
 			},
 			verify: func(pj prowapi.ProwJobSpec) error {
-				if pj.RerunPermissions == nil {
-					return errors.New("Expected RerunPermissions to be non-nil")
+				if pj.RerunAuthConfig.AllowAnyone {
+					return errors.New("Expected RerunAuthConfig.AllowAnyone to be false")
 				}
-				if pj.RerunPermissions.AllowAnyone {
-					return errors.New("Expected RerunPermissions.AllowAnyone to be false")
+				if pj.RerunAuthConfig.GitHubTeamIDs == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubTeamIDs to be non-nil")
 				}
-				if pj.RerunPermissions.GitHubTeams == nil {
-					return errors.New("Expected RerunPermissions.Groups to be non-nil")
-				}
-				if pj.RerunPermissions.GitHubUsers == nil {
-					return errors.New("Expected RerunPermissions.Users to be non-nil")
+				if pj.RerunAuthConfig.GitHubUsers == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubUsers to be non-nil")
 				}
 				return nil
 			},

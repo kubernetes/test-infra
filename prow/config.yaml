@@ -43,18 +43,6 @@ deck:
   hidden_repos:
   - kubernetes-security
   google_analytics: UA-82843984-5
-  rerun_auth_config:
-    authorized_users:
-      - mirandachrist
-      - cjwagner
-      - amwat
-      - fejta
-      - ixdy
-      - Katharine
-      - krzyzacy
-      - michelle192837
-      - spiffxp
-      - stevekuznetsov
 
 prowjob_namespace: default
 pod_namespace: test-pods

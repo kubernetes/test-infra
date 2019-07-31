@@ -48,6 +48,7 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
@@ -271,6 +272,23 @@ func (getter mockGitHubConfigGetter) GetUser(login string) (*github.User, error)
 	return &github.User{Login: &getter.githubLogin}, nil
 }
 
+type mockRerunClient struct {
+	members []string
+}
+
+func (cli mockRerunClient) TeamHasMember(teamID int, login string) (bool, error) {
+	for _, member := range cli.members {
+		if login == member {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (cli mockRerunClient) GetTeamBySlug(slug string, org string) (*prowgithub.Team, error) {
+	return nil, nil
+}
+
 // TestRerun just checks that the result can be unmarshaled properly, has an
 // updated status, and has equal spec.
 func TestRerun(t *testing.T) {
@@ -334,6 +352,26 @@ func TestRerun(t *testing.T) {
 			httpCode:            http.StatusMethodNotAllowed,
 			httpMethod:          http.MethodPost,
 		},
+		{
+			name:                "User permitted on specific job",
+			login:               "authorized",
+			authorized:          []string{},
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusOK,
+			httpMethod:          http.MethodPost,
+		},
+		{
+			name:                "User on permitted GitHub team",
+			login:               "teammember",
+			authorized:          []string{},
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusOK,
+			httpMethod:          http.MethodPost,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -353,15 +391,20 @@ func TestRerun(t *testing.T) {
 							{Number: 1},
 						},
 					},
+					RerunAuthConfig: prowapi.RerunAuthConfig{
+						AllowAnyone:   false,
+						GitHubUsers:   []string{"authorized", "alsoauthorized"},
+						GitHubTeamIDs: []int{1},
+					},
 				},
 				Status: prowapi.ProwJobStatus{
 					State: prowapi.PendingState,
 				},
 			})
-			configGetter := func() *config.RerunAuthConfig {
-				return &config.RerunAuthConfig{
-					AllowAnyone:     tc.allowAnyone,
-					AuthorizedUsers: tc.authorized,
+			configGetter := func() *prowapi.RerunAuthConfig {
+				return &prowapi.RerunAuthConfig{
+					AllowAnyone: tc.allowAnyone,
+					GitHubUsers: tc.authorized,
 				}
 			}
 
@@ -389,7 +432,8 @@ func TestRerun(t *testing.T) {
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
 			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc)
+			rc := mockRerunClient{members: []string{"teammember"}}
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc)
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
 				t.Fatalf("Bad error code: %d", rr.Code)
@@ -873,6 +917,9 @@ func Test_gatherOptions(t *testing.T) {
 		},
 	}
 	for _, tc := range cases {
+		fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
+		ghoptions := flagutil.GitHubOptions{}
+		ghoptions.AddFlagsWithoutDefaultGitHubTokenPath(fs)
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
 				configPath:            "yo",
@@ -882,6 +929,7 @@ func Test_gatherOptions(t *testing.T) {
 				templateFilesLocation: "/template",
 				spyglassFilesLocation: "/lenses",
 				kubernetes:            flagutil.ExperimentalKubernetesOptions{},
+				github:                ghoptions,
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
