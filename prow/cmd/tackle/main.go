@@ -574,11 +574,6 @@ func applySecret(ctx, ns, name, key, path string) error {
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
-	if !strings.HasPrefix(ctx, "gke_") {
-		// TODO(fejta): maybe do this for us
-		fmt.Printf("Warning: if %s is not on GKE, you may need to change\n", ctx)
-		fmt.Println("the Ingress path to deck from /* to /")
-	}
 	if choice == "" {
 		choice = prompt("Apply starter.yaml from", "github upstream")
 	}
