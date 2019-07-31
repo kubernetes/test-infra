@@ -129,6 +129,8 @@ presets:
     value: "true"
   - name: KUBE_MASTER_NODE_LABELS
     value: "node.kubernetes.io/node-exporter-ready=true"
+  - name: NETWORK_POLICY_PROVIDER
+    value: "calico"
 
 ###### Scalability Envs
 ### Common env variables for all scalability-related suites.
