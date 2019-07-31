@@ -404,7 +404,7 @@ func getSubCfg(key string, cfg reflect.Value) reflect.Value {
 					return subStruct
 				}
 			} else {
-				field := getJSONTagName(structField, i)
+				field := getJSONTagName(structField)
 				if field == key {
 					return cfgElem.Field(i)
 				}
@@ -414,7 +414,7 @@ func getSubCfg(key string, cfg reflect.Value) reflect.Value {
 	return reflect.Value{}
 }
 
-func getJSONTagName(field reflect.StructField, i int) string {
+func getJSONTagName(field reflect.StructField) string {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag != "" && jsonTag != "-" {
 		if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
