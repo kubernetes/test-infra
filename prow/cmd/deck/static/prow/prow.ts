@@ -686,7 +686,11 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
                         method: 'post',
                     });
                     const data = await result.text();
-                    rerunElement.innerHTML = data;
+                    if (result.status === 401) {
+                        window.location.href = window.location.origin + "/github-login?dest=%2F?rerun=gh_redirect";
+                    } else {
+                        rerunElement.innerHTML = data;
+                    }
                 };
             }
             rerunElement.appendChild(runButton);

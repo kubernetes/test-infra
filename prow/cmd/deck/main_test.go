@@ -378,7 +378,7 @@ func TestRerun(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Error making access token session: %v", err)
 			}
-			session.Values["access-token"] = &oauth2.Token{}
+			session.Values["access-token"] = &oauth2.Token{AccessToken: "validtoken"}
 
 			if err != nil {
 				t.Fatalf("Error making request: %v", err)

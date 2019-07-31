@@ -1296,8 +1296,8 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				}
 				login, err := goa.GetLogin(r, ghc)
 				if err != nil {
-					http.Error(w, fmt.Sprintf("Error retrieving GitHub login: %v", err), http.StatusInternalServerError)
 					l.WithError(err).Errorf("Error retrieving GitHub login")
+					http.Error(w, "Error retrieving GitHub login", http.StatusUnauthorized)
 					return
 				}
 				allowed = canTriggerJob(login, authConfig)
