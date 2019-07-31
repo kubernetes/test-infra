@@ -27,25 +27,59 @@ presets:
 presubmits:
   kubernetes/cloud-provider-vsphere:
 
-  # Runs "gofmt", "go vet", and "golint" on the sources.
-  - name: pull-cloud-provider-vsphere-check
+  - name: pull-cloud-provider-vsphere-verify-fmt
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
     decorate: true
-    branches:
-    - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
-    skip_submodules: true
-    always_run: true
-    skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-master
         command:
-        - "make"
+        - make
         args:
-        - "check"
+        - fmt
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-fmt
+      description: Verifies the Golang sources have been formatted
+
+  - name: pull-cloud-provider-vsphere-verify-lint
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-master
+        command:
+        - make
+        args:
+        - lint
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-lint
+      description: Verifies the Golang sources are linted
+
+  - name: pull-cloud-provider-vsphere-verify-vet
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-master
+        command:
+        - make
+        args:
+        - vet
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-vet
+      description: Vets the Golang sources have been vetted
 
   - name: pull-cloud-provider-vsphere-verify-markdown
     always_run: false
