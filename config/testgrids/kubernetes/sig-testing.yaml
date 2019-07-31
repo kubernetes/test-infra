@@ -8,7 +8,6 @@ dashboard_groups:
     - sig-testing-fejtabot
     - sig-testing-kind
     - sig-testing-maintenance
-    - sig-testing-org
     - sig-testing-prow
     - sig-testing-images
 
@@ -162,23 +161,6 @@ dashboards:
         url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-
-- name: sig-testing-org
-  dashboard_tab:
-    - name: post-peribolos
-      test_group_name: post-org-peribolos
-      alert_options:
-        alert_mail_to_addresses: kubernetes-github-managment-alerts@googlegroups.com
-      code_search_url_template:
-        url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
-    - name: test-all
-      test_group_name: pull-org-test-all
-      code_search_url_template:
-        url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
-    - name: verify-all
-      test_group_name: pull-org-verify-all
-      code_search_url_template:
-        url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
 
 - name: sig-testing-prow
   dashboard_tab:

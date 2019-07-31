@@ -643,6 +643,11 @@ postsubmits:
 periodics:
 - interval: 24h
   name: ci-org-peribolos
+  annotations:
+    testgrid-dashboards: sig-contribex-org
+    testgrid-tab-name: ci-peribolos
+    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
   cluster: test-infra-trusted
   decorate: true
   max_concurrency: 1
@@ -672,11 +677,6 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
-  annotations:
-    testgrid-dashboards: sig-testing-org
-    testgrid-tab-name: ci-peribolos
-    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com
-    testgrid-num-failures-to-alert: '1'
 - cron: "05 15 1-7 * 1"  # Run at 7:05 PST (15:05 UTC) on first monthly monday.
   name: ci-test-infra-autoupdate-minor
   cluster: test-infra-trusted
