@@ -63,7 +63,7 @@ require (
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
 	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
-	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
+	github.com/knative/pkg v0.0.0-20190330034653-916205998db9 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20171120080333-32fa128f234d // indirect
@@ -108,6 +108,7 @@ require (
 	k8s.io/klog v0.3.0
 	k8s.io/kubernetes v1.14.3 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
+	knative.dev/pkg v0.0.0-20190730155243-972acd413fb9
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.2.0-beta.4
 	sigs.k8s.io/yaml v1.1.0

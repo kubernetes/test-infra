@@ -529,6 +529,8 @@ k8s.io/test-infra v0.0.0-20181019233642-2e10a0bbe9b3/go.mod h1:2NzXB13Ji0nqpyubl
 k8s.io/utils v0.0.0-20181019225348-5e321f9a457c/go.mod h1:8k8uAuAQ0rXslZKaEWd0c3oVhZz7sSzSiPnVZayjIX0=
 k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5 h1:VBM/0P5TWxwk+Nw6Z+lAw3DKgO76g90ETOiA6rfLV1Y=
 k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5/go.mod h1:sZAwmy6armz5eXlNoLmJcl4F1QuKu7sr+mFQ0byX7Ew=
+knative.dev/pkg v0.0.0-20190730155243-972acd413fb9 h1:WUntTK8z8OLsNf3H87oAcSjzk8/MR9q6rAC7avihSJc=
+knative.dev/pkg v0.0.0-20190730155243-972acd413fb9/go.mod h1:pgODObA1dTyhNoFxPZTTjNWfx6F0aKsKzn+vaT9XO/Q=
 mvdan.cc/xurls/v2 v2.0.0 h1:r1zSOSNS/kqtpmATyMMMvaZ4/djsesbYz5kr0+qMRWc=
 mvdan.cc/xurls/v2 v2.0.0/go.mod h1:2/webFPYOXN9jp/lzuj0zuAVlF+9g4KPFJANH1oJhRU=
 sigs.k8s.io/controller-runtime v0.2.0-beta.4 h1:S1XVfRWR1MuIXZdkYx3jN8JDw+bbQxmWZroy0i87z/A=

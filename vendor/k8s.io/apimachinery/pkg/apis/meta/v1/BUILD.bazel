@@ -56,6 +56,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:all-srcs",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/validation:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

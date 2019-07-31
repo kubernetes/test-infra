@@ -1431,3 +1431,9 @@ def go_repositories():
         sum = "h1:60oN1cFdncCE8tjwQ3QEkFND5k37lQPcRjnlvm7CIJ0=",
         version = "v1.6.0",
     )
+    go_repository(
+        name = "dev_knative_pkg",
+        importpath = "knative.dev/pkg",
+        sum = "h1:WUntTK8z8OLsNf3H87oAcSjzk8/MR9q6rAC7avihSJc=",
+        version = "v0.0.0-20190730155243-972acd413fb9",
+    )
