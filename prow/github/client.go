@@ -211,6 +211,8 @@ type Client interface {
 	Throttle(hourlyTokens, burst int)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 
+	SetMax404Retries(int)
+
 	WithFields(fields logrus.Fields) Client
 }
 
@@ -224,6 +226,11 @@ type client struct {
 // delegate actually does the work to talk to GitHub
 type delegate struct {
 	time timeClient
+
+	maxRetries    int
+	max404Retries int
+	maxSleepTime  time.Duration
+	initialDelay  time.Duration
 
 	gqlc     gqlClient
 	client   httpClient
@@ -248,11 +255,7 @@ func (c *client) WithFields(fields logrus.Fields) Client {
 }
 
 var (
-	maxRetries    = 8
-	max404Retries = 2
-	maxSleepTime  = 2 * time.Minute
-	initialDelay  = 2 * time.Second
-	teamRe        = regexp.MustCompile(`^(.*)/(.*)$`)
+	teamRe = regexp.MustCompile(`^(.*)/(.*)$`)
 )
 
 const (
@@ -261,6 +264,11 @@ const (
 	// take up to 2 minutes. This limit should ensure all successful calls return
 	// but will prevent an indefinite stall if GitHub never responds.
 	maxRequestTime = 5 * time.Minute
+
+	defaultMaxRetries    = 8
+	defaultMax404Retries = 2
+	defaultMaxSleepTime  = 2 * time.Minute
+	defaultInitialDelay  = 2 * time.Second
 )
 
 // Force the compiler to check if the TokenSource is implementing correctly.
@@ -396,6 +404,10 @@ func (c *client) Throttle(hourlyTokens, burst int) {
 	c.throttle.throttle = throttle
 }
 
+func (c *client) SetMax404Retries(max int) {
+	c.max404Retries = max
+}
+
 // NewClientWithFields creates a new fully operational GitHub client. With
 // added logging fields.
 // 'getToken' is a generator for the GitHub access token to use.
@@ -414,10 +426,14 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEn
 					Timeout:   maxRequestTime,
 					Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
 				}),
-			client:   &http.Client{Timeout: maxRequestTime},
-			bases:    bases,
-			getToken: getToken,
-			dry:      false,
+			client:        &http.Client{Timeout: maxRequestTime},
+			bases:         bases,
+			getToken:      getToken,
+			dry:           false,
+			maxRetries:    defaultMaxRetries,
+			max404Retries: defaultMax404Retries,
+			initialDelay:  defaultInitialDelay,
+			maxSleepTime:  defaultMaxSleepTime,
 		},
 	}
 }
@@ -594,14 +610,14 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 	var hostIndex int
 	var resp *http.Response
 	var err error
-	backoff := initialDelay
-	for retries := 0; retries < maxRetries; retries++ {
+	backoff := c.initialDelay
+	for retries := 0; retries < c.maxRetries; retries++ {
 		if retries > 0 && resp != nil {
 			resp.Body.Close()
 		}
 		resp, err = c.doRequest(method, c.bases[hostIndex]+path, accept, body)
 		if err == nil {
-			if resp.StatusCode == 404 && retries < max404Retries {
+			if resp.StatusCode == 404 && retries < c.max404Retries {
 				// Retry 404s a couple times. Sometimes GitHub is inconsistent in
 				// the sense that they send us an event such as "PR opened" but an
 				// immediate request to GET the PR returns 404. We don't want to
@@ -619,10 +635,10 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// Sleep an extra second plus how long GitHub wants us to
 						// sleep. If it's going to take too long, then break.
 						sleepTime := c.time.Until(time.Unix(int64(t), 0)) + time.Second
-						if sleepTime < maxSleepTime {
+						if sleepTime < c.maxSleepTime {
 							c.time.Sleep(sleepTime)
 						} else {
-							err = fmt.Errorf("sleep time for token reset exceeds max sleep time (%v > %v)", sleepTime, maxSleepTime)
+							err = fmt.Errorf("sleep time for token reset exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
 							resp.Body.Close()
 							break
 						}
@@ -639,10 +655,10 @@ func (c *client) requestRetry(method, path, accept string, body interface{}) (*h
 						// Sleep an extra second plus how long GitHub wants us to
 						// sleep. If it's going to take too long, then break.
 						sleepTime := time.Duration(t+1) * time.Second
-						if sleepTime < maxSleepTime {
+						if sleepTime < c.maxSleepTime {
 							c.time.Sleep(sleepTime)
 						} else {
-							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, maxSleepTime)
+							err = fmt.Errorf("sleep time for abuse rate limit exceeds max sleep time (%v > %v)", sleepTime, c.maxSleepTime)
 							resp.Body.Close()
 							break
 						}

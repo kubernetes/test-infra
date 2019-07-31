@@ -62,7 +62,11 @@ func getClient(url string) *client {
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 				},
 			},
-			bases: []string{url},
+			bases:         []string{url},
+			maxRetries:    defaultMaxRetries,
+			max404Retries: defaultMax404Retries,
+			initialDelay:  defaultInitialDelay,
+			maxSleepTime:  defaultMaxSleepTime,
 		},
 	}
 }
@@ -129,12 +133,10 @@ func TestRetry404(t *testing.T) {
 }
 
 func TestRetryBase(t *testing.T) {
-	defer func(orig time.Duration) { initialDelay = orig }(initialDelay)
-	initialDelay = time.Microsecond
-
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	c.initialDelay = time.Microsecond
 	// One good endpoint:
 	c.bases = []string{c.bases[0]}
 	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
