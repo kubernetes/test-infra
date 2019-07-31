@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-prow/ghproxy:v20190730-794291b3d
+        image: gcr.io/k8s-prow/ghproxy:v20190731-cbc3a2509
         args:
         - --cache-dir=/cache
         - --cache-sizeGB=99
