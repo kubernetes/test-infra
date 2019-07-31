@@ -4,7 +4,7 @@ periodics:
   interval: 1h
   decorate: true
   annotations:
-    testgrid-dashboards: sig-testing-triagebot
+    testgrid-dashboards: sig-contribex-triagebot
     description: Adds API review process description to kind/api-change PRs
     testgrid-tab-name: api-review-help
   spec:
@@ -50,7 +50,7 @@ periodics:
   interval: 1h
   decorate: true
   annotations:
-    testgrid-dashboards: sig-testing-triagebot
+    testgrid-dashboards: sig-contribex-triagebot
     description: Re-checks CLA context when CLA labels are missing
     testgrid-tab-name: cla
   spec:
@@ -90,7 +90,7 @@ periodics:
   interval: 1h
   decorate: true
   annotations:
-    testgrid-dashboards: sig-testing-triagebot
+    testgrid-dashboards: sig-contribex-triagebot
     description: Closes rotten issues after 30d of inactivity
     testgrid-tab-name: close
   spec:
@@ -183,7 +183,7 @@ periodics:
   interval: 1h
   decorate: true
   annotations:
-    testgrid-dashboards: sig-testing-triagebot
+    testgrid-dashboards: sig-contribex-triagebot
     description: Adds lifecycle/rotten to stale issues after 30d of inactivity
     testgrid-tab-name: rotten
   spec:
@@ -227,7 +227,7 @@ periodics:
   interval: 1h
   decorate: true
   annotations:
-    testgrid-dashboards: sig-testing-triagebot
+    testgrid-dashboards: sig-contribex-triagebot
     description: Adds lifecycle/stale to issues after 30d of inactivity
     testgrid-tab-name: stale
   spec:
@@ -302,7 +302,7 @@ periodics:
   interval: 30m
   decorate: true
   annotations:
-    testgrid-dashboards: sig-testing-triagebot
+    testgrid-dashboards: sig-contribex-triagebot
     description: Prevents issues in `k/enhancements` from being marked as `lifecycle/frozen`y
     testgrid-tab-name: enhancements-unfreeze
   spec:
@@ -336,7 +336,7 @@ periodics:
   interval: 24h
   decorate: true
   annotations:
-    testgrid-dashboards: sig-testing-triagebot
+    testgrid-dashboards: sig-contribex-triagebot
     description: files bugs for SECURITY_CONTACTS
     testgrid-tab-name: periodic-secping
   extra_refs:

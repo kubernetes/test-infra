@@ -5,7 +5,6 @@ dashboard_groups:
   dashboard_names:
   - sig-testing-misc
   - sig-testing-canaries
-  - sig-testing-triagebot
   - sig-testing-kind
   - sig-testing-maintenance
   - sig-testing-prow
@@ -16,7 +15,6 @@ dashboard_groups:
 dashboards:
 - name: sig-testing-misc
 - name: sig-testing-canaries
-- name: sig-testing-triagebot
 - name: sig-testing-kind
 - name: sig-testing-maintenance
 - name: sig-testing-prow
