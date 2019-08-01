@@ -1,0 +1,36 @@
+{
+  "Example1": {
+    "boolean": {
+      "Type": "bool",
+      "IsObj": false,
+      "Doc": "Example1 BooleanField comment"
+    },
+    "integer": {
+      "Type": "int",
+      "IsObj": false,
+      "Doc": "Example1 IntegerField comment"
+    },
+    "string": {
+      "Type": "string",
+      "IsObj": false,
+      "Doc": "Example1 StringField comment"
+    }
+  },
+  "Example2": {
+    "boolean": {
+      "Type": "bool",
+      "IsObj": false,
+      "Doc": "Example2 BooleanField comment"
+    },
+    "integer": {
+      "Type": "int",
+      "IsObj": false,
+      "Doc": "Example2 IntegerField comment"
+    },
+    "string": {
+      "Type": "string",
+      "IsObj": false,
+      "Doc": "Example2 StringField comment"
+    }
+  }
+}

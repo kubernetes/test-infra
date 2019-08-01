@@ -1,0 +1,6 @@
+# StringField comment second line third line
+string1: string1
+
+
+# StringField comment \tsecond line \tthird line
+string2: string2
