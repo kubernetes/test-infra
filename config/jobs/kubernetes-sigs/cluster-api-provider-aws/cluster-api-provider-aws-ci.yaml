@@ -13,7 +13,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190801-9ec6db7-experimental
       command:
       - "./scripts/ci-aws-cred-test.sh"
   annotations:
@@ -35,7 +35,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190801-9ec6db7-experimental
       command: ["runner.sh"]
       args: ["make", "e2e"]
       env:
@@ -64,7 +64,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190801-9ec6db7-experimental
       command: ["runner.sh"]
       args: ["make", "e2e"]
       env:
@@ -94,7 +94,7 @@ postsubmits:
     - ^release-.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190801-9ec6db7-experimental
         command: ["runner.sh"]
         args: ["make", "e2e"]
         env:
