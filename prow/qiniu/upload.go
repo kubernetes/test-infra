@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type UploadFunc func(*Uploader) error
+type UploadFunc func(*Uploader, string) error
 
 type Uploader struct {
 	Bucket    string
@@ -41,8 +41,8 @@ func NewUploader(bucket, accessKey, secretKey string) (*Uploader, error) {
 	}, nil
 }
 
-func FileUpload(file string, key string) UploadFunc {
-	return func(ob *Uploader) error {
+func FileUpload(file string) UploadFunc {
+	return func(ob *Uploader, key string) error {
 		putPolicy := storage.PutPolicy{
 			Scope: ob.Bucket + ":" + key,
 		}
@@ -55,8 +55,8 @@ func FileUpload(file string, key string) UploadFunc {
 
 // DataUpload returns an UploadFunc which copies all
 // data from src reader into GCS
-func DataUpload(key string, src io.Reader) UploadFunc {
-	return func(ob *Uploader) error {
+func DataUpload(src io.Reader) UploadFunc {
+	return func(ob *Uploader, key string) error {
 		putPolicy := storage.PutPolicy{
 			Scope: ob.Bucket + ":" + key,
 		}
@@ -77,7 +77,7 @@ func (up *Uploader) Upload(uploadTargets map[string]UploadFunc) error {
 		logrus.WithField("dest", dest).Info("Queued for upload")
 		go func(f UploadFunc, obj *Uploader, name string) {
 			defer group.Done()
-			if err := f(obj); err != nil {
+			if err := f(obj, name); err != nil {
 				errCh <- err
 			}
 			logrus.WithField("dest", name).Info("Finished upload")
@@ -93,7 +93,7 @@ func (up *Uploader) Upload(uploadTargets map[string]UploadFunc) error {
 		return fmt.Errorf("encountered errors during upload: %v", uploadErrors)
 	}
 
-	logrus.Info("Finished upload to GCS")
+	logrus.Info("Finished upload to QINIU")
 
 	return nil
 }
