@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -1031,6 +1032,96 @@ func TestVerifyOwnersPresence(t *testing.T) {
 			}
 			if errMessage != tc.expected {
 				t.Errorf("result differs:\n%s", diff.StringDiff(tc.expected, errMessage))
+			}
+		})
+	}
+}
+
+func TestOptions(t *testing.T) {
+
+	var defaultGitHubOptions flagutil.GitHubOptions
+	defaultGitHubOptions.AddFlagsWithoutDefaultGitHubTokenPath(flag.NewFlagSet("", flag.ContinueOnError))
+
+	StringsFlag := func(vals []string) flagutil.Strings {
+		var flag flagutil.Strings
+		for _, val := range vals {
+			flag.Set(val)
+		}
+		return flag
+	}
+
+	testCases := []struct {
+		name            string
+		args            []string
+		expectedOptions *options
+		expectedError   bool
+	}{
+		{
+			name: "cannot parse argument, reject",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--strict=non-boolean-string",
+			},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name:            "forgot config-path, reject",
+			args:            []string{"--job-config-path=config/jobs/org/job.yaml"},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name: "config-path with two warnings but one unknown, reject",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--warnings=mismatched-tide",
+				"--warnings=unknown-warning",
+			},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name: "config-path with many valid options",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--plugin-config=prow/plugins/plugin.yaml",
+				"--job-config-path=config/jobs/org/job.yaml",
+				"--warnings=mismatched-tide",
+				"--warnings=mismatched-tide-lenient",
+				"--exclude-warning=tide-strict-branch",
+				"--exclude-warning=mismatched-tide",
+				"--exclude-warning=ok-if-unknown-warning",
+				"--strict=true",
+				"--expensive-checks=false",
+			},
+			expectedOptions: &options{
+				configPath:      "prow/config.yaml",
+				pluginConfig:    "prow/plugins/plugin.yaml",
+				jobConfigPath:   "config/jobs/org/job.yaml",
+				warnings:        StringsFlag([]string{"mismatched-tide", "mismatched-tide-lenient"}),
+				excludeWarnings: StringsFlag([]string{"tide-strict-branch", "mismatched-tide", "ok-if-unknown-warning"}),
+				strict:          true,
+				expensive:       false,
+				github:          defaultGitHubOptions,
+			},
+			expectedError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			var actualOptions options
+			switch actualErr := actualOptions.gatherOptions(flags, tc.args); {
+			case tc.expectedError:
+				if actualErr == nil {
+					t.Error("failed to receive an error")
+				}
+			case actualErr != nil:
+				t.Errorf("unexpected error: %v", actualErr)
+			case !reflect.DeepEqual(&actualOptions, tc.expectedOptions):
+				t.Errorf("actual %#v != expected %#v", actualOptions, *tc.expectedOptions)
 			}
 		})
 	}

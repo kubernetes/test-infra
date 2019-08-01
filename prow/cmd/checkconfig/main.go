@@ -143,27 +143,39 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
+func parseOptions() (options, error) {
 	o := options{}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
-	fs.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
-	fs.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
-	fs.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
-	fs.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
-	fs.Parse(os.Args[1:])
-	return o
+
+	if err := o.gatherOptions(flag.CommandLine, os.Args[1:]); err != nil {
+		return options{}, err
+	}
+	return o, nil
+}
+
+func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
+	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
+	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
+	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
+	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
+	o.github.AddFlagsWithoutDefaultGitHubTokenPath(flag)
+	if err := flag.Parse(args); err != nil {
+		return fmt.Errorf("parse flags: %v", err)
+	}
+	if err := o.Validate(); err != nil {
+		return fmt.Errorf("Invalid options: %v", err)
+	}
+	return nil
 }
 
 func main() {
 	logrusutil.ComponentInit("checkconfig")
 
-	o := gatherOptions()
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+	o, err := parseOptions()
+	if err != nil {
+		logrus.Fatalf("Error parsing options - %v", err)
 	}
 
 	// use all warnings by default
