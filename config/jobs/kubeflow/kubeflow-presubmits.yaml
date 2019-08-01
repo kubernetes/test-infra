@@ -310,8 +310,8 @@ presubmits:
       testgrid-dashboards: sig-big-data
       description: Presubmits for kubeflow/manifests.
       testgrid-num-columns-recent: '30'
-  kubeflow/manifests:
-  - name: kubeflow-manifests-presubmit
+  kubeflow/kfctl:
+  - name: kubeflow-kfctl-presubmit
     always_run: true
     branches:
     - master
