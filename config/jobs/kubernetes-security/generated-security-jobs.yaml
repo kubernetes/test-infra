@@ -4240,7 +4240,7 @@ presubmits:
         - name: EXCLUDE_GODEP
           value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
-          value: master
+          value: release-1.15
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-1.15
@@ -4297,7 +4297,7 @@ presubmits:
         - name: EXCLUDE_GODEP
           value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
-          value: master
+          value: release-1.14
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190730-f00516f-1.14
