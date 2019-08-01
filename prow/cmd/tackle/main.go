@@ -32,6 +32,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -574,11 +575,13 @@ func applySecret(ctx, ns, name, key, path string) error {
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
+	const defaultStarter = "https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/cluster/starter.yaml"
+
 	if choice == "" {
 		choice = prompt("Apply starter.yaml from", "github upstream")
 	}
 	if choice == "" || choice == "github" || choice == "upstream" || choice == "github upstream" {
-		choice = "https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/cluster/starter.yaml"
+		choice = defaultStarter
 		fmt.Println("Loading from", choice)
 	}
 	_, err := kc.AppsV1().Deployments(ns).Get("plank", metav1.GetOptions{})
@@ -588,8 +591,8 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 	case err != nil: // unexpected error
 		return fmt.Errorf("get plank: %v", err)
 	case !overwrite: // already a plank, confirm overwrite
-		choice = prompt(fmt.Sprintf("Prow is already deployed to %s in %s, overwrite?", ns, ctx), "no")
-		switch choice {
+		overwriteChoice := prompt(fmt.Sprintf("Prow is already deployed to %s in %s, overwrite?", ns, ctx), "no")
+		switch overwriteChoice {
 		case "y", "Y", "yes":
 			// carry on, then
 		default:
@@ -622,14 +625,26 @@ func clientConfig(context string) (*rest.Config, error) {
 
 func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 	for {
-		ings, err := kc.NetworkingV1beta1().Ingresses(ns).List(metav1.ListOptions{})
-		if err != nil {
-			logrus.WithError(err).Fatal("Could not get ingresses")
-			time.Sleep(5 * time.Second)
+		var ing *networking.IngressList
+		var err error
+
+		// Detect ingress API to use based on Kubernetes version
+		if hasResource(kc.Discovery(), networking.SchemeGroupVersion.WithResource("ingresses")) {
+			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+		} else {
+			oldIng, err := kc.ExtensionsV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+			if err == nil {
+				ing, err = toNewIngress(oldIng)
+			}
 		}
+
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not get ingresses for service: %s", service)
+		}
+
 		var best url.URL
 		points := 0
-		for _, ing := range ings.Items {
+		for _, ing := range ing.Items {
 			// does this ingress route to the hook service?
 			cur := -1
 			var maybe url.URL
