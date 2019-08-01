@@ -75,7 +75,7 @@ var (
 const (
 	// AzureStackCloud is a const string reference identifier for Azure Stack cloud
 	AzureStackCloud = "AzureStackCloud"
-	// ADFS Identity System for Azure Stack cloud
+	// ADFSIdentitySystem is a const for ADFS identifier on Azure Stack cloud
 	ADFSIdentitySystem = "adfs"
 )
 

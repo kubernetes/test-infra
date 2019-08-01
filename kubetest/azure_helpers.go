@@ -150,10 +150,12 @@ type AzureClient struct {
 	groupsClient      resources.GroupsClient
 }
 
+// CustomCloudProfile defines configuration for custom cloud profile( for ex: Azure Stack)
 type CustomCloudProfile struct {
 	PortalURL string `json:"portalURL,omitempty"`
 }
 
+// AzureStackMetadataEndpoints defines configuration for Azure Stack
 type AzureStackMetadataEndpoints struct {
 	GalleryEndpoint string                            `json:"galleryEndpoint,omitempty"`
 	GraphEndpoint   string                            `json:"graphEndpoint,omitempty"`
@@ -161,6 +163,7 @@ type AzureStackMetadataEndpoints struct {
 	Authentication  *AzureStackMetadataAuthentication `json:"authentication,omitempty"`
 }
 
+// AzureStackMetadataAuthentication defines configuration for Azure Stack
 type AzureStackMetadataAuthentication struct {
 	LoginEndpoint string   `json:"loginEndpoint,omitempty"`
 	Audiences     []string `json:"audiences,omitempty"`
