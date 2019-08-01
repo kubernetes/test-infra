@@ -65,38 +65,40 @@ type options struct {
 	defaultYAML        string
 }
 
-func gatherOptions() (options, error) {
-	o := options{}
-	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty)")
-	flag.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
-	flag.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
-	flag.BoolVar(&o.printText, "print-text", false, "print generated info in text format to stdout")
-	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
-	flag.BoolVar(&o.worldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
-	flag.BoolVar(&o.writeYAML, "output-yaml", false, "Output to TestGrid YAML instead of config proto")
-	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files or directories")
-	flag.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
-	flag.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
-	flag.StringVar(&o.defaultYAML, "default", "", "path to default settings; required for proto outputs")
-	flag.Parse()
+func (o *options) gatherOptions(fs *flag.FlagSet, args []string) error {
+	fs.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty)")
+	fs.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
+	fs.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
+	fs.BoolVar(&o.printText, "print-text", false, "print generated info in text format to stdout")
+	fs.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
+	fs.BoolVar(&o.worldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
+	fs.BoolVar(&o.writeYAML, "output-yaml", false, "Output to TestGrid YAML instead of config proto")
+	fs.Var(&o.inputs, "yaml", "comma-separated list of input YAML files or directories")
+	fs.StringVar(&o.prowConfig, "prow-config", "", "path to the prow config file. Required by --prow-job-config")
+	fs.StringVar(&o.prowJobConfig, "prow-job-config", "", "path to the prow job config. If specified, incorporates testgrid annotations on prowjobs. Requires --prow-config.")
+	fs.StringVar(&o.defaultYAML, "default", "", "path to default settings; required for proto outputs")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
 	if len(o.inputs) == 0 || o.inputs[0] == "" {
-		return o, errors.New("--yaml must include at least one file")
+		return errors.New("--yaml must include at least one file")
 	}
 
 	if !o.printText && !o.validateConfigFile && o.output == "" {
-		return o, errors.New("--print-text, --validate-config-file, or --output required")
+		return errors.New("--print-text, --validate-config-file, or --output required")
 	}
 	if o.validateConfigFile && o.output != "" {
-		return o, errors.New("--validate-config-file doesn't write the proto anywhere")
+		return errors.New("--validate-config-file doesn't write the proto anywhere")
 	}
 	if (o.prowConfig == "") != (o.prowJobConfig == "") {
-		return o, errors.New("--prow-config and --prow-job-config must be specified together")
+		return errors.New("--prow-config and --prow-job-config must be specified together")
 	}
 	if o.defaultYAML == "" && !o.writeYAML {
 		logrus.Warnf("--default not explicitly specified; assuming %s", o.inputs[0])
 		o.defaultYAML = o.inputs[0]
 	}
-	return o, nil
+	return nil
 }
 
 // announceChanges watches for changes in "paths" and writes them to the channel
@@ -299,8 +301,8 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 
 func main() {
 	// Parse flags
-	opt, err := gatherOptions()
-	if err != nil {
+	var opt options
+	if err := opt.gatherOptions(flag.CommandLine, os.Args[1:]); err != nil {
 		log.Fatalf("Bad flags: %v", err)
 	}
 
@@ -325,6 +327,7 @@ func main() {
 	// Setup GCS client
 	var client *storage.Client
 	if opt.output != "" {
+		var err error
 		client, err = gcs.ClientWithCreds(ctx, opt.creds)
 		if err != nil {
 			log.Fatalf("Failed to create storage client: %v", err)
