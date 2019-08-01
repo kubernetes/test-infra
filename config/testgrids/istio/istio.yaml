@@ -1,3 +1,19 @@
+dashboard_groups:
+- dashboard_names:
+  - istio-presubmits-master
+  - istio-postsubmits-master
+  - istio-presubmits-release-1.2
+  - istio-postsubmits-release-1.2
+  - istio-presubmits-release-1.1
+  - istio-postsubmits-release-1.1
+  - istio-api-presubmits
+  - istio-api-postsubmits
+  - istio-proxy-presubmits
+  - istio-proxy-postsubmits
+  - istio-release
+  - istio-infrastructure
+  - istio-gke
+  name: istio
 dashboards:
 - dashboard_tab:
   - code_search_url_template:
@@ -513,27 +529,6 @@ dashboards:
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-daily
-    name: release-daily
-    test_group_name: release-daily
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: perf-for-daily-release
-    name: perf-for-daily-release
-    test_group_name: perf-for-daily-release
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-monthly
-    name: release-monthly
-    test_group_name: release-monthly
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: istio-integ-local-tests-release-1.2
     name: istio-integ-local-tests-release-1.2
@@ -629,6 +624,27 @@ dashboards:
     description: istio_auth_sds_e2e-release-1.2
     name: istio_auth_sds_e2e-release-1.2
     test_group_name: istio_auth_sds_e2e-release-1.2
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-daily
+    name: release-daily
+    test_group_name: release-daily
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: perf-for-daily-release
+    name: perf-for-daily-release
+    test_group_name: perf-for-daily-release
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-monthly
+    name: release-monthly
+    test_group_name: release-monthly
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -943,21 +959,6 @@ test_groups:
 - gcs_prefix: istio-prow/logs/monitoring-verify-gcsweb
   name: monitoring-verify-gcsweb
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-daily
-  name: release-daily
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/perf-for-daily-release
-  name: perf-for-daily-release
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-monthly
-  name: release-monthly
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/api-postsubmit
-  name: api-postsubmit
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/proxy-postsubmit
-  name: proxy-postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-conformance-local-postsubmit-tests-master
   name: integ-conformance-local-postsubmit-tests-master
   num_failures_to_alert: 1
@@ -1142,6 +1143,21 @@ test_groups:
 - gcs_prefix: istio-prow/logs/istio_auth_sds_e2e-release-1.2
   name: istio_auth_sds_e2e-release-1.2
   num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/api-postsubmit
+  name: api-postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-daily
+  name: release-daily
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/perf-for-daily-release
+  name: perf-for-daily-release
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-monthly
+  name: release-monthly
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/proxy-postsubmit
+  name: proxy-postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit
   name: proxy-presubmit
