@@ -42,9 +42,18 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
+	var configMsg string
+	if config.Retitle.AllowClosedIssues {
+		configMsg = "The retitle plugin also allows retitling closed/merged issues and PRs."
+	} else {
+		configMsg = "The retitle plugin does not allow retitling closed/merged issues and PRs."
+	}
+
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The retitle plugin allows users to re-title pull requests and issues where GitHub permissions don't allow them to.",
+		Config: map[string]string{
+			"": configMsg,
+		},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/retitle <title>",
@@ -64,7 +73,7 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 	return handleGenericComment(pc.GitHubClient, func(user string) (bool, error) {
 		t := pc.PluginConfig.TriggerFor(org, repo)
 		return trigger.TrustedUser(pc.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
-	}, pc.Logger, e)
+	}, pc.PluginConfig.Retitle.AllowClosedIssues, pc.Logger, e)
 }
 
 type githubClient interface {
@@ -75,9 +84,15 @@ type githubClient interface {
 	EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error)
 }
 
-func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error), log *logrus.Entry, gce github.GenericCommentEvent) error {
-	// Only consider open PRs and issues, and new comments.
-	if gce.IssueState != "open" || gce.Action != github.GenericCommentActionCreated {
+func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error), allowClosedIssues bool, log *logrus.Entry, gce github.GenericCommentEvent) error {
+	// If closed/merged issues and PRs shouldn't be considered,
+	// return early if issue state is not open.
+	if !allowClosedIssues && gce.IssueState != "open" {
+		return nil
+	}
+
+	// Only consider new comments.
+	if gce.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 
