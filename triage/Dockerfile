@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM jamiehewland/alpine-pypy:2
+FROM jamiehewland/alpine-pypy:3
 
 RUN apk add --no-cache jq curl bash python
 RUN curl -o installer https://sdk.cloud.google.com && bash installer --disable-prompts --install-dir=/ && rm installer && ln -s /google-cloud-sdk/bin/* /bin/

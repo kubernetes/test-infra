@@ -64,7 +64,7 @@ curl -sO --retry 6 https://raw.githubusercontent.com/kubernetes/kubernetes/maste
 
 mkdir -p slices
 
-pypy summarize.py \
+pypy3 summarize.py \
   triage_builds.json \
   triage_tests.json \
   --owners test_owners.json \
