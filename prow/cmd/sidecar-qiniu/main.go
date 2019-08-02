@@ -36,7 +36,7 @@ func main() {
 	}
 
 	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sidecar"}),
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sidecar", "cloud": "qiniu"}),
 	)
 
 	failures, err := o.Run(context.Background())

@@ -49,7 +49,7 @@ func specToStarted(spec *downwardapi.JobSpec, mainRefSHA string) gcs.Started {
 // returns: bool - clone status
 //          string - final main ref SHA on a successful clone
 //          error - when unexpected file operation happens
-func processCloneLog(logfile string, uploadTargets map[string]qiniu.UploadFunc, prefix string) (bool, string, error) {
+func processCloneLog(logfile string, uploadTargets map[string]qiniu.UploadFunc) (bool, string, error) {
 	var cloneRecords []clone.Record
 	data, err := ioutil.ReadFile(logfile)
 	if err != nil {
@@ -72,14 +72,12 @@ func processCloneLog(logfile string, uploadTargets map[string]qiniu.UploadFunc, 
 		}
 
 	}
-	key := prefix + "/clone-log.txt"
-	uploadTargets[key] = qiniu.DataUpload(key, bytes.NewReader(cloneLog.Bytes()))
-	key = prefix + "/clone-records.json"
-	uploadTargets[key] = qiniu.FileUpload(key, logfile)
+
+	uploadTargets["clone-log.txt"] = qiniu.DataUpload(bytes.NewReader(cloneLog.Bytes()))
+	uploadTargets["clone-records.json"] = qiniu.FileUpload(logfile)
 
 	if failed {
-		key = prefix + "/build-log.txt"
-		uploadTargets[key] = qiniu.DataUpload(key, bytes.NewReader(cloneLog.Bytes()))
+		uploadTargets["build-log.txt"] = qiniu.DataUpload(bytes.NewReader(cloneLog.Bytes()))
 
 		passed := !failed
 		now := time.Now().Unix()
@@ -92,8 +90,8 @@ func processCloneLog(logfile string, uploadTargets map[string]qiniu.UploadFunc, 
 		if err != nil {
 			return true, mainRefSHA, fmt.Errorf("could not marshal finishing data: %v", err)
 		}
-		key = prefix + "/finished.json"
-		uploadTargets[key] = qiniu.DataUpload(key, bytes.NewReader(finishedData))
+
+		uploadTargets["finished.json"] = qiniu.DataUpload(bytes.NewReader(finishedData))
 	}
 	return failed, mainRefSHA, nil
 }

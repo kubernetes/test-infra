@@ -58,7 +58,7 @@ func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
 	return passed, aborted, failures
 }
 
-// Run will watch for the process being wrapped to exit
+// Start will watch for the process being wrapped to exit
 // and then post the status of that process and any artifacts
 // to cloud storage.
 func (o Options) Run(ctx context.Context) (int, error) {

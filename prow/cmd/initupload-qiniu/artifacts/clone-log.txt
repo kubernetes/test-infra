@@ -1,0 +1,191 @@
+# Cloning qbox/qtest at develop(e1ea0be3e2c02ead9ece73677fca824edc252806)
+# Checking out pulls:
+#	128(7dbbb1772955bea415c9641bf0d3c5a456936b75)
+$ mkdir -p /home/prow/go/src/kodo-pull-request-test/src/qiniu.com/qtest
+$ git init
+Initialized empty Git repository in /home/prow/go/src/kodo-pull-request-test/src/qiniu.com/qtest/.git/
+$ git config user.name ci-robot
+$ git config user.email ci-robot@k8s.io
+$ git fetch git@github.com:qbox/qtest.git --tags --prune
+Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+From github.com:qbox/qtest
+ * branch            HEAD       -> FETCH_HEAD
+$ git fetch git@github.com:qbox/qtest.git develop
+Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+From github.com:qbox/qtest
+ * branch            develop    -> FETCH_HEAD
+$ git checkout e1ea0be3e2c02ead9ece73677fca824edc252806
+Note: checking out 'e1ea0be3e2c02ead9ece73677fca824edc252806'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at e1ea0be... Merge pull request #127 from ZXVSXQ/fix
+$ git branch --force develop e1ea0be3e2c02ead9ece73677fca824edc252806
+$ git checkout develop
+Switched to branch 'develop'
+$ git fetch git@github.com:qbox/qtest.git pull/128/head
+Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+From github.com:qbox/qtest
+ * branch            refs/pull/128/head -> FETCH_HEAD
+$ git merge --no-ff 7dbbb1772955bea415c9641bf0d3c5a456936b75
+Merge made by the 'recursive' strategy.
+ infra/sonar-integration/README.md              |  65 +++++++++++++++++++++++++
+ infra/sonar-integration/cppcheck               | Bin 0 -> 4232787 bytes
+ infra/sonar-integration/get_changed_project.py |  64 ++++++++++++++++++++++++
+ infra/sonar-integration/get_sonar_result.py    |  40 +++++++++++++++
+ 4 files changed, 169 insertions(+)
+ create mode 100644 infra/sonar-integration/README.md
+ create mode 100755 infra/sonar-integration/cppcheck
+ create mode 100644 infra/sonar-integration/get_changed_project.py
+ create mode 100644 infra/sonar-integration/get_sonar_result.py
+# Cloning qbox/base at master
+$ mkdir -p /home/prow/go/src/kodo-pull-request-test/src/qiniu.com/base
+$ git init
+Initialized empty Git repository in /home/prow/go/src/kodo-pull-request-test/src/qiniu.com/base/.git/
+$ git config user.name ci-robot
+$ git config user.email ci-robot@k8s.io
+$ git fetch git@github.com:qbox/base.git --tags --prune
+Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+From github.com:qbox/base
+ * branch                HEAD                     -> FETCH_HEAD
+ * [new tag]             FA_v1.3.0                -> FA_v1.3.0
+ * [new tag]             FA_v1.3.1                -> FA_v1.3.1
+ * [new tag]             FA_v1.3.2                -> FA_v1.3.2
+ * [new tag]             FA_v1.4.0                -> FA_v1.4.0
+ * [new tag]             FA_v1.5.0                -> FA_v1.5.0
+ * [new tag]             FA_v1.6.0                -> FA_v1.6.0
+ * [new tag]             FA_v1.6.1                -> FA_v1.6.1
+ * [new tag]             FA_v1.6.2                -> FA_v1.6.2
+ * [new tag]             FA_v1.7.0                -> FA_v1.7.0
+ * [new tag]             qrsbox-v0.6.0            -> qrsbox-v0.6.0
+ * [new tag]             qrsbox-v0.6.1            -> qrsbox-v0.6.1
+ * [new tag]             t_324_421_460_483        -> t_324_421_460_483
+ * [new tag]             t_419_447_173            -> t_419_447_173
+ * [new tag]             t_435                    -> t_435
+ * [new tag]             t_435_318_324            -> t_435_318_324
+ * [new tag]             t_506                    -> t_506
+ * [new tag]             t_issues_1056            -> t_issues_1056
+ * [new tag]             t_issues_440_318_324     -> t_issues_440_318_324
+ * [new tag]             t_issues_440_318_324_new -> t_issues_440_318_324_new
+ * [new tag]             t_issues_475             -> t_issues_475
+ * [new tag]             t_issues_478_payapi      -> t_issues_478_payapi
+ * [new tag]             t_issues_571             -> t_issues_571
+ * [new tag]             t_issues_571_new         -> t_issues_571_new
+ * [new tag]             t_issues_620             -> t_issues_620
+ * [new tag]             t_issues_670             -> t_issues_670
+ * [new tag]             t_issues_738             -> t_issues_738
+ * [new tag]             t_issues_875             -> t_issues_875
+ * [new tag]             t_issues_927             -> t_issues_927
+ * [new tag]             t_tmp_1023               -> t_tmp_1023
+ * [new tag]             t_tmp_1097               -> t_tmp_1097
+ * [new tag]             t_tmp_1141               -> t_tmp_1141
+ * [new tag]             t_tmp_1159               -> t_tmp_1159
+ * [new tag]             t_tmp_1159_new           -> t_tmp_1159_new
+ * [new tag]             t_tmp_1295               -> t_tmp_1295
+ * [new tag]             t_tmp_1308               -> t_tmp_1308
+ * [new tag]             t_tmp_1448               -> t_tmp_1448
+ * [new tag]             t_tmp_1451               -> t_tmp_1451
+ * [new tag]             t_tmp_1651               -> t_tmp_1651
+ * [new tag]             t_tmp_1730               -> t_tmp_1730
+ * [new tag]             t_tmp_20130316           -> t_tmp_20130316
+ * [new tag]             t_tmp_2016               -> t_tmp_2016
+ * [new tag]             t_tmp_2018               -> t_tmp_2018
+ * [new tag]             t_tmp_2160               -> t_tmp_2160
+ * [new tag]             t_tmp_2161               -> t_tmp_2161
+ * [new tag]             t_tmp_2362               -> t_tmp_2362
+ * [new tag]             t_tmp_2661               -> t_tmp_2661
+ * [new tag]             t_tmp_720                -> t_tmp_720
+ * [new tag]             t_tmp_753                -> t_tmp_753
+ * [new tag]             t_tmp_762                -> t_tmp_762
+ * [new tag]             t_tmp_975                -> t_tmp_975
+ * [new tag]             v1.0.1056                -> v1.0.1056
+ * [new tag]             v1.0.1164                -> v1.0.1164
+ * [new tag]             v1.0.1218                -> v1.0.1218
+ * [new tag]             v1.0.1342                -> v1.0.1342
+ * [new tag]             v1.0.1381                -> v1.0.1381
+ * [new tag]             v1.0.1412                -> v1.0.1412
+ * [new tag]             v1.0.1426                -> v1.0.1426
+ * [new tag]             v1.0.1449                -> v1.0.1449
+ * [new tag]             v1.0.1451                -> v1.0.1451
+ * [new tag]             v1.0.1492                -> v1.0.1492
+ * [new tag]             v1.0.1511                -> v1.0.1511
+ * [new tag]             v1.0.1569                -> v1.0.1569
+ * [new tag]             v1.0.1653                -> v1.0.1653
+ * [new tag]             v1.0.1687                -> v1.0.1687
+ * [new tag]             v1.0.1737                -> v1.0.1737
+ * [new tag]             v1.0.1817                -> v1.0.1817
+ * [new tag]             v1.0.1918                -> v1.0.1918
+ * [new tag]             v1.0.1997                -> v1.0.1997
+ * [new tag]             v1.0.2035                -> v1.0.2035
+ * [new tag]             v1.0.2082                -> v1.0.2082
+ * [new tag]             v1.0.2146                -> v1.0.2146
+ * [new tag]             v1.0.2277                -> v1.0.2277
+ * [new tag]             v1.0.2363                -> v1.0.2363
+ * [new tag]             v2.5.20130921            -> v2.5.20130921
+$ git fetch git@github.com:qbox/base.git master
+Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+From github.com:qbox/base
+ * branch                master     -> FETCH_HEAD
+$ git checkout FETCH_HEAD
+Note: checking out 'FETCH_HEAD'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at edd4e0ef2... Merge pull request #4360 from qbox/develop
+$ git branch --force master FETCH_HEAD
+$ git checkout master
+Switched to branch 'master'
+# Cloning qbox/kodo at develop
+$ mkdir -p /home/prow/go/src/kodo-pull-request-test/src/qiniu.com/kodo
+$ git init
+Initialized empty Git repository in /home/prow/go/src/kodo-pull-request-test/src/qiniu.com/kodo/.git/
+$ git config user.name ci-robot
+$ git config user.email ci-robot@k8s.io
+$ git fetch git@github.com:qbox/kodo.git --tags --prune
+Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+From github.com:qbox/kodo
+ * branch                HEAD         -> FETCH_HEAD
+ * [new tag]             v2018.4      -> v2018.4
+ * [new tag]             v2019.1      -> v2019.1
+ * [new tag]             v2019.2      -> v2019.2
+ * [new tag]             v2019.2.0416 -> v2019.2.0416
+ * [new tag]             v2019.2.0515 -> v2019.2.0515
+ * [new tag]             v2019.2.0520 -> v2019.2.0520
+ * [new tag]             v2019.3      -> v2019.3
+ * [new tag]             v2019.3.0620 -> v2019.3.0620
+ * [new tag]             v2019.3.0624 -> v2019.3.0624
+ * [new tag]             v2019.3.0626 -> v2019.3.0626
+$ git fetch git@github.com:qbox/kodo.git develop
+Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+From github.com:qbox/kodo
+ * branch                develop    -> FETCH_HEAD
+$ git checkout FETCH_HEAD
+Note: checking out 'FETCH_HEAD'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at fdf577233... Merge pull request #1919 from Tevic/KODO-8107
+$ git branch --force develop FETCH_HEAD
+$ git checkout develop
+Switched to branch 'develop'

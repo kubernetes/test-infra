@@ -39,10 +39,10 @@ func main() {
 	}
 
 	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "initupload"}),
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "initupload", "cloud": "qiniu"}),
 	)
 
-	if err := o.Run(); err != nil {
+	if err := o.Start(); err != nil {
 		logrus.WithError(err).Fatal("Failed to initialize job")
 	}
 }

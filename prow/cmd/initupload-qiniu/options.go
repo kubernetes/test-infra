@@ -22,9 +22,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
 
-	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/qiniu"
 )
@@ -58,7 +57,15 @@ func (o *Options) ConfigVar() string {
 
 // LoadConfig loads options from serialized config.
 func (o *Options) LoadConfig(config string) error {
-	return json.Unmarshal([]byte(config), o)
+	if err := json.Unmarshal([]byte(config), o); err != nil {
+		return err
+	}
+
+	// TODO(CarlJi):理论上这些配置应该放到CRD里，这样全局就可以传递
+	// 但考虑到操作CRD，风险较高，这里为了简化，希望使用者外部直接传入这些信息，或者使用默认环境变量的值
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	o.AddFlags(fs)
+	return fs.Parse(os.Args[1:])
 }
 
 // AddFlags binds flags to options.
@@ -79,22 +86,19 @@ func Encode(options Options) (string, error) {
 	return string(encoded), err
 }
 
-// Run will start the initupload job to upload the artifacts, logs and clone status.
-func (o Options) Run() error {
+// Start will start the initupload job to upload the artifacts, logs and clone status.
+func (o Options) Start() error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
 		return fmt.Errorf("could not resolve job spec: %v", err)
 	}
-
-	// use folder structure with gcs
-	jobBasePath, _, _ := gcsupload.PathsForJob(o.GCSConfiguration, spec, "")
 
 	uploadTargets := map[string]qiniu.UploadFunc{}
 
 	var failed bool
 	var mainRefSHA string
 	if o.Log != "" {
-		if failed, mainRefSHA, err = processCloneLog(o.Log, uploadTargets, jobBasePath); err != nil {
+		if failed, mainRefSHA, err = processCloneLog(o.Log, uploadTargets); err != nil {
 			return err
 		}
 	}
@@ -105,22 +109,11 @@ func (o Options) Run() error {
 	if err != nil {
 		return fmt.Errorf("could not marshal starting data: %v", err)
 	}
-	key := jobBasePath + "/started.json"
-	uploadTargets[key] = qiniu.DataUpload(key, bytes.NewReader(startedData))
 
-	if o.DryRun {
-		for dest := range uploadTargets {
-			logrus.WithField("dest", dest).Info("Would upload")
-		}
-	} else {
-		qn, err := qiniu.NewUploader(o.Bucket, o.AccessKey, o.SecretKey)
-		if err != nil {
-			return fmt.Errorf("failed to init qiniu uploader: %v", err)
-		}
+	uploadTargets["started.json"] = qiniu.DataUpload(bytes.NewReader(startedData))
 
-		if err := qn.Upload(uploadTargets); err != nil {
-			return fmt.Errorf("failed to upload to Qiniu: %v", err)
-		}
+	if err := o.Run(spec, uploadTargets); err != nil {
+		return fmt.Errorf("failed to upload to QINIU: %v", err)
 	}
 
 	if failed {

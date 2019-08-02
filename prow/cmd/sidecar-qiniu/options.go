@@ -39,7 +39,8 @@ func NewOptions() *Options {
 // for defining the process being watched and
 // where in GCS an upload will land.
 type Options struct {
-	QnOptions                *qiniu.Options   `json:"qn_options"`
+	// TODO(CarlJI): still use the tag gcs_options to get value passed via crd
+	QnOptions                *qiniu.Options   `json:"gcs_options"`
 	DeprecatedWrapperOptions *wrapper.Options `json:"wrapper_options,omitempty"` // TODO(fejta): remove july 2019
 
 	// Additional entries to wait for if set
@@ -93,14 +94,11 @@ func (o *Options) LoadConfig(config string) error {
 	}
 
 	// TODO(CarlJi):理论上这些配置应该放到CRD里，这样全局就可以传递
-	// 但考虑到操作CRD，风险较高，这里为了简化，希望使用者外部直接传入这些信息
-	if len(os.Args) > 1 {
-		fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-		o.AddFlags(fs)
-		return fs.Parse(os.Args[1:])
-	}
+	// 但考虑到操作CRD，风险较高，这里为了简化，希望使用者外部直接传入这些信息,或者直接使用默认环境变量值
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	o.AddFlags(fs)
+	return fs.Parse(os.Args[1:])
 
-	return nil
 }
 
 // AddFlags binds flags to options
