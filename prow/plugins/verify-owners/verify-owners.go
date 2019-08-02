@@ -46,8 +46,13 @@ const (
 	nonCollaboratorResponseFormat = "The following users are mentioned in %s file(s) but are not members of the %s org."
 )
 
+var (
+	verifyOwnersRe = regexp.MustCompile(`(?mi)^/verify-owners\s*$`)
+)
+
 func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -61,6 +66,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 				strings.Join(config.Owners.LabelsBlackList, ", ")),
 		}
 	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/verify-owners",
+		Description: labels.InvalidOwners,
+		Featured:    false,
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/verify-owners"},
+	})
 	return pluginHelp, nil
 }
 
@@ -89,6 +101,13 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
+type state struct {
+	org          string
+	repo         string
+	repoFullName string
+	number       int
+}
+
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionReopened && pre.Action != github.PullRequestActionSynchronize {
 		return nil
@@ -106,7 +125,57 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 			break
 		}
 	}
-	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp)
+
+	prState := state{
+		org:          pre.Repo.Owner.Login,
+		repo:         pre.Repo.Name,
+		repoFullName: pre.Repo.FullName,
+		number:       pre.Number,
+	}
+
+	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prState, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp)
+}
+
+func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+
+	var skipTrustedUserCheck bool
+	for _, r := range pc.PluginConfig.Owners.SkipCollaborators {
+		if r == e.Repo.Name {
+			skipTrustedUserCheck = true
+			break
+		}
+	}
+
+	return handleGenericComment(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &e, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name), skipTrustedUserCheck, cp)
+}
+
+func handleGenericComment(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
+	// Only consider open PRs and new comments.
+	if ce.IssueState != "open" || !ce.IsPR || ce.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+
+	if !verifyOwnersRe.MatchString(ce.Body) {
+		return nil
+	}
+
+	prState := state{
+		org:          ce.Repo.Owner.Login,
+		repo:         ce.Repo.Name,
+		repoFullName: ce.Repo.FullName,
+		number:       ce.Number,
+	}
+
+	pr, err := ghc.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
+	if err != nil {
+		return err
+	}
+
+	return handle(ghc, gc, roc, log, pr, prState, labelsBlackList, triggerConfig, skipTrustedUserCheck, cp)
 }
 
 type messageWithLine struct {
@@ -114,14 +183,14 @@ type messageWithLine struct {
 	message string
 }
 
-func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
-	org := pre.Repo.Owner.Login
-	repo := pre.Repo.Name
-	number := pre.Number
+func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pr *github.PullRequest, state state, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
+	org := state.org
+	repo := state.repo
+	number := state.number
 	wrongOwnersFiles := map[string]messageWithLine{}
 
 	// Get changes.
-	changes, err := ghc.GetPullRequestChanges(org, repo, pre.Number)
+	changes, err := ghc.GetPullRequestChanges(org, repo, number)
 	if err != nil {
 		return fmt.Errorf("error getting PR changes: %v", err)
 	}
@@ -150,7 +219,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 	}
 
 	// Clone the repo, checkout the PR.
-	r, err := gc.Clone(pre.Repo.FullName)
+	r, err := gc.Clone(state.repoFullName)
 	if err != nil {
 		return err
 	}
@@ -159,12 +228,12 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 			log.WithError(err).Error("Error cleaning up repo.")
 		}
 	}()
-	if err := r.CheckoutPullRequest(pre.Number); err != nil {
+	if err := r.CheckoutPullRequest(number); err != nil {
 		return err
 	}
 	// If we have a specific SHA, use it.
-	if pre.PullRequest.Head.SHA != "" {
-		if err := r.Checkout(pre.PullRequest.Head.SHA); err != nil {
+	if pr.Head.SHA != "" {
+		if err := r.Checkout(pr.Head.SHA); err != nil {
 			return err
 		}
 	}
@@ -178,10 +247,6 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 
 	// Check if OWNERS files have the correct config and if they do,
 	// check if all newly added owners are trusted users.
-	pr, err := ghc.GetPullRequest(org, repo, number)
-	if err != nil {
-		return fmt.Errorf("error loading PullRequest: %v", err)
-	}
 	oc, err := roc.LoadRepoOwners(org, repo, pr.Base.Ref)
 	if err != nil {
 		return fmt.Errorf("error loading RepoOwners: %v", err)
@@ -232,14 +297,14 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 		// Make the review body.
 		response := fmt.Sprintf("%d invalid %s file%s", len(wrongOwnersFiles), ownersFileName, s)
 		draftReview := github.DraftReview{
-			Body:     plugins.FormatResponseRaw(pre.PullRequest.Body, pre.PullRequest.HTMLURL, pre.PullRequest.User.Login, response),
+			Body:     plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, response),
 			Action:   github.Comment,
 			Comments: comments,
 		}
-		if pre.PullRequest.Head.SHA != "" {
-			draftReview.CommitSHA = pre.PullRequest.Head.SHA
+		if pr.Head.SHA != "" {
+			draftReview.CommitSHA = pr.Head.SHA
 		}
-		err := ghc.CreateReview(org, repo, pre.Number, draftReview)
+		err := ghc.CreateReview(org, repo, number, draftReview)
 		if err != nil {
 			return fmt.Errorf("error creating a review for invalid %s file%s: %v", ownersFileName, s, err)
 		}
@@ -264,7 +329,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 	if len(wrongOwnersFiles) == 0 && len(nonTrustedUsers) == 0 {
 		// Don't bother checking if it has the label...it's a race, and we'll have
 		// to handle failure due to not being labeled anyway.
-		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.InvalidOwners); err != nil {
+		if err := ghc.RemoveLabel(org, repo, number, labels.InvalidOwners); err != nil {
 			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {

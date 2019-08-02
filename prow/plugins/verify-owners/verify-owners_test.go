@@ -411,14 +411,12 @@ func TestHandle(t *testing.T) {
 			t.Fatalf("Getting commit SHA: %v", err)
 		}
 		pre := &github.PullRequestEvent{
-			Number: pr,
 			PullRequest: github.PullRequest{
 				User: github.User{Login: "author"},
 				Head: github.PullRequestBranch{
 					SHA: sha,
 				},
 			},
-			Repo: github.Repo{FullName: "org/repo"},
 		}
 		fghc := newFakeGitHubClient(test.filesChanged, test.filesRemoved, pr)
 		fghc.PullRequests = map[int]*github.PullRequest{}
@@ -428,7 +426,14 @@ func TestHandle(t *testing.T) {
 			},
 		}
 
-		if err := handle(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
+		prState := state{
+			org:          "org",
+			repo:         "repo",
+			repoFullName: "org/repo",
+			number:       pr,
+		}
+
+		if err := handle(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), &pre.PullRequest, prState, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
 		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
@@ -845,14 +850,12 @@ func TestNonCollaborators(t *testing.T) {
 			t.Fatalf("Getting commit SHA: %v", err)
 		}
 		pre := &github.PullRequestEvent{
-			Number: pr,
 			PullRequest: github.PullRequest{
 				User: github.User{Login: "author"},
 				Head: github.PullRequestBranch{
 					SHA: sha,
 				},
 			},
-			Repo: github.Repo{FullName: "org/repo"},
 		}
 		fghc := newFakeGitHubClient(test.filesChanged, nil, pr)
 		fghc.PullRequestChanges[pr] = changes
@@ -875,7 +878,14 @@ func TestNonCollaborators(t *testing.T) {
 			froc.foc.dirBlacklist = blacklist
 		}
 
-		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), pre, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, test.skipTrustedUserCheck, &fakePruner{}); err != nil {
+		prState := state{
+			org:          "org",
+			repo:         "repo",
+			repoFullName: "org/repo",
+			number:       pr,
+		}
+
+		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), &pre.PullRequest, prState, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, test.skipTrustedUserCheck, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
 		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
@@ -891,4 +901,162 @@ func TestNonCollaborators(t *testing.T) {
 			t.Errorf("%s: expected comment but didn't receive", test.name)
 		}
 	}
+}
+
+func TestHandleGenericComment(t *testing.T) {
+	var tests = []struct {
+		name         string
+		commentEvent github.GenericCommentEvent
+		filesChanged []string
+		filesRemoved []string
+		ownersFile   string
+		shouldLabel  bool
+	}{
+		{
+			name: "no OWNERS file",
+			commentEvent: github.GenericCommentEvent{
+				Action:     github.GenericCommentActionCreated,
+				IssueState: "open",
+				IsPR:       true,
+				Body:       "/verify-owners",
+			},
+			filesChanged: []string{"a.go", "b.go"},
+			ownersFile:   "valid",
+			shouldLabel:  false,
+		},
+		{
+			name: "good OWNERS file",
+			commentEvent: github.GenericCommentEvent{
+				Action:     github.GenericCommentActionCreated,
+				IssueState: "open",
+				IsPR:       true,
+				Body:       "/verify-owners",
+			},
+			filesChanged: []string{"OWNERS", "b.go"},
+			ownersFile:   "valid",
+			shouldLabel:  false,
+		},
+		{
+			name: "invalid syntax OWNERS file",
+			commentEvent: github.GenericCommentEvent{
+				Action:     github.GenericCommentActionCreated,
+				IssueState: "open",
+				IsPR:       true,
+				Body:       "/verify-owners",
+			},
+			filesChanged: []string{"OWNERS", "b.go"},
+			ownersFile:   "invalidSyntax",
+			shouldLabel:  true,
+		},
+		{
+			name: "invalid syntax OWNERS file, unrelated comment",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/verify owners",
+			},
+			filesChanged: []string{"OWNERS", "b.go"},
+			ownersFile:   "invalidSyntax",
+			shouldLabel:  false,
+		},
+		{
+			name: "invalid syntax OWNERS file, comment edited",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionEdited,
+				IsPR:   true,
+				Body:   "/verify-owners",
+			},
+			filesChanged: []string{"OWNERS", "b.go"},
+			ownersFile:   "invalidSyntax",
+			shouldLabel:  false,
+		},
+		{
+			name: "invalid syntax OWNERS file, comment on an issue",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   false,
+				Body:   "/verify-owners",
+			},
+			filesChanged: []string{"OWNERS", "b.go"},
+			ownersFile:   "invalidSyntax",
+			shouldLabel:  false,
+		},
+	}
+
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making localgit: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Cleaning up localgit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Cleaning up client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo("org", "repo"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	for i, test := range tests {
+		pr := i + 1
+		// make sure we're on master before branching
+		if err := lg.Checkout("org", "repo", "master"); err != nil {
+			t.Fatalf("Switching to master branch: %v", err)
+		}
+		if len(test.filesRemoved) > 0 {
+			if err := addFilesToRepo(lg, test.filesRemoved, test.ownersFile); err != nil {
+				t.Fatalf("Adding base commit: %v", err)
+			}
+		}
+
+		if err := lg.CheckoutNewBranch("org", "repo", fmt.Sprintf("pull/%d/head", pr)); err != nil {
+			t.Fatalf("Checking out pull branch: %v", err)
+		}
+
+		if len(test.filesChanged) > 0 {
+			if err := addFilesToRepo(lg, test.filesChanged, test.ownersFile); err != nil {
+				t.Fatalf("Adding PR commit: %v", err)
+			}
+		}
+		if len(test.filesRemoved) > 0 {
+			if err := lg.RmCommit("org", "repo", test.filesRemoved); err != nil {
+				t.Fatalf("Adding PR commit (removing files): %v", err)
+			}
+		}
+
+		sha, err := lg.RevParse("org", "repo", "HEAD")
+		if err != nil {
+			t.Fatalf("Getting commit SHA: %v", err)
+		}
+
+		test.commentEvent.Repo.Owner.Login = "org"
+		test.commentEvent.Repo.Name = "repo"
+		test.commentEvent.Repo.FullName = "org/repo"
+		test.commentEvent.Number = pr
+
+		fghc := newFakeGitHubClient(test.filesChanged, test.filesRemoved, pr)
+		fghc.PullRequests = map[int]*github.PullRequest{}
+		fghc.PullRequests[pr] = &github.PullRequest{
+			User: github.User{Login: "author"},
+			Head: github.PullRequestBranch{
+				SHA: sha,
+			},
+			Base: github.PullRequestBranch{
+				Ref: fakegithub.TestRef,
+			},
+		}
+
+		if err := handleGenericComment(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), &test.commentEvent, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
+			t.Fatalf("Handle PR: %v", err)
+		}
+		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: didn't expect label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
+			continue
+		} else if test.shouldLabel && !IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
+			t.Errorf("%s: expected label %s in %s", test.name, labels.InvalidOwners, fghc.IssueLabelsAdded)
+			continue
+		}
+	}
+
 }
