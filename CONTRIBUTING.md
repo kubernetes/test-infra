@@ -87,7 +87,7 @@ up to date
 
 ### Dependency Management
 
-Please see [/docs/dep.md]
+Please see [/docs/deps.md]
 
 ### Prow Jobs
 
@@ -141,7 +141,7 @@ has test coverage in a variety of environments. For more info please see
 [gubernator.k8s.io/pr]: https://gubernator.k8s.io/pr
 [prow.k8s.io]: https://prow.k8s.io
 [testgrid.k8s.io]: https://testgrid.k8s.io
-[go.k8s.io/github-labels]: https://go.k8s.io/oncall
+[go.k8s.io/github-labels]: https://go.k8s.io/github-labels
 [go.k8s.io/oncall]: https://go.k8s.io/oncall
 [command-cc]: https://prow.k8s.io/command-help#cc
 [command-assign]: https://prow.k8s.io/command-help#assign
