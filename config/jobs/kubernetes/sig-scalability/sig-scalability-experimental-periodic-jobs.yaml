@@ -197,6 +197,51 @@ periodics:
       - --timeout=40m
       - --use-logexporter
 
+  # single node GKE storage experiments
+- name: ci-kubernetes-storage-scalability-storage-single-node-gke
+  tags:
+    - "perfDashPrefix: storage-single-node-gke"
+    - "perfDashJobType: storage"
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-node: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: storage-single-node-gke
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190801-9ec6db7-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --repo=k8s.io/perf-tests=master
+          - --repo=k8s.io/test-infra=master
+          - --root=/go/src
+          - --timeout=80
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-leaked-resources
+          - --cluster=
+          - --extract=ci/latest
+          - --deployment=gke
+          - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+          - --gcp-node-image=gci
+          - --gke-environment=staging
+          - --gke-create-command=container clusters create --quiet --cluster-version latest
+          - --gke-shape={"default":{"Nodes":1,"MachineType":"n1-standard-2"}}
+          - --provider=gke
+          - --test=false
+          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+          - --test-cmd-args=cluster-loader2
+          - --test-cmd-args=--nodes=1
+          - --test-cmd-args=--provider=gke
+          - --test-cmd-args=--report-dir=/workspace/_artifacts
+          - --test-cmd-args=--testsuite=$GOPATH/src/k8s.io/test-infra/config/jobs/kubernetes/sig-scalability/testsuites/single-node-storage.yaml
+          - --test-cmd-name=ClusterLoaderV2
+          - --timeout=60m
+          - --use-logexporter
+
 #- name: ci-kubernetes-storage-scalability-max-persistent-vol-per-pod
 #  tags:
 #    - "perfDashPrefix: storage-max-persistent-vol-per-pod"
