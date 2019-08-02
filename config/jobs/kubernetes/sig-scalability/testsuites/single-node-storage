@@ -1,0 +1,42 @@
+# Max Volume Per Node
+- Identifier: max_configmap_vol_per_node
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_node/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/configmap/override.yaml
+- Identifier: max_downwardapi_vol_per_node
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_node/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/downwardapi/override.yaml
+- Identifier: max_emptydir_vol_per_node
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_node/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/emptydir/override.yaml
+- Identifier: max_secret_vol_per_node
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_node/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/secret/override.yaml
+# Max Volume Per Pod
+- Identifier: max_configmap_vol_per_pod
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_pod/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/configmap/override.yaml
+- Identifier: max_downwardapi_vol_per_pod
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_pod/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/downwardapi/override.yaml
+- Identifier: max_emptydir_vol_per_pod
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_pod/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/emptydir/override.yaml
+- Identifier: max_secret_vol_per_pod
+  ConfigPath: testing/experimental/storage/pod-startup/config.yaml
+  OverridePaths:
+    - testing/experimental/storage/pod-startup/max_volumes_per_pod/override.yaml
+    - testing/experimental/storage/pod-startup/volume-types/secret/override.yaml
