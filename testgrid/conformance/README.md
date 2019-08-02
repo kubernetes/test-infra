@@ -20,7 +20,7 @@ If you'd like to post other kinds of tests or unrelated content, please consider
 
 - See The following PR from setting up the initial OpenStack bucket: [#7670](https://github.com/kubernetes/test-infra/pull/7670) 
 
-3. Setup a job in your CI system to run the conformance tests. To use [`upload_e2e.py`](./upload_e2e.py) the job environment must have `python` (v2.X) and `gcloud` / `gsutil` commands. For the gcloud CLI see [Installing the Google Cloud SDK](https://cloud.google.com/sdk/downloads).
+3. Setup a job in your CI system to run the conformance tests. To use [`upload_e2e.py`](./upload_e2e.py) the job environment must have `python` (v3.X) and `gcloud` / `gsutil` commands. For the gcloud CLI see [Installing the Google Cloud SDK](https://cloud.google.com/sdk/downloads).
 
 This job will need to:
    - `a)` setup a cluster from the kubernetes release / branch you want to test

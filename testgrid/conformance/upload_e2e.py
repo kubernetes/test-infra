@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2018 The Kubernetes Authors.
 #
@@ -32,6 +32,7 @@
 #
 # Usage: see README.md
 
+from __future__ import print_function
 
 import re
 import sys
@@ -166,7 +167,7 @@ def testgrid_finished_json_contents(finish_time, passed, metadata):
 def upload_string(gcs_path, text, dry):
     """Uploads text to gcs_path if dry is False, otherwise just prints"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
-    print >>sys.stderr, 'Run:', cmd, 'stdin=%s' % text
+    print('Run:', cmd, 'stdin=%s' % text, file=sys.stderr)
     if dry:
         return
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
@@ -180,7 +181,7 @@ def upload_file(gcs_path, file_path, dry):
     """Uploads file at file_path to gcs_path if dry is False, otherwise just prints"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain',
            'cp', file_path, gcs_path]
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry:
         return
     proc = subprocess.Popen(cmd)
@@ -194,16 +195,16 @@ def get_current_account(dry_run):
     """gets the currently active gcp account by shelling out to gcloud"""
     cmd = ['gcloud', 'auth', 'list',
            '--filter=status:ACTIVE', '--format=value(account)']
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
         return ""
-    return subprocess.check_output(cmd).strip('\n')
+    return subprocess.check_output(cmd, encoding='utf-8').strip('\n')
 
 
 def set_current_account(account, dry_run):
     """sets the currently active gcp account by shelling out to gcloud"""
     cmd = ['gcloud', 'config', 'set', 'core/account', account]
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
         return None
     return subprocess.check_call(cmd)
@@ -212,7 +213,7 @@ def set_current_account(account, dry_run):
 def activate_service_account(key_file, dry_run):
     """activates a gcp service account by shelling out to gcloud"""
     cmd = ['gcloud', 'auth', 'activate-service-account', '--key-file='+key_file]
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
         return
     subprocess.check_call(cmd)
@@ -221,7 +222,7 @@ def activate_service_account(key_file, dry_run):
 def revoke_current_account(dry_run):
     """logs out of the currently active gcp account by shelling out to gcloud"""
     cmd = ['gcloud', 'auth', 'revoke']
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
         return None
     return subprocess.check_call(cmd)
@@ -296,7 +297,7 @@ def main(cli_args):
     # testgrid entry
     junits = glob.glob(args.junit)
     if not junits:
-        print 'No matching JUnit files found!'
+        print('No matching JUnit files found!')
         sys.exit(-1)
 
     # parse the e2e.log for start time, finish time, and success
@@ -312,14 +313,14 @@ def main(cli_args):
     gcs_dir = args.bucket + '/' + str(datetime_to_unix(started))
 
     # upload metadata, log, junit to testgrid
-    print 'Uploading entry to: %s' % gcs_dir
+    print('Uploading entry to: %s' % gcs_dir)
     upload_string(gcs_dir+'/started.json', started_json, args.dry_run)
     upload_string(gcs_dir+'/finished.json', finished_json, args.dry_run)
     upload_file(gcs_dir+'/build-log.txt', args.log, args.dry_run)
     for junit_file in junits:
         upload_file(gcs_dir+'/artifacts/' +
                     path.basename(junit_file), junit_file, args.dry_run)
-    print 'Done.'
+    print('Done.')
 
 
 if __name__ == '__main__':
