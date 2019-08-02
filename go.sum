@@ -325,6 +325,14 @@ github.com/prometheus/procfs v0.0.0-20190117184657-bf6a532e95b1/go.mod h1:c3At6R
 github.com/prometheus/procfs v0.0.2/go.mod h1:TjEm7ze935MbeOT/UhFTIMYKhuLP4wbCsTZCD3I8kEA=
 github.com/prometheus/procfs v0.0.3 h1:CTwfnzjQ+8dS6MhHHu4YswVAD99sL2wjPqP+VkURmKE=
 github.com/prometheus/procfs v0.0.3/go.mod h1:4A/X28fw3Fc593LaREMrKMqOKvUAntwMDaekg4FpcdQ=
+github.com/qiniu/api.v7 v0.0.0-20190520053455-bea02cd22bf4 h1:GIr/KoLaPKm0vmzmc+1PRRzJ/L7xTufvNocIHjVnUpY=
+github.com/qiniu/api.v7 v0.0.0-20190520053455-bea02cd22bf4/go.mod h1:V8/EzlTgLN6q0s0CJmg/I81ytsvldSF22F7h6MI02+c=
+github.com/qiniu/api.v7 v7.2.5+incompatible h1:6KKaGt7MbFzVGSniwzv7qsM/Qv0or4SkRJfmak8LqZE=
+github.com/qiniu/api.v7 v7.2.5+incompatible/go.mod h1:V8/EzlTgLN6q0s0CJmg/I81ytsvldSF22F7h6MI02+c=
+github.com/qiniu/x v7.0.8+incompatible h1:P4LASsfwJY7SoZ13dwqBwGhZh7HKU8cdFVCUkmz0gZ8=
+github.com/qiniu/x v7.0.8+incompatible/go.mod h1:KpRKWYG/GaidPQVpoQ2Cvuvtts3gYnoo2PftgdmAiU4=
+github.com/qor/inflection v0.0.0-20180308033659-04140366298a h1:h1tL4LMzWeaTwOJrFiJJuvtlkgCPbJw1pes86e7UgeM=
+github.com/qor/inflection v0.0.0-20180308033659-04140366298a/go.mod h1:fdAii7qjg93AwBgaaH3P6+TWPFB1grjwrRHTOb/CZwM=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/rogpeppe/go-internal v1.1.0 h1:g0fH8RicVgNl+zVZDCDfbdWxAWoAEJyI7I3TZYXFiig=
 github.com/rogpeppe/go-internal v1.1.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
@@ -535,6 +543,8 @@ sigs.k8s.io/controller-runtime v0.2.0-beta.4 h1:S1XVfRWR1MuIXZdkYx3jN8JDw+bbQxmW
 sigs.k8s.io/controller-runtime v0.2.0-beta.4/go.mod h1:HweyYKQ8fBuzdu2bdaeBJvsFgAi/OqBBnrVGXcqKhME=
 sigs.k8s.io/testing_frameworks v0.1.1 h1:cP2l8fkA3O9vekpy5Ks8mmA0NW/F7yBdXf8brkWhVrs=
 sigs.k8s.io/testing_frameworks v0.1.1/go.mod h1:VVBKrHmJ6Ekkfz284YKhQePcdycOzNH9qL6ht1zEr/U=
+qiniupkg.com/x v7.0.8+incompatible h1:Ek0ZVi5IyaWUAFkJbPRiqlh34xDM4uoKw7KqdpankvU=
+qiniupkg.com/x v7.0.8+incompatible/go.mod h1:6sLxR5IZ03vMaRAQAY/5MvzofeoBIjO4XE0Njv6V1ms=
 sigs.k8s.io/yaml v1.1.0 h1:4A07+ZFc2wgJwo8YNlQpr1rVlgUDlxXHhPJciaPY5gs=
 sigs.k8s.io/yaml v1.1.0/go.mod h1:UJmg0vDUVViEyp3mgSv9WPwZCDxu4rQW1olrI1uml+o=
 vbom.ml/util v0.0.0-20170409195630-256737ac55c4 h1:VRvrHgbw/Yg8mlNgD20TTQsTXTNJenU4jFUEqVxDRCU=
