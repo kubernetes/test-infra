@@ -163,8 +163,18 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			return err
 		}
 		go func() {
-			if err := plugin.HandleEvent(l, s.ghc, &pre); err != nil {
-				l.Info("Error handling event.")
+			if err := plugin.HandlePullRequestEvent(l, s.ghc, &pre); err != nil {
+				l.WithField("event-type", eventType).WithError(err).Info("Error handling event.")
+			}
+		}()
+	case "issue_comment":
+		var ice github.IssueCommentEvent
+		if err := json.Unmarshal(payload, &ice); err != nil {
+			return err
+		}
+		go func() {
+			if err := plugin.HandleIssueCommentEvent(l, s.ghc, &ice); err != nil {
+				l.WithField("event-type", eventType).WithError(err).Info("Error handling event.")
 			}
 		}()
 	default:
