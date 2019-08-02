@@ -125,11 +125,11 @@ func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	for sKey := range f.agent.secretsMap {
 		secret := f.agent.GetSecret(sKey)
-		message = strings.ReplaceAll(message, string(secret), censored)
+		message = strings.Replace(message, string(secret), censored, -1)
 
 		for key, value := range data {
 			if valueString, ok := value.(string); ok {
-				data[key] = strings.ReplaceAll(valueString, string(secret), censored)
+				data[key] = strings.Replace(valueString, string(secret), censored, -1)
 			}
 		}
 	}
