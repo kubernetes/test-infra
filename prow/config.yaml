@@ -45,16 +45,9 @@ deck:
   google_analytics: UA-82843984-5
   rerun_auth_config:
     github_users:
-    - mirandachrist
-    - cjwagner
-    - amwat
-    - fejta
-    - ixdy
-    - Katharine
-    - krzyzacy
-    - michelle192837
-    - spiffxp
-    - stevekuznetsov
+      - mirandachrist
+    github_team_ids:
+      - 2009231 #test-infra-admins
 
 prowjob_namespace: default
 pod_namespace: test-pods
