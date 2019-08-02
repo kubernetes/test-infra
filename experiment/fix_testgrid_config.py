@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2018 The Kubernetes Authors.
 #
@@ -75,9 +75,9 @@ def main(testgrid):
 
     for dashboard in config['dashboards']:
         if any(prefix in dashboard['name'] for prefix in DASHBOARD_PREFIX):
-            for tab in dashboard['dashboard_tab']:
+            for tab in dashboard.get('dashboard_tab', []):
                 name = tab['test_group_name']
-                for key, val in MAP.iteritems():
+                for key, val in MAP.items():
                     name = name.replace(key, val)
                 tab['name'] = name
 

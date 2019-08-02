@@ -3,6 +3,7 @@ load("@py_deps//:requirements.bzl", "requirement")
 py_binary(
     name = "flakedetector",
     srcs = ["flakedetector.py"],
+    python_version = "PY3",
     deps = [requirement("requests")],
 )
 
@@ -16,6 +17,7 @@ py_binary(
         "//jobs",
         "//prow:configs",
     ],
+    python_version = "PY3",
     deps = [requirement("ruamel.yaml")],
 )
 
@@ -25,6 +27,7 @@ py_binary(
     data = [
         "//config:testgrids",
     ],
+    python_version = "PY3",
     deps = [requirement("ruamel.yaml")],
 )
 
@@ -43,6 +46,7 @@ py_binary(
         "//experiment/config-forker",
         "//experiment/config-rotator",
     ],
+    python_version = "PY3",
     deps = [
         requirement("ruamel.yaml"),
         requirement("sh"),
