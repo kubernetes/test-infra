@@ -1300,11 +1300,6 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			return
 		}
 		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
-		// Be very careful about this on publicly accessible Prow instances. Even after we have authentication
-		// for the handler, we need CSRF protection.
-		// On Prow instances that require auth even for viewing Deck this is okayish, because the Prowjob UUID
-		// is hard to guess
-		// Ref: https://github.com/kubernetes/test-infra/pull/12827#issuecomment-502850414
 		switch r.Method {
 		case http.MethodGet:
 			marshalJob(w, newPJ, l)
@@ -1338,6 +1333,11 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 					l.WithError(err).Errorf("Error checking if user can trigger job")
 					return
 				}
+				logrus.WithFields(logrus.Fields{
+					"user":    login,
+					"job":     newPJ.Spec.Job,
+					"allowed": allowed,
+				}).Info("Attempted rerun")
 			}
 
 			if !allowed {
