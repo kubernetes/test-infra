@@ -15,6 +15,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "config_test.go",
+        "prow_test.go",
         "yaml2proto_test.go",
     ],
     data = [
@@ -24,6 +25,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//testgrid/config:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
