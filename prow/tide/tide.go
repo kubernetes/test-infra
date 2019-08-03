@@ -34,7 +34,6 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/pkg/io"
@@ -307,7 +306,7 @@ func (c *Controller) Sync() error {
 	var err error
 	if len(prs) > 0 {
 		start := time.Now()
-		pjList, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: labels.Everything().String()})
+		pjList, err := c.prowJobClient.List(metav1.ListOptions{})
 		if err != nil {
 			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
@@ -699,9 +698,12 @@ func accumulateBatch(presubmits map[int][]config.Presubmit, prs []PullRequest, p
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []prowapi.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
+func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []prowapi.ProwJob, log *logrus.Entry) (successes, pendings, missings []PullRequest, missingTests map[int][]config.Presubmit) {
+
+	missingTests = map[int][]config.Presubmit{}
 	for _, pr := range prs {
-		// Accumulate the best result for each job.
+		// Accumulate the best result for each job (Passing > Pending > Failing/Unknown)
+		// We can ignore the baseSHA here because the subPool only contains ProwJobs with the correct baseSHA
 		psStates := make(map[string]simpleState)
 		for _, pj := range pjs {
 			if pj.Spec.Type != prowapi.PresubmitJob {
@@ -723,28 +725,33 @@ func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []
 				psStates[name] = successState
 			}
 		}
-		// The overall result is the worst of the best.
+		// The overall result for the PR is the worst of the best of all its
+		// required Presubmits
 		overallState := successState
 		for _, ps := range presubmits[int(pr.Number)] {
 			if s, ok := psStates[ps.Context]; !ok {
-				overallState = failureState
+				// No PJ with correct baseSHA+headSHA exists
+				missingTests[int(pr.Number)] = append(missingTests[int(pr.Number)], ps)
 				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps.Context)
-				break
 			} else if s == failureState {
-				overallState = failureState
+				// PJ with correct baseSHA+headSHA exists but failed
+				missingTests[int(pr.Number)] = append(missingTests[int(pr.Number)], ps)
 				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps.Context)
-				break
 			} else if s == pendingState {
 				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps.Context)
 				overallState = pendingState
 			}
 		}
+		if len(missingTests[int(pr.Number)]) > 0 {
+			overallState = failureState
+		}
+
 		if overallState == successState {
 			successes = append(successes, pr)
 		} else if overallState == pendingState {
 			pendings = append(pendings, pr)
 		} else {
-			nones = append(nones, pr)
+			missings = append(missings, pr)
 		}
 	}
 	return
@@ -1034,7 +1041,7 @@ func (c *Controller) trigger(sp subpool, presubmits map[int][]config.Presubmit, 
 	return nil
 }
 
-func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
+func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, missings, batchMerges []PullRequest, missingSerialTests map[int][]config.Presubmit) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -1061,9 +1068,9 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 		}
 	}
 	// If we have no serial jobs pending or successful, trigger one.
-	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmits, []PullRequest{pr})
+	if len(missings) > 0 && len(pendings) == 0 && len(successes) == 0 {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, missings, sp.cc); ok {
+			return Trigger, []PullRequest{pr}, c.trigger(sp, missingSerialTests, []PullRequest{pr})
 		}
 	}
 	return Wait, nil, nil
@@ -1169,12 +1176,12 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
+	successes, pendings, missings, missingSerialTests := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
 	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs, sp.log)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
-		"prs-missing":   prNumbers(nones),
+		"prs-missing":   prNumbers(missings),
 		"batch-passing": prNumbers(batchMerge),
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
@@ -1186,7 +1193,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 	if len(blocks) > 0 {
 		act = PoolBlocked
 	} else {
-		act, targets, err = c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
+		act, targets, err = c.takeAction(sp, batchPending, successes, pendings, missings, batchMerge, missingSerialTests)
 		if err != nil {
 			errorString = err.Error()
 		}
@@ -1214,7 +1221,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 
 			SuccessPRs: successes,
 			PendingPRs: pendings,
-			MissingPRs: nones,
+			MissingPRs: missings,
 
 			BatchPending: batchPending,
 
@@ -1266,12 +1273,17 @@ type subpool struct {
 	org    string
 	repo   string
 	branch string
-	sha    string
+	// sha is the baseSHA for this subpool
+	sha string
 
+	// pjs contains all ProwJobs of type Presubmit or Batch
+	// that have the same baseSHA as the subpool
 	pjs []prowapi.ProwJob
 	prs []PullRequest
 
-	cc         contextChecker
+	cc contextChecker
+	// presubmit contains all required presubmits for each PR
+	// in this subpool
 	presubmits map[int][]config.Presubmit
 }
 
