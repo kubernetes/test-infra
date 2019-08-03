@@ -34,7 +34,6 @@ go_library(
         "metrics.go",
         "prowjob.go",
         "ratelimiter.go",
-        "types.go",
     ],
     importpath = "k8s.io/test-infra/prow/kube",
     deps = [
