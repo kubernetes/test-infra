@@ -31,6 +31,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	clienttesting "k8s.io/client-go/testing"
@@ -464,7 +465,7 @@ func TestAccumulate(t *testing.T) {
 			})
 		}
 
-		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
+		successes, pendings, nones, _ := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
 
 		t.Logf("test run %d", i)
 		testPullsMatchList(t, "successes", successes, test.successes)
@@ -1285,7 +1286,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil && !tc.expectErr {
+		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); err != nil && !tc.expectErr {
 			t.Errorf("Unexpected error in takeAction: %v", err)
 			continue
 		} else if err == nil && tc.expectErr {
@@ -2408,5 +2409,265 @@ func TestPrepareMergeDetails(t *testing.T) {
 		if !reflect.DeepEqual(actual, test.expected) {
 			t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
 		}
+	}
+}
+
+func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
+	testCases := []struct {
+		name               string
+		presubmits         map[int][]config.Presubmit
+		prs                []PullRequest
+		pjs                []prowapi.ProwJob
+		expectedPresubmits map[int][]config.Presubmit
+	}{
+		{
+			name: "All presubmits missing, no changes",
+			prs: []PullRequest{{
+				Number:     githubql.Int(1),
+				HeadRefOID: githubql.String("sha"),
+			}},
+			presubmits: map[int][]config.Presubmit{1: {{
+				Reporter: config.Reporter{
+					Context: "my-presubmit",
+				},
+			}}},
+			expectedPresubmits: map[int][]config.Presubmit{
+				1: {{Reporter: config.Reporter{Context: "my-presubmit"}}},
+			},
+		},
+		{
+			name: "All presubmits successful, no retesting needed",
+			prs: []PullRequest{{
+				Number:     githubql.Int(1),
+				HeadRefOID: githubql.String("sha"),
+			}},
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PresubmitJob,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{
+							Number: 1,
+							SHA:    "sha",
+						}},
+					},
+					Context: "my-presubmit",
+				},
+				Status: prowapi.ProwJobStatus{State: prowapi.SuccessState},
+			}},
+			presubmits: map[int][]config.Presubmit{
+				1: {{Reporter: config.Reporter{Context: "my-presubmit"}}},
+			},
+		},
+		{
+			name: "All presubmits pending, no retesting needed",
+			prs: []PullRequest{{
+				Number:     githubql.Int(1),
+				HeadRefOID: githubql.String("sha"),
+			}},
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PresubmitJob,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{
+							Number: 1,
+							SHA:    "sha",
+						}},
+					},
+					Context: "my-presubmit",
+				},
+				Status: prowapi.ProwJobStatus{State: prowapi.PendingState},
+			}},
+			presubmits: map[int][]config.Presubmit{
+				1: {{Reporter: config.Reporter{Context: "my-presubmit"}}}},
+		},
+		{
+			name: "One successful, one pending, one missing, one failing, only missing and failing remain",
+			prs: []PullRequest{{
+				Number:     githubql.Int(1),
+				HeadRefOID: githubql.String("sha"),
+			}},
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 1,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-successful-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.SuccessState},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 1,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-pending-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.PendingState},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 1,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-failing-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.FailureState},
+				},
+			},
+			presubmits: map[int][]config.Presubmit{
+				1: {
+					{Reporter: config.Reporter{Context: "my-successful-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-pending-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-failing-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-missing-presubmit"}},
+				}},
+			expectedPresubmits: map[int][]config.Presubmit{
+				1: {
+					{Reporter: config.Reporter{Context: "my-failing-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-missing-presubmit"}},
+				}},
+		},
+		{
+			name: "Two prs, each with one successful, one pending, one missing, one failing, only missing and failing remain",
+			prs: []PullRequest{
+				{
+					Number:     githubql.Int(1),
+					HeadRefOID: githubql.String("sha"),
+				},
+				{
+					Number:     githubql.Int(2),
+					HeadRefOID: githubql.String("sha"),
+				},
+			},
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 1,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-successful-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.SuccessState},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 1,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-pending-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.PendingState},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 1,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-failing-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.FailureState},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 2,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-successful-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.SuccessState},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 2,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-pending-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.PendingState},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{{
+								Number: 2,
+								SHA:    "sha",
+							}},
+						},
+						Context: "my-failing-presubmit",
+					},
+					Status: prowapi.ProwJobStatus{State: prowapi.FailureState},
+				},
+			},
+			presubmits: map[int][]config.Presubmit{
+				1: {
+					{Reporter: config.Reporter{Context: "my-successful-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-pending-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-failing-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-missing-presubmit"}},
+				},
+				2: {
+					{Reporter: config.Reporter{Context: "my-successful-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-pending-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-failing-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-missing-presubmit"}},
+				},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{
+				1: {
+					{Reporter: config.Reporter{Context: "my-failing-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-missing-presubmit"}},
+				},
+				2: {
+					{Reporter: config.Reporter{Context: "my-failing-presubmit"}},
+					{Reporter: config.Reporter{Context: "my-missing-presubmit"}},
+				},
+			},
+		},
+	}
+
+	log := logrus.NewEntry(logrus.New())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, _, _, missingSerialTests := accumulate(tc.presubmits, tc.prs, tc.pjs, log)
+			// Apiequality treats nil slices/maps equal to a zero length slice/map, keeping us from
+			// the burden of having to always initialize them
+			if !apiequality.Semantic.DeepEqual(tc.expectedPresubmits, missingSerialTests) {
+				t.Errorf("expected \n%v\n to be \n%v\n", missingSerialTests, tc.expectedPresubmits)
+			}
+		})
 	}
 }
