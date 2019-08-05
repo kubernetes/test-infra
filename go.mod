@@ -80,8 +80,6 @@ require (
 	github.com/prometheus/client_golang v0.9.4
 	github.com/prometheus/procfs v0.0.3 // indirect
 	github.com/qiniu/api.v7 v0.0.0-20190520053455-bea02cd22bf4
-	github.com/qiniu/x v7.0.8+incompatible // indirect
-	github.com/qor/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
 	github.com/sirupsen/logrus v1.4.2
@@ -113,7 +111,6 @@ require (
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.2.0-beta.4
-	qiniupkg.com/x v7.0.8+incompatible // indirect
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4
 )
