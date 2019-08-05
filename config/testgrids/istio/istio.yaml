@@ -138,11 +138,6 @@ dashboards:
     test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-trustdomain-master
-    name: e2e-bookInfoTests-trustdomain-master
-    test_group_name: e2e-bookInfoTests-trustdomain-master
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: e2e-simpleTests-master
     name: e2e-simpleTests-master
     test_group_name: e2e-simpleTests-master
@@ -362,6 +357,13 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-trustdomain-master
+    name: e2e-bookInfoTests-trustdomain-master
+    test_group_name: e2e-bookInfoTests-trustdomain-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: e2e-mixer-no_auth-master
     name: e2e-mixer-no_auth-master
     test_group_name: e2e-mixer-no_auth-master
@@ -491,11 +493,6 @@ dashboards:
     test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.2
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-trustdomain-release-1.2
-    name: e2e-bookInfoTests-trustdomain-release-1.2
-    test_group_name: e2e-bookInfoTests-trustdomain-release-1.2
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: e2e-simpleTests-release-1.2
     name: e2e-simpleTests-release-1.2
     test_group_name: e2e-simpleTests-release-1.2
@@ -603,6 +600,13 @@ dashboards:
     description: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.2
     name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.2
     test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.2
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-trustdomain-release-1.2
+    name: e2e-bookInfoTests-trustdomain-release-1.2
+    test_group_name: e2e-bookInfoTests-trustdomain-release-1.2
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
