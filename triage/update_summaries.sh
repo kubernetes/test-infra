@@ -59,7 +59,7 @@ gsutil rm gs://k8s-gubernator/triage_tests/shard_*.json.gz || true
 bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests/shard_*.json.gz
 mkdir -p triage_tests
 gsutil cp -r gs://k8s-gubernator/triage_tests/* triage_tests/
-gzip -drf triage_tests
+gzip -df triage_tests/*.gz
 
 # gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
 curl -sO --retry 6 https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/test_owners.json
