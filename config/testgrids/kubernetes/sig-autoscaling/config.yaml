@@ -1,0 +1,28 @@
+dashboard_groups:
+- name: sig-autoscaling
+  dashboard_names:
+    - sig-autoscaling-cluster-autoscaler
+    - sig-autoscaling-hpa
+    - sig-autoscaling-vpa
+
+dashboards:
+- name: sig-autoscaling-cluster-autoscaler
+  dashboard_tab:
+    - name: gke-ubuntu1-k8sbeta-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
+    - name: gke-ubuntu1-k8sstable1-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
+    - name: gke-ubuntu1-k8sstable2-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
+    - name: gke-ubuntu1-k8sstable3-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
+    - name: gke-ubuntu2-k8sbeta-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling
+    - name: gke-ubuntu2-k8sstable1-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling
+    - name: gke-ubuntu2-k8sstable2-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
+    - name: gke-ubuntu2-k8sstable3-autoscaling
+      test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling
+- name: sig-autoscaling-hpa
+- name: sig-autoscaling-vpa
