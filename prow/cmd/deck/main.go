@@ -314,7 +314,11 @@ func main() {
 		indexHandler := handleSimpleTemplate(o, cfg, "index.html", struct {
 			SpyglassEnabled bool
 			ReRunCreatesJob bool
-		}{o.spyglass, o.rerunCreatesJob})
+			AllowAnyone     bool
+		}{
+			SpyglassEnabled: o.spyglass,
+			ReRunCreatesJob: o.rerunCreatesJob,
+			AllowAnyone:     cfg().Deck.RerunAuthConfig.AllowAnyone})
 		indexHandler(w, r)
 	})
 
