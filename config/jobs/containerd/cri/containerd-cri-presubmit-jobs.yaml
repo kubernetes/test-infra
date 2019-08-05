@@ -116,7 +116,7 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.11
+      base_ref: release-1.12
       path_alias: k8s.io/kubernetes
     - org: kubernetes
       repo: test-infra
