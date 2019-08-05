@@ -49,6 +49,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/test-infra/prow/qiniu"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -96,6 +97,7 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	gcsCredentialsFile    string
+	qnConfigFile          string
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
@@ -159,6 +161,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
+	fs.StringVar(&o.qnConfigFile, "qn-config-file", "", "Path to the QINIU credentials file")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
@@ -611,26 +614,46 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
 	var c *storage.Client
 	var err error
-	if o.gcsProxy != "" {
-		logrus.Debugf("use proxy %s to connect gcs", o.gcsProxy)
-		if o.gcsCredentialsFile == "" {
-			c, err = storage.NewProxyClient(context.Background(), o.gcsProxy, option.WithoutAuthentication())
-		} else {
-			c, err = storage.NewProxyClient(context.Background(), o.gcsProxy, option.WithCredentialsFile(o.gcsCredentialsFile))
-		}
+	if o.gcsCredentialsFile == "" {
+		c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
 	} else {
-		if o.gcsCredentialsFile == "" {
-			c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
-		} else {
-			c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
-		}
+		c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
 	}
 
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
+
 	sg := spyglass.New(ja, cfg, c, o.gcsCredentialsFile, context.Background())
 	sg.Start()
+
+	// TODO(CarlJi): move this to spyglass.New method
+	if o.qnConfigFile != "" {
+		config := &qiniu.Config{}
+
+		files, err := ioutil.ReadFile(o.qnConfigFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error reading qiniu config file")
+		}
+
+		if err := json.Unmarshal(files, config); err != nil {
+			logrus.WithError(err).Fatal("Error unmarshall qiniu config file")
+		}
+
+		if config.Bucket == "" {
+			logrus.WithError(err).Fatal("no qiniu bucket provided")
+		}
+
+		if config.AccessKey == "" || config.SecretKey == "" {
+			logrus.WithError(err).Fatal("either qiniu access key or secret key was not provided")
+		}
+
+		if config.Domain == "" {
+			logrus.WithError(err).Fatal("no qiniu bucket domain was provided")
+		}
+
+		sg.QNArtifactFetcher = spyglass.NewQNArtifactFetcher(config, nil)
+	}
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
 	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))

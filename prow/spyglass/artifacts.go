@@ -35,18 +35,26 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	logrus.Infof("func return: keyType: %s, key: %s", keyType, key)
 
 	gcsKey := ""
+	var artifactNames []string
 	switch keyType {
 	case gcsKeyType:
 		gcsKey = key
+		artifactNames, err = s.GCSArtifactFetcher.artifacts(gcsKey)
 	case prowKeyType:
 		if gcsKey, err = s.prowToGCS(key); err != nil {
 			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
 		}
+		artifactNames, err = s.GCSArtifactFetcher.artifacts(gcsKey)
+	case qiniuKeyType:
+		if qiniuKey, err := s.QNArtifactFetcher.splitKey(key); err != nil {
+			return []string{}, fmt.Errorf("error parsing src for qiniu key: %v", err)
+		} else {
+			logrus.Infof("qiniukey: %s", qiniuKey)
+			artifactNames, err = s.QNArtifactFetcher.artifacts(qiniuKey)
+		}
 	default:
 		return nil, fmt.Errorf("Unrecognized key type for src: %v", src)
 	}
-
-	artifactNames, err := s.GCSArtifactFetcher.artifacts(gcsKey)
 
 	logrus.Infof("s.GCSArtifactFetcher.artifacts(gcsKey) return, artifactNames: %v, gcsKey: %s", artifactNames, gcsKey)
 
@@ -109,33 +117,67 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 		return arts, fmt.Errorf("could not derive job: %v", err)
 	}
 	gcsKey := ""
+	podLogNeeded := false
 	switch keyType {
 	case gcsKeyType:
 		gcsKey = strings.TrimSuffix(key, "/")
+		for _, name := range artifactNames {
+			art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
+			if err == nil {
+				// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
+				// (these files are being explicitly requested and so will presumably soon be accessed, so
+				// the extra network I/O should not be too problematic).
+				_, err = art.Size()
+			}
+			if err != nil {
+				if name == "build-log.txt" {
+					podLogNeeded = true
+				}
+				continue
+			}
+			arts = append(arts, art)
+		}
 	case prowKeyType:
 		if gcsKey, err = s.prowToGCS(key); err != nil {
 			logrus.Warningln(err)
 		}
+		for _, name := range artifactNames {
+			art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
+			if err == nil {
+				// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
+				// (these files are being explicitly requested and so will presumably soon be accessed, so
+				// the extra network I/O should not be too problematic).
+				_, err = art.Size()
+			}
+			if err != nil {
+				if name == "build-log.txt" {
+					podLogNeeded = true
+				}
+				continue
+			}
+			arts = append(arts, art)
+		}
+	case qiniuKeyType:
+		// TODO(CarlJi): do refactor for repeat codes
+		for _, name := range artifactNames {
+			logrus.Infof("key: %s, name:%s", key, name)
+			art, err := s.QNArtifactFetcher.artifact(name, sizeLimit)
+			if err == nil {
+				// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
+				// (these files are being explicitly requested and so will presumably soon be accessed, so
+				// the extra network I/O should not be too problematic).
+				_, err = art.Size()
+			}
+			if err != nil {
+				if name == "build-log.txt" {
+					podLogNeeded = true
+				}
+				continue
+			}
+			arts = append(arts, art)
+		}
 	default:
 		return nil, fmt.Errorf("invalid src: %v", src)
-	}
-
-	podLogNeeded := false
-	for _, name := range artifactNames {
-		art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
-		if err == nil {
-			// Actually try making a request, because calling GCSArtifactFetcher.artifact does no I/O.
-			// (these files are being explicitly requested and so will presumably soon be accessed, so
-			// the extra network I/O should not be too problematic).
-			_, err = art.Size()
-		}
-		if err != nil {
-			if name == "build-log.txt" {
-				podLogNeeded = true
-			}
-			continue
-		}
-		arts = append(arts, art)
 	}
 
 	if podLogNeeded {

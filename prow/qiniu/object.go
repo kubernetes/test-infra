@@ -34,7 +34,6 @@ type Config struct {
 }
 
 func NewQiniuObject(cfg *Config, key string, bm *storage.BucketManager) *ObjectHandle {
-	client.TurnOnDebug()
 	return &ObjectHandle{
 		key:    key,
 		cfg:    cfg,

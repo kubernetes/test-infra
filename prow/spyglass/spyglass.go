@@ -41,8 +41,9 @@ import (
 
 // Key types specify the way Spyglass will fetch artifact handles
 const (
-	gcsKeyType  = "gcs"
-	prowKeyType = "prowjob"
+	gcsKeyType   = "gcs"
+	prowKeyType  = "prowjob"
+	qiniuKeyType = "qn"
 )
 
 // Spyglass records which sets of artifacts need views for a Prow job. The metaphor
@@ -60,6 +61,7 @@ type Spyglass struct {
 
 	*GCSArtifactFetcher
 	*PodLogArtifactFetcher
+	*QNArtifactFetcher
 }
 
 // LensRequest holds data sent by a view
@@ -173,6 +175,9 @@ func (s *Spyglass) ResolveSymlink(src string) (string, error) {
 			return "", fmt.Errorf("expected gs:// symlink, got '%s://'", u.Scheme)
 		}
 		return path.Join(gcsKeyType, u.Host, u.Path), nil
+	case qiniuKeyType:
+		// TODO(CarlJi): does qiniu have symlinks
+		return src, nil // prowjob keys cannot be symlinks.
 	default:
 		return "", fmt.Errorf("unknown src key type %q", keyType)
 	}
@@ -239,7 +244,7 @@ func (s *Spyglass) ProwJobName(src string) (string, error) {
 	var jobName string
 	var buildID string
 	switch keyType {
-	case gcsKeyType:
+	case gcsKeyType, qiniuKeyType:
 		if len(split) < 4 {
 			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
 		}

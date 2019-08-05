@@ -20,12 +20,14 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/logrusutil"
+
 	"k8s.io/test-infra/prow/pod-utils/options"
 )
 
 func main() {
+	logrusutil.ComponentInit("sidecar-qiniu")
+
 	o := NewOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
@@ -34,10 +36,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sidecar", "cloud": "qiniu"}),
-	)
 
 	failures, err := o.Run(context.Background())
 	if err != nil {

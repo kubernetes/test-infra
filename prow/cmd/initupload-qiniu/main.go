@@ -29,6 +29,8 @@ import (
 )
 
 func main() {
+	logrusutil.ComponentInit("initupload-qiniu")
+
 	o := NewOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
@@ -37,10 +39,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "initupload", "cloud": "qiniu"}),
-	)
 
 	if err := o.Start(); err != nil {
 		logrus.WithError(err).Fatal("Failed to initialize job")
