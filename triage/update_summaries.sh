@@ -68,7 +68,7 @@ mkdir -p slices
 
 pypy summarize.py \
   triage_builds.json \
-  triage_tests/* \
+  triage_tests/*.json \
   --owners test_owners.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json
