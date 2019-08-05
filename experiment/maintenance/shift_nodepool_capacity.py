@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2018 The Kubernetes Authors.
 #
@@ -27,7 +27,7 @@
 # TODO: delete this once dynamic kubelet config is available
 
 
-from __future__ import print_function
+
 
 import sys
 import subprocess
@@ -50,7 +50,7 @@ def get_pool_sizes(project, zone, cluster):
         'gcloud', 'container', 'node-pools', 'list',
         '--project', project, '--cluster', cluster, '--zone', zone,
         '--format=json',
-    ]))
+    ], encoding='utf-8'))
     group_to_pool = {}
     for pool in node_pools:
         # later on we will sum up node counts from instance groups
@@ -66,7 +66,7 @@ def get_pool_sizes(project, zone, cluster):
         'gcloud', 'compute', 'instance-groups', 'list',
         '--project', project, '--filter=zone:({})'.format(zone),
         '--format=json',
-    ]))
+    ], encoding='utf-8'))
     for group in groups:
         if group['name'] not in group_to_pool:
             continue
@@ -89,7 +89,7 @@ def resize_nodepool(pool, new_size, project, zone, cluster):
 def prompt_confirmation():
     """prompts for interactive confirmation, exits 1 unless input is 'yes'"""
     sys.stdout.write('Please confirm (yes/no): ')
-    response = raw_input()
+    response = input()
     if response != 'yes':
         print('Cancelling.')
         sys.exit(-1)
