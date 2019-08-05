@@ -32,11 +32,6 @@ presets:
       secretKeyRef:
         name: clusterapi-provider-vsphere-ci-prow
         key: target-vm-ssh-pub
-  - name: GCR_KEY_FILE
-    valueFrom:
-      secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
-        key: cluster-api-vsphere-gcr-service-account
   volumeMounts:
   - name: jumphost-key
     mountPath: /root/ssh/.jumphost
@@ -59,6 +54,9 @@ presets:
         path: bootstrapper-key
 - labels:
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
+  env:
+  - name: GCR_KEY_FILE
+    value: /root/.capv/keyfile.json
   volumes:
   - name: cluster-api-provider-vsphere-gcs-creds
     secret:
@@ -255,8 +253,6 @@ postsubmits:
         - ./hack/release.sh
         - -l
         - -p
-        - -k
-        - /root/.capv/keyfile.json
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -287,8 +283,6 @@ postsubmits:
         args:
         - ./hack/release.sh
         - -p
-        - -k
-        - /root/.capv/keyfile.json
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
