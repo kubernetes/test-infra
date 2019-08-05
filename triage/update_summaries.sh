@@ -55,9 +55,11 @@ bq query --allow_large_results --headless -n0 --replace --destination_table k8s-
   where
     test.failed
     and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))"
-bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests.json.gz
-gsutil cp gs://k8s-gubernator/triage_tests.json.gz triage_tests.json.gz
-gzip -df triage_tests.json.gz
+gsutil rm gs://k8s-gubernator/triage_tests/shard_*.json.gz || true
+bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests/shard_*.json.gz
+mkdir -p triage_tests
+gsutil cp -r gs://k8s-gubernator/triage_tests/* triage_tests/
+gzip -drf triage_tests
 
 # gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
 curl -sO --retry 6 https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/test_owners.json
@@ -66,7 +68,7 @@ mkdir -p slices
 
 pypy3 summarize.py \
   triage_builds.json \
-  triage_tests.json \
+  triage_tests/*.json \
   --owners test_owners.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json
