@@ -9,6 +9,7 @@ declare const allBuilds: Job[];
 declare const spyglass: boolean;
 declare const rerunCreatesJob: boolean;
 declare const csrfToken: string;
+declare const allowAnyone: boolean;
 
 function shortenBuildRefs(buildRef: string): string {
     return buildRef && buildRef.replace(/:[0-9a-f]*/g, '');
@@ -670,7 +671,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
         if (rerunCreatesJob) {
             const runButton = document.createElement('a');
             runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
-            if (login === "") {
+            if (login === "" && !allowAnyone) {
                 runButton.href = `/github-login?dest=%2F?rerun=gh_redirect`;
             } else {
                 runButton.onclick = async () => {
