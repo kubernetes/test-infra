@@ -22,15 +22,6 @@ py_binary(
 )
 
 py_binary(
-    name = "fix_testgrid_config",
-    srcs = ["fix_testgrid_config.py"],
-    data = [
-        "//config:testgrids",
-    ],
-    deps = [requirement("ruamel.yaml")],
-)
-
-py_binary(
     name = "prepare_release_branch",
     srcs = ["prepare_release_branch.py"],
     args = [
