@@ -49,6 +49,7 @@ type githubClient interface {
 	IsMergeable(org, repo string, number int, sha string) (bool, error)
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	Query(context.Context, interface{}, map[string]interface{}) error
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
 
 type commentPruner interface {
@@ -65,22 +66,46 @@ The plugin reacts to commit changes on PRs in addition to periodically scanning 
 		nil
 }
 
-// HandleEvent handles a GitHub PR event to determine if the "needs-rebase"
-// label needs to be added or removed. It depends on GitHub mergeability check
-// to decide the need for a rebase.
-func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
+// HandlePullRequestEvent handles a GitHub pull request event and adds or removes a
+// "needs-rebase" label based on whether the GitHub api considers the PR mergeable
+func HandlePullRequestEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
 		return nil
 	}
 
+	return handle(log, ghc, &pre.PullRequest)
+}
+
+// HandleIssueCommentEvent handles a GitHub issue comment event and adds or removes a
+// "needs-rebase" label if the issue is a PR based on whether the GitHub api considers
+// the PR mergeable
+func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.IssueCommentEvent) error {
+	if !ice.Issue.IsPullRequest() {
+		return nil
+	}
+	pr, err := ghc.GetPullRequest(ice.Repo.Owner.Login, ice.Repo.Name, ice.Issue.Number)
+	if err != nil {
+		return err
+	}
+
+	return handle(log, ghc, pr)
+}
+
+// handle handles a GitHub PR to determine if the "needs-rebase"
+// label needs to be added or removed. It depends on GitHub mergeability check
+// to decide the need for a rebase.
+func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
+	if pr.Merged {
+		return nil
+	}
 	// Before checking mergeability wait a few seconds to give github a chance to calculate it.
 	// This initial delay prevents us from always wasting the first API token.
 	sleep(time.Second * 5)
 
-	org := pre.Repo.Owner.Login
-	repo := pre.Repo.Name
-	number := pre.Number
-	sha := pre.PullRequest.Head.SHA
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+	number := pr.Number
+	sha := pr.Head.SHA
 
 	mergeable, err := ghc.IsMergeable(org, repo, number, sha)
 	if err != nil {
@@ -92,7 +117,7 @@ func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEve
 	}
 	hasLabel := github.HasLabel(labels.NeedsRebase, issueLabels)
 
-	return takeAction(log, ghc, org, repo, number, pre.PullRequest.User.Login, hasLabel, mergeable)
+	return takeAction(log, ghc, org, repo, number, pr.User.Login, hasLabel, mergeable)
 }
 
 // HandleAll checks all orgs and repos that enabled this plugin for open PRs to

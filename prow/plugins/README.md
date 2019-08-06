@@ -41,6 +41,9 @@ external_plugins:
     # No endpoint specified implies "http://{{name}}".
     events:
     - pull_request
+    # Dispatching issue_comment events to the needs-rebase plugin is optional. If enabled, this may cost up to two token per comment on a PR. If `ghproxy`
+    # is in use, these two tokens are only needed if the PR or its mergeability changed.
+    - issue_comment
   - name: cherrypick
     # No events specified implies all event types.
 ```
