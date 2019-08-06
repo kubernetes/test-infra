@@ -480,18 +480,30 @@ func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig 
 // checkIfTrustedUser looks for newly addded owners by checking if they are in the patch
 // and then checks if the owner is a trusted user.
 func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, owner, patch, fileName, org, repo string, nonTrustedUsers map[string][]string, repoAliases repoowners.RepoAliases) (map[string][]string, error) {
-	if strings.Contains(patch, owner) {
-		isTrustedUser, err := trigger.TrustedUser(ghc, triggerConfig.OnlyOrgMembers, triggerConfig.TrustedOrg, owner, org, repo)
-		if err != nil {
-			return nonTrustedUsers, err
-		}
+	// only consider owners in the current patch
+	if !strings.Contains(patch, owner) {
+		return nonTrustedUsers, nil
+	}
 
-		if !isTrustedUser {
-			if ownersFiles, ok := nonTrustedUsers[owner]; ok {
-				nonTrustedUsers[owner] = append(ownersFiles, fileName)
-			} else {
-				nonTrustedUsers[owner] = []string{fileName}
+	// if we already flagged the owner for the current file, return early
+	if ownersFiles, ok := nonTrustedUsers[owner]; ok {
+		for _, file := range ownersFiles {
+			if file == fileName {
+				return nonTrustedUsers, nil
 			}
+		}
+	}
+
+	isTrustedUser, err := trigger.TrustedUser(ghc, triggerConfig.OnlyOrgMembers, triggerConfig.TrustedOrg, owner, org, repo)
+	if err != nil {
+		return nonTrustedUsers, err
+	}
+
+	if !isTrustedUser {
+		if ownersFiles, ok := nonTrustedUsers[owner]; ok {
+			nonTrustedUsers[owner] = append(ownersFiles, fileName)
+		} else {
+			nonTrustedUsers[owner] = []string{fileName}
 		}
 	}
 	return nonTrustedUsers, nil
