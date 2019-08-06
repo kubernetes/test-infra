@@ -426,14 +426,14 @@ func TestHandle(t *testing.T) {
 			},
 		}
 
-		prState := state{
+		prInfo := info{
 			org:          "org",
 			repo:         "repo",
 			repoFullName: "org/repo",
 			number:       pr,
 		}
 
-		if err := handle(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), &pre.PullRequest, prState, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
+		if err := handle(fghc, c, makeFakeRepoOwnersClient(), logrus.WithField("plugin", PluginName), &pre.PullRequest, prInfo, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, false, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
 		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {
@@ -878,14 +878,14 @@ func TestNonCollaborators(t *testing.T) {
 			froc.foc.dirBlacklist = blacklist
 		}
 
-		prState := state{
+		prInfo := info{
 			org:          "org",
 			repo:         "repo",
 			repoFullName: "org/repo",
 			number:       pr,
 		}
 
-		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), &pre.PullRequest, prState, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, test.skipTrustedUserCheck, &fakePruner{}); err != nil {
+		if err := handle(fghc, c, froc, logrus.WithField("plugin", PluginName), &pre.PullRequest, prInfo, []string{labels.Approved, labels.LGTM}, plugins.Trigger{}, test.skipTrustedUserCheck, &fakePruner{}); err != nil {
 			t.Fatalf("Handle PR: %v", err)
 		}
 		if !test.shouldLabel && IssueLabelsAddedContain(fghc.IssueLabelsAdded, labels.InvalidOwners) {

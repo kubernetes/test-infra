@@ -103,7 +103,7 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-type state struct {
+type info struct {
 	org          string
 	repo         string
 	repoFullName string
@@ -128,14 +128,14 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 		}
 	}
 
-	prState := state{
+	prInfo := info{
 		org:          pre.Repo.Owner.Login,
 		repo:         pre.Repo.Name,
 		repoFullName: pre.Repo.FullName,
 		number:       pre.Number,
 	}
 
-	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prState, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp)
+	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prInfo, pc.PluginConfig.Owners.LabelsBlackList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp)
 }
 
 func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
@@ -165,7 +165,7 @@ func handleGenericComment(ghc githubClient, gc *git.Client, roc repoownersClient
 		return nil
 	}
 
-	prState := state{
+	prInfo := info{
 		org:          ce.Repo.Owner.Login,
 		repo:         ce.Repo.Name,
 		repoFullName: ce.Repo.FullName,
@@ -177,7 +177,7 @@ func handleGenericComment(ghc githubClient, gc *git.Client, roc repoownersClient
 		return err
 	}
 
-	return handle(ghc, gc, roc, log, pr, prState, labelsBlackList, triggerConfig, skipTrustedUserCheck, cp)
+	return handle(ghc, gc, roc, log, pr, prInfo, labelsBlackList, triggerConfig, skipTrustedUserCheck, cp)
 }
 
 type messageWithLine struct {
@@ -185,10 +185,10 @@ type messageWithLine struct {
 	message string
 }
 
-func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pr *github.PullRequest, state state, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
-	org := state.org
-	repo := state.repo
-	number := state.number
+func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.Entry, pr *github.PullRequest, info info, labelsBlackList []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner) error {
+	org := info.org
+	repo := info.repo
+	number := info.number
 	wrongOwnersFiles := map[string]messageWithLine{}
 
 	// Get changes.
@@ -221,7 +221,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 	}
 
 	// Clone the repo, checkout the PR.
-	r, err := gc.Clone(state.repoFullName)
+	r, err := gc.Clone(info.repoFullName)
 	if err != nil {
 		return err
 	}
