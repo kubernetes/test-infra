@@ -34,7 +34,7 @@ spec:
       # serviceAccountName: "tide" # Uncomment for use with RBAC
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190805-b43f41119
+        image: gcr.io/k8s-prow/tide:v20190806-a72e11278
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
