@@ -1176,79 +1176,7 @@ dashboards:
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
     base_options: include-filter-by-regex=GPU|DevicePlugin
-- name: sig-api-machinery-gce-gke
-  dashboard_tab:
-  - name: gce
-    test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gce e2e tests for master branch
-  - name: gke
-    test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gke e2e tests for master branch
-  - name: gce-flaky
-    test_group_name: ci-kubernetes-e2e-gci-gce-flaky
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gce flaky e2e tests for master branch
-  - name: gce-single-flake-attempt
-    test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gce e2e tests for master branch with reduced flake attempt
-  - name: gce-containerd
-    test_group_name: ci-kubernetes-e2e-gci-gce-containerd
-    base_options: include-filter-by-regex=sig-node
-    description: node gce e2e tests for master branch using containerd
-  - name: gke-flaky
-    test_group_name: ci-kubernetes-e2e-gci-gke-flaky
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gke flaky e2e tests for master branch
-  - name: gce-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gce slow e2e tests for master branch
-  - name: gke-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gke slow e2e tests for master branch
-  - name: gce-serial
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gce serial e2e tests for master branch
-  - name: gke-serial
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: include-filter-by-regex=sig-api-machinery
-    description: apimachinery gke serial e2e tests for master branch
 
-- name: sig-apps # TODO(crimsonfaith91): add upgrade tests when k8s v1.9 rolls out
-  dashboard_tab:
-  - name: gce
-    test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: include-filter-by-regex=sig-apps
-    description: apps gce e2e tests for master branch
-  - name: gke
-    test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: include-filter-by-regex=sig-apps
-    description: apps gke e2e tests for master branch
-  - name: gce-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: include-filter-by-regex=sig-apps
-    description: apps gce slow e2e tests for master branch
-  - name: gke-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: include-filter-by-regex=sig-apps
-    description: apps gke slow e2e tests for master branch
-  - name: gce-serial
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: include-filter-by-regex=sig-apps
-    description: apps gce serial e2e tests for master branch
-  - name: gke-serial
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: include-filter-by-regex=sig-apps
-    description: apps gke serial e2e tests for master branch
-  - name: gce-statefulset
-    test_group_name: ci-kubernetes-e2e-gci-gce-statefulset
-    base_options: include-filter-by-regex=sig-apps
-    description: apps gce statefulset e2e tests for master branch
 - name: sig-auth
   dashboard_tab:
   - name: gce
@@ -1277,27 +1205,6 @@ dashboards:
     description: apps gke serial e2e tests for master branch
 
 - name: sig-big-data
-- name: sig-autoscaling-cluster-autoscaler
-  dashboard_tab:
-  - name: gke-ubuntu1-k8sbeta-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
-  - name: gke-ubuntu1-k8sstable1-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
-  - name: gke-ubuntu1-k8sstable2-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
-  - name: gke-ubuntu1-k8sstable3-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
-  - name: gke-ubuntu2-k8sbeta-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling
-  - name: gke-ubuntu2-k8sstable1-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling
-  - name: gke-ubuntu2-k8sstable2-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
-  - name: gke-ubuntu2-k8sstable3-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling
-
-- name: sig-autoscaling-hpa
-- name: sig-autoscaling-vpa
 - name: sig-aws-alb-ingress-controller
 - name: sig-aws-cloud-provider-aws
 - name: presubmits-cloud-provider-alibaba
@@ -2489,8 +2396,6 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: gardener-oq@listserv.sap.com
 
-- name: sig-api-machinery-kube-storage-version-migrator
-- name: sig-api-machinery-structured-merge-diff
 - name: conformance-arm
   dashboard_tab:
   - name: Periodic Arm64 conformance test on AWS
@@ -2744,12 +2649,6 @@ dashboard_groups:
   - presubmits-release-notes-master
   - presubmits-cloud-provider-alibaba
 
-- name: sig-api-machinery
-  dashboard_names:
-  - sig-api-machinery-gce-gke
-  - sig-api-machinery-kube-storage-version-migrator
-  - sig-api-machinery-structured-merge-diff
-
 - name: sig-aws
   dashboard_names:
   - sig-aws-alb-ingress-controller
@@ -2842,12 +2741,6 @@ dashboard_groups:
   - sig-gcp-release-1.11
   - sig-gcp-release-1.12
   - sig-gcp-compute-persistent-disk-csi-driver
-
-- name: sig-autoscaling
-  dashboard_names:
-  - sig-autoscaling-cluster-autoscaler
-  - sig-autoscaling-hpa
-  - sig-autoscaling-vpa
 
 - name: sig-storage
   dashboard_names:
