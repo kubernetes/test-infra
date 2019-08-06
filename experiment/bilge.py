@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -41,15 +41,15 @@ def prune(host):
             since = item['inQueueSince']
             dupes.setdefault((name, params['PULL_NUMBER']), []).append((since, queue_id, params))
 
-    for key, val in dupes.iteritems():
+    for key, val in dupes.items():
         if len(val) < 2:
             continue
         val.sort()
-        print '===', key
+        print('===', key)
         for pull in val[:-1]:
-            print pull
+            print(pull)
             _resp = requests.post('http://%s/queue/cancelItem?id=%d' % (host, pull[1]))
-        print 'GOOD:', val[-1]
+        print('GOOD:', val[-1])
 
 
 if __name__ == '__main__':
