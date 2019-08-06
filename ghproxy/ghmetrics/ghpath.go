@@ -133,17 +133,13 @@ func GetSimplifiedPath(path string) string {
 		l("teams"),
 		l("licenses"))
 
-	splitPath := strings.FieldsFunc(path, splitFunc)
+	splitPath := strings.Split(path, "/")
 	resolvedPath, matches := resolve(tree, splitPath)
 	if !matches {
 		logrus.WithField("path", path).Warning("Path not handled. This is a bug in GHProxy, please open an issue against the kubernetes/test-infra repository with this error message.")
 		return unmatchedPath
 	}
 	return resolvedPath
-}
-
-func splitFunc(c rune) bool {
-	return c == '/'
 }
 
 type node struct {
@@ -192,34 +188,17 @@ func v(fragment string, children ...node) node {
 }
 
 func resolve(parent node, path []string) (string, bool) {
-	if len(path) == 0 {
-		return "", true
-	}
-	if parent.Represent() == "" {
-		for _, child := range parent.children {
-			suffix, matched := resolve(child, path)
-			if matched {
-				if suffix != "" {
-					return fmt.Sprintf("/%s", suffix), true
-				}
-			}
-		}
-	}
 	if !parent.Matches(path[0]) {
 		return "", false
 	}
 	representation := parent.Represent()
-	if len(parent.children) == 0 {
+	if len(path) == 1 || len(parent.children) == 0 {
 		return representation, true
 	}
-
 	for _, child := range parent.children {
 		suffix, matched := resolve(child, path[1:])
 		if matched {
-			if suffix != "" {
-				return fmt.Sprintf("%s/%s", representation, suffix), true
-			}
-			return representation, true
+			return strings.Join([]string{representation, suffix}, "/"), true
 		}
 	}
 	return "", false
