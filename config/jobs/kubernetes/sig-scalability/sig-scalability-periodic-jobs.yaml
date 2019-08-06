@@ -78,6 +78,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
@@ -85,7 +86,6 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-node-exporter.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       # docker-in-docker needs privileged mode
