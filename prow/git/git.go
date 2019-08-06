@@ -292,8 +292,12 @@ func (r *Repo) Push(repo, branch string) error {
 	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, repo, branch)
 	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, repo)
 	co := r.gitCommand("push", remote, branch)
-	_, err := co.CombinedOutput()
-	return err
+	out, err := co.CombinedOutput()
+	if err != nil {
+		r.logger.Errorf("Pushing failed with error: %v and output: %q", err, string(out))
+		return fmt.Errorf("pushing failed, output: %q, error: %v", string(out), err)
+	}
+	return nil
 }
 
 // CheckoutPullRequest does exactly that.
