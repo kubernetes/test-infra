@@ -122,18 +122,22 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 		return env, nil
 	}
 
-	env[repoOwnerEnv] = spec.Refs.Org
-	env[repoNameEnv] = spec.Refs.Repo
-	env[pullBaseRefEnv] = spec.Refs.BaseRef
-	env[pullBaseShaEnv] = spec.Refs.BaseSHA
-	env[pullRefsEnv] = spec.Refs.String()
+	if spec.Refs != nil {
+		env[repoOwnerEnv] = spec.Refs.Org
+		env[repoNameEnv] = spec.Refs.Repo
+		env[pullBaseRefEnv] = spec.Refs.BaseRef
+		env[pullBaseShaEnv] = spec.Refs.BaseSHA
+		env[pullRefsEnv] = spec.Refs.String()
+	}
 
 	if spec.Type == prowapi.PostsubmitJob || spec.Type == prowapi.BatchJob {
 		return env, nil
 	}
 
-	env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
-	env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
+	if spec.Refs != nil && len(spec.Refs.Pulls) > 0 {
+		env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+		env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
+	}
 	return env, nil
 }
 
