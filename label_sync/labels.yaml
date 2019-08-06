@@ -24,6 +24,61 @@ default:
       name: area/dependency
       target: both
       addedBy: label
+    - color: 0052cc
+      description: Issues or PRs related to aws provider
+      name: area/provider/aws
+      target: both
+      addedBy: label
+      previously:
+        - name: area/platform/aws
+        - name: area/platform/eks
+        - name: sig/aws
+        - name: aws
+    - color: 0052cc
+      description: Issues or PRs related to azure provider
+      name: area/provider/azure
+      target: both
+      addedBy: label
+      previously:
+        - name: area/platform/aks
+        - name: area/platform/azure
+        - name: sig/azure
+        - name: azure
+    - color: 0052cc
+      description: Issues or PRs related to gcp provider
+      name: area/provider/gcp
+      target: both
+      addedBy: label
+      previously:
+        - name: area/platform/gcp
+        - name: area/platform/gke
+        - name: sig/gcp
+        - name: gcp
+    - color: 0052cc
+      description: Issues or PRs related to ibmcloud provider
+      name: area/provider/ibmcloud
+      target: both
+      addedBy: label
+      previously:
+        - name: sig/ibmcloud
+        - name: ibmcloud
+    - color: 0052cc
+      description: Issues or PRs related to openstack provider
+      name: area/provider/openstack
+      target: both
+      addedBy: label
+      previously:
+        - name: sig/openstack
+        - name: openstack
+    - color: 0052cc
+      description: Issues or PRs related to vmware provider
+      name: area/provider/vmware
+      target: both
+      addedBy: label
+      previously:
+        - name: area/platform/vsphere
+        - name: sig/vmware
+        - name: vmware
     - color: 0ffa16
       description: Indicates a PR has been approved by an approver from all required OWNERS files.
       name: approved
@@ -383,18 +438,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-aws.
-      name: sig/aws
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-azure.
-      name: sig/azure
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-cli.
       name: sig/cli
       target: both
@@ -421,18 +464,6 @@ default:
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-docs.
       name: sig/docs
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-gcp.
-      name: sig/gcp
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      name: sig/ibmcloud
-      description: Categorizes an issue or PR as relevant to sig-ibmcloud.
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -466,12 +497,6 @@ default:
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-onprem.
       name: sig/onprem
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to sig-openstack.
-      name: sig/openstack
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -526,12 +551,6 @@ default:
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-usability.
       name: sig/usability
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      name: sig/vmware
-      description: Categorizes an issue or PR as relevant to sig-vmware.
       target: both
       prowPlugin: label
       addedBy: anyone
