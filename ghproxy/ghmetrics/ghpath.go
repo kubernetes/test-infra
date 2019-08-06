@@ -42,6 +42,7 @@ func GetSimplifiedPath(path string) string {
 							l("lock"),
 							l("comments"),
 							l("events"),
+							l("assignees"),
 							l("labels", v("labelId")))),
 					l("keys", v("keyId")),
 					l("labels", v("labelId")),
