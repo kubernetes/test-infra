@@ -15,7 +15,7 @@ go_library(
 
 prow_image(
     name = "image",
-    base = "@alpine-bash//image",
+    base = "@boskosctl-base//image",
     visibility = ["//visibility:public"],
 )
 
