@@ -38,7 +38,11 @@ func GetSimplifiedPath(path string) string {
 					l("issues",
 						l("comments", v("commentId")),
 						l("events", v("eventId")),
-						v("issueId", l("lock"))),
+						v("issueId",
+							l("lock"),
+							l("comments"),
+							l("events"),
+							l("labels", v("labelId")))),
 					l("keys", v("keyId")),
 					l("labels", v("labelId")),
 					l("milestones", v("milestone")),
@@ -57,7 +61,8 @@ func GetSimplifiedPath(path string) string {
 						l("commits", v("sha")),
 						l("ref", v("refId")),
 						l("tags", v("tagId")),
-						l("trees", v("sha"))),
+						l("trees", v("sha")),
+						l("refs", l("heads", v("ref")))),
 					l("stars"),
 					l("merges"),
 					l("stargazers"),
@@ -94,7 +99,14 @@ func GetSimplifiedPath(path string) string {
 			v("orgname",
 				l("credential-authorizations", v("credentialId")),
 				l("repos"),
-				l("issues"))),
+				l("issues"),
+				l("invitations"),
+				l("members"),
+				l("teams"))),
+		l("organizations",
+			v("orgId",
+				l("members"),
+				l("teams"))),
 		l("issues", v("issueId")),
 		l("search",
 			l("repositories"),
@@ -120,7 +132,7 @@ func GetSimplifiedPath(path string) string {
 	splitPath := strings.FieldsFunc(path, splitFunc)
 	resolvedPath, matches := resolve(tree, splitPath)
 	if !matches {
-		logrus.WithField("path", path).Warning("Path not handled")
+		logrus.WithField("path", path).Warning("Path not handled. This is a bug in GHProxy, please open an issue against the kubernetes/test-infra repository with this error message.")
 		return path
 	}
 	return resolvedPath
