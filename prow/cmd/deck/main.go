@@ -572,6 +572,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 	}
 
 	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
+	// If no token path is provided, we do not create a client.
 	var githubClient prowgithub.Client
 	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {

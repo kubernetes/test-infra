@@ -81,10 +81,6 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 		logrus.Error("-github-token-file is deprecated and may be removed anytime after 2019-01-01.  Use -github-token-path instead.")
 	}
 
-	if o.TokenPath == "" {
-		logrus.Warn("empty -github-token-path, will use anonymous github client")
-	}
-
 	return nil
 }
 
@@ -92,6 +88,7 @@ func (o *GitHubOptions) Validate(dryRun bool) error {
 func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dryRun bool, fields logrus.Fields) (client github.Client, err error) {
 	var generator *func() []byte
 	if o.TokenPath == "" {
+		logrus.Warn("empty -github-token-path, will use anonymous github client")
 		generatorFunc := func() []byte {
 			return []byte{}
 		}
