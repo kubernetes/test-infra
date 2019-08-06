@@ -76,8 +76,8 @@ type githubClient interface {
 }
 
 func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error), log *logrus.Entry, gce github.GenericCommentEvent) error {
-	// Only consider open PRs and issues, and new comments.
-	if gce.IssueState != "open" || gce.Action != github.GenericCommentActionCreated {
+	// Only consider new comments.
+	if gce.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 

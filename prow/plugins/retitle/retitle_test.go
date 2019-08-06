@@ -39,10 +39,15 @@ func TestHandleGenericComment(t *testing.T) {
 		expectedComment string
 	}{
 		{
-			name:   "comment on closed issue is ignored",
+			name:   "comment on closed issue works",
 			state:  "closed",
 			action: github.GenericCommentActionCreated,
 			body:   "/retitle foobar",
+			isPr:   true,
+			trusted: func(user string) (bool, error) {
+				return true, nil
+			},
+			expectedTitle: "foobar",
 		},
 		{
 			name:   "edited comment on open issue is ignored",
