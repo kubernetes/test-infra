@@ -62,20 +62,20 @@ func sync(c *client.Client, res string) {
 	if owners, err := c.Reset(res, common.Busy, *expiryDuration, *targetState); err != nil {
 		logrus.WithError(err).Error("Reset busy failed!")
 	} else {
-		logrus.Infof("Reset busy to dirty! Proj-owner: %v", owners)
+		logrus.Infof("Reset busy to %s! Proj-owner: %v", *targetState, owners)
 	}
 
 	// janitor, mason busted
 	if owners, err := c.Reset(res, common.Cleaning, *expiryDuration, *targetState); err != nil {
 		logrus.WithError(err).Error("Reset cleaning failed!")
 	} else {
-		logrus.Infof("Reset cleaning to dirty! Proj-owner: %v", owners)
+		logrus.Infof("Reset cleaning to %s! Proj-owner: %v", *targetState, owners)
 	}
 
 	// mason busted
 	if owners, err := c.Reset(res, common.Leased, *expiryDuration, *targetState); err != nil {
 		logrus.WithError(err).Error("Reset busy failed!")
 	} else {
-		logrus.Infof("Reset leased to dirty! Proj-owner: %v", owners)
+		logrus.Infof("Reset leased to %s! Proj-owner: %v", *targetState, owners)
 	}
 }
