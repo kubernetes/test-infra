@@ -45,6 +45,7 @@ py_binary(
         "//experiment/config-forker",
         "//experiment/config-rotator",
     ],
+    python_version = "PY3",
     deps = [
         requirement("ruamel.yaml"),
         requirement("sh"),

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2019 The Kubernetes Authors.
 #
@@ -42,7 +42,7 @@ def check_version(branch_path):
     if len(files) != 4:
         raise ToolError("Expected exactly four yaml files in " + branch_path)
     basenames = [os.path.splitext(os.path.basename(x))[0] for x in files]
-    numbers = sorted([map(int, x.split('.')) for x in basenames])
+    numbers = sorted([list(map(int, x.split('.'))) for x in basenames])
     lowest = numbers[0]
     for i, num in enumerate(numbers):
         if num[1] != lowest[1] + i:
@@ -57,7 +57,7 @@ def delete_dead_branch(branch_path, current_version):
 
 def rotate_files(rotator_bin, branch_path, current_version):
     suffixes = ['beta', 'stable1', 'stable2', 'stable3']
-    for i in xrange(0, 3):
+    for i in range(0, 3):
         filename = '%d.%d.yaml' % (current_version[0], current_version[1] - i)
         from_suffix = suffixes[i]
         to_suffix = suffixes[i+1]
