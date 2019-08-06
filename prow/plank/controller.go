@@ -37,6 +37,11 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
+// PodStatus constants
+const (
+	Evicted = "Evicted"
+)
+
 type kubeClient interface {
 	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
 	GetProwJob(string) (prowapi.ProwJob, error)
@@ -204,7 +209,7 @@ func (c *Controller) Sync() error {
 		selector = strings.Join([]string{c.selector, selector}, ",")
 	}
 
-	pm := map[string]kube.Pod{}
+	pm := map[string]v1.Pod{}
 	for alias, client := range c.pkcs {
 		pods, err := client.ListPods(selector)
 		if err != nil {
@@ -385,7 +390,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			pj.Status.Description = "Job succeeded."
 
 		case coreapi.PodFailed:
-			if pod.Status.Reason == kube.Evicted {
+			if pod.Status.Reason == Evicted {
 				// Pod was evicted.
 				if pj.Spec.ErrorOnEviction {
 					// ErrorOnEviction is enabled, complete the PJ and mark it as errored.
