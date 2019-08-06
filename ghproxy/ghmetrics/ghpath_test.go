@@ -27,9 +27,9 @@ func Test_GetSimplifiedPath(t *testing.T) {
 		args args
 		want string
 	}{
-		{name: "path not in tree", args: args{path: "/this/path/is/not/in/the/tree"}, want: "/this/path/is/not/in/the/tree"},
-		{name: "path not in tree #2", args: args{path: "/repos/hello/world/its/a/party"}, want: "/repos/hello/world/its/a/party"},
-		{name: "path not in tree #3", args: args{path: "/path-not-handled"}, want: "/path-not-handled"},
+		{name: "path not in tree", args: args{path: "/this/path/is/not/in/the/tree"}, want: "unmatched"},
+		{name: "path not in tree #2", args: args{path: "/repos/hello/world/its/a/party"}, want: "unmatched"},
+		{name: "path not in tree #3", args: args{path: "/path-not-handled"}, want: "unmatched"},
 
 		{name: "repo branches protection (restrictions for users) by name ", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/users"}, want: "/repos/:owner/:repo/branches/:branch/protection/restrictions/users"},
 		{name: "repositories", args: args{path: "/repositories"}, want: "/repositories"},
@@ -78,7 +78,7 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 		want string
 	}{
 		{name: "access repos/ path should not fail, is not explicitly handled", args: args{path: "/repos"}, want: "/repos"},
-		{name: "access repos/ path should not fail, is not explicitly handled", args: args{path: "/repos/testOwner/testRepo/"}, want: "/repos/:owner/:repo"},
+		{name: "access repos/ path should not fail, is not explicitly handled", args: args{path: "/repos/testOwner/testRepo/"}, want: "unmatched"},
 
 		{name: "repo issues", args: args{path: "/repos/testOwner/testRepo/issues"}, want: "/repos/:owner/:repo/issues"},
 		{name: "repo issue by number", args: args{path: "/repos/testOwner/testRepo/issues/21342"}, want: "/repos/:owner/:repo/issues/:issueId"},

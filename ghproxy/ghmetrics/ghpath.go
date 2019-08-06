@@ -17,11 +17,12 @@ limitations under the License.
 package ghmetrics
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 )
+
+const unmatchedPath = "unmatched"
 
 // GetSimplifiedPath returns a variable-free path that can be used as label for prometheus metrics
 func GetSimplifiedPath(path string) string {
@@ -136,7 +137,7 @@ func GetSimplifiedPath(path string) string {
 	resolvedPath, matches := resolve(tree, splitPath)
 	if !matches {
 		logrus.WithField("path", path).Warning("Path not handled. This is a bug in GHProxy, please open an issue against the kubernetes/test-infra repository with this error message.")
-		return path
+		return unmatchedPath
 	}
 	return resolvedPath
 }
