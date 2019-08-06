@@ -43,7 +43,9 @@ const (
 	PluginName                    = "verify-owners"
 	ownersFileName                = "OWNERS"
 	ownersAliasesFileName         = "OWNERS_ALIASES"
-	nonCollaboratorResponseFormat = "The following users are mentioned in %s file(s) but are not members of the %s org."
+	nonCollaboratorResponseFormat = `The following users are mentioned in %s file(s) but are not members of the %s org.
+
+Once all users have been added as members of the org, you can trigger verification by writing ` + "`/verify-owners`" + ` in a comment.`
 )
 
 var (
