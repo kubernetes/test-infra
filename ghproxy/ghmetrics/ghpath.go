@@ -132,7 +132,7 @@ func GetSimplifiedPath(path string) string {
 	splitPath := strings.FieldsFunc(path, splitFunc)
 	resolvedPath, matches := resolve(tree, splitPath)
 	if !matches {
-		logrus.WithField("path", path).Warning("Path not handled")
+		logrus.WithField("path", path).Warning("Path not handled. This is a bug in GHProxy, please open an issue against the kubernetes/test-infra repository with this error message.")
 		return path
 	}
 	return resolvedPath
