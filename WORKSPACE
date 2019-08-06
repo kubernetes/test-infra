@@ -113,6 +113,14 @@ container_pull(
 )
 
 container_pull(
+    name = "boskosctl-base",
+    digest = "sha256:a23c19a87857140926184d19e8e54812ba4a8acec4097386ca0993a248e83f8b",  # 2019/08/05
+    registry = "gcr.io",
+    repository = "k8s-testimages/boskosctl-base",
+    tag = "latest",
+)
+
+container_pull(
     name = "gcloud-base",
     digest = "sha256:8e51eea50a45c6be2a735be97139f85a04c623ca448801a317a737c1d9917d00",  # 2019/07/10
     registry = "gcr.io",
