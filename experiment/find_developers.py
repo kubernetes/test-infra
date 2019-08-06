@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -24,6 +24,7 @@ import json
 import os
 import random
 import sys
+import functools
 
 import requests
 
@@ -41,6 +42,7 @@ def load_content(data):
     return users
 
 
+@functools.total_ordering
 class User(object):  # pylint: disable=too-few-public-methods
     """Store .user and number of .total and .recent commits."""
     def __init__(self, blob):
@@ -49,8 +51,11 @@ class User(object):  # pylint: disable=too-few-public-methods
         self.recent = sum(k['c'] for k in weeks[-12:])
         self.total = sum(k['c'] for k in weeks)
 
-    def __cmp__(self, other):
-        return cmp((self.recent, self.total, self.user), (other.recent, other.total, other.user))
+    def __eq__(self, other):
+        return (self.recent, self.total, self.user) == (other.recent, other.total, other.user)
+
+    def __lt__(self, other):
+        return (self.recent, self.total, self.user) < (other.recent, other.total, other.user)
 
 
 def find_users(users, num, top, middle, bottom):
@@ -85,7 +90,7 @@ def main(path=None, num=35, top=0.6, middle=0.2, bottom=0.2):
             data = fp.read()
     users = sorted(load_content(data))
     for user in find_users(users, num, top, middle, bottom):
-        print '%s (%d recent commits, %d total)' % (user.user, user.recent, user.total)
+        print('%s (%d recent commits, %d total)' % (user.user, user.recent, user.total))
 
 
 if __name__ == '__main__':
