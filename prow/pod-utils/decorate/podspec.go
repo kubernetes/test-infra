@@ -179,7 +179,7 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, buildID string, outputDir string) (*c
 	}
 
 	if pj.Spec.DecorationConfig == nil {
-		spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(rawEnv)...)
+		spec.Containers[0].Env = append(spec.Containers[0].Env, KubeEnv(rawEnv)...)
 	} else {
 		if err := decorate(spec, &pj, rawEnv, outputDir); err != nil {
 			return nil, fmt.Errorf("error decorating podspec: %v", err)
@@ -218,7 +218,7 @@ func cloneEnv(opt clonerefs.Options) ([]coreapi.EnvVar, error) {
 	if err != nil {
 		return nil, err
 	}
-	return kubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}), nil
+	return KubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}), nil
 }
 
 // sshVolume converts a secret holding ssh keys into the corresponding volume and mount.
@@ -413,7 +413,7 @@ func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, 
 
 	c.Command = []string{entrypointLocation(tools)}
 	c.Args = nil
-	c.Env = append(c.Env, kubeEnv(map[string]string{entrypoint.JSONConfigEnvVar: entrypointConfigEnv})...)
+	c.Env = append(c.Env, KubeEnv(map[string]string{entrypoint.JSONConfigEnvVar: entrypointConfigEnv})...)
 	c.VolumeMounts = append(c.VolumeMounts, log, tools)
 	return wrapperOptions, nil
 }
@@ -483,7 +483,7 @@ func InitUpload(image string, opt gcsupload.Options, creds *coreapi.VolumeMount,
 		Name:    "initupload",
 		Image:   image,
 		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
-		Env: kubeEnv(map[string]string{
+		Env: KubeEnv(map[string]string{
 			downwardapi.JobSpecEnv:      encodedJobSpec,
 			initupload.JSONConfigEnvVar: initUploadConfigEnv,
 		}),
@@ -572,7 +572,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		PlaceEntrypoint(pj.Spec.DecorationConfig.UtilityImages.Entrypoint, toolsMount),
 	)
 
-	spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(rawEnv)...)
+	spec.Containers[0].Env = append(spec.Containers[0].Env, KubeEnv(rawEnv)...)
 
 	const ( // these values may change when/if we support multiple containers
 		prefix   = "" // unique per container
@@ -643,7 +643,7 @@ func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount *coreapi.Volum
 		Name:    "sidecar",
 		Image:   image,
 		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
-		Env: kubeEnv(map[string]string{
+		Env: KubeEnv(map[string]string{
 			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
 			downwardapi.JobSpecEnv:   encodedJobSpec, // TODO: shouldn't need this?
 		}),
@@ -652,10 +652,10 @@ func Sidecar(image string, gcsOptions gcsupload.Options, gcsMount *coreapi.Volum
 
 }
 
-// kubeEnv transforms a mapping of environment variables
+// KubeEnv transforms a mapping of environment variables
 // into their serialized form for a PodSpec, sorting by
 // the name of the env vars
-func kubeEnv(environment map[string]string) []coreapi.EnvVar {
+func KubeEnv(environment map[string]string) []coreapi.EnvVar {
 	var keys []string
 	for key := range environment {
 		keys = append(keys, key)
