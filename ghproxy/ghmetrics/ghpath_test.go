@@ -62,7 +62,7 @@ func Test_GetSimplifiedPath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
+				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
@@ -183,11 +183,17 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 		{name: "repo tags", args: args{path: "/repos/testOwner/testRepo/tags"}, want: "/repos/:owner/:repo/tags"},
 
 		{name: "repo transfer", args: args{path: "/repos/testOwner/testRepo/transfer"}, want: "/repos/:owner/:repo/transfer"},
+
+		{name: "master ref", args: args{path: "/repos/cri-o/cri-o/git/refs/heads/master"}, want: "/repos/:owner/:repo/git/refs/heads/:ref"},
+		{name: "issue comments", args: args{path: "/repos/openshift/aws-account-operator/issues/104/comments"}, want: "/repos/:owner/:repo/issues/:issueId/comments"},
+		{name: "issue labels", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels"}, want: "/repos/:owner/:repo/issues/:issueId/labels"},
+		{name: "issue label", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels/needs-rebase"}, want: "/repos/:owner/:repo/issues/:issueId/labels/:labelId"},
+		{name: "issue events", args: args{path: "/repos/helm/charts/issues/15756/events"}, want: "/repos/:owner/:repo/issues/:issueId/events"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
+				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
@@ -224,7 +230,7 @@ func Test_GetSimplifiedPathUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
+				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
@@ -278,11 +284,18 @@ func Test_GetSimplifiedPathOrgs(t *testing.T) {
 
 		{name: "orgs orgname credential-authorizations", args: args{path: "/orgs/testOrg/credential-authorizations"}, want: "/orgs/:orgname/credential-authorizations"},
 		{name: "orgs orgname credential-authorizations by id", args: args{path: "/orgs/testOrg/credential-authorizations/testId"}, want: "/orgs/:orgname/credential-authorizations/:credentialId"},
+
+		{name: "org invitations", args: args{path: "/orgs/openshift/invitations"}, want: "/orgs/:orgname/invitations"},
+		{name: "org members", args: args{path: "/orgs/openshift/members"}, want: "/orgs/:orgname/members"},
+		{name: "org teams", args: args{path: "/orgs/openshift/teams"}, want: "/orgs/:orgname/teams"},
+
+		{name: "org members by ID", args: args{path: "/organizations/792337/members"}, want: "/organizations/:orgId/members"},
+		{name: "org teams by ID", args: args{path: "/organizations/792337/teams"}, want: "/organizations/:orgId/teams"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
+				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
@@ -305,7 +318,7 @@ func Test_GetSimplifiedPathNotifications(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
+				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
