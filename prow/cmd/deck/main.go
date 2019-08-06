@@ -499,6 +499,8 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta)))
 	}
 
+	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
+	var githubClient prowgithub.Client
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
 	if o.oauthURL != "" {
@@ -540,6 +542,17 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		},
 		)
 
+		secretAgent := &secret.Agent{}
+		if o.github.TokenPath != "" {
+			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+				logrus.WithError(err).Fatal("Error starting secrets agent.")
+			}
+			githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error getting GitHub client.")
+			}
+		}
+
 		repoSet := make(map[string]bool)
 		for r := range cfg().Presubmits {
 			repoSet[r] = true
@@ -569,20 +582,6 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient, secure))
 		// Handles redirect from GitHub OAuth server.
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter(), secure))
-	}
-
-	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
-	// If no token path is provided, we do not create a client.
-	var githubClient prowgithub.Client
-	secretAgent := &secret.Agent{}
-	if o.github.TokenPath != "" {
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
-		}
-		githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting GitHub client.")
-		}
 	}
 
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter(), githubClient)))
