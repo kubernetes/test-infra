@@ -211,7 +211,7 @@ func validWorkingDirectory() error {
 	}
 	// This also matches "kubernetes_skew" for upgrades.
 	if !strings.Contains(filepath.Base(acwd), "kubernetes") {
-		return fmt.Errorf("must run from kubernetes directory root: %v", acwd)
+		return fmt.Errorf("must run from kubernetes directory root. current: %v", acwd)
 	}
 	return nil
 }
