@@ -3,3 +3,6 @@
 approvers:
 - abgworrall
 - dashpole
+
+labels:
+- area/provider/gcp
