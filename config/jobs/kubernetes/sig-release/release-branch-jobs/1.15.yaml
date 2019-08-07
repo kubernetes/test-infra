@@ -189,12 +189,12 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-etcd
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
-      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
