@@ -164,7 +164,7 @@ type ProwJobSpec struct {
 	ReporterConfig *ReporterConfig `json:"reporter_config,omitempty"`
 
 	// RerunAuthConfig holds information about which users can rerun the job
-	RerunAuthConfig RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+	RerunAuthConfig *RerunAuthConfig `json:"rerun_auth_config,omitempty"`
 }
 
 type GitHubTeamSlug struct {
