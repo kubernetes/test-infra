@@ -36,7 +36,6 @@ spec:
       sha: pullsha
     repo: test-repo
   report: true
-  rerun_auth_config: {}
   rerun_command: /test kubernetes-no-decoration
   type: presubmit
 status:
