@@ -23,12 +23,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/gorilla/sessions"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"io"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/githuboauth"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -36,6 +32,11 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/gorilla/sessions"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"k8s.io/test-infra/prow/githuboauth"
 
 	"github.com/google/go-github/github"
 
@@ -391,7 +392,7 @@ func TestRerun(t *testing.T) {
 							{Number: 1},
 						},
 					},
-					RerunAuthConfig: prowapi.RerunAuthConfig{
+					RerunAuthConfig: &prowapi.RerunAuthConfig{
 						AllowAnyone:   false,
 						GitHubUsers:   []string{"authorized", "alsoauthorized"},
 						GitHubTeamIDs: []int{1},
