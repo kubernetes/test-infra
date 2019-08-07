@@ -564,6 +564,9 @@ test_groups:
   gcs_prefix: pivotal-e2e-results/kubo-windows-2019
 
 # Alibaba Cloud Provider Test Groups
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.14
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.14
+
 - name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.12
   gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.12
 
@@ -842,6 +845,9 @@ dashboards:
 - name: vmware-cluster-api-provider-vsphere
 - name: conformance-alibaba-cloud-provider
   dashboard_tab:
+  - name: Alibaba Cloud Provider, v1.14
+    description: Runs conformance tests for cloud provier alibaba cloud on release v1.14
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.14
   - name: Alibaba Cloud Provider, v1.12
     description: Runs conformance tests for cloud provier alibaba cloud on release v1.12
     test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.12
