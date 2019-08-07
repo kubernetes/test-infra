@@ -85,7 +85,7 @@ periodics:
           cpu: 4
           memory: "8Gi"
   annotations:
-    testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+    testgrid-alert-email: release-managers@kubernetes.io
     testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: build-packages-debs
 
@@ -115,7 +115,7 @@ periodics:
           cpu: 4
           memory: "8Gi"
   annotations:
-    testgrid-alert-email: kubernetes-release-managers@googlegroups.com
+    testgrid-alert-email: release-managers@kubernetes.io
     testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: build-packages-rpms
 
