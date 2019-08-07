@@ -199,6 +199,9 @@ type MilestoneClient interface {
 type RerunClient interface {
 	TeamHasMember(teamID int, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
+	IsCollaborator(org, repo, user string) (bool, error)
+	IsMember(org, user string) (bool, error)
+	GetIssueLabels(org, repo string, number int) ([]Label, error)
 }
 
 // Client interface for GitHub API

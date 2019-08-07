@@ -108,6 +108,12 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
+type trustedPullRequestClient interface {
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	IsMember(org, user string) (bool, error)
+	IsCollaborator(org, repo, user string) (bool, error)
+}
+
 type prowJobClient interface {
 	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }

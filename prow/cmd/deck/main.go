@@ -27,6 +27,8 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger"
 	"net/http"
 	"net/url"
 	"os"
@@ -99,6 +101,7 @@ type options struct {
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
+	pluginConfig          string
 }
 
 func (o *options) Validate() error {
@@ -162,6 +165,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
+	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
 	o.kubernetes.AddFlags(fs)
 	o.github.AddFlagsWithoutDefaultGitHubTokenPath(fs)
 	fs.Parse(args)
@@ -499,8 +503,9 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta)))
 	}
 
+	var pluginAgent *plugins.ConfigAgent
 	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
-	var githubClient prowgithub.Client
+	var githubClient prowgithub.RerunClient
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
 	if o.oauthURL != "" {
@@ -551,6 +556,14 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting GitHub client.")
 			}
+			if o.pluginConfig != "" {
+				pluginAgent = &plugins.ConfigAgent{}
+				if err := pluginAgent.Load(o.pluginConfig); err != nil {
+					logrus.WithError(err).Fatal("Error loading Prow plugin config.")
+				}
+			} else {
+				logrus.Warning("No plugins configuration was provided to deck. You must provide one to reuse /test checks for rerun")
+			}
 		}
 
 		repoSet := make(map[string]bool)
@@ -584,7 +597,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter(), secure))
 	}
 
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter(), githubClient)))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter(), githubClient, pluginAgent)))
 
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if o.redirectHTTPTo != "" {
@@ -1256,7 +1269,7 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 }
 
 // canTriggerJob determines whether the given user can trigger any job.
-func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient) (bool, error) {
+func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent) (bool, error) {
 	auth, err := cfg.IsAuthorized(user, cli)
 	if auth {
 		return true, nil
@@ -1274,6 +1287,21 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 	}
 	if cli == nil {
 		logrus.Warning("No GitHub token was provided, so we cannot retrieve GitHub teams")
+		return false, nil
+	}
+
+	// If the job is a presubmit and has an associated PR, do the same checks as for /test
+	if pj.Spec.Type == prowapi.PresubmitJob && pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
+		if pluginAgent == nil {
+			// If no plugins configuration is provided, skip the checks
+			return false, nil
+		}
+		pcfg := pluginAgent.Config()
+		pull := pj.Spec.Refs.Pulls[0]
+		org := pj.Spec.Refs.Org
+		repo := pj.Spec.Refs.Repo
+		_, allowed, err := trigger.TrustedPullRequest(cli, pcfg.TriggerFor(org, repo), pull.Author, org, repo, pull.Number, nil)
+		return allowed, err
 	}
 	return false, nil
 }
@@ -1294,7 +1322,7 @@ func marshalJob(w http.ResponseWriter, pj prowapi.ProwJob, l *logrus.Entry) {
 // handleRerun triggers a rerun of the given job if that features is enabled, it receives a
 // POST request, and the user has the necessary permissions. Otherwise, it writes the config
 // for a new job but does not trigger it.
-func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.GitHubClientGetter, cli prowgithub.RerunClient) http.HandlerFunc {
+func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.GitHubClientGetter, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		l := logrus.WithField("prowjob", name)
@@ -1339,7 +1367,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 					http.Error(w, "Error retrieving GitHub login", http.StatusUnauthorized)
 					return
 				}
-				allowed, err = canTriggerJob(login, newPJ, authConfig, cli)
+				allowed, err = canTriggerJob(login, newPJ, authConfig, cli, pluginAgent)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error checking if user can trigger job: %v", err), http.StatusInternalServerError)
 					l.WithError(err).Errorf("Error checking if user can trigger job")
