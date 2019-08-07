@@ -599,7 +599,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	}
 
 	if len(refs) > 0 {
-		spec.Containers[0].WorkingDir = determineWorkDir(codeMount.MountPath, refs)
+		spec.Containers[0].WorkingDir = DetermineWorkDir(codeMount.MountPath, refs)
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
@@ -607,7 +607,8 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	return nil
 }
 
-func determineWorkDir(baseDir string, refs []prowapi.Refs) string {
+// DetermineWorkDir determines the working directory to use for a given set of refs to clone
+func DetermineWorkDir(baseDir string, refs []prowapi.Refs) string {
 	for _, ref := range refs {
 		if ref.WorkDir {
 			return clone.PathForRefs(baseDir, ref)
