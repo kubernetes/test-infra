@@ -38,7 +38,6 @@ const (
 
 var reactions = []string{
 	github.ReactionThumbsUp,
-	github.ReactionLaugh,
 	github.ReactionHeart,
 	github.ReactionHooray,
 }
