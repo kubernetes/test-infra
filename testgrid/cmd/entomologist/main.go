@@ -21,8 +21,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/flagutil"
 	"os"
 	"os/signal"
 	"regexp"
@@ -36,6 +34,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/test-infra/pkg/io"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/testgrid/issue_state"
 )
@@ -140,18 +140,31 @@ func main() {
 			outputFile = fd.Name()
 		}
 	}
-	writer, _ := client.Writer(ctx, outputFile)
-	defer writer.Close()
 
 	// kick off goroutines
 	poll := func() {
+		writer, err := client.Writer(ctx, outputFile)
+		if err != nil {
+			logrus.Errorf("Could not open writer to %s: %e", outputFile, err)
+		}
+		defer writer.Close()
+
 		issueState, err := pinIssues(ghct, opt)
 		if err != nil {
-			logrus.Fatalf("Could not get issues: %e", err)
+			logrus.Errorf("Could not get issues: %e", err)
+			return
 		}
 
-		out, _ := proto.Marshal(issueState)
-		n, _ := writer.Write(out)
+		out, err := proto.Marshal(issueState)
+		if err != nil {
+			logrus.Errorf("Could not marshal proto %v: %e", issueState, err)
+			return
+		}
+		n, err := writer.Write(out)
+		if err != nil {
+			logrus.Errorf("Could not write file: %e", err)
+			return
+		}
 
 		logrus.Infof("Sending %d characters to %s", n, outputFile)
 	}
