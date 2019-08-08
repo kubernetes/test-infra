@@ -195,7 +195,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	}
 
 	ghmetrics.CollectGitHubTokenMetrics(authHeaderHash, apiVersion, resp.Header, reqStartTime, responseTime)
-	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, string(resp.StatusCode), roundTripTime.String())
+	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, string(resp.StatusCode), roundTripTime.Seconds())
 
 	return resp, nil
 }
