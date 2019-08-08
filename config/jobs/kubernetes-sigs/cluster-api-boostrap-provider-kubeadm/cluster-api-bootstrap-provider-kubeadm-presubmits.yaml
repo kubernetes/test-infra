@@ -5,11 +5,16 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm"
     always_run: true
     decorate: true
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
         command:
+        - "runner.sh"
         - "./hack/verify-all.sh"
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
       testgrid-tab-name: pr-verify
