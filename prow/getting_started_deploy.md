@@ -495,10 +495,11 @@ automatically merged by [Tide][6].
 Tide can be enabled by modifying `config.yaml`.
 See [how to configure tide][7] for more details.
 
-#### Setup PR status dashboard
-
-To setup a PR status dashboard like [prow.k8s.io/pr](https://prow.k8s.io/pr), follow the
-instructions in [`pr_status_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/docs/pr_status_setup.md).
+#### Set up GitHub OAuth
+GitHub Oauth is required for [PR Status](https://prow.k8s.io/pr)
+and for the rerun button on [Prow Status](https://prow.k8s.io). 
+To enable these features, follow the
+instructions in [`github_oauth_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/pr_status_setup.md).
 
 ### Configure SSL
 
