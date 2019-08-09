@@ -92,7 +92,7 @@ what is this line anyway?`,
 		},
 		{
 			name: "partially valid config",
-			src: `# This file contains some valid lines, and then som bad lines.
+			src: `# This file contains some valid lines, and then some bad lines.
 
 # Good lines
 

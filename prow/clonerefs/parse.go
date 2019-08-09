@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // ParseRefs parses a human-provided string into the repo
@@ -38,8 +38,8 @@ import (
 //   kubernetes,test-infra=master,34:fghij56
 //   kubernetes,test-infra=master:abcde12,34:fghij56,78
 //   gerrit,test-infra=master:abcde12,34:fghij56:refs/changes/00/123/1
-func ParseRefs(value string) (*kube.Refs, error) {
-	gitRef := &kube.Refs{}
+func ParseRefs(value string) (*prowapi.Refs, error) {
+	gitRef := &prowapi.Refs{}
 	values := strings.SplitN(value, "=", 2)
 	if len(values) != 2 {
 		return gitRef, fmt.Errorf("refspec %s invalid: does not contain '='", value)
@@ -75,7 +75,7 @@ func ParseRefs(value string) (*kube.Refs, error) {
 		if err != nil {
 			return gitRef, fmt.Errorf("refspec %s invalid: pull request identifier not a number: %v", refValue, err)
 		}
-		pullRef := kube.Pull{
+		pullRef := prowapi.Pull{
 			Number: pullNumber,
 		}
 		if len(refParts) > 1 {

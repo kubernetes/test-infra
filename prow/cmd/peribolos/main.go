@@ -20,23 +20,23 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"net/url"
+	"io/ioutil"
 	"os"
 	"strings"
 
-	"k8s.io/test-infra/prow/config"
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/config/org"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
-
-	"github.com/ghodss/yaml"
-	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
-	defaultEndpoint  = "https://api.github.com"
 	defaultMinAdmins = 5
 	defaultDelta     = 0.25
 	defaultTokens    = 300
@@ -44,22 +44,25 @@ const (
 )
 
 type options struct {
-	config         string
-	confirm        bool
-	dump           string
-	endpoint       flagutil.Strings
-	jobConfig      string
-	maximumDelta   float64
-	minAdmins      int
-	requireSelf    bool
-	requiredAdmins flagutil.Strings
-	fixOrg         bool
-	fixOrgMembers  bool
-	fixTeamMembers bool
-	fixTeams       bool
-	token          string
-	tokenBurst     int
-	tokensPerHour  int
+	config            string
+	confirm           bool
+	dump              string
+	dumpFull          bool
+	jobConfig         string
+	maximumDelta      float64
+	minAdmins         int
+	requireSelf       bool
+	requiredAdmins    flagutil.Strings
+	fixOrg            bool
+	fixOrgMembers     bool
+	fixTeamMembers    bool
+	fixTeams          bool
+	fixTeamRepos      bool
+	ignoreSecretTeams bool
+	github            flagutil.GitHubOptions
+	tokenBurst        int
+	tokensPerHour     int
+	logLevel          string
 }
 
 func parseOptions() options {
@@ -71,41 +74,36 @@ func parseOptions() options {
 }
 
 func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
-	o.endpoint = flagutil.NewStrings(defaultEndpoint)
-	flags.Var(&o.endpoint, "github-endpoint", "Github api endpoint, may differ for enterprise")
 	o.requiredAdmins = flagutil.NewStrings()
 	flags.Var(&o.requiredAdmins, "required-admins", "Ensure config specifies these users as admins")
 	flags.IntVar(&o.minAdmins, "min-admins", defaultMinAdmins, "Ensure config specifies at least this many admins")
 	flags.BoolVar(&o.requireSelf, "require-self", true, "Ensure --github-token-path user is an admin")
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
-	flags.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
+	flags.StringVar(&o.config, "config-path", "", "Path to org config.yaml")
 	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
-	flags.StringVar(&o.token, "github-token-path", "", "Path to github token")
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
+	flags.BoolVar(&o.dumpFull, "dump-full", false, "Output current config of the org as a valid input config file instead of a snippet")
+	flags.BoolVar(&o.ignoreSecretTeams, "ignore-secret-teams", false, "Do not dump or update secret teams if set")
 	flags.BoolVar(&o.fixOrg, "fix-org", false, "Change org metadata if set")
 	flags.BoolVar(&o.fixOrgMembers, "fix-org-members", false, "Add/remove org members if set")
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
 	flags.BoolVar(&o.fixTeamMembers, "fix-team-members", false, "Add/remove team members if set")
-
+	flags.BoolVar(&o.fixTeamRepos, "fix-team-repos", false, "Add/remove team permissions on repos if set")
+	flags.StringVar(&o.logLevel, "log-level", logrus.InfoLevel.String(), fmt.Sprintf("Logging level, one of %v", logrus.AllLevels))
+	o.github.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
-	if o.token == "" {
-		return errors.New("empty --github-token-path")
+	if err := o.github.Validate(!o.confirm); err != nil {
+		return err
 	}
 	if o.tokensPerHour > 0 && o.tokenBurst >= o.tokensPerHour {
 		return fmt.Errorf("--tokens=%d must exceed --token-burst=%d", o.tokensPerHour, o.tokenBurst)
 	}
 
-	for _, ep := range o.endpoint.Strings() {
-		_, err := url.Parse(ep)
-		if err != nil {
-			return fmt.Errorf("invalid --endpoint URL %q: %v", ep, err)
-		}
-	}
 	if o.minAdmins < 2 {
 		return fmt.Errorf("--min-admins=%d must be at least 2", o.minAdmins)
 	}
@@ -117,62 +115,89 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 		return fmt.Errorf("--confirm cannot be used with --dump=%s", o.dump)
 	}
 	if o.config == "" && o.dump == "" {
-		return errors.New("--config or --dump required")
+		return errors.New("--config-path or --dump required")
 	}
 	if o.config != "" && o.dump != "" {
 		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
+	}
+
+	if o.jobConfig != "" {
+		logrus.Warn("--job-config-path is deprecated and unused, stop using it before July 2019")
+	}
+
+	if o.dumpFull && o.dump == "" {
+		return errors.New("--dump-full can't be used without --dump")
 	}
 
 	if o.fixTeamMembers && !o.fixTeams {
 		return fmt.Errorf("--fix-team-members requires --fix-teams")
 	}
 
+	if o.fixTeamRepos && !o.fixTeams {
+		return fmt.Errorf("--fix-team-repos requires --fix-teams")
+	}
+
+	level, err := logrus.ParseLevel(o.logLevel)
+	if err != nil {
+		return fmt.Errorf("--log-level invalid: %v", err)
+	}
+	logrus.SetLevel(level)
+
 	return nil
 }
 
 func main() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "peribolos"}),
-	)
+	logrusutil.ComponentInit("peribolos")
+
 	o := parseOptions()
 
-	var c *github.Client
-
-	secretAgent := &config.SecretAgent{}
-	if err := secretAgent.Start([]string{o.token}); err != nil {
+	secretAgent := &secret.Agent{}
+	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	if o.confirm {
-		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
-	} else {
-		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
+	githubClient, err := o.github.GitHubClient(secretAgent, !o.confirm)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 	if o.tokensPerHour > 0 {
-		c.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)
+		githubClient.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)
 	}
 
 	if o.dump != "" {
-		ret, err := dumpOrgConfig(c, o.dump)
+		ret, err := dumpOrgConfig(githubClient, o.dump, o.ignoreSecretTeams)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to collect current data.", o.dump)
 		}
-		out, err := yaml.Marshal(ret)
+		var output interface{}
+		if o.dumpFull {
+			output = org.FullConfig{
+				Orgs: map[string]org.Config{o.dump: *ret},
+			}
+		} else {
+			output = ret
+		}
+		out, err := yaml.Marshal(output)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to marshal output.", o.dump)
 		}
-		logrus.Info("Dumping orgs[\"%s\"]:", o.dump)
+		logrus.Infof("Dumping orgs[\"%s\"]:", o.dump)
 		fmt.Println(string(out))
 		return
 	}
 
-	cfg, err := config.Load(o.config, o.jobConfig)
+	raw, err := ioutil.ReadFile(o.config)
 	if err != nil {
-		logrus.Fatalf("Failed to load --config=%s: %v", o.config, err)
+		logrus.WithError(err).Fatal("Could not read --config-path file")
+	}
+
+	var cfg org.FullConfig
+	if err := yaml.Unmarshal(raw, &cfg); err != nil {
+		logrus.WithError(err).Fatal("Failed to load configuration")
 	}
 
 	for name, orgcfg := range cfg.Orgs {
-		if err := configureOrg(o, c, name, orgcfg); err != nil {
+		if err := configureOrg(o, githubClient, name, orgcfg); err != nil {
 			logrus.Fatalf("Configuration failed: %v", err)
 		}
 	}
@@ -183,13 +208,11 @@ type dumpClient interface {
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamRepos(id int) ([]github.Repo, error)
 }
 
-func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
-	out := org.Config{
-		Members: []string{},
-		Admins:  []string{},
-	}
+func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
+	out := org.Config{}
 	meta, err := client.GetOrg(orgName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get org: %v", err)
@@ -202,7 +225,7 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 	out.Metadata.Location = &meta.Location
 	out.Metadata.HasOrganizationProjects = &meta.HasOrganizationProjects
 	out.Metadata.HasRepositoryProjects = &meta.HasRepositoryProjects
-	drp := org.RepoPermissionLevel(meta.DefaultRepositoryPermission)
+	drp := github.RepoPermissionLevel(meta.DefaultRepositoryPermission)
 	out.Metadata.DefaultRepositoryPermission = &drp
 	out.Metadata.MembersCanCreateRepositories = &meta.MembersCanCreateRepositories
 
@@ -210,7 +233,9 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list org admins: %v", err)
 	}
+	logrus.Debugf("Found %d admins", len(admins))
 	for _, m := range admins {
+		logrus.WithField("login", m.Login).Debug("Recording admin.")
 		out.Admins = append(out.Admins, m.Login)
 	}
 
@@ -218,7 +243,9 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list org members: %v", err)
 	}
+	logrus.Debugf("Found %d members", len(orgMembers))
 	for _, m := range orgMembers {
+		logrus.WithField("login", m.Login).Debug("Recording member.")
 		out.Members = append(out.Members, m.Login)
 	}
 
@@ -226,6 +253,7 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list teams: %v", err)
 	}
+	logrus.Debugf("Found %d teams", len(teams))
 
 	names := map[int]string{}   // what's the name of a team?
 	idMap := map[int]org.Team{} // metadata for a team
@@ -233,7 +261,12 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 	var tops []int              // what are the top-level teams
 
 	for _, t := range teams {
+		logger := logrus.WithFields(logrus.Fields{"id": t.ID, "name": t.Name})
 		p := org.Privacy(t.Privacy)
+		if ignoreSecretTeams && p == org.Secret {
+			logger.Debug("Ignoring secret team.")
+			continue
+		}
 		d := t.Description
 		nt := org.Team{
 			TeamMetadata: org.TeamMetadata{
@@ -243,19 +276,24 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 			Maintainers: []string{},
 			Members:     []string{},
 			Children:    map[string]org.Team{},
+			Repos:       map[string]github.RepoPermissionLevel{},
 		}
 		maintainers, err := client.ListTeamMembers(t.ID, github.RoleMaintainer)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list team %d(%s) maintainers: %v", t.ID, t.Name, err)
 		}
+		logger.Debugf("Found %d maintainers.", len(maintainers))
 		for _, m := range maintainers {
+			logger.WithField("login", m.Login).Debug("Recording maintainer.")
 			nt.Maintainers = append(nt.Maintainers, m.Login)
 		}
 		teamMembers, err := client.ListTeamMembers(t.ID, github.RoleMember)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list team %d(%s) members: %v", t.ID, t.Name, err)
 		}
+		logger.Debugf("Found %d members.", len(teamMembers))
 		for _, m := range teamMembers {
+			logger.WithField("login", m.Login).Debug("Recording member.")
 			nt.Members = append(nt.Members, m.Login)
 		}
 
@@ -263,9 +301,22 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 		idMap[t.ID] = nt
 
 		if t.Parent == nil { // top level team
+			logger.Debug("Marking as top-level team.")
 			tops = append(tops, t.ID)
 		} else { // add this id to the list of the parent's children
+			logger.Debugf("Marking as child team of %d.", t.Parent.ID)
 			children[t.Parent.ID] = append(children[t.Parent.ID], t.ID)
+		}
+
+		repos, err := client.ListTeamRepos(t.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list team %d(%s) repos: %v", t.ID, t.Name, err)
+		}
+		logger.Debugf("Found %d repo permissions.", len(repos))
+		for _, repo := range repos {
+			level := github.LevelFromPermissions(repo.Permissions)
+			logger.WithFields(logrus.Fields{"repo": repo, "permission": level}).Debug("Recording repo permission.")
+			nt.Repos[repo.Name] = level
 		}
 	}
 
@@ -290,12 +341,11 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 type orgClient interface {
 	BotName() (string, error)
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
-	ListOrgInvitations(org string) ([]github.OrgInvitation, error)
 	RemoveOrgMembership(org, user string) error
 	UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error)
 }
 
-func configureOrgMembers(opt options, client orgClient, orgName string, orgConfig org.Config) error {
+func configureOrgMembers(opt options, client orgClient, orgName string, orgConfig org.Config, invitees sets.String) error {
 	// Get desired state
 	wantAdmins := sets.NewString(orgConfig.Admins...)
 	wantMembers := sets.NewString(orgConfig.Members...)
@@ -315,7 +365,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	}
 	if opt.requireSelf {
 		if me, err := client.BotName(); err != nil {
-			return fmt.Errorf("cannot determine user making requests for %s: %v", opt.token, err)
+			return fmt.Errorf("cannot determine user making requests for %s: %v", opt.github.TokenPath, err)
 		} else if !wantAdmins.Has(me) {
 			return fmt.Errorf("authenticated user %s is not an admin of %s", me, orgName)
 		}
@@ -336,14 +386,6 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	}
 	for _, m := range ms {
 		haveMembers.Insert(m.Login)
-	}
-	is, err := client.ListOrgInvitations(orgName)
-	if err != nil {
-		return fmt.Errorf("failed to list %s invitations: %v", orgName, err)
-	}
-	for _, i := range is { // Do not reinvite anyone
-		haveMembers.Insert(i.Login)
-		haveAdmins.Insert(i.Login)
 	}
 
 	have := memberships{members: haveMembers, super: haveAdmins}
@@ -376,6 +418,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		}
 	}
 
+	teamMembers = normalize(teamMembers)
 	if outside := teamMembers.Difference(want.all()); len(outside) > 0 {
 		return fmt.Errorf("all team members/maintainers must also be org members: %s", strings.Join(outside.List(), ", "))
 	}
@@ -385,6 +428,10 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	}
 
 	adder := func(user string, super bool) error {
+		if invitees.Has(user) { // Do not add them, as this causes another invite.
+			logrus.Infof("Waiting for %s to accept invitation to %s", user, orgName)
+			return nil
+		}
 		role := github.RoleMember
 		if super {
 			role = github.RoleAdmin
@@ -392,6 +439,11 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		om, err := client.UpdateOrgMembership(orgName, user, super)
 		if err != nil {
 			logrus.WithError(err).Warnf("UpdateOrgMembership(%s, %s, %t) failed", orgName, user, super)
+			if github.IsNotFound(err) {
+				// this could be caused by someone removing their account
+				// or a typo in the configuration but should not crash the sync
+				err = nil
+			}
 		} else if om.State == github.StatePending {
 			logrus.Infof("Invited %s to %s as a %s", user, orgName, role)
 		} else {
@@ -408,7 +460,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		return err
 	}
 
-	return configureMembers(have, want, adder, remover)
+	return configureMembers(have, want, invitees, adder, remover)
 }
 
 type memberships struct {
@@ -433,13 +485,14 @@ func (m *memberships) normalize() {
 	m.super = normalize(m.super)
 }
 
-func configureMembers(have, want memberships, adder func(user string, super bool) error, remover func(user string) error) error {
+func configureMembers(have, want memberships, invitees sets.String, adder func(user string, super bool) error, remover func(user string) error) error {
 	have.normalize()
 	want.normalize()
 	if both := want.super.Intersection(want.members); len(both) > 0 {
 		return fmt.Errorf("users in both roles: %s", strings.Join(both.List(), ", "))
 	}
-	remove := have.all().Difference(want.all())
+	havePlusInvites := have.all().Union(invitees)
+	remove := havePlusInvites.Difference(want.all())
 	members := want.members.Difference(have.members)
 	supers := want.super.Difference(have.super)
 
@@ -512,7 +565,7 @@ type teamClient interface {
 }
 
 // configureTeams returns the ids for all expected team names, creating/deleting teams as necessary.
-func configureTeams(client teamClient, orgName string, orgConfig org.Config, maxDelta float64) (map[string]github.Team, error) {
+func configureTeams(client teamClient, orgName string, orgConfig org.Config, maxDelta float64, ignoreSecretTeams bool) (map[string]github.Team, error) {
 	if err := validateTeamNames(orgConfig); err != nil {
 		return nil, err
 	}
@@ -524,23 +577,34 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	if err != nil {
 		return nil, fmt.Errorf("failed to list teams: %v", err)
 	}
+	logrus.Debugf("Found %d teams", len(teamList))
 	for _, t := range teamList {
+		if ignoreSecretTeams && org.Privacy(t.Privacy) == org.Secret {
+			continue
+		}
 		ids[t.ID] = t
 		ints.Insert(t.ID)
+	}
+	if ignoreSecretTeams {
+		logrus.Debugf("Found %d non-secret teams", len(teamList))
 	}
 
 	// What is the lowest ID for each team?
 	older := map[string][]github.Team{}
 	names := map[string]github.Team{}
 	for _, t := range ids {
+		logger := logrus.WithFields(logrus.Fields{"id": t.ID, "name": t.Name})
 		n := t.Name
 		switch val, ok := names[n]; {
 		case !ok: // first occurrence of the name
+			logger.Debug("First occurrence of this team name.")
 			names[n] = t
 		case ok && t.ID < val.ID: // t has the lower ID, replace and send current to older set
+			logger.Debugf("Replacing previous recorded team (%d) with this one due to smaller ID.", val.ID)
 			names[n] = t
 			older[n] = append(older[n], val)
 		default: // t does not have smallest id, add it to older set
+			logger.Debugf("Adding team (%d) to older set as a smaller ID is already recoded for it.", val.ID)
 			older[n] = append(older[n], val)
 		}
 	}
@@ -552,13 +616,16 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	var match func(teams map[string]org.Team)
 	match = func(teams map[string]org.Team) {
 		for name, orgTeam := range teams {
+			logger := logrus.WithField("name", name)
 			match(orgTeam.Children)
 			t := findTeam(names, name, orgTeam.Previously...)
 			if t == nil {
 				missing[name] = orgTeam
+				logger.Debug("Could not find team in GitHub for this configuration.")
 				continue
 			}
 			matches[name] = *t // t.Name != name if we matched on orgTeam.Previously
+			logger.WithField("id", t.ID).Debug("Found a team in GitHub for this configuration.")
 			used.Insert(t.ID)
 		}
 	}
@@ -598,7 +665,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	if reused := unused.Intersection(used); len(reused) > 0 {
 		// Logically possible for:
 		// * another actor to delete team N after the ListTeams() call
-		// * github to reuse team N after someone deted it
+		// * github to reuse team N after someone deleted it
 		// Therefore used may now include IDs in unused, handle this situation.
 		logrus.Warnf("Will not delete %d team IDs reused by github: %v", len(reused), reused.List())
 		unused = unused.Difference(reused)
@@ -680,7 +747,29 @@ func configureOrgMeta(client orgMetadataClient, orgName string, want org.Metadat
 	return nil
 }
 
-func configureOrg(opt options, client *github.Client, orgName string, orgConfig org.Config) error {
+type inviteClient interface {
+	ListOrgInvitations(org string) ([]github.OrgInvitation, error)
+}
+
+func orgInvitations(opt options, client inviteClient, orgName string) (sets.String, error) {
+	invitees := sets.String{}
+	if !opt.fixOrgMembers && !opt.fixTeamMembers {
+		return invitees, nil
+	}
+	is, err := client.ListOrgInvitations(orgName)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range is {
+		if i.Login == "" {
+			continue
+		}
+		invitees.Insert(github.NormLogin(i.Login))
+	}
+	return invitees, nil
+}
+
+func configureOrg(opt options, client github.Client, orgName string, orgConfig org.Config) error {
 	// Ensure that metadata is configured correctly.
 	if !opt.fixOrg {
 		logrus.Infof("Skipping org metadata configuration")
@@ -688,10 +777,15 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 		return err
 	}
 
+	invitees, err := orgInvitations(opt, client, orgName)
+	if err != nil {
+		return fmt.Errorf("failed to list %s invitations: %v", orgName, err)
+	}
+
 	// Invite/remove/update members to the org.
 	if !opt.fixOrgMembers {
 		logrus.Infof("Skipping org member configuration")
-	} else if err := configureOrgMembers(opt, client, orgName, orgConfig); err != nil {
+	} else if err := configureOrgMembers(opt, client, orgName, orgConfig, invitees); err != nil {
 		return fmt.Errorf("failed to configure %s members: %v", orgName, err)
 	}
 
@@ -701,21 +795,29 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	}
 
 	// Find the id and current state of each declared team (create/delete as necessary)
-	githubTeams, err := configureTeams(client, orgName, orgConfig, opt.maximumDelta)
+	githubTeams, err := configureTeams(client, orgName, orgConfig, opt.maximumDelta, opt.ignoreSecretTeams)
 	if err != nil {
 		return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
 	}
 
 	for name, team := range orgConfig.Teams {
-		err := configureTeamAndMembers(client, opt.fixTeamMembers, githubTeams, name, orgName, team, nil)
+		err := configureTeamAndMembers(opt, client, githubTeams, name, orgName, team, nil)
 		if err != nil {
 			return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
+		}
+
+		if !opt.fixTeamRepos {
+			logrus.Infof("Skipping team repo permissions configuration")
+			continue
+		}
+		if err := configureTeamRepos(client, githubTeams, name, orgName, team); err != nil {
+			return fmt.Errorf("failed to configure %s team %s repos: %v", orgName, name, err)
 		}
 	}
 	return nil
 }
 
-func configureTeamAndMembers(client *github.Client, fixMembers bool, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
+func configureTeamAndMembers(opt options, client github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)
@@ -728,14 +830,14 @@ func configureTeamAndMembers(client *github.Client, fixMembers bool, githubTeams
 	}
 
 	// Configure team members
-	if !fixMembers {
+	if !opt.fixTeamMembers {
 		logrus.Infof("Skipping %s member configuration", name)
-	} else if err = configureTeamMembers(client, gt.ID, team); err != nil {
+	} else if err = configureTeamMembers(client, gt, team); err != nil {
 		return fmt.Errorf("failed to update %s members: %v", name, err)
 	}
 
 	for childName, childTeam := range team.Children {
-		err = configureTeamAndMembers(client, fixMembers, githubTeams, childName, orgName, childTeam, &gt.ID)
+		err = configureTeamAndMembers(opt, client, githubTeams, childName, orgName, childTeam, &gt.ID)
 		if err != nil {
 			return fmt.Errorf("failed to update %s child teams: %v", name, err)
 		}
@@ -796,15 +898,87 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 	return nil
 }
 
+type teamRepoClient interface {
+	ListTeamRepos(id int) ([]github.Repo, error)
+	UpdateTeamRepo(id int, org, repo string, permission github.RepoPermissionLevel) error
+	RemoveTeamRepo(id int, org, repo string) error
+}
+
+// configureTeamRepos updates the list of repos that the team has permissions for when necessary
+func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Team, name, orgName string, team org.Team) error {
+	gt, ok := githubTeams[name]
+	if !ok { // configureTeams is buggy if this is the case
+		return fmt.Errorf("%s not found in id list", name)
+	}
+
+	want := team.Repos
+	have := map[string]github.RepoPermissionLevel{}
+	repos, err := client.ListTeamRepos(gt.ID)
+	if err != nil {
+		return fmt.Errorf("failed to list team %d(%s) repos: %v", gt.ID, name, err)
+	}
+	for _, repo := range repos {
+		have[repo.Name] = github.LevelFromPermissions(repo.Permissions)
+	}
+
+	actions := map[string]github.RepoPermissionLevel{}
+	for wantRepo, wantPermission := range want {
+		if havePermission, haveRepo := have[wantRepo]; haveRepo && havePermission == wantPermission {
+			// nothing to do
+			continue
+		}
+		// create or update this permission
+		actions[wantRepo] = wantPermission
+	}
+
+	for haveRepo := range have {
+		if _, wantRepo := want[haveRepo]; !wantRepo {
+			// should remove these permissions
+			actions[haveRepo] = github.None
+		}
+	}
+
+	var updateErrors []error
+	for repo, permission := range actions {
+		var err error
+		if permission == github.None {
+			err = client.RemoveTeamRepo(gt.ID, orgName, repo)
+		} else {
+			err = client.UpdateTeamRepo(gt.ID, orgName, repo, permission)
+		}
+		if err != nil {
+			updateErrors = append(updateErrors, fmt.Errorf("failed to update team %d(%s) permissions on repo %s to %s: %v", gt.ID, name, repo, permission, err))
+		}
+	}
+
+	return errorutil.NewAggregate(updateErrors...)
+}
+
 // teamMembersClient can list/remove/update people to a team.
 type teamMembersClient interface {
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+	ListTeamInvitations(id int) ([]github.OrgInvitation, error)
 	RemoveTeamMembership(id int, user string) error
 	UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error)
 }
 
+func teamInvitations(client teamMembersClient, teamID int) (sets.String, error) {
+	invitees := sets.String{}
+	is, err := client.ListTeamInvitations(teamID)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range is {
+		if i.Login == "" {
+			continue
+		}
+		invitees.Insert(github.NormLogin(i.Login))
+	}
+	return invitees, nil
+}
+
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
-func configureTeamMembers(client teamMembersClient, id int, team org.Team) error {
+func configureTeamMembers(client teamMembersClient, gt github.Team, team org.Team) error {
 	// Get desired state
 	wantMaintainers := sets.NewString(team.Maintainers...)
 	wantMembers := sets.NewString(team.Members...)
@@ -813,49 +987,58 @@ func configureTeamMembers(client teamMembersClient, id int, team org.Team) error
 	haveMaintainers := sets.String{}
 	haveMembers := sets.String{}
 
-	members, err := client.ListTeamMembers(id, github.RoleMember)
+	members, err := client.ListTeamMembers(gt.ID, github.RoleMember)
 	if err != nil {
-		return fmt.Errorf("failed to list %d members: %v", id, err)
+		return fmt.Errorf("failed to list %d(%s) members: %v", gt.ID, gt.Name, err)
 	}
 	for _, m := range members {
 		haveMembers.Insert(m.Login)
 	}
 
-	maintainers, err := client.ListTeamMembers(id, github.RoleMaintainer)
+	maintainers, err := client.ListTeamMembers(gt.ID, github.RoleMaintainer)
 	if err != nil {
-		return fmt.Errorf("failed to list %d maintainers: %v", id, err)
+		return fmt.Errorf("failed to list %d(%s) maintainers: %v", gt.ID, gt.Name, err)
 	}
 	for _, m := range maintainers {
 		haveMaintainers.Insert(m.Login)
 	}
 
+	invitees, err := teamInvitations(client, gt.ID)
+	if err != nil {
+		return fmt.Errorf("failed to list %d(%s) invitees: %v", gt.ID, gt.Name, err)
+	}
+
 	adder := func(user string, super bool) error {
+		if invitees.Has(user) {
+			logrus.Infof("Waiting for %s to accept invitation to %d(%s)", user, gt.ID, gt.Name)
+			return nil
+		}
 		role := github.RoleMember
 		if super {
 			role = github.RoleMaintainer
 		}
-		tm, err := client.UpdateTeamMembership(id, user, super)
+		tm, err := client.UpdateTeamMembership(gt.ID, user, super)
 		if err != nil {
-			logrus.WithError(err).Warnf("UpdateTeamMembership(%d, %s, %t) failed", id, user, super)
+			logrus.WithError(err).Warnf("UpdateTeamMembership(%d(%s), %s, %t) failed", gt.ID, gt.Name, user, super)
 		} else if tm.State == github.StatePending {
-			logrus.Infof("Invited %s to %d as a %s", user, id, role)
+			logrus.Infof("Invited %s to %d(%s) as a %s", user, gt.ID, gt.Name, role)
 		} else {
-			logrus.Infof("Set %s as a %s of %d", user, role, id)
+			logrus.Infof("Set %s as a %s of %d(%s)", user, role, gt.ID, gt.Name)
 		}
 		return err
 	}
 
 	remover := func(user string) error {
-		err := client.RemoveTeamMembership(id, user)
+		err := client.RemoveTeamMembership(gt.ID, user)
 		if err != nil {
-			logrus.WithError(err).Warnf("RemoveTeamMembership(%d, %s) failed", id, user)
+			logrus.WithError(err).Warnf("RemoveTeamMembership(%d(%s), %s) failed", gt.ID, gt.Name, user)
 		} else {
-			logrus.Infof("Removed %s from team %d", user, id)
+			logrus.Infof("Removed %s from team %d(%s)", user, gt.ID, gt.Name)
 		}
 		return err
 	}
 
 	want := memberships{members: wantMembers, super: wantMaintainers}
 	have := memberships{members: haveMembers, super: haveMaintainers}
-	return configureMembers(have, want, adder, remover)
+	return configureMembers(have, want, invitees, adder, remover)
 }

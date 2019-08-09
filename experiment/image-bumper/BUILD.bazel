@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/experiment/image-bumper",
+    visibility = ["//visibility:private"],
+    deps = ["//experiment/image-bumper/bumper:go_default_library"],
+)
+
+go_binary(
+    name = "image-bumper",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//experiment/image-bumper/bumper:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

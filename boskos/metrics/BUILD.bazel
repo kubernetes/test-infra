@@ -1,34 +1,40 @@
 package(default_visibility = ["//visibility:public"])
 
+load("//prow:def.bzl", "prow_image")
+
 licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
     "go_library",
-    "go_test",
 )
 
 go_binary(
     name = "metrics",
     embed = [":go_default_library"],
     pure = "on",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["metrics.go"],
     importpath = "k8s.io/test-infra/boskos/metrics",
-    tags = ["automanaged"],
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
+        "//prow/config:go_default_library",
+        "//prow/logrusutil:go_default_library",
+        "//prow/metrics:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
-        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
+)
+
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -42,11 +48,4 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["metrics_test.go"],
-    embed = [":go_default_library"],
-    deps = ["//boskos/common:go_default_library"],
 )

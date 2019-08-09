@@ -1,35 +1,8 @@
 package(default_visibility = ["//visibility:public"])
 
-py_test(
-    name = "config_test",
-    srcs = [
-        "config_test.py",
-    ],
-    data = [
-        "//boskos:resources.yaml",
-        "//jobs",
-        "//prow:config.yaml",
-        "//scenarios",
-    ],
-    deps = [
-        ":env_gc",
-        "@yaml",
-    ],
-)
-
-py_binary(
-    name = "env_gc",
-    srcs = ["env_gc.py"],
-    data = [
-        ":jobs",
-    ],
-)
-
 filegroup(
     name = "jobs",
     srcs = glob([
-        "**/*.sh",
-        "**/*.env",
         "**/*.json",
     ]),
 )

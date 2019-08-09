@@ -4,7 +4,7 @@ Overview
 Token-counter is a program that polls github to see how much of a token's
 ratelimit has been used.
 
-Github doesn't report how many requests you've used, and instead reports
+GitHub doesn't report how many requests you've used, and instead reports
 how many request you have left before the rate-limit resets.
 In order to do that, we poll more and more aggressively as we get near to the reset
 time. Once the reset happens, we compute the difference between `Limit` and

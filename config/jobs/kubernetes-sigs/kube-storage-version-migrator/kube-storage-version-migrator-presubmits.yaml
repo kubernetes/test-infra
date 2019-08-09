@@ -1,0 +1,78 @@
+presubmits:
+  kubernetes-sigs/kube-storage-version-migrator:
+  - name: pull-kube-storage-version-migrator-test
+    decorate: true
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - make
+        - test
+
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-test
+  - name: pull-kube-storage-version-migrator-manually-launched-e2e
+    decorate: true
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --extract=ci/latest
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-zone=us-central1-f
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../test/e2e/test-cmd.sh
+        - --timeout=50m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-e2e-manually-launched
+  - name: pull-kube-storage-version-migrator-fully-automated-e2e
+    decorate: true
+    always_run: true
+    # TODO: remove this when the test is stable
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --check-leaked-resources
+        - --extract=ci/latest
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --gcp-zone=us-central1-f
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../test/e2e/test-fully-automated.sh
+        - --test-cmd-args=--skip=\[Disruptive\]
+        - --timeout=50m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator
+      testgrid-tab-name: pr-e2e-fully-automated

@@ -160,21 +160,21 @@ images:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
 
   ubuntustable2-resource1:
-    image: ubuntu-gke-1604-xenial-v20170816-1
+    image: ubuntu-gke-1804-d1703-0-v20181113
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   ubuntustable2-resource2:
-    image: ubuntu-gke-1604-xenial-v20170816-1
+    image: ubuntu-gke-1804-d1703-0-v20181113
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   ubuntustable2-resource3:
-    image: ubuntu-gke-1604-xenial-v20170816-1
+    image: ubuntu-gke-1804-d1703-0-v20181113
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
@@ -182,21 +182,21 @@ images:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
 
   ubuntustable1-resource1:
-    image: ubuntu-gke-1604-xenial-v20171108-1
+    image: ubuntu-gke-1804-bionic-20180921
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   ubuntustable1-resource2:
-    image: ubuntu-gke-1604-xenial-v20171108-1
+    image: ubuntu-gke-1804-bionic-20180921
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   ubuntustable1-resource3:
-    image: ubuntu-gke-1604-xenial-v20171108-1
+    image: ubuntu-gke-1804-bionic-20180921
     project: ubuntu-os-gke-cloud
     machine: n1-standard-1
     metadata: "user-data</go/src/github.com/containerd/cri/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/cri-master/env"

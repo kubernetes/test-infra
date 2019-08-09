@@ -18,12 +18,15 @@ package github
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
+
+	"k8s.io/test-infra/prow/errorutil"
 )
 
 const (
-	// EventGUID is sent by Github in a header of every webhook request.
+	// EventGUID is sent by GitHub in a header of every webhook request.
 	// Used as a log field across prow.
 	EventGUID = "event-GUID"
 	// PrLogField is the number of a PR.
@@ -35,6 +38,22 @@ const (
 	// RepoLogField is the repository of a PR.
 	// Used as a log field across prow.
 	RepoLogField = "repo"
+
+	// SearchTimeFormat is a time.Time format string for ISO8601 which is the
+	// format that GitHub requires for times specified as part of a search query.
+	SearchTimeFormat = "2006-01-02T15:04:05Z"
+
+	// DefaultAPIEndpoint is the default GitHub API endpoint.
+	DefaultAPIEndpoint = "https://api.github.com"
+
+	// DefaultGraphQLEndpoint is the default GitHub GraphQL API endpoint.
+	DefaultGraphQLEndpoint = "https://api.github.com/graphql"
+)
+
+var (
+	// FoundingYear is the year GitHub was founded. This is just used so that
+	// we can lower bound dates related to PRs and issues.
+	FoundingYear, _ = time.Parse(SearchTimeFormat, "2007-01-01T00:00:00Z")
 )
 
 // These are possible State entries for a Status.
@@ -68,6 +87,23 @@ const (
 	MergeSquash PullRequestMergeType = "squash"
 )
 
+func unmarshalClientError(b []byte) error {
+	var errors []error
+	clientError := ClientError{}
+	err := json.Unmarshal(b, &clientError)
+	if err == nil {
+		return clientError
+	}
+	errors = append(errors, err)
+	alternativeClientError := AlternativeClientError{}
+	err = json.Unmarshal(b, &alternativeClientError)
+	if err == nil {
+		return alternativeClientError
+	}
+	errors = append(errors, err)
+	return errorutil.NewAggregate(errors...)
+}
+
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
 	Message string `json:"message"`
@@ -77,6 +113,22 @@ type ClientError struct {
 		Code     string `json:"code"`
 		Message  string `json:"message,omitempty"`
 	} `json:"errors,omitempty"`
+}
+
+func (r ClientError) Error() string {
+	return r.Message
+}
+
+// AlternativeClientError represents an alternative format for https://developer.github.com/v3/#client-errors
+// This is probably a GitHub bug, as documentation_url should appear only in custom errors
+type AlternativeClientError struct {
+	Message          string   `json:"message"`
+	Errors           []string `json:"errors,omitempty"`
+	DocumentationURL string   `json:"documentation_url,omitempty"`
+}
+
+func (r AlternativeClientError) Error() string {
+	return r.Message
 }
 
 // Reaction holds the type of emotional reaction.
@@ -94,19 +146,24 @@ type Status struct {
 
 // CombinedStatus is the latest statuses for a ref.
 type CombinedStatus struct {
+	SHA      string   `json:"sha"`
 	Statuses []Status `json:"statuses"`
+	State    string   `json:"state"`
 }
 
 // User is a GitHub user account.
 type User struct {
-	Login string `json:"login"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	ID    int    `json:"id"`
+	Login   string `json:"login"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	ID      int    `json:"id"`
+	HTMLURL string `json:"html_url"`
 }
 
 // NormLogin normalizes GitHub login strings
-var NormLogin = strings.ToLower
+func NormLogin(login string) string {
+	return strings.TrimPrefix(strings.ToLower(login), "@")
+}
 
 // PullRequestEventAction enumerates the triggers for this
 // webhook payload type. See also:
@@ -117,25 +174,27 @@ const (
 	// PullRequestActionAssigned means assignees were added.
 	PullRequestActionAssigned PullRequestEventAction = "assigned"
 	// PullRequestActionUnassigned means assignees were removed.
-	PullRequestActionUnassigned = "unassigned"
+	PullRequestActionUnassigned PullRequestEventAction = "unassigned"
 	// PullRequestActionReviewRequested means review requests were added.
-	PullRequestActionReviewRequested = "review_requested"
+	PullRequestActionReviewRequested PullRequestEventAction = "review_requested"
 	// PullRequestActionReviewRequestRemoved means review requests were removed.
-	PullRequestActionReviewRequestRemoved = "review_request_removed"
-	// PullRequestActionLabeled means means labels were added.
-	PullRequestActionLabeled = "labeled"
+	PullRequestActionReviewRequestRemoved PullRequestEventAction = "review_request_removed"
+	// PullRequestActionLabeled means labels were added.
+	PullRequestActionLabeled PullRequestEventAction = "labeled"
 	// PullRequestActionUnlabeled means labels were removed
-	PullRequestActionUnlabeled = "unlabeled"
+	PullRequestActionUnlabeled PullRequestEventAction = "unlabeled"
 	// PullRequestActionOpened means the PR was created
-	PullRequestActionOpened = "opened"
-	// PullRequestActionEdited means means the PR body changed.
-	PullRequestActionEdited = "edited"
+	PullRequestActionOpened PullRequestEventAction = "opened"
+	// PullRequestActionEdited means the PR body changed.
+	PullRequestActionEdited PullRequestEventAction = "edited"
 	// PullRequestActionClosed means the PR was closed (or was merged).
-	PullRequestActionClosed = "closed"
+	PullRequestActionClosed PullRequestEventAction = "closed"
 	// PullRequestActionReopened means the PR was reopened.
-	PullRequestActionReopened = "reopened"
+	PullRequestActionReopened PullRequestEventAction = "reopened"
 	// PullRequestActionSynchronize means the git state changed.
-	PullRequestActionSynchronize = "synchronize"
+	PullRequestActionSynchronize PullRequestEventAction = "synchronize"
+	// PullRequestActionReadyForReview means the PR is no longer a draft PR.
+	PullRequestActionReadyForReview PullRequestEventAction = "ready_for_review"
 )
 
 // PullRequestEvent is what GitHub sends us when a PR is changed.
@@ -151,12 +210,13 @@ type PullRequestEvent struct {
 	// and deserialize later as this is a polymorphic field
 	Changes json.RawMessage `json:"changes"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
+	ID                 int               `json:"id"`
 	Number             int               `json:"number"`
 	HTMLURL            string            `json:"html_url"`
 	User               User              `json:"user"`
@@ -167,6 +227,7 @@ type PullRequest struct {
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
 	State              string            `json:"state"`
+	Draft              bool              `json:"draft"`
 	Merged             bool              `json:"merged"`
 	CreatedAt          time.Time         `json:"created_at,omitempty"`
 	UpdatedAt          time.Time         `json:"updated_at,omitempty"`
@@ -181,6 +242,8 @@ type PullRequest struct {
 	// background job was started to compute it. When the job is complete, the response
 	// will include a non-null value for the mergeable attribute.
 	Mergable *bool `json:"mergeable,omitempty"`
+	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
+	Milestone *Milestone `json:"milestone,omitempty"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -226,6 +289,7 @@ type PullRequestChange struct {
 }
 
 // Repo contains general repository information.
+// See also https://developer.github.com/v3/repos/#get
 type Repo struct {
 	Owner         User   `json:"owner"`
 	Name          string `json:"name"`
@@ -233,6 +297,61 @@ type Repo struct {
 	HTMLURL       string `json:"html_url"`
 	Fork          bool   `json:"fork"`
 	DefaultBranch string `json:"default_branch"`
+	Archived      bool   `json:"archived"`
+
+	// Permissions reflect the permission level for the requester, so
+	// on a repository GET call this will be for the user whose token
+	// is being used, if listing a team's repos this will be for the
+	// team's privilege level in the repo
+	Permissions RepoPermissions `json:"permissions"`
+}
+
+// RepoPermissions describes which permission level an entity has in a
+// repo. At most one of the booleans here should be true.
+type RepoPermissions struct {
+	// Pull is equivalent to "Read" permissions in the web UI
+	Pull bool `json:"pull"`
+	// Push is equivalent to "Edit" permissions in the web UI
+	Push  bool `json:"push"`
+	Admin bool `json:"admin"`
+}
+
+// RepoPermissionLevel is admin, write, read or none.
+//
+// See https://developer.github.com/v3/repos/collaborators/#review-a-users-permission-level
+type RepoPermissionLevel string
+
+const (
+	// Read allows pull but not push
+	Read RepoPermissionLevel = "read"
+	// Write allows Read plus push
+	Write RepoPermissionLevel = "write"
+	// Admin allows Write plus change others' rights.
+	Admin RepoPermissionLevel = "admin"
+	// None disallows everything
+	None RepoPermissionLevel = "none"
+)
+
+var repoPermissionLevels = map[RepoPermissionLevel]bool{
+	Read:  true,
+	Write: true,
+	Admin: true,
+	None:  true,
+}
+
+// MarshalText returns the byte representation of the permission
+func (l RepoPermissionLevel) MarshalText() ([]byte, error) {
+	return []byte(l), nil
+}
+
+// UnmarshalText validates the text is a valid string
+func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
+	v := RepoPermissionLevel(text)
+	if _, ok := repoPermissionLevels[v]; !ok {
+		return fmt.Errorf("bad repo permission: %s not in %v", v, repoPermissionLevels)
+	}
+	*l = v
+	return nil
 }
 
 // Branch contains general branch information.
@@ -242,14 +361,52 @@ type Branch struct {
 	// TODO(fejta): consider including undocumented protection key
 }
 
-// BranchProtectionRequest represents
-// protections in place for a branch.
-// See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
-type BranchProtectionRequest struct {
+// BranchProtection represents protections
+// currently in place for a branch
+// See also: https://developer.github.com/v3/repos/branches/#get-branch-protection
+type BranchProtection struct {
 	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks"`
-	EnforceAdmins              *bool                       `json:"enforce_admins"`
+	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+}
+
+// EnforceAdmins specifies whether to enforce the
+// configured branch restrictions for administrators.
+type EnforceAdmins struct {
+	Enabled bool `json:"enabled"`
+}
+
+// RequiredPullRequestReviews exposes the state of review rights.
+type RequiredPullRequestReviews struct {
+	DismissalRestrictions        *Restrictions `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool          `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool          `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int           `json:"required_approving_review_count"`
+}
+
+// Restrictions exposes restrictions in github for an activity to people/teams.
+type Restrictions struct {
+	Users []User `json:"users,omitempty"`
+	Teams []Team `json:"teams,omitempty"`
+}
+
+// BranchProtectionRequest represents
+// protections to put in place for a branch.
+// See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
+type BranchProtectionRequest struct {
+	RequiredStatusChecks       *RequiredStatusChecks              `json:"required_status_checks"`
+	EnforceAdmins              *bool                              `json:"enforce_admins"`
+	RequiredPullRequestReviews *RequiredPullRequestReviewsRequest `json:"required_pull_request_reviews"`
+	Restrictions               *RestrictionsRequest               `json:"restrictions"`
+}
+
+func (r BranchProtectionRequest) String() string {
+	bytes, err := json.Marshal(&r)
+	if err != nil {
+		return fmt.Sprintf("%#v", r)
+	}
+	return string(bytes)
 }
 
 // RequiredStatusChecks specifies which contexts must pass to merge.
@@ -258,23 +415,57 @@ type RequiredStatusChecks struct {
 	Contexts []string `json:"contexts"`
 }
 
-// RequiredPullRequestReviews controls review rights.
-type RequiredPullRequestReviews struct {
-	DismissalRestrictions        Restrictions `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool         `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool         `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int          `json:"required_approving_review_count"`
+// RequiredPullRequestReviewsRequest controls a request for review rights.
+type RequiredPullRequestReviewsRequest struct {
+	DismissalRestrictions        RestrictionsRequest `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                 `json:"required_approving_review_count"`
 }
 
-// Restrictions tells github to restrict an activity to people/teams.
+// RestrictionsRequest tells github to restrict an activity to people/teams.
 //
 // Use *[]string in order to distinguish unset and empty list.
 // This is needed by dismissal_restrictions to distinguish
 // do not restrict (empty object) and restrict everyone (nil user/teams list)
-type Restrictions struct {
+type RestrictionsRequest struct {
+	// Users is a list of user logins
 	Users *[]string `json:"users,omitempty"`
+	// Teams is a list of team slugs
 	Teams *[]string `json:"teams,omitempty"`
 }
+
+// HookConfig holds the endpoint and its secret.
+type HookConfig struct {
+	URL         string  `json:"url"`
+	ContentType *string `json:"content_type,omitempty"`
+	Secret      *string `json:"secret,omitempty"`
+}
+
+// Hook holds info about the webhook configuration.
+type Hook struct {
+	ID     int        `json:"id"`
+	Name   string     `json:"name"`
+	Events []string   `json:"events"`
+	Active bool       `json:"active"`
+	Config HookConfig `json:"config"`
+}
+
+// HookRequest can create and/or edit a webhook.
+//
+// AddEvents and RemoveEvents are only valid during an edit, and only for a repo
+type HookRequest struct {
+	Name         string      `json:"name,omitempty"` // must be web or "", only create
+	Active       *bool       `json:"active,omitempty"`
+	AddEvents    []string    `json:"add_events,omitempty"` // only repo edit
+	Config       *HookConfig `json:"config,omitempty"`
+	Events       []string    `json:"events,omitempty"`
+	RemoveEvents []string    `json:"remove_events,omitempty"` // only repo edit
+}
+
+// AllHookEvents causes github to send all events.
+// https://developer.github.com/v3/activity/events/types/
+var AllHookEvents = []string{"*"}
 
 // IssueEventAction enumerates the triggers for this
 // webhook payload type. See also:
@@ -285,23 +476,27 @@ const (
 	// IssueActionAssigned means assignees were added.
 	IssueActionAssigned IssueEventAction = "assigned"
 	// IssueActionUnassigned means assignees were added.
-	IssueActionUnassigned = "unassigned"
+	IssueActionUnassigned IssueEventAction = "unassigned"
 	// IssueActionLabeled means labels were added.
-	IssueActionLabeled = "labeled"
+	IssueActionLabeled IssueEventAction = "labeled"
 	// IssueActionUnlabeled means labels were removed.
-	IssueActionUnlabeled = "unlabeled"
+	IssueActionUnlabeled IssueEventAction = "unlabeled"
 	// IssueActionOpened means issue was opened/created.
-	IssueActionOpened = "opened"
+	IssueActionOpened IssueEventAction = "opened"
 	// IssueActionEdited means issue body was edited.
-	IssueActionEdited = "edited"
+	IssueActionEdited IssueEventAction = "edited"
 	// IssueActionMilestoned means the milestone was added/changed.
-	IssueActionMilestoned = "milestoned"
+	IssueActionMilestoned IssueEventAction = "milestoned"
 	// IssueActionDemilestoned means a milestone was removed.
-	IssueActionDemilestoned = "demilestoned"
+	IssueActionDemilestoned IssueEventAction = "demilestoned"
 	// IssueActionClosed means issue was closed.
-	IssueActionClosed = "closed"
+	IssueActionClosed IssueEventAction = "closed"
 	// IssueActionReopened means issue was reopened.
-	IssueActionReopened = "reopened"
+	IssueActionReopened IssueEventAction = "reopened"
+	// IssueActionPinned means the issue was pinned.
+	IssueActionPinned IssueEventAction = "pinned"
+	// IssueActionUnpinned means the issue was unpinned.
+	IssueActionUnpinned IssueEventAction = "unpinned"
 )
 
 // IssueEvent represents an issue event from a webhook payload (not from the events API).
@@ -312,7 +507,7 @@ type IssueEvent struct {
 	// Label is specified for IssueActionLabeled and IssueActionUnlabeled events.
 	Label Label `json:"label"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -334,9 +529,9 @@ const (
 	// IssueCommentActionCreated means the comment was created.
 	IssueCommentActionCreated IssueCommentEventAction = "created"
 	// IssueCommentActionEdited means the comment was edited.
-	IssueCommentActionEdited = "edited"
+	IssueCommentActionEdited IssueCommentEventAction = "edited"
 	// IssueCommentActionDeleted means the comment was deleted.
-	IssueCommentActionDeleted = "deleted"
+	IssueCommentActionDeleted IssueCommentEventAction = "deleted"
 )
 
 // IssueCommentEvent is what GitHub sends us when an issue comment is changed.
@@ -346,12 +541,13 @@ type IssueCommentEvent struct {
 	Comment IssueComment            `json:"comment"`
 	Repo    Repo                    `json:"repository"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
 // Issue represents general info about an issue.
 type Issue struct {
+	ID        int       `json:"id"`
 	User      User      `json:"user"`
 	Number    int       `json:"number"`
 	Title     string    `json:"title"`
@@ -422,7 +618,7 @@ type StatusEvent struct {
 	Sender      User   `json:"sender,omitempty"`
 	Repo        Repo   `json:"repository,omitempty"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -437,6 +633,9 @@ type PushEvent struct {
 	Ref     string   `json:"ref"`
 	Before  string   `json:"before"`
 	After   string   `json:"after"`
+	Created bool     `json:"created"`
+	Deleted bool     `json:"deleted"`
+	Forced  bool     `json:"forced"`
 	Compare string   `json:"compare"`
 	Commits []Commit `json:"commits"`
 	// Pusher is the user that pushed the commit, valid in a webhook event.
@@ -445,14 +644,15 @@ type PushEvent struct {
 	Sender User `json:"sender"`
 	Repo   Repo `json:"repository"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
 // Branch returns the name of the branch to which the user pushed.
 func (pe PushEvent) Branch() string {
-	refs := strings.Split(pe.Ref, "/")
-	return refs[len(refs)-1]
+	ref := strings.TrimPrefix(pe.Ref, "refs/heads/") // if Ref is a branch
+	ref = strings.TrimPrefix(ref, "refs/tags/")      // if Ref is a tag
+	return ref
 }
 
 // Commit represents general info about a commit.
@@ -464,6 +664,16 @@ type Commit struct {
 	Modified []string `json:"modified"`
 }
 
+// SingleCommit is the commit part received when requesting a single commit
+// https://developer.github.com/v3/repos/commits/#get-a-single-commit
+type SingleCommit struct {
+	Commit struct {
+		Tree struct {
+			SHA string `json:"sha"`
+		} `json:"tree"`
+	} `json:"commit"`
+}
+
 // ReviewEventAction enumerates the triggers for this
 // webhook payload type. See also:
 // https://developer.github.com/v3/activity/events/types/#pullrequestreviewevent
@@ -473,9 +683,9 @@ const (
 	// ReviewActionSubmitted means the review was submitted.
 	ReviewActionSubmitted ReviewEventAction = "submitted"
 	// ReviewActionEdited means the review was edited.
-	ReviewActionEdited = "edited"
+	ReviewActionEdited ReviewEventAction = "edited"
 	// ReviewActionDismissed means the review was dismissed.
-	ReviewActionDismissed = "dismissed"
+	ReviewActionDismissed ReviewEventAction = "dismissed"
 )
 
 // ReviewEvent is what GitHub sends us when a PR review is changed.
@@ -485,7 +695,7 @@ type ReviewEvent struct {
 	Repo        Repo              `json:"repository"`
 	Review      Review            `json:"review"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -520,9 +730,9 @@ const (
 	// ReviewCommentActionCreated means the comment was created.
 	ReviewCommentActionCreated ReviewCommentEventAction = "created"
 	// ReviewCommentActionEdited means the comment was edited.
-	ReviewCommentActionEdited = "edited"
+	ReviewCommentActionEdited ReviewCommentEventAction = "edited"
 	// ReviewCommentActionDeleted means the comment was deleted.
-	ReviewCommentActionDeleted = "deleted"
+	ReviewCommentActionDeleted ReviewCommentEventAction = "deleted"
 )
 
 // ReviewCommentEvent is what GitHub sends us when a PR review comment is changed.
@@ -532,7 +742,7 @@ type ReviewCommentEvent struct {
 	Repo        Repo                     `json:"repository"`
 	Comment     ReviewComment            `json:"comment"`
 
-	// GUID is included in the header of the request received by Github.
+	// GUID is included in the header of the request received by GitHub.
 	GUID string
 }
 
@@ -597,6 +807,7 @@ const (
 type Team struct {
 	ID           int    `json:"id,omitempty"`
 	Name         string `json:"name"`
+	Slug         string `json:"slug"`
 	Description  string `json:"description,omitempty"`
 	Privacy      string `json:"privacy,omitempty"`
 	Parent       *Team  `json:"parent,omitempty"`         // Only present in responses
@@ -660,7 +871,8 @@ type TeamMembership struct {
 // OrgInvitation contains Login and other details about the invitation.
 type OrgInvitation struct {
 	TeamMember
-	Inviter TeamMember `json:"login"`
+	Email   string     `json:"email"`
+	Inviter TeamMember `json:"inviter"`
 }
 
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.
@@ -671,9 +883,9 @@ const (
 	// GenericCommentActionCreated means something was created/opened/submitted
 	GenericCommentActionCreated GenericCommentEventAction = "created" // "opened", "submitted"
 	// GenericCommentActionEdited means something was edited.
-	GenericCommentActionEdited = "edited"
+	GenericCommentActionEdited GenericCommentEventAction = "edited"
 	// GenericCommentActionDeleted means something was deleted/dismissed.
-	GenericCommentActionDeleted = "deleted" // "dismissed"
+	GenericCommentActionDeleted GenericCommentEventAction = "deleted" // "dismissed"
 )
 
 // GenericCommentEvent is a fake event type that is instantiated for any github event that contains
@@ -688,6 +900,7 @@ const (
 // Issue and PR "closed" events are not coerced to the "deleted" Action and do not trigger
 // a GenericCommentEvent because these events don't actually remove the comment content from GH.
 type GenericCommentEvent struct {
+	ID           int `json:"id"`
 	IsPR         bool
 	Action       GenericCommentEventAction
 	Body         string
@@ -707,4 +920,44 @@ type GenericCommentEvent struct {
 type Milestone struct {
 	Title  string `json:"title"`
 	Number int    `json:"number"`
+}
+
+// RepositoryCommit represents a commit in a repo.
+// Note that it's wrapping a GitCommit, so author/committer information is in two places,
+// but contain different details about them: in RepositoryCommit "github details", in GitCommit - "git details".
+type RepositoryCommit struct {
+	SHA         string    `json:"sha"`
+	Commit      GitCommit `json:"commit"`
+	Author      User      `json:"author"`
+	Committer   User      `json:"committer"`
+	Parents     []Commit  `json:"parents,omitempty"`
+	HTMLURL     string    `json:"html_url"`
+	URL         string    `json:"url"`
+	CommentsURL string    `json:"comments_url"`
+}
+
+// GitCommit represents a GitHub commit.
+type GitCommit struct {
+	SHA     string `json:"sha,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// Project is a github project
+type Project struct {
+	Name string `json:"name"`
+	ID   int    `json:"id"`
+}
+
+// ProjectColumn is a colunm in a github project
+type ProjectColumn struct {
+	Name string `json:"name"`
+	ID   int    `json:"id"`
+}
+
+// ProjectCard is a github project card
+type ProjectCard struct {
+	ID          int    `json:"id"`
+	ContentID   int    `json:"content_id"`
+	ContentType string `json:"content_type"`
+	ContentURL  string `json:"content_url"`
 }

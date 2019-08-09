@@ -131,7 +131,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Time{}),
 			},
 			new: []*github.Issue{
-				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "", 0, false,
+				makeGitHubIssue(2, "Super Title", "Body", "NoState", "Login", "", 0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
@@ -165,12 +165,12 @@ func TestUpdateIssues(t *testing.T) {
 					time.Time{}),
 			},
 			new: []*github.Issue{
-				makeGithubIssue(2, "Super Title", "Body", "NoState", "Login", "",
+				makeGitHubIssue(2, "Super Title", "Body", "NoState", "Login", "",
 					0, false,
 					time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Time{}),
-				makeGithubIssue(3, "Title", "Body", "State", "John", "",
+				makeGitHubIssue(3, "Title", "Body", "State", "John", "",
 					0, false,
 					time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -204,7 +204,7 @@ func TestUpdateIssues(t *testing.T) {
 					time.Time{}),
 			},
 			new: []*github.Issue{
-				makeGithubIssue(1, "Super Title", "Body", "NoState", "Login", "",
+				makeGitHubIssue(1, "Super Title", "Body", "NoState", "Login", "",
 					0, false,
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),

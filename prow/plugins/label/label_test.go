@@ -20,11 +20,14 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
@@ -104,9 +107,9 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Add Single Kind Label",
 			body:                  "/kind bug",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("kind/bug"),
+			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 		},
@@ -122,18 +125,18 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Adding Labels is Case Insensitive",
 			body:                  "/kind BuG",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("kind/bug"),
+			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 		},
 		{
 			name:                  "Adding Labels is Case Insensitive",
 			body:                  "/kind bug",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/BUG"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("kind/BUG"),
+			expectedNewLabels:     formatLabels(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 		},
@@ -149,7 +152,7 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Non Org Member Can't Add",
 			body:                  "/area infra",
-			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
+			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
@@ -158,7 +161,7 @@ func TestLabel(t *testing.T) {
 		{
 			name:                  "Command must start at the beginning of the line",
 			body:                  "  /area infra",
-			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent", "priority/important", "kind/bug"},
+			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent", "priority/important", labels.Bug},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
@@ -431,12 +434,12 @@ func TestLabel(t *testing.T) {
 		t.Logf("Running scenario %q", tc.name)
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
-			Issues:         make([]github.Issue, 1),
-			IssueComments:  make(map[int][]github.IssueComment),
-			ExistingLabels: tc.repoLabels,
-			OrgMembers:     map[string][]string{"org": {orgMember}},
-			LabelsAdded:    []string{},
-			LabelsRemoved:  []string{},
+			Issues:             make(map[int]*github.Issue),
+			IssueComments:      make(map[int][]github.IssueComment),
+			RepoLabelsExisting: tc.repoLabels,
+			OrgMembers:         map[string][]string{"org": {orgMember}},
+			IssueLabelsAdded:   []string{},
+			IssueLabelsRemoved: []string{},
 		}
 		// Add initial labels
 		for _, label := range tc.issueLabels {
@@ -461,15 +464,15 @@ func TestLabel(t *testing.T) {
 			expectLabels = []string{}
 		}
 		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
+			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fakeClient.IssueLabelsAdded)
 		}
 
 		sort.Strings(tc.expectedRemovedLabels)
-		sort.Strings(fakeClient.LabelsRemoved)
-		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.LabelsRemoved) {
-			t.Errorf("expected the labels %q to be removed, but %q were removed.", tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+		sort.Strings(fakeClient.IssueLabelsRemoved)
+		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved) {
+			t.Errorf("expected the labels %q to be removed, but %q were removed.", tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved)
 		}
 		if len(fakeClient.IssueCommentsAdded) > 0 && !tc.expectedBotComment {
 			t.Errorf("unexpected bot comments: %#v", fakeClient.IssueCommentsAdded)
@@ -477,5 +480,58 @@ func TestLabel(t *testing.T) {
 		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
 			t.Error("expected a bot comment but got none")
 		}
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name               string
+		config             *plugins.Configuration
+		enabledRepos       []string
+		err                bool
+		configInfoIncludes []string
+	}{
+		{
+			name:               "Empty config",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{configString(defaultLabels)},
+		},
+		{
+			name:               "Overlapping org and org/repo",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org2", "org2/repo"},
+			configInfoIncludes: []string{configString(defaultLabels)},
+		},
+		{
+			name:               "Invalid enabledRepos",
+			config:             &plugins.Configuration{},
+			enabledRepos:       []string{"org1", "org2/repo/extra"},
+			err:                true,
+			configInfoIncludes: []string{configString(defaultLabels)},
+		},
+		{
+			name: "With AdditionalLabels",
+			config: &plugins.Configuration{
+				Label: plugins.Label{
+					AdditionalLabels: []string{"sig", "triage", "wg"},
+				},
+			},
+			enabledRepos:       []string{"org1", "org2/repo"},
+			configInfoIncludes: []string{configString(append(defaultLabels, "sig", "triage", "wg"))},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			pluginHelp, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
+			}
+			for _, msg := range c.configInfoIncludes {
+				if !strings.Contains(pluginHelp.Config[""], msg) {
+					t.Fatalf("helpProvider.Config error mismatch: didn't get %v, but wanted it", msg)
+				}
+			}
+		})
 	}
 }

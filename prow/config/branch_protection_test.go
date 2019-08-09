@@ -36,6 +36,7 @@ func normalize(policy *Policy) {
 		return
 	}
 	sort.Strings(policy.RequiredStatusChecks.Contexts)
+	sort.Strings(policy.Exclude)
 }
 
 func TestSelectBool(t *testing.T) {
@@ -269,6 +270,18 @@ func TestApply(test *testing.T) {
 				Protect: &t,
 			},
 		},
+		{
+			name: "merge exclusion strings",
+			child: Policy{
+				Exclude: []string{"foo*"},
+			},
+			parent: Policy{
+				Exclude: []string{"bar*"},
+			},
+			expected: Policy{
+				Exclude: []string{"bar*", "foo*"},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -278,10 +291,7 @@ func TestApply(test *testing.T) {
 					test.Errorf("unexpected panic: %s", r)
 				}
 			}()
-			actual, err := tc.parent.Apply(tc.child)
-			if err != nil {
-				test.Fatalf("unexpected error: %v", err)
-			}
+			actual := tc.parent.Apply(tc.child)
 			normalize(&actual)
 			normalize(&tc.expected)
 			if !reflect.DeepEqual(actual, tc.expected) {
@@ -291,140 +301,66 @@ func TestApply(test *testing.T) {
 	}
 }
 
-func TestJobRequirements(t *testing.T) {
+func TestBranchRequirements(t *testing.T) {
 	cases := []struct {
-		name                          string
-		config                        []Presubmit
-		masterExpected, otherExpected []string
-		masterOptional, otherOptional []string
+		name                            string
+		config                          []Presubmit
+		masterExpected, otherExpected   []string
+		masterOptional, otherOptional   []string
+		masterIfPresent, otherIfPresent []string
 	}{
 		{
 			name: "basic",
 			config: []Presubmit{
 				{
-					Context:    "always-run",
-					AlwaysRun:  true,
-					SkipReport: false,
+					AlwaysRun: true,
+					Reporter: Reporter{
+						Context:    "always-run",
+						SkipReport: false,
+					},
 				},
 				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					AlwaysRun:    false,
-					SkipReport:   false,
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "run-if-changed",
+						SkipReport: false,
+					},
 				},
 				{
-					Context:    "not-always",
-					AlwaysRun:  false,
-					SkipReport: false,
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "not-always",
+						SkipReport: false,
+					},
 				},
 				{
-					Context:    "skip-report",
-					AlwaysRun:  true,
-					SkipReport: true,
+					AlwaysRun: true,
+					Reporter: Reporter{
+						Context:    "skip-report",
+						SkipReport: true,
+					},
 					Brancher: Brancher{
 						SkipBranches: []string{"master"},
 					},
 				},
 				{
-					Context:    "optional",
-					AlwaysRun:  true,
-					SkipReport: false,
-					Optional:   true,
+					AlwaysRun: true,
+					Reporter: Reporter{
+						Context:    "optional",
+						SkipReport: false,
+					},
+					Optional: true,
 				},
 			},
-			masterExpected: []string{"always-run", "run-if-changed"},
-			masterOptional: []string{"optional"},
-			otherExpected:  []string{"always-run", "run-if-changed"},
-			otherOptional:  []string{"skip-report", "optional"},
-		},
-		{
-			name: "children",
-			config: []Presubmit{
-				{
-					Context:    "always-run",
-					AlwaysRun:  true,
-					SkipReport: false,
-					RunAfterSuccess: []Presubmit{
-						{
-							Context: "include-me",
-						},
-					},
-				},
-				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					SkipReport:   true,
-					AlwaysRun:    false,
-					RunAfterSuccess: []Presubmit{
-						{
-							Context: "me2",
-						},
-					},
-				},
-				{
-					Context:    "run-and-skip",
-					AlwaysRun:  true,
-					SkipReport: true,
-					RunAfterSuccess: []Presubmit{
-						{
-							Context: "also-me-3",
-						},
-					},
-				},
-				{
-					Context:    "optional",
-					AlwaysRun:  false,
-					SkipReport: false,
-					RunAfterSuccess: []Presubmit{
-						{
-							Context: "no thanks",
-						},
-					},
-				},
-				{
-					Context:    "hidden-grandpa",
-					AlwaysRun:  true,
-					SkipReport: true,
-					RunAfterSuccess: []Presubmit{
-						{
-							Context:   "hidden-parent",
-							Optional:  true,
-							AlwaysRun: false,
-							Brancher: Brancher{
-								Branches: []string{"master"},
-							},
-							RunAfterSuccess: []Presubmit{
-								{
-									Context: "visible-kid",
-									Brancher: Brancher{
-										Branches: []string{"master"},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			masterExpected: []string{
-				"always-run", "include-me",
-				"me2",
-				"also-me-3",
-				"visible-kid",
-			},
-			masterOptional: []string{
-				"run-if-changed",
-				"run-and-skip",
-				"hidden-grandpa",
-				"hidden-parent"},
-			otherExpected: []string{
-				"always-run", "include-me",
-				"me2",
-				"also-me-3",
-			},
-			otherOptional: []string{
-				"run-if-changed",
-				"run-and-skip",
-				"hidden-grandpa"},
+			masterExpected:  []string{"always-run"},
+			masterIfPresent: []string{"run-if-changed", "not-always"},
+			masterOptional:  []string{"optional"},
+			otherExpected:   []string{"always-run"},
+			otherIfPresent:  []string{"run-if-changed", "not-always"},
+			otherOptional:   []string{"skip-report", "optional"},
 		},
 	}
 
@@ -432,30 +368,38 @@ func TestJobRequirements(t *testing.T) {
 		if err := SetPresubmitRegexes(tc.config); err != nil {
 			t.Fatalf("could not set regexes: %v", err)
 		}
-		masterActual, masterOptional := jobRequirements(tc.config, "master", false)
+		presubmits := map[string][]Presubmit{
+			"o/r": tc.config,
+		}
+		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("o", "r", "master", presubmits)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
-			t.Errorf("branch: master - %s: actual %v != expected %v", tc.name, masterActual, tc.masterExpected)
+			t.Errorf("%s: identified incorrect required contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActual, tc.masterExpected))
 		}
 		if !reflect.DeepEqual(masterOptional, tc.masterOptional) {
-			t.Errorf("branch: master - optional - %s: actual %v != expected %v", tc.name, masterOptional, tc.masterOptional)
+			t.Errorf("%s: identified incorrect optional contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterOptional, tc.masterOptional))
 		}
-		otherActual, otherOptional := jobRequirements(tc.config, "other", false)
+		if !reflect.DeepEqual(masterActualIfPresent, tc.masterIfPresent) {
+			t.Errorf("%s: identified incorrect if-present contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActualIfPresent, tc.masterIfPresent))
+		}
+		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("o", "r", "other", presubmits)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
-			t.Errorf("branch: other - %s: actual %v != expected %v", tc.name, otherActual, tc.otherExpected)
+			t.Errorf("%s: identified incorrect required contexts on branch other: : %s", tc.name, diff.ObjectReflectDiff(otherActual, tc.otherExpected))
 		}
 		if !reflect.DeepEqual(otherOptional, tc.otherOptional) {
-			t.Errorf("branch: other - optional - %s: actual %v != expected %v", tc.name, otherOptional, tc.otherOptional)
+			t.Errorf("%s: identified incorrect optional contexts on branch other: %s", tc.name, diff.ObjectReflectDiff(otherOptional, tc.otherOptional))
+		}
+		if !reflect.DeepEqual(otherActualIfPresent, tc.otherIfPresent) {
+			t.Errorf("%s: identified incorrect if-present contexts on branch other: %s", tc.name, diff.ObjectReflectDiff(otherActualIfPresent, tc.otherIfPresent))
 		}
 	}
 }
 
 func TestConfig_GetBranchProtection(t *testing.T) {
 	testCases := []struct {
-		name              string
-		config            Config
-		org, repo, branch string
-		err               bool
-		expected          *Policy
+		name     string
+		config   Config
+		err      bool
+		expected *Policy
 	}{
 		{
 			name: "unprotected by default",
@@ -678,8 +622,12 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "required presubmit",
-								Context:   "required presubmit",
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
+								Reporter: Reporter{
+									Context: "required presubmit",
+								},
 								AlwaysRun: true,
 							},
 						},
@@ -708,8 +656,12 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "required presubmit",
-								Context:   "required presubmit",
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
+								Reporter: Reporter{
+									Context: "required presubmit",
+								},
 								AlwaysRun: true,
 							},
 						},
@@ -740,8 +692,12 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "required presubmit",
-								Context:   "required presubmit",
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
+								Reporter: Reporter{
+									Context: "required presubmit",
+								},
 								AlwaysRun: true,
 							},
 						},
@@ -765,8 +721,12 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "optional presubmit",
-								Context:   "optional presubmit",
+								JobBase: JobBase{
+									Name: "optional presubmit",
+								},
+								Reporter: Reporter{
+									Context: "optional presubmit",
+								},
 								AlwaysRun: true,
 								Optional:  true,
 							},
@@ -794,8 +754,12 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							{
-								Name:      "optional presubmit",
-								Context:   "optional presubmit",
+								JobBase: JobBase{
+									Name: "optional presubmit",
+								},
+								Reporter: Reporter{
+									Context: "optional presubmit",
+								},
 								AlwaysRun: true,
 								Optional:  true,
 							},
@@ -804,6 +768,44 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 				},
 			},
 			expected: &Policy{Protect: yes},
+		},
+		{
+			name: "Explicit non-configuration takes precedence over ProtectTested",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						AllowDisabledJobPolicies: true,
+						ProtectTested:            true,
+						Orgs: map[string]Org{
+							"org": {
+								Repos: map[string]Repo{
+									"repo": {
+										Policy: Policy{
+											Protect: no,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				JobConfig: JobConfig{
+					Presubmits: map[string][]Presubmit{
+						"org/repo": {
+							{
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
+								Reporter: Reporter{
+									Context: "required presubmit",
+								},
+								AlwaysRun: true,
+							},
+						},
+					},
+				},
+			},
+			expected: nil,
 		},
 	}
 

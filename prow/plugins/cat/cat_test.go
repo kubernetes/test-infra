@@ -37,9 +37,10 @@ type fakeClowder string
 
 var human = flag.Bool("human", false, "Enable to run additional manual tests")
 var category = flag.String("category", "", "Request a particular category if set")
-var path = flag.String("key-path", "", "Path to api key if set")
+var movieCat = flag.Bool("gif", false, "Specifically request a GIF image if set")
+var keyPath = flag.String("key-path", "", "Path to api key if set")
 
-func (c fakeClowder) readCat(category string) (string, error) {
+func (c fakeClowder) readCat(category string, movieCat bool, grumpyRoot string) (string, error) {
 	if category == "error" {
 		return "", errors.New(string(c))
 	}
@@ -50,11 +51,11 @@ func TestRealCat(t *testing.T) {
 	if !*human {
 		t.Skip("Real cats disabled for automation. Manual users can add --human [--category=foo]")
 	}
-	if *path != "" {
-		meow.setKey(*path, logrus.WithField("plugin", pluginName))
+	if *keyPath != "" {
+		meow.setKey(*keyPath, logrus.WithField("plugin", pluginName))
 	}
 
-	if cat, err := meow.readCat(*category); err != nil {
+	if cat, err := meow.readCat(*category, *movieCat, defaultGrumpyRoot); err != nil {
 		t.Errorf("Could not read cats from %#v: %v", meow, err)
 	} else {
 		fmt.Println(cat)
@@ -67,6 +68,7 @@ func TestUrl(t *testing.T) {
 		url      string
 		category string
 		key      string
+		movie    bool
 		require  []string
 		deny     []string
 	}{
@@ -79,13 +81,28 @@ func TestUrl(t *testing.T) {
 			url:     "http://foo",
 			key:     "blah",
 			require: []string{"api_key=blah"},
-			deny:    []string{"category="},
+			deny:    []string{"category=", "mime_types=gif"},
 		},
 		{
 			name:     "category",
 			url:      "http://foo",
 			category: "bar",
 			require:  []string{"category=bar"},
+			deny:     []string{"api_key=", "mime_types=gif"},
+		},
+		{
+			name:    "movie",
+			url:     "http://foo",
+			movie:   true,
+			require: []string{"mime_types=gif"},
+			deny:    []string{"category=this", "api_key=that"},
+		},
+		{
+			name:     "category and movie",
+			url:      "http://foo",
+			category: "this",
+			movie:    true,
+			require:  []string{"mime_types=gif", "category=this", "&"},
 			deny:     []string{"api_key="},
 		},
 		{
@@ -94,6 +111,15 @@ func TestUrl(t *testing.T) {
 			category: "this",
 			key:      "that",
 			require:  []string{"category=this", "api_key=that", "&"},
+			deny:     []string{"mime_types=gif"},
+		},
+		{
+			name:     "category, key, and movie",
+			url:      "http://foo",
+			category: "this",
+			key:      "that",
+			movie:    true,
+			require:  []string{"category=this", "api_key=that", "&", "mime_types=gif"},
 		},
 	}
 
@@ -102,7 +128,75 @@ func TestUrl(t *testing.T) {
 			url: tc.url,
 			key: tc.key,
 		}
-		url := rc.Url(tc.category)
+		url := rc.URL(tc.category, tc.movie)
+		for _, r := range tc.require {
+			if !strings.Contains(url, r) {
+				t.Errorf("%s: %s does not contain %s", tc.name, url, r)
+			}
+		}
+		for _, d := range tc.deny {
+			if strings.Contains(url, d) {
+				t.Errorf("%s: %s contained unexpected %s", tc.name, url, d)
+			}
+		}
+	}
+}
+
+func TestGrumpy(t *testing.T) {
+	// fake server for images
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body := "binary image"
+		io.WriteString(w, body)
+	}))
+	defer ts.Close()
+
+	cases := []struct {
+		name     string
+		url      string
+		category string
+		key      string
+		movie    bool
+		require  []string
+		deny     []string
+	}{
+		{
+			name:     "category",
+			url:      "http://foo",
+			category: "bar",
+			movie:    false,
+			deny:     []string{ts.URL + "/" + grumpyIMG},
+		},
+		{
+			name:     "category and movie",
+			url:      "http://foo",
+			category: "this",
+			movie:    true,
+			deny:     []string{ts.URL + "/" + grumpyIMG},
+		},
+		{
+			name:     "grumpy cat no keyword",
+			url:      "http://foo",
+			category: "no",
+			key:      "that",
+			movie:    false,
+			require:  []string{ts.URL + "/" + grumpyIMG},
+		},
+		{
+			name:     "grumpy cat grumpy keyword",
+			url:      "http://foo",
+			category: "grumpy",
+			key:      "that",
+			movie:    false,
+			require:  []string{ts.URL + "/" + grumpyIMG},
+		},
+	}
+
+	for _, tc := range cases {
+		rc := realClowder{
+			url: tc.url,
+			key: tc.key,
+		}
+		url, _ := rc.readCat(tc.category, tc.movie, ts.URL+"/")
 		for _, r := range tc.require {
 			if !strings.Contains(url, r) {
 				t.Errorf("%s: %s does not contain %s", tc.name, url, r)
@@ -117,50 +211,34 @@ func TestUrl(t *testing.T) {
 }
 
 func TestFormat(t *testing.T) {
-	re := regexp.MustCompile(`\[!\[.+\]\(.+\)\]\(.+\)`)
+	re := regexp.MustCompile(`!\[.+\]\(.+\)`)
 	basicURL := "http://example.com"
 	testcases := []struct {
 		name string
-		src  string
 		img  string
 		err  bool
 	}{
 		{
 			name: "basically works",
-			src:  basicURL,
 			img:  basicURL,
 			err:  false,
 		},
 		{
-			name: "empty source",
-			src:  "",
-			img:  basicURL,
-			err:  true,
-		},
-		{
 			name: "empty image",
-			src:  basicURL,
 			img:  "",
 			err:  true,
 		},
 		{
-			name: "bad source",
-			src:  "http://this is not a url",
-			img:  basicURL,
-			err:  true,
-		},
-		{
 			name: "bad image",
-			src:  basicURL,
 			img:  "http://still a bad url",
 			err:  true,
 		},
 	}
 	for _, tc := range testcases {
 		ret, err := catResult{
-			Source: tc.src,
-			Image:  tc.img,
+			Image: tc.img,
 		}.Format()
+
 		switch {
 		case tc.err:
 			if err == nil {
@@ -196,25 +274,51 @@ func TestHttpResponse(t *testing.T) {
 	// create test cases for handling http responses
 	img := ts2.URL + "/cat.jpg"
 	bigimg := ts2.URL + "/bigcat.jpg"
-	src := "http://localhost?kind=source_url"
-	validResponse := fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, img, src)
+	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s"}]`, img)
 	var testcases = []struct {
 		name     string
 		path     string
 		response string
-		isValid  bool
+		valid    bool
+		code     int
 	}{
 		{
 			name:     "valid",
 			path:     "/valid",
-			response: fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, img, src),
-			isValid:  true,
+			response: validResponse,
+			valid:    true,
 		},
 		{
 			name:     "image too big",
 			path:     "/too-big",
-			response: fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, bigimg, src),
-			isValid:  false,
+			response: fmt.Sprintf(`[{"id":"toobig","url":"%s"}]`, bigimg),
+		},
+		{
+			name: "return-406",
+			path: "/return-406",
+			code: 406,
+			response: `
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>406 Not Acceptable</title>
+</head><body>
+<h1>Not Acceptable</h1>
+<p>An appropriate representation of the requested resource /api/images/get could not be found on this server.</p>
+Available variants:
+<ul>
+<li><a href="get.php">get.php</a> , type x-mapp-php5</li>
+</ul>
+</body></html>`,
+		},
+		{
+			name:     "no-cats-in-json",
+			path:     "/no-cats-in-json",
+			response: "[]",
+		},
+		{
+			name:     "no-image-in-json",
+			path:     "/no-image-in-json",
+			response: "[{}]",
 		},
 	}
 
@@ -223,7 +327,15 @@ func TestHttpResponse(t *testing.T) {
 	for _, testcase := range testcases {
 		pathToResponse[testcase.path] = testcase.response
 	}
+	codes := make(map[string]int)
+	for _, tc := range testcases {
+		codes[tc.path] = tc.code
+	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		code := codes[r.URL.Path]
+		if code > 0 {
+			w.WriteHeader(code)
+		}
 		if r, ok := pathToResponse[r.URL.Path]; ok {
 			io.WriteString(w, r)
 		} else {
@@ -240,16 +352,18 @@ func TestHttpResponse(t *testing.T) {
 	// run test for each case
 	for _, testcase := range testcases {
 		fakemeow := &realClowder{url: ts.URL + testcase.path}
-		cat, err := fakemeow.readCat(*category)
-		if testcase.isValid && err != nil {
+		cat, err := fakemeow.readCat(*category, *movieCat, "")
+		if testcase.valid && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", testcase.name, err)
-		} else if !testcase.isValid && err == nil {
+		} else if !testcase.valid && err == nil {
 			t.Errorf("For case %s, expected error, received cat: %s", testcase.name, cat)
+		} else if testcase.valid && cat == "" {
+			t.Errorf("For case %s, got an empty cat", testcase.name)
 		}
 	}
 
 	// fully test handling a comment
-	comment := "/meow"
+	comment := "/meowvie space"
 
 	e := &github.GenericCommentEvent{
 		Action:     github.GenericCommentActionCreated,
@@ -257,7 +371,7 @@ func TestHttpResponse(t *testing.T) {
 		Number:     5,
 		IssueState: "open",
 	}
-	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL}, func() {}); err != nil {
+	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL + "/?format=json"}, func() {}); err != nil {
 		t.Errorf("didn't expect error: %v", err)
 		return
 	}
@@ -267,8 +381,6 @@ func TestHttpResponse(t *testing.T) {
 	}
 	if c := fc.IssueComments[5][0]; !strings.Contains(c.Body, img) {
 		t.Errorf("missing image url: %s from comment: %v", img, c)
-	} else if !strings.Contains(c.Body, src) {
-		t.Errorf("missing source url: %s from comment: %v", src, c)
 	}
 
 }
@@ -332,6 +444,22 @@ func TestCats(t *testing.T) {
 			body:          "/meow error",
 			shouldComment: true,
 			shouldError:   true,
+		},
+		{
+			name:          "movie cat",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/meowvie",
+			shouldComment: true,
+			shouldError:   false,
+		},
+		{
+			name:          "categorical movie cat",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/meowvie space",
+			shouldComment: true,
+			shouldError:   false,
 		},
 	}
 	for _, tc := range testcases {

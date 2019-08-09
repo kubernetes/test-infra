@@ -1,0 +1,57 @@
+presubmits:
+  kubernetes-sigs/service-catalog:
+  - name: pull-service-catalog-unit
+    always_run: true
+    skip_report: false
+    decorate: true
+    spec:
+      containers:
+      - image: golang:1.12
+        command:
+        - make
+        args:
+        - test-unit
+        env:
+        - name: NO_DOCKER
+          value: "1"
+  - name: pull-service-catalog-integration
+    decorate: true
+    decoration_config:
+      timeout: 45m
+    always_run: true
+    skip_report: false
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test-integration
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-service-catalog-xbuild
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    always_run: true
+    skip_report: false
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - images-all
+        - svcat-all
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true

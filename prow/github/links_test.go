@@ -16,7 +16,9 @@ limitations under the License.
 
 package github
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestParseLinks(t *testing.T) {
 	var testcases = []struct {

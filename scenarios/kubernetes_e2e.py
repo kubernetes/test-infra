@@ -40,37 +40,37 @@ DEFAULT_AWS_ZONES = [
     'ap-northeast-1a',
     'ap-northeast-1c',
     'ap-northeast-1d',
-    #'ap-northeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'ap-northeast-2a',
     #'ap-northeast-2b' - AZ does not exist, so we're breaking the 3 AZs per region target here
-    #'ap-northeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-south-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-south-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-1c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-southeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ca-central-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ca-central-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'ap-northeast-2c',
+    'ap-south-1a',
+    'ap-south-1b',
+    'ap-southeast-1a',
+    'ap-southeast-1b',
+    'ap-southeast-1c',
+    'ap-southeast-2a',
+    'ap-southeast-2b',
+    'ap-southeast-2c',
+    'ca-central-1a',
+    'ca-central-1b',
     'eu-central-1a',
     'eu-central-1b',
     'eu-central-1c',
     'eu-west-1a',
     'eu-west-1b',
     'eu-west-1c',
-    #'eu-west-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'eu-west-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'eu-west-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
+    'eu-west-2a',
+    'eu-west-2b',
+    'eu-west-2c',
     #'eu-west-3a', documented to not support c4 family
     #'eu-west-3b', documented to not support c4 family
     #'eu-west-3c', documented to not support c4 family
     'sa-east-1a',
     #'sa-east-1b', AZ does not exist, so we're breaking the 3 AZs per region target here
     'sa-east-1c',
-    'us-east-1a',
-    'us-east-1b',
-    'us-east-1c',
+    #'us-east-1a', # temporarily removing due to lack of quota #10043
+    #'us-east-1b', # temporarily removing due to lack of quota #10043
+    #'us-east-1c', # temporarily removing due to lack of quota #10043
     #'us-east-1d', # limiting to 3 zones to not overallocate
     #'us-east-1e', # limiting to 3 zones to not overallocate
     #'us-east-1f', # limiting to 3 zones to not overallocate
@@ -80,9 +80,9 @@ DEFAULT_AWS_ZONES = [
     'us-west-1a',
     'us-west-1b',
     #'us-west-1c', AZ does not exist, so we're breaking the 3 AZs per region target here
-    'us-west-2a',
-    'us-west-2b',
-    'us-west-2c'
+    #'us-west-2a', # temporarily removing due to lack of quota #10043
+    #'us-west-2b', # temporarily removing due to lack of quota #10043
+    #'us-west-2c', # temporarily removing due to lack of quota #10043
 ]
 
 def test_infra(*paths):
@@ -212,9 +212,9 @@ class LocalMode(object):
         shutil.copy(cred, aws_cred)
 
         self.add_environment(
-            'JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
-            'JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
-            'JENKINS_AWS_CREDENTIALS_FILE=%s' % cred,
+            'AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
+            'AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
+            'AWS_SHARED_CREDENTIALS_FILE=%s' % cred,
         )
 
     def add_aws_role(self, profile, arn):
@@ -428,6 +428,15 @@ def get_shared_gcs_path(gcs_shared, use_shared_build):
     build_file += 'build-location.txt'
     return os.path.join(gcs_shared, os.getenv('PULL_REFS', ''), build_file)
 
+def inject_bazelrc(lines):
+    if not lines:
+        return
+    with open('/etc/bazel.bazelrc', 'a') as fp:
+        fp.writelines(lines)
+    path = os.path.join(os.getenv('HOME'), '.bazelrc')
+    with open(path, 'a') as fp:
+        fp.writelines(lines)
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements,too-many-locals
@@ -443,9 +452,11 @@ def main(args):
 
     # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
-    artifacts = os.path.join(workspace, '_artifacts')
+    artifacts = os.environ.get('ARTIFACTS', os.path.join(workspace, '_artifacts'))
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
+
+    inject_bazelrc(args.inject_bazelrc)
 
     mode = LocalMode(workspace, artifacts)
 
@@ -456,9 +467,22 @@ def main(args):
 
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
-    runner_args = [
-        '--dump=%s' % mode.artifacts,
-    ]
+    if args.dump_before_and_after:
+        before_dir = os.path.join(mode.artifacts, 'before')
+        if not os.path.exists(before_dir):
+            os.makedirs(before_dir)
+        after_dir = os.path.join(mode.artifacts, 'after')
+        if not os.path.exists(after_dir):
+            os.makedirs(after_dir)
+
+        runner_args = [
+            '--dump-pre-test-logs=%s' % before_dir,
+            '--dump=%s' % after_dir,
+            ]
+    else:
+        runner_args = [
+            '--dump=%s' % mode.artifacts,
+        ]
 
     if args.service_account:
         runner_args.append(
@@ -550,8 +574,15 @@ def main(args):
 
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
+        # try to look for k-a repo
+        kubeadm_path = os.path.join(workspace, 'k8s.io', 'kubernetes-anywhere')
+        go_path = os.environ.get('GOPATH', '')
+        if go_path:
+            kubeadm_in_gopath = os.path.join(go_path, 'src', 'k8s.io', 'kubernetes-anywhere')
+            if os.path.exists(kubeadm_in_gopath):
+                kubeadm_path = kubeadm_in_gopath
         runner_args.extend([
-            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'kubernetes-anywhere'),
+            '--kubernetes-anywhere-path=%s' % kubeadm_path,
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
@@ -572,7 +603,7 @@ def main(args):
         set_up_kops_aws(mode.workspace, args, mode, cluster, runner_args)
     elif args.deployment == 'kops' and args.provider == 'gce':
         set_up_kops_gce(mode.workspace, args, mode, cluster, runner_args)
-    elif args.gce_ssh:
+    elif args.deployment != 'kind' and args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     # TODO(fejta): delete this?
@@ -620,6 +651,9 @@ def create_parser():
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
     parser.add_argument(
+        '--inject-bazelrc', default=[], action='append',
+        help='Inject /etc/bazel.bazelrc and ~/.bazelrc lines')
+    parser.add_argument(
         '--build-federation', nargs='?', default=None, const='',
         help='Build federation binaries if set, optionally specifying strategy')
     parser.add_argument(
@@ -653,6 +687,9 @@ def create_parser():
         action='append',
         default=[],
         help='Send unrecognized args directly to kubetest')
+    parser.add_argument(
+        '--dump-before-and-after', action='store_true',
+        help='Dump artifacts from both before and after the test run')
 
 
     # kops & aws
@@ -673,15 +710,15 @@ def create_parser():
         help='Use --aws-profile to run as --aws-role-arn if set')
     parser.add_argument(
         '--aws-ssh',
-        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
+        default=os.environ.get('AWS_SSH_PRIVATE_KEY_FILE'),
         help='Path to private aws ssh keys')
     parser.add_argument(
         '--aws-pub',
-        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
+        default=os.environ.get('AWS_SSH_PUBLIC_KEY_FILE'),
         help='Path to pub aws ssh key')
     parser.add_argument(
         '--aws-cred',
-        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        default=os.environ.get('AWS_SHARED_CREDENTIALS_FILE'),
         help='Path to aws credential file')
     parser.add_argument(
         '--aws-cluster-domain', help='Domain of the aws cluster for aws-pr jobs')

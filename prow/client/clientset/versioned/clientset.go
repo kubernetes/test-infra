@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ limitations under the License.
 package versioned
 
 import (
-	glog "github.com/golang/glog"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -29,8 +28,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	ProwV1() prowv1.ProwV1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Prow() prowv1.ProwV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -42,12 +39,6 @@ type Clientset struct {
 
 // ProwV1 retrieves the ProwV1Client
 func (c *Clientset) ProwV1() prowv1.ProwV1Interface {
-	return c.prowV1
-}
-
-// Deprecated: Prow retrieves the default version of ProwClient.
-// Please explicitly pick a version.
-func (c *Clientset) Prow() prowv1.ProwV1Interface {
 	return c.prowV1
 }
 
@@ -74,7 +65,6 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
-		glog.Errorf("failed to create the DiscoveryClient: %v", err)
 		return nil, err
 	}
 	return &cs, nil

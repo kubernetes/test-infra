@@ -21,40 +21,45 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/util/sets"
-
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
-	pluginName = "trigger"
-	lgtmLabel  = "lgtm"
+	// PluginName is the name of the trigger plugin
+	PluginName = "trigger"
 )
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, helpProvider)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
-	plugins.RegisterPushEventHandler(pluginName, handlePush, helpProvider)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPushEventHandler(PluginName, handlePush, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
 	for _, orgRepo := range enabledRepos {
 		parts := strings.Split(orgRepo, "/")
-		if len(parts) != 2 {
+		var trigger plugins.Trigger
+		switch len(parts) {
+		case 1:
+			trigger = config.TriggerFor(orgRepo, "")
+		case 2:
+			trigger = config.TriggerFor(parts[0], parts[1])
+		default:
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
-		org, repoName := parts[0], parts[1]
-		if trigger := config.TriggerFor(org, repoName); trigger != nil && trigger.TrustedOrg != "" {
+		org := parts[0]
+		if trigger.TrustedOrg != "" {
 			org = trigger.TrustedOrg
 		}
-		configInfo[orgRepo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", org)
+		configInfo[orgRepo] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", org)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
@@ -100,49 +105,56 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-type kubeClient interface {
-	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
-type client struct {
-	GitHubClient githubClient
-	KubeClient   kubeClient
-	Config       *config.Config
-	Logger       *logrus.Entry
+// Client holds the necessary structures to work with prow via logging, github, kubernetes and its configuration.
+//
+// TODO(fejta): consider exporting an interface rather than a struct
+type Client struct {
+	GitHubClient  githubClient
+	ProwJobClient prowJobClient
+	Config        *config.Config
+	Logger        *logrus.Entry
 }
 
-func getClient(pc plugins.PluginClient) client {
-	return client{
-		GitHubClient: pc.GitHubClient,
-		Config:       pc.Config,
-		KubeClient:   pc.KubeClient,
-		Logger:       pc.Logger,
+// trustedUserClient is used to check is user member and repo collaborator
+type trustedUserClient interface {
+	IsCollaborator(org, repo, user string) (bool, error)
+	IsMember(org, user string) (bool, error)
+}
+
+func getClient(pc plugins.Agent) Client {
+	return Client{
+		GitHubClient:  pc.GitHubClient,
+		Config:        pc.Config,
+		ProwJobClient: pc.ProwJobClient,
+		Logger:        pc.Logger,
 	}
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	org, repo, _ := orgRepoAuthor(pr.PullRequest)
 	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(getClient(pc), pc.PluginConfig.TriggerFor(ic.Repo.Owner.Login, ic.Repo.Name), ic)
+func handleGenericCommentEvent(pc plugins.Agent, gc github.GenericCommentEvent) error {
+	return handleGenericComment(getClient(pc), pc.PluginConfig.TriggerFor(gc.Repo.Owner.Login, gc.Repo.Name), gc)
 }
 
-func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
+func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
-// trustedUser returns true if user is trusted in repo.
-//
+// TrustedUser returns true if user is trusted in repo.
 // Trusted users are either repo collaborators, org members or trusted org members.
-// Whether repo collaborators and/or a second org is trusted is configured by trigger.
-func trustedUser(ghc githubClient, trigger *plugins.Trigger, user, org, repo string) (bool, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (bool, error) {
 	// First check if user is a collaborator, assuming this is allowed
-	allowCollaborators := trigger == nil || !trigger.OnlyOrgMembers
-	if allowCollaborators {
+	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
 			return false, fmt.Errorf("error in IsCollaborator: %v", err)
 		} else if ok {
@@ -160,123 +172,90 @@ func trustedUser(ghc githubClient, trigger *plugins.Trigger, user, org, repo str
 	}
 
 	// Determine if there is a second org to check
-	if trigger == nil || trigger.TrustedOrg == "" || trigger.TrustedOrg == org {
+	if trustedOrg == "" || trustedOrg == org {
 		return false, nil // No trusted org and/or it is the same
 	}
 
 	// Check the second trusted org.
-	member, err := ghc.IsMember(trigger.TrustedOrg, user)
+	member, err := ghc.IsMember(trustedOrg, user)
 	if err != nil {
-		return false, fmt.Errorf("error in IsMember(%s): %v", trigger.TrustedOrg, err)
+		return false, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
 	}
 	return member, nil
 }
 
-func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]string, error) {
-	var changedFiles []string
-	return func() ([]string, error) {
-		// Fetch the changed files from github at most once.
-		if changedFiles == nil {
-			changes, err := ghc.GetPullRequestChanges(org, repo, num)
-			if err != nil {
-				return nil, fmt.Errorf("error getting pull request changes: %v", err)
-			}
-			changedFiles = []string{}
-			for _, change := range changes {
-				changedFiles = append(changedFiles, change.Filename)
-			}
-		}
-		return changedFiles, nil
+func skippedStatusFor(context string) github.Status {
+	return github.Status{
+		State:       github.StatusSuccess,
+		Context:     context,
+		Description: "Skipped.",
 	}
 }
 
-func allContexts(parent config.Presubmit) []string {
-	contexts := []string{parent.Context}
-	for _, child := range parent.RunAfterSuccess {
-		contexts = append(contexts, allContexts(child)...)
+// RunAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
+// for the reporting jobs that are skipped
+func RunAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
+	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
+		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
+		return err
 	}
-	return contexts
+	runErr := runRequested(c, pr, requestedJobs, eventGUID)
+	var skipErr error
+	if !elideSkippedContexts {
+		skipErr = skipRequested(c, pr, skippedJobs)
+	}
+
+	return errorutil.NewAggregate(runErr, skipErr)
 }
 
-func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
-	org := pr.Base.Repo.Owner.Login
-	repo := pr.Base.Repo.Name
-	number := pr.Number
+// validateContextOverlap ensures that there will be no overlap in contexts between a set of jobs running and a set to skip
+func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
+	requestedContexts := sets.NewString()
+	for _, job := range toRun {
+		requestedContexts.Insert(job.Context)
+	}
+	skippedContexts := sets.NewString()
+	for _, job := range toSkip {
+		skippedContexts.Insert(job.Context)
+	}
+	if overlap := requestedContexts.Intersection(skippedContexts).List(); len(overlap) > 0 {
+		return fmt.Errorf("the following contexts are both triggered and skipped: %s", strings.Join(overlap, ", "))
+	}
 
-	baseSHA, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+	return nil
+}
+
+// runRequested executes the config.Presubmits that are requested
+func runRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
+	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
 	if err != nil {
 		return err
 	}
 
-	// Use a closure to lazily retrieve the file changes only if they are needed.
-	// We only have to fetch the changes if there is at least one RunIfChanged
-	// job that is not being force run (due to a `/retest` after a failure or
-	// because it is explicitly triggered with `/test foo`).
-	getChanges := fileChangesGetter(c.GitHubClient, org, repo, number)
-	// shouldRun indicates if a job should actually run.
-	shouldRun := func(j config.Presubmit) (bool, error) {
-		if !j.RunsAgainstBranch(pr.Base.Ref) {
-			return false, nil
-		}
-		if j.RunIfChanged == "" || forceRunContexts[j.Context] || j.TriggerMatches(body) {
-			return true, nil
-		}
-		changes, err := getChanges()
-		if err != nil {
-			return false, err
-		}
-		return j.RunsAgainstChanges(changes), nil
-	}
-
-	// For each job determine if any sharded version of the job runs.
-	// This in turn determines which jobs to run and which contexts to mark as "Skipped".
-	//
-	// Note: Job sharding is achieved with presubmit configurations that overlap on
-	// name, but run under disjoint circumstances. For example, a job 'foo' can be
-	// sharded to have different pod specs for different branches by
-	// creating 2 presubmit configurations with the name foo, but different pod
-	// specs, and specifying different branches for each job.
-	var toRunJobs []config.Presubmit
-	toRun := sets.NewString()
-	toSkip := sets.NewString()
-	for _, job := range requestedJobs {
-		runs, err := shouldRun(job)
-		if err != nil {
-			return err
-		}
-		if runs {
-			toRunJobs = append(toRunJobs, job)
-			toRun.Insert(job.Context)
-		} else if !job.SkipReport {
-			// we need to post context statuses for all jobs; if a job is slated to
-			// run after the success of a parent job that is skipped, it must be
-			// skipped as well
-			toSkip.Insert(allContexts(job)...)
-		}
-	}
-	// 'Skip' any context that is requested, but doesn't have any job shards that
-	// will run.
-	for _, context := range toSkip.Difference(toRun).List() {
-		if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
-			State:       github.StatusSuccess,
-			Context:     context,
-			Description: "Skipped",
-		}); err != nil {
-			return err
-		}
-	}
-
 	var errors []error
-	for _, job := range toRunJobs {
+	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
+		if _, err := c.ProwJobClient.Create(&pj); err != nil {
+			c.Logger.WithError(err).Error("Failed to create prowjob.")
 			errors = append(errors, err)
 		}
 	}
-	if len(errors) > 0 {
-		return fmt.Errorf("errors starting jobs: %v", errors)
+	return errorutil.NewAggregate(errors...)
+}
+
+// skipRequested posts skipped statuses for the config.Presubmits that are requested
+func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presubmit) error {
+	var errors []error
+	for _, job := range skippedJobs {
+		if job.SkipReport {
+			continue
+		}
+		c.Logger.Infof("Skipping %s build.", job.Name)
+		if err := c.GitHubClient.CreateStatus(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA, skippedStatusFor(job.Context)); err != nil {
+			errors = append(errors, err)
+		}
 	}
-	return nil
+	return errorutil.NewAggregate(errors...)
 }

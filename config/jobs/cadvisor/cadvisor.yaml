@@ -19,17 +19,13 @@ presets:
 presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
-    agent: kubernetes
     always_run: true
-    context: pull-cadvisor-e2e
-    rerun_command: "/test pull-cadvisor-e2e"
-    trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes"
@@ -49,17 +45,19 @@ presubmits:
         - --test_args=--nodes=1--flakeAttempts=2
         - --timeout=10m
 
+    annotations:
+      testgrid-dashboards: presubmits-misc
+      testgrid-tab-name: cadvisor
 periodics:
 - interval: 24h
   name: ci-cadvisor-canarypush
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-cadvisor-docker-credential: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+    - image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
       args:
       - --repo=github.com/google/cadvisor
       - --root=/go/src
@@ -73,15 +71,17 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-node-cadvisor
+    testgrid-tab-name: cadvisor-push
 - name: ci-cadvisor-e2e
   interval: 8h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
       args:
       - --job=$(JOB_NAME)
       - --root=/go/src
@@ -103,3 +103,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+  annotations:
+    testgrid-dashboards: sig-node-cadvisor
+    testgrid-tab-name: cadvisor-e2e

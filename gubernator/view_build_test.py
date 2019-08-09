@@ -64,6 +64,27 @@ class ParseJunitTest(unittest.TestCase):
             "out: first line\nout: second line\nerr: first line",
             )])
 
+    def test_testsuites_no_time(self):
+        results = self.parse("""
+            <testsuites>
+                <testsuite name="k8s.io/suite">
+                    <properties>
+                        <property name="go.version" value="go1.6"/>
+                    </properties>
+                    <testcase name="TestBad">
+                        <failure>something bad</failure>
+                        <system-out>out: first line</system-out>
+                        <system-err>err: first line</system-err>
+                        <system-out>out: second line</system-out>
+                    </testcase>
+                </testsuite>
+            </testsuites>""")
+        self.assertEqual(results['failed'], [(
+            'k8s.io/suite TestBad', 0.0, 'something bad', "junit_filename.xml",
+            "out: first line\nout: second line\nerr: first line",
+            )])
+
+
     def test_nested_testsuites(self):
         results = self.parse("""
             <testsuites>
@@ -172,7 +193,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('Error Goes Here', response)
         self.assertIn('test.go#L123">', response)  # stacktrace link works
 
-    def test_finished_has_version(self):
+    def test_finished_has_revision(self):
         """Test that metadata with version in finished works."""
         init_build(self.BUILD_DIR, finished_has_version=True)
         self.test_build()
@@ -186,7 +207,7 @@ class BuildTest(main_test.TestBase):
     def test_show_metadata(self):
         write(self.BUILD_DIR + 'started.json',
             {
-                'version': 'v1+56',
+                'revision': 'v1+56',
                 'timestamp': 1406535800,
                 'node': 'agent-light-7',
                 'pull': 'master:1234,35:abcd,72814',
@@ -251,7 +272,7 @@ class BuildTest(main_test.TestBase):
 
     def test_build_testgrid_links(self):
         response = self.get_build_page()
-        base = 'https://k8s-testgrid.appspot.com/k8s#ajob'
+        base = 'https://testgrid.k8s.io/k8s#ajob'
         self.assertIn('a href="%s"' % base, response)
         option = '&amp;include-filter-by-regex=%5EOverall%24%7CThird'
         self.assertIn('a href="%s%s"' % (base, option), response)

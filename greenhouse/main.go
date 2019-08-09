@@ -64,9 +64,8 @@ var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*10,
 var promMetrics *prometheusMetrics
 
 func init() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "greenhouse"}),
-	)
+	logrusutil.ComponentInit("greenhouse")
+
 	logrus.SetOutput(os.Stdout)
 	promMetrics = initMetrics()
 }
@@ -135,7 +134,7 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 
 		// actually handle request depending on method
 		switch m := r.Method; m {
-		// handle retreival
+		// handle retrieval
 		case http.MethodGet:
 			err := cache.Get(r.URL.Path, func(exists bool, contents io.ReadSeeker) error {
 				if !exists {

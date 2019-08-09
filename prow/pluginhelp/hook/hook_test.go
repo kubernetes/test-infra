@@ -33,9 +33,9 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-type fakeGithubClient map[string][]string
+type fakeGitHubClient map[string][]string
 
-func (fghc fakeGithubClient) GetRepos(org string, _ bool) ([]github.Repo, error) {
+func (fghc fakeGitHubClient) GetRepos(org string, _ bool) ([]github.Repo, error) {
 	var repos []github.Repo
 	for _, repo := range fghc[org] {
 		repos = append(repos, github.Repo{FullName: fmt.Sprintf("%s/%s", org, repo)})
@@ -52,7 +52,7 @@ func (fpa fakePluginAgent) Config() *plugins.Configuration {
 
 func TestGeneratePluginHelp(t *testing.T) {
 	orgToRepos := map[string][]string{"org1": {"repo1", "repo2", "repo3"}, "org2": {"repo1"}}
-	fghc := fakeGithubClient(orgToRepos)
+	fghc := fakeGitHubClient(orgToRepos)
 
 	normalHelp := map[string]pluginhelp.PluginHelp{
 		"org-plugin": {Description: "org-plugin", Config: map[string]string{"": "overall config"}},
@@ -140,7 +140,7 @@ func TestGeneratePluginHelp(t *testing.T) {
 
 	help := NewHelpAgent(fpa, fghc).GeneratePluginHelp()
 	if help == nil {
-		t.Fatal("HelpAgent returned nil Help struct pointer.")
+		t.Fatal("NewHelpAgent returned nil HelpAgent struct pointer.")
 	}
 	if got, expected := sets.NewString(help.AllRepos...), sets.NewString(expectedAllRepos...); !got.Equal(expected) {
 		t.Errorf("Expected 'AllRepos' to be %q, but got %q.", expected.List(), got.List())

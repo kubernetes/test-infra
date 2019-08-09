@@ -24,41 +24,68 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 func TestWipLabel(t *testing.T) {
+	const (
+		wipTitle     = "[WIP] title"
+		regularTitle = "title"
+	)
+
 	var testcases = []struct {
 		name          string
+		title         string
+		draft         bool
 		hasLabel      bool
-		needsLabel    bool
 		shouldLabel   bool
 		shouldUnlabel bool
 	}{
 		{
-			name:          "nothing to do, need nothing",
+			name:          "regular PR, need nothing",
+			title:         regularTitle,
+			draft:         false,
 			hasLabel:      false,
-			needsLabel:    false,
 			shouldLabel:   false,
 			shouldUnlabel: false,
 		},
 		{
-			name:          "needs label and comment",
+			name:          "wip title PR, needs label",
+			title:         wipTitle,
+			draft:         false,
 			hasLabel:      false,
-			needsLabel:    true,
 			shouldLabel:   true,
 			shouldUnlabel: false,
 		},
 		{
-			name:          "unnecessary label should be removed",
+			name:          "draft PR, needs label",
+			title:         regularTitle,
+			draft:         true,
+			hasLabel:      false,
+			shouldLabel:   true,
+			shouldUnlabel: false,
+		},
+		{
+			name:          "regular PR, remove label",
+			title:         regularTitle,
+			draft:         false,
 			hasLabel:      true,
-			needsLabel:    false,
 			shouldLabel:   false,
 			shouldUnlabel: true,
 		},
 		{
-			name:          "nothing to do, have everything",
+			name:          "wip title PR, nothing to do",
+			title:         wipTitle,
+			draft:         false,
 			hasLabel:      true,
-			needsLabel:    true,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+		},
+		{
+			name:          "draft PR, nothing to do",
+			title:         regularTitle,
+			draft:         true,
+			hasLabel:      true,
 			shouldLabel:   false,
 			shouldUnlabel: false,
 		},
@@ -70,32 +97,33 @@ func TestWipLabel(t *testing.T) {
 		}
 		org, repo, number := "org", "repo", 5
 		e := &event{
-			org:        org,
-			repo:       repo,
-			number:     number,
-			hasLabel:   tc.hasLabel,
-			needsLabel: tc.needsLabel,
+			org:      org,
+			repo:     repo,
+			number:   number,
+			title:    tc.title,
+			draft:    tc.draft,
+			hasLabel: tc.hasLabel,
 		}
 
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", PluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from wip: %v", tc.name, err)
 			continue
 		}
 
-		fakeLabel := fmt.Sprintf("%s/%s#%d:%s", org, repo, number, label)
+		fakeLabel := fmt.Sprintf("%s/%s#%d:%s", org, repo, number, labels.WorkInProgress)
 		if tc.shouldLabel {
-			if len(fc.LabelsAdded) != 1 || fc.LabelsAdded[0] != fakeLabel {
-				t.Errorf("For case %s: expected to add %q label but instead added: %v", tc.name, label, fc.LabelsAdded)
+			if len(fc.IssueLabelsAdded) != 1 || fc.IssueLabelsAdded[0] != fakeLabel {
+				t.Errorf("For case %s: expected to add %q Label but instead added: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsAdded)
 			}
-		} else if len(fc.LabelsAdded) > 0 {
-			t.Errorf("For case %s, expected to not add %q label but added: %v", tc.name, label, fc.LabelsAdded)
+		} else if len(fc.IssueLabelsAdded) > 0 {
+			t.Errorf("For case %s, expected to not add %q Label but added: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsAdded)
 		}
 		if tc.shouldUnlabel {
-			if len(fc.LabelsRemoved) != 1 || fc.LabelsRemoved[0] != fakeLabel {
-				t.Errorf("For case %s: expected to remove %q label but instead removed: %v", tc.name, label, fc.LabelsRemoved)
+			if len(fc.IssueLabelsRemoved) != 1 || fc.IssueLabelsRemoved[0] != fakeLabel {
+				t.Errorf("For case %s: expected to remove %q Label but instead removed: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsRemoved)
 			}
-		} else if len(fc.LabelsRemoved) > 0 {
-			t.Errorf("For case %s, expected to not remove %q label but removed: %v", tc.name, label, fc.LabelsRemoved)
+		} else if len(fc.IssueLabelsRemoved) > 0 {
+			t.Errorf("For case %s, expected to not remove %q Label but removed: %v", tc.name, labels.WorkInProgress, fc.IssueLabelsRemoved)
 		}
 	}
 }

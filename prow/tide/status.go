@@ -14,26 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package tide contains a controller for managing a tide pool of PRs. The
-// controller will automatically retest PRs in the pool and merge them if they
-// pass tests.
 package tide
 
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/tide/blockers"
 )
 
 const (
@@ -45,9 +48,16 @@ const (
 	statusNotInPool = "Not mergeable.%s"
 )
 
+type storedState struct {
+	// LatestPR is the update time of the most recent result
+	LatestPR metav1.Time
+	// PreviousQuery is the query most recently used for results
+	PreviousQuery string
+}
+
 type statusController struct {
 	logger *logrus.Entry
-	ca     *config.Agent
+	config config.Getter
 	ghc    githubClient
 
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
@@ -60,13 +70,14 @@ type statusController struct {
 	// lastSyncStart is used to ensure that the status update period is at least
 	// the minimum status update period.
 	lastSyncStart time.Time
-	// lastSuccessfulQueryStart is used to only list PRs that have changed since
-	// we last successfully listed PRs in order to make status context updates
-	// cheaper.
-	lastSuccessfulQueryStart time.Time
 
 	sync.Mutex
 	poolPRs map[string]PullRequest
+	blocks  blockers.Blockers
+
+	storedState
+	opener io.Opener
+	path   string
 }
 
 func (sc *statusController) shutdown() {
@@ -77,13 +88,14 @@ func (sc *statusController) shutdown() {
 // requirementDiff calculates the diff between a PR and a TideQuery.
 // This diff is defined with a string that describes some subset of the
 // differences and an integer counting the total number of differences.
-// The diff count should always reflect the total number of differences between
+// The diff count should always reflect the scale of the differences between
 // the current state of the PR and the query, but the message returned need not
 // attempt to convey all of that information if some differences are more severe.
 // For instance, we need to convey that a PR is open against a forbidden branch
 // more than we need to detail which status contexts are failed against the PR.
+// To this end, some differences are given a higher diff weight than others.
 // Note: an empty diff can be returned if the reason that the PR does not match
-// the TideQuery is unknown. This can happen happen if this function's logic
+// the TideQuery is unknown. This can happen if this function's logic
 // does not match GitHub's and does not indicate that the PR matches the query.
 func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (string, int) {
 	const maxLabelChars = 50
@@ -102,26 +114,40 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		return labels[:i]
 	}
 
+	// Weight incorrect branches with very high diff so that we select the query
+	// for the correct branch.
+	targetBranchBlacklisted := false
 	for _, excludedBranch := range q.ExcludedBranches {
 		if string(pr.BaseRef.Name) == excludedBranch {
-			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
-			diff = 1
+			targetBranchBlacklisted = true
+			break
 		}
 	}
-
 	// if no whitelist is configured, the target is OK by default
 	targetBranchWhitelisted := len(q.IncludedBranches) == 0
 	for _, includedBranch := range q.IncludedBranches {
 		if string(pr.BaseRef.Name) == includedBranch {
 			targetBranchWhitelisted = true
+			break
+		}
+	}
+	if targetBranchBlacklisted || !targetBranchWhitelisted {
+		diff += 1000
+		if desc == "" {
+			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
 		}
 	}
 
-	if !targetBranchWhitelisted {
-		desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
-		diff++
+	// Weight incorrect milestone with relatively high diff so that we select the
+	// query for the correct milestone (but choose favor query for correct branch).
+	if q.Milestone != "" && (pr.Milestone == nil || string(pr.Milestone.Title) != q.Milestone) {
+		diff += 100
+		if desc == "" {
+			desc = fmt.Sprintf(" Must be in milestone %s.", q.Milestone)
+		}
 	}
 
+	// Weight incorrect labels and statues with low (normal) diff values.
 	var missingLabels []string
 	for _, l1 := range q.Labels {
 		var found bool
@@ -186,13 +212,6 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 
-	if q.Milestone != "" && (pr.Milestone == nil || string(pr.Milestone.Title) != q.Milestone) {
-		diff++
-		if desc == "" {
-			desc = fmt.Sprintf(" Must be in milestone %s.", q.Milestone)
-		}
-	}
-
 	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
 	// PR query.
 
@@ -204,8 +223,21 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker) (string, string) {
+func expectedStatus(queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker, blocks blockers.Blockers) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
+		// if the branch is blocked forget checking for a diff
+		blockingIssues := blocks.GetApplicable(string(pr.Repository.Owner.Login), string(pr.Repository.Name), string(pr.BaseRef.Name))
+		var numbers []string
+		for _, issue := range blockingIssues {
+			numbers = append(numbers, strconv.Itoa(issue.Number))
+		}
+		if len(numbers) > 0 {
+			var s string
+			if len(numbers) > 1 {
+				s = "s"
+			}
+			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", ")))
+		}
 		minDiffCount := -1
 		var minDiff string
 		for _, q := range queryMap.ForRepo(string(pr.Repository.Owner.Login), string(pr.Repository.Name)) {
@@ -223,11 +255,11 @@ func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]P
 // targetURL determines the URL used for more details in the status
 // context on GitHub. If no PR dashboard is configured, we will use
 // the administrative Prow overview.
-func targetURL(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
+func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	var link string
-	if tideURL := c.Config().Tide.TargetURL; tideURL != "" {
+	if tideURL := c().Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c.Config().Tide.PRStatusBaseURL; baseURL != "" {
+	} else if baseURL := c().Tide.PRStatusBaseURL; baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
@@ -242,8 +274,10 @@ func targetURL(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
 	return link
 }
 
-func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest) {
-	queryMap := sc.ca.Config().Tide.Queries.QueryMap()
+func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest, blocks blockers.Blockers) {
+	// queryMap caches which queries match a repo.
+	// Make a new one each sync loop as queries will change.
+	queryMap := sc.config().Tide.Queries.QueryMap()
 	processed := sets.NewString()
 
 	process := func(pr *PullRequest) {
@@ -254,7 +288,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-		cr, err := sc.ca.Config().GetTideContextPolicy(
+		cr, err := sc.config().GetTideContextPolicy(
 			string(pr.Repository.Owner.Login),
 			string(pr.Repository.Name),
 			string(pr.BaseRef.Name))
@@ -263,7 +297,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr, blocks)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -281,7 +315,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					Context:     statusContext,
 					State:       wantState,
 					Description: wantDesc,
-					TargetURL:   targetURL(sc.ca, pr, log),
+					TargetURL:   targetURL(sc.config, pr, log),
 				}); err != nil {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q.",
@@ -312,7 +346,67 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 	}
 }
 
+func (sc *statusController) load() {
+	if sc.path == "" {
+		sc.logger.Debug("No stored state configured")
+		return
+	}
+	entry := sc.logger.WithField("path", sc.path)
+	reader, err := sc.opener.Reader(context.Background(), sc.path)
+	if err != nil {
+		entry.WithError(err).Warn("Cannot open stored state")
+		return
+	}
+	defer io.LogClose(reader)
+
+	buf, err := ioutil.ReadAll(reader)
+	if err != nil {
+		entry.WithError(err).Warn("Cannot read stored state")
+		return
+	}
+
+	var stored storedState
+	if err := yaml.Unmarshal(buf, &stored); err != nil {
+		entry.WithError(err).Warn("Cannot unmarshal stored state")
+		return
+	}
+	sc.storedState = stored
+}
+
+func (sc *statusController) save(ticker *time.Ticker) {
+	for range ticker.C {
+		if sc.path == "" {
+			return
+		}
+		entry := sc.logger.WithField("path", sc.path)
+		current := sc.storedState
+		buf, err := yaml.Marshal(current)
+		if err != nil {
+			entry.WithError(err).Warn("Cannot marshal state")
+			continue
+		}
+		writer, err := sc.opener.Writer(context.Background(), sc.path)
+		if err != nil {
+			entry.WithError(err).Warn("Cannot open state writer")
+			continue
+		}
+		if _, err = writer.Write(buf); err != nil {
+			entry.WithError(err).Warn("Cannot write state")
+			io.LogClose(writer)
+			continue
+		}
+		if err := writer.Close(); err != nil {
+			entry.WithError(err).Warn("Failed to close written state")
+		}
+		entry.Debug("Saved status state")
+	}
+}
+
 func (sc *statusController) run() {
+	sc.load()
+	ticks := time.NewTicker(time.Hour)
+	defer ticks.Stop()
+	go sc.save(ticks)
 	for {
 		// wait for a new pool
 		if !<-sc.newPoolPending {
@@ -330,14 +424,15 @@ func (sc *statusController) run() {
 // this function returns immediately without syncing.
 func (sc *statusController) waitSync() {
 	// wait for the min sync period time to elapse if needed.
-	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.ca.Config().Tide.StatusUpdatePeriod)))
+	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.config().Tide.StatusUpdatePeriod.Duration)))
 	for {
 		select {
 		case <-wait:
 			sc.Lock()
 			pool := sc.poolPRs
+			blocks := sc.blocks
 			sc.Unlock()
-			sc.sync(pool)
+			sc.sync(pool, blocks)
 			return
 		case more := <-sc.newPoolPending:
 			if !more {
@@ -347,18 +442,60 @@ func (sc *statusController) waitSync() {
 	}
 }
 
-func (sc *statusController) sync(pool map[string]PullRequest) {
+func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Blockers) {
 	sc.lastSyncStart = time.Now()
+	defer func() {
+		duration := time.Since(sc.lastSyncStart)
+		sc.logger.WithField("duration", duration.String()).Info("Statuses synced.")
+		tideMetrics.statusUpdateDuration.Set(duration.Seconds())
+	}()
 
-	sinceTime := sc.lastSuccessfulQueryStart.Add(-10 * time.Second)
-	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
-	queryStartTime := time.Now()
-	allPRs, err := search(context.Background(), sc.ghc, sc.logger, query)
-	if err != nil {
-		sc.logger.WithError(err).Errorf("Searching for open PRs.")
-		return
+	sc.setStatuses(sc.search(), pool, blocks)
+}
+
+func (sc *statusController) search() []PullRequest {
+	queries := sc.config().Tide.Queries
+	if len(queries) == 0 {
+		return nil
 	}
-	// We were able to find all open PRs so update the last successful query time.
-	sc.lastSuccessfulQueryStart = queryStartTime
-	sc.setStatuses(allPRs, pool)
+
+	orgExceptions, repos := queries.OrgExceptionsAndRepos()
+	orgs := sets.StringKeySet(orgExceptions)
+	query := openPRsQuery(orgs.List(), repos.List(), orgExceptions)
+	now := time.Now()
+	log := sc.logger.WithField("query", query)
+	if query != sc.PreviousQuery {
+		// Query changed and/or tide restarted, recompute everything
+		log.WithField("previously", sc.PreviousQuery).Info("Query changed, resetting start time to zero")
+		sc.LatestPR = metav1.Time{}
+		sc.PreviousQuery = query
+	}
+
+	prs, err := search(sc.ghc.Query, sc.logger, query, sc.LatestPR.Time, now)
+	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
+	if err != nil {
+		log := log.WithError(err)
+		if len(prs) == 0 {
+			log.Error("Search failed")
+			return nil
+		}
+		log.Warn("Search partially completed")
+	}
+	if len(prs) == 0 {
+		log.WithField("latestPR", sc.LatestPR).Debug("no new results")
+		return nil
+	}
+
+	latest := prs[len(prs)-1].UpdatedAt.Time
+	if latest.IsZero() {
+		log.WithField("latestPR", sc.LatestPR).Debug("latest PR has zero time")
+		return prs
+	}
+	sc.LatestPR.Time = latest.Add(-30 * time.Second)
+	log.WithField("latestPR", sc.LatestPR).Debug("Advanced start time")
+	return prs
+}
+
+func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
+	return "is:pr state:open sort:updated-asc " + orgRepoQueryString(orgs, repos, orgExceptions)
 }

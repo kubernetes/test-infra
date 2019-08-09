@@ -40,14 +40,45 @@ func ImageTooBig(url string) (bool, error) {
 	// try to get the image size from Content-Length header
 	resp, err := http.Head(url)
 	if err != nil {
-		return true, fmt.Errorf("error getting size of image, cannot get headers for %s: %s", url, err)
+		return true, fmt.Errorf("HEAD error: %v", err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		return true, fmt.Errorf("error getting size of image %s: %s", url, resp.Status)
+	if sc := resp.StatusCode; sc != http.StatusOK {
+		return true, fmt.Errorf("failing %d response", sc)
 	}
 	size, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
 	if size > limit {
 		return true, nil
 	}
 	return false, nil
+}
+
+// LevelFromPermissions adapts a repo permissions struct to the
+// appropriate permission level used elsewhere
+func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
+	if permissions.Admin {
+		return Admin
+	} else if permissions.Push {
+		return Write
+	} else if permissions.Pull {
+		return Read
+	} else {
+		return None
+	}
+}
+
+// PermissionsFromLevel adapts a repo permission level to the
+// appropriate permissions struct used elsewhere
+func PermissionsFromLevel(permission RepoPermissionLevel) RepoPermissions {
+	switch permission {
+	case None:
+		return RepoPermissions{}
+	case Read:
+		return RepoPermissions{Pull: true}
+	case Write:
+		return RepoPermissions{Pull: true, Push: true}
+	case Admin:
+		return RepoPermissions{Pull: true, Push: true, Admin: true}
+	default:
+		return RepoPermissions{}
+	}
 }

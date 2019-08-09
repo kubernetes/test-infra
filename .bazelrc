@@ -1,6 +1,21 @@
+# populate env used for stamping builds etc
 build --workspace_status_command=./hack/print-workspace-status.sh
 run --workspace_status_command=./hack/print-workspace-status.sh
+
+# https://github.com/kubernetes/test-infra/issues/13140
+build --incompatible_disable_deprecated_attr_params=false
+query --incompatible_disable_deprecated_attr_params=false
+
+# https://github.com/kubernetes/test-infra/issues/13239
+# https://github.com/bazelbuild/rules_docker/issues/842
+# https://github.com/bazelbuild/bazel/issues/7899
+build --host_force_python=PY2
+
+# enable data race detection
 test --features=race --test_output=errors
+
+# only build tests when testing
+test --build_tests_only
 
 # you can run only lint tests with:
 # bazel test //... --config=lint
@@ -9,3 +24,38 @@ test:lint --test_tag_filters=lint
 # you can run non-lint tests with:
 # bazel test //... --config=unit
 test:unit --test_tag_filters=-lint
+
+# Note needs an instance name
+# See --config=remote-fejta for a concrete example
+# https://github.com/bazelbuild/bazel-toolchains/blob/master/bazelrc/bazel-0.27.0.bazelrc
+build:remote --jobs=500
+build:remote --host_javabase=@rbe_default//java:jdk
+build:remote --javabase=@rbe_default//java:jdk
+build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build:remote --crosstool_top=@rbe_default//cc:toolchain
+build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+
+build:remote --extra_toolchains=@rbe_default//config:cc-toolchain
+build:remote --extra_execution_platforms=:rbe_with_network
+build:remote --host_platform=:rbe_with_network
+build:remote --platforms=:rbe_with_network
+
+build:remote --define=EXECUTOR=remote
+build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
+build:remote --remote_timeout=3600
+
+# --google_credentials=some_file.json
+build:remote --google_default_credentials=true
+
+# Compose the remote configs with an instance name
+# A couple examples below:
+
+# --config=ci-instance adds the instance name
+build:ci-instance --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
+
+# Config we want to use in ci
+build:ci --config=remote --config=ci-instance
+
+# https://github.com/bazelbuild/rules_go/pull/2110#issuecomment-508713878
+build --stamp=true

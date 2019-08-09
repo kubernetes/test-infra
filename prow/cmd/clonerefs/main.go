@@ -25,6 +25,8 @@ import (
 )
 
 func main() {
+	logrusutil.ComponentInit("clonerefs")
+
 	o := &clonerefs.Options{}
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
@@ -33,10 +35,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "clonerefs"}),
-	)
 
 	if err := o.Run(); err != nil {
 		logrus.WithError(err).Fatal("Failed to clone refs")

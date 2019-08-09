@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Copyright 2018 The Kubernetes Authors.
 #
@@ -113,7 +113,7 @@ def main():
     with open(args.file) as log:
         for test in _get_tests(log):
             if test.overlaps(after, before):
-                print str(test)
+                print(str(test))
 
 
 if __name__ == '__main__':

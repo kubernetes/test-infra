@@ -22,15 +22,14 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 var (
-	branchRE = regexp.MustCompile(`(?im)\bbranch:[^\w-]*([\w-]+)\b`)
+	branchRE = regexp.MustCompile(`(?im)\bbranch:[^\w-]*([\w-./]+)\b`)
 )
 
 type githubClient interface {
@@ -44,25 +43,25 @@ type Blocker struct {
 	// TODO: time blocked? (when blocker label was added)
 }
 
-type orgRepo struct {
-	org, repo string
+type OrgRepo struct {
+	Org, Repo string
 }
 
-type orgRepoBranch struct {
-	org, repo, branch string
+type OrgRepoBranch struct {
+	Org, Repo, Branch string
 }
 
 // Blockers holds maps of issues that are blocking various repos/branches.
 type Blockers struct {
-	Repo   map[orgRepo][]Blocker       `json:"repo,omitempty"`
-	Branch map[orgRepoBranch][]Blocker `json:"branch,omitempty"`
+	Repo   map[OrgRepo][]Blocker       `json:"repo,omitempty"`
+	Branch map[OrgRepoBranch][]Blocker `json:"branch,omitempty"`
 }
 
 // GetApplicable returns the subset of blockers applicable to the specified branch.
 func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 	var res []Blocker
-	res = append(res, b.Repo[orgRepo{org: org, repo: repo}]...)
-	res = append(res, b.Branch[orgRepoBranch{org: org, repo: repo, branch: branch}]...)
+	res = append(res, b.Repo[OrgRepo{Org: org, Repo: repo}]...)
+	res = append(res, b.Branch[OrgRepoBranch{Org: org, Repo: repo, Branch: branch}]...)
 
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].Number < res[j].Number
@@ -71,56 +70,59 @@ func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 }
 
 // FindAll finds issues with label in the specified orgs/repos that should block tide.
-func FindAll(ghc githubClient, log *logrus.Entry, label string, orgs, repos sets.String) (Blockers, error) {
+func FindAll(ghc githubClient, log *logrus.Entry, label, orgRepoTokens string) (Blockers, error) {
 	issues, err := search(
 		context.Background(),
 		ghc,
 		log,
-		blockerQuery(label, orgs, repos),
+		blockerQuery(label, orgRepoTokens),
 	)
 	if err != nil {
 		return Blockers{}, fmt.Errorf("error searching for blocker issues: %v", err)
 	}
 
-	return fromIssues(issues), nil
+	return fromIssues(issues, log), nil
 }
 
-func fromIssues(issues []Issue) Blockers {
-	res := Blockers{Repo: make(map[orgRepo][]Blocker), Branch: make(map[orgRepoBranch][]Blocker)}
+func fromIssues(issues []Issue, log *logrus.Entry) Blockers {
+	log.Debugf("Finding blockers from %d issues.", len(issues))
+	res := Blockers{Repo: make(map[OrgRepo][]Blocker), Branch: make(map[OrgRepoBranch][]Blocker)}
 	for _, issue := range issues {
+		logger := log.WithFields(logrus.Fields{"org": issue.Repository.Owner.Login, "repo": issue.Repository.Name, "issue": issue.Number})
 		strippedTitle := branchRE.ReplaceAllLiteralString(string(issue.Title), "")
 		block := Blocker{
 			Number: int(issue.Number),
 			Title:  strippedTitle,
-			URL:    string(issue.HTMLURL),
+			URL:    string(issue.URL),
 		}
 		if branches := parseBranches(string(issue.Title)); len(branches) > 0 {
 			for _, branch := range branches {
-				key := orgRepoBranch{
-					org:    string(issue.Repository.Owner.Login),
-					repo:   string(issue.Repository.Name),
-					branch: branch,
+				key := OrgRepoBranch{
+					Org:    string(issue.Repository.Owner.Login),
+					Repo:   string(issue.Repository.Name),
+					Branch: branch,
 				}
+				logger.WithField("branch", branch).Debug("Blocking merges to branch via issue.")
 				res.Branch[key] = append(res.Branch[key], block)
 			}
 		} else {
-			key := orgRepo{
-				org:  string(issue.Repository.Owner.Login),
-				repo: string(issue.Repository.Name),
+			key := OrgRepo{
+				Org:  string(issue.Repository.Owner.Login),
+				Repo: string(issue.Repository.Name),
 			}
+			logger.Debug("Blocking merges to all branches via issue.")
 			res.Repo[key] = append(res.Repo[key], block)
 		}
 	}
 	return res
 }
 
-func blockerQuery(label string, orgs, repos sets.String) string {
-	tokens := []string{"is:issue", "state:open", fmt.Sprintf("label:\"%s\"", label)}
-	for _, org := range orgs.List() {
-		tokens = append(tokens, fmt.Sprintf("org:\"%s\"", org))
-	}
-	for _, repo := range repos.List() {
-		tokens = append(tokens, fmt.Sprintf("repo:\"%s\"", repo))
+func blockerQuery(label, orgRepoTokens string) string {
+	tokens := []string{
+		"is:issue",
+		"state:open",
+		fmt.Sprintf("label:\"%s\"", label),
+		orgRepoTokens,
 	}
 	return strings.Join(tokens, " ")
 }
@@ -134,6 +136,7 @@ func parseBranches(str string) []string {
 }
 
 func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) ([]Issue, error) {
+	requestStart := time.Now()
 	var ret []Issue
 	vars := map[string]interface{}{
 		"query":        githubql.String(q),
@@ -156,16 +159,17 @@ func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) 
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	log.Debugf("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	log.WithField(
+		"duration", time.Since(requestStart).String(),
+	).Debugf("Search for blocker query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
 	return ret, nil
 }
 
 // Issue holds graphql response data about issues
-// TODO: validate that fields are populated properly
 type Issue struct {
 	Number     githubql.Int
 	Title      githubql.String
-	HTMLURL    githubql.String
+	URL        githubql.String
 	Repository struct {
 		Name  githubql.String
 		Owner struct {

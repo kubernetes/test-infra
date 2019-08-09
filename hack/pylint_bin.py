@@ -26,11 +26,26 @@ if __name__ == '__main__':
         if not os.path.isdir(path):
             continue
         for something in os.listdir(path):
+            # bazel stopped symlinking dirs, so this now depends on files like
+            # bazel-out/k8-fastbuild/bin/hack/verify-pylint.runfiles/pypi__sh_1_12_14/ pylint: disable=line-too-long
+            # containing a sh.py symlink to external/pypi__sh_1_12_14/sh.py
+            # imports that do not have files in the root dir will not have a
+            # different real name.
             full = os.path.join(path, something)
             real = os.path.realpath(full)
-            if real != full:
-                EXTRAS.add(os.path.dirname(real))
-                break
+            # If we use pip_import() then there will be
+            # a WHEEL file symlink we can use to find the real path.
+            # TODO(fejta): https://github.com/kubernetes/test-infra/issues/13162
+            # (ruamel has C code, which hasn't yet worked with pip_import())
+            if real == full: # bazel stopped symlinking dirs
+                wheel = os.path.join(full, 'WHEEL')
+                if not os.path.isfile(wheel):
+                    continue
+                real = os.path.dirname(os.path.realpath(wheel))
+            if real == full:
+                continue
+            EXTRAS.add(os.path.dirname(real))
+            break
     # also do one level up so foo.bar imports work :shrug:
     EXTRAS = set(os.path.dirname(e) for e in EXTRAS).union(EXTRAS)
     # append these to the path

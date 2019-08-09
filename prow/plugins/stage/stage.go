@@ -61,7 +61,7 @@ type stageClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func stageHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func stageHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 
@@ -106,13 +106,13 @@ func handleOne(gc stageClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		for _, label := range stageLabels {
 			if label != lbl && github.HasLabel(label, labels) {
 				if err := gc.RemoveLabel(org, repo, number, label); err != nil {
-					log.WithError(err).Errorf("Github failed to remove the following label: %s", label)
+					log.WithError(err).Errorf("GitHub failed to remove the following label: %s", label)
 				}
 			}
 		}
 
 		if err := gc.AddLabel(org, repo, number, lbl); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", lbl)
+			log.WithError(err).Errorf("GitHub failed to add the following label: %s", lbl)
 		}
 	}
 

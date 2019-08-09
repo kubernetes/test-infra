@@ -26,10 +26,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/test-infra/prow/kube"
 
-	"k8s.io/test-infra/prow/artifact-uploader"
+	artifact_uploader "k8s.io/test-infra/prow/artifact-uploader"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/options"
 )
@@ -87,11 +87,11 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
+// AddFlags binds flags to options
+func (o *Options) AddFlags(flags *flag.FlagSet) {
 	flags.IntVar(&o.NumWorkers, "num-workers", 25, "Number of threads to use for processing updates.")
 	flags.StringVar(&o.ProwJobNamespace, "prow-job-ns", "", "Namespace containing ProwJobs.")
-	gcsupload.BindOptions(o.Options, flags)
+	o.Options.AddFlags(flags)
 }
 
 // Complete internalizes command line arguments
@@ -151,6 +151,8 @@ func (o *Options) Run() error {
 }
 
 func main() {
+	logrusutil.ComponentInit("artifact-uploader")
+
 	o := newOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
@@ -159,10 +161,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "artifact-uploader"}),
-	)
 
 	if err := o.Run(); err != nil {
 		logrus.WithError(err).Fatal("Failed to run the GCS uploader controller")

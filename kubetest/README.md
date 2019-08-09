@@ -96,7 +96,7 @@ The `--up` flag will tell `kubetest` to turn up a new cluster for you.
 It will first attempt to tear down an old instance of the same cluster.
 
 Currently requires a complicated set of flags and environment variables
-such as `--gcp-project`, `--federation`, etc.
+such as `--gcp-project`, etc.
 
 We are in the process of converting all environment variables into flags. See
 the current set of flag options with `kubetest -h`.
@@ -118,6 +118,9 @@ to dynamically reserve a project.
 This makes it easier for developers to add and remove jobs. With boskos they no
 longer need to worry about creating, provisioning, naming, etc a project for
 this new job.
+
+The `--boskos-wait-duration` flag defines how long Kubetest waits on an Boskos resource
+becomes available before quitting the job, default value is 5 minutes.
 
 See the boskos docs for more details.
 
@@ -167,9 +170,9 @@ from the `kubernetes/kubernetes` repo.
 Typically jobs also include a `--test_args=--ginkgo.focus=FOO --ginkgo.skip=BAR`
 flag to filter down to a particular set of interesting tests.
 
-### Upgrade, skew, kubemark, federation
+### Upgrade, skew, kubemark
 
-You can also run `--kubemark` or `--federation` tests instead of the standard
+You can also run `--kubemark` tests instead of the standard
 tests.
 
 Tests can use `--skew` and `--upgrade_args` if they provided multiple
@@ -195,7 +198,7 @@ upgrading from v1 to v2. The command does not run other e2e tests after completi
 the upgrade tests. If you want to run the e2e tests, specify also `--test` and 
 `--test_args` flags.
 
-Tips: CI upgrade tests listed at `jobs/config.json` show flags used in the real CI 
+Tips: CI upgrade tests listed at [sig-cluster-lifecycle config] show flags used in the real CI 
 test environment, which is a good source to learn more about how the flags are used.
 
 ### Staging
@@ -217,9 +220,10 @@ right path, the command below does the same as above:
 
 [bootstrap.py]: /jenkins/bootstrap.py
 [boskos]: /boskos
-[e2e testing]: https://git.k8s.io/community/contributors/devel/e2e-tests.md
+[e2e testing]: https://git.k8s.io/community/contributors/devel/sig-testing/e2e-tests.md
 [extract_k8s.go]: /kubetest/extract_k8s.go
 [ginkgo]: https://github.com/onsi/ginkgo
 [kubekins-e2e]: /images/kubekins-e2e
 [kubekins-e2e-prow]: /images/e2e-prow
 [prow]: /prow
+[sig-cluster-lifecycle config]: /config/jobs/kubernetes/sig-cluster-lifecycle

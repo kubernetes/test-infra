@@ -19,6 +19,7 @@ package main
 import (
 	"errors"
 	"log"
+	"os/exec"
 	"time"
 )
 
@@ -52,4 +53,9 @@ func (n noneDeploy) Down() error {
 
 func (n noneDeploy) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, errors.New("not implemented")
+}
+
+func (_ noneDeploy) KubectlCommand() (*exec.Cmd, error) {
+	log.Print("Noop KubectlCommand()")
+	return nil, nil
 }

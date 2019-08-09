@@ -21,53 +21,6 @@ import (
 	"testing"
 )
 
-func TestRepoPermissionLevel(t *testing.T) {
-	get := func(v RepoPermissionLevel) *RepoPermissionLevel {
-		return &v
-	}
-	cases := []struct {
-		input    string
-		expected *RepoPermissionLevel
-	}{
-		{
-			"admin",
-			get(Admin),
-		},
-		{
-			"write",
-			get(Write),
-		},
-		{
-			"read",
-			get(Read),
-		},
-		{
-			"none",
-			get(None),
-		},
-		{
-			"",
-			nil,
-		},
-		{
-			"unknown",
-			nil,
-		},
-	}
-	for _, tc := range cases {
-		var actual RepoPermissionLevel
-		err := json.Unmarshal([]byte("\""+tc.input+"\""), &actual)
-		switch {
-		case err == nil && tc.expected == nil:
-			t.Errorf("%s: failed to receive an error", tc.input)
-		case err != nil && tc.expected != nil:
-			t.Errorf("%s: unexpected error: %v", tc.input, err)
-		case err == nil && *tc.expected != actual:
-			t.Errorf("%s: actual %v != expected %v", tc.input, tc.expected, actual)
-		}
-	}
-}
-
 func TestPrivacy(t *testing.T) {
 	get := func(v Privacy) *Privacy {
 		return &v

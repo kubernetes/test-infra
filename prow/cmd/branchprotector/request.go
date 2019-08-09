@@ -21,6 +21,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // makeRequest renders a branch protection policy into the corresponding GitHub api request.
@@ -34,12 +35,17 @@ func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest 
 
 }
 
-// makeAdmins returns true iff *val == true, else nil
+// makeAdmins returns true iff *val == true, else false
+// TODO(skuznets): the API documentation tells us to pass
+//    `nil` to unset, but that is broken so we need to pass
+//    false. Change back when it's fixed
 func makeAdmins(val *bool) *bool {
-	if v := makeBool(val); v {
-		return &v
+	if val != nil {
+		return val
+	} else {
+		no := false
+		return &no
 	}
-	return nil
 }
 
 // makeBool returns true iff *val == true
@@ -56,7 +62,7 @@ func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks
 		return nil
 	}
 	return &github.RequiredStatusChecks{
-		Contexts: append([]string{}, cp.Contexts...),
+		Contexts: append([]string{}, sets.NewString(cp.Contexts...).List()...),
 		Strict:   makeBool(cp.Strict),
 	}
 }
@@ -65,13 +71,13 @@ func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks
 //
 // Returns nil when input restrictions is nil.
 // Otherwise Teams and Users are both non-nil (empty list if unset)
-func makeRestrictions(rp *branchprotection.Restrictions) *github.Restrictions {
+func makeRestrictions(rp *branchprotection.Restrictions) *github.RestrictionsRequest {
 	if rp == nil {
 		return nil
 	}
-	teams := append([]string{}, rp.Teams...)
-	users := append([]string{}, rp.Users...)
-	return &github.Restrictions{
+	teams := append([]string{}, sets.NewString(rp.Teams...).List()...)
+	users := append([]string{}, sets.NewString(rp.Users...).List()...)
+	return &github.RestrictionsRequest{
 		Teams: &teams,
 		Users: &users,
 	}
@@ -80,7 +86,7 @@ func makeRestrictions(rp *branchprotection.Restrictions) *github.Restrictions {
 // makeReviews renders review policy into the corresponding GitHub api object.
 //
 // Returns nil if the policy is nil, or approvals is nil or 0.
-func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestReviews {
+func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestReviewsRequest {
 	switch {
 	case rp == nil:
 		return nil
@@ -90,7 +96,7 @@ func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestR
 	case *rp.Approvals == 0:
 		return nil
 	}
-	rprr := github.RequiredPullRequestReviews{
+	rprr := github.RequiredPullRequestReviewsRequest{
 		DismissStaleReviews:          makeBool(rp.DismissStale),
 		RequireCodeOwnerReviews:      makeBool(rp.RequireOwners),
 		RequiredApprovingReviewCount: *rp.Approvals,

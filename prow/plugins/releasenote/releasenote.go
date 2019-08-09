@@ -30,10 +30,14 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "release-note"
-
 const (
-	releaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
+	// PluginName defines this plugin's registered name.
+	PluginName = "release-note"
+)
+const (
+	// ReleaseNoteLabelNeeded defines the label used when a missing release-note label is blocking the
+	// merge.
+	ReleaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
@@ -45,7 +49,7 @@ const (
 )
 
 var (
-	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNoteLabelNeeded)
+	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, ReleaseNoteLabelNeeded)
 	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
@@ -55,7 +59,7 @@ var (
 	allRNLabels = []string{
 		releaseNoteNone,
 		releaseNoteActionRequired,
-		releaseNoteLabelNeeded,
+		ReleaseNoteLabelNeeded,
 		releaseNote,
 	}
 
@@ -65,13 +69,13 @@ var (
 )
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, helpProvider)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterIssueCommentHandler(PluginName, handleIssueComment, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The releasenote plugin implements a release note process that uses a markdown 'releasenote' code block to associate a release note with a pull request. Until the 'releasenote' block in the pull request body is populated the PR will be assigned the '` + releaseNoteLabelNeeded + `' label.
+		Description: `The releasenote plugin implements a release note process that uses a markdown 'releasenote' code block to associate a release note with a pull request. Until the 'releasenote' block in the pull request body is populated the PR will be assigned the '` + ReleaseNoteLabelNeeded + `' label.
 <br>There are three valid types of release notes that can replace this label:
 <ol><li>PRs with a normal release note in the 'releasenote' block are given the label '` + releaseNote + `'.</li>
 <li>PRs that have a release note of 'none' in the block are given the label '` + releaseNoteNone + `' to indicate that the PR does not warrant a release note.</li>
@@ -99,7 +103,7 @@ type githubClient interface {
 	BotName() (string, error)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
 	return handleComment(pc.GitHubClient, pc.Logger, ic)
 }
 
@@ -191,7 +195,7 @@ func removeOtherLabels(remover func(string) error, label string, labelSet []stri
 	return nil
 }
 
-func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, pc.Logger, &pr)
 }
 
@@ -214,7 +218,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 
 	var comments []github.IssueComment
 	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body)
-	if labelToAdd == releaseNoteLabelNeeded {
+	if labelToAdd == ReleaseNoteLabelNeeded {
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
 			return clearStaleComments(gc, log, pr, prLabels, nil)
@@ -225,7 +229,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		}
 		if containsNoneCommand(comments) {
 			labelToAdd = releaseNoteNone
-		} else if !prLabels.Has(releaseNoteLabelNeeded) {
+		} else if !prLabels.Has(ReleaseNoteLabelNeeded) {
 			comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteBody)
 			if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 				log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
@@ -292,9 +296,9 @@ func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.P
 	org := pr.Repo.Owner.Login
 	repo := pr.Repo.Name
 	format := "Failed to remove the label %q from %s/%s#%d."
-	if prLabels.Has(releaseNoteLabelNeeded) {
-		if err := gc.RemoveLabel(org, repo, pr.Number, releaseNoteLabelNeeded); err != nil {
-			log.WithError(err).Errorf(format, releaseNoteLabelNeeded, org, repo, pr.Number)
+	if prLabels.Has(ReleaseNoteLabelNeeded) {
+		if err := gc.RemoveLabel(org, repo, pr.Number, ReleaseNoteLabelNeeded); err != nil {
+			log.WithError(err).Errorf(format, ReleaseNoteLabelNeeded, org, repo, pr.Number)
 		}
 	}
 }
@@ -305,7 +309,7 @@ func determineReleaseNoteLabel(body string) string {
 	composedReleaseNote := strings.ToLower(strings.TrimSpace(getReleaseNote(body)))
 
 	if composedReleaseNote == "" {
-		return releaseNoteLabelNeeded
+		return ReleaseNoteLabelNeeded
 	}
 	if noneRe.MatchString(composedReleaseNote) {
 		return releaseNoteNone
@@ -363,7 +367,7 @@ func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.P
 		return false
 	}
 
-	if comment && !prLabels.Has(releaseNoteLabelNeeded) {
+	if comment && !prLabels.Has(ReleaseNoteLabelNeeded) {
 		comment := plugins.FormatResponse(
 			pr.PullRequest.User.Login,
 			parentReleaseNoteBody,

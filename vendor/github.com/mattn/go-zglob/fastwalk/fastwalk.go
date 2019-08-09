@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 )
 
 // TraverseLink is a sentinel error for fastWalk, similar to filepath.SkipDir.
@@ -67,11 +68,14 @@ func FastWalk(root string, walkFn func(path string, typ os.FileMode) error) erro
 		// buffered for correctness & not leaking goroutines:
 		resc: make(chan error, numWorkers),
 	}
-	defer close(w.donec)
+
 	// TODO(bradfitz): start the workers as needed? maybe not worth it.
+	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
-		go w.doWork()
+		wg.Add(1)
+		go w.doWork(&wg)
 	}
+
 	todo := []walkItem{{dir: root}}
 	out := 0
 	for {
@@ -89,10 +93,28 @@ func FastWalk(root string, walkFn func(path string, typ os.FileMode) error) erro
 		case it := <-w.enqueuec:
 			todo = append(todo, it)
 		case err := <-w.resc:
-			out--
 			if err != nil {
+				// Signal to the workers to close.
+				close(w.donec)
+
+				// Drain the results channel from the other workers which
+				// haven't returned yet.
+				go func() {
+					for {
+						select {
+						case _, ok := <-w.resc:
+							if !ok {
+								return
+							}
+						}
+					}
+				}()
+
+				wg.Wait()
 				return err
 			}
+
+			out--
 			if out == 0 && len(todo) == 0 {
 				// It's safe to quit here, as long as the buffered
 				// enqueue channel isn't also readable, which might
@@ -104,6 +126,10 @@ func FastWalk(root string, walkFn func(path string, typ os.FileMode) error) erro
 				case it := <-w.enqueuec:
 					todo = append(todo, it)
 				default:
+					// Signal to the workers to close, and wait for all of
+					// them to return.
+					close(w.donec)
+					wg.Wait()
 					return nil
 				}
 			}
@@ -113,10 +139,11 @@ func FastWalk(root string, walkFn func(path string, typ os.FileMode) error) erro
 
 // doWork reads directories as instructed (via workc) and runs the
 // user's callback function.
-func (w *walker) doWork() {
+func (w *walker) doWork(wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-w.donec:
+			wg.Done()
 			return
 		case it := <-w.workc:
 			w.resc <- w.walk(it.dir, !it.callbackDone)

@@ -1,5 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
+load("//prow:def.bzl", "prow_image")
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -21,6 +22,11 @@ go_library(
         "//boskos/common:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
+)
+
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

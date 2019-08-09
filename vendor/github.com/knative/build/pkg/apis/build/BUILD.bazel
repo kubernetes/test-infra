@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["register.go"],
-    importmap = "vendor/github.com/knative/build/pkg/apis/build",
+    importmap = "k8s.io/test-infra/vendor/github.com/knative/build/pkg/apis/build",
     importpath = "github.com/knative/build/pkg/apis/build",
     visibility = ["//visibility:public"],
 )

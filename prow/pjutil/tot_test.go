@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 type responseVendor struct {
@@ -56,6 +57,10 @@ func parrotServer(codes []int, data []string) *httptest.Server {
 }
 
 func TestGetBuildID(t *testing.T) {
+	oldSleep := sleep
+	sleep = func(time.Duration) { return }
+	defer func() { sleep = oldSleep }()
+
 	var testCases = []struct {
 		name        string
 		codes       []int

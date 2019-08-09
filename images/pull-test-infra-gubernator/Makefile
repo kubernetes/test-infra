@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.4
+push-prod:
+  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/pull-test-infra-gubernator
 
-image:
-	docker build -t "gcr.io/k8s-testimages/gubernator:$(VERSION)" .
+push:
+	bazel run //images/builder -- --allow-dirty images/pull-test-infra-gubernator
 
-push: image
-	docker push "gcr.io/k8s-testimages/gubernator:$(VERSION)"
-
-.PHONY: image push
+.PHONY: push push-prod

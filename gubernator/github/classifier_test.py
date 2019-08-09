@@ -110,7 +110,7 @@ class CalculateTest(unittest.TestCase):
                     }
                 }, 1),
                 make_comment_event(1, 'k8s-bot',
-                    'failure in https://k8s-gubernator.appspot.com/build/bucket/job/123/', ts=2),
+                    'failure in https://gubernator.k8s.io/build/bucket/job/123/', ts=2),
                 ('pull_request', {
                     'action': 'labeled',
                     'label': {'name': 'release-note-none', 'color': 'orange'},
@@ -211,7 +211,7 @@ class CalculateTest(unittest.TestCase):
             self.assertEqual(result, classifier.get_xrefs(
                 [{'comment': c} for c in comments], {'body': body}))
         def fail(path):
-            return 'foobar https://k8s-gubernator.appspot.com/build%s asdf' % path
+            return 'foobar https://gubernator.k8s.io/build%s asdf' % path
         expect(None, [], [])
         expect('something', [], [])
         expect(fail('/a/b/34/'), [], ['/a/b/34'])

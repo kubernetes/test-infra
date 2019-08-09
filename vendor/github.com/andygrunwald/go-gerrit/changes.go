@@ -25,10 +25,10 @@ type WebLinkInfo struct {
 
 // GitPersonInfo entity contains information about the author/committer of a commit.
 type GitPersonInfo struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Date  string `json:"date"`
-	TZ    int    `json:"tz"`
+	Name  string    `json:"name"`
+	Email string    `json:"email"`
+	Date  Timestamp `json:"date"`
+	TZ    int       `json:"tz"`
 }
 
 // NotifyInfo entity contains detailed information about who should be
@@ -67,8 +67,9 @@ type ChangeEditMessageInput struct {
 type ChangeMessageInfo struct {
 	ID             string      `json:"id"`
 	Author         AccountInfo `json:"author,omitempty"`
-	Date           string      `json:"date"`
+	Date           Timestamp   `json:"date"`
 	Message        string      `json:"message"`
+	Tag            string      `json:"tag,omitempty"`
 	RevisionNumber int         `json:"_revision_number,omitempty"`
 }
 
@@ -206,15 +207,16 @@ type ReviewerInput struct {
 
 // ReviewInput entity contains information for adding a review to a revision.
 type ReviewInput struct {
-	Message               string                    `json:"message,omitempty"`
-	Tag                   string                    `json:"tag,omitempty"`
-	Labels                map[string]string         `json:"labels,omitempty"`
-	Comments              map[string][]CommentInput `json:"comments,omitempty"`
-	StrictLabels          bool                      `json:"strict_labels,omitempty"`
-	Drafts                string                    `json:"drafts,omitempty"`
-	Notify                string                    `json:"notify,omitempty"`
-	OmitDuplicateComments bool                      `json:"omit_duplicate_comments,omitempty"`
-	OnBehalfOf            string                    `json:"on_behalf_of,omitempty"`
+	Message               string                         `json:"message,omitempty"`
+	Tag                   string                         `json:"tag,omitempty"`
+	Labels                map[string]string              `json:"labels,omitempty"`
+	Comments              map[string][]CommentInput      `json:"comments,omitempty"`
+	RobotComments         map[string][]RobotCommentInput `json:"robot_comments,omitempty"`
+	StrictLabels          bool                           `json:"strict_labels,omitempty"`
+	Drafts                string                         `json:"drafts,omitempty"`
+	Notify                string                         `json:"notify,omitempty"`
+	OmitDuplicateComments bool                           `json:"omit_duplicate_comments,omitempty"`
+	OnBehalfOf            string                         `json:"on_behalf_of,omitempty"`
 }
 
 // RelatedChangeAndCommitInfo entity contains information about a related change and commit.
@@ -229,9 +231,9 @@ type RelatedChangeAndCommitInfo struct {
 
 // DiffContent entity contains information about the content differences in a file.
 type DiffContent struct {
-	A      string            `json:"a,omitempty"`
-	B      string            `json:"b,omitempty"`
-	AB     string            `json:"ab,omitempty"`
+	A      []string          `json:"a,omitempty"`
+	B      []string          `json:"b,omitempty"`
+	AB     []string          `json:"ab,omitempty"`
 	EditA  DiffIntralineInfo `json:"edit_a,omitempty"`
 	EditB  DiffIntralineInfo `json:"edit_b,omitempty"`
 	Skip   int               `json:"skip,omitempty"`
@@ -240,52 +242,128 @@ type DiffContent struct {
 
 // CommentInput entity contains information for creating an inline comment.
 type CommentInput struct {
-	ID        string       `json:"id,omitempty"`
-	Path      string       `json:"path,omitempty"`
-	Side      string       `json:"side,omitempty"`
-	Line      int          `json:"line,omitempty"`
-	Range     CommentRange `json:"range,omitempty"`
-	InReplyTo string       `json:"in_reply_to,omitempty"`
-	Updated   string       `json:"updated,omitempty"`
-	Message   string       `json:"message,omitempty"`
+	ID        string        `json:"id,omitempty"`
+	Path      string        `json:"path,omitempty"`
+	Side      string        `json:"side,omitempty"`
+	Line      int           `json:"line,omitempty"`
+	Range     *CommentRange `json:"range,omitempty"`
+	InReplyTo string        `json:"in_reply_to,omitempty"`
+	Updated   *Timestamp    `json:"updated,omitempty"`
+	Message   string        `json:"message,omitempty"`
+}
+
+// RobotCommentInput entity contains information for creating an inline robot comment.
+// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#robot-comment-input
+type RobotCommentInput struct {
+	CommentInput
+
+	// The ID of the robot that generated this comment.
+	RobotID string `json:"robot_id"`
+	// An ID of the run of the robot.
+	RobotRunID string `json:"robot_run_id"`
+	// URL to more information.
+	URL string `json:"url,omitempty"`
+	// Robot specific properties as map that maps arbitrary keys to values.
+	Properties *map[string]*string `json:"properties,omitempty"`
+	// Suggested fixes for this robot comment as a list of FixSuggestionInfo
+	// entities.
+	FixSuggestions *FixSuggestionInfo `json:"fix_suggestions,omitempty"`
+}
+
+// RobotCommentInfo entity contains information about a robot inline comment
+// RobotCommentInfo has the same fields as CommentInfo. In addition RobotCommentInfo has the following fields:
+// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#robot-comment-info
+type RobotCommentInfo struct {
+	CommentInfo
+
+	// The ID of the robot that generated this comment.
+	RobotID string `json:"robot_id"`
+	// An ID of the run of the robot.
+	RobotRunID string `json:"robot_run_id"`
+	// URL to more information.
+	URL string `json:"url,omitempty"`
+	// Robot specific properties as map that maps arbitrary keys to values.
+	Properties map[string]string `json:"properties,omitempty"`
+	// Suggested fixes for this robot comment as a list of FixSuggestionInfo
+	// entities.
+	FixSuggestions *FixSuggestionInfo `json:"fix_suggestions,omitempty"`
+}
+
+// FixSuggestionInfo entity represents a suggested fix.
+// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#fix-suggestion-info
+type FixSuggestionInfo struct {
+	// The UUID of the suggested fix. It will be generated automatically and
+	// hence will be ignored if it’s set for input objects.
+	FixID string `json:"fix_id"`
+	// A description of the suggested fix.
+	Description string `json:"description"`
+	// A list of FixReplacementInfo entities indicating how the content of one or
+	// several files should be modified. Within a file, they should refer to
+	// non-overlapping regions.
+	Replacements FixReplacementInfo `json:"replacements"`
+}
+
+// FixReplacementInfo entity describes how the content of a file should be replaced by another content.
+// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#fix-replacement-info
+type FixReplacementInfo struct {
+	// The path of the file which should be modified. Any file in the repository may be modified.
+	Path string `json:"path"`
+
+	// A CommentRange indicating which content of the file should be replaced.
+	// Lines in the file are assumed to be separated by the line feed character,
+	// the carriage return character, the carriage return followed by the line
+	// feed character, or one of the other Unicode linebreak sequences supported
+	// by Java.
+	Range CommentRange `json:"range"`
+
+	// The content which should be used instead of the current one.
+	Replacement string `json:"replacement,omitempty"`
 }
 
 // DiffIntralineInfo entity contains information about intraline edits in a file.
-type DiffIntralineInfo []struct {
-	SkipLength int
-	MarkLength int
-}
+//
+// The information consists of a list of <skip length, mark length> pairs,
+// where the skip length is the number of characters between the end of
+// the previous edit and the start of this edit, and the mark length is the
+// number of edited characters following the skip. The start of the edits
+// is from the beginning of the related diff content lines.
+//
+// Note that the implied newline character at the end of each line
+// is included in the length calculation, and thus it is possible for
+// the edits to span newlines.
+type DiffIntralineInfo [][2]int
 
 // ChangeInfo entity contains information about a change.
 type ChangeInfo struct {
-	ID                 string                  `json:"id"`
-	URL                string                  `json:"url,omitempty"`
-	Project            string                  `json:"project"`
-	Branch             string                  `json:"branch"`
-	Topic              string                  `json:"topic,omitempty"`
-	ChangeID           string                  `json:"change_id"`
-	Subject            string                  `json:"subject"`
-	Status             string                  `json:"status"`
-	Created            string                  `json:"created"`
-	Updated            string                  `json:"updated"`
-	Submitted          string                  `json:"submitted,omitempty"`
-	Starred            bool                    `json:"starred,omitempty"`
-	Reviewed           bool                    `json:"reviewed,omitempty"`
-	Mergeable          bool                    `json:"mergeable,omitempty"`
-	Insertions         int                     `json:"insertions"`
-	Deletions          int                     `json:"deletions"`
-	Number             int                     `json:"_number"`
-	Owner              AccountInfo             `json:"owner"`
-	Actions            map[string]ActionInfo   `json:"actions,omitempty"`
-	Labels             map[string]LabelInfo    `json:"labels,omitempty"`
-	PermittedLabels    map[string][]string     `json:"permitted_labels,omitempty"`
-	RemovableReviewers []AccountInfo           `json:"removable_reviewers,omitempty"`
-	Messages           []ChangeMessageInfo     `json:"messages,omitempty"`
-	CurrentRevision    string                  `json:"current_revision,omitempty"`
-	Revisions          map[string]RevisionInfo `json:"revisions,omitempty"`
-	MoreChanges        bool                    `json:"_more_changes,omitempty"`
-	Problems           []ProblemInfo           `json:"problems,omitempty"`
-	BaseChange         string                  `json:"base_change,omitempty"`
+	ID                 string                   `json:"id"`
+	URL                string                   `json:"url,omitempty"`
+	Project            string                   `json:"project"`
+	Branch             string                   `json:"branch"`
+	Topic              string                   `json:"topic,omitempty"`
+	ChangeID           string                   `json:"change_id"`
+	Subject            string                   `json:"subject"`
+	Status             string                   `json:"status"`
+	Created            Timestamp                `json:"created"`
+	Updated            Timestamp                `json:"updated"`
+	Submitted          *Timestamp               `json:"submitted,omitempty"`
+	Starred            bool                     `json:"starred,omitempty"`
+	Reviewed           bool                     `json:"reviewed,omitempty"`
+	Mergeable          bool                     `json:"mergeable,omitempty"`
+	Insertions         int                      `json:"insertions"`
+	Deletions          int                      `json:"deletions"`
+	Number             int                      `json:"_number"`
+	Owner              AccountInfo              `json:"owner"`
+	Actions            map[string]ActionInfo    `json:"actions,omitempty"`
+	Labels             map[string]LabelInfo     `json:"labels,omitempty"`
+	PermittedLabels    map[string][]string      `json:"permitted_labels,omitempty"`
+	RemovableReviewers []AccountInfo            `json:"removable_reviewers,omitempty"`
+	Reviewers          map[string][]AccountInfo `json:"reviewers,omitempty"`
+	Messages           []ChangeMessageInfo      `json:"messages,omitempty"`
+	CurrentRevision    string                   `json:"current_revision,omitempty"`
+	Revisions          map[string]RevisionInfo  `json:"revisions,omitempty"`
+	MoreChanges        bool                     `json:"_more_changes,omitempty"`
+	Problems           []ProblemInfo            `json:"problems,omitempty"`
+	BaseChange         string                   `json:"base_change,omitempty"`
 }
 
 // LabelInfo entity contains information about a label on a change, always corresponding to the current patch set.
@@ -310,7 +388,7 @@ type LabelInfo struct {
 type RevisionInfo struct {
 	Draft             bool                  `json:"draft,omitempty"`
 	Number            int                   `json:"_number"`
-	Created           string                `json:"created"`
+	Created           Timestamp             `json:"created"`
 	Uploader          AccountInfo           `json:"uploader"`
 	Ref               string                `json:"ref"`
 	Fetch             map[string]FetchInfo  `json:"fetch"`
@@ -323,16 +401,16 @@ type RevisionInfo struct {
 
 // CommentInfo entity contains information about an inline comment.
 type CommentInfo struct {
-	PatchSet  int          `json:"patch_set,omitempty"`
-	ID        string       `json:"id"`
-	Path      string       `json:"path,omitempty"`
-	Side      string       `json:"side,omitempty"`
-	Line      int          `json:"line,omitempty"`
-	Range     CommentRange `json:"range,omitempty"`
-	InReplyTo string       `json:"in_reply_to,omitempty"`
-	Message   string       `json:"message,omitempty"`
-	Updated   string       `json:"updated"`
-	Author    AccountInfo  `json:"author,omitempty"`
+	PatchSet  int           `json:"patch_set,omitempty"`
+	ID        string        `json:"id"`
+	Path      string        `json:"path,omitempty"`
+	Side      string        `json:"side,omitempty"`
+	Line      int           `json:"line,omitempty"`
+	Range     *CommentRange `json:"range,omitempty"`
+	InReplyTo string        `json:"in_reply_to,omitempty"`
+	Message   string        `json:"message,omitempty"`
+	Updated   *Timestamp    `json:"updated"`
+	Author    AccountInfo   `json:"author,omitempty"`
 }
 
 // QueryOptions specifies global parameters to query changes / reviewers.
@@ -374,7 +452,7 @@ type ChangeOptions struct {
 	AdditionalFields []string `url:"o,omitempty"`
 }
 
-// QueryChanges visible to the caller.
+// QueryChanges lists changes visible to the caller.
 // The query string must be provided by the q parameter.
 // The n parameter can be used to limit the returned results.
 //
@@ -702,11 +780,17 @@ func (s *ChangesService) change(tail string, changeID string, input interface{})
 
 	v := new(ChangeInfo)
 	resp, err := s.client.Do(req, v)
-	if resp.StatusCode == http.StatusConflict {
-		body, _ := ioutil.ReadAll(resp.Body)
-		err = errors.New(string(body[:]))
+	if err != nil {
+		return nil, resp, err
 	}
-	return v, resp, err
+	if resp.StatusCode == http.StatusConflict {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return v, resp, err
+		}
+		return v, resp, errors.New(string(body[:]))
+	}
+	return v, resp, nil
 }
 
 // SubmitChange submits a change.

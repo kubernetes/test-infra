@@ -20,16 +20,17 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 )
 
 var testQuery = TideQuery{
 	Orgs:                   []string{"org"},
 	Repos:                  []string{"k/k", "k/t-i"},
-	Labels:                 []string{"lgtm", "approved"},
+	Labels:                 []string{labels.LGTM, labels.Approved},
 	MissingLabels:          []string{"foo"},
 	Milestone:              "milestone",
 	ReviewApprovedRequired: true,
@@ -55,57 +56,47 @@ func TestTideQuery(t *testing.T) {
 	checkTok("review:approved")
 }
 
-func TestAllPRsSince(t *testing.T) {
-	testTime, err := time.Parse(time.UnixDate, "Sat Mar  7 11:06:39 PST 2015")
-	if err != nil {
-		t.Fatalf("Error parsing test time string: %v.", err)
-	}
-	testTimeOld, err := time.Parse(time.UnixDate, "Sat Mar  7 11:06:39 PST 1915")
-	if err != nil {
-		t.Fatalf("Error parsing test time string: %v.", err)
-	}
-	var q string
-	checkTok := func(tok string, shouldExist bool) {
-		if shouldExist == strings.Contains(q, " "+tok+" ") {
-			return
-		} else if shouldExist {
-			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
-		} else {
-			t.Errorf("Expected query to not contain \"%s\", got \"%s\"", tok, q)
-
-		}
-	}
-
-	queries := TideQueries([]TideQuery{
-		testQuery,
+func TestOrgExceptionsAndRepos(t *testing.T) {
+	queries := TideQueries{
 		{
-			Orgs:   []string{"foo"},
-			Repos:  []string{"k/foo"},
-			Labels: []string{"lgtm", "mergeable"},
+			Orgs:          []string{"k8s"},
+			ExcludedRepos: []string{"k8s/k8s"},
 		},
-	})
-	q = " " + queries.AllPRsSince(testTime) + " "
-	checkTok("is:pr", true)
-	checkTok("state:open", true)
-	checkTok("org:\"org\"", true)
-	checkTok("org:\"foo\"", true)
-	checkTok("repo:\"k/k\"", true)
-	checkTok("repo:\"k/t-i\"", true)
-	checkTok("repo:\"k/foo\"", true)
-	checkTok("label:\"lgtm\"", false)
-	checkTok("label:\"approved\"", false)
-	checkTok("label:\"mergeable\"", false)
-	checkTok("-label:\"foo\"", false)
-	checkTok("milestone:\"milestone\"", false)
-	checkTok("review:approved", false)
-	checkTok("updated:>=2015-03-07T11:06:39Z", true)
+		{
+			Orgs:          []string{"kuber"},
+			Repos:         []string{"foo/bar", "baz/bar"},
+			ExcludedRepos: []string{"kuber/netes"},
+		},
+		{
+			Orgs:          []string{"k8s"},
+			ExcludedRepos: []string{"k8s/k8s", "k8s/t-i"},
+		},
+		{
+			Orgs:          []string{"org", "org2"},
+			ExcludedRepos: []string{"org2/repo", "org2/repo2", "org2/repo3"},
+		},
+		{
+			Orgs:  []string{"foo"},
+			Repos: []string{"org2/repo3"},
+		},
+	}
 
-	// Test that if time is the zero time value, the token is not included.
-	q = " " + queries.AllPRsSince(time.Time{}) + " "
-	checkTok("updated:>=0001-01-01T00:00:00Z", false)
-	// Test that if time is before 1970, the token is not included.
-	q = " " + queries.AllPRsSince(testTimeOld) + " "
-	checkTok("updated:>=1915-03-07T11:06:39Z", false)
+	expectedOrgs := map[string]sets.String{
+		"foo":   sets.NewString(),
+		"k8s":   sets.NewString("k8s/k8s"),
+		"kuber": sets.NewString("kuber/netes"),
+		"org":   sets.NewString(),
+		"org2":  sets.NewString("org2/repo", "org2/repo2"),
+	}
+	expectedRepos := sets.NewString("foo/bar", "baz/bar", "org2/repo3")
+
+	orgs, repos := queries.OrgExceptionsAndRepos()
+	if !reflect.DeepEqual(orgs, expectedOrgs) {
+		t.Errorf("Expected org map %v, but got %v.", expectedOrgs, orgs)
+	}
+	if !repos.Equal(expectedRepos) {
+		t.Errorf("Expected repo set %v, but got %v.", expectedRepos, repos)
+	}
 }
 
 func TestMergeMethod(t *testing.T) {
@@ -154,6 +145,80 @@ func TestMergeMethod(t *testing.T) {
 	for _, test := range testcases {
 		if ti.MergeMethod(test.org, test.repo) != test.expected {
 			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, ti.MergeMethod(test.org, test.repo), test.org, test.repo)
+		}
+	}
+}
+func TestMergeTemplate(t *testing.T) {
+	ti := &Tide{
+		MergeTemplate: map[string]TideMergeCommitTemplate{
+			"kubernetes/kops": {
+				TitleTemplate: "",
+				BodyTemplate:  "",
+			},
+			"kubernetes/charts": {
+				TitleTemplate: "{{ .Number }}",
+				BodyTemplate:  "",
+			},
+			"helm/charts": {
+				TitleTemplate: "",
+				BodyTemplate:  "{{ .Body }}",
+			},
+			"kubernetes-helm": {
+				TitleTemplate: "{{ .Title }}",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+	}
+
+	var testcases = []struct {
+		org      string
+		repo     string
+		expected TideMergeCommitTemplate
+	}{
+		{
+			org:      "kubernetes",
+			repo:     "kubernetes",
+			expected: TideMergeCommitTemplate{},
+		},
+		{
+			org:  "kubernetes",
+			repo: "kops",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "",
+				BodyTemplate:  "",
+			},
+		},
+		{
+			org:  "kubernetes",
+			repo: "charts",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "{{ .Number }}",
+				BodyTemplate:  "",
+			},
+		},
+		{
+			org:  "helm",
+			repo: "charts",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+		{
+			org:  "kubernetes-helm",
+			repo: "monocular",
+			expected: TideMergeCommitTemplate{
+				TitleTemplate: "{{ .Title }}",
+				BodyTemplate:  "{{ .Body }}",
+			},
+		},
+	}
+
+	for _, test := range testcases {
+		actual := ti.MergeCommitTemplate(test.org, test.repo)
+
+		if actual.TitleTemplate != test.expected.TitleTemplate || actual.BodyTemplate != test.expected.BodyTemplate {
+			t.Errorf("Expected title \"%v\", body \"%v\", but got title \"%v\", body \"%v\" for %v/%v", test.expected.TitleTemplate, test.expected.BodyTemplate, actual.TitleTemplate, actual.BodyTemplate, test.org, test.repo)
 		}
 	}
 }
@@ -288,7 +353,7 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 	for _, tc := range testCases {
 		policy := parseTideContextPolicyOptions(org, repo, branch, tc.config)
 		if !reflect.DeepEqual(policy, tc.expected) {
-			t.Errorf("%s - expected %v got %v", tc.name, tc.expected, policy)
+			t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(tc.expected, policy))
 		}
 	}
 }
@@ -320,11 +385,15 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					Presubmits: map[string][]Presubmit{
 						"org/repo": {
 							Presubmit{
-								Context:   "pr1",
+								Reporter: Reporter{
+									Context: "pr1",
+								},
 								AlwaysRun: true,
 							},
 							Presubmit{
-								Context:   "po1",
+								Reporter: Reporter{
+									Context: "po1",
+								},
 								AlwaysRun: true,
 								Optional:  true,
 							},
@@ -333,8 +402,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{"pr1"},
-				OptionalContexts: []string{"po1"},
+				RequiredContexts:          []string{"pr1"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"po1"},
 			},
 		},
 		{
@@ -352,8 +422,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{},
-				OptionalContexts: []string{},
+				RequiredContexts:          []string{},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{},
 			},
 		},
 		{
@@ -370,8 +441,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{},
-				OptionalContexts: []string{},
+				RequiredContexts:          []string{},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{},
 			},
 		},
 		{
@@ -397,8 +469,9 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts: []string{},
-				OptionalContexts: []string{},
+				RequiredContexts:          []string{},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{},
 			},
 		},
 		{
@@ -408,18 +481,20 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					Tide: Tide{
 						ContextOptions: TideContextPolicyOptions{
 							TideContextPolicy: TideContextPolicy{
-								RequiredContexts:    []string{"r1"},
-								OptionalContexts:    []string{"o1"},
-								SkipUnknownContexts: &yes,
+								RequiredContexts:          []string{"r1"},
+								RequiredIfPresentContexts: []string{},
+								OptionalContexts:          []string{"o1"},
+								SkipUnknownContexts:       &yes,
 							},
 						},
 					},
 				},
 			},
 			expected: TideContextPolicy{
-				RequiredContexts:    []string{"r1"},
-				OptionalContexts:    []string{"o1"},
-				SkipUnknownContexts: &yes,
+				RequiredContexts:          []string{"r1"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"o1"},
+				SkipUnknownContexts:       &yes,
 			},
 		},
 	}
@@ -427,7 +502,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 	for _, tc := range testCases {
 		p, err := tc.config.GetTideContextPolicy(org, repo, branch)
 		if !reflect.DeepEqual(p, &tc.expected) {
-			t.Errorf("%s - expected contexts %v got %v", tc.name, &tc.expected, p)
+			t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
 		}
 		if err != nil {
 			if err.Error() != tc.error {
@@ -548,6 +623,167 @@ func TestMergeTideContextPolicyConfig(t *testing.T) {
 
 func TestTideQuery_Validate(t *testing.T) {
 	testCases := []struct {
+		name        string
+		query       TideQuery
+		expectError bool
+	}{
+		{
+			name: "good query",
+			query: TideQuery{
+				Orgs:                   []string{"kuber"},
+				Repos:                  []string{"foo/bar", "baz/bar"},
+				ExcludedRepos:          []string{"kuber/netes"},
+				IncludedBranches:       []string{"master"},
+				Milestone:              "backlog-forever",
+				Labels:                 []string{labels.LGTM, labels.Approved},
+				MissingLabels:          []string{"do-not-merge/evil-code"},
+				ReviewApprovedRequired: true,
+			},
+			expectError: false,
+		},
+		{
+			name: "simple org query is valid",
+			query: TideQuery{
+				Orgs: []string{"kuber"},
+			},
+			expectError: false,
+		},
+		{
+			name: "org with slash is invalid",
+			query: TideQuery{
+				Orgs: []string{"kube/r"},
+			},
+			expectError: true,
+		},
+		{
+			name: "empty org is invalid",
+			query: TideQuery{
+				Orgs: []string{""},
+			},
+			expectError: true,
+		},
+		{
+			name: "duplicate org is invalid",
+			query: TideQuery{
+				Orgs: []string{"kuber", "kuber"},
+			},
+			expectError: true,
+		},
+		{
+			name: "simple repo query is valid",
+			query: TideQuery{
+				Repos: []string{"kuber/netes"},
+			},
+			expectError: false,
+		},
+		{
+			name: "repo without slash is invalid",
+			query: TideQuery{
+				Repos: []string{"foobar", "baz/bar"},
+			},
+			expectError: true,
+		},
+		{
+			name: "repo included with parent org is invalid",
+			query: TideQuery{
+				Orgs:  []string{"kuber"},
+				Repos: []string{"foo/bar", "kuber/netes"},
+			},
+			expectError: true,
+		},
+		{
+			name: "duplicate repo is invalid",
+			query: TideQuery{
+				Repos: []string{"baz/bar", "foo/bar", "baz/bar"},
+			},
+			expectError: true,
+		},
+		{
+			name: "empty orgs and repos is invalid",
+			query: TideQuery{
+				IncludedBranches:       []string{"master"},
+				Milestone:              "backlog-forever",
+				Labels:                 []string{labels.LGTM, labels.Approved},
+				MissingLabels:          []string{"do-not-merge/evil-code"},
+				ReviewApprovedRequired: true,
+			},
+			expectError: true,
+		},
+		{
+			name: "simple excluded repo query is valid",
+			query: TideQuery{
+				Orgs:          []string{"kuber"},
+				ExcludedRepos: []string{"kuber/netes"},
+			},
+			expectError: false,
+		},
+		{
+			name: "excluded repo without slash is invalid",
+			query: TideQuery{
+				Orgs:          []string{"kuber"},
+				ExcludedRepos: []string{"kubernetes"},
+			},
+			expectError: true,
+		},
+		{
+			name: "excluded repo included without parent org is invalid",
+			query: TideQuery{
+				Repos:         []string{"foo/bar", "baz/bar"},
+				ExcludedRepos: []string{"kuber/netes"},
+			},
+			expectError: true,
+		},
+		{
+			name: "duplicate excluded repo is invalid",
+			query: TideQuery{
+				Orgs:                   []string{"kuber"},
+				ExcludedRepos:          []string{"kuber/netes", "kuber/netes"},
+				ReviewApprovedRequired: true,
+			},
+			expectError: true,
+		},
+		{
+			name: "label cannot be required and forbidden",
+			query: TideQuery{
+				Orgs:          []string{"kuber"},
+				Labels:        []string{labels.LGTM, labels.Approved},
+				MissingLabels: []string{"do-not-merge/evil-code", labels.LGTM},
+			},
+			expectError: true,
+		},
+		{
+			name: "simple excluded branches query is valid",
+			query: TideQuery{
+				Orgs:             []string{"kuber"},
+				ExcludedBranches: []string{"dev"},
+			},
+			expectError: false,
+		},
+		{
+			name: "specifying both included and excluded branches is invalid",
+			query: TideQuery{
+				Orgs:             []string{"kuber"},
+				IncludedBranches: []string{"master"},
+				ExcludedBranches: []string{"dev"},
+			},
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.query.Validate()
+			if err != nil && !tc.expectError {
+				t.Errorf("Unexpected error: %v.", err)
+			} else if err == nil && tc.expectError {
+				t.Error("Expected a validation error, but didn't get one.")
+			}
+		})
+
+	}
+}
+
+func TestTideContextPolicy_Validate(t *testing.T) {
+	testCases := []struct {
 		name   string
 		t      TideContextPolicy
 		failed bool
@@ -560,7 +796,7 @@ func TestTideQuery_Validate(t *testing.T) {
 			},
 		},
 		{
-			name: "good policy",
+			name: "optional contexts must differ from required contexts",
 			t: TideContextPolicy{
 				OptionalContexts: []string{"c1"},
 				RequiredContexts: []string{"c1"},
@@ -568,7 +804,7 @@ func TestTideQuery_Validate(t *testing.T) {
 			failed: true,
 		},
 		{
-			name: "good policy",
+			name: "individual contexts cannot be both optional and required",
 			t: TideContextPolicy{
 				OptionalContexts: []string{"c1", "c2", "c3", "c4"},
 				RequiredContexts: []string{"c1", "c4"},

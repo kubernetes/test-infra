@@ -17,6 +17,13 @@ type AccountInfo struct {
 	Name      string `json:"name,omitempty"`
 	Email     string `json:"email,omitempty"`
 	Username  string `json:"username,omitempty"`
+
+	// Avatars lists avatars of various sizes for the account.
+	// This field is only populated if the avatars plugin is enabled.
+	Avatars []struct {
+		URL    string `json:"url,omitempty"`
+		Height int    `json:"height,omitempty"`
+	} `json:"avatars,omitempty"`
 }
 
 // SSHKeyInfo entity contains information about an SSH key of a user.
@@ -87,7 +94,7 @@ type AccountInput struct {
 // AccountDetailInfo entity contains detailed information about an account.
 type AccountDetailInfo struct {
 	AccountInfo
-	RegisteredOn string `json:"registered_on"`
+	RegisteredOn Timestamp `json:"registered_on"`
 }
 
 // AccountNameInput entity contains information for setting a name for an account.

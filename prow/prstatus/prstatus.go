@@ -25,22 +25,20 @@ import (
 	"strings"
 	"time"
 
-	gogithub "github.com/google/go-github/github"
-	"github.com/shurcooL/githubql"
+	"github.com/gorilla/sessions"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/ghclient"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
 
 const (
-	loginSession   = "github_login"
-	githubEndpoint = "https://api.github.com"
-	tokenSession   = "access-token-session"
-	tokenKey       = "access-token"
-	loginKey       = "login"
+	loginSession = "github_login"
+	tokenSession = "access-token-session"
+	tokenKey     = "access-token"
+	loginKey     = "login"
 )
 
 type githubClient interface {
@@ -50,9 +48,8 @@ type githubClient interface {
 
 // PullRequestQueryHandler defines an interface that query handlers should implement.
 type PullRequestQueryHandler interface {
-	HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error)
 	QueryPullRequests(context.Context, githubClient, string) ([]PullRequest, error)
-	GetUser(*ghclient.Client) (*gogithub.User, error)
+	GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error)
 }
 
 // UserData represents data returned to client request to the endpoint. It has a flag that indicates
@@ -60,37 +57,38 @@ type PullRequestQueryHandler interface {
 // user.
 type UserData struct {
 	Login                    bool
-	PullRequestsWithContexts []PullRequestWithContext
+	PullRequestsWithContexts []PullRequestWithContexts
 }
 
-// PullRequestWithContext contains a pull request with its latest context.
-type PullRequestWithContext struct {
+// PullRequestWithContexts contains a pull request with its latest commit contexts.
+type PullRequestWithContexts struct {
 	Contexts    []Context
 	PullRequest PullRequest
 }
 
-// Dashboard Agent is responsible for handling request to /pr-status endpoint. It will serve
-// list of open pull requests owned by the user.
+// DashboardAgent is responsible for handling request to /pr-status endpoint.
+// It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
 	repos []string
-	goac  *config.GithubOAuthConfig
+	goac  *config.GitHubOAuthConfig
 
 	log *logrus.Entry
 }
 
+// Label represents a GitHub label.
 type Label struct {
 	ID   githubql.ID
 	Name githubql.String
 }
 
-// Context represent github contexts.
+// Context represent a GitHub status check context.
 type Context struct {
 	Context     string
 	Description string
 	State       string
 }
 
-// PullRequest holds graphql response data for github pull request.
+// PullRequest holds the GraphQL response data for a GitHub pull request.
 type PullRequest struct {
 	Number githubql.Int
 	Merged githubql.Boolean
@@ -116,11 +114,12 @@ type PullRequest struct {
 		}
 	} `graphql:"labels(first: 100)"`
 	Milestone struct {
-		ID     githubql.ID
-		Closed githubql.Boolean
+		Title githubql.String
 	}
+	Mergeable githubql.MergeableState
 }
 
+// UserLoginQuery holds the GraphQL query for the currently authenticated user.
 type UserLoginQuery struct {
 	Viewer struct {
 		Login githubql.String
@@ -143,8 +142,8 @@ type searchQuery struct {
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
 
-// Returns new user dashboard agent.
-func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *logrus.Entry) *DashboardAgent {
+// NewDashboardAgent creates a new user dashboard agent .
+func NewDashboardAgent(repos []string, config *config.GitHubOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		repos: repos,
 		goac:  config,
@@ -152,8 +151,23 @@ func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *lo
 	}
 }
 
+func invalidateGitHubSession(w http.ResponseWriter, r *http.Request, session *sessions.Session) error {
+	// Invalidate github login session
+	http.SetCookie(w, &http.Cookie{
+		Name:    loginSession,
+		Path:    "/",
+		Expires: time.Now().Add(-time.Hour * 24),
+		MaxAge:  -1,
+		Secure:  true,
+	})
+
+	// Invalidate access token session
+	session.Options.MaxAge = -1
+	return session.Save(r, w)
+}
+
 // HandlePrStatus returns a http handler function that handles request to /pr-status
-// endpoint. The handler takes user access token stored in the cookie to query to Github on behalf
+// endpoint. The handler takes user access token stored in the cookie to query to GitHub on behalf
 // of the user and serve the data in return. The Query handler is passed to the method so as it
 // can be mocked in the unit test..
 func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) http.HandlerFunc {
@@ -164,40 +178,39 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			http.Error(w, msg, http.StatusInternalServerError)
 		}
 
-		session, err := da.goac.CookieStore.Get(r, tokenSession)
-		if err != nil {
-			serverError("Error with getting git token session.", err)
-			return
-		}
-		token, ok := session.Values[tokenKey].(*oauth2.Token)
 		data := UserData{
 			Login: false,
 		}
 
-		var user *gogithub.User
+		// Get existing session. Invalidate everything if we fail and continue as
+		// if not logged in.
+		session, err := da.goac.CookieStore.Get(r, tokenSession)
+		if err != nil {
+			da.log.WithError(err).Info("Failed to get existing session, invalidating GitHub login session")
+			if err := invalidateGitHubSession(w, r, session); err != nil {
+				serverError("Failed to invalidate GitHub session", err)
+				return
+			}
+		}
+
+		// If access token exists, get user login using the access token. This is a
+		// chance to validate whether the access token is consumable or not. If
+		// not, we invalidate the sessions and continue as if not logged in.
+		token, ok := session.Values[tokenKey].(*oauth2.Token)
+		var user *github.User
+		var botName string
 		if ok && token.Valid() {
-			// If access token exist, get user login using the access token. This is a chance
-			// to validate whether the access token is consumable or not. If not, invalidate the
-			// session.
-			goGithubClient := ghclient.NewClient(token.AccessToken, false)
+			githubClient := github.NewClient(func() []byte { return []byte(token.AccessToken) }, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 			var err error
-			user, err = queryHandler.GetUser(goGithubClient)
+			botName, err = githubClient.BotName()
+			user = &github.User{Login: botName}
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
-					// Invalidate access token session
-					session.Options.MaxAge = -1
-					if err := session.Save(r, w); err != nil {
-						serverError("Error with saving invalidated session", err)
+					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")
+					if err := invalidateGitHubSession(w, r, session); err != nil {
+						serverError("Failed to invalidate GitHub session", err)
 						return
 					}
-					// Invalidate github login session
-					http.SetCookie(w, &http.Cookie{
-						Name:    loginSession,
-						Path:    "/",
-						Expires: time.Now().Add(-time.Hour * 24),
-						MaxAge:  -1,
-						Secure:  true,
-					})
 				} else {
 					serverError("Error with getting user login", err)
 					return
@@ -206,7 +219,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 		}
 
 		if user != nil {
-			login := *user.Login
+			login := user.Login
 			data.Login = true
 			// Saves login. We save the login under 2 cookies. One for the use of client to render the
 			// data and one encoded for server to verify the identity of the authenticated user.
@@ -223,12 +236,8 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 				return
 			}
 
-			getSecret := func() []byte {
-				return []byte(token.AccessToken)
-			}
-
 			// Construct query
-			ghc := github.NewClient(getSecret, githubEndpoint)
+			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {
@@ -247,21 +256,22 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 				serverError("Error with querying user data.", err)
 				return
 			}
-			var pullRequestWithContexts []PullRequestWithContext
+			var pullRequestWithContexts []PullRequestWithContexts
 			for _, pr := range pullRequests {
-				prcontext, err := queryHandler.HeadContexts(ghc, pr)
+				prcontexts, err := queryHandler.GetHeadContexts(ghc, pr)
 				if err != nil {
 					serverError("Error with getting head context of pr", err)
 					continue
 				}
-				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContext{
-					Contexts:    prcontext,
+				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
+					Contexts:    prcontexts,
 					PullRequest: pr,
 				})
 			}
 
 			data.PullRequestsWithContexts = pullRequestWithContexts
 		}
+
 		marshaledData, err := json.Marshal(data)
 		if err != nil {
 			da.log.WithError(err).Error("Error with marshalling user data.")
@@ -277,7 +287,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 	}
 }
 
-// Query function that returns a list of open pull requests owned by the user whose access token
+// QueryPullRequests is a query function that returns a list of open pull requests owned by the user whose access token
 // is consumed by the github client.
 func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
 	var prs []PullRequest
@@ -306,7 +316,8 @@ func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClien
 	return prs, nil
 }
 
-func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
+// GetHeadContexts returns the status checks' contexts of the head commit of the PR.
+func (da *DashboardAgent) GetHeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
@@ -327,10 +338,9 @@ func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Cont
 	return contexts, nil
 }
 
-func (da *DashboardAgent) GetUser(client *ghclient.Client) (*gogithub.User, error) {
-	return client.GetUser("")
-}
-
+// ConstructSearchQuery returns the GitHub search query string for PRs that are open and authored
+// by the user passed. The search is scoped to repositories that are configured with either Prow or
+// Tide.
 func (da *DashboardAgent) ConstructSearchQuery(login string) string {
 	tokens := []string{"is:pr", "state:open", "author:" + login}
 	for i := range da.repos {

@@ -1,0 +1,71 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "addresses.go",
+        "asg.go",
+        "clean.go",
+        "cloud_formation_stacks.go",
+        "dhcp_options.go",
+        "elb.go",
+        "iam_instance_profiles.go",
+        "iam_roles.go",
+        "instance.go",
+        "internet_gateways.go",
+        "launch_configs.go",
+        "list.go",
+        "nat_gateway.go",
+        "resource.go",
+        "route53.go",
+        "route_tables.go",
+        "security_groups.go",
+        "set.go",
+        "subnets.go",
+        "volumes.go",
+        "vpcs.go",
+    ],
+    importpath = "k8s.io/test-infra/maintenance/aws-janitor/resources",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//maintenance/aws-janitor/account:go_default_library",
+        "//maintenance/aws-janitor/regions:go_default_library",
+        "//maintenance/aws-janitor/s3:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/cloudformation:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/s3:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["route53_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -1,2 +1,7 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 approvers:
 - stevekuznetsov
+labels:
+ - area/prow/gcsupload
+ - area/prow/pod-utilities

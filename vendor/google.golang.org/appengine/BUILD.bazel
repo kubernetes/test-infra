@@ -10,7 +10,7 @@ go_library(
         "namespace.go",
         "timeout.go",
     ],
-    importmap = "vendor/google.golang.org/appengine",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/appengine",
     importpath = "google.golang.org/appengine",
     visibility = ["//visibility:public"],
     deps = [
@@ -34,6 +34,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/google.golang.org/appengine/internal:all-srcs",
+        "//vendor/google.golang.org/appengine/socket:all-srcs",
         "//vendor/google.golang.org/appengine/urlfetch:all-srcs",
     ],
     tags = ["automanaged"],

@@ -22,7 +22,7 @@ import (
 	"os"
 	"strconv"
 
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // JobSpec is the full downward API that we expose to
@@ -31,32 +31,30 @@ import (
 //  - the full spec, in serialized JSON in one variable
 //  - individual fields of the spec in their own variables
 type JobSpec struct {
-	Type      kube.ProwJobType `json:"type,omitempty"`
-	Job       string           `json:"job,omitempty"`
-	BuildID   string           `json:"buildid,omitempty"`
-	ProwJobID string           `json:"prowjobid,omitempty"`
+	Type      prowapi.ProwJobType `json:"type,omitempty"`
+	Job       string              `json:"job,omitempty"`
+	BuildID   string              `json:"buildid,omitempty"`
+	ProwJobID string              `json:"prowjobid,omitempty"`
 
-	Refs kube.Refs `json:"refs,omitempty"`
+	// refs & extra_refs from the full spec
+	Refs      *prowapi.Refs  `json:"refs,omitempty"`
+	ExtraRefs []prowapi.Refs `json:"extra_refs,omitempty"`
 
 	// we need to keep track of the agent until we
 	// migrate everyone away from using the $BUILD_NUMBER
 	// environment variable
-	agent kube.ProwJobAgent
+	agent prowapi.ProwJobAgent
 }
 
-// NewJobSpec converts a kube.ProwJobSpec invocation into a JobSpec
-func NewJobSpec(spec kube.ProwJobSpec, buildID, prowJobID string) JobSpec {
-	refs := kube.Refs{}
-	if spec.Refs != nil {
-		refs = *spec.Refs
-	}
-
+// NewJobSpec converts a prowapi.ProwJobSpec invocation into a JobSpec
+func NewJobSpec(spec prowapi.ProwJobSpec, buildID, prowJobID string) JobSpec {
 	return JobSpec{
 		Type:      spec.Type,
 		Job:       spec.Job,
 		BuildID:   buildID,
 		ProwJobID: prowJobID,
-		Refs:      refs,
+		Refs:      spec.Refs,
+		ExtraRefs: spec.ExtraRefs,
 		agent:     spec.Agent,
 	}
 }
@@ -85,9 +83,8 @@ const (
 	jobTypeEnv   = "JOB_TYPE"
 	prowJobIDEnv = "PROW_JOB_ID"
 
-	buildIDEnv        = "BUILD_ID"
-	prowBuildIDEnv    = "BUILD_NUMBER" // Deprecated, will be removed in the future.
-	jenkinsBuildIDEnv = "buildId"      // Deprecated, will be removed in the future.
+	buildIDEnv     = "BUILD_ID"
+	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
 
 	repoOwnerEnv   = "REPO_OWNER"
 	repoNameEnv    = "REPO_NAME"
@@ -111,10 +108,8 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	// for backwards compatibility, we provide the build ID
 	// in both $BUILD_ID and $BUILD_NUMBER for Prow agents
 	// and in both $buildId and $BUILD_NUMBER for Jenkins
-	if spec.agent == kube.KubernetesAgent {
+	if spec.agent == prowapi.KubernetesAgent {
 		env[prowBuildIDEnv] = spec.BuildID
-	} else if spec.agent == kube.JenkinsAgent {
-		env[jenkinsBuildIDEnv] = spec.BuildID
 	}
 
 	raw, err := json.Marshal(spec)
@@ -123,37 +118,73 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	}
 	env[JobSpecEnv] = string(raw)
 
-	if spec.Type == kube.PeriodicJob {
+	if spec.Type == prowapi.PeriodicJob {
 		return env, nil
 	}
+
 	env[repoOwnerEnv] = spec.Refs.Org
 	env[repoNameEnv] = spec.Refs.Repo
 	env[pullBaseRefEnv] = spec.Refs.BaseRef
 	env[pullBaseShaEnv] = spec.Refs.BaseSHA
 	env[pullRefsEnv] = spec.Refs.String()
 
-	if spec.Type == kube.PostsubmitJob || spec.Type == kube.BatchJob {
+	if spec.Type == prowapi.PostsubmitJob || spec.Type == prowapi.BatchJob {
 		return env, nil
 	}
+
 	env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 	env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
 	return env, nil
 }
 
 // EnvForType returns the slice of environment variables to export for jobType
-func EnvForType(jobType kube.ProwJobType) []string {
-	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv, jenkinsBuildIDEnv}
+func EnvForType(jobType prowapi.ProwJobType) []string {
+	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 
 	switch jobType {
-	case kube.PeriodicJob:
+	case prowapi.PeriodicJob:
 		return baseEnv
-	case kube.PostsubmitJob, kube.BatchJob:
+	case prowapi.PostsubmitJob, prowapi.BatchJob:
 		return append(baseEnv, refsEnv...)
-	case kube.PresubmitJob:
+	case prowapi.PresubmitJob:
 		return append(append(baseEnv, refsEnv...), pullEnv...)
 	default:
 		return []string{}
 	}
+}
+
+// getRevisionFromRef returns a ref or sha from a refs object
+func getRevisionFromRef(refs *prowapi.Refs) string {
+	if len(refs.Pulls) > 0 {
+		return refs.Pulls[0].SHA
+	}
+
+	if refs.BaseSHA != "" {
+		return refs.BaseSHA
+	}
+
+	return refs.BaseRef
+}
+
+// GetRevisionFromSpec returns a main ref or sha from a spec object
+func GetRevisionFromSpec(spec *JobSpec) string {
+	if spec.Refs != nil {
+		return getRevisionFromRef(spec.Refs)
+	} else if len(spec.ExtraRefs) > 0 {
+		return getRevisionFromRef(&spec.ExtraRefs[0])
+	}
+	return ""
+}
+
+// MainRefs determines the main refs under test, if there are any
+func (s *JobSpec) MainRefs() *prowapi.Refs {
+	if s.Refs != nil {
+		return s.Refs
+	}
+	if len(s.ExtraRefs) > 0 {
+		return &s.ExtraRefs[0]
+	}
+	return nil
 }

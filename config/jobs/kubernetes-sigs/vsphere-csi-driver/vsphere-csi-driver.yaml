@@ -1,0 +1,185 @@
+presubmits:
+  kubernetes-sigs/vsphere-csi-driver:
+
+  - name: pull-vsphere-csi-driver-verify-fmt
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - make
+        args:
+        - fmt
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-fmt
+      description: Verifies the Golang sources have been formatted
+
+  - name: pull-vsphere-csi-driver-verify-lint
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - make
+        args:
+        - lint
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-lint
+      description: Verifies the Golang sources are linted
+
+  - name: pull-vsphere-csi-driver-verify-vet
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - make
+        args:
+        - vet
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-vet
+      description: Vets the Golang sources have been vetted
+
+  # Runs 'shellcheck' on appropriate sources
+  - name: pull-vsphere-csi-driver-verify-shell
+    always_run: false
+    run_if_changed: '.*\.\w*sh$'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
+        command:
+        - /bin/shellcheck.sh
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-tab-name: pr-verify-shell
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies the shell scripts have been linted
+
+  # Runs 'mdlint' on appropriate sources
+  - name: pull-vsphere-csi-driver-verify-markdown
+    always_run: false
+    run_if_changed: '.*\.md$'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/mdlint:0.17.0
+        command:
+        - /nodejs/bin/node
+        args:
+        - /md/lint
+        - .
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-tab-name: pr-verify-markdown
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies the markdown has been linted
+
+  # Builds the CSI binary
+  - name: pull-vsphere-csi-driver-build
+    always_run: false
+    run_if_changed: '^(cmd|pkg|go.mod)'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+        command:
+        - "make"
+        args:
+        - "build"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+  # Executes the unit tests.
+  - name: pull-vsphere-csi-driver-unit-test
+    always_run: false
+    run_if_changed: '^(cmd|pkg|go.mod)'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+        command:
+        - "make"
+        args:
+        - "unit-test"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+postsubmits:
+  kubernetes-sigs/vsphere-csi-driver:
+
+  # Deploys the CSI image after all merges to master
+  - name: post-vsphere-csi-driver-deploy
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^master$
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+        command:
+        - "make"
+        args:
+        - "deploy"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-postsubmits-vsphere-csi-driver
+      testgrid-num-columns-recent: '20'
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+  # Deploys the CSI image for tagged releases
+  - name: post-vsphere-csi-driver-release
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^v(\d)+\.(\d)+\.(\d)+(-(alpha|beta|rc)\.(\d)+)?$
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+        command:
+        - "make"
+        args:
+        - "push-images"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-postsubmits-vsphere-csi-driver
+      testgrid-num-columns-recent: '20'
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com

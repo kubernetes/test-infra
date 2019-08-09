@@ -1,17 +1,18 @@
 # Standard labels set (common for all kubernetes repos)
 ---
-labels:
-  - color: green
-    name: lgtm
-    description: LGTM
-  - color: red
-    name: priority/P0
-    description: P0 Priority
-    previously:
-    - color: blue
-      name: P0
+default:
+  labels:
+    - color: green
+      name: lgtm
+      description: LGTM
+    - color: red
+      name: priority/P0
       description: P0 Priority
-  - name: dead-label
-    description: Delete Me :)
-    deleteAfter: 2017-01-01T13:00:00Z
+      previously:
+      - color: blue
+        name: P0
+        description: P0 Priority
+    - name: dead-label
+      description: Delete Me :)
+      deleteAfter: 2017-01-01T13:00:00Z
 ...

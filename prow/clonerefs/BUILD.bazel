@@ -11,7 +11,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/clonerefs",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/kube:go_default_library",
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/pod-utils/clone:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
@@ -23,10 +23,12 @@ go_test(
     srcs = [
         "options_test.go",
         "parse_test.go",
+        "run_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
-        "//prow/kube:go_default_library",
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/pod-utils/clone:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
     ],
 )

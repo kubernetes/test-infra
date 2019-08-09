@@ -1,0 +1,22 @@
+# sigs.k8s.io/cluster-api-provider-docker presubmits
+presubmits:
+  kubernetes-sigs/cluster-api-provider-docker:
+  - name: pull-cluster-api-provider-docker-verify
+    path_alias: "sigs.k8s.io/cluster-api-provider-docker"
+    always_run: true
+    optional: false
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - "runner.sh"
+        - "./hack/verify-all.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-docker
+      testgrid-tab-name: pr-verify

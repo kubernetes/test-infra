@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: peribolos
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      name: peribolos
+    spec:
+      containers:
+      - name: peribolos
+        image: gcr.io/k8s-testimages/peribolos:latest  # Note: not gcr.io/k8s-prow for dev
+        imagePullPolicy: Always  # Good practice for dev/debugging, bad for prod
+        args:
+        - --config-path=/etc/config/config.yaml
+        - --github-token-path=/etc/github/oauth
+        - --min-admins=2
+        - --fix-org
+        - --fix-org-members
+        - --fix-teams
+        - --fix-team-members
+        #- --confirm
+        volumeMounts:
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: test-config
+          mountPath: /etc/config
+          readOnly: true
+      restartPolicy: Never
+      volumes:
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: test-config
+        configMap:
+          name: peribolos-test-config
+

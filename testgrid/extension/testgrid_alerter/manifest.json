@@ -11,7 +11,7 @@
   },
   "permissions": [
     "https://ajax.googleapis.com/",
-    "https://k8s-testgrid.appspot.com/*",
+    "https://testgrid.k8s.io/*",
     "storage"
   ],
   "background": {

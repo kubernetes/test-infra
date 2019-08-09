@@ -19,20 +19,19 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/test-infra/prow/pjutil"
 
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/config/secret"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -44,38 +43,42 @@ type options struct {
 
 	configPath    string
 	jobConfigPath string
-	cluster       string
 	buildCluster  string
 	selector      string
+	skipReport    bool
 
-	githubEndpoint  flagutil.Strings
-	githubTokenFile string
-	dryRun          bool
-	deckURL         string
+	dryRun     bool
+	kubernetes prowflagutil.KubernetesOptions
+	github     prowflagutil.GitHubOptions
 }
 
-func gatherOptions() options {
-	o := options{
-		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
+	fs.StringVar(&o.totURL, "tot-url", "", "Tot URL")
+
+	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	fs.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
+
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		group.AddFlags(fs)
 	}
 
-	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
-
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-
-	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
-	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
-	flag.Parse()
+	fs.Parse(args)
+	o.configPath = config.ConfigPath(o.configPath)
 	return o
 }
 
 func (o *options) Validate() error {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
+	}
+
 	if _, err := labels.Parse(o.selector); err != nil {
 		return fmt.Errorf("parse label selector: %v", err)
 	}
@@ -84,92 +87,63 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	o := gatherOptions()
+	logrusutil.ComponentInit("plank")
+
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "plank"}),
-	)
+	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
-	var err error
-	// Check if github endpoint is a valid url.
-	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-		}
-	}
-
-	var ghc plank.GitHubClient
-	if o.githubTokenFile != "" {
-		secretAgent := &config.SecretAgent{}
-		if err := secretAgent.Start([]string{o.githubTokenFile}); err != nil {
+	secretAgent := &secret.Agent{}
+	if o.github.TokenPath != "" {
+		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 			logrus.WithError(err).Fatal("Error starting secrets agent.")
 		}
-
-		if o.dryRun {
-			if string(secretAgent.GetTokenGenerator(o.githubTokenFile)()) != "" {
-				ghc = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile),
-					o.githubEndpoint.Strings()...)
-			}
-		} else {
-			if string(secretAgent.GetTokenGenerator(o.githubTokenFile)()) != "" {
-				ghc = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile),
-					o.githubEndpoint.Strings()...)
-			}
-		}
 	}
 
-	var kc *kube.Client
+	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
+	}
+
+	kubeClient, err := o.kubernetes.Client(cfg().ProwJobNamespace, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting kube client.")
+	}
+
 	var pkcs map[string]*kube.Client
 	if o.dryRun {
-		kc = kube.NewFakeClient(o.deckURL)
-		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc}
+		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kubeClient}
 	} else {
-		if o.cluster == "" {
-			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client.")
-			}
-		} else {
-			kc, err = kube.NewClientFromFile(o.cluster, configAgent.Config().ProwJobNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client.")
-			}
-		}
 		if o.buildCluster == "" {
-			pkc, err := kube.NewClientInCluster(configAgent.Config().PodNamespace)
+			pkc, err := kube.NewClientInCluster(cfg().PodNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 			pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: pkc}
 		} else {
-			pkcs, err = kube.ClientMapFromFile(o.buildCluster, configAgent.Config().PodNamespace)
+			pkcs, err = kube.ClientMapFromFile(o.buildCluster, cfg().PodNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
 			}
 		}
 	}
 
-	c, err := plank.NewController(kc, pkcs, ghc, nil, configAgent, o.totURL, o.selector)
+	c, err := plank.NewController(kubeClient, pkcs, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("plank", pushGateway.Endpoint, pushGateway.Interval)
-	}
-	// serve prometheus metrics.
-	go serve()
+	// Expose prometheus metrics
+	metrics.ExposeMetrics("plank", cfg().PushGateway)
 	// gather metrics for the jobs handled by plank.
 	go gather(c)
 
@@ -190,13 +164,6 @@ func main() {
 			return
 		}
 	}
-}
-
-// serve starts a http server and serves prometheus metrics.
-// Meant to be called inside a goroutine.
-func serve() {
-	http.Handle("/metrics", promhttp.Handler())
-	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
 // gather metrics from plank.

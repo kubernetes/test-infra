@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: default
   name: plank
   labels:
     app: plank
 spec:
   replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: plank
   template:
     metadata:
       labels:
@@ -28,14 +34,15 @@ spec:
       # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180723-3632407bc
+        image: gcr.io/k8s-prow/plank:v20190808-5e69697af
         args:
-        - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --skip-report=true
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster

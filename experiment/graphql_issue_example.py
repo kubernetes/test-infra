@@ -149,7 +149,7 @@ def main():
     parser.add_argument('token', help='GitHub auth token.')
     options = parser.parse_args()
     print("getting issues for: %s/%s" % (options.org, options.repo))
-    # TODO: replace this with with something more useful?
+    # TODO: replace this with something more useful?
     def issue_func(issue):
         print(issue)
     get_all_issues(options.org, options.repo, options.token, issue_func)

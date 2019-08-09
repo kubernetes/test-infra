@@ -63,27 +63,19 @@ function addElement(parent, type, opts, children) {
   return el;
 }
 
-// Creates a urlsafe slug out of a string-- MUST match Gubernator's slugify function.
-function slugify(inp) {
-  return inp.replace(/[^\w\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
-}
-
-function gubernatorURLForBuild(build, test) {
+function spyglassURLForBuild(build, test) {
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
-  var gubernatorURL = 'https://k8s-gubernator.appspot.com/build/' + buildPath.slice(5);
+  var spyglassURL = 'https://prow.k8s.io/view/gcs/' + buildPath.slice(5);
   if (build.pr) {
-    gubernatorURL = gubernatorURL.replace(/(\/pr-logs\/pull\/)[^/]*\//, '$1' + build.pr + '/');
+    spyglassURL = spyglassURL.replace(/(\/pr-logs\/pull\/)[^/]*\//, '$1' + build.pr + '/');
   }
-  if (test) {
-    gubernatorURL += '#' + slugify(test);
-  }
-  return gubernatorURL;
+  return spyglassURL;
 }
 
 // Turn a build object into a link with information.
 function buildToHtml(build, test, skipNumber) {
   let started = tsToString(build.started);
-  return `<a href="${gubernatorURLForBuild(build, test)}" target="_blank" rel="noopener">${skipNumber ? "" : build.number} ${started}</a>`;
+  return `<a href="${spyglassURLForBuild(build, test)}" target="_blank" rel="noopener">${skipNumber ? "" : build.number} ${started}</a>`;
 }
 
 // Turn a job and array of build numbers into a list of build links.
@@ -134,7 +126,10 @@ function renderJobs(parent, clusterId) {
 
   var jobList = addElement(parent, 'ul');
   for (let [job, buildNumbersSet] of jobs) {
-    let buildNumbers = Array.from(buildNumbersSet).sort((a,b) => b - a);
+    // This sort isn't strictly correct - our numbers are too large - but in practice we shouldn't
+    // have ID numbers this similar anyway, and it's not fatal if builds this close together
+    // are sorted wrong.
+    let buildNumbers = Array.from(buildNumbersSet).sort((a,b) => Number(b) - Number(a));
     var count = counts[job];
     if (jobs.length > kCollapseThreshold && !jobAllSection && countSum > 0.8 * dayCount) {
       addElement(jobList, 'button', {className: 'rest', title: 'Show Daily Bottom 20%'}, 'More');
@@ -233,6 +228,10 @@ function renderSpans(text, spans) {
   if (!spans) {
     return [text];
   }
+  if (spans.length > 1000) {
+    console.warn(`Not highlighting excessive number of spans to avoid browser hang: ${spans.length}`);
+    return [text];
+  }
   var out = [];
   var c = 0;
   for (var i = 0; i < spans.length; i += 2) {
@@ -248,7 +247,7 @@ function renderSpans(text, spans) {
   return out;
 }
 
-function makeGithubIssue(id, text, owner, latestBuilds) {
+function makeGitHubIssue(id, text, owner, latestBuilds) {
   let title = `Failure cluster [${id.slice(0, 8)}...]`;
   let body = `### Failure cluster [${id}](https://go.k8s.io/triage#{id})
 
@@ -259,7 +258,7 @@ ${text.slice(0, Math.min(text.length, 1500))}
 #### Recent failures:
 `;
   for (let [build, job, test] of latestBuilds) {
-    const url = gubernatorURLForBuild(build, test);
+    const url = spyglassURLForBuild(build, test);
     const started = tsToString(build.started);
     body += `[${started} ${job}](${url})\n`
   }
@@ -312,7 +311,7 @@ function renderCluster(top, cluster) {
   var latestBuilds = renderLatest(latest, id);
 
   fileBug.addEventListener('click', () => {
-    let [title, body] = makeGithubIssue(id, text, owner, latestBuilds);
+    let [title, body] = makeGitHubIssue(id, text, owner, latestBuilds);
     title = encodeURIComponent(title);
     body = encodeURIComponent(body);
     fileBug.href = `https://github.com/kubernetes/kubernetes/issues/new?body=${body}&title=${title}`;

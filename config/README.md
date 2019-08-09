@@ -1,10 +1,11 @@
 # Kubernetes Project Configs
 
-This is a central place for Kubernetes-project specific configs for other tools in this repo.
+This is a central place for Kubernetes-project specific configs for some of
+the tools housed within this repo.
 
-### UNDER MIGRATION
+### Directory Structure
 
-Directory structure:
+- [`jobs/`](./jobs): Prow job configs for [prow.k8s.io](https://prow.k8s.io)
+- [`testgrids/`](./testgrids): Testgrid configuration for [testgrid.k8s.io](https://testgrid.k8s.io)
+- [`tests/`](./tests): validation tests for the configs
 
-[jobs/](./jobs) : job configs for Kubernetes Prow deployment, potentially testgrid configs as well  
-[tests](./tests) : validation tests for the configs

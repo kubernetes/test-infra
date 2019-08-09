@@ -1,50 +1,49 @@
 postsubmits:
   kubernetes/test-infra:
-  - name: ci-test-infra-bazel
-    agent: kubernetes
+  - name: post-test-infra-build-smoke
+    agent: knative-build
+    decorate: true
+    build_spec:
+      steps:
+      - name: first
+        image: busybox
+        args: ["echo", "hello"]
+      - name: second
+        image: busybox
+        args: ["echo", "world"]
+      - name: third
+        image: busybox
+        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-postsubmits.yaml"]
+
+  - name: post-test-infra-bazel
     branches:
     - master
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
+      - image: launcher.gcr.io/google/bazel:0.27.0
+        command:
+        - hack/bazel.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/logs
-        - --scenario=kubernetes_bazel
-        - -- # end bootstrap args, scenario args below
-        - --build=//...
-        - --install=gubernator/test_requirements.txt
-        - --test=//...
-        - --test-args=--test_output=errors
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
+        - test
+        - --config=ci
+        - --nobuild_tests_only
+        - //...
 
   - name: maintenance-boskos-config-upload
-    agent: kubernetes
     branches:
     - master
     labels:
       preset-service-account: "true"
+    run_if_changed: '^boskos/.*$'
+    decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/logs
-        - --scenario=execute
-        - --
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
+        command:
         - ./boskos/update_prow_config.sh
         env:
         - name: PROW_SERVICE_ACCOUNT
@@ -59,23 +58,20 @@ postsubmits:
           secretName: prow-build-service
 
   - name: maintenance-ci-testgrid-config-upload
-    agent: kubernetes
     branches:
     - master
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
+    run_if_changed: '^config/(jobs|testgrids)/.*$'
+    decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/logs
-        - --scenario=execute
-        - --
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
+        command:
         - ./testgrid/config-upload.sh
         resources:
           requests:
             memory: "1Gi"
+    annotations:
+      testgrid-num-failures-to-alert: '2'

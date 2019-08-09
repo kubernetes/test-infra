@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ func (c *FakeProwJobs) List(opts v1.ListOptions) (result *prowjobsv1.ProwJobList
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &prowjobsv1.ProwJobList{}
+	list := &prowjobsv1.ProwJobList{ListMeta: obj.(*prowjobsv1.ProwJobList).ListMeta}
 	for _, item := range obj.(*prowjobsv1.ProwJobList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
@@ -131,7 +131,7 @@ func (c *FakeProwJobs) DeleteCollection(options *v1.DeleteOptions, listOptions v
 // Patch applies the patch and returns the patched prowJob.
 func (c *FakeProwJobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(prowjobsResource, c.ns, name, data, subresources...), &prowjobsv1.ProwJob{})
+		Invokes(testing.NewPatchSubresourceAction(prowjobsResource, c.ns, name, pt, data, subresources...), &prowjobsv1.ProwJob{})
 
 	if obj == nil {
 		return nil, err

@@ -1,18 +1,20 @@
 # How to setup PR Status 
-This document helps configure PR Status endpoints. 
+This document helps configure [PR Status endpoints](https://prow.k8s.io/pr). 
 
 ## Setup secrets
 PR status is an OAuth App that query pull requests on behalf of the authenticated users.
 Therefore, some secret pieces of information are needed to authorize users for the app. The following
 steps will show you how to setup an oauth app that works with PR Status.
-1. Create your Github Oauth application 
+1. Create your GitHub Oauth application 
 
     https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/
+    
+    Make sure to create a GitHub Oauth App and not a regular GitHub App.
     
     The callback url should be:
     
     `<PROW_BASE_URL>/github-login/redirect`
-2. Create a secret file for github oauth that content should be as following. The information can be found in the [Github OAuth developer settings](https://github.com/settings/developers):
+2. Create a secret file for github oauth that has the following content. The information can be found in the [GitHub OAuth developer settings](https://github.com/settings/developers):
     
     ```
     client_id: <APP_CLIENT_ID>
@@ -20,6 +22,13 @@ steps will show you how to setup an oauth app that works with PR Status.
     redirect_url: <PROW_BASE_URL>/github-login/redirect
     final_redirect_url: <PROW_BASE_URL>/pr
     ```
+    
+    If Prow is expected to work with private repositories, add
+    ```
+    scopes:
+    - repo
+    ```
+    
 3. Create another secret file for the cookie store. The file should contain a random 64-byte length base64 key. For example, you can use `openssl` to generate the key
     
     ```
@@ -55,11 +64,17 @@ steps will show you how to setup an oauth app that works with PR Status.
         ```
     * Or, pass the path to your secrets to `deck` using the `--github-oauth-config-file`  and `--cookie-secret` flags.
 
+6. Set the flag `--oauth-url=/github-login` on the deck deployment.
+
 ## Run PR Status endpoint locally
-Firstly, you will need a Github OAuth app. Please visit step 1 - 3 above. 
+Firstly, you will need a GitHub OAuth app. Please visit step 1 - 3 above. 
 
 When testing locally, pass the path to your secrets to `deck` using the `--github-oauth-config-file`  and `--cookie-secret` flags.
 
 Run the commands:
 
-`go build . && ./deck --config-path=../../config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth_url=/pr`
+`go build . && ./deck --config-path=../../config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth-url=/pr`
+
+## Run PR Status endpoint on a test cluster
+If hosting your instance on http instead of https, you will need to set `Secure` to `false` every time it appears in [`githuboauth.go`](/prow/githuboauth/githuboauth.go).  
+There is an open issue for a flag that will do this for you: [#12989](https://github.com/kubernetes/test-infra/issues/12989)

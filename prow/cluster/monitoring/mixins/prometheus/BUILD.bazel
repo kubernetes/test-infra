@@ -1,0 +1,36 @@
+load("@io_bazel_rules_jsonnet//jsonnet:jsonnet.bzl", "jsonnet_library", "jsonnet_to_json")
+
+jsonnet_library(
+    name = "prom_lib",
+    srcs = [
+        "ci_absent_alerts.libsonnet",
+        "configmap_alerts.libsonnet",
+        "hook_alert.libsonnet",
+        "prometheus.libsonnet",
+        "prow_monitoring_absent_alerts.libsonnet",
+    ],
+)
+
+jsonnet_to_json(
+    name = "prow_prometheusrule",
+    src = "prow_prometheusrule.jsonnet",
+    outs = ["prow_prometheusrule.yaml"],
+    #uncomment the following line when https://github.com/bazelbuild/rules_jsonnet/issues/114 has a fix.
+    #yaml_stream = True,
+    visibility = ["//visibility:public"],
+    deps = [":prom_lib"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

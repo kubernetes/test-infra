@@ -91,11 +91,11 @@ func TestJiraLink(t *testing.T) {
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 
-		fc.LabelsAdded = []string{}
+		fc.IssueLabelsAdded = []string{}
 		for _, label := range tc.hasLabels {
-			fc.LabelsAdded = append(fc.LabelsAdded, repoLabelCommentPrefix+label)
+			fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, repoLabelCommentPrefix+label)
 		}
-		t.Logf("BEFORE\nAdded: %+v,\nRemoved: %+v\nAll: %+v", fc.LabelsAdded, fc.LabelsRemoved, fc.ExistingLabels)
+		t.Logf("BEFORE\nAdded: %+v,\nRemoved: %+v\nAll: %+v", fc.IssueLabelsAdded, fc.IssueLabelsRemoved, fc.IssueLabelsExisting)
 
 		err := handle(fc, logrus.WithField("plugin", pluginName), plugins.JiraLinker{JiraBaseUrl: jiraBaseUrl}, e)
 		if err != nil {
@@ -103,24 +103,24 @@ func TestJiraLink(t *testing.T) {
 			continue
 		}
 
-		t.Logf("AFTER\nAdded: %+v,\nRemoved: %+v\nAll: %+v", fc.LabelsAdded, fc.LabelsRemoved, fc.ExistingLabels)
+		t.Logf("AFTER\nAdded: %+v,\nRemoved: %+v\nAll: %+v", fc.IssueLabelsAdded, fc.IssueLabelsRemoved, fc.IssueLabelsExisting)
 
-		if len(fc.LabelsRemoved) != len(tc.labelsRemovedOverall) {
-			t.Errorf("Unexpected labels removed for case %s (got %+v, expected %+v)", tc.name, fc.LabelsRemoved, tc.labelsRemovedOverall)
+		if len(fc.IssueLabelsRemoved) != len(tc.labelsRemovedOverall) {
+			t.Errorf("Unexpected labels removed for case %s (got %+v, expected %+v)", tc.name, fc.IssueLabelsRemoved, tc.labelsRemovedOverall)
 		} else {
-			for i, label := range fc.LabelsRemoved {
+			for i, label := range fc.IssueLabelsRemoved {
 				if repoLabelCommentPrefix+tc.labelsRemovedOverall[i] != label {
-					t.Errorf("Unexpected labels removed for case %s (got %+v, expected %+v)", tc.name, fc.LabelsRemoved, tc.labelsRemovedOverall)
+					t.Errorf("Unexpected labels removed for case %s (got %+v, expected %+v)", tc.name, fc.IssueLabelsRemoved, tc.labelsRemovedOverall)
 				}
 			}
 		}
 
-		if len(fc.LabelsAdded) != len(tc.labelsAddedOverall) {
-			t.Errorf("Unexpected labels added for case %s (got %+v, expected %+v)", tc.name, fc.LabelsAdded, tc.labelsAddedOverall)
+		if len(fc.IssueLabelsAdded) != len(tc.labelsAddedOverall) {
+			t.Errorf("Unexpected labels added for case %s (got %+v, expected %+v)", tc.name, fc.IssueLabelsAdded, tc.labelsAddedOverall)
 		} else {
-			for i, label := range fc.LabelsAdded {
+			for i, label := range fc.IssueLabelsAdded {
 				if repoLabelCommentPrefix+tc.labelsAddedOverall[i] != label {
-					t.Errorf("Unexpected labels added for case %s (got %+v, expected %+v)", tc.name, fc.LabelsAdded, tc.labelsAddedOverall)
+					t.Errorf("Unexpected labels added for case %s (got %+v, expected %+v)", tc.name, fc.IssueLabelsAdded, tc.labelsAddedOverall)
 				}
 			}
 		}
@@ -140,12 +140,12 @@ func TestJiraLink(t *testing.T) {
 }
 
 func TestJiraTicketRef(t *testing.T) {
-	for _, test := range []struct{
-		prTitle string
-		prBranch string
-		shouldFind bool
+	for _, test := range []struct {
+		prTitle     string
+		prBranch    string
+		shouldFind  bool
 		ticketTitle string
-		ticketTeam string
+		ticketTeam  string
 	}{
 		{
 			prTitle:     "ENG-32: Swap colour to color",
@@ -170,11 +170,11 @@ func TestJiraTicketRef(t *testing.T) {
 			ticketTeam:  "JIRA",
 		},
 		{
-			prTitle:     "test",
-			prBranch:    "TEST-23-test",
-			shouldFind:  false,
+			prTitle:    "test",
+			prBranch:   "TEST-23-test",
+			shouldFind: false,
 		},
-	}{
+	} {
 		found, team, ticket := extractJiraTicketDetails(test.prTitle, test.prBranch)
 		if found != test.shouldFind {
 			t.Errorf("Unexpected result for test %+v", test)

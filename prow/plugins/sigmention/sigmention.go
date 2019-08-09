@@ -26,6 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -36,7 +37,7 @@ var (
 	chatBack = "Reiterating the mentions to trigger a notification: \n%v\n"
 
 	kindMap = map[string]string{
-		"bugs":             "kind/bug",
+		"bugs":             labels.Bug,
 		"feature-requests": "kind/feature",
 		"api-reviews":      "kind/api-change",
 		"proposals":        "kind/design",
@@ -58,19 +59,18 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: `The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
+			Description: `The sigmention plugin responds to SIG (Special Interest Group) GitHub team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
 <ol><li> The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.</li>
-<li> If the user who mentioned the Github team is not a member of the organization that owns the repository the bot will create a comment that repeats the mention. This is necessary because non-member mentions do not trigger Github notifications.</li></ol>`,
+<li> If the user who mentioned the GitHub team is not a member of the organization that owns the repository the bot will create a comment that repeats the mention. This is necessary because non-member mentions do not trigger GitHub notifications.</li></ol>`,
 			Config: map[string]string{
-				"": fmt.Sprintf("Labels added by the plugin are triggered by mentions of Github teams matching the following regexp:\n%s", config.SigMention.Regexp),
+				"": fmt.Sprintf("Labels added by the plugin are triggered by mentions of GitHub teams matching the following regexp:\n%s", config.SigMention.Regexp),
 			},
 		},
 		nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.Re)
 }
 
@@ -103,29 +103,29 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	if err != nil {
 		return err
 	}
-	existingLabels := map[string]string{}
+	RepoLabelsExisting := map[string]string{}
 	for _, l := range repoLabels {
-		existingLabels[strings.ToLower(l.Name)] = l.Name
+		RepoLabelsExisting[strings.ToLower(l.Name)] = l.Name
 	}
 
 	var nonexistent, toRepeat []string
 	for _, sigMatch := range sigMatches {
 		sigLabel := strings.ToLower("sig" + "/" + sigMatch[1])
-		sigLabel, ok := existingLabels[sigLabel]
+		sigLabel, ok := RepoLabelsExisting[sigLabel]
 		if !ok {
 			nonexistent = append(nonexistent, "sig/"+sigMatch[1])
 			continue
 		}
 		if !github.HasLabel(sigLabel, labels) {
 			if err := gc.AddLabel(org, repo, e.Number, sigLabel); err != nil {
-				log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
+				log.WithError(err).Errorf("GitHub failed to add the following label: %s", sigLabel)
 			}
 		}
 
 		if len(sigMatch) > 2 {
 			if kindLabel, ok := kindMap[sigMatch[2]]; ok && !github.HasLabel(kindLabel, labels) {
 				if err := gc.AddLabel(org, repo, e.Number, kindLabel); err != nil {
-					log.WithError(err).Errorf("Github failed to add the following label: %s", kindLabel)
+					log.WithError(err).Errorf("GitHub failed to add the following label: %s", kindLabel)
 				}
 			}
 		}

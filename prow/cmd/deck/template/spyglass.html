@@ -1,0 +1,49 @@
+{{define "title"}}{{.JobName}} #{{.BuildID}}{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript">
+  var src = {{.Source}};
+  var lensArtifacts = {{.LensArtifacts}};
+  var lensIndexes = {{.LensIndexes}};
+</script>
+<script type="text/javascript" src="/static/spyglass_bundle.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/spyglass/spyglass.css">
+{{end}}
+
+{{define "content"}}
+{{$source:=.Source}}
+{{if .Announcement}}
+<div id="announcement">
+  {{.Announcement}}
+</div>
+{{end}}
+<div id="lens-container">
+  {{if or .JobHistLink .ProwJobLink .ArtifactsLink .PRHistLink .PRLink .TestgridLink .ExtraLinks}}
+  <div id="links-card" class="mdl-card mdl-shadow--2dp lens-card">
+    {{if .JobHistLink}}<a href="{{.JobHistLink}}">Job History</a>{{end}}
+    {{if .ProwJobLink}}<a href="{{.ProwJobLink}}" onclick="gtag('event', 'view_job_yaml', {event_category: 'engagement', transport_type: 'beacon'})">Prow Job YAML</a>{{end}}
+    {{if .PRHistLink}}<a href="{{.PRHistLink}}">PR History</a>{{end}}
+    {{if .PRLink}}<a href="{{.PRLink}}">PR</a>{{end}}
+    {{if .ArtifactsLink}}<a href="{{.ArtifactsLink}}">Artifacts</a>{{end}}
+    {{if .TestgridLink}}<a href="{{.TestgridLink}}">Testgrid</a>{{end}}
+    {{range .ExtraLinks}}
+    <a href="{{.URL}}" title="{{.Description}}">{{.Name}}</a>
+    {{end}}
+  </div>
+  {{end}}
+  {{$lenses:=.Lenses}}
+  {{range $index := .LensIndexes}}
+  {{$lens:=index $lenses $index}}
+  {{$config:=$lens.Config}}
+  <div class="mdl-card mdl-shadow--2dp lens-card">
+    <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{$config.Title}}</h3></div>
+    <div id="{{$config.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
+      <img src="/static/kubernetes-wheel.svg" alt="loading spinner" class="loading-spinner is-active lens-card-loading" id="{{$config.Name}}-loading">
+      <iframe class="lens-container" style="visibility: hidden;" id="iframe-{{$index}}" sandbox="allow-scripts allow-top-navigation allow-popups" data-lens-index="{{$index}}" data-lens-name="{{$config.Name}}"{{if $config.HideTitle}} data-hide-title="true"{{end}}></iframe>
+    </div>
+  </div>
+  {{end}}
+</div>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly darkMode "spyglass" .)}}

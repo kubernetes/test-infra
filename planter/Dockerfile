@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
-LABEL maintainer="Benjamin Elder <bentheelder@google.com>"
+FROM debian:stretch
 
 # Includes everything needed to build and test github.com/kubernetes/kubernetes
 # and github.com/kubernetes/test-infra with bazel and run bazel as the host UID
@@ -35,8 +34,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     wget \
     zip \
-    zlib1g-dev \
-    && apt-get clean && \
+    zlib1g-dev && \
+    rm -rf /var/lib/apt/lists/* && \
     python -m pip install --upgrade pip setuptools wheel && \
     pip install pylint pyyaml
 

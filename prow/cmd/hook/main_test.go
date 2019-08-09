@@ -17,56 +17,125 @@ limitations under the License.
 package main
 
 import (
+	"flag"
+	"reflect"
 	"testing"
+	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 // Make sure that our plugins are valid.
 func TestPlugins(t *testing.T) {
-	pa := &plugins.PluginAgent{}
+	pa := &plugins.ConfigAgent{}
 	if err := pa.Load("../../plugins.yaml"); err != nil {
 		t.Fatalf("Could not load plugins: %v.", err)
 	}
 }
 
-func TestOptions_Validate(t *testing.T) {
-	var testCases = []struct {
-		name        string
-		opt         options
-		expectedErr bool
+func Test_gatherOptions(t *testing.T) {
+	cases := []struct {
+		name     string
+		args     map[string]string
+		del      sets.String
+		expected func(*options)
+		err      bool
 	}{
 		{
-			name: "all ok without dry-run",
-			opt: options{
-				dryRun: false,
-			},
-			expectedErr: false,
+			name: "minimal flags work",
 		},
 		{
-			name: "all ok with dry-run",
-			opt: options{
-				dryRun:  true,
-				deckURL: "internet",
+			name: "explicitly set --config-path",
+			args: map[string]string{
+				"--config-path": "/random/value",
 			},
-			expectedErr: false,
+			expected: func(o *options) {
+				o.configPath = "/random/value"
+			},
 		},
 		{
-			name: "missing deck endpoint with dry-run",
-			opt: options{
-				dryRun: true,
+			name: "empty config-path defaults to old value",
+			args: map[string]string{
+				"--config-path": "",
 			},
-			expectedErr: true,
+			expected: func(o *options) {
+				o.configPath = config.DefaultConfigPath
+			},
+		},
+		{
+			name: "expicitly set --dry-run=false",
+			args: map[string]string{
+				"--dry-run": "false",
+			},
+			expected: func(o *options) {
+				o.dryRun = false
+			},
+		},
+		{
+			name: "--dry-run=true requires --deck-url",
+			args: map[string]string{
+				"--dry-run":  "true",
+				"--deck-url": "",
+			},
+			err: true,
+		},
+		{
+			name: "explicitly set --plugin-config",
+			args: map[string]string{
+				"--plugin-config": "/random/value",
+			},
+			expected: func(o *options) {
+				o.pluginConfig = "/random/value"
+			},
 		},
 	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			expected := &options{
+				port:              8888,
+				configPath:        "yo",
+				pluginConfig:      "/etc/plugins/plugins.yaml",
+				dryRun:            true,
+				gracePeriod:       180 * time.Second,
+				kubernetes:        flagutil.ExperimentalKubernetesOptions{DeckURI: "http://whatever"},
+				webhookSecretFile: "/etc/webhook/hmac",
+			}
+			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
+			expected.github.AddFlags(expectedfs)
+			if tc.expected != nil {
+				tc.expected(expected)
+			}
 
-	for _, testCase := range testCases {
-		err := testCase.opt.Validate()
-		if testCase.expectedErr && err == nil {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-		if !testCase.expectedErr && err != nil {
-			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
+			argMap := map[string]string{
+				"--config-path": "yo",
+				"--deck-url":    "http://whatever",
+			}
+			for k, v := range tc.args {
+				argMap[k] = v
+			}
+			for k := range tc.del {
+				delete(argMap, k)
+			}
+
+			var args []string
+			for k, v := range argMap {
+				args = append(args, k+"="+v)
+			}
+			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
+			actual := gatherOptions(fs, args...)
+			switch err := actual.Validate(); {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive expected error")
+			case !reflect.DeepEqual(*expected, actual):
+				t.Errorf("%#v != expected %#v", actual, *expected)
+			}
+		})
 	}
 }

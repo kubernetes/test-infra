@@ -47,11 +47,12 @@ var (
 	gkeAdditionalZones             = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
 	gkeNodeLocations               = flag.String("gke-node-locations", "", "(gke only) List of Google Compute Engine zones to use.")
 	gkeEnvironment                 = flag.String("gke-environment", "", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
-	gkeShape                       = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
+	gkeShape                       = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8", "ExtraArgs": []}}`)
 	gkeCreateArgs                  = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
 	gkeCommandGroup                = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
 	gkeCreateCommand               = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
 	gkeCustomSubnet                = flag.String("gke-custom-subnet", "", "(gke only) if specified, we create a custom subnet with the specified options and use it for the gke cluster. The format should be '<subnet-name> --region=<subnet-gcp-region> --range=<subnet-cidr> <any other optional params>'.")
+	gkeReleaseChannel              = flag.String("gke-release-channel", "", "(gke only) if specified, bring up GKE clusters from that release channel.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
@@ -67,6 +68,7 @@ var (
 type gkeNodePool struct {
 	Nodes       int
 	MachineType string
+	ExtraArgs   []string
 }
 
 type gkeDeployer struct {
@@ -87,6 +89,7 @@ type gkeDeployer struct {
 	commandGroup                []string
 	createCommand               []string
 	singleZoneNodeInstanceGroup bool
+	sshProxyInstanceName        string
 
 	setup          bool
 	kubecfg        string
@@ -102,7 +105,7 @@ type ig struct {
 
 var _ deployer = &gkeDeployer{}
 
-func newGKE(provider, project, zone, region, network, image, imageFamily, imageProject, cluster string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
+func newGKE(provider, project, zone, region, network, image, imageFamily, imageProject, cluster, sshProxyInstanceName string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
 	if provider != "gke" {
 		return nil, fmt.Errorf("--provider must be 'gke' for GKE deployment, found %q", provider)
 	}
@@ -262,6 +265,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 
 	g.singleZoneNodeInstanceGroup = *gkeSingleZoneNodeInstanceGroup
+	g.sshProxyInstanceName = sshProxyInstanceName
 
 	return g, nil
 }
@@ -303,6 +307,7 @@ func (g *gkeDeployer) Up() error {
 		"--num-nodes="+strconv.Itoa(def.Nodes),
 		"--network="+g.network,
 	)
+	args = append(args, def.ExtraArgs...)
 	if strings.ToUpper(g.image) == "CUSTOM" {
 		args = append(args, "--image-family="+g.imageFamily)
 		args = append(args, "--image-project="+g.imageProject)
@@ -326,11 +331,20 @@ func (g *gkeDeployer) Up() error {
 			}
 		}
 	}
-	// TODO(zmerlynn): The version should be plumbed through Extract
-	// or a separate flag rather than magic env variables.
-	if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
-		args = append(args, "--cluster-version="+v)
+
+	if *gkeReleaseChannel != "" {
+		args = append(args, "--release-channel="+*gkeReleaseChannel)
+		if strings.EqualFold(*gkeReleaseChannel, "rapid") {
+			args = append(args, "--enable-autorepair")
+		}
+	} else {
+		// TODO(zmerlynn): The version should be plumbed through Extract
+		// or a separate flag rather than magic env variables.
+		if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
+			args = append(args, "--cluster-version="+v)
+		}
 	}
+
 	args = append(args, g.cluster)
 	if err := control.FinishRunning(exec.Command("gcloud", args...)); err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
@@ -339,13 +353,14 @@ func (g *gkeDeployer) Up() error {
 		if poolName == defaultPool {
 			continue
 		}
-		if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs(
-			"node-pools", "create", poolName,
-			"--cluster="+g.cluster,
-			"--project="+g.project,
+		poolArgs := []string{"node-pools", "create", poolName,
+			"--cluster=" + g.cluster,
+			"--project=" + g.project,
 			g.location,
-			"--machine-type="+pool.MachineType,
-			"--num-nodes="+strconv.Itoa(pool.Nodes))...)); err != nil {
+			"--machine-type=" + pool.MachineType,
+			"--num-nodes=" + strconv.Itoa(pool.Nodes)}
+		poolArgs = append(poolArgs, pool.ExtraArgs...)
+		if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs(poolArgs...)...)); err != nil {
 			return fmt.Errorf("error creating node pool %q: %v", poolName, err)
 		}
 	}
@@ -432,6 +447,11 @@ func (g *gkeDeployer) TestSetup() error {
 	if err := g.setupEnv(); err != nil {
 		return err
 	}
+	if g.sshProxyInstanceName != "" {
+		if err := setKubeShhBastionEnv(g.project, g.zone, g.sshProxyInstanceName); err != nil {
+			return err
+		}
+	}
 	g.setup = true
 	return nil
 }
@@ -478,6 +498,9 @@ func (g *gkeDeployer) setupEnv() error {
 }
 
 func (g *gkeDeployer) ensureFirewall() error {
+	if g.network == "default" {
+		return nil
+	}
 	firewall, err := g.getClusterFirewall()
 	if err != nil {
 		return fmt.Errorf("error getting unique firewall: %v", err)
@@ -588,6 +611,15 @@ func (g *gkeDeployer) Down() error {
 		"gcloud", g.containerArgs("clusters", "delete", "-q", g.cluster,
 			"--project="+g.project,
 			g.location)...))
+
+	// don't delete default network
+	if g.network == "default" {
+		if errCluster != nil {
+			log.Printf("Error deleting cluster using default network, allow the error for now %s", errCluster)
+		}
+		return nil
+	}
+
 	var errFirewall error
 	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,
@@ -649,3 +681,5 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	}
 	return created, nil
 }
+
+func (_ *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

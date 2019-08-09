@@ -1,0 +1,3 @@
+test config file
+wow, such config file
+now there are three lines!

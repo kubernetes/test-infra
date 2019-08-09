@@ -44,11 +44,11 @@ def get_pods_by_job(show_all):
     pods_by_job = defaultdict(list)
     for pod in pods:
         # check if prow job
-        if "prow.k8s.io/job" not in pod["metadata"]["annotations"]:
+        if "prow.k8s.io/job" not in pod["metadata"]["labels"]:
             continue
         # get pod and job name, add to dict
         pod_name = pod["metadata"]["name"].encode('utf-8')
-        job_name = pod["metadata"]["annotations"]["prow.k8s.io/job"].encode('utf-8')
+        job_name = pod["metadata"]["labels"]["prow.k8s.io/job"].encode('utf-8')
         pods_by_job[job_name].append(pod_name)
     return pods_by_job
 

@@ -1,0 +1,15 @@
+# See the OWNERS file documentation:
+#  https://github.com/kubernetes/community/blob/master/contributors/devel/owners.md
+
+approvers:
+- luxas
+- timothysc
+- fabriziopandini
+- neolit123
+reviewers:
+- luxas
+- timothysc
+- fabriziopandini
+- neolit123
+labels:
+- sig/cluster-lifecycle

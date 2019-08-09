@@ -17,10 +17,8 @@ limitations under the License.
 package jobtests
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -30,36 +28,11 @@ import (
 	cfg "k8s.io/test-infra/prow/config"
 )
 
-// config.json is the worst but contains useful information :-(
-type configJSON map[string]map[string]interface{}
-
 var configPath = flag.String("config", "../../config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../../config/jobs", "Path to prow job config")
-var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
-
-func (c configJSON) ScenarioForJob(jobName string) string {
-	if scenario, ok := c[jobName]["scenario"]; ok {
-		return scenario.(string)
-	}
-	return ""
-}
-
-func readConfigJSON(path string) (config configJSON, err error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	config = configJSON{}
-	err = json.Unmarshal(raw, &config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
-}
 
 // Loaded at TestMain.
 var c *cfg.Config
-var cj configJSON
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -74,14 +47,6 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	c = conf
-
-	if *configJSONPath != "" {
-		cj, err = readConfigJSON(*configJSONPath)
-		if err != nil {
-			fmt.Printf("Could not load jobs config: %v", err)
-			os.Exit(1)
-		}
-	}
 
 	os.Exit(m.Run())
 }
@@ -162,9 +127,6 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 	if !p.SkipReport && p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
 	}
-	for _, c := range p.RunAfterSuccess {
-		checkContext(t, repo, c)
-	}
 }
 
 func TestContextMatches(t *testing.T) {
@@ -181,7 +143,6 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 		if p.RerunCommand != expected {
 			t.Errorf("%s in %s rerun_command: %s != expected: %s", repo, p.Name, p.RerunCommand, expected)
 		}
-		checkRetest(t, repo, p.RunAfterSuccess)
 	}
 }
 
@@ -203,9 +164,6 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 		if !p.AlwaysRun {
 			continue
 		}
-		for _, r := range findRequired(t, p.RunAfterSuccess) {
-			required = append(required, r)
-		}
 		if p.SkipReport {
 			continue
 		}
@@ -214,14 +172,13 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	return required
 }
 
-// Load the config and extract all jobs, including any child jobs inside
-// RunAfterSuccess fields.
+// Load the config and extract all jobs
 func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 	pres := []cfg.Presubmit{}
 	posts := []cfg.Postsubmit{}
 	peris := []cfg.Periodic{}
 
-	{ // Find all presubmit jobs, including child jobs.
+	{ // Find all presubmit jobs
 		q := []cfg.Presubmit{}
 
 		for _, p := range c.Presubmits {
@@ -232,14 +189,11 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 
 		for len(q) > 0 {
 			pres = append(pres, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
 			q = q[1:]
 		}
 	}
 
-	{ // Find all postsubmit jobs, including child jobs.
+	{ // Find all postsubmit jobs
 		q := []cfg.Postsubmit{}
 
 		for _, p := range c.Postsubmits {
@@ -250,14 +204,11 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 
 		for len(q) > 0 {
 			posts = append(posts, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
 			q = q[1:]
 		}
 	}
 
-	{ // Find all periodic jobs, including child jobs.
+	{ // Find all periodic jobs
 		q := []cfg.Periodic{}
 		for _, p := range c.Periodics {
 			q = append(q, p)
@@ -265,9 +216,6 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 
 		for len(q) > 0 {
 			peris = append(peris, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
 			q = q[1:]
 		}
 	}

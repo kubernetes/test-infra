@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: prow-monitoring
+spec:
+  #keep replicas 1 unless we have a solution to
+  #A. GLB BackendConfig with session affinity, or
+  #B. SHARED session between replicas
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - image: docker.io/nginx:1.17.0-alpine
+        name: nginx
+        readinessProbe:
+          httpGet:
+            path: /healthy
+            port: 80
+        ports:
+          - containerPort: 80
+            name: nginx
+        volumeMounts:
+          - mountPath: /etc/nginx/
+            name: grafana-nginx
+      - args:
+        - -config=/etc/grafana/grafana.ini
+        image: grafana/grafana:6.1.4
+        name: grafana
+        env:
+          - name: GF_SECURITY_ADMIN_USER
+            value: adm
+          - name: GF_SECURITY_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: grafana
+                key: password
+        ports:
+        - containerPort: 3001
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: grafana-storage
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/datasources
+          name: grafana-datasources
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/dashboards
+          name: grafana-dashboards
+          readOnly: false
+        - mountPath: /etc/grafana
+          name: grafana-config
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/prow
+          name: grafana-dashboard-prow
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/deck
+          name: grafana-dashboard-deck
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/ghproxy
+          name: grafana-dashboard-ghproxy
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/hook
+          name: grafana-dashboard-hook
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/plank
+          name: grafana-dashboard-plank
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/sinker
+          name: grafana-dashboard-sinker
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/tide
+          name: grafana-dashboard-tide
+          readOnly: false
+      nodeSelector: {}
+      securityContext: {}
+      serviceAccountName: grafana
+      volumes:
+      - name: grafana-storage
+        emptyDir: {}
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+      - name: grafana-dashboards
+        configMap:
+          name: grafana-dashboards
+      - name: grafana-config
+        configMap:
+          name: grafana-config
+      - name: grafana-dashboard-prow
+        configMap:
+          name: grafana-dashboard-prow
+      - name: grafana-dashboard-deck
+        configMap:
+          name: grafana-dashboard-deck
+      - name: grafana-dashboard-ghproxy
+        configMap:
+          name: grafana-dashboard-ghproxy
+      - name: grafana-dashboard-hook
+        configMap:
+          name: grafana-dashboard-hook
+      - name: grafana-dashboard-plank
+        configMap:
+          name: grafana-dashboard-plank
+      - name: grafana-dashboard-sinker
+        configMap:
+          name: grafana-dashboard-sinker
+      - name: grafana-dashboard-tide
+        configMap:
+          name: grafana-dashboard-tide
+      - name: grafana-nginx
+        configMap:
+          name: grafana-nginx

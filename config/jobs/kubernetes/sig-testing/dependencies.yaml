@@ -1,0 +1,125 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-dependencies
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+    always_run: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - name: main
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: "vendor vendor-licenses"
+  - name: pull-kubernetes-dependencies
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    branches:
+    - release-1.15
+    always_run: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - name: main
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: "vendor vendor-licenses"
+  - name: pull-kubernetes-dependencies-canary
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    always_run: true
+    skip_report: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - name: main
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: "vendor vendor-licenses"
+    annotations:
+      testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-godeps
+    run_if_changed: '^((build\/|Godeps\/|vendor\/|hack\/lib\/|hack\/.*godep|staging\/).*)$'
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    branches:
+    - release-1.14
+    - release-1.13
+    - release-1.12
+    - release-1.11
+    always_run: false
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - name: main
+        command:
+        - runner.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        # Force checks to run; we don't have remotes so we can't rely on the
+        # bash/git checks to work.
+        - name: KUBE_FORCE_VERIFY_CHECKS
+          value: "Y"
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: "godeps staging-godeps godep-licenses"
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'

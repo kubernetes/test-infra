@@ -1,0 +1,26 @@
+presubmits:
+  kubernetes/k8s.io:
+  - name: pull-k8sio-cip
+    decorate: true
+    skip_report: false
+    run_if_changed: "k8s.gcr.io/.*/manifest.yaml"
+    max_concurrency: 10
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/cip-demo-staging/cip:20190801-v2.1.2-0-g356c232
+        command:
+        - multirun.sh
+        args:
+        - /app/cip-docker-image.binary
+        - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml
+        - k8s.gcr.io/k8s-staging-cluster-api-aws/manifest.yaml
+        - k8s.gcr.io/k8s-staging-coredns/manifest.yaml
+        - k8s.gcr.io/k8s-staging-csi/manifest.yaml
+        env:
+        - name: CIP_GIT_DIR
+          # Pod Utilities already sets pwd to
+          # /home/prow/go/src/github.com/{{.Org}}/{{.Repo}}, so just '.' should
+          # suffice, but it's nice to be explicit.
+          value: "/home/prow/go/src/github.com/kubernetes/k8s.io"

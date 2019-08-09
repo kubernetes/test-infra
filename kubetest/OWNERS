@@ -1,0 +1,9 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- krzyzacy
+- shyamjvs
+- wojtek-t # For European timezone emergencies.
+
+labels:
+- area/kubetest

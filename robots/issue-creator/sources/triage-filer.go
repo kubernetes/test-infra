@@ -28,7 +28,6 @@ import (
 	"time"
 
 	githubapi "github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/robots/issue-creator/creator"
 )
 
@@ -62,7 +61,7 @@ func init() {
 // then syncs the top issues to github with the IssueCreator.
 func (f *TriageFiler) Issues(c *creator.IssueCreator) ([]creator.Issue, error) {
 	f.creator = c
-	rawjson, err := mungerutil.ReadHTTP(clusterDataURL)
+	rawjson, err := ReadHTTP(clusterDataURL)
 	if err != nil {
 		return nil, err
 	}
@@ -417,7 +416,7 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 			}
 		}
 		path := strings.TrimPrefix(c.filer.data.Builds.JobPaths[job.Name], "gs://")
-		fmt.Fprintf(&buf, "| %s | %d | [%s](https://k8s-gubernator.appspot.com/build/%s/%d) |\n", job.Name, len(job.Builds), time.Unix(latestTime, 0).Format(timeFormat), path, latest)
+		fmt.Fprintf(&buf, "| %s | %d | [%s](https://gubernator.k8s.io/build/%s/%d) |\n", job.Name, len(job.Builds), time.Unix(latestTime, 0).Format(timeFormat), path, latest)
 	}
 	// previously closed issues if there are any
 	if len(closedIssues) > 0 {

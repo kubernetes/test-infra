@@ -1,0 +1,90 @@
+periodics:
+- cron: "0 0-23/4 * * *"
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=ca-gpu
+      - --deployment=gke
+      - --env=TESTED_GPU_TYPE=nvidia-tesla-k80
+      - --extract=ci-cross/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
+      - --timeout=150m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+    testgrid-tab-name: gci-gke-autoscaling-gpu-k80
+- cron: "0 2-23/4 * * *"
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=ca-gpu
+      - --deployment=gke
+      - --env=TESTED_GPU_TYPE=nvidia-tesla-p100
+      - --extract=ci-cross/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
+      - --timeout=150m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+    testgrid-tab-name: gci-gke-autoscaling-gpu-p100
+- interval: 4h
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=ca-gpu
+      - --deployment=gke
+      - --env=TESTED_GPU_TYPE=nvidia-tesla-v100
+      - --extract=ci-cross/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-gke-gpu-boskos-v100
+      - --gcp-zone=us-west1-b
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingGpu\] --ginkgo.skip=\[Flaky\]
+      - --timeout=150m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+    testgrid-tab-name: gci-gke-autoscaling-gpu-v100

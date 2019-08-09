@@ -3,13 +3,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "csidriver.go",
+        "csinode.go",
         "doc.go",
         "generated_expansion.go",
         "storage_client.go",
         "storageclass.go",
         "volumeattachment.go",
     ],
-    importmap = "vendor/k8s.io/client-go/kubernetes/typed/storage/v1beta1",
+    importmap = "k8s.io/test-infra/vendor/k8s.io/client-go/kubernetes/typed/storage/v1beta1",
     importpath = "k8s.io/client-go/kubernetes/typed/storage/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
@@ -32,7 +34,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/client-go/kubernetes/typed/storage/v1beta1/fake:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

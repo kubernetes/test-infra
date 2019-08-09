@@ -1,3 +1,11 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 approvers:
-- bentheelder
+- cblecker
 - krzyzacy
+- spiffxp
+- wojtek-t
+reviewers:
+- chases2
+labels:
+- area/config

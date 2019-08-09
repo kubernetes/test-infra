@@ -6,7 +6,7 @@ go_library(
         "doc.go",
         "register.go",
     ],
-    importmap = "vendor/k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme",
+    importmap = "k8s.io/test-infra/vendor/k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme",
     importpath = "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme",
     visibility = ["//visibility:public"],
     deps = [
@@ -15,6 +15,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
     ],
 )
 

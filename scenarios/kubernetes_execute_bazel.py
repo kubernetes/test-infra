@@ -45,9 +45,10 @@ def main(cmd):
     if not cmd:
         raise ValueError(cmd)
     # update bazel caching configuration if enabled
+    # TODO(fejta): migrate all jobs to use RBE instead of this
     if os.environ.get('BAZEL_REMOTE_CACHE_ENABLED', 'false') == 'true':
         print 'Bazel remote cache is enabled, generating .bazelrcs ...'
-        # TODO(bentheelder): consider moving this once we've migrated all users
+        # TODO: consider moving this once we've migrated all users
         # of the remote cache to this script
         check(test_infra('images/bootstrap/create_bazel_cache_rcs.sh'))
     # call the user supplied command

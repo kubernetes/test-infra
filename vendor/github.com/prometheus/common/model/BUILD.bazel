@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "alert.go",
         "fingerprinting.go",
+        "fnv.go",
         "labels.go",
         "labelset.go",
         "metric.go",
@@ -14,7 +15,7 @@ go_library(
         "time.go",
         "value.go",
     ],
-    importmap = "vendor/github.com/prometheus/common/model",
+    importmap = "k8s.io/test-infra/vendor/github.com/prometheus/common/model",
     importpath = "github.com/prometheus/common/model",
     visibility = ["//visibility:public"],
 )

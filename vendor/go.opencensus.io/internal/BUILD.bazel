@@ -7,7 +7,7 @@ go_library(
         "sanitize.go",
         "traceinternals.go",
     ],
-    importmap = "vendor/go.opencensus.io/internal",
+    importmap = "k8s.io/test-infra/vendor/go.opencensus.io/internal",
     importpath = "go.opencensus.io/internal",
     visibility = ["//visibility:public"],
     deps = ["//vendor/go.opencensus.io:go_default_library"],
@@ -22,7 +22,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/go.opencensus.io/internal/tagencoding:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

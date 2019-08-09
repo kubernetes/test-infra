@@ -1,0 +1,32 @@
+variants:
+  experimental:
+    CONFIG: experimental
+    GO_VERSION: 1.12.1
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 0.28.1
+    UPGRADE_DOCKER: 'true'
+  master:
+    CONFIG: master
+    GO_VERSION: 1.12.1
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 0.23.2
+  '1.15':
+    CONFIG: '1.15'
+    GO_VERSION: 1.12.1
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 0.23.2
+  '1.14':
+    CONFIG: '1.14'
+    GO_VERSION: 1.12.1
+    K8S_RELEASE: latest
+    BAZEL_VERSION: 0.21.0
+  '1.13':
+    CONFIG: '1.13'
+    GO_VERSION: 1.11.5
+    K8S_RELEASE: stable-1.13
+    BAZEL_VERSION: 0.18.1
+  '1.12':
+    CONFIG: '1.12'
+    GO_VERSION: 1.10.8
+    K8S_RELEASE: stable-1.12
+    BAZEL_VERSION: 0.18.1

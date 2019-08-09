@@ -21,16 +21,19 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
-	pluginName = "welcome"
+	pluginName            = "welcome"
+	defaultWelcomeMessage = "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉"
 )
 
 // PRInfo contains info used provided to the welcome message template
@@ -46,15 +49,25 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	welcomeConfig := map[string]string{}
+	for _, repo := range enabledRepos {
+		parts := strings.Split(repo, "/")
+		var messageTemplate string
+		switch len(parts) {
+		case 1:
+			messageTemplate = welcomeMessageForRepo(config, repo, "")
+		case 2:
+			messageTemplate = welcomeMessageForRepo(config, parts[0], parts[1])
+		default:
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
+		}
+		welcomeConfig[repo] = fmt.Sprintf("The welcome plugin is configured to post using following welcome template: %s.", messageTemplate)
+	}
+
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
 	return &pluginhelp.PluginHelp{
 			Description: "The welcome plugin posts a welcoming message when it detects a user's first contribution to a repo.",
-			Config: map[string]string{
-				"": fmt.Sprintf(
-					"The welcome plugin is configured to post using following welcome template: %s.",
-					config.Welcome.MessageTemplate,
-				),
-			},
+			Config:      welcomeConfig,
 		},
 		nil
 }
@@ -69,15 +82,15 @@ type client struct {
 	Logger       *logrus.Entry
 }
 
-func getClient(pc plugins.PluginClient) client {
+func getClient(pc plugins.Agent) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
 		Logger:       pc.Logger,
 	}
 }
 
-func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pre, pc.PluginConfig.Welcome.MessageTemplate)
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+	return handlePR(getClient(pc), pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
 }
 
 func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) error {
@@ -96,8 +109,8 @@ func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) err
 		return err
 	}
 
-	// if there is exactly one result, this is the first! post the welcome comment
-	if len(issues) == 1 {
+	// if there are no results, this is the first! post the welcome comment
+	if len(issues) == 0 || len(issues) == 1 && issues[0].Number == pre.Number {
 		// load the template, and run it over the PR info
 		parsedTemplate, err := template.New("welcome").Parse(welcomeTemplate)
 		if err != nil {
@@ -119,4 +132,36 @@ func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) err
 	}
 
 	return nil
+}
+
+func welcomeMessageForRepo(config *plugins.Configuration, org, repo string) string {
+	opts := optionsForRepo(config, org, repo)
+	if opts.MessageTemplate != "" {
+		return opts.MessageTemplate
+	}
+	return defaultWelcomeMessage
+}
+
+// optionsForRepo gets the plugins.Welcome struct that is applicable to the indicated repo.
+func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Welcome {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+
+	// First search for repo config
+	for _, c := range config.Welcome {
+		if !sets.NewString(c.Repos...).Has(fullName) {
+			continue
+		}
+		return &c
+	}
+
+	// If you don't find anything, loop again looking for an org config
+	for _, c := range config.Welcome {
+		if !sets.NewString(c.Repos...).Has(org) {
+			continue
+		}
+		return &c
+	}
+
+	// Return an empty config, and default to defaultWelcomeMessage
+	return &plugins.Welcome{}
 }

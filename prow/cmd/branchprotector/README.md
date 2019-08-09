@@ -59,7 +59,7 @@ editor and then send out a PR. When the PR merges prow pushes the updated config
 
 #### Fields
 
-See [`branch_protection.go`] and Github's [protection api] for a complete list of fields allowed
+See [`branch_protection.go`] and GitHub's [protection api] for a complete list of fields allowed
 inside `branch-protection` and their meanings. The format is:
 
 ```yaml
@@ -156,18 +156,18 @@ Use [`planter.sh`] if [`bazel`] is not already installed on the machine.
 
 ### Run unit tests
 
-`bazel test //prow/cmd/branchprotection:all`
+`bazel test //prow/cmd/branchprotector:all`
 
 ### Run locally
 
-`bazel run //prow/cmd/branchprotection -- --help`, which will tell you about the
+`bazel run //prow/cmd/branchprotector -- --help`, which will tell you about the
 current flags.
 
 Do a dry run (which will not make any changes to github) with
 something like the following command:
 
 ```sh
-bazel run //prow/cmd/branchprotection -- \
+bazel run //prow/cmd/branchprotector -- \
   --config-path=/path/to/config.yaml \
   --github-token-path=/path/to/my-github-token
 ```
@@ -180,11 +180,11 @@ This will say how the binary will actually change github if you add a
 Run things like the following:
 ```sh
 # Build and push image, create job
-bazel run //prow/cmd/branchprotection:oneshot.create
+bazel run //prow/cmd/branchprotector:oneshot.create
 # Delete finished job
-bazel run //prow/cmd/branchprotection:oneshot.delete
+bazel run //prow/cmd/branchprotector:oneshot.delete
 # Describe current state of job
-bazel run //prow/cmd/branchprotection:oneshot.describe
+bazel run //prow/cmd/branchprotector:oneshot.describe
 ```
 
 This will build an image with your local changes, push it to

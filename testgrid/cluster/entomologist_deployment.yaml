@@ -1,0 +1,114 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: testgrid-entomologist
+  labels:
+    component: entomologist
+    app: testgrid
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: entomologist
+        app: testgrid
+    spec:
+      containers:
+        - name: entomologist
+          image: gcr.io/k8s-testgrid/entomologist:latest
+          imagePullPolicy: Always
+          args:
+            - --output=gs://k8s-testgrid-canary
+            - --gcs-credentials-file=/etc/gcp/k8s-testgrid.json
+            - --github-org=kubernetes
+            - --github-repo=test-infra
+            - --github-token-path=/etc/github/token.txt
+            - --github-endpoint=http://ghproxy
+          volumeMounts:
+            - name: gcp-account
+              mountPath: /etc/gcp
+              readOnly: true
+            - name: github-account
+              mountPath: /etc/github
+              readOnly: true
+      volumes:
+        - name: gcp-account
+          secret:
+            secretName: testgrid-service-account
+        - name: github-account
+          secret:
+            secretName: github-service-account
+---
+### Gh Proxy Deployment
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: default
+  labels:
+    app: ghproxy
+  name: ghproxy
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  # gce-ssd-retain is specified in prow/cluster/gce-ssd-retain_storageclass.yaml
+  #
+  # If you are setting up your own Prow instance you can do any of the following:
+  # 1) Delete this to use the default storage class for your cluster.
+  # 2) Specify your own storage class.
+  # 3) If you are using GKE you can use the gce-ssd-retain storage class. It can be
+  #    created with: `kubectl create -f prow/cluster/gce-ssd-retain_storageclass.yaml
+  storageClassName: gce-ssd-retain
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: default
+  name: ghproxy
+  labels:
+    app: ghproxy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ghproxy
+    spec:
+      containers:
+        - name: ghproxy
+          image: gcr.io/k8s-prow/ghproxy:v20190806-a72e11278
+          args:
+            - --cache-dir=/cache
+            - --cache-sizeGB=9
+            - --push-gateway=pushgateway
+            - --serve-metrics=true
+          ports:
+            - containerPort: 8888
+          volumeMounts:
+            - name: cache
+              mountPath: /cache
+      volumes:
+        - name: cache
+          persistentVolumeClaim:
+            claimName: ghproxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ghproxy
+  namespace: default
+  name: ghproxy
+spec:
+  ports:
+    - name: main
+      port: 80
+      protocol: TCP
+      targetPort: 8888
+    - name: metrics
+      port: 9090
+  selector:
+    app: ghproxy
+  type: NodePort

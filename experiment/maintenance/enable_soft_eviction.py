@@ -17,7 +17,7 @@
 # This script hijacks the COS kubelet service definition to set soft eviction thresholds
 # for nodefs on the prow builds cluster
 # USE AT YOUR OWN RISK.
-# TODO(bentheelder): delete this once dynamic kubelet config is available
+# TODO: delete this once dynamic kubelet config is available
 
 # pylint: disable=line-too-long
 

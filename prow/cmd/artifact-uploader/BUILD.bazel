@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//prow:def.bzl", "prow_image")
 
 go_library(
     name = "go_default_library",
@@ -16,6 +17,12 @@ go_library(
         "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
     ],
+)
+
+prow_image(
+    name = "image",
+    base = "@alpine-base//image",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -24,6 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/tide"
+	"k8s.io/test-infra/prow/tide/history"
 )
 
 func TestFilterHidden(t *testing.T) {
@@ -32,11 +34,14 @@ func TestFilterHidden(t *testing.T) {
 
 		hiddenRepos []string
 		hiddenOnly  bool
+		showHidden  bool
 		queries     []config.TideQuery
 		pools       []tide.Pool
+		hist        map[string][]history.Record
 
 		expectedQueries []config.TideQuery
 		expectedPools   []tide.Pool
+		expectedHist    map[string][]history.Record
 	}{
 		{
 			name: "public frontend",
@@ -65,6 +70,12 @@ func TestFilterHidden(t *testing.T) {
 				{Org: "kubernetes", Repo: "apiserver"},
 				{Org: "kubernetes-security", Repo: "apiserver"},
 			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
 
 			expectedQueries: []config.TideQuery{
 				{
@@ -76,6 +87,10 @@ func TestFilterHidden(t *testing.T) {
 				{Org: "kubernetes", Repo: "kubernetes"},
 				{Org: "kubernetes", Repo: "docs"},
 				{Org: "kubernetes", Repo: "apiserver"},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/test-infra:master": {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/kubernetes:master": {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
 			},
 		},
 		{
@@ -105,6 +120,12 @@ func TestFilterHidden(t *testing.T) {
 				{Org: "kubernetes", Repo: "apiserver"},
 				{Org: "kubernetes-security", Repo: "apiserver"},
 			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
 
 			expectedQueries: []config.TideQuery{
 				{
@@ -118,6 +139,72 @@ func TestFilterHidden(t *testing.T) {
 				{Org: "kubernetes", Repo: "website"},
 				{Org: "kubernetes-security", Repo: "apiserver"},
 			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+			},
+		},
+		{
+			name: "frontend for everything",
+
+			showHidden: true,
+			hiddenRepos: []string{
+				"kubernetes-security",
+				"kubernetes/website",
+			},
+
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
 		},
 	}
 
@@ -127,15 +214,23 @@ func TestFilterHidden(t *testing.T) {
 		ta := &tideAgent{
 			hiddenRepos: test.hiddenRepos,
 			hiddenOnly:  test.hiddenOnly,
+			showHidden:  test.showHidden,
 			log:         logrus.WithField("agent", "tide"),
 		}
 
-		gotQueries, gotPools := ta.filterHidden(test.queries, test.pools)
+		gotQueries := ta.filterHiddenQueries(test.queries)
+		gotPools := ta.filterHiddenPools(test.pools)
+		gotHist := ta.filterHiddenHistory(test.hist)
 		if !equality.Semantic.DeepEqual(gotQueries, test.expectedQueries) {
 			t.Errorf("expected queries:\n%v\ngot queries:\n%v\n", test.expectedQueries, gotQueries)
 		}
 		if !equality.Semantic.DeepEqual(gotPools, test.expectedPools) {
 			t.Errorf("expected pools:\n%v\ngot pools:\n%v\n", test.expectedPools, gotPools)
+		}
+		// equality.Semantic.DeepEqual doesn't like the unexported fields in time.Time.
+		// We don't care about that for this test.
+		if !reflect.DeepEqual(gotHist, test.expectedHist) {
+			t.Errorf("expected history:\n%v\ngot history:\n%v\n", test.expectedHist, gotHist)
 		}
 	}
 }

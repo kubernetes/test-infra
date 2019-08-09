@@ -44,6 +44,13 @@ func (c *fakeClientReopen) ReopenPR(owner, repo string, number int) error {
 	return nil
 }
 
+func (c *fakeClientReopen) IsCollaborator(owner, repo, login string) (bool, error) {
+	if login == "collaborator" {
+		return true, nil
+	}
+	return false, nil
+}
+
 func TestReopenComment(t *testing.T) {
 	var testcases = []struct {
 		name          string
@@ -59,7 +66,7 @@ func TestReopenComment(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "does not matter",
-			commenter:     "o",
+			commenter:     "random-person",
 			shouldReopen:  false,
 			shouldComment: false,
 		},
@@ -68,34 +75,34 @@ func TestReopenComment(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
-			commenter:     "a",
+			commenter:     "author",
 			shouldReopen:  true,
-			shouldComment: false,
+			shouldComment: true,
 		},
 		{
-			name:          "re-open by reviewer",
+			name:          "re-open by collaborator",
 			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
-			commenter:     "r1",
+			commenter:     "collaborator",
 			shouldReopen:  true,
-			shouldComment: false,
+			shouldComment: true,
 		},
 		{
-			name:          "re-open by reviewer, trailing space.",
+			name:          "re-open by collaborator, trailing space.",
 			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen \r",
-			commenter:     "r1",
+			commenter:     "collaborator",
 			shouldReopen:  true,
-			shouldComment: false,
+			shouldComment: true,
 		},
 		{
 			name:          "re-open edited by author",
 			action:        github.GenericCommentActionEdited,
 			state:         "closed",
 			body:          "/reopen",
-			commenter:     "a",
+			commenter:     "author",
 			shouldReopen:  false,
 			shouldComment: false,
 		},
@@ -104,16 +111,16 @@ func TestReopenComment(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/reopen",
-			commenter:     "a",
+			commenter:     "author",
 			shouldReopen:  false,
 			shouldComment: false,
 		},
 		{
-			name:          "re-open by other person",
+			name:          "re-open by non-collaborator, cannot reopen",
 			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
-			commenter:     "o",
+			commenter:     "non-collaborator",
 			shouldReopen:  false,
 			shouldComment: true,
 		},
@@ -126,8 +133,7 @@ func TestReopenComment(t *testing.T) {
 			Body:        tc.body,
 			User:        github.User{Login: tc.commenter},
 			Number:      5,
-			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
-			IssueAuthor: github.User{Login: "a"},
+			IssueAuthor: github.User{Login: "author"},
 		}
 		if err := handleReopen(fc, logrus.WithField("plugin", "fake-reopen"), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)

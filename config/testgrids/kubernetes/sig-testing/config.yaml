@@ -1,0 +1,208 @@
+# Dashboard Group
+
+dashboard_groups:
+- name: sig-testing
+  dashboard_names:
+    - sig-testing-misc
+    - sig-testing-canaries
+    - sig-testing-fejtabot
+    - sig-testing-kind
+    - sig-testing-maintenance
+    - sig-testing-prow
+    - sig-testing-images
+
+# Dashboards
+
+dashboards:
+- name: sig-testing-misc
+  dashboard_tab:
+    - name: ci-bazel
+      description: Runs bazel test //... on the test-infra repo every hour
+      test_group_name: ci-test-infra-bazel
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: post-bazel
+      description: Runs bazel test //... on the test-infra repo on each commit
+      test_group_name: post-test-infra-bazel
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: triage
+      description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
+      test_group_name: ci-test-infra-triage
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    - name: metrics-bigquery
+      description: Runs BigQuery queries to generate data for metrics.
+      test_group_name: metrics-bigquery
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: metrics-kettle
+      description: Monitors Kettle's BigQuery database freshness.
+      test_group_name: metrics-kettle
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    - name: ci-kubernetes-local-e2e
+      description: Runs conformance tests using kubetest with local-up-cluster
+      test_group_name: ci-kubernetes-local-e2e
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: pull-kubernetes-local-e2e
+      description: Runs conformance tests using kubetest with local-up-cluster
+      test_group_name: pull-kubernetes-local-e2e
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: pull-kubernetes-conformance-image-test
+      description: Runs conformance tests using kind and the conformance image
+      test_group_name: pull-kubernetes-conformance-image-test
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: slack-oncall-updater
+      description: runs experiment/slack-oncall-updater to update the membership of the test-infra-oncall slack usergroup
+      test_group_name: ci-test-infra-update-slack-oncall
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+      alert_options:
+        alert_mail_to_addresses: ktbry@google.com
+    - name: branchprotector
+      description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
+      test_group_name: ci-test-infra-branchprotector
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    - name: label_sync
+      description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
+      test_group_name: ci-test-infra-label-sync
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+
+- name: sig-testing-canaries
+  dashboard_tab:
+    - name: gce
+      test_group_name: ci-kubernetes-e2e-gce-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: gke
+      test_group_name: ci-kubernetes-e2e-gke-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: kops-aws
+      test_group_name: ci-kubernetes-e2e-kops-aws-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: prow
+      test_group_name: ci-kubernetes-e2e-prow-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: node
+      test_group_name: ci-kubernetes-e2e-node-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: kubemark
+      test_group_name: ci-kubernetes-kubemark-100-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: scalability
+      test_group_name: ci-kubernetes-e2e-gce-scalability-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: test-infra-bazel
+      test_group_name: pull-test-infra-bazel-canary
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: sig-testing-fejtabot
+  dashboard_tab:
+    - name: retester
+      description: Automatically /retest for approved PRs that failed retesting
+      test_group_name: periodic-test-infra-retester
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: issue-creator
+      description: Creates github issues based on data from various 'IssueSource's.
+      test_group_name: issue-creator
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: sig-testing-kind
+
+- name: sig-testing-maintenance
+  dashboard_tab:
+    - name: boskos-config-upload
+      description: Update boskos configmap on test-infra pushes
+      test_group_name: maintenance-boskos-config-upload
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: ci-janitor
+      description: Deletes old GCP resources from periodic jobs
+      test_group_name: maintenance-ci-janitor
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: pull-janitor
+      description: Deletes old GCP resources from presubmit jobs
+      test_group_name: maintenance-pull-janitor
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: pull-scale-janitor
+      description: Deletes old GCP resources from scalability presubmit jobs
+      test_group_name: maintenance-pull-scale-janitor
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: testgrid-config-upload
+      description: Compiles and uploads testgrid config on test-infra pushes
+      test_group_name: maintenance-ci-testgrid-config-upload
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+
+- name: sig-testing-prow
+  dashboard_tab:
+    - name: push-prow
+      description: builds and pushes all prow on each commit by running prow/push.sh
+      test_group_name: post-test-infra-push-prow
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: autobump-prow
+      description: runs prow/autobump.sh to create/update a PR that bumps prow to the latest RC
+      test_group_name: ci-test-infra-autobump-prow
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: deploy-prow
+      description: deploys the configured version of prow by running prow/deploy.sh
+      test_group_name: post-test-infra-deploy-prow
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: build-smoke
+      description: basic job to ensure build controller works correctly
+      test_group_name: ci-test-infra-build-smoke
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: pull-build-smoke
+      description: basic presubmit to ensure build controller works correctly
+      test_group_name: pull-test-infra-build-smoke
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: pull-build-smoke-fail
+      description: basic presubmit to ensure build controller fails correctly (Will remove once we assert the behavior)
+      test_group_name: pull-test-infra-build-smoke-fail
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: post-build-smoke
+      description: basic postsubmit to ensure build controller works correctly
+      test_group_name: post-test-infra-build-smoke
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    - name: resultstore-upload
+      description: transfer finished results into resultstore
+      test_group_name: ci-test-infra-resultstore-upload
+      code_search_url_template:
+        url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: sig-testing-images

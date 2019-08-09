@@ -23,36 +23,54 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
-	"strings"
+)
+
+const (
+	defaultSyncPeriod      = 10 * time.Minute
+	defaultRequestTTL      = 30 * time.Second
+	defaultRequestGCPeriod = time.Minute
 )
 
 var (
-	configPath  = flag.String("config", "config.yaml", "Path to init resource file")
-	storagePath = flag.String("storage", "", "Path to persistent volume to load the state")
+	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
+	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
+	syncPeriod        = flag.Duration("sync-period", defaultSyncPeriod, "Period at which to sync config")
+	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
+	kubeClientOptions crds.KubernetesClientOptions
 )
 
 func main() {
+	kubeClientOptions.AddFlags(flag.CommandLine)
 	flag.Parse()
+	kubeClientOptions.Validate()
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	rc, err := crds.NewResourceClient()
+	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
-		logrus.WithError(err).Fatal("unable to create a CRD client")
+		logrus.WithError(err).Fatal("unable to create a Resource CRD client")
+	}
+	dc, err := kubeClientOptions.Client(crds.DRLCType)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a DynamicResourceLifeCycle CRD client")
 	}
 
 	resourceStorage := crds.NewCRDStorage(rc)
-	storage, err := ranch.NewStorage(resourceStorage, *storagePath)
+	dRLCStorage := crds.NewCRDStorage(dc)
+	storage, err := ranch.NewStorage(resourceStorage, dRLCStorage, *storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create storage")
 	}
 
-	r, err := ranch.NewRanch(*configPath, storage)
+	r, err := ranch.NewRanch(*configPath, storage, *requestTTL)
 	if err != nil {
 		logrus.WithError(err).Fatalf("failed to create ranch! Config: %v", *configPath)
 	}
@@ -64,7 +82,7 @@ func main() {
 
 	go func() {
 		logTick := time.NewTicker(time.Minute).C
-		configTick := time.NewTicker(time.Minute * 10).C
+		configTick := time.NewTicker(*syncPeriod).C
 		for {
 			select {
 			case <-logTick:
@@ -74,6 +92,8 @@ func main() {
 			}
 		}
 	}()
+
+	r.StartRequestGC(defaultRequestGCPeriod)
 
 	logrus.Info("Start Service")
 	logrus.WithError(boskos.ListenAndServe()).Fatal("ListenAndServe returned.")
@@ -100,6 +120,8 @@ func ErrorToStatus(err error) int {
 	case *ranch.OwnerNotMatch:
 		return http.StatusUnauthorized
 	case *ranch.ResourceNotFound:
+		return http.StatusNotFound
+	case *ranch.ResourceTypeNotFound:
 		return http.StatusNotFound
 	case *ranch.StateNotMatch:
 		return http.StatusConflict
@@ -136,6 +158,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		state := req.URL.Query().Get("state")
 		dest := req.URL.Query().Get("dest")
 		owner := req.URL.Query().Get("owner")
+		requestID := req.URL.Query().Get("request_id")
 		if rtype == "" || state == "" || dest == "" || owner == "" {
 			msg := fmt.Sprintf("Type: %v, state: %v, dest: %v, owner: %v, all of them must be set in the request.", rtype, state, dest, owner)
 			logrus.Warning(msg)
@@ -145,7 +168,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 
 		logrus.Infof("Request for a %v %v from %v, dest %v", state, rtype, owner, dest)
 
-		resource, err := r.Acquire(rtype, state, dest, owner)
+		resource, err := r.Acquire(rtype, state, dest, owner, requestID)
 
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")
@@ -160,7 +183,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 			// release the resource, though this is not expected to happen.
 			err = r.Release(resource.Name, state, owner)
 			if err != nil {
-				logrus.WithError(err).Warning("unable to release resource %s", resource.Name)
+				logrus.WithError(err).Warningf("unable to release resource %s", resource.Name)
 			}
 			return
 		}
@@ -220,7 +243,7 @@ func handleAcquireByState(r *ranch.Ranch) http.HandlerFunc {
 			for _, resource := range resources {
 				err := r.Release(resource.Name, state, owner)
 				if err != nil {
-					logrus.WithError(err).Warning("unable to release resource %s", resource.Name)
+					logrus.WithError(err).Warningf("unable to release resource %s", resource.Name)
 				}
 			}
 			return
@@ -383,7 +406,7 @@ func handleMetric(r *ranch.Ranch) http.HandlerFunc {
 		logrus.WithField("handler", "handleMetric").Infof("From %v", req.RemoteAddr)
 
 		if req.Method != http.MethodGet {
-			logrus.Warning("[BadRequest]method %v, expect GET", req.Method)
+			logrus.Warningf("[BadRequest]method %v, expect GET", req.Method)
 			http.Error(res, "/metric only accepts GET", http.StatusMethodNotAllowed)
 			return
 		}

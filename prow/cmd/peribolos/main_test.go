@@ -24,17 +24,16 @@ import (
 	"sort"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
 )
 
 func TestOptions(t *testing.T) {
-	weirdFlags := flagutil.NewStrings(defaultEndpoint)
-	weirdFlags.Set("weird://url") // no error possible
 	cases := []struct {
 		name     string
 		args     []string
@@ -42,135 +41,127 @@ func TestOptions(t *testing.T) {
 	}{
 		{
 			name: "missing --config",
-			args: []string{"--github-token-path=fake"},
-		},
-		{
-			name: "missing --github-token-path",
-			args: []string{"--config-path=fake"},
+			args: []string{},
 		},
 		{
 			name: "bad --github-endpoint",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=ht!tp://:dumb"},
+			args: []string{"--config-path=foo", "--github-endpoint=ht!tp://:dumb"},
 		},
 		{
 			name: "--minAdmins too low",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--min-admins=1"},
+			args: []string{"--config-path=foo", "--min-admins=1"},
 		},
 		{
 			name: "--maximum-removal-delta too high",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=1.1"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=1.1"},
 		},
 		{
 			name: "--maximum-removal-delta too low",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=-0.1"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=-0.1"},
+		},
+		{
+			name: "reject --dump-full-config without --dump",
+			args: []string{"--config-path=foo", "--dump-full-config"},
 		},
 		{
 			name: "maximal delta",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=1"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=1"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  1,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
 			name: "minimal delta",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=0"},
+			args: []string{"--config-path=foo", "--maximum-removal-delta=0"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  0,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
 			name: "minimal admins",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--min-admins=2"},
+			args: []string{"--config-path=foo", "--min-admins=2"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     2,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
 			name: "reject burst > tokens",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=10", "--token-burst=11"},
+			args: []string{"--config-path=foo", "--tokens=10", "--token-burst=11"},
 		},
 		{
 			name: "reject dump and confirm",
-			args: []string{"--github-token-path=bar", "--confirm", "--dump=frogger"},
+			args: []string{"--confirm", "--dump=frogger"},
 		},
 		{
 			name: "reject dump and config-path",
-			args: []string{"--github-token-path=bar", "--config-path=foo", "--dump=frogger"},
+			args: []string{"--config-path=foo", "--dump=frogger"},
 		},
 		{
 			name: "reject --fix-team-members without --fix-teams",
-			args: []string{"--github-token-path=bar", "--config-path=foo", "--fix-team-members"},
+			args: []string{"--config-path=foo", "--fix-team-members"},
 		},
 		{
 			name: "allow disabled throttle",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=0"},
+			args: []string{"--config-path=foo", "--tokens=0"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
 				tokensPerHour: 0,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
 			name: "allow dump without config",
-			args: []string{"--github-token-path=bar", "--dump=frogger"},
+			args: []string{"--dump=frogger"},
 			expected: &options{
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
 				dump:          "frogger",
+				logLevel:      "info",
 			},
 		},
 		{
 			name: "minimal",
-			args: []string{"--config-path=foo", "--github-token-path=bar"},
+			args: []string{"--config-path=foo"},
 			expected: &options{
 				config:        "foo",
-				token:         "bar",
-				endpoint:      flagutil.NewStrings(defaultEndpoint),
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
 				tokensPerHour: defaultTokens,
 				tokenBurst:    defaultBurst,
+				logLevel:      "info",
 			},
 		},
 		{
 			name: "full",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members"},
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members", "--log-level=debug"},
 			expected: &options{
 				config:         "foo",
-				token:          "bar",
-				endpoint:       weirdFlags,
 				confirm:        true,
 				requireSelf:    false,
 				minAdmins:      defaultMinAdmins,
@@ -181,6 +172,7 @@ func TestOptions(t *testing.T) {
 				fixOrgMembers:  true,
 				fixTeams:       true,
 				fixTeamMembers: true,
+				logLevel:       "debug",
 			},
 		},
 	}
@@ -189,13 +181,14 @@ func TestOptions(t *testing.T) {
 		flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
 		var actual options
 		err := actual.parseArgs(flags, tc.args)
+		actual.github = flagutil.GitHubOptions{}
 		switch {
 		case err == nil && tc.expected == nil:
 			t.Errorf("%s: failed to return an error", tc.name)
 		case err != nil && tc.expected != nil:
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: actual %v != expected %v", tc.name, actual, *tc.expected)
+			t.Errorf("%s: got incorrect options: %v", tc.name, diff.ObjectReflectDiff(actual, *tc.expected))
 		}
 	}
 }
@@ -229,7 +222,7 @@ func (c *fakeClient) ListOrgMembers(org, role string) ([]github.TeamMember, erro
 	case github.RoleAdmin:
 		return c.makeMembers(c.admins), nil
 	default:
-		// RoleAll: implmenent when/if necessary
+		// RoleAll: implement when/if necessary
 		return nil, fmt.Errorf("bad role: %s", role)
 	}
 }
@@ -301,6 +294,24 @@ func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, 
 	}
 }
 
+func (c *fakeClient) ListTeamInvitations(id int) ([]github.OrgInvitation, error) {
+	if id != teamID {
+		return nil, fmt.Errorf("only team 66 supported, not %d", id)
+	}
+	var ret []github.OrgInvitation
+	for p := range c.invitees {
+		if p == "fail" {
+			return nil, errors.New("injected list org invitations failure")
+		}
+		ret = append(ret, github.OrgInvitation{
+			TeamMember: github.TeamMember{
+				Login: p,
+			},
+		})
+	}
+	return ret, nil
+}
+
 const teamID = 66
 
 func (c *fakeClient) UpdateTeamMembership(id int, user string, maintainer bool) (*github.TeamMembership, error) {
@@ -349,13 +360,14 @@ func (c *fakeClient) RemoveTeamMembership(id int, user string) error {
 
 func TestConfigureMembers(t *testing.T) {
 	cases := []struct {
-		name    string
-		want    memberships
-		have    memberships
-		remove  sets.String
-		members sets.String
-		supers  sets.String
-		err     bool
+		name     string
+		want     memberships
+		have     memberships
+		remove   sets.String
+		members  sets.String
+		supers   sets.String
+		invitees sets.String
+		err      bool
 	}{
 		{
 			name: "forgot to remove duplicate entry",
@@ -431,6 +443,17 @@ func TestConfigureMembers(t *testing.T) {
 				members: sets.NewString("UpPeR"),
 			},
 		},
+		{
+			name: "remove invites for those not in org config",
+			have: memberships{
+				members: sets.NewString("member-one", "member-two"),
+			},
+			want: memberships{
+				members: sets.NewString("member-one", "member-two"),
+			},
+			remove:   sets.NewString("member-three"),
+			invitees: sets.NewString("member-three"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -458,7 +481,7 @@ func TestConfigureMembers(t *testing.T) {
 				return nil
 			}
 
-			err := configureMembers(tc.have, tc.want, adder, remover)
+			err := configureMembers(tc.have, tc.want, tc.invitees, adder, remover)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -583,6 +606,30 @@ func TestConfigureOrgMembers(t *testing.T) {
 			err: true,
 		},
 		{
+			name: "require team members with upper name to be org member",
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"foo": {
+						Members: []string{"Me"},
+					},
+				},
+				Members: []string{"Me"},
+			},
+			members: []string{"Me"},
+		},
+		{
+			name: "require team maintainer with upper name to be org member",
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"foo": {
+						Maintainers: []string{"Me"},
+					},
+				},
+				Admins: []string{"Me"},
+			},
+			admins: []string{"Me"},
+		},
+		{
 			name: "disallow duplicate names",
 			config: org.Config{
 				Teams: map[string]org.Team{
@@ -606,7 +653,7 @@ func TestConfigureOrgMembers(t *testing.T) {
 			err: true,
 		},
 		{
-			name: "trival case works",
+			name: "trivial case works",
 		},
 		{
 			name: "some of everything",
@@ -631,11 +678,6 @@ func TestConfigureOrgMembers(t *testing.T) {
 			},
 			invitations: []string{"invited-admin", "invited-member"},
 		},
-		{
-			name:        "github list invitation rpc fails",
-			invitations: []string{"fail"},
-			err:         true,
-		},
 	}
 
 	for _, tc := range cases {
@@ -643,12 +685,12 @@ func TestConfigureOrgMembers(t *testing.T) {
 			fc := &fakeClient{
 				admins:     sets.NewString(tc.admins...),
 				members:    sets.NewString(tc.members...),
-				invitees:   sets.NewString(tc.invitations...),
 				removed:    sets.String{},
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureOrgMembers(tc.opt, fc, fakeOrg, tc.config)
+
+			err := configureOrgMembers(tc.opt, fc, fakeOrg, tc.config, sets.NewString(tc.invitations...))
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -824,14 +866,15 @@ func TestConfigureTeams(t *testing.T) {
 	desc := "so interesting"
 	priv := org.Secret
 	cases := []struct {
-		name            string
-		err             bool
-		orgNameOverride string
-		config          org.Config
-		teams           []github.Team
-		expected        map[string]github.Team
-		deleted         []int
-		delta           float64
+		name              string
+		err               bool
+		orgNameOverride   string
+		ignoreSecretTeams bool
+		config            org.Config
+		teams             []github.Team
+		expected          map[string]github.Team
+		deleted           []int
+		delta             float64
 	}{
 		{
 			name: "do nothing without error",
@@ -967,7 +1010,8 @@ func TestConfigureTeams(t *testing.T) {
 			expected: map[string]github.Team{
 				"used": {ID: 2, Name: "used"},
 			},
-			delta: 0.6,
+			deleted: []int{1},
+			delta:   0.6,
 		},
 		{
 			name: "refuse to delete too many teams",
@@ -989,6 +1033,27 @@ func TestConfigureTeams(t *testing.T) {
 			err:   true,
 			delta: 0.1,
 		},
+		{
+			name:              "refuse to delete private teams if ignoring them",
+			ignoreSecretTeams: true,
+			teams: []github.Team{
+				{
+					Name:    "secret",
+					ID:      1,
+					Privacy: string(org.Secret),
+				},
+				{
+					Name:    "closed",
+					ID:      2,
+					Privacy: string(org.Closed),
+				},
+			},
+			config:   org.Config{Teams: map[string]org.Team{}},
+			err:      false,
+			expected: map[string]github.Team{},
+			deleted:  []int{2},
+			delta:    1,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1004,7 +1069,7 @@ func TestConfigureTeams(t *testing.T) {
 			if tc.delta == 0 {
 				tc.delta = 1
 			}
-			actual, err := configureTeams(fc, orgName, tc.config, tc.delta)
+			actual, err := configureTeams(fc, orgName, tc.config, tc.delta, tc.ignoreSecretTeams)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1019,6 +1084,16 @@ func TestConfigureTeams(t *testing.T) {
 				if team, ok := fc.teams[id]; ok {
 					t.Errorf("%d still present: %#v", id, team)
 				}
+			}
+			original, current, deleted := sets.NewInt(), sets.NewInt(), sets.NewInt(tc.deleted...)
+			for _, team := range tc.teams {
+				original.Insert(team.ID)
+			}
+			for id := range fc.teams {
+				current.Insert(id)
+			}
+			if unexpected := original.Difference(current).Difference(deleted); unexpected.Len() > 0 {
+				t.Errorf("the following teams were unexpectedly deleted: %v", unexpected.List())
 			}
 		})
 	}
@@ -1209,6 +1284,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 		remove         sets.String
 		addMembers     sets.String
 		addMaintainers sets.String
+		invitees       sets.String
 		team           org.Team
 		id             int
 	}{
@@ -1241,21 +1317,45 @@ func TestConfigureTeamMembers(t *testing.T) {
 			addMembers:     sets.NewString("new-member"),
 			addMaintainers: sets.NewString("new-maintainer"),
 		},
+		{
+			name: "do not reinvitee invitees",
+			team: org.Team{
+				Maintainers: []string{"invited-maintainer", "newbie"},
+				Members:     []string{"invited-member"},
+			},
+			invitees:       sets.NewString("invited-maintainer", "invited-member"),
+			addMaintainers: sets.NewString("newbie"),
+		},
+		{
+			name: "do not remove pending invitees",
+			team: org.Team{
+				Maintainers: []string{"keep-maintainer"},
+				Members:     []string{"invited-member"},
+			},
+			maintainers: sets.NewString("keep-maintainer"),
+			invitees:    sets.NewString("invited-member"),
+			remove:      sets.String{},
+		},
 	}
 
 	for _, tc := range cases {
-		if tc.id == 0 {
-			tc.id = teamID
+		gt := github.Team{
+			ID:   teamID,
+			Name: "whatev",
+		}
+		if tc.id != 0 {
+			gt.ID = tc.id
 		}
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &fakeClient{
 				admins:     sets.StringKeySet(tc.maintainers),
 				members:    sets.StringKeySet(tc.members),
+				invitees:   sets.StringKeySet(tc.invitees),
 				removed:    sets.String{},
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureTeamMembers(fc, tc.id, tc.team)
+			err := configureTeamMembers(fc, gt, tc.team)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1463,7 +1563,7 @@ func TestConfigureOrgMeta(t *testing.T) {
 	no := false
 	str := "random-letters"
 	fail := "fail"
-	read := org.Read
+	read := github.Read
 
 	cases := []struct {
 		name     string
@@ -1624,19 +1724,23 @@ func TestDumpOrgConfig(t *testing.T) {
 	details := "wise and brilliant exemplary human specimens"
 	yes := true
 	no := false
-	perm := org.Write
+	perm := github.Write
 	pub := org.Privacy("")
+	secret := org.Secret
+	closed := org.Closed
 	cases := []struct {
-		name        string
-		orgOverride string
-		meta        github.Organization
-		members     []string
-		admins      []string
-		teams       []github.Team
-		teamMembers map[int][]string
-		maintainers map[int][]string
-		expected    org.Config
-		err         bool
+		name              string
+		orgOverride       string
+		ignoreSecretTeams bool
+		meta              github.Organization
+		members           []string
+		admins            []string
+		teams             []github.Team
+		teamMembers       map[int][]string
+		maintainers       map[int][]string
+		repoPermissions   map[int][]github.Repo
+		expected          org.Config
+		err               bool
 	}{
 		{
 			name:        "fails if GetOrg fails",
@@ -1671,7 +1775,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		{
 			name: "basically works",
 			meta: github.Organization{
-				Name: hello,
+				Name:                         hello,
 				MembersCanCreateRepositories: yes,
 				DefaultRepositoryPermission:  string(perm),
 			},
@@ -1694,6 +1798,7 @@ func TestDumpOrgConfig(t *testing.T) {
 						ID:   6,
 						Name: "enemies",
 					},
+					Privacy: string(org.Secret),
 				},
 			},
 			teamMembers: map[int][]string{
@@ -1705,6 +1810,11 @@ func TestDumpOrgConfig(t *testing.T) {
 				5: {},
 				6: {"giant", "jungle"},
 				7: {"banana"},
+			},
+			repoPermissions: map[int][]github.Repo{
+				5: {},
+				6: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}},
+				7: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}, {Name: "admin-repo", Permissions: github.RepoPermissions{Admin: true}}},
 			},
 			expected: org.Config{
 				Metadata: org.Metadata{
@@ -1728,6 +1838,113 @@ func TestDumpOrgConfig(t *testing.T) {
 						Members:     []string{"george", "james"},
 						Maintainers: []string{},
 						Children:    map[string]org.Team{},
+						Repos:       map[string]github.RepoPermissionLevel{},
+					},
+					"enemies": {
+						TeamMetadata: org.TeamMetadata{
+							Description: &empty,
+							Privacy:     &pub,
+						},
+						Members:     []string{"george"},
+						Maintainers: []string{"giant", "jungle"},
+						Repos: map[string]github.RepoPermissionLevel{
+							"pull-repo": github.Read,
+						},
+						Children: map[string]org.Team{
+							"archenemies": {
+								TeamMetadata: org.TeamMetadata{
+									Description: &empty,
+									Privacy:     &secret,
+								},
+								Members:     []string{},
+								Maintainers: []string{"banana"},
+								Repos: map[string]github.RepoPermissionLevel{
+									"pull-repo":  github.Read,
+									"admin-repo": github.Admin,
+								},
+								Children: map[string]org.Team{},
+							},
+						},
+					},
+				},
+				Members: []string{"george", "jungle", "banana"},
+				Admins:  []string{"james", "giant", "peach"},
+			},
+		},
+		{
+			name:              "ignores private teams when expected to",
+			ignoreSecretTeams: true,
+			meta: github.Organization{
+				Name:                         hello,
+				MembersCanCreateRepositories: yes,
+				DefaultRepositoryPermission:  string(perm),
+			},
+			members: []string{"george", "jungle", "banana"},
+			admins:  []string{"james", "giant", "peach"},
+			teams: []github.Team{
+				{
+					ID:          5,
+					Name:        "friends",
+					Description: details,
+				},
+				{
+					ID:   6,
+					Name: "enemies",
+				},
+				{
+					ID:   7,
+					Name: "archenemies",
+					Parent: &github.Team{
+						ID:   6,
+						Name: "enemies",
+					},
+					Privacy: string(org.Secret),
+				},
+				{
+					ID:   8,
+					Name: "frenemies",
+					Parent: &github.Team{
+						ID:   6,
+						Name: "enemies",
+					},
+					Privacy: string(org.Closed),
+				},
+			},
+			teamMembers: map[int][]string{
+				5: {"george", "james"},
+				6: {"george"},
+				7: {},
+				8: {"patrick"},
+			},
+			maintainers: map[int][]string{
+				5: {},
+				6: {"giant", "jungle"},
+				7: {"banana"},
+				8: {"starfish"},
+			},
+			expected: org.Config{
+				Metadata: org.Metadata{
+					Name:                         &hello,
+					BillingEmail:                 &empty,
+					Company:                      &empty,
+					Email:                        &empty,
+					Description:                  &empty,
+					Location:                     &empty,
+					HasOrganizationProjects:      &no,
+					HasRepositoryProjects:        &no,
+					DefaultRepositoryPermission:  &perm,
+					MembersCanCreateRepositories: &yes,
+				},
+				Teams: map[string]org.Team{
+					"friends": {
+						TeamMetadata: org.TeamMetadata{
+							Description: &details,
+							Privacy:     &pub,
+						},
+						Members:     []string{"george", "james"},
+						Maintainers: []string{},
+						Children:    map[string]org.Team{},
+						Repos:       map[string]github.RepoPermissionLevel{},
 					},
 					"enemies": {
 						TeamMetadata: org.TeamMetadata{
@@ -1737,16 +1954,18 @@ func TestDumpOrgConfig(t *testing.T) {
 						Members:     []string{"george"},
 						Maintainers: []string{"giant", "jungle"},
 						Children: map[string]org.Team{
-							"archenemies": {
+							"frenemies": {
 								TeamMetadata: org.TeamMetadata{
 									Description: &empty,
-									Privacy:     &pub,
+									Privacy:     &closed,
 								},
-								Members:     []string{},
-								Maintainers: []string{"banana"},
+								Members:     []string{"patrick"},
+								Maintainers: []string{"starfish"},
 								Children:    map[string]org.Team{},
+								Repos:       map[string]github.RepoPermissionLevel{},
 							},
 						},
+						Repos: map[string]github.RepoPermissionLevel{},
 					},
 				},
 				Members: []string{"george", "jungle", "banana"},
@@ -1762,15 +1981,16 @@ func TestDumpOrgConfig(t *testing.T) {
 				orgName = tc.orgOverride
 			}
 			fc := fakeDumpClient{
-				name:        orgName,
-				members:     tc.members,
-				admins:      tc.admins,
-				meta:        tc.meta,
-				teams:       tc.teams,
-				teamMembers: tc.teamMembers,
-				maintainers: tc.maintainers,
+				name:            orgName,
+				members:         tc.members,
+				admins:          tc.admins,
+				meta:            tc.meta,
+				teams:           tc.teams,
+				teamMembers:     tc.teamMembers,
+				maintainers:     tc.maintainers,
+				repoPermissions: tc.repoPermissions,
 			}
-			actual, err := dumpOrgConfig(fc, orgName)
+			actual, err := dumpOrgConfig(fc, orgName, tc.ignoreSecretTeams)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1784,7 +2004,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				if !reflect.DeepEqual(actual, &tc.expected) {
 					a, _ := yaml.Marshal(*actual)
 					e, _ := yaml.Marshal(tc.expected)
-					t.Errorf("actual:\n%s != expected:\n%s", string(a), string(e))
+					t.Errorf("did not get correct config: %v", diff.StringDiff(string(a), string(e)))
 				}
 
 			}
@@ -1793,13 +2013,14 @@ func TestDumpOrgConfig(t *testing.T) {
 }
 
 type fakeDumpClient struct {
-	name        string
-	members     []string
-	admins      []string
-	meta        github.Organization
-	teams       []github.Team
-	teamMembers map[int][]string
-	maintainers map[int][]string
+	name            string
+	members         []string
+	admins          []string
+	meta            github.Organization
+	teams           []github.Team
+	teamMembers     map[int][]string
+	maintainers     map[int][]string
+	repoPermissions map[int][]github.Repo
 }
 
 func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
@@ -1867,6 +2088,14 @@ func (c fakeDumpClient) ListTeamMembers(id int, role string) ([]github.TeamMembe
 	return c.makeMembers(people)
 }
 
+func (c fakeDumpClient) ListTeamRepos(id int) ([]github.Repo, error) {
+	if id < 0 {
+		return nil, errors.New("injected ListTeamRepos error")
+	}
+
+	return c.repoPermissions[id], nil
+}
+
 func fixup(ret *org.Config) {
 	if ret == nil {
 		return
@@ -1878,5 +2107,288 @@ func fixup(ret *org.Config) {
 		sort.Strings(team.Maintainers)
 		sort.Strings(team.Previously)
 		ret.Teams[name] = team
+	}
+}
+
+func TestOrgInvitations(t *testing.T) {
+	cases := []struct {
+		name     string
+		opt      options
+		invitees sets.String // overrides
+		expected sets.String
+		err      bool
+	}{
+		{
+			name:     "do not call on empty options",
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.String{},
+		},
+		{
+			name: "call if fixOrgMembers",
+			opt: options{
+				fixOrgMembers: true,
+			},
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.NewString("him", "her", "them"),
+		},
+		{
+			name: "call if fixTeamMembers",
+			opt: options{
+				fixTeamMembers: true,
+			},
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.NewString("him", "her", "them"),
+		},
+		{
+			name: "ensure case normalization",
+			opt: options{
+				fixOrgMembers:  true,
+				fixTeamMembers: true,
+			},
+			invitees: sets.NewString("MiXeD", "lower", "UPPER"),
+			expected: sets.NewString("mixed", "lower", "upper"),
+		},
+		{
+			name: "error if list fails",
+			opt: options{
+				fixTeamMembers: true,
+				fixOrgMembers:  true,
+			},
+			invitees: sets.NewString("erick", "fail"),
+			err:      true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakeClient{
+				invitees: tc.invitees,
+			}
+			actual, err := orgInvitations(tc.opt, fc, "random-org")
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive an error")
+			case !reflect.DeepEqual(actual, tc.expected):
+				t.Errorf("%#v != expected %#v", actual, tc.expected)
+			}
+		})
+	}
+}
+
+type fakeTeamRepoClient struct {
+	repos                            map[int][]github.Repo
+	failList, failUpdate, failRemove bool
+}
+
+func (c *fakeTeamRepoClient) ListTeamRepos(id int) ([]github.Repo, error) {
+	if c.failList {
+		return nil, errors.New("injected failure to ListTeamRepos")
+	}
+	return c.repos[id], nil
+}
+
+func (c *fakeTeamRepoClient) UpdateTeamRepo(id int, org, repo string, permission github.RepoPermissionLevel) error {
+	if c.failUpdate {
+		return errors.New("injected failure to UpdateTeamRepos")
+	}
+
+	updated := false
+	for i, repository := range c.repos[id] {
+		if repository.Name == repo {
+			c.repos[id][i].Permissions = github.PermissionsFromLevel(permission)
+			updated = true
+			break
+		}
+	}
+
+	if !updated {
+		c.repos[id] = append(c.repos[id], github.Repo{Name: repo, Permissions: github.PermissionsFromLevel(permission)})
+	}
+
+	return nil
+}
+
+func (c *fakeTeamRepoClient) RemoveTeamRepo(id int, org, repo string) error {
+	if c.failRemove {
+		return errors.New("injected failure to RemoveTeamRepos")
+	}
+
+	for i, repository := range c.repos[id] {
+		if repository.Name == repo {
+			c.repos[id] = append(c.repos[id][:i], c.repos[id][i+1:]...)
+			break
+		}
+	}
+
+	return nil
+}
+
+func TestConfigureTeamRepos(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		githubTeams   map[string]github.Team
+		teamName      string
+		team          org.Team
+		existingRepos map[int][]github.Repo
+		failList      bool
+		failUpdate    bool
+		failRemove    bool
+		expected      map[int][]github.Repo
+		expectedErr   bool
+	}{
+		{
+			name:        "githubTeams cache not containing team errors",
+			githubTeams: map[string]github.Team{},
+			teamName:    "team",
+			expectedErr: true,
+		},
+		{
+			name:        "listing repos failing errors",
+			githubTeams: map[string]github.Team{"team": {ID: 1}},
+			teamName:    "team",
+			failList:    true,
+			expectedErr: true,
+		},
+		{
+			name:        "nothing to do",
+			githubTeams: map[string]github.Team{"team": {ID: 1}},
+			teamName:    "team",
+			team: org.Team{
+				Repos: map[string]github.RepoPermissionLevel{
+					"read":  github.Read,
+					"write": github.Write,
+					"admin": github.Admin,
+				},
+			},
+			existingRepos: map[int][]github.Repo{1: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+			expected: map[int][]github.Repo{1: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+		},
+		{
+			name:        "new requirement in org config gets added",
+			githubTeams: map[string]github.Team{"team": {ID: 1}},
+			teamName:    "team",
+			team: org.Team{
+				Repos: map[string]github.RepoPermissionLevel{
+					"read":        github.Read,
+					"write":       github.Write,
+					"admin":       github.Admin,
+					"other-admin": github.Admin,
+				},
+			},
+			existingRepos: map[int][]github.Repo{1: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+			expected: map[int][]github.Repo{1: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+				{Name: "other-admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+		},
+		{
+			name:        "change in permission on existing gets updated",
+			githubTeams: map[string]github.Team{"team": {ID: 1}},
+			teamName:    "team",
+			team: org.Team{
+				Repos: map[string]github.RepoPermissionLevel{
+					"read":  github.Read,
+					"write": github.Write,
+					"admin": github.Read,
+				},
+			},
+			existingRepos: map[int][]github.Repo{1: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+			expected: map[int][]github.Repo{1: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true}},
+			}},
+		},
+		{
+			name:        "omitted requirement gets removed",
+			githubTeams: map[string]github.Team{"team": {ID: 1}},
+			teamName:    "team",
+			team: org.Team{
+				Repos: map[string]github.RepoPermissionLevel{
+					"write": github.Write,
+					"admin": github.Read,
+				},
+			},
+			existingRepos: map[int][]github.Repo{1: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+			expected: map[int][]github.Repo{1: {
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true}},
+			}},
+		},
+		{
+			name:        "failed update errors",
+			failUpdate:  true,
+			githubTeams: map[string]github.Team{"team": {ID: 1}},
+			teamName:    "team",
+			team: org.Team{
+				Repos: map[string]github.RepoPermissionLevel{
+					"will-fail": github.Write,
+				},
+			},
+			existingRepos: map[int][]github.Repo{1: {}},
+			expected:      map[int][]github.Repo{1: {}},
+			expectedErr:   true,
+		},
+		{
+			name:        "failed delete errors",
+			failRemove:  true,
+			githubTeams: map[string]github.Team{"team": {ID: 1}},
+			teamName:    "team",
+			team: org.Team{
+				Repos: map[string]github.RepoPermissionLevel{},
+			},
+			existingRepos: map[int][]github.Repo{1: {
+				{Name: "needs-deletion", Permissions: github.RepoPermissions{Pull: true}},
+			}},
+			expected: map[int][]github.Repo{1: {
+				{Name: "needs-deletion", Permissions: github.RepoPermissions{Pull: true}},
+			}},
+			expectedErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		client := fakeTeamRepoClient{
+			repos:      testCase.existingRepos,
+			failList:   testCase.failList,
+			failUpdate: testCase.failUpdate,
+			failRemove: testCase.failRemove,
+		}
+		err := configureTeamRepos(&client, testCase.githubTeams, testCase.teamName, "org", testCase.team)
+		if err == nil && testCase.expectedErr {
+			t.Errorf("%s: expected an error but got none", testCase.name)
+		}
+		if err != nil && !testCase.expectedErr {
+			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+		}
+		if actual, expected := client.repos, testCase.expected; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: got incorrect team repos: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
 	}
 }

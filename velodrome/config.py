@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -18,7 +18,7 @@ import os
 import string
 import sys
 
-import yaml
+import ruamel.yaml as yaml
 
 CONFIG = "config.yaml"
 
@@ -38,11 +38,11 @@ DEPLOYMENTS = {
 
 def main():
     if len(sys.argv) != 1:
-        print >> sys.stderr, "Too many arguments."
+        print("Too many arguments.", file=sys.stderr)
         sys.exit(128)
 
     with open(get_absolute_path(CONFIG)) as config_file:
-        config = yaml.load(config_file)
+        config = yaml.safe_load(config_file)
         print_deployments(["sqlproxy", "prober"], {})
         for project_name, project in config['projects'].items():
             public_ip = project.get('nginx', {}).get('public-ip', '') or ''
@@ -85,14 +85,14 @@ def main():
 
 def apply_transform(new_args, env):
     with open(get_absolute_path(DEPLOYMENTS["transform"])) as fp:
-        config = yaml.load(fp)
+        config = yaml.safe_load(fp)
         config['spec']['template']['spec']['containers'][0]['args'] += new_args
     print_deployment(yaml.dump(config, default_flow_style=False), env)
 
 
 def patch_configuration(component, values, env):
     with open(get_absolute_path(DEPLOYMENTS[component])) as fp:
-        config = yaml.load(fp)
+        config = yaml.safe_load(fp)
         # We want to fail if we have unknown keys in values
         unknown_keys = set(values) - set(config['data'])
         if unknown_keys:
@@ -112,8 +112,8 @@ def print_deployments(components, env):
 
 
 def print_deployment(deployment, env):
-    print string.Template(deployment).safe_substitute(**env),
-    print '---'
+    print(string.Template(deployment).safe_substitute(**env), end=' ')
+    print('---')
 
 if __name__ == '__main__':
     main()

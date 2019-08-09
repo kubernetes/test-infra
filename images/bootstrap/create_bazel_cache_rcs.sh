@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CACHE_HOST="bazel-cache.default"
+CACHE_HOST="bazel-cache.default.svc.cluster.local."
 CACHE_PORT="8080"
 
 # get the installed version of a debian package
@@ -29,7 +29,7 @@ command_to_package () {
     # https://wiki.debian.org/DebianAlternatives
     local binary_path
     binary_path=$(readlink -f "$(command -v "$1")")
-    # `dpkg-query --search $file-pattern` ouputs lines with the format: "$package: $file-path"
+    # `dpkg-query --search $file-pattern` outputs lines with the format: "$package: $file-path"
     # where $file-path belongs to $package
     # https://manpages.debian.org/jessie/dpkg/dpkg-query.1.en.html
     dpkg-query --search "${binary_path}" | cut -d':' -f1
@@ -55,7 +55,7 @@ hash_toolchains () {
     local rpmbuild_version
     rpmbuild_version=$(command_to_version rpmbuild)
     # combine all tool versions into a hash
-    # NOTE(bentheelder): if we change the set of tools considered we should
+    # NOTE: if we change the set of tools considered we should
     # consider prepending the hash with a """schema version""" for completeness
     local tool_versions
     tool_versions="CC:${cc_version},PY:${python_version},RPM:${rpmbuild_version}"
@@ -76,7 +76,15 @@ make_bazel_rc () {
     # since this is the only hash our cache supports
     echo "startup --host_jvm_args=-Dbazel.DigestFunction=sha256"
     # use remote caching for all the things
-    echo "build --experimental_remote_spawn_cache"
+    # Only set this flag for older bazel versions, it is now enabled by 
+    # default and the flag was removed.
+    #
+    # NOTE: This is an exceptional case (version comparison)
+    # shellcheck disable=SC2072
+    # https://github.com/koalaman/shellcheck/wiki/SC2072#exceptions
+    if [[ "${BAZEL_VERSION:-}" < '0.25' ]]; then
+       echo "build --experimental_remote_spawn_cache"
+    fi
     # don't fail if the cache is unavailable
     echo "build --remote_local_fallback"
     # point bazel at our http cache ...

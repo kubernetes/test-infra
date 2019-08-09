@@ -1,5 +1,8 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("//prow:def.bzl", "prow_image")
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -21,7 +24,32 @@ go_library(
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/github.com/spf13/pflag:go_default_library",
     ],
+)
+
+filegroup(
+    name = "janitor_files",
+    srcs = ["gcp_janitor.py"],
+)
+
+pkg_tar(
+    name = "janitor_tar",
+    srcs = [":janitor_files"],
+    mode = "0o755",
+    package_dir = "bin",
+)
+
+container_image(
+    name = "janitor_image",
+    base = "@gcloud-go//image",
+    tars = [":janitor_tar"],
+)
+
+prow_image(
+    name = "image",
+    base = ":janitor_image",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

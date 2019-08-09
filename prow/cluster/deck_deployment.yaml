@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: default
   name: deck
   labels:
     app: deck
@@ -25,6 +26,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: deck
   template:
     metadata:
       labels:
@@ -34,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20180723-3632407bc
+        image: gcr.io/k8s-prow/deck:v20190808-5e69697af
         imagePullPolicy: Always
         ports:
           - name: http
@@ -45,10 +49,17 @@ spec:
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
         - --oauth-url=/github-login
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --spyglass=true
+        - --rerun-creates-job
+        - --github-token-path=/etc/github/oauth
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
+        - --github-oauth-config-file=/etc/githuboauth/secret
         volumeMounts:
         - name: oauth-config
-          mountPath: /etc/github
+          mountPath: /etc/githuboauth
           readOnly: true
         - name: cookie-secret
           mountPath: /etc/cookie
@@ -62,10 +73,29 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        - name: oauth-token
+          mountPath: /etc/github
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 600
       volumes:
       - name: oauth-config
         secret:
           secretName: github-oauth-config
+      - name: oauth-token
+        secret:
+          secretName: oauth-token
       - name: cookie-secret
         secret:
           secretName: cookie

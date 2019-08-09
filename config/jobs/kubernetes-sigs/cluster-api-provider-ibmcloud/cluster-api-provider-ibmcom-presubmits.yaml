@@ -1,0 +1,65 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+  - name: pull-cluster-api-provider-ibmcloud-make
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        args:
+        - make
+        - images
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-make
+  - name: pull-cluster-api-provider-ibmcloud-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-test
+  - name: pull-cluster-api-provider-ibmcloud-check
+    always_run: true
+    decorate: true
+    branches:
+    - master
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - make
+        - check
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-check

@@ -28,7 +28,7 @@ import (
 type PersistenceLayer interface {
 	Add(i common.Item) error
 	Delete(name string) error
-	Update(i common.Item) error
+	Update(i common.Item) (common.Item, error)
 	Get(name string) (common.Item, error)
 	List() ([]common.Item, error)
 }
@@ -67,15 +67,15 @@ func (im *inMemoryStore) Delete(name string) error {
 	return nil
 }
 
-func (im *inMemoryStore) Update(i common.Item) error {
+func (im *inMemoryStore) Update(i common.Item) (common.Item, error) {
 	im.lock.Lock()
 	defer im.lock.Unlock()
 	_, ok := im.items[i.GetName()]
 	if !ok {
-		return fmt.Errorf("cannot find item %s", i.GetName())
+		return nil, fmt.Errorf("cannot find item %s", i.GetName())
 	}
 	im.items[i.GetName()] = i
-	return nil
+	return i, nil
 }
 
 func (im *inMemoryStore) Get(name string) (common.Item, error) {

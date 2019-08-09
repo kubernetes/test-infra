@@ -90,6 +90,18 @@ func TestHandlePR(t *testing.T) {
 			},
 			expectedReactionAdded: false,
 		},
+		// PR opened against kubernetes/kubernetes that adds 1 line to
+		// an OWNERS_ALIASES file
+		{
+			prAction: github.PullRequestActionOpened,
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "foo/bar/OWNERS_ALIASES",
+					Additions: 1,
+				},
+			},
+			expectedReactionAdded: true,
+		},
 	}
 
 	for _, tc := range testcases {

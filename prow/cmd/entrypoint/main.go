@@ -26,6 +26,8 @@ import (
 )
 
 func main() {
+	logrusutil.ComponentInit("entrypoint")
+
 	o := entrypoint.NewOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
@@ -34,10 +36,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "entrypoint"}),
-	)
 
 	os.Exit(o.Run())
 }

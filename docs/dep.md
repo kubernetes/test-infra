@@ -1,32 +1,43 @@
 # kubernetes/test-infra dependency management
 
-test-infra uses [`dep`] for Go dependency
-management. Usage requires [bazel], which can be accessed
-through [`planter`] if not locally installed.
+test-infra uses [go modules] for Go dependency management.
+Usage requires [bazel], which can be accessed through
+[`planter`] if not locally installed.
 
 ## Usage
 
-Run [`hack/update-deps.sh`] whenever vendored dependencies change. This will
-take around 5m to complete.
+Run [`hack/update-deps.sh`] whenever vendored dependencies change.
+This takes a minute to complete, and
+longer the more uncached repos golang needs to download.
 
-### Advanced usage
 
-* [add] - Run `hack/update-deps.sh --add cloud.google.com/go/storage@v0.17.0 [...]` to pin a dependency at a particular version
-* [update] - Run `hack/update-deps.sh --update golang.org/x/net [...]` to update an existing dependency
-* [remove] - Edit `Gopkg.toml` and run `hack/update-deps.sh` to remove or unpin dependencies
+### Updating dependencies
 
-## Tips
+New dependencies causes golang to recompute the minor version used for each major version of each dependency. And
+golang automatically removes dependencies that nothing imports any more.
 
-If `dep ensure` doesn't come back and freezes, please make sure `hg` command is
-installed on your environment. `dep ensure` requires `hg` command for getting
-bitbucket.org/ww/goautoneg , but `dep ensure` doesn't output such error message
-and just [freezes].
+Manually increasing the version of dependencies can be done in one of three ways:
+* `bazel run //:update-patch # -- example.com/foo example.com/bar`
+  - update everything (or just foo and bar) to the latest patch release
+  - aka `vX.Y.latest`
+* `bazel run //:update-minor # -- cloud.google.com/go/storage`
+  - update everything (or just storage) to the latest minor release
+  - aka `vX.latest.latest`
+* Manually editing `go.mod`.
 
-[add]: https://golang.github.io/dep/docs/daily-dep.html#adding-a-new-dependency
+Always run `hack/update-deps.sh` after changing `go.mod` by any of these methods (or adding new imports).
+
+See golang's [go.mod] and [dependency upgrade] docs for more details.
+
+### Tips
+
+Use `bazel run //:go -- whatever` rather than `go whatever` from your `$PATH` to ensure the correct version of golang is selected.
+
+Note that using this path does not otherwise require golang to be installed on your workstation.
+
 [bazel]: https://bazel.build/
-[`dep`]: https://github.com/golang/dep
-[freezes]: https://github.com/kubernetes/test-infra/issues/5987
+[dependency upgrade]: https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies
+[go.mod]: https://github.com/golang/go/wiki/Modules#gomod
+[go modules]: https://github.com/golang/go/wiki/Modules
 [`hack/update-deps.sh`]: /hack/update-deps.sh
 [`planter`]: /planter
-[remove]: https://github.com/golang/dep/blob/master/docs/daily-dep.md#rule-changes-in-gopkgtoml
-[update]: https://golang.github.io/dep/docs/daily-dep.html#updating-dependencies

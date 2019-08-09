@@ -1,0 +1,296 @@
+periodics:
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu
+  cron: "0 0-23/2 * * *"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci-cross/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gke-device-plugin-gpu
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  cron: "30 0-23/2 * * *"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    testgrid-tab-name: gke-device-plugin-gpu-1.14
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
+  cron: "30 0-23/3 * * *"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci-cross/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverAcceleratorMonitoring\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-num-failures-to-alert: '8'
+    testgrid-alert-stale-results-hours: '24'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
+  cron: "30 2-23/12 * * *" #expensive test
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci-cross/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: gke-device-plugin-gpu-p100
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '36'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  cron: "30 8-23/12 * * *" #expensive test
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    testgrid-tab-name: gke-device-plugin-gpu-p100-1.14
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '36'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
+  cron: "0 0-23/12 * * *" #expensive test
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '36'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
+  cron: "0 6-23/12 * * *" #expensive test
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-stable2
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-p100,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-release-1.12-all
+    testgrid-tab-name: gke-device-plugin-gpu-p100-1.12
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '36'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+  cron: "0 1-23/6 * * *"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-gcp-release-1.11
+    testgrid-tab-name: gke-device-plugin-gpu-1.13
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '24'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+  cron: "0 2-23/12 * * *"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-stable2
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-release-1.13-all, sig-release-1.12-all
+    testgrid-tab-name: gke-device-plugin-gpu-1.12
+    testgrid-num-failures-to-alert: '2'
+    testgrid-alert-stale-results-hours: '24'
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
+  cron: "0 1-23/2 * * *"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
+      - --extract=ci-cross/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=ubuntu
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'

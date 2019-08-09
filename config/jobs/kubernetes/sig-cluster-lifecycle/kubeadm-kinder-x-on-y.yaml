@@ -1,0 +1,162 @@
+# periodic jobs
+
+periodics:
+- name: ci-kubernetes-e2e-kubeadm-kinder-master-on-1-15
+  interval: 2h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
+    testgrid-tab-name: kubeadm-kinder-master-on-1-15
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "8"
+  decoration_config:
+    timeout: 40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.15
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "skew-master-on-1.15"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-15-on-1-14
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.15-informing
+    testgrid-tab-name: kubeadm-kinder-1-15-on-1-14
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "2"
+    testgrid-alert-stale-results-hours: "24"
+  decoration_config:
+    timeout: 40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.14
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.14
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "skew-1.15-on-1.14"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-14-on-1-13
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.14-informing
+    testgrid-tab-name: kubeadm-kinder-1-14-on-1-13
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "2"
+    testgrid-alert-stale-results-hours: "24"
+  decoration_config:
+    timeout: 40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.13
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.13
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "skew-1.14-on-1.13"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-1-13-on-1-12
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.13-informing
+    testgrid-tab-name: kubeadm-kinder-1-13-on-1-12
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "2"
+    testgrid-alert-stale-results-hours: "24"
+  decoration_config:
+    timeout: 40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.12
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.13
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "skew-1.13-on-1.12"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m

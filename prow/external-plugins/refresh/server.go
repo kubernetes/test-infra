@@ -27,12 +27,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
-	"k8s.io/test-infra/prow/report"
 )
 
 const pluginName = "refresh"
@@ -41,7 +41,7 @@ var refreshRe = regexp.MustCompile(`(?mi)^/refresh\s*$`)
 
 func helpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case Github breaks down.`,
+		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case GitHub breaks down.`,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/refresh",
@@ -56,12 +56,12 @@ type server struct {
 	tokenGenerator func() []byte
 	prowURL        string
 	configAgent    *config.Agent
-	ghc            *github.Client
+	ghc            github.Client
 	log            *logrus.Entry
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok := github.ValidateWebhook(w, r, s.tokenGenerator())
+	eventType, eventGUID, payload, ok, _ := github.ValidateWebhook(w, r, s.tokenGenerator())
 	if !ok {
 		return
 	}
@@ -133,7 +133,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	}
 
 	var list struct {
-		PJs []kube.ProwJob `json:"items"`
+		PJs []prowapi.ProwJob `json:"items"`
 	}
 	if err := json.Unmarshal(data, &list); err != nil {
 		return fmt.Errorf("cannot unmarshal data from deck: %v", err)
@@ -144,7 +144,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		return err
 	}
 
-	var presubmits []kube.ProwJob
+	var presubmits []prowapi.ProwJob
 	for _, pj := range list.PJs {
 		if pj.Spec.Type != "presubmit" {
 			continue
@@ -168,12 +168,13 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 
 	jenkinsConfig := s.configAgent.Config().JenkinsOperators
 	kubeReport := s.configAgent.Config().Plank.ReportTemplate
-	for _, pj := range pjutil.GetLatestProwJobs(presubmits, kube.PresubmitJob) {
+	reportTypes := s.configAgent.Config().GitHubReporter.JobTypesToReport
+	for _, pj := range pjutil.GetLatestProwJobs(presubmits, prowapi.PresubmitJob) {
 		var reportTemplate *template.Template
 		switch pj.Spec.Agent {
-		case kube.KubernetesAgent:
+		case prowapi.KubernetesAgent:
 			reportTemplate = kubeReport
-		case kube.JenkinsAgent:
+		case prowapi.JenkinsAgent:
 			reportTemplate = s.reportForProwJob(pj, jenkinsConfig)
 		}
 		if reportTemplate == nil {
@@ -181,14 +182,14 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 
 		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.ObjectMeta.Name)
-		if err := report.Report(s.ghc, reportTemplate, pj); err != nil {
+		if err := report.Report(s.ghc, reportTemplate, pj, reportTypes); err != nil {
 			s.log.WithError(err).WithFields(l.Data).Info("Failed report.")
 		}
 	}
 	return nil
 }
 
-func (s *server) reportForProwJob(pj kube.ProwJob, configs []config.JenkinsOperator) *template.Template {
+func (s *server) reportForProwJob(pj prowapi.ProwJob, configs []config.JenkinsOperator) *template.Template {
 	for _, cfg := range configs {
 		if cfg.LabelSelector.Matches(labels.Set(pj.Labels)) {
 			return cfg.ReportTemplate

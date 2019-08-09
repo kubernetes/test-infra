@@ -1,0 +1,24 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-typecheck
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    always_run: true
+    skip_report: false
+    # branched per release (older go versions)
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+    spec:
+      containers:
+      - name: main
+        command:
+        - make
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        args:
+        - verify
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: typecheck

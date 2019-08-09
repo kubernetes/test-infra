@@ -49,7 +49,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Usage:       "/[un]assign [[@]<username>...]",
 		Description: "Assigns an assignee to the PR",
 		Featured:    true,
-		WhoCanUse:   "Anyone can use the command, but the target user must be a member of the org that owns the repository.",
+		WhoCanUse:   "Anyone can use the command, but the target user must be an org member, a repo collaborator, or should have previously commented on the issue or PR.",
 		Examples:    []string{"/assign", "/unassign", "/assign @k8s-ci-robot"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
@@ -72,7 +72,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
@@ -188,7 +188,7 @@ type handler struct {
 func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
 	org := e.Repo.Owner.Login
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can be assigned. \nFor more information please see [the contributor guide](https://git.k8s.io/community/contributors/guide/#issue-assignment-in-github)", strings.Join(mu.Users, ", "), org, org)
+		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people), repo collaborators and people who have commented on this issue/PR can be assigned. Additionally, issues/PRs can only have 10 assignees at the same time.\nFor more information please see [the contributor guide](https://git.k8s.io/community/contributors/guide/#issue-assignment-in-github)", strings.Join(mu.Users, ", "), org, org)
 	}
 
 	return &handler{

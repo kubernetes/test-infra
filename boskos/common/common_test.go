@@ -86,5 +86,15 @@ func TestUserData_JSON(t *testing.T) {
 	if !reflect.DeepEqual(ud.ToMap(), decodedUD.ToMap()) {
 		t.Errorf("src %v does not match %v", ud.ToMap(), decodedUD.ToMap())
 	}
+}
 
+func TestConfig(t *testing.T) {
+	config, err := ParseConfig("../resources.yaml")
+	if err != nil {
+		t.Errorf("parseConfig error: %v", err)
+	}
+
+	if err = ValidateConfig(config); err != nil {
+		t.Errorf("invalid config: %v", err)
+	}
 }

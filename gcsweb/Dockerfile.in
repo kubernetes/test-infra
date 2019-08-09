@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ARG_FROM
+FROM gcr.io/distroless/static
 
-MAINTAINER Tim Hockin <thockin@google.com>
+ADD passwd /etc/passwd
+USER nobody:nobody
 
-RUN apk update --no-cache && apk add ca-certificates
 ADD bin/ARG_ARCH/ARG_BIN /ARG_BIN
 ADD icons /icons
 ADD styles /styles
-RUN chmod -R go+r /icons /styles
 
-USER nobody:nobody
 ENTRYPOINT ["/ARG_BIN"]

@@ -244,7 +244,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--kubemark',
             '--extract=this',
             '--extract=that',
-            '--perf-tests',
             '--save=somewhere',
             '--skew',
             '--publish=location',
@@ -260,7 +259,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         args = kubernetes_e2e.parse_args(migrated
                                          + explicit_passthrough_args
                                          + ['--test=false'])
-        self.assertEquals(migrated, args.kubetest_args)
+        self.assertEqual(migrated, args.kubetest_args)
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
@@ -427,11 +426,11 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('kops-e2e-runner.sh', lastcall)
 
         self.assertEqual(
-            self.envs['JENKINS_AWS_SSH_PRIVATE_KEY_FILE'], temp.name)
+            self.envs['AWS_SSH_PRIVATE_KEY_FILE'], temp.name)
         self.assertEqual(
-            self.envs['JENKINS_AWS_SSH_PUBLIC_KEY_FILE'], temp.name)
+            self.envs['AWS_SSH_PUBLIC_KEY_FILE'], temp.name)
         self.assertEqual(
-            self.envs['JENKINS_AWS_CREDENTIALS_FILE'], temp.name)
+            self.envs['AWS_SHARED_CREDENTIALS_FILE'], temp.name)
 
     def test_kops_aws(self):
         temp = tempfile.NamedTemporaryFile()

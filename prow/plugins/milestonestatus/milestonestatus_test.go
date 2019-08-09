@@ -51,21 +51,21 @@ func TestMilestoneStatus(t *testing.T) {
 	}
 	testcases := []testCase{
 		{
-			name:              "Dont label when non sig-lead user approves",
+			name:              "Don't label when non sig-lead user approves",
 			body:              "/status approved-for-milestone",
 			expectedNewLabels: []string{},
 			commenter:         "sig-follow",
 			shouldComment:     true,
 		},
 		{
-			name:              "Dont label when non sig-lead user marks in progress",
+			name:              "Don't label when non sig-lead user marks in progress",
 			body:              "/status in-progress",
 			expectedNewLabels: []string{},
 			commenter:         "sig-follow",
 			shouldComment:     true,
 		},
 		{
-			name:              "Dont label when non sig-lead user marks in review",
+			name:              "Don't label when non sig-lead user marks in review",
 			body:              "/status in-review",
 			expectedNewLabels: []string{},
 			commenter:         "sig-follow",
@@ -93,14 +93,14 @@ func TestMilestoneStatus(t *testing.T) {
 			shouldComment:     false,
 		},
 		{
-			name:              "Dont label when sig-lead user marks invalid status",
+			name:              "Don't label when sig-lead user marks invalid status",
 			body:              "/status in-valid",
 			expectedNewLabels: []string{},
 			commenter:         "sig-lead",
 			shouldComment:     false,
 		},
 		{
-			name:              "Dont label when sig-lead user marks empty status",
+			name:              "Don't label when sig-lead user marks empty status",
 			body:              "/status ",
 			expectedNewLabels: []string{},
 			commenter:         "sig-lead",
@@ -148,9 +148,9 @@ func TestMilestoneStatus(t *testing.T) {
 		// Check that the correct labels were added.
 		expectLabels := formatLabels(tc.expectedNewLabels...)
 		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
+			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.IssueLabelsAdded)
 		}
 
 		// Check that a comment was left iff one should have been left.

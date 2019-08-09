@@ -91,12 +91,12 @@ func TestEndpointSuccess(t *testing.T) {
 				},
 			},
 			contentType:  "application/json",
-			expectedBody: `{"error_message":"The Org or repo or BaseCommit may be not valid(s) : error checking out 13202CD5-3068-46D4-8C1D-46F544ED39EF: exit status 1. output: error: pathspec '13202CD5-3068-46D4-8C1D-46F544ED39EF' did not match any file(s) known to git\n"}`,
+			expectedBody: `{"error_message":"The Org or repo or BaseCommit may be not valid(s) : error checking out 13202CD5-3068-46D4-8C1D-46F544ED39EF: exit status 1. output: error: pathspec '13202CD5-3068-46D4-8C1D-46F544ED39EF' did not match any file(s) known to git.\n"}`,
 			expectedCode: http.StatusBadRequest,
 		},
 	}
 
-	client, cleanup, initErr := getTestClient(testFiles, true, false, true, nil, nil, nil)
+	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil)
 	switch {
 	case initErr != nil:
 		t.Fatalf("Error creating test client: %v.", initErr)
@@ -184,7 +184,7 @@ func TestEndPointRegex(t *testing.T) {
 		},
 	}
 
-	client, cleanup, initErr := getTestClient(testFiles, true, false, true, nil, nil, nil)
+	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil)
 	switch {
 	case initErr != nil:
 		t.Fatalf("Error creating test client: %v.", initErr)
@@ -241,7 +241,7 @@ func TestEndpointCorrupted(t *testing.T) {
 		},
 	}
 
-	client, cleanup, initErr := getTestClient(testFiles, true, false, true, nil, nil, nil)
+	client, cleanup, initErr := getTestClient(testFiles, true, false, true, false, nil, nil, nil, nil)
 	switch {
 	case initErr != nil:
 		t.Fatalf("Error creating test client: %v.", initErr)

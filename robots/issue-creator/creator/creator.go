@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/github"
-	"k8s.io/test-infra/ghclient"
+	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/robots/issue-creator/testowner"
 
 	"github.com/golang/glog"

@@ -315,9 +315,9 @@ func TestHandlePR(t *testing.T) {
 				},
 			},
 			getPullRequestChangesErr: testError,
-			err:              testError,
-			action:           github.PullRequestActionOpened,
-			shouldSkipRetest: false,
+			err:                      testError,
+			action:                   github.PullRequestActionOpened,
+			shouldSkipRetest:         false,
 		},
 		{
 			name:   "error getting labels",
@@ -369,7 +369,7 @@ func TestHandlePR(t *testing.T) {
 				removeLabelErr:           c.removeLabelErr,
 				getIssueLabelsErr:        c.getIssueLabelsErr,
 				getPullRequestChangesErr: c.getPullRequestChangesErr,
-				T: t,
+				T:                        t,
 			}
 
 			event := github.PullRequestEvent{

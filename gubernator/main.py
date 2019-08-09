@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import yaml
 import webapp2
 
@@ -39,7 +40,7 @@ config = {
         'secret_key': None,  # filled in on the first request
         'cookie_args': {
             # we don't have SSL For local development
-            'secure': hostname and 'appspot.com' in hostname,
+            'secure': os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'),
             'httponly': True,
         },
     },
@@ -76,10 +77,16 @@ class ConfigHandler(view_base.BaseHandler):
             github_id = self.request.get('github_id')
             github_secret = self.request.get('github_secret')
             github_token = self.request.get('github_token')
+            github_client_key = 'github_client'
+            if self.request.get('github_client_host'):
+                # enable custom domains pointed at the same app to have their
+                # own github oauth config.
+                github_client_key = 'github_client_%s' % \
+                    self.request.get('github_client_host')
             if github_id and github_secret:
                 value = {'id': github_id, 'secret': github_secret}
-                secrets.put('github_client', value)
-                app.config['github_client'] = value
+                secrets.put(github_client_key, value)
+                app.config[github_client_key] = value
                 oauth_set = True
             github_webhook_secret = self.request.get('github_webhook_secret')
             if github_webhook_secret:

@@ -1,0 +1,94 @@
+// Summary info for TestGrid tests, dashboard tabs, and dashboards.
+// Stored in GCS as "dashboard-<normalized dashboard name>".
+
+syntax = "proto3";
+
+// Summary of a failing test.
+message FailingTestSummary {
+  // Display name of the test.
+  string display_name = 1;
+
+  // Name of the test. E.g., the target for tests in Sponge.
+  string test_name = 2;
+
+  // First build ID at which the test failed.
+  string fail_build_id = 3;
+
+  // Timestamp for the first cycle in which the test failed.
+  double fail_timestamp = 4;
+
+  // Last build ID at which the test passed.
+  string pass_build_id = 5;
+
+  // Timestamp for the last cycle in which the test passed.
+  double pass_timestamp = 6;
+
+  // Number of times the test has failed.
+  int32 fail_count = 7;
+
+  // Link to search for build changes.
+  string build_link = 8;
+
+  // Text for option to search for build changes.
+  string build_link_text = 9;
+
+  // Text to display for link to search for build changes.
+  string build_url_text = 10;
+
+  // Text for failure statuses associated with this test.
+  string failure_message = 11;
+
+  // List of bug IDs for bugs associated with this test.
+  repeated string linked_bugs = 12;
+
+  // A link to the first build in which the test failed.
+  string fail_test_link = 13;
+}
+
+// Summary of a dashboard tab.
+message DashboardTabSummary {
+  // The name of the dashboard.
+  string dashboard_name = 1;
+
+  // The name of the dashboard tab.
+  string dashboard_tab_name = 2;
+
+  // Any top-level alert on this dashboard tab.
+  string alert = 3;
+
+  // List of failing test summary information.
+  repeated FailingTestSummary failing_test_summaries = 4;
+
+  // Seconds since epoch at which the test group was last updated.
+  double last_update_timestamp = 5;
+
+  // A summary of the status of this dashboard tab.
+  string status = 6;
+
+  enum TabStatus {
+    NOT_SET = 0;
+    UNKNOWN = 1;
+    PASS = 2;
+    FAIL = 3;
+    FLAKY = 4;
+    STALE = 5;
+  }
+
+  // The overall status for this dashboard tab.
+  TabStatus overall_status = 7;
+
+  // The ID for the latest passing build.
+  string latest_green = 8;
+
+  // Seconds since epoch at which tests last ran.
+  double last_run_timestamp = 9;
+
+  // String indicating the URL for linking to a bug.
+  string bug_url = 10;
+}
+
+// Summary state of a dashboard.
+message DashboardSummary {
+  // Summary of a dashboard tab; see config.proto.
+  repeated DashboardTabSummary tab_summaries = 1;
+}

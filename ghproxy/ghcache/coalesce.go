@@ -57,75 +57,79 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	}
 
 	var cacheMode = ModeError
-	defer func() {
-		cacheCounter.WithLabelValues(cacheMode).Inc()
-	}()
+	resp, err := func() (*http.Response, error) {
+		key := req.URL.String()
+		r.Lock()
+		waiter, ok := r.keys[key]
+		if ok {
+			// Earlier request in flight. Wait for it's response.
+			if req.Body != nil {
+				defer req.Body.Close() // Since we won't pass the request we must close it.
+			}
+			waiter.L.Lock()
+			r.Unlock()
+			waiter.waiting = true
+			// The documentation for Wait() says:
+			// "Because c.L is not locked when Wait first resumes, the caller typically
+			// cannot assume that the condition is true when Wait returns. Instead, the
+			// caller should Wait in a loop."
+			// This does not apply to this use of Wait() because the condition we are
+			// waiting for remains true once it becomes true. This lets us avoid the
+			// normal check to see if the condition has switched back to false between
+			// the signal being sent and this thread acquiring the lock.
+			waiter.Wait()
+			waiter.L.Unlock()
+			// Earlier request completed.
 
-	key := req.URL.String()
-	r.Lock()
-	waiter, ok := r.keys[key]
-	if ok {
-		// Earlier request in flight. Wait for it's response.
-		if req.Body != nil {
-			defer req.Body.Close() // Since we won't pass the request we must close it.
+			if waiter.err != nil {
+				// Don't log the error, it will be logged by requester.
+				return nil, waiter.err
+			}
+			resp, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(waiter.resp)), nil)
+			if err != nil {
+				logrus.WithField("cache-key", key).WithError(err).Error("Error loading response.")
+				return nil, err
+			}
+
+			cacheMode = ModeCoalesced
+			return resp, nil
 		}
-		waiter.L.Lock()
+		// No earlier request in flight (common case).
+		// Register a new responseWaiter and make the request ourself.
+		waiter = &responseWaiter{Cond: sync.NewCond(&sync.Mutex{})}
+		r.keys[key] = waiter
 		r.Unlock()
-		waiter.waiting = true
-		// The documentation for Wait() says:
-		// "Because c.L is not locked when Wait first resumes, the caller typically
-		// cannot assume that the condition is true when Wait returns. Instead, the
-		// caller should Wait in a loop."
-		// This does not apply to this use of Wait() because the condition we are
-		// waiting for remains true once it becomes true. This lets us avoid the
-		// normal check to see if the condition has switched back to false between
-		// the signal being sent and this thread acquiring the lock.
-		waiter.Wait()
-		waiter.L.Unlock()
-		// Earlier request completed.
 
-		if waiter.err != nil {
-			// Don't log the error, it will be logged by requester.
-			return nil, waiter.err
+		resp, err := r.delegate.RoundTrip(req)
+		// Real response received. Remove this responseWaiter from the map THEN
+		// wake any requesters that were waiting on this response.
+		r.Lock()
+		delete(r.keys, key)
+		r.Unlock()
+
+		waiter.L.Lock()
+		if waiter.waiting {
+			if err != nil {
+				waiter.resp, waiter.err = nil, err
+			} else {
+				// Copy the response before releasing to waiter(s).
+				waiter.resp, waiter.err = httputil.DumpResponse(resp, true)
+			}
+			waiter.Broadcast()
 		}
-		resp, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(waiter.resp)), nil)
+		waiter.L.Unlock()
+
 		if err != nil {
-			logrus.WithField("cache-key", key).WithError(err).Error("Error loading response.")
+			logrus.WithField("cache-key", key).WithError(err).Error("Error from cache transport layer.")
 			return nil, err
 		}
-
-		cacheMode = ModeCoalesced
+		cacheMode = cacheResponseMode(resp.Header)
 		return resp, nil
-	}
-	// No earlier request in flight (common case).
-	// Register a new responseWaiter and make the request ourself.
-	waiter = &responseWaiter{Cond: sync.NewCond(&sync.Mutex{})}
-	r.keys[key] = waiter
-	r.Unlock()
+	}()
 
-	resp, err := r.delegate.RoundTrip(req)
-	// Real response received. Remove this responseWaiter from the map THEN
-	// wake any requesters that were waiting on this response.
-	r.Lock()
-	delete(r.keys, key)
-	r.Unlock()
-
-	waiter.L.Lock()
-	if waiter.waiting {
-		if err != nil {
-			waiter.resp, waiter.err = nil, err
-		} else {
-			// Copy the response before releasing to waiter(s).
-			waiter.resp, waiter.err = httputil.DumpResponse(resp, true)
-		}
-		waiter.Broadcast()
+	cacheCounter.WithLabelValues(string(cacheMode)).Inc()
+	if resp != nil {
+		resp.Header.Set(CacheModeHeader, string(cacheMode))
 	}
-	waiter.L.Unlock()
-
-	if err != nil {
-		logrus.WithField("cache-key", key).WithError(err).Error("Error from cache transport layer.")
-		return nil, err
-	}
-	cacheMode = cacheResponseMode(resp.Header)
-	return resp, nil
+	return resp, err
 }
