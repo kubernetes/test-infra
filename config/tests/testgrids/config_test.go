@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package testgrids
 
 import (
+	"context"
+	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/mail"
 	"os"
 	"path/filepath"
@@ -63,47 +64,24 @@ var (
 	}
 )
 
-const (
-	prowPath    = "../../../prow/config.yaml"
-	jobPath     = "../../../config/jobs"
-	defaultPath = "../../../config/testgrids/default.yaml"
-)
+var prowPath = flag.String("prow-config", "../../../prow/config.yaml", "Path to prow config")
+var jobPath = flag.String("job-config", "../../jobs", "Path to prow job config")
+var protoPath = flag.String("config", "", "Path to TestGrid config proto")
 
 // Shared testgrid config, loaded at TestMain.
 var cfg *config_pb.Configuration
 
 func TestMain(m *testing.M) {
-	//make sure we can parse configurations
-	yamlFiles := []string{"../../../config/testgrids"}
+	flag.Parse()
+	if *protoPath == "" {
+		fmt.Println("--config must be set")
+		os.Exit(1)
+	}
 
-	var c Config
-	b, err := ioutil.ReadFile(defaultPath)
+	var err error
+	cfg, err = config_pb.Read(*protoPath, context.Background(), nil)
 	if err != nil {
-		fmt.Printf("Could not read default config: %v", err)
-	}
-	if err := c.UpdateDefaults(b); err != nil {
-		fmt.Printf("Could not update defaults: %v", err)
-	}
-
-	if err := readToConfig(&c, yamlFiles); err != nil {
-		fmt.Printf("Could not read testgrid config: %v", err)
-		os.Exit(1)
-	}
-
-	pca := &prow_config.Agent{}
-	if err := pca.Start(prowPath, jobPath); err != nil {
-		fmt.Printf("Prow config agent error: %v", err)
-		os.Exit(1)
-	}
-
-	if err := applyProwjobAnnotations(&c, pca); err != nil {
-		fmt.Printf("Couldn't apply prowjob annotations: %v", err)
-		os.Exit(1)
-	}
-
-	cfg, err = c.Raw()
-	if err != nil {
-		fmt.Printf("Error validating config: %v", err)
+		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
 	}
 
@@ -402,7 +380,7 @@ func hasAnyPrefix(s string, prefixes []string) bool {
 func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T) {
 	jobs := make(map[string]bool)
 
-	prowConfig, err := prow_config.Load(prowPath, jobPath)
+	prowConfig, err := prow_config.Load(*prowPath, *jobPath)
 	if err != nil {
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}

@@ -33,6 +33,11 @@ filegroup(
 )
 
 filegroup(
+    name = "testgrid_default",
+    srcs = ["testgrids/default.yaml"],
+)
+
+filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],
@@ -45,6 +50,7 @@ filegroup(
         ":package-srcs",
         "//config/jobs/kubernetes-security:all-srcs",
         "//config/tests/jobs:all-srcs",
+        "//config/tests/testgrids:all-srcs",
     ],
     tags = ["automanaged"],
 )

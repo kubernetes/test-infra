@@ -327,11 +327,8 @@ func main() {
 	// Setup GCS client
 	var client *storage.Client
 	if opt.output != "" {
-		var err error
-		client, err = gcs.ClientWithCreds(ctx, opt.creds)
-		if err != nil {
-			log.Fatalf("Failed to create storage client: %v", err)
-		}
+		// Error returned if outputting to file; ignore for now
+		client, _ = gcs.ClientWithCreds(ctx, opt.creds)
 	}
 
 	// Oneshot mode, write config and exit
