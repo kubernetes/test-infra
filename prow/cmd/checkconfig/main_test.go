@@ -922,32 +922,40 @@ func TestWarningEnabled(t *testing.T) {
 
 type fakeGHContent map[string]map[string]map[string]bool // org[repo][path] -> exist/does not exist
 
-func (f fakeGHContent) GetFile(org, repo, filepath, _ string) ([]byte, error) {
-	if _, hasOrg := f[org]; !hasOrg {
+type fakeGH struct {
+	files    fakeGHContent
+	archived map[string]bool // org/repo -> true/false
+}
+
+func (f fakeGH) GetFile(org, repo, filepath, _ string) ([]byte, error) {
+	if _, hasOrg := f.files[org]; !hasOrg {
 		return nil, &github.FileNotFound{}
 	}
-	if _, hasRepo := f[org][repo]; !hasRepo {
+	if _, hasRepo := f.files[org][repo]; !hasRepo {
 		return nil, &github.FileNotFound{}
 	}
-	if _, hasPath := f[org][repo][filepath]; !hasPath {
+	if _, hasPath := f.files[org][repo][filepath]; !hasPath {
 		return nil, &github.FileNotFound{}
 	}
 
 	return []byte("CONTENT"), nil
 }
 
-func (f fakeGHContent) GetRepos(org string, isUser bool) ([]github.Repo, error) {
-	if _, hasOrg := f[org]; !hasOrg {
+func (f fakeGH) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	if _, hasOrg := f.files[org]; !hasOrg {
 		return nil, fmt.Errorf("no such org")
 	}
 	var repos []github.Repo
-	for repo := range f[org] {
+	for repo := range f.files[org] {
+		fullname := fmt.Sprintf("%s/%s", org, repo)
+		_, archived := f.archived[fullname]
 		repos = append(
 			repos,
 			github.Repo{
 				Owner:    github.User{Login: org},
 				Name:     repo,
-				FullName: fmt.Sprintf("%s/%s", org, repo),
+				FullName: fullname,
+				Archived: archived,
 			})
 	}
 	return repos, nil
@@ -957,52 +965,60 @@ func TestVerifyOwnersPresence(t *testing.T) {
 	testCases := []struct {
 		description string
 		cfg         *plugins.Configuration
-		gh          fakeGHContent
+		gh          fakeGH
 
 		expected string
 	}{
 		{
 			description: "org with blunderbuss enabled contains a repo without OWNERS",
 			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"blunderbuss"}}},
-			gh:          fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
 			description: "org with approve enable contains a repo without OWNERS",
 			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"approve"}}},
-			gh:          fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
 			description: "org with owners-label enabled contains a repo without OWNERS",
 			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
-			gh:          fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
+			description: "org with owners-label enabled contains an *archived* repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			gh: fakeGH{
+				files:    fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+				archived: map[string]bool{"org/repo": true},
+			},
+			expected: "",
+		}, {
 			description: "repo with owners-label enabled does not contain OWNERS",
 			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
-			gh:          fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected: "the following orgs or repos enable at least one" +
 				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
 				" its master branch does not contain a root level OWNERS file: [org/repo]",
 		}, {
 			description: "org with owners-label enabled contains only repos with OWNERS",
 			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
-			gh:          fakeGHContent{"org": {"repo": {"OWNERS": true}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
 			expected:    "",
 		}, {
 			description: "repo with owners-label enabled contains OWNERS",
 			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
-			gh:          fakeGHContent{"org": {"repo": {"OWNERS": true}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
 			expected:    "",
 		}, {
 			description: "repo with unrelated plugin enabled does not contain OWNERS",
 			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"cat"}}},
-			gh:          fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
 			expected:    "",
 		},
 	}

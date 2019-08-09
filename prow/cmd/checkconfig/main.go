@@ -873,7 +873,7 @@ func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker
 		}
 
 		for _, repo := range repos {
-			if excluded.Has(repo.FullName) {
+			if excluded.Has(repo.FullName) || repo.Archived {
 				continue
 			}
 			if _, err := rc.GetFile(repo.Owner.Login, repo.Name, "OWNERS", ""); err != nil {
