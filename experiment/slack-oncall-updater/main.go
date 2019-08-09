@@ -65,6 +65,7 @@ func mapGitHubToSlack(github string) (string, error) {
 		"fejta":          "U0E2KHQ13",
 		"katharine":      "UBTBNJ6GL",
 		"krzyzacy":       "U22Q65CTG",
+		"mirandachrist":  "UJR3XHHNF",
 		"michelle192837": "U3TRY5WV7",
 		"tony-yang":      "UK3MVSP3J",
 	}
