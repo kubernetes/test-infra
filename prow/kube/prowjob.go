@@ -47,4 +47,8 @@ const (
 	// PullLabel is added in resources created by prow and
 	// carries the PR number associated with the job, eg 321.
 	PullLabel = "prow.k8s.io/refs.pull"
+	// ProwHiddenJob is used to mark a prow job as hidden.
+	// Such jobs are not displayed by deck instances
+	// not configured to show hidden jobs.
+	ProwHiddenJob = "prow.k8s.io/hidden"
 )

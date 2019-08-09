@@ -23,12 +23,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/gorilla/sessions"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"io"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/githuboauth"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -36,6 +32,11 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/gorilla/sessions"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"k8s.io/test-infra/prow/githuboauth"
 
 	"github.com/google/go-github/github"
 
@@ -49,6 +50,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	prowgithub "k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
@@ -827,6 +829,98 @@ func TestListProwJobs(t *testing.T) {
 			hiddenRepos: sets.NewString("org/repo"),
 			expected:    sets.NewString("first", "second"),
 			showHidden:  true,
+		},
+		{
+			name:     "prowjobs with 'prow.k8s.io/hidden' label are not returned when neither showHidden nor hiddenOnly is set",
+			selector: labels.Everything().String(),
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "first"
+					in.Labels = map[string]string{
+						kube.ProwHiddenJob: "true",
+					}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "second"
+					return in
+				},
+			},
+			expected: sets.NewString("second"),
+		},
+		{
+			name:     "prowjobs with 'prow.k8s.io/hidden' label are returned when showHidden is set",
+			selector: labels.Everything().String(),
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "first"
+					in.Labels = map[string]string{
+						kube.ProwHiddenJob: "true",
+					}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "second"
+					return in
+				},
+			},
+			expected:   sets.NewString("first", "second"),
+			showHidden: true,
+		},
+		{
+			name:     "prowjobs with 'prow.k8s.io/hidden' label are returned when hiddenOnly is set",
+			selector: labels.Everything().String(),
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "first"
+					in.Labels = map[string]string{
+						kube.ProwHiddenJob: "true",
+					}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "second"
+					return in
+				},
+			},
+			expected:   sets.NewString("first", "second"),
+			hiddenOnly: true,
+		},
+		{
+			name:     "prowjobs with 'prow.k8s.io/hidden' label set to an invalid value are not returned when neither showHidden nor hiddenOnly is set",
+			selector: labels.Everything().String(),
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "first"
+					in.Labels = map[string]string{
+						kube.ProwHiddenJob: "INVALID",
+					}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "second"
+					return in
+				},
+			},
+			expected: sets.NewString("second"),
+		},
+		{
+			name:     "prowjobs with 'prow.k8s.io/hidden' label set to false are always returned",
+			selector: labels.Everything().String(),
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "first"
+					in.Labels = map[string]string{
+						kube.ProwHiddenJob: "false",
+					}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "second"
+					return in
+				},
+			},
+			expected: sets.NewString("first", "second"),
 		},
 	}
 

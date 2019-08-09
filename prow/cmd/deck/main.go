@@ -417,6 +417,18 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 
 	var filtered []prowapi.ProwJob
 	for _, item := range prowJobList.Items {
+		if h, ok := item.Labels[kube.ProwHiddenJob]; ok {
+			hidden, err := strconv.ParseBool(h)
+			if err != nil {
+				logrus.WithError(err).Warningf("Invalid value for label: %s, job: %s.", kube.ProwHiddenJob, item.Name)
+			}
+
+			if err != nil || hidden {
+				if !c.showHidden && !c.hiddenOnly {
+					continue
+				}
+			}
+		}
 		if item.Spec.Refs == nil && len(item.Spec.ExtraRefs) == 0 {
 			// periodic jobs with no refs cannot be filtered
 			filtered = append(filtered, item)

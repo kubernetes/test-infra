@@ -68,6 +68,7 @@ go_test(
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/githuboauth:go_default_library",
+        "//prow/kube:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/spyglass/lenses/buildlog:go_default_library",
         "//prow/spyglass/lenses/junit:go_default_library",
