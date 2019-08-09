@@ -212,6 +212,10 @@ type ConfigAgent struct {
 	configuration *Configuration
 }
 
+func NewFakeConfigAgent() ConfigAgent {
+	return ConfigAgent{configuration: &Configuration{}}
+}
+
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or the configuration is invalid.
 func (pa *ConfigAgent) Load(path string) error {

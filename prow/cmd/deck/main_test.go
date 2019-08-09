@@ -28,7 +28,9 @@ import (
 	"golang.org/x/oauth2"
 	"io"
 	"io/ioutil"
+	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/plugins"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -48,7 +50,6 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
-	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
@@ -272,23 +273,6 @@ func (getter mockGitHubConfigGetter) GetUser(login string) (*github.User, error)
 	return &github.User{Login: &getter.githubLogin}, nil
 }
 
-type mockRerunClient struct {
-	members []string
-}
-
-func (cli mockRerunClient) TeamHasMember(teamID int, login string) (bool, error) {
-	for _, member := range cli.members {
-		if login == member {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (cli mockRerunClient) GetTeamBySlug(slug string, org string) (*prowgithub.Team, error) {
-	return nil, nil
-}
-
 // TestRerun just checks that the result can be unmarshaled properly, has an
 // updated status, and has equal spec.
 func TestRerun(t *testing.T) {
@@ -363,8 +347,18 @@ func TestRerun(t *testing.T) {
 			httpMethod:          http.MethodPost,
 		},
 		{
-			name:                "User on permitted GitHub team",
-			login:               "teammember",
+			name:                "User on permitted team",
+			login:               "sig-lead",
+			authorized:          []string{},
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusOK,
+			httpMethod:          http.MethodPost,
+		},
+		{
+			name:                "Org member permitted for presubmits",
+			login:               "org-member",
 			authorized:          []string{},
 			allowAnyone:         false,
 			rerunCreatesJob:     true,
@@ -388,13 +382,16 @@ func TestRerun(t *testing.T) {
 						Org:  "org",
 						Repo: "repo",
 						Pulls: []prowapi.Pull{
-							{Number: 1},
+							{
+								Number: 1,
+								Author: tc.login,
+							},
 						},
 					},
 					RerunAuthConfig: prowapi.RerunAuthConfig{
 						AllowAnyone:   false,
 						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{1},
+						GitHubTeamIDs: []int{42},
 					},
 				},
 				Status: prowapi.ProwJobStatus{
@@ -432,8 +429,9 @@ func TestRerun(t *testing.T) {
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
 			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
-			rc := mockRerunClient{members: []string{"teammember"}}
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc)
+			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
+			pca := plugins.NewFakeConfigAgent()
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc, &pca)
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
 				t.Fatalf("Bad error code: %d", rr.Code)

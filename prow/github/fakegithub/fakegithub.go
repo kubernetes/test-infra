@@ -636,3 +636,13 @@ func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error)
 	}
 	return false, nil
 }
+
+func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error) {
+	teams, _ := f.ListTeams(org)
+	for _, team := range teams {
+		if team.Name == slug {
+			return &team, nil
+		}
+	}
+	return &github.Team{}, nil
+}
