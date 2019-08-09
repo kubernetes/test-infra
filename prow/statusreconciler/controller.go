@@ -219,6 +219,9 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 			changes := config.NewGitHubDeferredChangedFilesProvider(c.githubClient, org, repo, number)
 			logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "number": number, "branch": branch})
+			commitMessages := config.NewGitHubCommitMessagesProvider(c.githubClient, org, repo, number)
+
+			// TODO: add comit messages here
 			toTrigger, toSkip, err := pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 			if err != nil {
 				return err

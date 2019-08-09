@@ -380,6 +380,7 @@ type ChangedFilesProvider func() ([]string, error)
 
 type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 }
 
 // NewGitHubDeferredChangedFilesProvider uses a closure to lazily retrieve the file changes only if they are needed.
@@ -399,6 +400,30 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 			}
 		}
 		return changedFiles, nil
+	}
+}
+
+// CommitMessagesProvider returns all commit messages
+type CommitMessagesProvider func() ([]string, error)
+
+// NewGitHubDeferredCommitMessagesProvider uses a closure to lazily retrieve the messages of the commits of a PR.
+func NewGitHubDeferredCommitMessagesProvider(client githubClient, org, repo string, num int) CommitMessagesProvider {
+	var commitMessages []string
+	return func() ([]string, error) {
+		// Fetch the commit messages from github at most once.
+
+		if commitMessages == nil {
+			commits, err := client.ListPRCommits(org, repo, num)
+			if err != nil {
+				return nil, fmt.Errorf("error getting commits from PR: %v", err)
+			}
+
+			for _, commit := range commits {
+				commitMessages = append(commitMessages, commit.Commit.Message)
+			}
+		}
+
+		return commitMessages, nil
 	}
 }
 
