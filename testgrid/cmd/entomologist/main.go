@@ -26,6 +26,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -37,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/issue_state"
 )
 
@@ -45,26 +47,43 @@ type githubClient interface {
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 }
 
+type multiString []string
+
+func (m multiString) String() string {
+	return strings.Join(m, ",")
+}
+
+func (m *multiString) Set(v string) error {
+	*m = strings.Split(v, ",")
+	return nil
+}
+
 const defaultPollInterval = 1 * time.Hour
 
 type options struct {
 	github         flagutil.GitHubOptions
+	repositories   multiString
 	organization   string
 	repository     string
+	configPath     string
 	output         string
 	gcsCredentials string
 	oneshot        bool
 	pollInterval   string
+	rateLimit      int
 }
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
-	fs.StringVar(&o.organization, "github-org", "", "GitHub organization")
-	fs.StringVar(&o.repository, "github-repo", "", "GitHub repository")
+	fs.Var(&o.repositories, "repos", "Target GitHub org/repos (ex. kubernetes/test-infra)")
+	fs.StringVar(&o.organization, "github-org", "", "GitHub organization") //Deprecated; remove Sep 1 2018
+	fs.StringVar(&o.repository, "github-repo", "", "GitHub repository")    //Deprecated; remove Sep 1 2018
+	fs.StringVar(&o.configPath, "config", "", "TestGrid Config proto: gs://bucket or /local/path")
 	fs.StringVar(&o.output, "output", "", "write proto to gs://bucket or /local/path")
 	fs.StringVar(&o.gcsCredentials, "gcs-credentials-file", "", "/path/to/service/account/credentials (as .json)")
 	fs.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring GitHub for changes")
 	fs.StringVar(&o.pollInterval, "poll-interval", "", "How often the program polls GitHub for changes (e.g. '1h10m42s', default '1h')")
+	fs.IntVar(&o.rateLimit, "rate-limit", 0, "Max requests per hour against GitHub. Unlimited by default.")
 	o.github.AddFlags(fs)
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -74,14 +93,18 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 }
 
 func (o *options) validate() error {
-	if o.organization == "" {
-		return errors.New("--github-org is required")
+	if o.organization != "" || o.repository != "" {
+		logrus.Warn("--github-org and --github-repo are deprecated and may disappear after August 2018; use --repos=org/repo instead")
+		o.repositories = append(o.repositories, o.organization+"/"+o.repository)
 	}
-	if o.repository == "" {
-		return errors.New("--github-repo is required")
+	if len(o.repositories) == 0 {
+		return errors.New("--repos is required")
 	}
 	if o.output == "" {
 		return errors.New("--output is required")
+	}
+	if o.configPath == "" {
+		return errors.New("--config is required")
 	}
 	if strings.HasPrefix(o.output, "gs://") && o.gcsCredentials == "" {
 		return errors.New("--gcs-credentials-file required for write operations")
@@ -114,63 +137,62 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting GitHub client")
 	}
+	ghct.Throttle(opt.rateLimit, 1)
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 
-	client, _ := io.NewOpener(ctx, opt.gcsCredentials)
+	client, err := io.NewOpener(ctx, opt.gcsCredentials)
+	if err != nil {
+		logrus.WithError(err).Fatal("Could not create client")
+	}
 
-	var outputFile string
-	if strings.HasPrefix(opt.output, "gs://") {
-		// testgrid expects issue_state.proto files for an org/repo to be named this way
-		outputFile = fmt.Sprintf("%s/bugs-%s-%s", opt.output, opt.organization, opt.repository)
-	} else {
+	// Check or create output dir
+	if !strings.HasPrefix(opt.output, "gs://") {
 		fi, err := os.Stat(opt.output)
 		if err == nil && fi.Mode().IsRegular() {
-			outputFile = opt.output
-		} else if err == nil && fi.Mode().IsDir() {
-			outputFile = fmt.Sprintf("%s/bugs-%s-%s", opt.output, opt.organization, opt.repository)
-		} else {
-			// Try to create the file
-			fd, err := os.Create(opt.output)
-			defer fd.Close()
+			logrus.Fatalf("Output is a file, not a directory or cloud bucket")
+		} else if err != nil { // Target may not exist
+			err := os.Mkdir(opt.output, 664)
 			if err != nil {
-				logrus.Fatalf("Could not create file: %e", err)
+				logrus.Fatalf("Could not create directory at %s: %e", opt.output, err)
 			}
-			outputFile = fd.Name()
 		}
 	}
 
 	// kick off goroutines
-	poll := func() {
-		writer, err := client.Writer(ctx, outputFile)
+	doOneshot := func(ctx context.Context) {
+		//Read test groups
+		reader, err := client.Reader(ctx, opt.configPath)
 		if err != nil {
-			logrus.Errorf("Could not open writer to %s: %e", outputFile, err)
+			logrus.Errorf("Could not open reader from %s: %e", opt.configPath, err)
+			return
 		}
-		defer writer.Close()
-
-		issueState, err := pinIssues(ghct, opt)
+		defer reader.Close()
+		tgConfig, err := config.Unmarshal(reader)
 		if err != nil {
+			logrus.Errorf("Could not unmarshal proto at %s: %e", opt.configPath, err)
+			return
+		}
+
+		issueStates := getTestGroups(tgConfig)
+
+		if err := pinIssues(ghct, opt.repositories, issueStates, ctx); err != nil {
 			logrus.Errorf("Could not get issues: %e", err)
 			return
 		}
 
-		out, err := proto.Marshal(issueState)
-		if err != nil {
-			logrus.Errorf("Could not marshal proto %v: %e", issueState, err)
-			return
+		for testGroup, issueState := range issueStates {
+			if issueState != nil {
+				if err := writeProto(opt.output, testGroup, issueState, client, ctx); err != nil {
+					logrus.WithError(err).Error("Could not write issue state")
+				}
+			}
 		}
-		n, err := writer.Write(out)
-		if err != nil {
-			logrus.Errorf("Could not write file: %e", err)
-			return
-		}
-
-		logrus.Infof("Sending %d characters to %s", n, outputFile)
 	}
 
 	if opt.oneshot {
-		poll()
+		doOneshot(ctx)
 		return
 	}
 
@@ -184,9 +206,7 @@ func main() {
 		}
 	}
 
-	stopCh := make(chan struct{})
-	defer close(stopCh)
-	wait.Until(poll, pollInterval, stopCh)
+	wait.UntilWithContext(ctx, doOneshot, pollInterval)
 
 	sigTerm := make(chan os.Signal, 1)
 	signal.Notify(sigTerm, syscall.SIGTERM)
@@ -196,10 +216,45 @@ func main() {
 	logrus.Info("Entomologist is closing...")
 }
 
-var targetRegExp = regexp.MustCompile(`(?m)^target:(.+)$`)
+func writeProto(path, testGroupName string, file *issue_state.IssueState, client io.Opener, ctx context.Context) error {
+	fullPath := fmt.Sprintf("%s/bugs-%s", path, testGroupName) //TestGrid expects filenames in this format
+	writer, err := client.Writer(ctx, fullPath)
+	if err != nil {
+		return fmt.Errorf("open writer to %s: %e", fullPath, err)
+	}
+	defer writer.Close()
 
-func getIssues(client githubClient, o options) ([]github.Issue, error) {
-	issuesAndPRs, err := client.ListOpenIssues(o.organization, o.repository)
+	out, err := proto.Marshal(file)
+	if err != nil {
+		return fmt.Errorf("marshal proto: %e", err)
+	}
+	n, err := writer.Write(out)
+	if err != nil {
+		return fmt.Errorf("write file: %e", err)
+	}
+
+	logrus.Infof("Sending %d characters to %s", n, fullPath)
+	return nil
+}
+
+// Returns a map containing every test group as a key, with nil as a value
+func getTestGroups(tgConfig *config.Configuration) map[string]*issue_state.IssueState {
+	if tgConfig == nil {
+		return nil
+	}
+
+	result := make(map[string]*issue_state.IssueState)
+	for _, testGroup := range tgConfig.TestGroups {
+		if testGroup != nil {
+			result[testGroup.Name] = nil
+		}
+	}
+
+	return result
+}
+
+func getIssues(client githubClient, org, repo string) ([]github.Issue, error) {
+	issuesAndPRs, err := client.ListOpenIssues(org, repo)
 
 	issues := issuesAndPRs[:0]
 	for _, issue := range issuesAndPRs {
@@ -211,54 +266,91 @@ func getIssues(client githubClient, o options) ([]github.Issue, error) {
 	return issues, err
 }
 
-// Algorithm for detecting and formatting test targets in issues
-func pinIssues(client githubClient, o options) (*issue_state.IssueState, error) {
-	issues, err := getIssues(client, o)
+// matchesPattern determines what Entomologist sees as a potential association to a test group
+var targetRegExp = regexp.MustCompile(`(?mi)^pin:(.+)$`)
 
-	logrus.Infof("Found %d open issues in %s/%s", len(issues), o.organization, o.repository)
+func matchesPattern(body string) []string {
+	allMatches := targetRegExp.FindAllStringSubmatch(body, -1)
+	results := make([]string, 0)
 
-	if err != nil {
-		return nil, err
+	for _, match := range allMatches {
+		results = append(results, strings.TrimSpace(match[1]))
 	}
+	return results
+}
 
-	var results []*issue_state.IssueInfo
+// Gets information from the repositories on gitHub, and populates testGroups with IssueStates
+func pinIssues(client githubClient, repositories []string, testGroups map[string]*issue_state.IssueState, ctx context.Context) error {
 
-	for _, issue := range issues {
-
-		var targets []string
-
-		matches := targetRegExp.FindAllStringSubmatch(issue.Body, -1)
-		for _, match := range matches {
-			targets = append(targets, strings.TrimSpace(match[1]))
+	for _, repository := range repositories {
+		orgAndRepo := strings.Split(repository, "/")
+		if len(orgAndRepo) != 2 {
+			logrus.Errorf("Can't process %s: not in 'org/repo' format", repository)
+			continue
 		}
 
-		// TODO(chases2): separate the comments API calls into their own goroutines
-		comments, err := client.ListIssueComments(o.organization, o.repository, issue.Number)
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		issues, err := getIssues(client, orgAndRepo[0], orgAndRepo[1])
+		logrus.Infof("Found %d open issues in %s/%s", len(issues), orgAndRepo[0], orgAndRepo[1])
 		if err != nil {
-			return nil, err
+			return err
 		}
-		for _, comment := range comments {
-			matches := targetRegExp.FindAllStringSubmatch(comment.Body, -1)
-			for _, match := range matches {
-				targets = append(targets, strings.TrimSpace(match[1]))
+
+		var wg sync.WaitGroup
+		var testGroupAccess sync.Mutex
+
+		pinIssue := func(issue github.Issue) {
+			defer wg.Done()
+			matchingTestGroups := matchesPattern(issue.Body)
+			comments, err := client.ListIssueComments(orgAndRepo[0], orgAndRepo[1], issue.Number)
+			if err != nil {
+				logrus.Warnf("Could not reach comments at %s/%s#%d", orgAndRepo[0], orgAndRepo[1], issue.Number)
+			}
+			for _, comment := range comments {
+				matchingTestGroups = append(matchingTestGroups, matchesPattern(comment.Body)...)
+			}
+
+			if ctx.Err() != nil {
+				logrus.WithError(ctx.Err()).Warnf("Thread terminated due to expiration at %s/%s#%d", orgAndRepo[0], orgAndRepo[1], issue.Number)
+				return
+			}
+
+			testGroupAccess.Lock()
+			defer testGroupAccess.Unlock()
+			for _, matchingGroup := range matchingTestGroups {
+				issueStates, matches := testGroups[matchingGroup]
+				if matches {
+					logrus.Infof("Pinning issue %s to %s", issue.Title, matchingGroup)
+					newResult := issue_state.IssueInfo{
+						IssueId: strconv.Itoa(issue.Number),
+						Title:   issue.Title,
+						RowIds:  matchingTestGroups,
+					}
+
+					if issueStates == nil {
+						testGroups[matchingGroup] = &issue_state.IssueState{
+							IssueInfo: []*issue_state.IssueInfo{&newResult},
+						}
+					} else {
+						testGroups[matchingGroup].IssueInfo = append(testGroups[matchingGroup].IssueInfo, &newResult)
+					}
+				}
 			}
 		}
 
-		if len(targets) != 0 {
-			newResult := issue_state.IssueInfo{
-				IssueId: strconv.Itoa(issue.Number),
-				Title:   issue.Title,
-				RowIds:  targets,
-			}
-
-			results = append(results, &newResult)
+		if ctx.Err() != nil {
+			return ctx.Err()
 		}
+
+		for _, issue := range issues {
+			wg.Add(1)
+			pinIssue(issue)
+		}
+		wg.Wait()
 	}
 
-	logrus.Printf("Pinning %d issues", len(results))
-	file := &issue_state.IssueState{
-		IssueInfo: results,
-	}
-
-	return file, nil
+	return nil
 }

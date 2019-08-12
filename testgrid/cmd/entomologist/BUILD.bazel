@@ -11,6 +11,7 @@ go_library(
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
+        "//testgrid/config:go_default_library",
         "//testgrid/issue_state:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
@@ -32,6 +33,7 @@ go_test(
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
+        "//testgrid/config:go_default_library",
         "//testgrid/issue_state:go_default_library",
     ],
 )
