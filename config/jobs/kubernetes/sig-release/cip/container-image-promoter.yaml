@@ -1,4 +1,5 @@
 presubmits:
+  # Check that changes to promoter manifests are valid.
   kubernetes/k8s.io:
   - name: pull-k8sio-cip
     decorate: true
