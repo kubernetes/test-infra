@@ -46,6 +46,7 @@ type Properties struct {
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
 	ExtensionProfiles       []map[string]string      `json:"extensionProfiles,omitempty"`
 	CustomCloudProfile      *CustomCloudProfile      `json:"customCloudProfile,omitempty"`
+	FeatureFlags            *FeatureFlags            `json:"featureFlags,omitempty"`
 }
 
 type ServicePrincipalProfile struct {
@@ -112,7 +113,10 @@ type KubernetesConfig struct {
 	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
 	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
+	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
+	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
 }
+
 type OrchestratorProfile struct {
 	OrchestratorType    string            `json:"orchestratorType"`
 	OrchestratorRelease string            `json:"orchestratorRelease"`
@@ -148,6 +152,10 @@ type AzureClient struct {
 	subscriptionID    string
 	deploymentsClient resources.DeploymentsClient
 	groupsClient      resources.GroupsClient
+}
+
+type FeatureFlags struct {
+	EnableIPv6DualStack bool `json:"enableIPv6DualStack,omitempty"`
 }
 
 // CustomCloudProfile defines configuration for custom cloud profile( for ex: Azure Stack)
