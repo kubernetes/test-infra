@@ -562,7 +562,7 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 					logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 				}
 			} else {
-				logrus.Warning("No plugins configuration was provided to deck. You must provide one to reuse /test checks for rerun")
+				logrus.Info("No plugins configuration was provided to deck. You must provide one to reuse /test checks for rerun")
 			}
 		}
 
@@ -1290,12 +1290,9 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 		return false, nil
 	}
 
-	// If the job is a presubmit and has an associated PR, do the same checks as for /test
-	if pj.Spec.Type == prowapi.PresubmitJob && pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
-		if pluginAgent == nil {
-			// If no plugins configuration is provided, skip the checks
-			return false, nil
-		}
+	// If the job is a presubmit and has an associated PR, and a plugin config is provided,
+	// do the same checks as for /test
+	if pj.Spec.Type == prowapi.PresubmitJob && pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 && pluginAgent != nil {
 		pcfg := pluginAgent.Config()
 		pull := pj.Spec.Refs.Pulls[0]
 		org := pj.Spec.Refs.Org
