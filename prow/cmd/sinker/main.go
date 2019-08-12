@@ -19,7 +19,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
@@ -334,6 +333,7 @@ func (c *controller) clean() {
 		isActivePeriodic[p.Name] = true
 	}
 
+<<<<<<< HEAD
 	// Get the jobs that we need to retain so horologium can continue working
 	// as intended.
 	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, prowapi.PeriodicJob)
@@ -401,7 +401,7 @@ func (c *controller) clean() {
 			}
 		}
 	}
-
+	
 	metrics.finishedAt = time.Now()
 	sinkerMetrics.podsCreated.Set(float64(metrics.podsCreated))
 	sinkerMetrics.timeUsed.Set(float64(metrics.getTimeUsed().Seconds()))
