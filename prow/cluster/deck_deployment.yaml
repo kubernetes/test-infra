@@ -57,7 +57,6 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-oauth-config-file=/etc/githuboauth/secret
-        - --plugin-config=/etc/plugins/plugins.yaml
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/githuboauth
@@ -76,9 +75,6 @@ spec:
           readOnly: true
         - name: oauth-token
           mountPath: /etc/github
-          readOnly: true
-        - name: plugins
-          mountPath: /etc/plugins
           readOnly: true
         livenessProbe:
           httpGet:
@@ -113,6 +109,3 @@ spec:
       - name: job-config
         configMap:
           name: job-config
-      - name: plugins
-        configMap:
-          name: plugins
