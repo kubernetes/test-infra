@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-9137ac3e9
+    - image: gcr.io/k8s-prow/commenter:v20190812-ee5d95270
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -55,7 +55,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-9137ac3e9
+    - image: gcr.io/k8s-prow/commenter:v20190812-ee5d95270
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -95,7 +95,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-9137ac3e9
+    - image: gcr.io/k8s-prow/commenter:v20190812-ee5d95270
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -132,7 +132,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-9137ac3e9
+    - image: gcr.io/k8s-prow/commenter:v20190812-ee5d95270
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -182,7 +182,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-9137ac3e9
+    - image: gcr.io/k8s-prow/commenter:v20190812-ee5d95270
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -226,7 +226,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-9137ac3e9
+    - image: gcr.io/k8s-prow/commenter:v20190812-ee5d95270
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -298,7 +298,7 @@ periodics:
     testgrid-tab-name: enhancements-unfreeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190808-9137ac3e9
+    - image: gcr.io/k8s-prow/commenter:v20190812-ee5d95270
       command:
       - /app/robots/commenter/app.binary
       args:
