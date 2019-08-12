@@ -17,8 +17,10 @@ limitations under the License.
 package omit
 
 type OmitEmptyStrings struct {
-	// StringField comment
-	StringField string `json:"string,omitempty"`
+	// StringFieldOmitEmpty comment
+	StringFieldOmitEmpty string `json:"stringomit,omitempty"`
+	// StringFieldKeepEmpty comment
+	StringFieldKeepEmpty string `json:"stringkeep"`
 	// BooleanField comment
 	BooleanField bool `json:"boolean"`
 	// IntegerField comment

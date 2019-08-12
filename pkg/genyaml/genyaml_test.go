@@ -67,9 +67,11 @@ func TestFmtRawDoc(t *testing.T) {
 			expected: "Owners of the cat.",
 		},
 		{
-			name:     "Multi line comment",
-			rawDoc:   "StringField comment\nsecond line\nthird line",
-			expected: "StringField comment second line third line",
+			name:   "Multi line comment",
+			rawDoc: "StringField comment\nsecond line\nthird line",
+			expected: `StringField comment
+second line
+third line`,
 		},
 		{
 			name:     "Delete trailing space(s)",
@@ -84,12 +86,12 @@ func TestFmtRawDoc(t *testing.T) {
 		{
 			name:     "Escape double quote(s)",
 			rawDoc:   `"Some comment"`,
-			expected: `\"Some comment\"`,
+			expected: `"Some comment"`,
 		},
 		{
-			name:     "Strip TODO(s)",
-			rawDoc:   `"Some comment"`,
-			expected: `\"Some comment\"`,
+			name: "Convert tab to space",
+			rawDoc: "tab	tab		tabtab",
+			expected: "tab tab tabtab",
 		},
 		{
 			name:     "Strip TODO prefixed comment",
@@ -332,6 +334,10 @@ func TestGenYAML(t *testing.T) {
 			structObj: &multiline.Multiline{
 				StringField1: "string1",
 				StringField2: "string2",
+				StringField3: "string3",
+				StringField4: "string4",
+				StringField5: "string5",
+				StringField6: "string6",
 			},
 			expected: true,
 		},
@@ -368,9 +374,10 @@ func TestGenYAML(t *testing.T) {
 		{
 			name: "omit if empty",
 			structObj: &omit.OmitEmptyStrings{
-				StringField:  "",
-				BooleanField: true,
-				IntegerField: 1,
+				StringFieldOmitEmpty: "",
+				StringFieldKeepEmpty: "",
+				BooleanField:         true,
+				IntegerField:         1,
 			},
 			expected: true,
 		},

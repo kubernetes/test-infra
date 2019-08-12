@@ -5,6 +5,110 @@
 
 ## Usage
 
+TODOs are ignored (e.g. TODO(clarketm)... or TODO...) if and only if they are on a **single** line.
+
+```go
+type Employee struct {
+	// Name of employee
+	Name string
+	// Age of employee
+	Age int
+    // TODO(clarketm): change this to a float64
+	// Salary of employee
+	Salary int
+}
+```
+
+```yaml
+# Age of employee
+Age: 22
+
+# Name of employee
+Name: Jim
+
+# Salary of employee
+Salary: 100000
+```
+
+Multiline comments are preserved, albeit *tabs* are converted to *spaces* and *multiple* spaces are compressed into a *single* line.
+
+```go
+type Multiline struct {
+	// StringField1 comment
+	// second line
+	// third line
+	StringField1 string `json:"string1"`
+
+	/* StringField2 comment
+	second line
+	third line
+	*/
+	StringField2 string `json:"string2"`
+
+	/* StringField3 comment
+			second line
+			third line
+	*/
+	StringField3 string `json:"string3"`
+}
+```
+
+```yaml
+# StringField1 comment
+# second line
+# third line
+string1: string1
+
+# StringField2 comment
+# second line
+# third line
+string2: string2
+
+# StringField3 comment
+# second line
+# third line
+string3: string3
+```
+
+All subsequent lines and blocks after a `---` will be ignored.
+
+```go
+type Person struct {
+	// Name of person
+	// --- 
+	// The name of the person is both the first and last name separated 
+	// by a space character
+	Name string
+}
+```
+
+```yaml
+# Name of person
+Name: Frank
+```
+
+Generator instructions prefixed with a `+` are ignored.
+
+```go
+type Dog struct {
+	// Gender of dog (male|female)
+	// +optional
+	Gender string `json:"gender,omitempty"`
+	// Weight in pounds of dog
+	Weight int `json:"weight,omitempty"`
+}
+```
+
+```yaml
+# Gender of dog (male|female)
+gender: male
+
+# Weight in pounds of dog
+weight: 150
+```
+
+## Example
+
 First, assume there is a Go file `config.go` with the following contents:
 > NOTE: `genyaml` reads **json** tags for maximum portability.
 

@@ -70,13 +70,13 @@ import (
 	"go/token"
 	yaml3 "gopkg.in/yaml.v3"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 )
 
 const (
-	YamlTag = "yaml"
-	JsonTag = "json"
+	jsonTag = "json"
 )
 
 // Comment is an abstract structure for storing mapped types to comments.
@@ -165,36 +165,24 @@ func astFrom(path string) (*doc.Package, error) {
 // fmtRawDoc formats/sanitizes a Go doc string removing TODOs, newlines, whitespace, and various other characters from the resultant string.
 func fmtRawDoc(rawDoc string) string {
 	var buffer bytes.Buffer
-	delPrevChar := func() {
-		if buffer.Len() > 0 {
-			buffer.Truncate(buffer.Len() - 1) // Delete the last " " or "\n".
-		}
-	}
 
 	// Ignore all lines after ---.
 	rawDoc = strings.Split(rawDoc, "---")[0]
 
 	for _, line := range strings.Split(rawDoc, "\n") {
-		line = strings.TrimRight(line, " ")
-		leading := strings.TrimLeft(line, " ")
+		line = strings.TrimSpace(line) // Trim leading and trailing whitespace.
 		switch {
-		case len(line) == 0: // Keep paragraphs
-			delPrevChar()
-			buffer.WriteString("\n\n")
-		case strings.HasPrefix(leading, "TODO"): // Ignore one line TODOs.
-		case strings.HasPrefix(leading, "+"): // Ignore instructions to the generators.
+		case strings.HasPrefix(line, "TODO"): // Ignore one line TODOs.
+		case strings.HasPrefix(line, "+"): // Ignore instructions to the generators.
 		default:
-			line += " "
+			line += "\n"
 			buffer.WriteString(line)
 		}
 	}
 
-	postDoc := strings.TrimRight(buffer.String(), "\n")
-	postDoc = strings.Trim(postDoc, " ")
-	postDoc = strings.Replace(postDoc, "\\\"", "\"", -1) // replace user's \" to ".
-	postDoc = strings.Replace(postDoc, "\"", "\\\"", -1) // Escape ".
-	postDoc = strings.Replace(postDoc, "\n", "\\n", -1)
-	postDoc = strings.Replace(postDoc, "\t", "\\t", -1)
+	postDoc := strings.TrimRight(buffer.String(), "\n")               // Remove last newline.
+	postDoc = strings.Replace(postDoc, "\t", " ", -1)                 // Replace tabs with spaces.
+	postDoc = regexp.MustCompile(` +`).ReplaceAllString(postDoc, " ") // Compress multiple spaces to a single space.
 
 	return postDoc
 }
@@ -265,7 +253,7 @@ func (cm *CommentMap) genDocMap(path string) error {
 
 			for _, field := range lst {
 
-				if tagName := fieldName(field, JsonTag); tagName != "-" {
+				if tagName := fieldName(field, jsonTag); tagName != "-" {
 					typeName := fieldType(field)
 					isObj := false
 

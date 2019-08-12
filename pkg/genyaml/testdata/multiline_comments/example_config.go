@@ -17,14 +17,39 @@ limitations under the License.
 package multiline_comments
 
 type Multiline struct {
-	// StringField comment
+	// StringField1 comment
 	// second line
 	// third line
 	StringField1 string `json:"string1"`
 
-	/* StringField comment
+	/* StringField2 comment
 	second line
 	third line
 	*/
 	StringField2 string `json:"string2"`
+
+	/* StringField3 comment
+	second line
+	third line
+	*/
+	StringField3 string `json:"string3"`
+
+	//
+	//
+	// Paragraph line
+	//
+	//
+	StringField4 string `json:"string4"`
+
+	/*
+
+		Paragraph block
+
+	*/
+	StringField5 string `json:"string5"`
+
+	/*
+		Tab	Tab		TabTab
+	*/
+	StringField6 string `json:"string6"`
 }

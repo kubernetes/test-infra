@@ -4,3 +4,7 @@ boolean: true
 
 # IntegerField comment
 integer: 1
+
+
+# StringFieldKeepEmpty comment
+stringkeep: ""
