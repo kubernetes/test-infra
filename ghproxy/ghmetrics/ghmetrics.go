@@ -48,8 +48,8 @@ var ghTokenUsageGaugeVec = prometheus.NewGaugeVec(
 
 // ghRequestsCounter provides the 'github_requests' counter that keeps track
 // of the number of GitHub requests by API path.
-var ghRequestsCounter = prometheus.NewGaugeVec(
-	prometheus.GaugeOpts{
+var ghRequestsCounter = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
 		Name: "github_requests",
 		Help: "GitHub requests by API path.",
 	},
