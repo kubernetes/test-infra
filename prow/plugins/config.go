@@ -71,6 +71,7 @@ type Configuration struct {
 	Project                    ProjectConfig                `json:"project_config,omitempty"`
 	RequireMatchingLabel       []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
 	RequireSIG                 RequireSIG                   `json:"requiresig,omitempty"`
+	Retitle                    Retitle                      `json:"retitle,omitempty"`
 	Slack                      Slack                        `json:"slack,omitempty"`
 	SigMention                 SigMention                   `json:"sigmention,omitempty"`
 	Size                       Size                         `json:"size"`
@@ -182,6 +183,12 @@ func (c *Configuration) SkipCollaborators(org, repo string) bool {
 type RequireSIG struct {
 	// GroupListURL is the URL where a list of the available SIGs can be found.
 	GroupListURL string `json:"group_list_url,omitempty"`
+}
+
+// Retitle specifies configuration for the retitle plugin.
+type Retitle struct {
+	// AllowClosedIssues allows retitling closed/merged issues and PRs.
+	AllowClosedIssues bool `json:"allow_closed_issues,omitempty"`
 }
 
 // SigMention specifies configuration for the sigmention plugin.
