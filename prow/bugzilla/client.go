@@ -163,7 +163,9 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 		req.URL.RawQuery = values.Encode()
 	}
 	resp, err := c.client.Do(req)
-	logger.WithField("response", resp.StatusCode).Debug("Got response from Bugzilla.")
+	if resp != nil {
+		logger.WithField("response", resp.StatusCode).Debug("Got response from Bugzilla.")
+	}
 	if err != nil {
 		code := -1
 		if resp != nil {
