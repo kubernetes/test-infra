@@ -182,3 +182,8 @@ plugin:
     string: string
     
 ```
+
+## Limitations / Going Forward
+
+- [] Embedded structs must include a tag name (i.e. must not be *spread*), otherwise the type can not be inferred from the YAML output.
+- [] Interface types, more specifically concrete types implementing a particular interface, can can not be inferred from the YAML output.

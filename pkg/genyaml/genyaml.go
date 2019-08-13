@@ -81,7 +81,9 @@ const (
 
 // Comment is an abstract structure for storing mapped types to comments.
 type CommentMap struct {
+	// comments is a map of string(typeSpecName) -> string(tagName) -> Comment.
 	comments map[string]map[string]Comment
+	// RWMutex is a read/write mutex.
 	sync.RWMutex
 }
 
@@ -200,17 +202,41 @@ func fieldName(field *ast.Field, tag string) string {
 
 	tagVal = strings.Split(tagVal, ",")[0] // This can return "-".
 	if tagVal == "" {
-		return fieldType(field)
+		// Set field name to the defined name in struct if defined.
+		if field.Names != nil {
+			return field.Names[0].Name
+		}
+		// Fallback field name to the immediate field type.
+		name, _ := fieldType(field, false)
+		return name
 	}
 	return tagVal
 }
 
-// fieldType extracts the type of the field and returns the resultant string.
-func fieldType(field *ast.Field) string {
-	if field.Names != nil {
-		return field.Names[0].Name
-	}
-	return field.Type.(*ast.Ident).Name
+// fieldType extracts the type of the field and returns the resultant string type and a bool indicating if it is an object type.
+func fieldType(field *ast.Field, recurse bool) (string, bool) {
+	typeName := ""
+	isObj, isSelect := false, false
+
+	// Find leaf node.
+	ast.Inspect(field, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.Field:
+			// First node is always a field; skip.
+			return true
+		case *ast.Ident:
+			// Encountered a type, overwrite typeName and isObj.
+			typeName = x.Name
+			isObj = x.Obj != nil || isSelect
+		case *ast.SelectorExpr:
+			// SelectorExpr are not object types yet reference one, thus continue with DFS.
+			isSelect = true
+		}
+
+		return recurse || isSelect
+	})
+
+	return typeName, isObj
 }
 
 // getType returns the type's name within its package for a defined type. For other (non-defined) types it returns the empty string.
@@ -254,20 +280,7 @@ func (cm *CommentMap) genDocMap(path string) error {
 			for _, field := range lst {
 
 				if tagName := fieldName(field, jsonTag); tagName != "-" {
-					typeName := fieldType(field)
-					isObj := false
-
-					// Find leaf node.
-					ast.Inspect(field, func(n ast.Node) bool {
-						switch x := n.(type) {
-						case *ast.Ident:
-							typeName = x.Name
-							isObj = x.Obj != nil
-						}
-
-						return true
-					})
-
+					typeName, isObj := fieldType(field, true)
 					docString := fmtRawDoc(field.Doc.Text())
 					cm.comments[typeSpecName][tagName] = Comment{typeName, isObj, docString}
 				}
