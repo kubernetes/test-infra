@@ -45,6 +45,7 @@ prow_push(
             "ghproxy": "//ghproxy:image",
             "label_sync": "//label_sync:image",
             "commenter": "//robots/commenter:image",
+            "issue-creator": "//robots/issue-creator:image",
         },
     ),
 )

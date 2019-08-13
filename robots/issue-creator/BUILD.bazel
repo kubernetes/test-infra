@@ -7,7 +7,10 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-prow_image(name = "image")
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
+)
 
 prow_push(
     name = "push",
