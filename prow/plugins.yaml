@@ -209,18 +209,25 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.12:
-            - feiskyer # 1.12 patch release manager
         release-1.13:
-            - aleksandra-malinowska # 1.13 patch release team
-            - tpepper # 1.13 patch release team
+            - aleksandra-malinowska # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - tpepper # Patch Release Team
         release-1.14:
-            - aleksandra-malinowska # 1.14 patch release team
-            - tpepper # 1.14 patch release team
-            - hoegaarden # 1.14 patch release team
+            - aleksandra-malinowska # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - tpepper # Patch Release Team
         release-1.15:
-            - bubblemelon # 1.15 branch manager
-            - idealhack # 1.15 branch manager shadow
+            - aleksandra-malinowska # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - tpepper # Patch Release Team
+        release-1.16:
+            - bubblemelon # Branch Manager
+            - idealhack # Branch Manager
+            - justaugustus # Release Manager Associate
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
