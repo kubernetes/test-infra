@@ -24,13 +24,7 @@ presubmits:
         - name: NO_DOCKER
           value: "1"
   - name: pull-service-catalog-integration
-    decorate: true
-    decoration_config:
-      timeout: 45m
-    always_run: true
-    skip_report: false
-    labels:
-      preset-dind-enabled: "true"
+    <<: *build_image_cfg
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190612-bf4a71f-master
@@ -43,7 +37,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-service-catalog-build-image-all-arch
+  - name: pull-build-all-images-for-amd64
     <<: *build_image_cfg
     spec:
       containers:
@@ -53,11 +47,11 @@ presubmits:
         - runner.sh
         args:
         - make
-        - service-catalog-image-all-arch
+        - arch-image-amd64
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-brokers-build-image-all-arch
+  - name: pull-build-all-images-for-arm
     <<: *build_image_cfg
     spec:
       containers:
@@ -67,12 +61,11 @@ presubmits:
             - runner.sh
           args:
             - make
-            - user-broker-image-all-arch
-            - test-broker-image-all-arch
+            - arch-image-arm
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
-  - name: pull-healthcheck-build-image-all-arch
+  - name: pull-build-all-images-for-arm64
     <<: *build_image_cfg
     spec:
       containers:
@@ -82,11 +75,39 @@ presubmits:
             - runner.sh
           args:
             - make
-            - healthcheck-image-all-arch
+            - arch-image-arm64
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
-  - name: pull-svcat-build-image-all-arch
+  - name: pull-build-all-images-for-ppc64le
+    <<: *build_image_cfg
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190612-bf4a71f-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - arch-image-ppc64le
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-build-all-images-for-s390x
+    <<: *build_image_cfg
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190612-bf4a71f-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - arch-image-ppc64le
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+  - name: pull-build-all-images-for-svcat
     <<: *build_image_cfg
     spec:
       containers:
