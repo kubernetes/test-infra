@@ -96,7 +96,7 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-1.16-all
-    testgrid-tab-name: node-kubelet-features
+    testgrid-tab-name: node-kubelet-features-beta
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
@@ -846,34 +846,6 @@ presubmits:
         name: ""
         resources: {}
   - always_run: true
-    annotations:
-      testgrid-alert-stale-results-hours: "24"
-      testgrid-create-test-group: "true"
-      testgrid-num-failures-to-alert: "10"
-    branches:
-    - release-1.16
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-dependencies
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - args:
-        - make
-        - verify
-        command:
-        - runner.sh
-        env:
-        - name: WHAT
-          value: vendor vendor-licenses
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.16
-        name: main
-        resources: {}
-        securityContext:
-          privileged: true
-  - always_run: true
     branches:
     - release-1.16
     decorate: true
@@ -891,41 +863,3 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.16
         name: main
         resources: {}
-  - always_run: true
-    annotations:
-      testgrid-alert-stale-results-hours: "24"
-      testgrid-create-test-group: "true"
-      testgrid-num-failures-to-alert: "10"
-    branches:
-    - release-1.16
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-verify
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - args:
-        - ./hack/jenkins/verify-dockerized.sh
-        command:
-        - runner.sh
-        env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
-        - name: EXCLUDE_TYPECHECK
-          value: "y"
-        - name: EXCLUDE_GODEP
-          value: "y"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: release-1.16
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.16
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: "4"
-        securityContext:
-          privileged: true

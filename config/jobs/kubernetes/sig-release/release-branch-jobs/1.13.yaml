@@ -149,7 +149,7 @@ periodics:
         requests:
           memory: 6Gi
 - annotations:
-    testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.12-all
+    testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all
     testgrid-tab-name: periodic-bazel-test-1.13
   interval: 6h
   labels:
