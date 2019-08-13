@@ -366,7 +366,7 @@ func main() {
 
 	// if we allow direct reruns, we must protect against CSRF in all post requests using the cookie secret as a token
 	// for more information about CSRF, see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/csrf.md
-	if o.rerunCreatesJob && csrfToken == nil {
+	if o.rerunCreatesJob && csrfToken == nil && !cfg().Deck.RerunAuthConfig.AllowAnyone {
 		logrus.Fatal("Rerun creates job cannot be enabled without CSRF protection, which requires --cookie-secret to be exactly 32 bytes")
 		return
 	}
