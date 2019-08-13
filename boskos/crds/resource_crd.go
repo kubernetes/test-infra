@@ -17,17 +17,18 @@ limitations under the License.
 package crds
 
 import (
+	"reflect"
 	"time"
 
 	"k8s.io/test-infra/boskos/common"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"reflect"
 )
 
 var (
-	resourceType = Type{
+	// ResourceType is the ResourceObject CRD type
+	ResourceType = Type{
 		Kind:       reflect.TypeOf(ResourceObject{}).Name(),
 		ListKind:   reflect.TypeOf(ResourceCollection{}).Name(),
 		Singular:   "resource",
@@ -37,14 +38,9 @@ var (
 	}
 )
 
-// NewResourceClient creates a CRD rest client for common.Resource
-func NewResourceClient() (ClientInterface, error) {
-	return newClientFromFlags(resourceType)
-}
-
 // NewTestResourceClient creates a fake CRD rest client for common.Resource
 func NewTestResourceClient() ClientInterface {
-	return newDummyClient(resourceType)
+	return newDummyClient(ResourceType)
 }
 
 // ResourceObject represents common.ResourceObject. It implements the Object interface.
@@ -69,10 +65,11 @@ type ResourceSpec struct {
 
 // ResourceStatus holds information that are likely to change
 type ResourceStatus struct {
-	State      string           `json:"state,omitempty"`
-	Owner      string           `json:"owner"`
-	LastUpdate time.Time        `json:"lastUpdate,omitempty"`
-	UserData   *common.UserData `json:"userData,omitempty"`
+	State          string           `json:"state,omitempty"`
+	Owner          string           `json:"owner"`
+	LastUpdate     time.Time        `json:"lastUpdate,omitempty"`
+	UserData       *common.UserData `json:"userData,omitempty"`
+	ExpirationDate *time.Time       `json:"expirationDate,omitempty"`
 }
 
 // GetName returns a unique identifier for a given resource
@@ -107,12 +104,13 @@ func (in *ResourceObject) DeepCopyObject() runtime.Object {
 
 func (in *ResourceObject) toResource() common.Resource {
 	return common.Resource{
-		Name:       in.Name,
-		Type:       in.Spec.Type,
-		Owner:      in.Status.Owner,
-		State:      in.Status.State,
-		LastUpdate: in.Status.LastUpdate,
-		UserData:   in.Status.UserData,
+		Name:           in.Name,
+		Type:           in.Spec.Type,
+		Owner:          in.Status.Owner,
+		State:          in.Status.State,
+		LastUpdate:     in.Status.LastUpdate,
+		UserData:       in.Status.UserData,
+		ExpirationDate: in.Status.ExpirationDate,
 	}
 }
 
@@ -128,6 +126,7 @@ func (in *ResourceObject) fromResource(r common.Resource) {
 	in.Status.State = r.State
 	in.Status.LastUpdate = r.LastUpdate
 	in.Status.UserData = r.UserData
+	in.Status.ExpirationDate = r.ExpirationDate
 }
 
 // FromItem implements Object interface

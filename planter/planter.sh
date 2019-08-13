@@ -18,6 +18,8 @@
 #
 # Environment variable options:
 # - $TAG can be overridden to choose a bazel version eg `TAG=0.8.0 planter.sh ...`
+# - $CROSS can be set to use the larger image containing the
+#   crossbuild-essential packages.
 # - Alternatively $IMAGE or $IMAGE_NAME can be overridden to set the exact image
 # - $NO_PULL will disable pulling the image before running if set
 # - $DOCKER_EXTRA can be set to supply extra args in the docker call
@@ -30,7 +32,7 @@
 # Then you can build with:
 # $ cd $GOPATH/src/k8s.io/kubernetes
 # $ $GOPATH/src/k8s.io/test-infra/planter/planter.sh make bazel-release
-# 
+#
 # or build a specific binary like:
 # $ cd $GOPATH/src/k8s.io/kubernetes
 # $ $GOPATH/src/k8s.io/test-infra/planter/planter.sh bazel build //cmd/kubectl
@@ -42,8 +44,8 @@ set -o nounset
 # these can be overridden but otherwise default to the current stable image
 # used to build kubernetes from the master branch
 IMAGE_NAME="${IMAGE_NAME:-gcr.io/k8s-testimages/planter}"
-TAG="${TAG:-0.14.0}"
-IMAGE=${IMAGE:-${IMAGE_NAME}:${TAG}}
+TAG="${TAG:-0.23.0}"
+IMAGE=${IMAGE:-${IMAGE_NAME}:${TAG}${CROSS+-cross}}
 
 # We want to mount our bazel workspace and the bazel cache
 # - WORKSPACE is assumed to be in your current git repo, or alternatively $PWD
@@ -67,7 +69,7 @@ RUN_OPTS="${RUN_OPTS} -it"
 RUN_OPTS="${RUN_OPTS} --hostname=planter"
 
 # - NOTE: SELinux disabled for this container to prevent relabeling $HOME (!)
-RUN_OPTS="${RUN_OPTS} --security-opt label:disable"
+RUN_OPTS="${RUN_OPTS} --security-opt label=disable"
 
 # - supply the host user's `id` info so we can run as the host user and create
 #   a matching environment for the purposes of building, see the Dockerfile and
@@ -103,6 +105,11 @@ RUN_OPTS="${RUN_OPTS} -v ${REPO}:${REPO}:delegated"
 #   planter image.
 #   $PWD specifically can also make commands other than bazel more consistent
 RUN_OPTS="${RUN_OPTS} -w ${PWD}"
+
+# Preserve GOPATH if any
+if [ -n "${GOPATH:-}" ]; then
+    RUN_OPTS="${RUN_OPTS} -e GOPATH=${GOPATH}"
+fi
 
 # - pass through any extra user-supplied options
 if [ -n "${DOCKER_EXTRA:-}" ]; then

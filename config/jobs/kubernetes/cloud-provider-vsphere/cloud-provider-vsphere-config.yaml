@@ -1,0 +1,520 @@
+presets:
+# Attaches the secrets to a job required to execute the e2e conformance
+# suite against a cluster turned up with the cloud provider.
+- labels:
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  env:
+  - name: CONFIG_ENV
+    value: /root/.cloud-provider-vsphere/config.env
+  - name: GCR_KEY_FILE
+    value: /root/.cloud-provider-vsphere/keyfile.json
+  volumes:
+  - name: cloud-provider-vsphere-e2e-config
+    secret:
+      secretName: cloud-provider-vsphere-e2e-config
+      items:
+      - key: config.env
+        path: config.env
+        mode: 288
+      - key: keyfile.json
+        path: keyfile.json
+        mode: 288
+  volumeMounts:
+  - name: cloud-provider-vsphere-e2e-config
+    mountPath: /root/.cloud-provider-vsphere
+    readOnly: true
+
+presubmits:
+  kubernetes/cloud-provider-vsphere:
+
+  - name: pull-cloud-provider-vsphere-verify-fmt
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - make
+        args:
+        - fmt
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-fmt
+      description: Verifies the Golang sources have been formatted
+
+  - name: pull-cloud-provider-vsphere-verify-lint
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - make
+        args:
+        - lint
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-lint
+      description: Verifies the Golang sources are linted
+
+  - name: pull-cloud-provider-vsphere-verify-vet
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - make
+        args:
+        - vet
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-vet
+      description: Vets the Golang sources have been vetted
+
+  - name: pull-cloud-provider-vsphere-verify-markdown
+    always_run: false
+    run_if_changed: '.*\.md$'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/mdlint:0.17.0
+        command:
+        - /nodejs/bin/node
+        args:
+        - /md/lint
+        - -i
+        - vendor
+        - -i
+        - docs/book/node_modules
+        - .
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-tab-name: pr-verify-markdown
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies the markdown has been linted
+
+  - name: pull-cloud-provider-vsphere-verify-shell
+    always_run: false
+    run_if_changed: '.*\.\w*sh$'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
+        command:
+        - /bin/shellcheck.sh
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-tab-name: pr-verify-shell
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies the shell scripts have been linted
+
+  # Builds the CCM and CSI binaries.
+  - name: pull-cloud-provider-vsphere-build
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+        command:
+        - "make"
+        args:
+        - "build"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+    # Executes the unit tests.
+  - name: pull-cloud-provider-vsphere-unit-test
+    decorate: true
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+        command:
+        - "make"
+        args:
+        - "unit-test"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+  # Executes the integration tests.
+  - name: pull-cloud-provider-vsphere-integration-test
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+        command:
+        - "make"
+        args:
+        - "integration-test"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+postsubmits:
+  kubernetes/cloud-provider-vsphere:
+
+  # Deploys the CCM and CSI images if both the unit and integration tests succeed.
+  - name: post-cloud-provider-vsphere-deploy
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+        command:
+        - "make"
+        args:
+        - "deploy"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-num-columns-recent: '20'
+
+periodics:
+
+# Runs the e2e conformance suite against a cluster turned up with the
+# latest cloud provider image deployed from master. This job is duplicated
+# for multiple versions of Kubernetes.
+- name: ci-cloud-provider-vsphere-conformance-latest
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: ci/latest.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
+      - name: LOG_LEVEL
+        value: "5"
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
+    testgrid-tab-name: vsphere-latest
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
+    testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
+- name: ci-cloud-provider-vsphere-conformance-stable-1-14
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.14.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
+      - name: LOG_LEVEL
+        value: "5"
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
+    testgrid-tab-name: vsphere-v1.14
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.14 branch with cloud-provider-vsphere
+    testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
+- name: ci-cloud-provider-vsphere-conformance-stable-1-13
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.13.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
+      - name: LOG_LEVEL
+        value: "5"
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
+    testgrid-tab-name: vsphere-v1.13
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with cloud-provider-vsphere
+    testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
+- name: ci-cloud-provider-vsphere-conformance-stable-1-12
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: K8S_VERSION
+        value: release/stable-1.12.txt
+      - name: DESTROY_FORCE
+        value: "dryrun"
+      - name: LOG_LEVEL
+        value: "5"
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
+    testgrid-tab-name: vsphere-v1.12
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with cloud-provider-vsphere
+    testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
+# Runs the e2e conformance suite against a cluster turned up with the
+# in-tree vSphere cloud provider. This job is duplicated for multiple versions
+# of Kubernetes.
+- name: ci-vsphere-conformance-latest
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: ci/latest.txt
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
+    testgrid-tab-name: in-tree-vsphere-latest
+    description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
+    testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '4'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
+- name: ci-vsphere-conformance-stable-1-14
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.14.txt
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
+    testgrid-tab-name: in-tree-vsphere-v1.14
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.14 branch with the in-tree vSphere cloud provider
+    testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
+- name: ci-vsphere-conformance-stable-1-13
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.13.txt
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
+    testgrid-tab-name: in-tree-vsphere-v1.13
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.13 branch with the in-tree vSphere cloud provider
+    testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'
+- name: ci-vsphere-conformance-stable-1-12
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-vsphere
+    base_ref: master
+  path_alias: k8s.io/cloud-provider-vsphere
+  skip_submodules: true
+  spec:
+    containers:
+    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      command:
+      - "make"
+      args:
+      - "conformance-test"
+      securityContext:
+        privileged: true
+      env:
+      - name: CLOUD_PROVIDER
+        value: vsphere
+      - name: K8S_VERSION
+        value: release/stable-1.12.txt
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
+    testgrid-tab-name: in-tree-vsphere-v1.12
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
+    testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '16'
+    testgrid-num-columns-recent: '20'

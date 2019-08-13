@@ -13,7 +13,6 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/alpine:0.1
-LABEL maintainer="mkargaki@redhat.com"
 
 COPY static /static
 COPY tracer /tracer

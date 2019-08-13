@@ -7,9 +7,18 @@
 # You may find the example pipeline steps listed here helpful: https://buildkite.com/docs/pipelines/defining-steps#example-pipeline but please
 #  note that the setup is already done, so you should not manually adjust anything through the BuildKite interface.
 #
-agent_queue: &agent_queue "queue=v-c3aa0727f94b044d-------1537468604"
+
+linux_builders: &linux_builders
+  agents:
+    - "agent_count=8"
+    - "capable_of_building=platform"
+    - "environment=production"
+    - "permission_set=builder"
+    - "platform=linux"
+    - "queue=${CI_LINUX_BUILDER_QUEUE:-v3-1564411674-9c5746811d9f2beb-------z}"
+    - "scaler_version=2"
+
 steps:
   - label: "Prow Unit Tests"
-    command: ".buildkite/run_prow_tests.sh"
-    agents:
-    - *agent_queue
+    command: ".buildkite/run_dockerized_tests.sh"
+    <<: *linux_builders

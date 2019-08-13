@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -56,7 +56,7 @@ words = [
     "fortressing", "inadequately", "prank", "authored",
     "fortresing", "inadeqautely", "prang", "awthered",
     "cruller's", "fanatic", "Laplace", "recollections",
-    "Kevlar", "underpays", u"jalape\u00f1o", u"ch\u00e2telaine",
+    "Kevlar", "underpays", "jalape\u00f1o", "ch\u00e2telaine",
     "kevlar", "overpaid", "jalapeno", "chatelaine",
     "A survey of algorithms for running text search by Navarro appeared",
     "in ACM Computing Surveys 33#1: http://portal.acm.org/citation.cfm?...",
@@ -73,14 +73,14 @@ wordDistances = {}
 # dynamic programming technique.  This is here purely to verify
 # the results of better algorithms.
 def dynamicProgrammingLevenshtein(s1, s2):
-    lastRow = range(len(s1) + 1)
-    for j in range(0, len(s2)):
+    lastRow = list(range(len(s1) + 1))
+    for j, s2_item in enumerate(s2):
         thisRow = [0] * len(lastRow)
         thisRow[0] = j + 1
         for i in range(1, len(thisRow)):
             thisRow[i] = min(lastRow[i] + 1,
                              thisRow[i - 1] + 1,
-                             lastRow[i - 1] + int(s2[j] != s1[i-1]))
+                             lastRow[i - 1] + int(s2_item != s1[i-1]))
         lastRow = thisRow
     return lastRow[-1]
 
@@ -89,7 +89,7 @@ for wordA in words:
         wordDistances[wordA, wordB] = dynamicProgrammingLevenshtein(wordA, wordB)
 
 
-class AbstractLevenshteinTestCase(object):
+class AbstractLevenshteinTestCase:
     # pylint: disable=no-member
 
     # Tests a Levenshtein engine against the DP-based computation
@@ -128,7 +128,7 @@ class AbstractLevenshteinTestCase(object):
     # @return the number of edits actually performed, the new string
     @staticmethod
     def performSomeEdits(b, alphabet, replaces, inserts):
-        r = random.Random(768614336404564651L)
+        r = random.Random(768614336404564651)
         edits = 0
         b = list(b)
 
@@ -175,8 +175,8 @@ class AbstractLevenshteinTestCase(object):
                               ed.getDistance(s2, len(s2)))
 
         # Always try near MAX_VALUE
-        self.assertEquals(ed.getDistance(s2, 2**63 - 1), expectedResult)
-        self.assertEquals(ed.getDistance(s2, 2**63), expectedResult)
+        self.assertEqual(ed.getDistance(s2, 2**63 - 1), expectedResult)
+        self.assertEqual(ed.getDistance(s2, 2**63), expectedResult)
 
     # Tests a specific engine on a pair of strings
     def specificAlgorithmVerify(self, ed, s1, s2, expectedResult):
@@ -210,7 +210,7 @@ class AbstractLevenshteinTestCase(object):
     # @param d distance computed
     def verifyResult(self, s1, s2, expectedResult, k, d):
         if k >= expectedResult:
-            self.assertEquals(
+            self.assertEqual(
                 expectedResult, d,
                 'Distance from %r to %r should be %d (within limit=%d) but was %d' %
                 (s1, s2, expectedResult, k, d))
@@ -239,7 +239,7 @@ class BerghelRoachTest(unittest.TestCase, AbstractLevenshteinTestCase):
         SIZE = 10000
         SEED = 1
 
-        self.verifySomeEdits(self.generateRandomString(SIZE, SEED), (SIZE / 50), (SIZE / 50))
+        self.verifySomeEdits(self.generateRandomString(SIZE, SEED), (SIZE // 50), (SIZE // 50))
 
     def testHugeString(self):
          # An even larger size is feasible, but the test would no longer

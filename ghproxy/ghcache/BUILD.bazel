@@ -9,11 +9,15 @@ go_library(
     importpath = "k8s.io/test-infra/ghproxy/ghcache",
     visibility = ["//visibility:public"],
     deps = [
+        "//ghproxy/ghmetrics:go_default_library",
+        "//vendor/github.com/gomodule/redigo/redis:go_default_library",
         "//vendor/github.com/gregjones/httpcache:go_default_library",
         "//vendor/github.com/gregjones/httpcache/diskcache:go_default_library",
+        "//vendor/github.com/gregjones/httpcache/redis:go_default_library",
         "//vendor/github.com/peterbourgon/diskv:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/golang.org/x/sync/semaphore:go_default_library",
     ],
 )
 
@@ -35,4 +39,5 @@ go_test(
     name = "go_default_test",
     srcs = ["coalesce_test.go"],
     embed = [":go_default_library"],
+    deps = ["//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library"],
 )

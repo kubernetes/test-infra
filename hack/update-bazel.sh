@@ -17,19 +17,36 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-# https://github.com/kubernetes/test-infra/issues/5699#issuecomment-348350792
-cd ${TESTINFRA_ROOT}
-TMP_GOPATH=$(mktemp -d)
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating bazel rules..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
+    bazel run @io_k8s_test_infra//hack:update-bazel
+  )
+  exit 0
+else
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:update-bazel
+  )
+  exit 0
+fi
 
-OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
+gazelle=$(realpath "$1")
+kazel=$(realpath "$2")
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
+cd "$BUILD_WORKSPACE_DIRECTORY"
 
-"${OUTPUT_GOBIN}/gazelle" fix \
-  -external=vendored \
-  -mode=fix
+if [[ ! -f go.mod ]]; then
+    echo "No module defined, see https://github.com/golang/go/wiki/Modules#how-to-define-a-module" >&2
+    exit 1
+fi
 
-"${OUTPUT_GOBIN}/kazel"
+"$gazelle" fix --external=vendored
+"$kazel" --cfg-path=./hack/.kazelcfg.json
+"$gazelle" fix --external=vendored # TODO(fejta): remove this

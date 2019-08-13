@@ -10,7 +10,7 @@ go_library(
         "server.go",
         "upload.go",
     ],
-    importmap = "vendor/github.com/fsouza/fake-gcs-server/fakestorage",
+    importmap = "k8s.io/test-infra/vendor/github.com/fsouza/fake-gcs-server/fakestorage",
     importpath = "github.com/fsouza/fake-gcs-server/fakestorage",
     visibility = ["//visibility:public"],
     deps = [

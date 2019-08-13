@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - yutongz
+  - sebastienvas
+reviewers:
+  - yutongz
+  - sebastienvas
+labels:
+ - area/prow/pubsub

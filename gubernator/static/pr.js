@@ -5,7 +5,7 @@ function sortRows(rows, col, colName, dir) {
   // customize sorting functions for different columns
   let extract = el => el.innerText.replace(/^\s+|\s+$/g, '');
   let fn = x => x;
-  switch (colName) {
+  switch (colName.trim()) {
     case 'Number':
       fn = Number;
       break;

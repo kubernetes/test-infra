@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	TEST_SEED = int64(0)
+	TestSeed = int64(0)
 )
 
 type FakeRepo struct {
@@ -77,11 +77,11 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 	for dir, approvers := range la {
 		la[dir] = setToLower(approvers)
 		a[dir] = setToLower(approvers)
-		starting_path := dir
+		startingPath := dir
 		for {
 			dir = canonicalize(filepath.Dir(dir))
-			if parent_approvers, ok := la[dir]; ok {
-				a[starting_path] = a[starting_path].Union(setToLower(parent_approvers))
+			if parentApprovers, ok := la[dir]; ok {
+				a[startingPath] = a[startingPath].Union(setToLower(parentApprovers))
 			}
 			if dir == "" {
 				break
@@ -114,7 +114,7 @@ func TestCreateFakeRepo(t *testing.T) {
 		"c":       cApprovers,
 		"a/combo": edcApprovers,
 	}
-	fake_repo := createFakeRepo(FakeRepoMap)
+	fakeRepo := createFakeRepo(FakeRepoMap)
 
 	tests := []struct {
 		testName              string
@@ -155,17 +155,17 @@ func TestCreateFakeRepo(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		calculated_leaf_approvers := fake_repo.LeafApprovers(test.ownersFile)
-		calculated_approvers := fake_repo.Approvers(test.ownersFile)
+		calculatedLeafApprovers := fakeRepo.LeafApprovers(test.ownersFile)
+		calculatedApprovers := fakeRepo.Approvers(test.ownersFile)
 
 		test.expectedLeafApprovers = setToLower(test.expectedLeafApprovers)
-		if !calculated_leaf_approvers.Equal(test.expectedLeafApprovers) {
-			t.Errorf("Failed for test %v.  Expected Leaf Approvers: %v. Actual Leaf Approvers %v", test.testName, test.expectedLeafApprovers, calculated_leaf_approvers)
+		if !calculatedLeafApprovers.Equal(test.expectedLeafApprovers) {
+			t.Errorf("Failed for test %v.  Expected Leaf Approvers: %v. Actual Leaf Approvers %v", test.testName, test.expectedLeafApprovers, calculatedLeafApprovers)
 		}
 
 		test.expectedApprovers = setToLower(test.expectedApprovers)
-		if !calculated_approvers.Equal(test.expectedApprovers) {
-			t.Errorf("Failed for test %v.  Expected Approvers: %v. Actual Approvers %v", test.testName, test.expectedApprovers, calculated_approvers)
+		if !calculatedApprovers.Equal(test.expectedApprovers) {
+			t.Errorf("Failed for test %v.  Expected Approvers: %v. Actual Approvers %v", test.testName, test.expectedApprovers, calculatedApprovers)
 		}
 	}
 }
@@ -222,7 +222,7 @@ func TestGetLeafApprovers(t *testing.T) {
 		testOwners := Owners{
 			filenames: test.filenames,
 			repo:      createFakeRepo(FakeRepoMap),
-			seed:      TEST_SEED,
+			seed:      TestSeed,
 			log:       logrus.WithField("plugin", "some_plugin"),
 		}
 		oMap := testOwners.GetLeafApprovers()
@@ -284,7 +284,7 @@ func TestGetOwnersSet(t *testing.T) {
 		testOwners := Owners{
 			filenames: test.filenames,
 			repo:      createFakeRepo(FakeRepoMap),
-			seed:      TEST_SEED,
+			seed:      TestSeed,
 			log:       logrus.WithField("plugin", "some_plugin"),
 		}
 		oSet := testOwners.GetOwnersSet()
@@ -360,7 +360,7 @@ func TestGetSuggestedApprovers(t *testing.T) {
 		testOwners := Owners{
 			filenames: test.filenames,
 			repo:      createFakeRepo(FakeRepoMap),
-			seed:      TEST_SEED,
+			seed:      TestSeed,
 			log:       logrus.WithField("plugin", "some_plugin"),
 		}
 		suggested := testOwners.GetSuggestedApprovers(testOwners.GetReverseMap(testOwners.GetLeafApprovers()), testOwners.GetShuffledApprovers())
@@ -446,7 +446,7 @@ func TestGetAllPotentialApprovers(t *testing.T) {
 		testOwners := Owners{
 			filenames: test.filenames,
 			repo:      createFakeRepo(FakeRepoMap),
-			seed:      TEST_SEED,
+			seed:      TestSeed,
 			log:       logrus.WithField("plugin", "some_plugin"),
 		}
 		all := testOwners.GetAllPotentialApprovers()
@@ -527,7 +527,7 @@ func TestFindMostCoveringApprover(t *testing.T) {
 		testOwners := Owners{
 			filenames: test.filenames,
 			repo:      createFakeRepo(FakeRepoMap),
-			seed:      TEST_SEED,
+			seed:      TestSeed,
 			log:       logrus.WithField("plugin", "some_plugin"),
 		}
 		bestPerson := findMostCoveringApprover(testOwners.GetAllPotentialApprovers(), testOwners.GetReverseMap(testOwners.GetLeafApprovers()), test.unapproved)
@@ -588,7 +588,7 @@ func TestGetReverseMap(t *testing.T) {
 		testOwners := Owners{
 			filenames: test.filenames,
 			repo:      createFakeRepo(FakeRepoMap),
-			seed:      TEST_SEED,
+			seed:      TestSeed,
 			log:       logrus.WithField("plugin", "some_plugin"),
 		}
 		calculatedRevMap := testOwners.GetReverseMap(testOwners.GetLeafApprovers())

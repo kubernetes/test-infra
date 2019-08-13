@@ -6,7 +6,7 @@ go_library(
         "lru.go",
         "lru_interface.go",
     ],
-    importmap = "vendor/github.com/hashicorp/golang-lru/simplelru",
+    importmap = "k8s.io/test-infra/vendor/github.com/hashicorp/golang-lru/simplelru",
     importpath = "github.com/hashicorp/golang-lru/simplelru",
     visibility = ["//visibility:public"],
 )

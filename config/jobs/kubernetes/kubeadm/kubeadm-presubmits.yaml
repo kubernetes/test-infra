@@ -1,0 +1,12 @@
+# k8s.io/kubeadm presubmits
+presubmits:
+  kubernetes/kubeadm:
+  - name: pull-kubeadm-kinder-verify
+    path_alias: "k8s.io/kubeadm"
+    decorate: true
+    run_if_changed: '^kinder\/.*$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - "./kinder/hack/verify-all.sh"

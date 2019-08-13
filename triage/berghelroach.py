@@ -177,7 +177,7 @@ def dist(a, b, limit=None):
 # to save some arithmetic.  The first round is always even, as p=abs(main).
 # Note that we rename the "f" function to "computeRow" to be Googley.
 
-class BerghelRoach(object):
+class BerghelRoach:
     def __init__(self, pattern):
         # The "pattern" string against which others are compared.
         self.pattern = pattern
@@ -240,7 +240,7 @@ class BerghelRoach(object):
             # Before calling computeRow(main, distance), we need to fill in
             # missing cache elements.  See the high-level description above.
             # Higher-numbered diagonals
-            offDiagonal = (distance - main) / 2
+            offDiagonal = (distance - main) // 2
             self.ensureCapacityRight(offDiagonal, True)
 
             if even:
@@ -260,17 +260,17 @@ class BerghelRoach(object):
                 self.currentRight[offDiagonal] = immediateRight
                 offDiagonal -= 1
             # Lower-numbered diagonals
-            offDiagonal = (distance + main) / 2
+            offDiagonal = (distance + main) // 2
             self.ensureCapacityLeft(offDiagonal, True)
 
             if even:
                 # Lower diagonals, fictitious values for f(-x-1,x) = x
-                self.lastLeft[offDiagonal] = (distance-main)/2 - 1
+                self.lastLeft[offDiagonal] = (distance-main)//2 - 1
 
             if even:
                 immediateLeft = -1
             else:
-                immediateLeft = (distance - main) / 2
+                immediateLeft = (distance - main) // 2
 
             while offDiagonal > 0:
                 immediateLeft = computeRow(
@@ -301,7 +301,7 @@ class BerghelRoach(object):
             tmp = self.priorLeft
             self.priorLeft = self.lastLeft
             self.lastLeft = self.currentLeft
-            self.currentLeft = self.priorLeft
+            self.currentLeft = tmp
 
             tmp = self.priorRight
             self.priorRight = self.lastRight

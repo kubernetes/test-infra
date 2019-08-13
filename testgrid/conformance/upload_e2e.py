@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2018 The Kubernetes Authors.
 #
@@ -32,6 +32,8 @@
 #
 # Usage: see README.md
 
+# Required for pylint: 1.9.4 to tokenize the python3 print function.
+from __future__ import print_function
 
 import re
 import sys
@@ -59,7 +61,8 @@ E2E_LOG_TIMESTAMP_RE = re.compile(r'(... .\d \d\d:\d\d:\d\d\.\d\d\d):.*')
 # Ginkgo gives a line like the following at the end of successful runs:
 # SUCCESS! -- 123 Passed | 0 Failed | 0 Pending | 587 Skipped PASS
 # we match this to detect overall success
-E2E_LOG_SUCCESS_RE = re.compile(r'SUCCESS! -- .* PASS')
+E2E_LOG_SUCCESS_RE = re.compile(r'Test Suite Passed')
+E2E_LOG_FAIL_RE = re.compile(r'Test Suite Failed')
 
 
 def log_line_strip_escape_sequences(line):
@@ -95,8 +98,7 @@ def parse_e2e_logfile(file_handle, year):
     Returns:
         started (datetime.datetime), finished (datetime.datetime), passed (boolean)
     """
-    started = finished = None
-    passed = False
+    passed = started = finished = None
     for line in file_handle:
         line = log_line_strip_escape_sequences(line)
         # try to get a timestamp from each line, keep the first one as
@@ -107,10 +109,13 @@ def parse_e2e_logfile(file_handle, year):
                 finished = timestamp
             else:
                 started = timestamp
-        # if we found the ginkgo success line then the run passed
-        is_success = E2E_LOG_SUCCESS_RE.match(line)
-        if is_success:
+        if passed is False:
+            # if we already have found a failure, ignore subsequent pass/fails
+            continue
+        elif E2E_LOG_SUCCESS_RE.match(line):
             passed = True
+        elif E2E_LOG_FAIL_RE.match(line):
+            passed = False
     return started, finished, passed
 
 
@@ -163,7 +168,7 @@ def testgrid_finished_json_contents(finish_time, passed, metadata):
 def upload_string(gcs_path, text, dry):
     """Uploads text to gcs_path if dry is False, otherwise just prints"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
-    print >>sys.stderr, 'Run:', cmd, 'stdin=%s' % text
+    print('Run:', cmd, 'stdin=%s' % text, file=sys.stderr)
     if dry:
         return
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
@@ -177,7 +182,7 @@ def upload_file(gcs_path, file_path, dry):
     """Uploads file at file_path to gcs_path if dry is False, otherwise just prints"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain',
            'cp', file_path, gcs_path]
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry:
         return
     proc = subprocess.Popen(cmd)
@@ -191,25 +196,25 @@ def get_current_account(dry_run):
     """gets the currently active gcp account by shelling out to gcloud"""
     cmd = ['gcloud', 'auth', 'list',
            '--filter=status:ACTIVE', '--format=value(account)']
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
         return ""
-    return subprocess.check_output(cmd).strip('\n')
+    return subprocess.check_output(cmd, encoding='utf-8').strip('\n')
 
 
 def set_current_account(account, dry_run):
     """sets the currently active gcp account by shelling out to gcloud"""
     cmd = ['gcloud', 'config', 'set', 'core/account', account]
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
-        return
+        return None
     return subprocess.check_call(cmd)
 
 
 def activate_service_account(key_file, dry_run):
     """activates a gcp service account by shelling out to gcloud"""
     cmd = ['gcloud', 'auth', 'activate-service-account', '--key-file='+key_file]
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
         return
     subprocess.check_call(cmd)
@@ -218,9 +223,9 @@ def activate_service_account(key_file, dry_run):
 def revoke_current_account(dry_run):
     """logs out of the currently active gcp account by shelling out to gcloud"""
     cmd = ['gcloud', 'auth', 'revoke']
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     if dry_run:
-        return
+        return None
     return subprocess.check_call(cmd)
 
 
@@ -293,7 +298,7 @@ def main(cli_args):
     # testgrid entry
     junits = glob.glob(args.junit)
     if not junits:
-        print 'No matching JUnit files found!'
+        print('No matching JUnit files found!')
         sys.exit(-1)
 
     # parse the e2e.log for start time, finish time, and success
@@ -309,14 +314,14 @@ def main(cli_args):
     gcs_dir = args.bucket + '/' + str(datetime_to_unix(started))
 
     # upload metadata, log, junit to testgrid
-    print 'Uploading entry to: %s' % gcs_dir
+    print('Uploading entry to: %s' % gcs_dir)
     upload_string(gcs_dir+'/started.json', started_json, args.dry_run)
     upload_string(gcs_dir+'/finished.json', finished_json, args.dry_run)
     upload_file(gcs_dir+'/build-log.txt', args.log, args.dry_run)
     for junit_file in junits:
         upload_file(gcs_dir+'/artifacts/' +
                     path.basename(junit_file), junit_file, args.dry_run)
-    print 'Done.'
+    print('Done.')
 
 
 if __name__ == '__main__':

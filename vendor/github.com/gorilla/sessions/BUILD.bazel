@@ -3,12 +3,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "cookie.go",
+        "cookie_go111.go",
         "doc.go",
         "lex.go",
+        "options.go",
+        "options_go111.go",
         "sessions.go",
         "store.go",
     ],
-    importmap = "vendor/github.com/gorilla/sessions",
+    importmap = "k8s.io/test-infra/vendor/github.com/gorilla/sessions",
     importpath = "github.com/gorilla/sessions",
     visibility = ["//visibility:public"],
     deps = [

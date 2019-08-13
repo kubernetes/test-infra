@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: default
   name: needs-rebase
   labels:
     app: needs-rebase
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: needs-rebase
   template:
     metadata:
       labels:
@@ -28,7 +32,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: needs-rebase
-        image: gcr.io/k8s-prow/needs-rebase:v20180723-3632407bc
+        image: gcr.io/k8s-prow/needs-rebase:v20190808-5e69697af
         imagePullPolicy: Always
         args:
         - --dry-run=false

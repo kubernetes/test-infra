@@ -13,7 +13,6 @@
 # limitations under the License.
 
 FROM ubuntu:16.04
-LABEL maintainer="spxtr@google.com"
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -22,7 +21,7 @@ RUN apt-get update && apt-get install -y \
     python \
     python-pip \
     mocha && \
-    apt-get clean
+    rm -rf /var/lib/apt/lists/*
 
 ENV GCLOUD_VERSION 138.0.0
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \

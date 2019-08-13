@@ -9,7 +9,7 @@ go_library(
         "mutatingwebhookconfiguration.go",
         "validatingwebhookconfiguration.go",
     ],
-    importmap = "vendor/k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1",
+    importmap = "k8s.io/test-infra/vendor/k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1",
     importpath = "k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
@@ -32,7 +32,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1/fake:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

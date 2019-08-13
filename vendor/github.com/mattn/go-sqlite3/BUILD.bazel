@@ -70,7 +70,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
-    importmap = "vendor/github.com/mattn/go-sqlite3",
+    importmap = "k8s.io/test-infra/vendor/github.com/mattn/go-sqlite3",
     importpath = "github.com/mattn/go-sqlite3",
     visibility = ["//visibility:public"],
 )

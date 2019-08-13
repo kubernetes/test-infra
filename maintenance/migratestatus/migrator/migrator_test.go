@@ -20,59 +20,59 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
+	"k8s.io/test-infra/prow/github"
 )
 
 type modeTest struct {
 	name          string
-	start         []github.RepoStatus
-	expectedDiffs []*github.RepoStatus
+	start         []github.Status
+	expectedDiffs []github.Status
 }
 
 // compareDiffs checks if a list of status updates matches an expected list of status updates.
-func compareDiffs(diffs []*github.RepoStatus, expectedDiffs []*github.RepoStatus) error {
+func compareDiffs(diffs []github.Status, expectedDiffs []github.Status) error {
 	if len(diffs) != len(expectedDiffs) {
 		return fmt.Errorf("failed because the returned diff had %d changes instead of %d", len(diffs), len(expectedDiffs))
 	}
 	for _, diff := range diffs {
-		if diff == nil {
-			return fmt.Errorf("failed because the returned diff contained a nil RepoStatus")
+		if diff.Context == "" {
+			return fmt.Errorf("failed because the returned diff contained a Status with an empty Context field")
 		}
-		if diff.Context == nil {
-			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil Context field")
+		if diff.Description == "" {
+			return fmt.Errorf("failed because the returned diff contained a Status with an empty Description field")
 		}
-		if diff.Description == nil {
-			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil Description field")
+		if diff.State == "" {
+			return fmt.Errorf("failed because the returned diff contained a Status with an empty State field")
 		}
-		if diff.State == nil {
-			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil State field")
-		}
-		var match *github.RepoStatus
+		var match github.Status
+		var found bool
 		for _, expected := range expectedDiffs {
-			if *expected.Context == *diff.Context {
+			if expected.Context == diff.Context {
 				match = expected
+				found = true
 				break
 			}
 		}
-		if match == nil {
-			return fmt.Errorf("failed because the returned diff contained an unexpected change to context '%s'", *diff.Context)
+		if !found {
+			return fmt.Errorf("failed because the returned diff contained an unexpected change to context '%s'", diff.Context)
 		}
 		// Found a matching context. Make sure that fields are equal.
-		if *match.Description != *diff.Description {
-			return fmt.Errorf("failed because the returned diff for context '%s' had Description '%s' instead of '%s'", *diff.Context, *diff.Description, *match.Description)
+		if match.Description != diff.Description {
+			return fmt.Errorf("failed because the returned diff for context '%s' had Description '%s' instead of '%s'", diff.Context, diff.Description, match.Description)
 		}
-		if *match.State != *diff.State {
-			return fmt.Errorf("failed because the returned diff for context '%s' had State '%s' instead of '%s'", *diff.Context, *diff.State, *match.State)
+		if match.State != diff.State {
+			return fmt.Errorf("failed because the returned diff for context '%s' had State '%s' instead of '%s'", diff.Context, diff.State, match.State)
 		}
 
-		if match.TargetURL == nil {
-			if diff.TargetURL != nil {
-				return fmt.Errorf("failed because the returned diff for context '%s' had a non-nil TargetURL", *diff.Context)
+		if match.TargetURL == "" {
+			if diff.TargetURL != "" {
+				return fmt.Errorf("failed because the returned diff for context '%s' had a non-empty TargetURL", diff.Context)
 			}
-		} else if diff.TargetURL == nil {
-			return fmt.Errorf("failed because the returned diff for context '%s' had a nil TargetURL", *diff.Context)
-		} else if *match.TargetURL != *diff.TargetURL {
-			return fmt.Errorf("failed because the returned diff for context '%s' had TargetURL '%s' instead of '%s'", *diff.Context, *diff.TargetURL, *match.TargetURL)
+		} else if diff.TargetURL == "" {
+			return fmt.Errorf("failed because the returned diff for context '%s' had an empty TargetURL", diff.Context)
+		} else if match.TargetURL != diff.TargetURL {
+			return fmt.Errorf("failed because the returned diff for context '%s' had TargetURL '%s' instead of '%s'", diff.Context, diff.TargetURL, match.TargetURL)
 		}
 	}
 	return nil
@@ -86,61 +86,61 @@ func TestMoveMode(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.RepoStatus{
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextA, "success", desc, ""),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "unrelated contexts",
-			start: []github.RepoStatus{
-				*makeStatus("also not related", "error", "description 4", "url 4"),
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
+			start: []github.Status{
+				makeStatus("also not related", "error", "description 4", "url 4"),
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextA, "success", desc, ""),
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "unrelated contexts; missing context A",
-			start: []github.RepoStatus{
-				*makeStatus("also not related", "error", "description 4", "url 4"),
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
+			start: []github.Status{
+				makeStatus("also not related", "error", "description 4", "url 4"),
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "unrelated contexts; already have context A and B",
-			start: []github.RepoStatus{
-				*makeStatus("also not related", "error", "description 4", "url 4"),
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextB, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus("also not related", "error", "description 4", "url 4"),
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "unrelated contexts; already have context B; no context A",
-			start: []github.RepoStatus{
-				*makeStatus("also not related", "error", "description 4", "url 4"),
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextB, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus("also not related", "error", "description 4", "url 4"),
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name:          "no contexts",
-			start:         []github.RepoStatus{},
-			expectedDiffs: []*github.RepoStatus{},
+			start:         []github.Status{},
+			expectedDiffs: []github.Status{},
 		},
 	}
 
-	m := *MoveMode(contextA, contextB)
+	m := *MoveMode(contextA, contextB, "")
 	for _, test := range tests {
 		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
@@ -156,70 +156,70 @@ func TestCopyMode(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.RepoStatus{
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "unrelated contexts",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
 		},
 		{
 			name: "already have context B",
-			start: []github.RepoStatus{
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus(contextB, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "already have updated context B",
-			start: []github.RepoStatus{
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus(contextB, "success", "description 2", "url 2"),
+			start: []github.Status{
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus(contextB, "success", "description 2", "url 2"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "unrelated contexts already have updated context B",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
-				*makeStatus(contextB, "error", "description 3", "url 3"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
+				makeStatus(contextB, "error", "description 3", "url 3"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "only have context B",
-			start: []github.RepoStatus{
-				*makeStatus(contextB, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "unrelated contexts; context B but not A",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextB, "failure", "description 1", "url 1"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextB, "failure", "description 1", "url 1"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name:          "no contexts",
-			start:         []github.RepoStatus{},
-			expectedDiffs: []*github.RepoStatus{},
+			start:         []github.Status{},
+			expectedDiffs: []github.Status{},
 		},
 	}
 
@@ -240,66 +240,66 @@ func TestRetireModeReplacement(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.RepoStatus{
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus(contextB, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name: "unrelated contexts;updated context B",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
-				*makeStatus(contextB, "success", "description 3", "url 3"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
+				makeStatus(contextB, "success", "description 3", "url 3"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name: "missing context B",
-			start: []github.RepoStatus{
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "unrelated contexts;missing context B",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "missing context A",
-			start: []github.RepoStatus{
-				*makeStatus(contextB, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextB, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "unrelated contexts;missing context A",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
-				*makeStatus(contextB, "success", "description 3", "url 3"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
+				makeStatus(contextB, "success", "description 3", "url 3"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name:          "no contexts",
-			start:         []github.RepoStatus{},
-			expectedDiffs: []*github.RepoStatus{},
+			start:         []github.Status{},
+			expectedDiffs: []github.Status{},
 		},
 	}
 
-	m := *RetireMode(contextA, contextB)
+	m := *RetireMode(contextA, contextB, "")
 	for _, test := range tests {
 		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
@@ -315,40 +315,40 @@ func TestRetireModeNoReplacement(t *testing.T) {
 	tests := []*modeTest{
 		{
 			name: "simple",
-			start: []github.RepoStatus{
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
+			start: []github.Status{
+				makeStatus(contextA, "failure", "description 1", "url 1"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name: "unrelated contexts",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus(contextA, "failure", "description 1", "url 1"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus(contextA, "failure", "description 1", "url 1"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []*github.RepoStatus{
+			expectedDiffs: []github.Status{
 				makeStatus(contextA, "success", desc, ""),
 			},
 		},
 		{
 			name:          "missing context A",
-			start:         []github.RepoStatus{},
-			expectedDiffs: []*github.RepoStatus{},
+			start:         []github.Status{},
+			expectedDiffs: []github.Status{},
 		},
 		{
 			name: "unrelated contexts;missing context A",
-			start: []github.RepoStatus{
-				*makeStatus("unrelated context", "success", "description 2", "url 2"),
-				*makeStatus("also not related", "error", "description 4", "url 4"),
+			start: []github.Status{
+				makeStatus("unrelated context", "success", "description 2", "url 2"),
+				makeStatus("also not related", "error", "description 4", "url 4"),
 			},
-			expectedDiffs: []*github.RepoStatus{},
+			expectedDiffs: []github.Status{},
 		},
 	}
 
-	m := *RetireMode(contextA, "")
+	m := *RetireMode(contextA, "", "")
 	for _, test := range tests {
 		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
@@ -357,17 +357,80 @@ func TestRetireModeNoReplacement(t *testing.T) {
 	}
 }
 
-// makeStatus returns a new RepoStatus struct with the specified fields.
+// makeStatus returns a new Status struct with the specified fields.
 // targetURL=="" means TargetURL==nil
-func makeStatus(context, state, description, targetURL string) *github.RepoStatus {
-	var url *string
+func makeStatus(context, state, description, targetURL string) github.Status {
+	var url string
 	if targetURL != "" {
-		url = &targetURL
+		url = targetURL
 	}
-	return &github.RepoStatus{
-		Context:     &context,
-		State:       &state,
-		Description: &description,
+	return github.Status{
+		Context:     context,
+		State:       state,
+		Description: description,
 		TargetURL:   url,
+	}
+}
+
+type refID struct {
+	org, repo, ref string
+}
+
+type fakeGitHubClient struct {
+	statusesRetrieved map[refID]interface{}
+}
+
+func (c *fakeGitHubClient) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+	c.statusesRetrieved[refID{org: org, repo: repo, ref: ref}] = nil
+	return nil, errors.New("return error to stop execution early")
+}
+
+func (c *fakeGitHubClient) CreateStatus(org, repo, SHA string, s github.Status) error {
+	return nil
+}
+
+func (c *fakeGitHubClient) GetPullRequests(org, repo string) ([]github.PullRequest, error) {
+	return []github.PullRequest{}, nil
+}
+
+func TestProcessPR(t *testing.T) {
+	var testCases = []struct {
+		name    string
+		matches bool
+	}{
+		{
+			name:    "branch matching filter should proceed",
+			matches: true,
+		},
+		{
+			name:    "branch not matching filter should not proceed",
+			matches: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		client := fakeGitHubClient{statusesRetrieved: map[refID]interface{}{}}
+		var filteredBranch string
+		migrator := Migrator{
+			org:  "org",
+			repo: "repo",
+			targetBranchFilter: func(branch string) bool {
+				filteredBranch = branch
+				return testCase.matches
+			},
+			client: &client,
+		}
+		migrator.processPR(github.PullRequest{Base: github.PullRequestBranch{Ref: "branch"}, Head: github.PullRequestBranch{SHA: "fake"}})
+		if filteredBranch != "branch" {
+			t.Errorf("%s: failed to use filter on branch", testCase.name)
+		}
+
+		_, retrieved := client.statusesRetrieved[refID{org: "org", repo: "repo", ref: "fake"}]
+		if testCase.matches && !retrieved {
+			t.Errorf("%s: failed to process a PR that matched", testCase.name)
+		}
+		if !testCase.matches && retrieved {
+			t.Errorf("%s: processed a PR that didn't match", testCase.name)
+		}
 	}
 }

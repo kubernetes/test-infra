@@ -1,0 +1,168 @@
+/*
+Copyright 2019 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+syntax = "proto3";
+option go_package = "response";
+
+import "testgrid/config/config.proto";
+import "testgrid/summary/summary.proto";
+
+// PhaseTimer times the duration of each update cycle.
+message PhaseTimer {
+  int32 start = 1;
+  int32 last = 2;
+  repeated string phases = 3;
+  repeated double delta = 4;
+  double total = 5;
+}
+
+message TestAlert {
+  string fail_build_id = 1 [json_name="fail-build-id"];
+  int64 fail_count = 2 [json_name="fail-count"];
+  int32 fail_time = 3 [json_name="fail-time"];
+  string text = 4;
+  string message = 5;
+  string link_text = 6 [json_name="link-text"];
+  string link = 7;
+  string url_text = 8 [json_name="url-text"];
+  string test_id = 9 [json_name="test-id"];
+  string pass_build_id = 10 [json_name="pass-build-id"];
+  int64 pass_count = 11 [json_name="pass-count"];
+  int32 pass_time = 12 [json_name="pass-time"];
+  string code_search_path = 13 [json_name="code-search-path"];
+  string test_name = 14 [json_name="test-name"];
+}
+
+// RleStatus represents a run-length encoded test status:
+// a run of Count cells with status Value.
+message RleStatus {
+  int32 count = 1;
+  int32 value = 2;
+}
+
+message RawMetric {
+  // Name.
+  string id = 1;
+  // A sparse encoding of densely stored values. The layout encodes the cycle
+  // indices of the values in the value field below. The layout contains indices
+  // followed by counts. The indices specify test cycles where contiguous
+  // sequences of values start.
+  repeated int32 layout = 2;
+  // Non-empty values for each test result.
+  repeated double value = 3;
+}
+
+message Graph {
+  string metric = 1;
+  repeated string names = 2;
+  repeated string labels = 3;
+
+  message Values {
+    repeated double values = 1;
+  }
+
+  repeated Values values = 4;
+}
+
+// Row describes a test row.
+message Row {
+  string name = 1;
+  string original_name = 2 [json_name="original-name"];
+  TestAlert alert = 3;
+  repeated string linked_bugs = 4;
+  repeated string messages = 5;
+  repeated string short_texts = 6;
+  repeated string test_ids = 7;
+  repeated int64 short_test_ids = 8;
+  repeated RleStatus statuses = 9;
+  string target = 10;
+  repeated Row tests = 11;
+  repeated string tabular_name_groups = 12 [json_name="tabular-name-groups"];
+  repeated RawMetric metric_info = 13 [json_name="-"];
+  repeated Graph graphs = 14;
+}
+
+message TestMetadata {
+  int32 bug_component = 1 [json_name="bug-component"];
+  string owner = 2;
+  repeated string cc = 3;
+}
+
+// Response has all the fields expected by TestGrid's javascript client.
+// It represents a grid of test results, with additional annotations for metadata.
+message Response {
+  // Display the Test Group name
+  string test_group_name = 1 [json_name="test-group-name"];
+  string query_param = 2 [json_name="query"];
+  string status = 3;
+  // The duration of each update cycle
+  PhaseTimer phase_timer = 4 [json_name="phase-timer"];
+  // Boolean to determine if the response is loaded from a cache
+  bool cached = 5;
+  string summary = 6;
+  
+  map<string, string> bugs = 7;
+  repeated string build_ids = 8 [json_name="build-ids"];
+  repeated string column_ids = 9;
+
+  message CustomColumns {
+    repeated string custom_columns = 1;
+  }
+  repeated CustomColumns custom_columns = 10 [json_name="custom-columns"];
+  repeated string column_header_names = 11 [json_name="column-header-names"];
+  repeated string groups = 12;
+  repeated string metrics = 13;
+  repeated Row tests = 14;
+  // Client wants nullable strings here
+  repeated string row_ids = 15;
+  repeated int64 timestamps = 16;
+  
+  // Lookup map for shortening long test IDs in each row.
+  map<int64, string> test_id_map = 17;
+  map<string, TestMetadata> test_metadata = 18 [json_name="test-metadata"];
+  int32 stale_test_threshold = 19 [json_name="stale-test-threshold"];
+  int64 num_stale_tests = 20 [json_name="num-stale-tests"];
+  string alerts = 21;
+  
+  bool add_tabular_names_option = 22 [json_name="add-tabular-names-option"];
+  bool show_tabular_names = 23 [json_name="show-tabular-names"];
+  repeated string tabular_names_column_headers = 24 [json_name="tabular-names-column-headers"];
+
+  string description = 25;
+  int32 bug_component = 26 [json_name="bug-component"];
+  string code_search_path = 27 [json_name="code-search-path"];
+  LinkTemplate open_test_template = 28 [json_name="open-test-template"];
+  LinkTemplate file_bug_template = 29 [json_name="file-bug-template"];
+  LinkTemplate attach_bug_template = 30 [json_name="attach-bug-template"];
+  LinkTemplate results_url_template = 31 [json_name="results-url-template"];
+  LinkTemplate code_search_url_template = 32 [json_name="code-search-url-template"];
+  LinkTemplate open_bug_template = 33 [json_name="open-bug-template"];
+  string about_dashboard_url = 34 [json_name="about-dashboard-url"];
+
+  string results_text = 35 [json_name="results-text"];
+  string latest_green = 36 [json_name="latest-green"];
+
+  bool triage_enabled = 37 [json_name="triage-enabled"];
+  repeated Notification notifications = 38;
+
+  TestGroup test_group = 39 [json_name="-"];
+  DashboardTab dashboard_tab = 40 [json_name="-"];
+  DashboardTabSummary.TabStatus overall_status = 41 [json_name="overall-status"];
+
+  string dashboard_name = 42;
+  int64 update_timestamp = 43;
+}
+

@@ -1,64 +1,105 @@
 presubmits:
   kubernetes-sigs/cluster-api:
   - name: pull-cluster-api-build
-    agent: kubernetes
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
     always_run: true
-    context: pull-cluster-api-build
-    rerun_command: "/test pull-cluster-api-build"
-    trigger: "/test( all| pull-cluster-api-build)"
     labels:
       preset-service-account: "true"
+    skip_branches:
+    - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        - "./scripts/ci-build.sh"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        - ./scripts/ci-build.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: pr-build
   - name: pull-cluster-api-make
-    agent: kubernetes
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
     always_run: true
-    context: pull-cluster-api-make
-    rerun_command: "/test pull-cluster-api-make"
-    trigger: "/test( all| pull-cluster-api-make)"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
+    skip_branches:
+    - gh-pages
     spec:
       containers:
-      - args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - "--scenario=execute"
-        - "--"
-        - "./scripts/ci-make.sh"
+      - command:
+        - runner.sh
+        - ./scripts/ci-make.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: pr-make
   - name: pull-cluster-api-test
-    agent: kubernetes
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
     always_run: true
-    context: pull-cluster-api-test
-    rerun_command: "/test pull-cluster-api-test"
-    trigger: "/test( all| pull-cluster-api-test)"
     labels:
       preset-service-account: "true"
+    skip_branches:
+    - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
-        - "./scripts/ci-test.sh"
+        - runner.sh
+        - ./scripts/ci-test.sh
+        resources:
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: pr-test
+  - name: pull-cluster-api-vendor-in-sync
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    skip_branches:
+    - gh-pages
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        - ./scripts/ci-is-vendor-in-sync.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: pr-vendor
+  - name: pull-cluster-api-integration
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        - ./scripts/ci-integration.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: pr-integration

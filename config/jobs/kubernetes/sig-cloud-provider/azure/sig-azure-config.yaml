@@ -1,0 +1,80 @@
+presets:
+- labels:
+    preset-azure-cred: "true"
+  env:
+  - name: AZURE_CREDENTIALS
+    value: /etc/azure-cred/credentials
+  - name: AZURE_SSH_PUBLIC_KEY_FILE
+    value: /etc/azure-ssh/azure-ssh-pub
+  - name: REGISTRY
+    value: k8sprow.azurecr.io
+  - name: KUBE_VERBOSE
+    value: 0
+  volumes:
+  - name: azure-cred
+    secret:
+      secretName: azure-cred
+  - name: azure-ssh
+    secret:
+      secretName: azure-ssh
+  volumeMounts:
+  - name: azure-cred
+    mountPath: /etc/azure-cred
+    readOnly: true
+  - name: azure-ssh
+    mountPath: /etc/azure-ssh
+    readOnly: true
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-aks-engine-azure
+    always_run: false
+    optional: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=460"
+        - "--scenario=kubernetes_e2e"
+        - --
+        - "--gce-ssh=" # https://github.com/kubernetes/test-infra/pull/10054
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine"
+        - "--build=bazel" # build kubectl binary
+        - "--provider=skeleton" # noop
+        - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure"
+        - "--ginkgo-parallel=30"
+        - "--acsengine-agentpoolcount=3"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
+        - "--acsengine-orchestratorRelease=1.16" # needed for now until aks-engine supports `custom`
+        - "--acsengine-mastervmsize=Standard_DS2_v2"
+        - "--acsengine-agentvmsize=Standard_DS2_v2"
+        - "--acsengine-hyperkube=True" # build hyperkube image
+        - "--acsengine-location=centralus"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/kubernetes.json"
+        - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.0/aks-engine-v0.39.0-linux-amd64.tar.gz"
+        - "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\] --ginkgo.skip=\\[sig-node\\]\\sMount\\spropagation|\\[sig-network\\]\\sNetwork\\sshould\\sset\\sTCP\\sCLOSE_WAIT\\stimeout|\\[sig-storage\\]\\sPersistentVolumes-local\\sStress\\swith\\slocal\\svolume\\sprovisioner\\s\\[Serial\\]\\sshould\\suse\\sbe\\sable\\sto\\sprocess\\smany\\spods\\sand\\sreuse\\slocal\\svolumes|should\\sunmount\\sif\\spod\\sis\\sgracefully\\sdeleted\\swhile\\skubelet\\sis\\sdown\\s\\[Disruptive\\]\\[Slow\\]|should\\sunmount\\sif\\spod\\sis\\sforce\\sdeleted\\swhile\\skubelet\\sis\\sdown\\s\\[Disruptive\\]\\[Slow\\]|\\[sig-network\\]\\sServices\\sshould\\sbe\\sable\\sto\\screate\\sa\\sfunctioning\\sNodePort\\sservice|\\[sig-scheduling\\]\\sSchedulerPredicates\\s\\[Serial\\]\\svalidates\\sMaxPods\\slimit\\snumber\\sof\\spods\\sthat\\sare\\sallowed\\sto\\srun\\s\\[Slow\\]|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sDefault\\sshould\\screate\\sand\\sdelete\\sdefault\\spersistent\\svolumes\\s\\[Slow\\]|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sshould\\sprovision\\sstorage\\swith\\sdifferent\\sparameters|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sshould\\stest\\sthat\\sdeleting\\sa\\sclaim\\sbefore\\sthe\\svolume\\sis\\sprovisioned\\sdeletes\\sthe\\svolume.|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\sadopt\\smatching\\sorphans\\sand\\srelease\\snon-matching\\spods|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\snot\\sdeadlock\\swhen\\sa\\spod.s\\spredecessor\\sfails|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\sperform\\srolling\\supdates\\sand\\sroll\\sbacks\\sof\\stemplate\\smodifications\\swith\\sPVCs|\\[sig-apps\\]\\sStatefulSet\\s\\[k8s.io\\]\\sBasic\\sStatefulSet\\sfunctionality\\s\\[StatefulSetBasic\\]\\sshould\\sprovide\\sbasic\\sidentity|\\[sig-storage\\]\\sPersistentVolumes\\sDefault\\sStorageClass\\spods\\sthat\\suse\\smultiple\\svolumes\\sshould\\sbe\\sreschedulable|\\[sig-storage\\]\\sPVC\\sProtection|\\[sig-storage\\]\\sDynamic\\sProvisioning\\s\\[k8s.io\\]\\sGlusterDynamicProvisioner|\\[sig-storage\\]\\sVolumes\\sAzure\\sDisk\\sshould\\sbe\\smountable\\s\\[Slow\\]|\\[sig-apps\\]\\sNetwork\\sPartition\\s\\[Disruptive\\]\\s\\[Slow\\]|\\[sig-network\\]\\sDNS\\sconfigMap|\\[k8s.io\\]\\s\\[sig-node\\]\\sKubelet\\s\\[Serial\\]\\s\\[Slow\\]\\s\\[k8s.io\\]\\s\\[sig-node\\]\\sregular\\sresource\\susage\\stracking\\sresource\\stracking\\sfor\\s0\\spods\\sper\\snode|\\[k8s.io\\]\\s\\[sig-node\\]\\sKubelet\\s\\[Serial\\]\\s\\[Slow\\]\\s\\[k8s.io\\]\\s\\[sig-node\\]\\sregular\\sresource\\susage\\stracking\\sresource\\stracking\\sfor\\s100\\spods\\sper\\snode|Horizontal\\spod\\sautoscaling\\s\\(scale\\sresource:\\sCPU\\)|\\[sig-storage\\]\\sDynamic\\sProvisioning\\sDynamicProvisioner\\sExternal\\sshould\\slet\\san\\sexternal\\sdynamic\\sprovisioner\\screate\\sand\\sdelete\\spersistent\\svolumes\\s\\[Slow\\]|ESIPP|\\[sig-network\\]\\sServices\\sshould\\spreserve\\ssource\\spod\\sIP\\sfor\\straffic\\sthru\\sservice\\scluster\\sIP|In-tree\\sVolumes|PersistentVolumes-local|CSI\\sVolumes|should\\swrite\\sentries\\sto\\s/etc/hosts|\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[NodeFeature:.+\\]"
+        - "--timeout=420m"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-azure-master
+      testgrid-tab-name: pr-k8s-e2e
+      description: Run e2e tests
+      testgrid-num-columns-recent: '30'

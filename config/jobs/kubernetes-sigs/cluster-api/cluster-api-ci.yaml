@@ -1,31 +1,41 @@
 periodics:
 - name: ci-cluster-api-build
   interval: 1h
-  agent: kubernetes
+  decorate: true
   labels:
     preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      command:
       - "./scripts/ci-build.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: build
 - name: ci-cluster-api-test
   interval: 1h
-  agent: kubernetes
+  decorate: true
   labels:
     preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      command:
       - "./scripts/ci-test.sh"
+      resources:
+        requests:
+          cpu: 3
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: unit tests

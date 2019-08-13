@@ -22,17 +22,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 var (
-	lifecycleActiveLabel = "lifecycle/active"
-	lifecycleFrozenLabel = "lifecycle/frozen"
-	lifecycleStaleLabel  = "lifecycle/stale"
-	lifecycleRottenLabel = "lifecycle/rotten"
-	lifecycleLabels      = []string{lifecycleActiveLabel, lifecycleFrozenLabel, lifecycleStaleLabel, lifecycleRottenLabel}
-	lifecycleRe          = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (active|frozen|stale|rotten)\s*$`)
+	lifecycleLabels = []string{labels.LifecycleActive, labels.LifecycleFrozen, labels.LifecycleStale, labels.LifecycleRotten}
+	lifecycleRe     = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (active|frozen|stale|rotten)\s*$`)
 )
 
 func init() {
@@ -47,14 +44,14 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 		Usage:       "/close",
 		Description: "Closes an issue or PR.",
 		Featured:    false,
-		WhoCanUse:   "Authors and assignees can triggers this command.",
+		WhoCanUse:   "Authors and collaborators on the repository can trigger this command.",
 		Examples:    []string{"/close"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/reopen",
 		Description: "Reopens an issue or PR",
 		Featured:    false,
-		WhoCanUse:   "Authors and assignees can trigger this command.",
+		WhoCanUse:   "Authors and collaborators on the repository can trigger this command.",
 		Examples:    []string{"/reopen"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
@@ -73,7 +70,7 @@ type lifecycleClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func lifecycleHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	gc := pc.GitHubClient
 	log := pc.Logger
 	if err := handleReopen(gc, log, &e); err != nil {
@@ -126,13 +123,13 @@ func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEv
 		for _, label := range lifecycleLabels {
 			if label != lbl && github.HasLabel(label, labels) {
 				if err := gc.RemoveLabel(org, repo, number, label); err != nil {
-					log.WithError(err).Errorf("Github failed to remove the following label: %s", label)
+					log.WithError(err).Errorf("GitHub failed to remove the following label: %s", label)
 				}
 			}
 		}
 
 		if err := gc.AddLabel(org, repo, number, lbl); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", lbl)
+			log.WithError(err).Errorf("GitHub failed to add the following label: %s", lbl)
 		}
 	}
 

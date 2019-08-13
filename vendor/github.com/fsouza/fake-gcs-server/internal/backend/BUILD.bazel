@@ -8,7 +8,7 @@ go_library(
         "object.go",
         "storage.go",
     ],
-    importmap = "vendor/github.com/fsouza/fake-gcs-server/internal/backend",
+    importmap = "k8s.io/test-infra/vendor/github.com/fsouza/fake-gcs-server/internal/backend",
     importpath = "github.com/fsouza/fake-gcs-server/internal/backend",
     visibility = ["//vendor/github.com/fsouza/fake-gcs-server:__subpackages__"],
 )

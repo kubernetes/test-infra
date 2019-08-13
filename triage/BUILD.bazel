@@ -1,4 +1,4 @@
-load("@build_bazel_rules_nodejs//:defs.bzl", "jasmine_node_test")
+load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
 
 py_test(
     name = "summarize_test",
@@ -7,6 +7,7 @@ py_test(
         "summarize.py",
         "summarize_test.py",
     ],
+    python_version = "PY3",
 )
 
 py_test(
@@ -15,19 +16,16 @@ py_test(
         "berghelroach.py",
         "berghelroach_test.py",
     ],
-)
-
-filegroup(
-    name = "node_modules",
-    srcs = glob(["node_modules/**/*"]),
-    visibility = ["//visibility:public"],
+    python_version = "PY3",
 )
 
 jasmine_node_test(
     name = "script_test",
     srcs = ["script_test.js"],
     data = ["js-srcs"],
-    node_modules = ":node_modules",
+    deps = [
+        "@npm//jasmine",
+    ],
 )
 
 filegroup(

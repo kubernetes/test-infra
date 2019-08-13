@@ -21,6 +21,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"net/url"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -104,7 +105,7 @@ func TestUnapprovedFiles(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED, log: logrus.WithField("plugin", "some_plugin")})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
 		testApprovers.RequireIssue = false
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", false)
@@ -148,33 +149,33 @@ func TestGetFiles(t *testing.T) {
 			testName:          "Single Root File PR Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			expectedFiles:     []File{ApprovedFile{"", sets.NewString(rootApprovers.List()[0]), "org", "project", "master"}},
+			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", sets.NewString(rootApprovers.List()[0]), "master"}},
 		},
 		{
 			testName:          "Single File PR in B No One Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"b", "org", "project", "master"}},
+			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", "master"}},
 		},
 		{
 			testName:          "Single File PR in B Fully Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: bApprovers,
-			expectedFiles:     []File{ApprovedFile{"b", bApprovers, "org", "project", "master"}},
+			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", bApprovers, "master"}},
 		},
 		{
 			testName:          "Single Root File PR No One Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"", "org", "project", "master"}},
+			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", "master"}},
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: sets.NewString(),
 			expectedFiles: []File{
-				UnapprovedFile{"a/combo", "org", "project", "master"},
-				UnapprovedFile{"a/d", "org", "project", "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
 			},
 		},
 		{
@@ -182,8 +183,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: eApprovers,
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", eApprovers, "org", "project", "master"},
-				UnapprovedFile{"a/d", "org", "project", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", eApprovers, "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
 			},
 		},
 		{
@@ -191,8 +192,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: edcApprovers.Intersection(dApprovers),
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", edcApprovers.Intersection(dApprovers), "org", "project", "master"},
-				ApprovedFile{"a/d", edcApprovers.Intersection(dApprovers), "org", "project", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", edcApprovers.Intersection(dApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", edcApprovers.Intersection(dApprovers), "master"},
 			},
 		},
 		{
@@ -200,9 +201,9 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go", "c/test"},
 			currentlyApproved: cApprovers,
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", cApprovers, "org", "project", "master"},
-				UnapprovedFile{"a/d", "org", "project", "master"},
-				ApprovedFile{"c", cApprovers, "org", "project", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", cApprovers, "master"},
+				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "c", cApprovers, "master"},
 			},
 		},
 		{
@@ -210,19 +211,19 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/test.go", "a/d/test.go", "b/test"},
 			currentlyApproved: rootApprovers.Union(aApprovers).Union(bApprovers),
 			expectedFiles: []File{
-				ApprovedFile{"a", rootApprovers.Union(aApprovers), "org", "project", "master"},
-				ApprovedFile{"b", rootApprovers.Union(bApprovers), "org", "project", "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a", rootApprovers.Union(aApprovers), "master"},
+				ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", rootApprovers.Union(bApprovers), "master"},
 			},
 		},
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED, log: logrus.WithField("plugin", "some_plugin")})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
 		testApprovers.RequireIssue = false
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
-		calculated := testApprovers.GetFiles("org", "project", "master")
+		calculated := testApprovers.GetFiles(&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "master")
 		if !reflect.DeepEqual(test.expectedFiles, calculated) {
 			t.Errorf("Failed for test %v.  Expected files: %v. Found %v", test.testName, test.expectedFiles, calculated)
 		}
@@ -708,28 +709,24 @@ func TestGetMessage(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approver: **alice**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
 
-- **[a/OWNERS](https://github.com/org/project/blob/dev/a/OWNERS)**
-- ~~[b/OWNERS](https://github.com/org/project/blob/dev/b/OWNERS)~~ [Bill]
+- **[a/OWNERS](https://github.com/org/repo/blob/dev/a/OWNERS)**
+- ~~[b/OWNERS](https://github.com/org/repo/blob/dev/b/OWNERS)~~ [Bill]
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`
-	if got := GetMessage(ap, "org", "project", "dev"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "dev"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -757,21 +754,21 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these files:
 
-- ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
-- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+- ~~[b/OWNERS](https://github.com/org/repo/blob/master/b/OWNERS)~~ [Bill]
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "project", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -794,28 +791,24 @@ func TestGetMessageNoneApproved(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approvers: **alice**, **bill**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **bill**
+You can assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
 
-- **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
-- **[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)**
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+- **[b/OWNERS](https://github.com/org/repo/blob/master/b/OWNERS)**
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","bill"]} -->`
-	if got := GetMessage(ap, "org", "project", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -845,21 +838,21 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 Associated issue: *#12345*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these files:
 
-- ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
-- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+- ~~[b/OWNERS](https://github.com/org/repo/blob/master/b/OWNERS)~~ [Bill]
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "project", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -888,21 +881,21 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 Associated issue requirement bypassed by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these files:
 
-- ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
-- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+- ~~[b/OWNERS](https://github.com/org/repo/blob/master/b/OWNERS)~~ [Bill]
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "project", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -926,28 +919,65 @@ func TestGetMessageMDOwners(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To fully approve this pull request, please assign additional approvers.
-We suggest the following additional approvers: **alice**, **doctor**
-
-If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **doctor**
+You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
 
-- **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
-- **[b/README.md](https://github.com/org/project/blob/master/b/README.md)**
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+- **[b/README.md](https://github.com/org/repo/blob/master/b/README.md)**
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","doctor"]} -->`
-	if got := GetMessage(ap, "org", "project", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+	}
+}
+
+func TestGetMessageDifferentGitHubLink(t *testing.T) {
+	ap := NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/README.md"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a":           sets.NewString("Alice"),
+				"b":           sets.NewString("Bill"),
+				"b/README.md": sets.NewString("Doctor"),
+			}),
+			log: logrus.WithField("plugin", "some_plugin"),
+		},
+	)
+	ap.AddAuthorSelfApprover("John", "REFERENCE", false)
+	ap.RequireIssue = true
+	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **doctor**
+You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.mycorp.com/org/repo/blob/master/a/OWNERS)**
+- **[b/README.md](https://github.mycorp.com/org/repo/blob/master/b/README.md)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice","doctor"]} -->`
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.mycorp.com"}, "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)

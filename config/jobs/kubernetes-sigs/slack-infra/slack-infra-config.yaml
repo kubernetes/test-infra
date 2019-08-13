@@ -1,0 +1,35 @@
+presubmits:
+  kubernetes-sigs/slack-infra:
+  - name: pull-slack-infra-verify
+    decorate: true
+    path_alias: sigs.k8s.io/slack-infra
+    always_run: true
+    spec:
+      containers:
+        - image: golang:1.11.5
+          command:
+            - "./hack/verify-all.sh"
+  - name: pull-slack-infra-build
+    decorate: true
+    path_alias: sigs.k8s.io/slack-infra
+    always_run: true
+    spec:
+      containers:
+        - image: golang:1.11.5
+          command:
+            - "./hack/verify-build.sh"
+  - name: pull-slack-infra-test
+    decorate: true
+    path_alias: sigs.k8s.io/slack-infra
+    always_run: true
+    spec:
+      containers:
+        - image: golang:1.11.5
+          command:
+            - "go"
+          args:
+            - "test"
+            - "./..."
+          env:
+            - name: GO111MODULE
+              value: "on"

@@ -12,41 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMG = gcr.io/k8s-testimages/kubekins-test
-TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
-VERSIONS := $(wildcard ./Dockerfile-*)
+EXTRA_ARG =
+VERSION ?= all
+ifneq ($(VERSION), all)
+	EXTRA_ARG = --variant $(VERSION)
+endif
 
-do_build = \
-	$(eval VERSION := $(subst ./Dockerfile-,,$(v)))\
-	docker build -f ./Dockerfile-$(VERSION) -t $(IMG):$(VERSION)-$(TAG) . ;\
-	docker tag $(IMG):$(VERSION)-$(TAG) $(IMG):$(VERSION)-latest ;\
-	echo Built $(IMG):$(VERSION)-$(TAG) and tagged with $(IMG):$(VERSION)-latest ;
+push-prod:
+  bazel run //images/builder -- $(EXTRA_ARG) --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/kubekins-test
 
-do_push = \
-	$(eval VERSION := $(subst ./Dockerfile-,,$(v)))\
-	docker push $(IMG):$(VERSION)-$(TAG);\
-	docker push $(IMG):$(VERSION)-latest;\
-	echo Pushed $(IMG):$(VERSION)-latest and $(IMG):$(VERSION)-$(TAG);
+push:
+	bazel run //images/builder -- $(EXTRA_ARG) --allow-dirty images/kubekins-test
 
 .PHONY: all build push help
 
-all: build
-
-build:
-	@$(foreach v,$(VERSIONS),$(do_build))
-
-push: build
-	@$(foreach v,$(VERSIONS),$(do_push))
-
 help:
 	@echo "VARIABLES:"
-	@echo " VERSIONS:       Dockerfile to be built/pushed, can be either full file name or a tag"
-	@echo " 				- make build VERSIONS=./Dockerfile-1.4"
-	@echo " 				- make build VERSIONS=1.4"
-	@echo " 				are equivalent and both valid."
+	@echo " VERSION: Version to be pushed. If omitted, all images are pushed."
+	@echo "   - make push VERSION=1.4"
 	@echo ""
 	@echo "TARGETS:"
-	@echo " all:            build"
-	@echo " build:      	builds all the Dockerfile-* in VERSIONS"
-	@echo " push:       	builds all the Dockerfile-* in VERSIONS and pushes to k8s-testimages"
-
+	@echo " push:       	builds all the images and pushes to your current project's GCR"
+	@echo " push-prod:    builds all the images and pushes to k8s-testimages"

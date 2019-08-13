@@ -17,8 +17,5 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-${TESTINFRA_ROOT}/hack/update-bazel.sh
-${TESTINFRA_ROOT}/hack/update-gofmt.sh
-${TESTINFRA_ROOT}/hack/update-config.sh
-${TESTINFRA_ROOT}/hack/update-labels.sh
+cd "$(git rev-parse --show-toplevel)"
+find hack -name 'update-*.sh' -not -name "$(basename "$0")" \( -print -exec '{}' ';' -o -quit \)

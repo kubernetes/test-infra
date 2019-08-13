@@ -46,7 +46,7 @@ func init() {
 	plugins.RegisterPullRequestHandler(pluginName, pullRequestHandler, helpProvider)
 }
 
-func pullRequestHandler(pc plugins.PluginClient, event github.PullRequestEvent) error {
+func pullRequestHandler(pc plugins.Agent, event github.PullRequestEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.JiraLinker, &event)
 }
 
@@ -71,7 +71,6 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.JiraLinker, event
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, event.Number)
 	}
-
 
 	found, jiraTeamName, ticketName := extractJiraTicketDetails(event.PullRequest.Title, event.PullRequest.Head.Ref)
 	if found {

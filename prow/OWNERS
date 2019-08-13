@@ -1,10 +1,19 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 filters:
   ".*":
     approvers:
+      - cblecker
       - cjwagner
-      - kargakis
-      - spxtr
+      - fejta
       - stevekuznetsov
+    emeritus_approvers:
+      - spxtr # 2018-09-17
+    reviewers:
+      - matthyx
+      - alvaroaleman
+    labels:
+      - area/prow
   "(plugins|config)\\.yaml$":
     required_reviewers:
       - cblecker

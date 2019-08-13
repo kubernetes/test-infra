@@ -14,7 +14,14 @@
 
 FROM ubuntu
 
-RUN apt-get update && apt-get install -y tzdata curl pv time sqlite3 python-pip && apt-get clean
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    curl \
+    pv \
+    time \
+    sqlite3 \
+    python-pip \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://bitbucket.org/squeaky/portable-pypy/downloads/pypy-5.8-1-linux_x86_64-portable.tar.bz2 | tar xj -C opt
 RUN ln -s /opt/pypy*/bin/pypy /usr/bin

@@ -234,7 +234,7 @@ max-module-lines=1000
 # tab).
 indent-string='    '
 
-# Number of spaces of indent required inside a hanging  or continued line.
+# Number of spaces of indent required inside a hanging or continued line.
 indent-after-paren=4
 
 # Expected format of line ending, e.g. empty (any line ending), LF or CRLF.

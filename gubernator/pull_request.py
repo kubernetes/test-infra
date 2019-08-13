@@ -28,11 +28,13 @@ def builds_to_table(jobs):
     """
     # pylint: disable=too-many-locals
 
-    def commit(started):
+    def commit(started, finished):
         if 'pull' in started:
             return started['pull'].split(':')[-1]
         if 'version' in started:
             return started['version'].split('+')[-1]
+        if finished and 'revision' in finished:
+            return finished['revision']
         return 'unknown'
 
     # Compute the headings first -- versions and their maximum build counts.
@@ -43,7 +45,7 @@ def builds_to_table(jobs):
         for build, started, finished in builds:
             if not started:
                 continue
-            version = commit(started)
+            version = commit(started, finished)
             if not version:
                 continue
             versions.setdefault(version, {}).setdefault(job, 0)
@@ -68,10 +70,10 @@ def builds_to_table(jobs):
         row = []
         n = 0
         for build, started, finished in builds:
-            if not started or not commit(started):
+            if not started or not commit(started, finished):
                 minspan = 0
             else:
-                minspan = version_colstart[commit(started)]
+                minspan = version_colstart[commit(started, finished)]
             while n < minspan:
                 row.append(None)
                 n += 1

@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: default
   name: tide
   labels:
     app: tide
 spec:
   replicas: 1 # Do not scale up.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tide
   template:
     metadata:
       labels:
@@ -28,12 +34,16 @@ spec:
       # serviceAccountName: "tide" # Uncomment for use with RBAC
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20180723-3632407bc
+        image: gcr.io/k8s-prow/tide:v20190808-5e69697af
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
+        - --gcs-credentials-file=/etc/service-account/service-account.json
+        - --history-uri=gs://k8s-prow/tide-history.json
+        - --status-path=gs://k8s-prow/tide-status-checkpoint.yaml
         ports:
           - name: http
             containerPort: 8888
@@ -47,6 +57,9 @@ spec:
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        - name: service-account
+          mountPath: /etc/service-account
+          readOnly: true
       volumes:
       - name: oauth
         secret:
@@ -57,3 +70,6 @@ spec:
       - name: job-config
         configMap:
           name: job-config
+      - name: service-account
+        secret:
+          secretName: tide-history-service-account

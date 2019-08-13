@@ -27,14 +27,17 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "hold"
+const (
+	// PluginName defines this plugin's registered name.
+	PluginName = "hold"
+)
 
 var (
-	label         = "do-not-merge/hold"
 	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)
 	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
 )
@@ -42,19 +45,19 @@ var (
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The hold plugin allows anyone to add or remove the '" + label + "' label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
+		Description: "The hold plugin allows anyone to add or remove the '" + labels.Hold + "' Label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/hold [cancel]",
-		Description: "Adds or removes the `" + label + "` label which is used to indicate that the PR should not be automatically merged.",
+		Description: "Adds or removes the `" + labels.Hold + "` Label which is used to indicate that the PR should not be automatically merged.",
 		Featured:    false,
-		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + label + "' label.",
+		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + labels.Hold + "' Label.",
 		Examples:    []string{"/hold", "/hold cancel"},
 	})
 	return pluginHelp, nil
@@ -66,7 +69,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	hasLabel := func(label string, labels []github.Label) bool {
 		return github.HasLabel(label, labels)
 	}
@@ -91,18 +94,18 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
-	labels, err := gc.GetIssueLabels(org, repo, e.Number)
+	issueLabels, err := gc.GetIssueLabels(org, repo, e.Number)
 	if err != nil {
 		return fmt.Errorf("failed to get the labels on %s/%s#%d: %v", org, repo, e.Number, err)
 	}
 
-	hasLabel := f(label, labels)
+	hasLabel := f(labels.Hold, issueLabels)
 	if hasLabel && !needsLabel {
-		log.Info("Removing %q label for %s/%s#%d", label, org, repo, e.Number)
-		return gc.RemoveLabel(org, repo, e.Number, label)
+		log.Infof("Removing %q Label for %s/%s#%d", labels.Hold, org, repo, e.Number)
+		return gc.RemoveLabel(org, repo, e.Number, labels.Hold)
 	} else if !hasLabel && needsLabel {
-		log.Info("Adding %q label for %s/%s#%d", label, org, repo, e.Number)
-		return gc.AddLabel(org, repo, e.Number, label)
+		log.Infof("Adding %q Label for %s/%s#%d", labels.Hold, org, repo, e.Number)
+		return gc.AddLabel(org, repo, e.Number, labels.Hold)
 	}
 	return nil
 }

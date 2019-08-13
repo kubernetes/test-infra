@@ -1,32 +1,59 @@
-presubmits:  
+presubmits:
   kubernetes/test-infra:
   - name: pull-test-infra-bazel-canary
-    agent: kubernetes
-    context: pull-test-infra-bazel-canary
-    always_run: false
-    rerun_command: "/test pull-test-infra-bazel-canary"
-    trigger: "(?m)^/test pull-test-infra-bazel-canary,?(\\s+|$)"
+    decorate: true
+    skip_report: true
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+      - image: launcher.gcr.io/google/bazel
         imagePullPolicy: Always
+        command:
+        - hack/bazel.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--timeout=15"
-        - "--" # end bootstrap args, scenario args below
-        - "hack/build-then-unit.sh"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        resources:
-          requests:
-            memory: "2Gi"
+        - test
+        - --config=ci
+        - --nobuild_tests_only
+        - //...
+    annotations:
+      testgrid-create-test-group: 'true'
+# Testing to make sure things still update.
+periodics:
+- interval: 10m
+  name: ci-test-infra-canary-echo-test
+  decorate: true
+  spec:
+    containers:
+    - image: alpine
+      command: ["/bin/date"]
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: echo-test
+    description: temporarily echoing things.
+- name: ci-test-infra-benchmark-demo
+  interval: 20m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ./pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - --pass-on-error
+      - ./experiment/dummybenchmarks/...
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: benchmark-demo
+    description: Demoing JUnit golang benchmark results.

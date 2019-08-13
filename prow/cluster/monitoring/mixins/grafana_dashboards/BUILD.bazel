@@ -1,0 +1,78 @@
+load("@io_bazel_rules_jsonnet//jsonnet:jsonnet.bzl", "jsonnet_library", "jsonnet_to_json")
+
+jsonnet_to_json(
+    name = "deck",
+    src = "deck.jsonnet",
+    outs = ["deck.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
+)
+
+jsonnet_to_json(
+    name = "ghproxy",
+    src = "ghproxy.jsonnet",
+    outs = ["ghproxy.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
+)
+
+jsonnet_to_json(
+    name = "hook",
+    src = "hook.jsonnet",
+    outs = ["hook.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
+)
+
+jsonnet_to_json(
+    name = "plank",
+    src = "plank.jsonnet",
+    outs = ["plank.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
+)
+
+jsonnet_to_json(
+    name = "prow",
+    src = "prow.jsonnet",
+    outs = ["prow.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
+)
+
+jsonnet_to_json(
+    name = "tide",
+    src = "tide.jsonnet",
+    outs = ["tide.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
+)
+
+jsonnet_to_json(
+    name = "sinker",
+    src = "sinker.jsonnet",
+    outs = ["sinker.json"],
+    imports = ["../vendor/"],
+    visibility = ["//visibility:public"],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

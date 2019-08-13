@@ -17,40 +17,33 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-TMP_GOPATH=$(mktemp -d)
-cd "${TESTINFRA_ROOT}"
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
+  echo "Validating bazel rules..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+elif ! bazel query @//:all-srcs union @io_k8s_test_infra//hack:update-bazel &>/dev/null; then
+  echo "ERROR: bazel rules need bootstrapping. Run hack/update-bazel.sh" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-bazel
+  )
+  exit 0
+fi
 
-OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
+gazelle=$1
+kazel=$2
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
+gazelle_diff=$("$gazelle" fix --mode=diff --external=vendored)
+kazel_diff=$("$kazel" --dry-run --print-diff --cfg-path=./hack/.kazelcfg.json)
 
-gazelle_diff=$("${OUTPUT_GOBIN}/gazelle" fix \
-  -external=vendored \
-  -mode=diff)
-
-kazel_diff=$("${OUTPUT_GOBIN}/kazel" \
-  -dry-run \
-  -print-diff)
-
-if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
+if [[ -n "${gazelle_diff}${kazel_diff}" ]]; then
+  echo "Current rules (-) do not match expected (+):" >&2
   echo "${gazelle_diff}"
   echo "${kazel_diff}"
   echo
-  echo "Run ./hack/update-bazel.sh"
-  exit 1
-fi
-
-# Make sure there are no BUILD files outside vendor - we should only have
-# BUILD.bazel files.
-old_build_files=$(find . -name BUILD \( -type f -o -type l \) \
-  -not -path './vendor/*' | sort)
-if [[ -n "${old_build_files}" ]]; then
-  echo "One or more BUILD files found in the tree:" >&2
-  echo "${old_build_files}" >&2
-  echo >&2
-  echo "Only BUILD.bazel is allowed." >&2
+  echo "ERROR: bazel rules out of date. Fix with ./hack/update-bazel.sh" >&2
   exit 1
 fi

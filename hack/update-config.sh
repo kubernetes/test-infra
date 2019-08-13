@@ -17,10 +17,21 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating job configs..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel run //hack:update-config
+  )
+  exit 0
+fi
 
-bazel run //config/jobs/kubernetes-security:genjobs -- \
-"--config=${TESTINFRA_ROOT}/prow/config.yaml" \
-"--config-json=${TESTINFRA_ROOT}/jobs/config.json" \
-"--jobs=${TESTINFRA_ROOT}/config/jobs" \
-"--output=${TESTINFRA_ROOT}/config/jobs/kubernetes-security/generated-security-jobs.yaml"
+in=hack/zz.security-jobs.yaml
+out=$BUILD_WORKSPACE_DIRECTORY/config/jobs/kubernetes-security/generated-security-jobs.yaml
+
+cp "$in" "$out"
+chmod 644 "$out"

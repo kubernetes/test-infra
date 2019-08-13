@@ -33,6 +33,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/ghproxy/ghcache"
 )
 
 type testTime struct {
@@ -47,20 +48,26 @@ func (tt *testTime) Until(t time.Time) time.Duration {
 	return t.Sub(tt.now)
 }
 
-func getClient(url string) *Client {
+func getClient(url string) *client {
 	getToken := func() []byte {
 		return []byte("")
 	}
 
-	return &Client{
-		time:     &standardTime{},
-		getToken: getToken,
-		client: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	return &client{
+		delegate: &delegate{
+			time:     &testTime{},
+			getToken: getToken,
+			client: &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
 			},
+			bases:         []string{url},
+			maxRetries:    defaultMaxRetries,
+			max404Retries: defaultMax404Retries,
+			initialDelay:  defaultInitialDelay,
+			maxSleepTime:  defaultMaxSleepTime,
 		},
-		bases: []string{url},
 	}
 }
 
@@ -70,6 +77,27 @@ func TestRequestRateLimit(t *testing.T) {
 		if tc.slept == 0 {
 			w.Header().Set("X-RateLimit-Remaining", "0")
 			w.Header().Set("X-RateLimit-Reset", strconv.Itoa(int(tc.now.Add(time.Second).Unix())))
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.time = tc
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	} else if tc.slept < time.Second {
+		t.Errorf("Expected to sleep for at least a second, got %v", tc.slept)
+	}
+}
+
+func TestAbuseRateLimit(t *testing.T) {
+	tc := &testTime{now: time.Now()}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if tc.slept == 0 {
+			w.Header().Set("Retry-After", "1")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 		}
 	}))
@@ -105,12 +133,10 @@ func TestRetry404(t *testing.T) {
 }
 
 func TestRetryBase(t *testing.T) {
-	defer func(orig time.Duration) { initialDelay = orig }(initialDelay)
-	initialDelay = time.Microsecond
-
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	c.initialDelay = time.Microsecond
 	// One good endpoint:
 	c.bases = []string{c.bases[0]}
 	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
@@ -312,11 +338,54 @@ func TestGetRef(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	sha, err := c.GetRef("k8s", "kuber", "heads/mastah")
+	SHA, err := c.GetRef("k8s", "kuber", "heads/mastah")
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
-	} else if sha != "abcde" {
-		t.Errorf("Wrong sha: %s", sha)
+	} else if SHA != "abcde" {
+		t.Errorf("Wrong SHA: %s", SHA)
+	}
+}
+
+func TestDeleteRef(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/git/refs/heads/my-feature" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.Error(w, "204 No Content", http.StatusNoContent)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.DeleteRef("k8s", "kuber", "heads/my-feature"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestGetSingleCommit(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		fmt.Fprint(w, `{
+			"commit": {
+			  "tree": {
+				"sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+			  }
+		        }
+		  }`)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	commit, err := c.GetSingleCommit("octocat", "Hello-World", "6dcb09b5b57875f334f61aebed695e2e4193db5e")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if commit.Commit.Tree.SHA != "6dcb09b5b57875f334f61aebed695e2e4193db5e" {
+		t.Errorf("Wrong tree-hash: %s", commit.Commit.Tree.SHA)
 	}
 }
 
@@ -346,6 +415,42 @@ func TestCreateStatus(t *testing.T) {
 		Context: "c",
 	}); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestListIssues(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/issues" {
+			ics := []Issue{{Number: 1}}
+			b, err := json.Marshal(ics)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			ics := []Issue{{Number: 2}}
+			b, err := json.Marshal(ics)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	ics, err := c.ListOpenIssues("k8s", "kuber")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(ics) != 2 {
+		t.Errorf("Expected two issues, found %d: %v", len(ics), ics)
+	} else if ics[0].Number != 1 || ics[1].Number != 2 {
+		t.Errorf("Wrong issue IDs: %v", ics)
 	}
 }
 
@@ -446,9 +551,6 @@ func TestRemoveLabelFailsOnOtherThan404(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error but got none")
 	}
-	if _, ok := err.(*LabelNotFound); ok {
-		t.Fatalf("Expected error not to be a 404: %v", err)
-	}
 }
 
 func TestRemoveLabelNotFound(t *testing.T) {
@@ -459,12 +561,8 @@ func TestRemoveLabelNotFound(t *testing.T) {
 	c := getClient(ts.URL)
 	err := c.RemoveLabel("any", "old", 3, "label")
 
-	if err == nil {
-		t.Fatalf("RemoveLabel expected an error, got none")
-	}
-
-	if _, ok := err.(*LabelNotFound); !ok {
-		t.Fatalf("RemoveLabel expected LabelNotFound error, got %v", err)
+	if err != nil {
+		t.Fatalf("RemoveLabel expected no error, got one: %v", err)
 	}
 }
 
@@ -1336,14 +1434,24 @@ func TestListIssueEvents(t *testing.T) {
 }
 
 func TestThrottle(t *testing.T) {
-	ts := simpleTestServer(
-		t,
-		"/repos/org/repo/issues/1/events",
-		[]ListedIssueEvent{
-			{Event: IssueActionOpened},
-			{Event: IssueActionClosed},
-		},
-	)
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/repos/org/repo/issues/1/events" {
+			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionClosed}})
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/repos/org/repo/issues/2/events" {
+			w.Header().Set(ghcache.CacheModeHeader, string(ghcache.ModeRevalidated))
+			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionOpened}})
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Fatalf("Bad request path: %s", r.URL.Path)
+		}
+	}))
 	c := getClient(ts.URL)
 	c.Throttle(1, 2)
 	if c.client != &c.throttle {
@@ -1355,16 +1463,26 @@ func TestThrottle(t *testing.T) {
 	if cap(c.throttle.throttle) != 2 {
 		t.Fatalf("Expected throttle channel capacity of two, found %d", cap(c.throttle.throttle))
 	}
+	check := func(events []ListedIssueEvent, err error, expectedAction IssueEventAction) {
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if len(events) != 1 || events[0].Event != expectedAction {
+			t.Errorf("Expected one %q event, found: %v", string(expectedAction), events)
+		}
+		if len(c.throttle.throttle) != 1 {
+			t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle))
+		}
+	}
 	events, err := c.ListIssueEvents("org", "repo", 1)
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-	if len(events) != 2 {
-		t.Errorf("Expected two events, found %d: %v", len(events), events)
-	}
-	if len(c.throttle.throttle) != 1 {
-		t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle))
-	}
+	check(events, err, IssueActionClosed)
+	// The following 2 calls should be refunded.
+	events, err = c.ListIssueEvents("org", "repo", 2)
+	check(events, err, IssueActionOpened)
+	events, err = c.ListIssueEvents("org", "repo", 2)
+	check(events, err, IssueActionOpened)
+
+	// Check that calls are delayed while throttled.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	go func() {
 		if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {
@@ -1417,6 +1535,134 @@ func TestGetBranches(t *testing.T) {
 		t.Errorf("Wrong branch name for index 1: %v", branches[1])
 	case branches[1].Protected == false:
 		t.Errorf("Wrong branch protection for index 1: %v", branches[1])
+	}
+}
+
+func TestGetBranchProtection(t *testing.T) {
+	contexts := []string{"foo-pr-test", "other"}
+	pushers := []Team{{Slug: "movers"}, {Slug: "awesome-team"}, {Slug: "shakers"}}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		bp := BranchProtection{
+			RequiredStatusChecks: &RequiredStatusChecks{
+				Contexts: contexts,
+			},
+			Restrictions: &Restrictions{
+				Teams: pushers,
+			},
+		}
+		b, err := json.Marshal(&bp)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	bp, err := c.GetBranchProtection("org", "repo", "master")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+	switch {
+	case bp.Restrictions == nil:
+		t.Errorf("RestrictionsRequest unset")
+	case bp.Restrictions.Teams == nil:
+		t.Errorf("Teams unset")
+	case len(bp.Restrictions.Teams) != len(pushers):
+		t.Errorf("Bad teams: expected %v, got: %v", pushers, bp.Restrictions.Teams)
+	case bp.RequiredStatusChecks == nil:
+		t.Errorf("RequiredStatusChecks unset")
+	case len(bp.RequiredStatusChecks.Contexts) != len(contexts):
+		t.Errorf("Bad contexts: expected: %v, got: %v", contexts, bp.RequiredStatusChecks.Contexts)
+	default:
+		mc := map[string]bool{}
+		for _, k := range bp.RequiredStatusChecks.Contexts {
+			mc[k] = true
+		}
+		var missing []string
+		for _, k := range contexts {
+			if mc[k] != true {
+				missing = append(missing, k)
+			}
+		}
+		if n := len(missing); n > 0 {
+			t.Errorf("missing %d required contexts: %v", n, missing)
+		}
+		mp := map[string]bool{}
+		for _, k := range bp.Restrictions.Teams {
+			mp[k.Slug] = true
+		}
+		missing = nil
+		for _, k := range pushers {
+			if mp[k.Slug] != true {
+				missing = append(missing, k.Slug)
+			}
+		}
+		if n := len(missing); n > 0 {
+			t.Errorf("missing %d pushers: %v", n, missing)
+		}
+	}
+}
+
+// GetBranchProtection should return nil if the github API call
+// returns 404 with "Branch not protected" message
+func TestGetBranchProtection404BranchNotProtected(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		ge := &githubError{
+			Message: "Branch not protected",
+		}
+		b, err := json.Marshal(&ge)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusNotFound)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	bp, err := c.GetBranchProtection("org", "repo", "master")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if bp != nil {
+		t.Errorf("Expected nil as BranchProtection object, got: %v", *bp)
+	}
+}
+
+// GetBranchProtection should fail on any 404 which is NOT due to
+// branch not being protected.
+func TestGetBranchProtectionFailsOnOther404(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		ge := &githubError{
+			Message: "Not Found",
+		}
+		b, err := json.Marshal(&ge)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		http.Error(w, string(b), http.StatusNotFound)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	_, err := c.GetBranchProtection("org", "repo", "master")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
 	}
 }
 
@@ -1513,7 +1759,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 			RequiredStatusChecks: &RequiredStatusChecks{
 				Contexts: tc.contexts,
 			},
-			Restrictions: &Restrictions{
+			Restrictions: &RestrictionsRequest{
 				Teams: &tc.pushers,
 			},
 		})
@@ -1598,5 +1844,66 @@ func TestListMilestones(t *testing.T) {
 	c := getClient(ts.URL)
 	if err, _ := c.ListMilestones("k8s", "kuber"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestListPRCommits(t *testing.T) {
+	ts := simpleTestServer(t, "/repos/theorg/therepo/pulls/3/commits",
+		[]RepositoryCommit{
+			{SHA: "sha"},
+			{SHA: "sha2"},
+		})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if commits, err := c.ListPRCommits("theorg", "therepo", 3); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else {
+		if len(commits) != 2 {
+			t.Errorf("Expected 2 commits to be returned, but got %d", len(commits))
+		}
+	}
+}
+
+func TestCombinedStatus(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/commits/SHA/status" {
+			statuses := CombinedStatus{
+				SHA:      "SHA",
+				Statuses: []Status{{Context: "foo"}},
+			}
+			b, err := json.Marshal(statuses)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			statuses := CombinedStatus{
+				SHA:      "SHA",
+				Statuses: []Status{{Context: "bar"}},
+			}
+			b, err := json.Marshal(statuses)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	combined, err := c.GetCombinedStatus("k8s", "kuber", "SHA")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if combined.SHA != "SHA" {
+		t.Errorf("Expected SHA 'SHA', found %s", combined.SHA)
+	} else if len(combined.Statuses) != 2 {
+		t.Errorf("Expected two statuses, found %d: %v", len(combined.Statuses), combined.Statuses)
+	} else if combined.Statuses[0].Context != "foo" || combined.Statuses[1].Context != "bar" {
+		t.Errorf("Wrong review IDs: %v", combined.Statuses)
 	}
 }

@@ -5,17 +5,13 @@ go_library(
     srcs = [
         "client.go",
         "mason.go",
-        "storage.go",
     ],
     importpath = "k8s.io/test-infra/boskos/mason",
     visibility = ["//visibility:public"],
     deps = [
         "//boskos/common:go_default_library",
-        "//boskos/storage:go_default_library",
-        "//vendor/github.com/deckarep/golang-set:go_default_library",
         "//vendor/github.com/hashicorp/go-multierror:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/gopkg.in/yaml.v2:go_default_library",
     ],
 )
 
@@ -34,7 +30,6 @@ go_test(
 filegroup(
     name = "testdata",
     srcs = [
-        "test-configs.yaml",
         "test-resources.yaml",
     ],
     visibility = ["//visibility:public"],
@@ -49,7 +44,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//boskos/mason/fake-mason:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

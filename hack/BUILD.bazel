@@ -1,3 +1,6 @@
+load("@py_deps//:requirements.bzl", "requirement")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_test")
+
 package(default_visibility = ["//visibility:public"])
 
 py_test(
@@ -7,12 +10,14 @@ py_test(
         "coalesce.py",
         "coalesce_test.py",
     ],
+    python_version = "PY3",
 )
 
 py_test(
     name = "verify_boilerplate",
     srcs = ["verify_boilerplate.py"],
     data = ["//:all-srcs"],
+    python_version = "PY3",
     tags = ["lint"],
 )
 
@@ -26,39 +31,351 @@ sh_test(
     tags = ["lint"],
 )
 
+nodejs_test(
+    name = "verify-tslint",
+    data = [
+        "//:all-srcs",
+        "@npm//tslint",
+    ],
+    entry_point = "@npm//:node_modules/tslint/bin/tslint",
+    tags = ["lint"],
+    templated_args = [
+        "-p",
+        ".",
+    ],
+)
+
+MISSPELL = "//vendor/github.com/client9/misspell/cmd/misspell"
+
+sh_test(
+    name = "verify-codegen",
+    srcs = ["verify-codegen.sh"],
+    args = [
+        "$(location :update-codegen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/client-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/deepcopy-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/informer-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
+    ],
+    data = [
+        ":boilerplate/boilerplate.generated.go.txt",
+        ":update-codegen",
+        "//vendor/k8s.io/code-generator/cmd/client-gen",
+        "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
+        "//vendor/k8s.io/code-generator/cmd/informer-gen",
+        "//vendor/k8s.io/code-generator/cmd/lister-gen",
+        "@//:all-srcs",
+        "@go_sdk//:files",
+    ],
+    tags = ["lint"],
+)
+
+sh_binary(
+    name = "update-codegen",
+    srcs = ["update-codegen.sh"],
+    args = [
+        "$(location //vendor/k8s.io/code-generator/cmd/client-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/deepcopy-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/informer-gen)",
+        "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
+    ],
+    data = [
+        ":boilerplate/boilerplate.generated.go.txt",
+        "//vendor/k8s.io/code-generator/cmd/client-gen",
+        "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
+        "//vendor/k8s.io/code-generator/cmd/informer-gen",
+        "//vendor/k8s.io/code-generator/cmd/lister-gen",
+        "@go_sdk//:files",
+    ],
+)
+
 sh_test(
     name = "verify-spelling",
     srcs = ["verify-spelling.sh"],
-    args = ["-m $(location //vendor/github.com/client9/misspell/cmd/misspell)"],
+    args = [
+        "$(location %s)" % MISSPELL,
+        "--error",
+    ],
     data = [
+        "@//:all-srcs",
+        MISSPELL,
+    ],
+    tags = ["lint"],
+)
+
+sh_binary(
+    name = "update-spelling",
+    srcs = ["update-spelling.sh"],
+    args = [
+        "$(location %s)" % MISSPELL,
+        "-w",
+    ],
+    data = [
+        "@//:all-srcs",
+        MISSPELL,
+    ],
+    tags = ["lint"],
+)
+
+protoc = "@com_google_protobuf//:protoc"
+
+protoc_gen_go = "@com_github_golang_protobuf//protoc-gen-go"
+
+protoc_grpc = "plugins=grpc"
+
+# Use the protoc go_out plugin parameter to map the proto import path to the
+# Go package import path. Each mapping entry is prefixed with the keyword "M".
+# Reference the https://github.com/golang/protobuf "Parameters" section.
+proto_importmap = ",".join([
+    "Mtestgrid/config/config.proto=k8s.io/test-infra/testgrid/config",
+    "Mtestgrid/summary/summary.proto=k8s.io/test-infra/testgrid/summary",
+    "Mtestgrid/cmd/summarizer/response/types.proto=k8s.io/test-infra/testgrid/cmd/summarizer/response",
+])
+
+sh_binary(
+    name = "update-protos",
+    srcs = ["update-protos.sh"],
+    args = [
+        "$(location %s)" % protoc,
+        "$(location %s)" % protoc_gen_go,
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        protoc_grpc,
+        proto_importmap,
+    ],
+    data = [
+        ":boilerplate/boilerplate.generated.go.txt",
         "//:all-srcs",
-        "//vendor/github.com/client9/misspell/cmd/misspell",
+        protoc,
+        protoc_gen_go,
+    ],
+    tags = ["local"],
+)
+
+sh_test(
+    name = "verify-protos",
+    srcs = ["verify-protos.sh"],
+    args = [
+        "$(location %s)" % ":update-protos",
+        "$(location %s)" % protoc,
+        "$(location %s)" % protoc_gen_go,
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        protoc_grpc,
+        proto_importmap,
+    ],
+    data = [
+        ":boilerplate/boilerplate.generated.go.txt",
+        ":update-protos",
+        protoc,
+        protoc_gen_go,
+        "@//:all-srcs",
+    ],
+)
+
+sh_binary(
+    name = "update-labels",
+    srcs = ["update-labels.sh"],
+    args = ["$(location //label_sync)"],
+    data = ["//label_sync"],
+)
+
+sh_test(
+    name = "verify-labels",
+    srcs = ["verify-labels.sh"],
+    args = [
+        "$(location :update-labels)",
+        "$(location //label_sync)",
+    ],
+    data = [
+        ":update-labels",
+        "//label_sync",
+        "//label_sync:labels.md",
+        "//label_sync:labels.md.tmpl",
+        "//label_sync:labels.yaml",
     ],
     tags = ["lint"],
 )
 
 test_suite(
     name = "verify-all",
-    tags = ["lint"],
-    tests = [
-        "verify-pylint",
-        "verify_boilerplate",
+    tags = ["lint"],  # picks up all non-manual targets with this tag
+)
+
+GAZELLE = "//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
+
+KAZEL = "//vendor/k8s.io/repo-infra/kazel"
+
+GO = "@go_sdk//:bin/go"
+
+sh_binary(
+    name = "update-deps",
+    srcs = ["update-deps.sh"],
+    args = [
+        "$(location %s)" % GO,
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+        "$(location :update-bazel)",
     ],
+    data = [
+        GAZELLE,
+        GO,
+        KAZEL,
+        ":update-bazel",
+    ],
+)
+
+GAZELLE_BOOT = "@bazel_gazelle//cmd/gazelle"
+
+KAZEL_BOOT = "@io_k8s_repo_infra//kazel"
+
+sh_binary(
+    name = "bootstrap-testinfra",
+    srcs = ["update-deps.sh"],
+    args = [
+        "$(location %s)" % GO,
+        "$(location %s)" % GAZELLE_BOOT,
+        "$(location %s)" % KAZEL_BOOT,
+        "$(location :update-bazel.sh)",
+    ],
+    data = [
+        GAZELLE_BOOT,
+        GO,
+        KAZEL_BOOT,
+        ":update-bazel.sh",
+    ],
+)
+
+sh_test(
+    name = "verify-deps",
+    srcs = ["verify-deps.sh"],
+    args = [
+        "$(location :update-deps)",
+        "$(location %s)" % GO,
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+        "$(location :update-bazel)",
+    ],
+    data = [
+        GAZELLE,
+        GO,
+        KAZEL,
+        ":update-bazel",
+        ":update-deps",
+        "@//:all-srcs",
+    ],
+    tags = ["lint"],
+)
+
+sh_binary(
+    name = "update-bazel",
+    srcs = ["update-bazel.sh"],
+    args = [
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+    ],
+    data = [
+        GAZELLE,
+        KAZEL,
+    ],
+)
+
+sh_test(
+    name = "verify-bazel",
+    srcs = ["verify-bazel.sh"],
+    args = [
+        "$(location %s)" % GAZELLE,
+        "$(location %s)" % KAZEL,
+    ],
+    data = [
+        "@//:all-srcs",
+        GAZELLE,
+        KAZEL,
+    ],
+    tags = ["lint"],
 )
 
 py_binary(
     name = "pylint_bin",
     srcs = ["pylint_bin.py"],
+    python_version = "PY2",
     tags = ["lint"],
     # NOTE: this should only contain direct third party imports and pylint
     deps = [
-        "@influxdb",
-        "@pylint",
-        "@pytz",
-        "@requests",  # TODO(fejta): figure out a better solution
-        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
-        "@yaml",
+        requirement("astroid"),
+        requirement("backports.functools_lru_cache"),
+        requirement("configparser"),
+        requirement("enum34"),
+        requirement("influxdb"),
+        requirement("isort"),
+        requirement("lazy-object-proxy"),
+        requirement("pylint"),
+        requirement("pytz"),
+        requirement("PyYAML"),
+        requirement("requests"),
+        requirement("setuptools"),
+        requirement("sh"),
+        requirement("singledispatch"),
+        requirement("six"),
+        requirement("wrapt"),
+        requirement("ruamel.yaml"),
     ],
+)
+
+sh_binary(
+    name = "update-gofmt",
+    srcs = ["update-gofmt.sh"],
+    args = ["$(location @go_sdk//:bin/gofmt)"],
+    data = ["@go_sdk//:bin/gofmt"],
+)
+
+sh_test(
+    name = "verify-gofmt",
+    srcs = ["verify-gofmt.sh"],
+    args = ["$(location @go_sdk//:bin/gofmt)"],
+    data = [
+        "@//:all-srcs",
+        "@go_sdk//:bin/gofmt",
+    ],
+    tags = ["lint"],
+)
+
+genrule(
+    name = "generate-security-jobs",
+    srcs = [
+        "//config:all-srcs",
+        "//prow:config.yaml",
+    ],
+    outs = ["zz.security-jobs.yaml"],
+    # $@ == expected location for zz.security-jobs.yaml
+    cmd = "./$(location //config/jobs/kubernetes-security:genjobs) --config=prow/config.yaml --jobs=config/jobs --output=\"$@\"",
+    tools = ["//config/jobs/kubernetes-security:genjobs"],
+)
+
+sh_binary(
+    name = "update-config",
+    srcs = ["update-config.sh"],
+    data = [
+        ":zz.security-jobs.yaml",
+    ],
+)
+
+sh_test(
+    name = "verify-config",
+    srcs = ["verify-config.sh"],
+    args = [
+        "$(location //prow/cmd/checkconfig)",
+        "--config-path=prow/config.yaml",
+        "--job-config-path=config/jobs",
+        "--plugin-config=prow/plugins.yaml",
+    ],
+    data = [
+        ":zz.security-jobs.yaml",
+        "//config:all-srcs",
+        "//config/jobs/kubernetes-security:all-srcs",
+        "//prow:config.yaml",
+        "//prow:plugins.yaml",
+        "//prow/cmd/checkconfig",
+    ],
+    tags = ["lint"],
 )
 
 filegroup(

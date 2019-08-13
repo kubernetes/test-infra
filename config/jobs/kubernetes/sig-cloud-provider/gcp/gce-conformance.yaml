@@ -1,0 +1,140 @@
+periodics:
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-latest
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
+    testgrid-dashboards: sig-release-master-informing, conformance-all, conformance-gce
+    testgrid-tab-name: GCE, master (dev)
+    description: Runs conformance tests using kubetest against kubernetes master on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+# manual-release-bump-required (add a job for the new version and delete the job for the oldest version)
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-stable-1-12
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=release/stable-1.12
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.12
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-gce
+    testgrid-tab-name: GCE, v1.12 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-stable-1-13
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=release/stable-1.13
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.13
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-gce
+    testgrid-tab-name: GCE, v1.13 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.13 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-stable-1-14
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=release/stable-1.14
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.14
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-gce
+    testgrid-tab-name: GCE, v1.14 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.14 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
+- interval: 6h
+  name: ci-kubernetes-gce-conformance-stable-1-15
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=release/stable-1.15
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-1.15
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-gce
+    testgrid-tab-name: GCE, v1.15 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.15 stable tag on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'

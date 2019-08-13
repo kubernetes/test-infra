@@ -7,9 +7,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/github:go_default_library",
+        "//prow/labels:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
-        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -20,8 +21,9 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/github:go_default_library",
+        "//prow/labels:go_default_library",
         "//prow/plugins:go_default_library",
-        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/shurcooL/githubv4:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

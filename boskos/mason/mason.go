@@ -19,16 +19,11 @@ package mason
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"sync"
 	"time"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
-	"k8s.io/test-infra/boskos/storage"
 )
 
 const (
@@ -44,6 +39,14 @@ type Masonable interface {
 // ConfigConverter converts a string into a Masonable
 type ConfigConverter func(string) (Masonable, error)
 
+type storageAccess interface {
+	// GetDynamicResourceLifeCycle gets an existing dynamic resource life cycle, errors otherwise
+	GetDynamicResourceLifeCycle(name string) (common.DynamicResourceLifeCycle, error)
+
+	// GetDynamicResourceLifeCycles list all dynamic resource life cycle
+	GetDynamicResourceLifeCycles() ([]common.DynamicResourceLifeCycle, error)
+}
+
 type boskosClient interface {
 	Acquire(rtype, state, dest string) (*common.Resource, error)
 	AcquireByState(state, dest string, names []string) ([]common.Resource, error)
@@ -58,7 +61,7 @@ type boskosClient interface {
 type Mason struct {
 	client                             boskosClient
 	cleanerCount                       int
-	storage                            Storage
+	storage                            storageAccess
 	pending, fulfilled, cleaned        chan requirements
 	boskosWaitPeriod, boskosSyncPeriod time.Duration
 	wg                                 sync.WaitGroup
@@ -86,76 +89,6 @@ func (r requirements) isFulFilled() bool {
 	return true
 }
 
-// ParseConfig reads data stored in given config path
-// In: configPath - path to the config file
-// Out: A list of ResourceConfig object on success, or nil on error.
-func ParseConfig(configPath string) ([]common.ResourcesConfig, error) {
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return nil, err
-	}
-	file, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return nil, err
-	}
-
-	var data common.MasonConfig
-	err = yaml.Unmarshal(file, &data)
-	if err != nil {
-		return nil, err
-	}
-	return data.Configs, nil
-}
-
-// ValidateConfig validates config with existing resources
-// In: configs   - a list of resources configs
-//     resources - a list of resources
-// Out: nil on success, error on failure
-func ValidateConfig(configs []common.ResourcesConfig, resources []common.Resource) error {
-	resourcesNeeds := map[string]int{}
-	actualResources := map[string]int{}
-
-	configNames := map[string]map[string]int{}
-	for _, c := range configs {
-		_, alreadyExists := configNames[c.Name]
-		if alreadyExists {
-			return fmt.Errorf("config %s already exists", c.Name)
-		}
-		configNames[c.Name] = c.Needs
-	}
-
-	for _, res := range resources {
-		_, useConfig := configNames[res.Type]
-		if useConfig {
-			c, ok := configNames[res.Type]
-			if !ok {
-				err := fmt.Errorf("resource type %s does not have associated config", res.Type)
-				logrus.WithError(err).Error("using useconfig implies associated config")
-				return err
-			}
-			// Updating resourceNeeds
-			for k, v := range c {
-				resourcesNeeds[k] += v
-			}
-		}
-		actualResources[res.Type]++
-	}
-
-	for rType, needs := range resourcesNeeds {
-		actual, ok := actualResources[rType]
-		if !ok {
-			err := fmt.Errorf("need for resource %s that does not exist", rType)
-			logrus.WithError(err).Errorf("invalid configuration")
-			return err
-		}
-		if needs > actual {
-			err := fmt.Errorf("not enough resource of type %s for provisioning", rType)
-			logrus.WithError(err).Errorf("invalid configuration")
-			return err
-		}
-	}
-	return nil
-}
-
 // NewMason creates and initialized a new Mason object
 // In: rtypes            - A list of resource types to act on
 //     cleanerCount      - Number of cleaning threads
@@ -163,11 +96,11 @@ func ValidateConfig(configs []common.ResourcesConfig, resources []common.Resourc
 //     waitPeriod        - time to wait before a new boskos operation (acquire mostly)
 //     syncPeriod        - time to wait before syncing resource information to boskos
 // Out: A Pointer to a Mason Object
-func NewMason(cleanerCount int, client boskosClient, waitPeriod, syncPeriod time.Duration) *Mason {
+func NewMason(cleanerCount int, client boskosClient, waitPeriod, syncPeriod time.Duration, s storageAccess) *Mason {
 	return &Mason{
 		client:           client,
 		cleanerCount:     cleanerCount,
-		storage:          *newStorage(storage.NewMemoryStorage()),
+		storage:          s,
 		pending:          make(chan requirements),
 		cleaned:          make(chan requirements, cleanerCount+1),
 		fulfilled:        make(chan requirements, cleanerCount+1),
@@ -177,16 +110,15 @@ func NewMason(cleanerCount int, client boskosClient, waitPeriod, syncPeriod time
 	}
 }
 
-func checkUserData(res common.Resource) (common.LeasedResources, error) {
+// CheckUserData helps with extracting leased resource data from the resource.
+func CheckUserData(res common.Resource) (common.LeasedResources, error) {
 	var leasedResources common.LeasedResources
 	if res.UserData == nil {
 		err := fmt.Errorf("user data is empty")
-		logrus.WithError(err).Errorf("failed to extract %s", LeasedResources)
 		return nil, err
 	}
 
 	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
-		logrus.WithError(err).Errorf("failed to extract %s", LeasedResources)
 		return nil, err
 	}
 	return leasedResources, nil
@@ -206,10 +138,10 @@ func (m *Mason) RegisterConfigConverter(name string, fn ConfigConverter) error {
 	return nil
 }
 
-func (m *Mason) convertConfig(configEntry *common.ResourcesConfig) (Masonable, error) {
+func (m *Mason) convertConfig(configEntry *common.DynamicResourceLifeCycle) (Masonable, error) {
 	fn, ok := m.configConverters[configEntry.Config.Type]
 	if !ok {
-		return nil, fmt.Errorf("config type %s is not supported", configEntry.Name)
+		return nil, fmt.Errorf("config type %s is not supported", configEntry.GetName())
 	}
 	return fn(configEntry.Config.Content)
 }
@@ -251,7 +183,7 @@ func (m *Mason) cleanAll(ctx context.Context) {
 }
 
 func (m *Mason) cleanOne(ctx context.Context, res *common.Resource, leasedResources common.TypeToResources) error {
-	configEntry, err := m.storage.GetConfig(res.Type)
+	configEntry, err := m.storage.GetDynamicResourceLifeCycle(res.Type)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to get config for resource %s", res.Type)
 		return err
@@ -313,7 +245,7 @@ func (m *Mason) freeAll(ctx context.Context) {
 }
 
 func (m *Mason) freeOne(res *common.Resource) error {
-	leasedResources, err := checkUserData(*res)
+	leasedResources, err := CheckUserData(*res)
 	if err != nil {
 		return err
 	}
@@ -345,14 +277,14 @@ func (m *Mason) recycleAll(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-tick:
-			configs, err := m.storage.GetConfigs()
+			configs, err := m.storage.GetDynamicResourceLifeCycles()
 			if err != nil {
 				logrus.WithError(err).Error("unable to get configuration")
 				continue
 			}
 			var configTypes []string
 			for _, c := range configs {
-				configTypes = append(configTypes, c.Name)
+				configTypes = append(configTypes, c.GetName())
 			}
 			for _, r := range configTypes {
 				if res, err := m.client.Acquire(r, common.Dirty, common.Cleaning); err != nil {
@@ -374,13 +306,16 @@ func (m *Mason) recycleAll(ctx context.Context) {
 
 func (m *Mason) recycleOne(res *common.Resource) (*requirements, error) {
 	logrus.Infof("Resource %s is being recycled", res.Name)
-	configEntry, err := m.storage.GetConfig(res.Type)
+	configEntry, err := m.storage.GetDynamicResourceLifeCycle(res.Type)
 	if err != nil {
 		logrus.WithError(err).Errorf("could not get config for resource type %s", res.Type)
 		return nil, err
 	}
 
-	leasedResources, _ := checkUserData(*res)
+	leasedResources, err := CheckUserData(*res)
+	if err != nil {
+		logrus.WithError(err).Warningf("failed to extract %s from resource user data", LeasedResources)
+	}
 	if leasedResources != nil {
 		resources, err := m.client.AcquireByState(res.Name, common.Leased, leasedResources)
 		if err != nil {
@@ -505,18 +440,6 @@ func (m *Mason) updateResources(req *requirements) {
 			logrus.WithError(err).Warningf("failed to update resource %s", r.Name)
 		}
 	}
-}
-
-// UpdateConfigs updates configs from storage path
-// In: storagePath - the path to read the config file from
-// Out: nil on success error otherwise
-func (m *Mason) UpdateConfigs(storagePath string) error {
-	configs, err := ParseConfig(storagePath)
-	if err != nil {
-		logrus.WithError(err).Error("unable to parse config")
-		return err
-	}
-	return m.storage.SyncConfigs(configs)
 }
 
 func (m *Mason) start(ctx context.Context, fn func(context.Context)) {

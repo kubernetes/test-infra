@@ -12,18 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMG = gcr.io/k8s-testimages/triage
-TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
-
-build:
-	docker build -t $(IMG):$(TAG) .
-	docker tag $(IMG):$(TAG) $(IMG):latest
-	echo Built $(IMG):$(TAG) and tagged with $(IMG):latest ;
-
 push:
-	docker push $(IMG):$(TAG)
-	docker push $(IMG):latest
-	echo Pushed $(IMG):latest and $(IMG):$(TAG)
+  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch triage
 
 push_static:
 	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read index.html interactive.js model.js render.js style.css gs://k8s-gubernator/triage/
@@ -31,6 +21,6 @@ push_static:
 push_staging:
 	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read index.html interactive.js model.js render.js style.css gs://k8s-gubernator/triage/staging/
 
-.PHONY: all build push push_static
+.PHONY: all push push_static
 
 all: build

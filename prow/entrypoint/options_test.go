@@ -31,8 +31,8 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "all ok",
 			input: Options{
-				Args: []string{"/usr/bin/true"},
 				Options: &wrapper.Options{
+					Args:       []string{"/usr/bin/true"},
 					ProcessLog: "output.txt",
 					MarkerFile: "marker.txt",
 				},

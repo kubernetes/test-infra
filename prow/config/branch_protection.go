@@ -27,8 +27,6 @@ import (
 // Policy for the config/org/repo/branch.
 // When merging policies, a nil value results in inheriting the parent policy.
 type Policy struct {
-	deprecatedPolicy
-	deprecatedWarning bool // true if a warning message was sent
 	// Protect overrides whether branch protection is enabled if set.
 	Protect *bool `json:"protect,omitempty"`
 	// RequiredStatusChecks configures github contexts
@@ -39,26 +37,13 @@ type Policy struct {
 	Restrictions *Restrictions `json:"restrictions,omitempty"`
 	// RequiredPullRequestReviews specifies github approval/review criteria.
 	RequiredPullRequestReviews *ReviewPolicy `json:"required_pull_request_reviews,omitempty"`
-}
-
-// deprecatedPolicy deserializes fields that are no longer in use
-type deprecatedPolicy struct {
-	DeprecatedProtect  *bool    `json:"protect-by-default,omitempty"`
-	DeprecatedContexts []string `json:"require-contexts,omitempty"`
-	DeprecatedPushers  []string `json:"allow-push,omitempty"`
-}
-
-func (d deprecatedPolicy) defined() bool {
-	return d.DeprecatedProtect != nil || d.DeprecatedContexts != nil || d.DeprecatedPushers != nil
+	// Exclude specifies a set of regular expressions which identify branches
+	// that should be excluded from the protection policy
+	Exclude []string `json:"exclude,omitempty"`
 }
 
 func (p Policy) defined() bool {
 	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil
-}
-
-// HasProtect returns true if the policy or deprecated policy defines protection
-func (p Policy) HasProtect() bool {
-	return p.Protect != nil || p.deprecatedPolicy.DeprecatedProtect != nil
 }
 
 // ContextPolicy configures required github contexts.
@@ -163,48 +148,43 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 }
 
 // Apply returns a policy that merges the child into the parent
-func (p Policy) Apply(child Policy) (Policy, error) {
-	if old := child.deprecatedPolicy.defined(); old && child.defined() {
-		return p, errors.New("cannot mix Policy and deprecatedPolicy branch protection fields")
-	} else if old {
-		if !p.deprecatedWarning {
-			p.deprecatedWarning = true
-			logrus.Warn("WARNING: protect-by-default, require-contexts, allow-push are deprecated. Please replace them before July 2018")
-		}
-		d := child.deprecatedPolicy
-		child = Policy{
-			Protect: d.DeprecatedProtect,
-		}
-		if d.DeprecatedContexts != nil {
-			child.RequiredStatusChecks = &ContextPolicy{
-				Contexts: d.DeprecatedContexts,
-			}
-		}
-		if d.DeprecatedPushers != nil {
-			child.Restrictions = &Restrictions{
-				Teams: d.DeprecatedPushers,
-			}
-		}
-	}
-
+func (p Policy) Apply(child Policy) Policy {
 	return Policy{
 		Protect:                    selectBool(p.Protect, child.Protect),
 		RequiredStatusChecks:       mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
 		Admins:                     selectBool(p.Admins, child.Admins),
 		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
 		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
-		deprecatedWarning:          p.deprecatedWarning,
-	}, nil
+		Exclude:                    unionStrings(p.Exclude, child.Exclude),
+	}
 }
 
 // BranchProtection specifies the global branch protection policy
 type BranchProtection struct {
 	Policy
-	ProtectTested         bool           `json:"protect-tested-repos,omitempty"`
-	Orgs                  map[string]Org `json:"orgs,omitempty"`
-	AllowDisabledPolicies bool           `json:"allow_disabled_policies,omitempty"`
+	// ProtectTested determines if branch protection rules are set for all repos
+	// that Prow has registered jobs for, regardless of if those repos are in the
+	// branch protection config.
+	ProtectTested bool `json:"protect-tested-repos,omitempty"`
+	// Orgs holds branch protection options for orgs by name
+	Orgs map[string]Org `json:"orgs,omitempty"`
+	// AllowDisabledPolicies allows a child to disable all protection even if the
+	// branch has inherited protection options from a parent.
+	AllowDisabledPolicies bool `json:"allow_disabled_policies,omitempty"`
+	// AllowDisabledJobPolicies allows a branch to choose to opt out of branch protection
+	// even if Prow has registered required jobs for that branch.
+	AllowDisabledJobPolicies bool `json:"allow_disabled_job_policies,omitempty"`
+}
 
-	warned bool // warn if deprecated fields are use
+// GetOrg returns the org config after merging in any global policies.
+func (bp BranchProtection) GetOrg(name string) *Org {
+	o, ok := bp.Orgs[name]
+	if ok {
+		o.Policy = bp.Apply(o.Policy)
+	} else {
+		o.Policy = bp.Policy
+	}
+	return &o
 }
 
 // Org holds the default protection policy for an entire org, as well as any repo overrides.
@@ -213,10 +193,35 @@ type Org struct {
 	Repos map[string]Repo `json:"repos,omitempty"`
 }
 
+// GetRepo returns the repo config after merging in any org policies.
+func (o Org) GetRepo(name string) *Repo {
+	r, ok := o.Repos[name]
+	if ok {
+		r.Policy = o.Apply(r.Policy)
+	} else {
+		r.Policy = o.Policy
+	}
+	return &r
+}
+
 // Repo holds protection policy overrides for all branches in a repo, as well as specific branch overrides.
 type Repo struct {
 	Policy
 	Branches map[string]Branch `json:"branches,omitempty"`
+}
+
+// GetBranch returns the branch config after merging in any repo policies.
+func (r Repo) GetBranch(name string) (*Branch, error) {
+	b, ok := r.Branches[name]
+	if ok {
+		b.Policy = r.Apply(b.Policy)
+		if b.Protect == nil {
+			return nil, errors.New("defined branch policies must set protect")
+		}
+	} else {
+		b.Policy = r.Policy
+	}
+	return &b, nil
 }
 
 // Branch holds protection policy overrides for a particular branch.
@@ -228,42 +233,31 @@ type Branch struct {
 //
 // Handles merging any policies defined at repo/org/global levels into the branch policy.
 func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) {
-	bp := c.BranchProtection
-	var policy Policy
-	policy, err := policy.Apply(bp.Policy)
+	if _, present := c.BranchProtection.Orgs[org]; !present {
+		return nil, nil // only consider branches in configured orgs
+	}
+	b, err := c.BranchProtection.GetOrg(org).GetRepo(repo).GetBranch(branch)
 	if err != nil {
 		return nil, err
 	}
 
-	if o, ok := bp.Orgs[org]; ok {
-		policy, err = policy.Apply(o.Policy)
-		if err != nil {
-			return nil, err
-		}
-		if r, ok := o.Repos[repo]; ok {
-			policy, err = policy.Apply(r.Policy)
-			if err != nil {
-				return nil, err
-			}
-			if b, ok := r.Branches[branch]; ok {
-				policy, err = policy.Apply(b.Policy)
-				if err != nil {
-					return nil, err
-				}
-				if policy.Protect == nil {
-					return nil, errors.New("defined branch policies must set protect")
-				}
-			}
-		}
-	} else {
-		return nil, nil
-	}
+	return c.GetPolicy(org, repo, branch, *b)
+}
 
-	// Automatically require any required prow jobs
-	if prowContexts, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
+// GetPolicy returns the protection policy for the branch, after merging in presubmits.
+func (c *Config) GetPolicy(org, repo, branch string, b Branch) (*Policy, error) {
+	policy := b.Policy
+
+	// Automatically require contexts from prow which must always be present
+	if prowContexts, _, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
-			return nil, fmt.Errorf("required prow jobs require branch protection")
+			if c.BranchProtection.AllowDisabledJobPolicies {
+				logrus.Warnf("%s/%s=%s has required jobs but has protect: false", org, repo, branch)
+				return nil, nil
+			} else {
+				return nil, fmt.Errorf("required prow jobs require branch protection")
+			}
 		}
 		ps := Policy{
 			RequiredStatusChecks: &ContextPolicy{
@@ -271,14 +265,11 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 			},
 		}
 		// Require protection by default if ProtectTested is true
-		if bp.ProtectTested {
+		if c.BranchProtection.ProtectTested {
 			yes := true
 			ps.Protect = &yes
 		}
-		policy, err = policy.Apply(ps)
-		if err != nil {
-			return nil, err
-		}
+		policy = policy.Apply(ps)
 	}
 
 	if policy.Protect != nil && !*policy.Protect {
@@ -286,7 +277,7 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 		var old *bool
 		old, policy.Protect = policy.Protect, old
 		switch {
-		case policy.defined() && bp.AllowDisabledPolicies:
+		case policy.defined() && c.BranchProtection.AllowDisabledPolicies:
 			logrus.Warnf("%s/%s=%s defines a policy but has protect: false", org, repo, branch)
 			policy = Policy{
 				Protect: policy.Protect,
@@ -303,34 +294,34 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 	return &policy, nil
 }
 
-func jobRequirements(jobs []Presubmit, branch string, after bool) ([]string, []string) {
-	var required, optional []string
+// BranchRequirements partitions status contexts for a given org, repo branch into three buckets:
+//  - contexts that are always required to be present
+//  - contexts that are required, _if_ present
+//  - contexts that are always optional
+func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) ([]string, []string, []string) {
+	jobs, ok := presubmits[org+"/"+repo]
+	if !ok {
+		return nil, nil, nil
+	}
+	var required, requiredIfPresent, optional []string
 	for _, j := range jobs {
-		if !j.Brancher.RunsAgainstBranch(branch) {
+		if !j.CouldRun(branch) {
 			continue
 		}
-		// Does this job require a context or have kids that might need one?
-		if !after && !j.AlwaysRun && j.RunIfChanged == "" {
-			continue // No
-		}
-		if j.ContextRequired() { // This job needs a context
-			required = append(required, j.Context)
+
+		if j.ContextRequired() {
+			if j.TriggersConditionally() {
+				// jobs that trigger conditionally cannot be
+				// required as their status may not exist on PRs
+				requiredIfPresent = append(requiredIfPresent, j.Context)
+			} else {
+				// jobs that produce required contexts and will
+				// always run should be required at all times
+				required = append(required, j.Context)
+			}
 		} else {
 			optional = append(optional, j.Context)
 		}
-		// Check which children require contexts
-		r, o := jobRequirements(j.RunAfterSuccess, branch, true)
-		required = append(required, r...)
-		optional = append(optional, o...)
 	}
-	return required, optional
-}
-
-// BranchRequirements returns required and optional presubmits prow jobs for a given org, repo branch.
-func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) ([]string, []string) {
-	p, ok := presubmits[org+"/"+repo]
-	if !ok {
-		return nil, nil
-	}
-	return jobRequirements(p, branch, false)
+	return required, requiredIfPresent, optional
 }

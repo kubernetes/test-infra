@@ -6,7 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/githuboauth",
     visibility = ["//visibility:public"],
     deps = [
-        "//ghclient:go_default_library",
+        "//pkg/ghclient:go_default_library",
         "//prow/config:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

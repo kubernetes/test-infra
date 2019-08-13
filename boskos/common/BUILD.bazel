@@ -10,10 +10,16 @@ go_library(
     name = "go_default_library",
     srcs = [
         "common.go",
+        "config.go",
         "mason_config.go",
     ],
     importpath = "k8s.io/test-infra/boskos/common",
-    deps = ["//vendor/github.com/ghodss/yaml:go_default_library"],
+    deps = [
+        "//vendor/github.com/google/uuid:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
 )
 
 filegroup(
@@ -25,12 +31,16 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//boskos/common/aws:all-srcs",
+    ],
     tags = ["automanaged"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["common_test.go"],
+    data = ["//boskos:testdata"],
     embed = [":go_default_library"],
 )

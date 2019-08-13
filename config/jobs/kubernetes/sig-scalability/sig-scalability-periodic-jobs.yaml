@@ -1,0 +1,371 @@
+periodics:
+- name: ci-kubernetes-e2e-gce-node-throughput
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-node: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-node
+    testgrid-tab-name: node-throughput
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=60
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=1
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=40m
+      - --use-logexporter
+
+#kubemark
+- name: ci-kubernetes-kubemark-100-gce
+  tags:
+  - "perfDashPrefix: kubemark-100Nodes"
+  - "perfDashJobType: performance"
+  interval: 3h
+  # TODO(oxddr): renable this once we have a project pool in scalability build cluster
+  # cluster: scalability
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-100
+    testgrid-num-failures-to-alert: '1'
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=260
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-100
+      - --extract=ci/latest
+      - --gcp-master-size=n1-standard-2
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-4
+      - --gcp-nodes=4
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=100
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-node-exporter=true
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+      # TODO(oxddr): renable this once the current impact is understood
+      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=240m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-kubemark-500-gce
+  tags:
+  - "perfDashPrefix: kubemark-500Nodes"
+  - "perfDashJobType: performance"
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-500
+    testgrid-num-failures-to-alert: '1'
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-500
+      - --extract=ci/latest
+      - --gcp-master-size=n1-standard-4
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=8
+      - --gcp-project=k8s-jenkins-blocking-kubemark
+      - --gcp-zone=us-central1-f
+      - --kubemark
+      - --kubemark-nodes=500
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=500
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+      # TODO(oxddr): renable this once the current impact is understood
+      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=70m
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-kubemark-gce-scale
+  tags:
+  - "perfDashPrefix: kubemark-5000Nodes"
+  - "perfDashJobType: performance"
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-e2e-kubemark-gce-scale: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-5000
+    testgrid-num-failures-to-alert: '1'
+    testgrid-num-columns-recent: '3'
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=1100
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-5000
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=83
+      - --gcp-project=kubemark-scalability-testing
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=5000
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+      - --test-cmd-args=--nodes=5000
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      # TODO(oxddr): renable this once the current impact is understood
+      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=1080m
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- name: ci-kubernetes-kubemark-high-density-100-gce
+  tags:
+  - "perfDashPrefix: kubemark-100Nodes-highDensity"
+  - "perfDashJobType: performance"
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-100-high-density
+    testgrid-num-failures-to-alert: '1'
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=300
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-100pods
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=9
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-master-size=n1-standard-32
+      - --kubemark-nodes=600
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=600
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/density/600_nodes/high_density_override.yaml
+      # TODO(oxddr): renable this once the current impact is understood
+      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=280m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-perf-tests-kubemark-100-benchmark
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-perf-tests
+    testgrid-tab-name: kubemark-100-benchmark
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=10
+      - --scenario=execute
+      - --
+      - ./benchmark/runner.sh
+
+- name: ci-benchmark-scheduler-master
+  tags:
+  - "perfDashPrefix: scheduler-benchmark"
+  - "perfDashJobType: benchmark"
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: scheduler
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=55
+      - --root=/go/src
+      - --scenario=execute
+      - --
+      - ./hack/jenkins/benchmark-dockerized.sh
+      - ./test/integration/scheduler_perf
+      env:
+      - name: GOPATH
+        value: /go
+      - name: KUBE_TIMEOUT
+        value: --timeout 40m
+
+- name: ci-benchmark-kube-dns-master
+  interval: 2h
+  tags:
+  - "perfDashPrefix: kube-dns benchmark"
+  - "perfDashJobType: dnsBenchmark"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: kube-dns
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=kube-dns-benchmark
+      - --extract=ci/latest
+      - --gcp-nodes=3
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=kube-dns
+      - --test-cmd-args=/workspace/_artifacts/out
+      - --test-cmd-args=/workspace/_artifacts
+      - --test-cmd-name=KubeDnsBenchmark
+      - --timeout=120m
+
+- name: ci-benchmark-microbenchmarks
+  interval: 20m
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: microbenchmarks
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    # TODO(wojtek-t): Can we use the current Go version from Kubernetes?
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ./pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - ../kubernetes/pkg/...
+      - ../kubernetes/plugin/...
+      - ../kubernetes/vendor/k8s.io/apimachinery/...
+      - ../kubernetes/vendor/k8s.io/apiserver/...
+      - ../kubernetes/vendor/k8s.io/client-go/...

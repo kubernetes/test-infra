@@ -45,6 +45,8 @@ var flPort = flag.Int("p", 8080, "port number on which to listen")
 var flIcons = flag.String("i", "/icons", "path to the icons directory")
 var flStyles = flag.String("s", "/styles", "path to the styles directory")
 var flVersion = flag.Bool("version", false, "print version and exit")
+var flUpgradeProxiedHTTPtoHTTPS = flag.Bool("upgrade-proxied-http-to-https", false,
+	"upgrade any proxied request (e.g. from GCLB) from http to https")
 
 const (
 	iconFile = "/icons/file.png"
@@ -86,7 +88,7 @@ func main() {
 		log.Printf("allowing %s", bucket)
 		http.HandleFunc(bucket+"/", gcsRequest)
 		http.HandleFunc(bucket, func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, bucket+"/", http.StatusMovedPermanently)
+			http.Redirect(w, r, bucket+"/", http.StatusPermanentRedirect)
 		})
 	}
 	// Handle unknown buckets.
@@ -95,6 +97,9 @@ func main() {
 	// Serve icons and styles.
 	longCacheServer := func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
+			if upgradeToHTTPS(w, r, newTxnLogger(r)) {
+				return
+			}
 			// Mark as never expiring as per https://www.ietf.org/rfc/rfc2616.txt
 			w.Header().Add("Cache-Control", "max-age=31536000")
 			h.ServeHTTP(w, r)
@@ -111,6 +116,20 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *flPort), nil))
 }
 
+func upgradeToHTTPS(w http.ResponseWriter, r *http.Request, logger txnLogger) bool {
+	if *flUpgradeProxiedHTTPtoHTTPS && r.Header.Get("X-Forwarded-Proto") == "http" {
+		newURL := *r.URL
+		newURL.Scheme = "https"
+		if newURL.Host == "" {
+			newURL.Host = r.Host
+		}
+		logger.Printf("redirect to %s [https upgrade]", newURL.String())
+		http.Redirect(w, r, newURL.String(), http.StatusPermanentRedirect)
+		return true
+	}
+	return false
+}
+
 func healthzRequest(w http.ResponseWriter, r *http.Request) {
 	newTxnLogger(r)
 
@@ -123,8 +142,11 @@ func healthzRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func robotsRequest(w http.ResponseWriter, r *http.Request) {
-	newTxnLogger(r)
+	logger := newTxnLogger(r)
 
+	if upgradeToHTTPS(w, r, logger) {
+		return
+	}
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -134,8 +156,11 @@ func robotsRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func unknownBucketRequest(w http.ResponseWriter, r *http.Request) {
-	newTxnLogger(r)
+	logger := newTxnLogger(r)
 
+	if upgradeToHTTPS(w, r, logger) {
+		return
+	}
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -154,13 +179,19 @@ func unknownBucketRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func otherRequest(w http.ResponseWriter, r *http.Request) {
-	newTxnLogger(r)
+	logger := newTxnLogger(r)
+	if upgradeToHTTPS(w, r, logger) {
+		return
+	}
 	http.NotFound(w, r)
 }
 
 func gcsRequest(w http.ResponseWriter, r *http.Request) {
 	logger := newTxnLogger(r)
 
+	if upgradeToHTTPS(w, r, logger) {
+		return
+	}
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return

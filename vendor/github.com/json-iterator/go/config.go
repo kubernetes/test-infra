@@ -2,11 +2,13 @@ package jsoniter
 
 import (
 	"encoding/json"
-	"github.com/modern-go/reflect2"
 	"io"
+	"reflect"
 	"sync"
 	"unsafe"
+
 	"github.com/modern-go/concurrent"
+	"github.com/modern-go/reflect2"
 )
 
 // Config customize how the API should behave.
@@ -22,6 +24,7 @@ type Config struct {
 	OnlyTaggedField               bool
 	ValidateJsonRawMessage        bool
 	ObjectFieldMustBeSimpleString bool
+	CaseSensitive                 bool
 }
 
 // API the public interface of this package.
@@ -39,6 +42,8 @@ type API interface {
 	NewDecoder(reader io.Reader) *Decoder
 	Valid(data []byte) bool
 	RegisterExtension(extension Extension)
+	DecoderOf(typ reflect2.Type) ValDecoder
+	EncoderOf(typ reflect2.Type) ValEncoder
 }
 
 // ConfigDefault the default API
@@ -60,7 +65,6 @@ var ConfigFastest = Config{
 	ObjectFieldMustBeSimpleString: true, // do not unescape object field
 }.Froze()
 
-
 type frozenConfig struct {
 	configBeforeFrozen            Config
 	sortMapKeys                   bool
@@ -70,9 +74,12 @@ type frozenConfig struct {
 	disallowUnknownFields         bool
 	decoderCache                  *concurrent.Map
 	encoderCache                  *concurrent.Map
-	extensions                    []Extension
+	encoderExtension              Extension
+	decoderExtension              Extension
+	extraExtensions               []Extension
 	streamPool                    *sync.Pool
 	iteratorPool                  *sync.Pool
+	caseSensitive                 bool
 }
 
 func (cfg *frozenConfig) initCache() {
@@ -104,7 +111,7 @@ func (cfg *frozenConfig) getEncoderFromCache(cacheKey uintptr) ValEncoder {
 	return nil
 }
 
-var cfgCache = &sync.Map{}
+var cfgCache = concurrent.NewMap()
 
 func getFrozenConfigFromCache(cfg Config) *frozenConfig {
 	obj, found := cfgCache.Load(cfg)
@@ -126,6 +133,7 @@ func (cfg Config) Froze() API {
 		objectFieldMustBeSimpleString: cfg.ObjectFieldMustBeSimpleString,
 		onlyTaggedField:               cfg.OnlyTaggedField,
 		disallowUnknownFields:         cfg.DisallowUnknownFields,
+		caseSensitive:                 cfg.CaseSensitive,
 	}
 	api.streamPool = &sync.Pool{
 		New: func() interface{} {
@@ -152,22 +160,21 @@ func (cfg Config) Froze() API {
 	if cfg.ValidateJsonRawMessage {
 		api.validateJsonRawMessage(encoderExtension)
 	}
-	if len(encoderExtension) > 0 {
-		api.extensions = append(api.extensions, encoderExtension)
-	}
-	if len(decoderExtension) > 0 {
-		api.extensions = append(api.extensions, decoderExtension)
-	}
+	api.encoderExtension = encoderExtension
+	api.decoderExtension = decoderExtension
 	api.configBeforeFrozen = cfg
 	return api
 }
 
-func (cfg Config) frozeWithCacheReuse() *frozenConfig {
+func (cfg Config) frozeWithCacheReuse(extraExtensions []Extension) *frozenConfig {
 	api := getFrozenConfigFromCache(cfg)
 	if api != nil {
 		return api
 	}
 	api = cfg.Froze().(*frozenConfig)
+	for _, extension := range extraExtensions {
+		api.RegisterExtension(extension)
+	}
 	addFrozenConfigToCache(cfg, api)
 	return api
 }
@@ -184,7 +191,7 @@ func (cfg *frozenConfig) validateJsonRawMessage(extension EncoderExtension) {
 			stream.WriteRaw(string(rawMessage))
 		}
 	}, func(ptr unsafe.Pointer) bool {
-		return false
+		return len(*((*json.RawMessage)(ptr))) == 0
 	}}
 	extension[reflect2.TypeOfPtr((*json.RawMessage)(nil)).Elem()] = encoder
 	extension[reflect2.TypeOfPtr((*RawMessage)(nil)).Elem()] = encoder
@@ -192,6 +199,11 @@ func (cfg *frozenConfig) validateJsonRawMessage(extension EncoderExtension) {
 
 func (cfg *frozenConfig) useNumber(extension DecoderExtension) {
 	extension[reflect2.TypeOfPtr((*interface{})(nil)).Elem()] = &funcDecoder{func(ptr unsafe.Pointer, iter *Iterator) {
+		exitingValue := *((*interface{})(ptr))
+		if exitingValue != nil && reflect.TypeOf(exitingValue).Kind() == reflect.Ptr {
+			iter.ReadVal(exitingValue)
+			return
+		}
 		if iter.WhatIsNext() == NumberValue {
 			*((*interface{})(ptr)) = json.Number(iter.readNumberAsString())
 		} else {
@@ -208,7 +220,9 @@ func (cfg *frozenConfig) getTagKey() string {
 }
 
 func (cfg *frozenConfig) RegisterExtension(extension Extension) {
-	cfg.extensions = append(cfg.extensions, extension)
+	cfg.extraExtensions = append(cfg.extraExtensions, extension)
+	copied := cfg.configBeforeFrozen
+	cfg.configBeforeFrozen = copied
 }
 
 type lossyFloat32Encoder struct {
@@ -303,7 +317,7 @@ func (cfg *frozenConfig) MarshalIndent(v interface{}, prefix, indent string) ([]
 	}
 	newCfg := cfg.configBeforeFrozen
 	newCfg.IndentionStep = len(indent)
-	return newCfg.frozeWithCacheReuse().Marshal(v)
+	return newCfg.frozeWithCacheReuse(cfg.extraExtensions).Marshal(v)
 }
 
 func (cfg *frozenConfig) UnmarshalFromString(str string, v interface{}) error {

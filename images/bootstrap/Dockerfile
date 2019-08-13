@@ -14,8 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:jessie
-LABEL maintainer="Sen Lu <senlu@google.com>"
+FROM debian:stretch
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
@@ -38,6 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     mercurial \
     openssh-client \
     pkg-config \
+    procps \
     python \
     python-dev \
     python-openssl \
@@ -48,7 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils \
     zip \
     zlib1g-dev \
-    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --upgrade pip setuptools wheel
 
 # Install gcloud
@@ -81,7 +81,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gnupg2 \
     software-properties-common \
-    lsb-release
+    lsb-release && \
+    rm -rf /var/lib/apt/lists/*
 
 # Add the Docker apt-repository
 RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg \
@@ -91,15 +92,14 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
     $(lsb_release -cs) stable"
 
 # Install Docker
-# TODO(bentheelder): the `sed` is a bit of a hack, look into alternatives.
+# TODO: the `sed` is a bit of a hack, look into alternatives.
 # Why this exists: `docker service start` on debian runs a `cgroupfs_mount` method,
 # We're already inside docker though so we can be sure these are already mounted.
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
-# TODO(benthelder): update docker version. This is pinned because of
-# https://github.com/kubernetes/test-infra/issues/6187
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce=17.09.1~ce-0~debian && \
+    apt-get install -y --no-install-recommends docker-ce=5:18.09.* && \
+    rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
 
 
@@ -123,5 +123,11 @@ COPY ["barnacle/barnacle", "/usr/local/bin/"]
 # .bazelrc files if bazel remote caching is enabled 
 COPY ["entrypoint.sh", "runner.sh", "create_bazel_cache_rcs.sh", \
         "/usr/local/bin/"]
+
+# TODO(krzyzacy): Move the scenario scripts to kubekins v2
+# The bundled scenarios are for podutil jobs, bootstrap jobs will still use
+# scenario scripts from cloned test-infra
+RUN mkdir /workspace/scenarios
+COPY ["./scenarios", "/workspace/scenarios"]
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -1,0 +1,31 @@
+periodics:
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-containerd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_CONTAINER_RUNTIME=containerd
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --env=ENABLE_POD_SECURITY_POLICY=true
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: google-gce, sig-storage-kubernetes
+    testgrid-tab-name: gce-containerd
+    description: node gce e2e tests for master branch using containerd

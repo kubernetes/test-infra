@@ -1,0 +1,98 @@
+presets:
+- labels:
+    preset-pull-gce-device-plugin-gpu: "true"
+  env:
+  - name: NODE_ACCELERATORS
+    value: type=nvidia-tesla-k80,count=2
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    skip_branches:
+    - release-\d+\.\d+
+    annotations:
+      fork-per-release: "true"
+    always_run: true
+    optional: true
+    max_concurrency: 12
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-gce-device-plugin-gpu: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-project=k8s-jkns-pr-gce-gpus
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
+        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+        - --timeout=60m
+        resources:
+          requests:
+            memory: "6Gi"
+  - name: pull-kubernetes-e2e-gke-device-plugin-gpu
+    skip_branches:
+    - release-\d+\.\d+
+    annotations:
+      fork-per-release: "true"
+    always_run: false
+    skip_report: false
+    max_concurrency: 1
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --deployment=gke
+        - --extract=local
+        - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+        - --gcp-node-image=gci
+        - --gcp-project=k8s-gke-gpu-pr
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=30
+        - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
+        - --gke-environment=test
+        - --provider=gke
+        - --stage=gs://kubernetes-release-dev/ci
+        - --stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu
+        - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+        - --timeout=60m
+        resources:
+          requests:
+            memory: "6Gi"

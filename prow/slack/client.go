@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Logger provides an interface to log debug messages.
 type Logger interface {
 	Debugf(s string, v ...interface{})
 }
@@ -103,7 +104,8 @@ func (sl *Client) WriteMessage(text, channel string) error {
 	if sl.fake {
 		return nil
 	}
-	var uv *url.Values = sl.urlValues()
+
+	var uv = sl.urlValues()
 	uv.Add("channel", channel)
 	uv.Add("text", text)
 

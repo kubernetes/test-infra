@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes/cloud-provider-alibaba-cloud:
+  - name: pull-cloud-provider-alibaba-cloud-check
+    always_run: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/cloud-provider-alibaba-cloud
+    spec:
+      containers:
+      - image: pouchcontainer/pouchlinter:v0.1.2
+        command:
+        - make
+        args:
+        - check
+    annotations:
+      testgrid-dashboards: presubmits-cloud-provider-alibaba
+      testgrid-tab-name: check
+      description: alibaba cloud provider checks
+      testgrid-num-columns-recent: '30'
+  - name: pull-cloud-provider-alibaba-cloud-unit-test
+    always_run: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/cloud-provider-alibaba-cloud
+    spec:
+      containers:
+      - image: golang:1.12
+        command:
+        - make
+        args:
+        - unit-test
+    annotations:
+      testgrid-dashboards: presubmits-cloud-provider-alibaba
+      testgrid-tab-name: unit-test
+      description: alibaba cloud provider unit test
+      testgrid-num-columns-recent: '30'

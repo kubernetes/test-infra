@@ -1,0 +1,4 @@
+CONTAINERD_TEST: 'true'
+CONTAINERD_LOG_LEVEL: 'debug'
+CONTAINERD_DEPLOY_PATH: 'cri-containerd-staging/containerd/release-1.2'
+CONTAINERD_PKG_PREFIX: 'containerd-cni'

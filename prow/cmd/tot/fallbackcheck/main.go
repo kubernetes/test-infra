@@ -27,8 +27,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pjutil"

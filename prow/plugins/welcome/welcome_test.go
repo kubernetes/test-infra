@@ -18,17 +18,19 @@ package welcome
 
 import (
 	"fmt"
+	"io/ioutil"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
-
-// TODO(bentheelder): these tests are a bit lame.
-// There has to be a better way to write tests like this.
 
 const (
 	testWelcomeTemplate = "Welcome human! 🤖 {{.AuthorName}} {{.AuthorLogin}} {{.Repo}} {{.Org}}}"
@@ -139,6 +141,7 @@ func TestHandlePR(t *testing.T) {
 		author        string
 		prNumber      int
 		prAction      github.PullRequestEventAction
+		addPR         bool
 		expectComment bool
 	}{
 		{
@@ -169,6 +172,16 @@ func TestHandlePR(t *testing.T) {
 			expectComment: true,
 		},
 		{
+			name:          "new contributor and API recorded PR already",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        "newContributor",
+			prAction:      github.PullRequestActionOpened,
+			prNumber:      50,
+			expectComment: true,
+			addPR:         true,
+		},
+		{
 			name:          "new contributor, not PR open event",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
@@ -188,8 +201,10 @@ func TestHandlePR(t *testing.T) {
 		fc.ClearComments()
 
 		event := makeFakePullRequestEvent(tc.repoOwner, tc.repoName, tc.author, tc.prNumber, tc.prAction)
-		// make sure the PR in the event is recorded
-		fc.AddPR(tc.repoOwner, tc.repoName, tc.author, tc.prNumber)
+		if tc.addPR {
+			// make sure the PR in the event is recorded
+			fc.AddPR(tc.repoOwner, tc.repoName, tc.author, tc.prNumber)
+		}
 
 		// try handling it
 		if err := handlePR(c, event, testWelcomeTemplate); err != nil {
@@ -206,5 +221,153 @@ func TestHandlePR(t *testing.T) {
 		} else if numComments > 0 && !tc.expectComment {
 			t.Fatalf("did not expect comments for case '%s' and got %d comments", tc.name, numComments)
 		}
+	}
+}
+
+func TestWelcomeConfig(t *testing.T) {
+	var (
+		orgMessage  = "defined message for an org"
+		repoMessage = "defined message for a repo"
+	)
+
+	config := &plugins.Configuration{
+		Welcome: []plugins.Welcome{
+			{
+				Repos:           []string{"kubernetes/test-infra"},
+				MessageTemplate: repoMessage,
+			},
+			{
+				Repos:           []string{"kubernetes"},
+				MessageTemplate: orgMessage,
+			},
+			{
+				Repos:           []string{"kubernetes/repo-infra"},
+				MessageTemplate: repoMessage,
+			},
+		},
+	}
+
+	testCases := []struct {
+		name            string
+		repo            string
+		org             string
+		expectedMessage string
+	}{
+		{
+			name:            "default message",
+			org:             "kubernetes-sigs",
+			repo:            "kind",
+			expectedMessage: defaultWelcomeMessage,
+		},
+		{
+			name:            "org defined message",
+			org:             "kubernetes",
+			repo:            "community",
+			expectedMessage: orgMessage,
+		},
+		{
+			name:            "repo defined message, before an org",
+			org:             "kubernetes",
+			repo:            "test-infra",
+			expectedMessage: repoMessage,
+		},
+		{
+			name:            "repo defined message, after an org",
+			org:             "kubernetes",
+			repo:            "repo-infra",
+			expectedMessage: repoMessage,
+		},
+	}
+
+	for _, tc := range testCases {
+		receivedMessage := welcomeMessageForRepo(config, tc.org, tc.repo)
+		if receivedMessage != tc.expectedMessage {
+			t.Fatalf("%s: expected to get '%s' and received '%s'", tc.name, tc.expectedMessage, receivedMessage)
+		}
+	}
+}
+
+// TestPluginConfig validates that there are no duplicate repos in the welcome plugin config.
+func TestPluginConfig(t *testing.T) {
+	pa := &plugins.ConfigAgent{}
+
+	b, err := ioutil.ReadFile("../../plugins.yaml")
+	if err != nil {
+		t.Fatalf("Failed to read plugin config: %v.", err)
+	}
+	np := &plugins.Configuration{}
+	if err := yaml.Unmarshal(b, np); err != nil {
+		t.Fatalf("Failed to unmarshal plugin config: %v.", err)
+	}
+	pa.Set(np)
+
+	orgs := map[string]bool{}
+	repos := map[string]bool{}
+	for _, config := range pa.Config().Welcome {
+		for _, entry := range config.Repos {
+			if strings.Contains(entry, "/") {
+				if repos[entry] {
+					t.Errorf("The repo %q is duplicated in the 'welcome' plugin configuration.", entry)
+				}
+				repos[entry] = true
+			} else {
+				if orgs[entry] {
+					t.Errorf("The org %q is duplicated in the 'welcome' plugin configuration.", entry)
+				}
+				orgs[entry] = true
+			}
+		}
+	}
+	for repo := range repos {
+		org := strings.Split(repo, "/")[0]
+		if orgs[org] {
+			t.Errorf("The repo %q is duplicated with %q in the 'welcome' plugin configuration.", repo, org)
+		}
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name         string
+		config       *plugins.Configuration
+		enabledRepos []string
+		err          bool
+	}{
+		{
+			name:         "Empty config",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+		{
+			name:         "Overlapping org and org/repo",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org2", "org2/repo"},
+		},
+		{
+			name:         "Invalid enabledRepos",
+			config:       &plugins.Configuration{},
+			enabledRepos: []string{"org1", "org2/repo/extra"},
+			err:          true,
+		},
+		{
+			name: "All configs enabled",
+			config: &plugins.Configuration{
+				Welcome: []plugins.Welcome{
+					{
+						Repos:           []string{"org2"},
+						MessageTemplate: "Hello, welcome!",
+					},
+				},
+			},
+			enabledRepos: []string{"org1", "org2/repo"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := helpProvider(c.config, c.enabledRepos)
+			if err != nil && !c.err {
+				t.Fatalf("helpProvider error: %v", err)
+			}
+		})
 	}
 }

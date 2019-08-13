@@ -97,7 +97,7 @@ func (url realJoke) readJoke() (string, error) {
 	return a.Joke, nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, jokeURL)
 }
 

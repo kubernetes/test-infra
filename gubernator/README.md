@@ -2,11 +2,11 @@ Gubernator is a frontend for displaying Kubernetes test results stored in GCS.
 
 It runs on Google App Engine, and parses JSON and junit.xml results for display.
 
-https://k8s-gubernator.appspot.com/
+https://gubernator.k8s.io/
 
 # Adding a repository to the PR Dashboard
 
-To make Gubernator's [PR Dashboard](https://k8s-gubernator.appspot.com/pr) work
+To make Gubernator's [PR Dashboard](https://gubernator.k8s.io/pr) work
 on another repository, it needs to receive webhook events.
 
 Go to Settings -> Webhooks on the repository (or organization) you want to add.
@@ -23,13 +23,13 @@ only updates after the webhook is added will be shown on the dashboard.
 # Development
 
 - Install the Google Cloud SDK: https://cloud.google.com/sdk/
-- Run locally using `dev_appserver.py` and visit http://localhost:8080
+- Run locally using `dev_appserver.py app.yaml` and visit http://localhost:8080
 - Test and lint using `./test-gubernator.sh`
 - Deploy with `make deploy` followed by `make migrate`
 
 # Deployment
 
-- Visit /config on the new deployment to configure Github [OAuth logins](https://github.com/settings/applications)
+- Visit /config on the new deployment to configure GitHub [OAuth logins](https://github.com/settings/applications)
   and webhook secrets.
 
 # GCS Layout
@@ -78,6 +78,30 @@ The following fields in `finished.json` are honored:
 Any artifacts from the build should be placed under `./artifacts/`. Any jUnit
 XML reports should be named `junit_*.xml` and placed under `./artifacts` as well.
 
+## Test Properties [Optional]
+
+Test properties are a set of key value pairs defined on the test case and are optional. The test 
+result file `junit_*.xml` contains a list of test cases and the properties associated with it.
+These properties can be later parsed by any aggregator like testgrid, and used to collect metrics 
+about the test case.
+
+The properties can be defined as:
+
+```xml
+<testcase ...>
+  <properties>
+    <property>
+        <name>key1</name>
+        <value>value1</value>
+    </property>
+    <property>
+        <name>key2</name>
+        <value>value2</value>
+    </property>
+  </properties>
+</testcase>
+```
+
 ## GCS Bucket Layout
 
 In your bucket, a number of directories are required to store the output of all
@@ -107,5 +131,5 @@ the different types of jobs:
 
 # Migrations
 
-1. 2018-01-09: Github webhook and oauth secrets must be reconfigured. Visit
+1. 2018-01-09: GitHub webhook and oauth secrets must be reconfigured. Visit
    /config on your deployment to enter the new values.

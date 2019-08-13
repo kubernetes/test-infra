@@ -1,0 +1,56 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/testgrid/cmd/entomologist",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/io:go_default_library",
+        "//prow/config/secret:go_default_library",
+        "//prow/flagutil:go_default_library",
+        "//prow/github:go_default_library",
+        "//testgrid/issue_state:go_default_library",
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "entomologist",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["main_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//prow/flagutil:go_default_library",
+        "//prow/github:go_default_library",
+        "//prow/github/fakegithub:go_default_library",
+        "//testgrid/issue_state:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
+)

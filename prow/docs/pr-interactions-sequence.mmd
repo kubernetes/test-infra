@@ -1,0 +1,51 @@
+sequenceDiagram
+  participant Contributor
+  participant Reviewer
+  participant Approver
+  participant GitHub
+  participant hook
+  participant approve as approve<br/>(hook plugin)
+  participant size as size<br/>(hook plugin)
+  participant cla as cla<br/>(hook plugin)
+  participant lgtm as lgtm<br/>(hook plugin)
+  participant trigger as trigger<br/>(hook plugin)
+  participant tide
+  participant prowJob
+  participant k8s as Kubernetes<br/>API Server
+
+  Contributor->>GitHub: Creates Pull Request (PR)
+  GitHub->>hook: Sends PR create webhook
+  hook->>approve: Sends PR create webhook
+  approve->>approve: Analyzes repository approvers
+  approve->>GitHub: Create PR comment "PR not approved"
+  hook->>size: Send PR create webhook
+  size->>size: Analyzes PR changed line count
+  size->>GitHub: Adds "size/XS" label to PR
+  hook->>cla: Send PR create webhook
+  cla->>cla: Analyzes if Contributor is CLA approved
+  cla->>GitHub: Adds "cncf-cla: yes" label to PR
+
+  hook->>GitHub: Adds Reviewers to PR
+  GitHub->>Reviewer: Requests Review (Normally an Email)
+  Reviewer->>GitHub: Requests PR Changes
+  Contributor->>GitHub: Make Changes Reviewer Requested
+  Reviewer->>GitHub: Creates a "/lgtm" Comment
+  GitHub->>hook: Sends comment Event
+  hook->>lgtm: Sends comment Event
+  lgtm->>lgtm: Analyzes OWNERS files
+  lgtm->>GitHub: Adds "lgtm" label to PR
+
+  Reviewer->>GitHub: Creates an "/ok-to-test" Comment
+  hook->>GitHub: Adds "ok-to-test" label to PR
+  trigger->>k8s: Create presubmit prowJob
+  k8s->>prowJob: Run presubmit prowJob
+  prowJob->>GitHub: Update PR "statuses" based on job exit code
+
+  Approver->>GitHub: Creates an "/approved" Comment
+  GitHub->>approve: Sends comment Event
+  approve->>approve: Analyzes if Approver can approve PR
+  approve->>GitHub: Adds an "approved" label to PR
+
+  tide->>GitHub: Checks if All Merge Labels Exist on PR
+  tide->>GitHub: Merges PR
+

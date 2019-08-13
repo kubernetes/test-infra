@@ -1,18 +1,14 @@
 presubmits:
   helm/charts:
   - name: pull-charts-e2e
-    agent: kubernetes
     always_run: true
-    context: pull-charts-e2e
-    rerun_command: "/test pull-charts-e2e"
-    trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
         args:
         - "--repo=github.com/helm/charts=$(PULL_REFS)"
         - "--root=/go/src/"
@@ -25,9 +21,11 @@ presubmits:
         securityContext:
           privileged: true
 
+    annotations:
+      testgrid-dashboards: presubmits-misc
+      testgrid-tab-name: charts
 periodics:
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-charts-gce
   labels:
     preset-service-account: "true"
@@ -49,4 +47,7 @@ periodics:
       - --provider=gce
       - --test=false
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-apps
+    testgrid-tab-name: charts-gce

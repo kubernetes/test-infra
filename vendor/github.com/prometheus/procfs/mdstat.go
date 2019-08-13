@@ -1,17 +1,29 @@
+// Copyright 2018 The Prometheus Authors
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package procfs
 
 import (
 	"fmt"
 	"io/ioutil"
-	"path"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 var (
-	statuslineRE = regexp.MustCompile(`(\d+) blocks .*\[(\d+)/(\d+)\] \[[U_]+\]`)
-	buildlineRE  = regexp.MustCompile(`\((\d+)/\d+\)`)
+	statusLineRE   = regexp.MustCompile(`(\d+) blocks .*\[(\d+)/(\d+)\] \[[U_]+\]`)
+	recoveryLineRE = regexp.MustCompile(`\((\d+)/\d+\)`)
 )
 
 // MDStat holds info parsed from /proc/mdstat.
@@ -22,137 +34,161 @@ type MDStat struct {
 	ActivityState string
 	// Number of active disks.
 	DisksActive int64
-	// Total number of disks the device consists of.
+	// Total number of disks the device requires.
 	DisksTotal int64
+	// Number of failed disks.
+	DisksFailed int64
+	// Spare disks in the device.
+	DisksSpare int64
 	// Number of blocks the device holds.
 	BlocksTotal int64
 	// Number of blocks on the device that are in sync.
 	BlocksSynced int64
 }
 
-// ParseMDStat parses an mdstat-file and returns a struct with the relevant infos.
-func (fs FS) ParseMDStat() (mdstates []MDStat, err error) {
-	mdStatusFilePath := path.Join(string(fs), "mdstat")
-	content, err := ioutil.ReadFile(mdStatusFilePath)
+// MDStat parses an mdstat-file (/proc/mdstat) and returns a slice of
+// structs containing the relevant info.  More information available here:
+// https://raid.wiki.kernel.org/index.php/Mdstat
+func (fs FS) MDStat() ([]MDStat, error) {
+	data, err := ioutil.ReadFile(fs.proc.Path("mdstat"))
 	if err != nil {
-		return []MDStat{}, fmt.Errorf("error parsing %s: %s", mdStatusFilePath, err)
+		return nil, fmt.Errorf("error parsing mdstat %s: %s", fs.proc.Path("mdstat"), err)
 	}
+	mdstat, err := parseMDStat(data)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing mdstat %s: %s", fs.proc.Path("mdstat"), err)
+	}
+	return mdstat, nil
+}
 
-	mdStatusFile := string(content)
+// parseMDStat parses data from mdstat file (/proc/mdstat) and returns a slice of
+// structs containing the relevant info.
+func parseMDStat(mdStatData []byte) ([]MDStat, error) {
+	mdStats := []MDStat{}
+	lines := strings.Split(string(mdStatData), "\n")
 
-	lines := strings.Split(mdStatusFile, "\n")
-	var currentMD string
-
-	// Each md has at least the deviceline, statusline and one empty line afterwards
-	// so we will have probably something of the order len(lines)/3 devices
-	// so we use that for preallocation.
-	estimateMDs := len(lines) / 3
-	mdStates := make([]MDStat, 0, estimateMDs)
-
-	for i, l := range lines {
-		if l == "" {
-			// Skip entirely empty lines.
+	for i, line := range lines {
+		if strings.TrimSpace(line) == "" || line[0] == ' ' ||
+			strings.HasPrefix(line, "Personalities") ||
+			strings.HasPrefix(line, "unused") {
 			continue
 		}
 
-		if l[0] == ' ' {
-			// Those lines are not the beginning of a md-section.
-			continue
+		deviceFields := strings.Fields(line)
+		if len(deviceFields) < 3 {
+			return nil, fmt.Errorf("not enough fields in mdline (expected at least 3): %s", line)
 		}
-
-		if strings.HasPrefix(l, "Personalities") || strings.HasPrefix(l, "unused") {
-			// We aren't interested in lines with general info.
-			continue
-		}
-
-		mainLine := strings.Split(l, " ")
-		if len(mainLine) < 3 {
-			return mdStates, fmt.Errorf("error parsing mdline: %s", l)
-		}
-		currentMD = mainLine[0]      // name of md-device
-		activityState := mainLine[2] // activity status of said md-device
+		mdName := deviceFields[0] // mdx
+		state := deviceFields[2]  // active or inactive
 
 		if len(lines) <= i+3 {
-			return mdStates, fmt.Errorf("error parsing %s: entry for %s has fewer lines than expected", mdStatusFilePath, currentMD)
+			return nil, fmt.Errorf(
+				"error parsing %s: too few lines for md device",
+				mdName,
+			)
 		}
 
-		active, total, size, err := evalStatusline(lines[i+1]) // parse statusline, always present
+		// Failed disks have the suffix (F) & Spare disks have the suffix (S).
+		fail := int64(strings.Count(line, "(F)"))
+		spare := int64(strings.Count(line, "(S)"))
+		active, total, size, err := evalStatusLine(lines[i], lines[i+1])
+
 		if err != nil {
-			return mdStates, fmt.Errorf("error parsing %s: %s", mdStatusFilePath, err)
+			return nil, fmt.Errorf("error parsing md device lines: %s", err)
 		}
 
-		//
-		// Now get the number of synced blocks.
-		//
-
-		// Get the line number of the syncing-line.
-		var j int
-		if strings.Contains(lines[i+2], "bitmap") { // then skip the bitmap line
-			j = i + 3
-		} else {
-			j = i + 2
+		syncLineIdx := i + 2
+		if strings.Contains(lines[i+2], "bitmap") { // skip bitmap line
+			syncLineIdx++
 		}
 
-		// If device is syncing at the moment, get the number of currently synced bytes,
-		// otherwise that number equals the size of the device.
+		// If device is syncing at the moment, get the number of currently
+		// synced bytes, otherwise that number equals the size of the device.
 		syncedBlocks := size
-		if strings.Contains(lines[j], "recovery") || strings.Contains(lines[j], "resync") {
-			syncedBlocks, err = evalBuildline(lines[j])
-			if err != nil {
-				return mdStates, fmt.Errorf("error parsing %s: %s", mdStatusFilePath, err)
+		recovering := strings.Contains(lines[syncLineIdx], "recovery")
+		resyncing := strings.Contains(lines[syncLineIdx], "resync")
+
+		// Append recovery and resyncing state info.
+		if recovering || resyncing {
+			if recovering {
+				state = "recovering"
+			} else {
+				state = "resyncing"
+			}
+
+			// Handle case when resync=PENDING or resync=DELAYED.
+			if strings.Contains(lines[syncLineIdx], "PENDING") ||
+				strings.Contains(lines[syncLineIdx], "DELAYED") {
+				syncedBlocks = 0
+			} else {
+				syncedBlocks, err = evalRecoveryLine(lines[syncLineIdx])
+				if err != nil {
+					return nil, fmt.Errorf("error parsing sync line in md device %s: %s", mdName, err)
+				}
 			}
 		}
 
-		mdStates = append(mdStates, MDStat{currentMD, activityState, active, total, size, syncedBlocks})
-
+		mdStats = append(mdStats, MDStat{
+			Name:          mdName,
+			ActivityState: state,
+			DisksActive:   active,
+			DisksFailed:   fail,
+			DisksSpare:    spare,
+			DisksTotal:    total,
+			BlocksTotal:   size,
+			BlocksSynced:  syncedBlocks,
+		})
 	}
 
-	return mdStates, nil
+	return mdStats, nil
 }
 
-func evalStatusline(statusline string) (active, total, size int64, err error) {
-	matches := statuslineRE.FindStringSubmatch(statusline)
+func evalStatusLine(deviceLine, statusLine string) (active, total, size int64, err error) {
 
-	// +1 to make it more obvious that the whole string containing the info is also returned as matches[0].
-	if len(matches) != 3+1 {
-		return 0, 0, 0, fmt.Errorf("unexpected number matches found in statusline: %s", statusline)
+	sizeStr := strings.Fields(statusLine)[0]
+	size, err = strconv.ParseInt(sizeStr, 10, 64)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("unexpected statusLine %s: %s", statusLine, err)
 	}
 
-	size, err = strconv.ParseInt(matches[1], 10, 64)
-	if err != nil {
-		return 0, 0, 0, fmt.Errorf("%s in statusline: %s", err, statusline)
+	if strings.Contains(deviceLine, "raid0") || strings.Contains(deviceLine, "linear") {
+		// In the device deviceLine, only disks have a number associated with them in [].
+		total = int64(strings.Count(deviceLine, "["))
+		return total, total, size, nil
+	}
+
+	if strings.Contains(deviceLine, "inactive") {
+		return 0, 0, size, nil
+	}
+
+	matches := statusLineRE.FindStringSubmatch(statusLine)
+	if len(matches) != 4 {
+		return 0, 0, 0, fmt.Errorf("couldn't find all the substring matches: %s", statusLine)
 	}
 
 	total, err = strconv.ParseInt(matches[2], 10, 64)
 	if err != nil {
-		return 0, 0, 0, fmt.Errorf("%s in statusline: %s", err, statusline)
+		return 0, 0, 0, fmt.Errorf("unexpected statusLine %s: %s", statusLine, err)
 	}
 
 	active, err = strconv.ParseInt(matches[3], 10, 64)
 	if err != nil {
-		return 0, 0, 0, fmt.Errorf("%s in statusline: %s", err, statusline)
+		return 0, 0, 0, fmt.Errorf("unexpected statusLine %s: %s", statusLine, err)
 	}
 
 	return active, total, size, nil
 }
 
-// Gets the size that has already been synced out of the sync-line.
-func evalBuildline(buildline string) (int64, error) {
-	matches := buildlineRE.FindStringSubmatch(buildline)
-
-	// +1 to make it more obvious that the whole string containing the info is also returned as matches[0].
-	if len(matches) < 1+1 {
-		return 0, fmt.Errorf("too few matches found in buildline: %s", buildline)
+func evalRecoveryLine(recoveryLine string) (syncedBlocks int64, err error) {
+	matches := recoveryLineRE.FindStringSubmatch(recoveryLine)
+	if len(matches) != 2 {
+		return 0, fmt.Errorf("unexpected recoveryLine: %s", recoveryLine)
 	}
 
-	if len(matches) > 1+1 {
-		return 0, fmt.Errorf("too many matches found in buildline: %s", buildline)
-	}
-
-	syncedSize, err := strconv.ParseInt(matches[1], 10, 64)
+	syncedBlocks, err = strconv.ParseInt(matches[1], 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("%s in buildline: %s", err, buildline)
+		return 0, fmt.Errorf("%s in recoveryLine: %s", err, recoveryLine)
 	}
 
-	return syncedSize, nil
+	return syncedBlocks, nil
 }

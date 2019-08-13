@@ -31,15 +31,15 @@ import (
 	"time"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/test-infra/prow/pjutil"
 
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/config/secret"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/jenkins"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	m "k8s.io/test-infra/prow/metrics"
 )
@@ -49,7 +49,6 @@ type options struct {
 	jobConfigPath string
 	selector      string
 	totURL        string
-	deckURL       string
 
 	jenkinsURL             string
 	jenkinsUserName        string
@@ -60,12 +59,22 @@ type options struct {
 	caCertFile             string
 	csrfProtect            bool
 
-	githubEndpoint  flagutil.Strings
-	githubTokenFile string
-	dryRun          bool
+	dryRun     bool
+	kubernetes prowflagutil.ExperimentalKubernetesOptions
+	github     prowflagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
+	}
+
+	if _, err := url.ParseRequestURI(o.jenkinsURL); err != nil {
+		return fmt.Errorf("invalid -jenkins-url URI: %q", o.jenkinsURL)
+	}
+
 	if o.jenkinsTokenFile == "" && o.jenkinsBearerTokenFile == "" {
 		return errors.New("either --jenkins-token-file or --jenkins-bearer-token-file must be set")
 	} else if o.jenkinsTokenFile != "" && o.jenkinsBearerTokenFile != "" {
@@ -89,39 +98,39 @@ func (o *options) Validate() error {
 }
 
 func gatherOptions() options {
-	o := options{
-		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	fs.StringVar(&o.totURL, "tot-url", "", "Tot URL")
+
+	fs.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
+	fs.StringVar(&o.jenkinsUserName, "jenkins-user", "jenkins-trigger", "Jenkins username")
+	fs.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
+	fs.StringVar(&o.jenkinsBearerTokenFile, "jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
+	fs.StringVar(&o.certFile, "cert-file", "", "Path to a PEM-encoded certificate file.")
+	fs.StringVar(&o.keyFile, "key-file", "", "Path to a PEM-encoded key file.")
+	fs.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
+	fs.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
+
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		group.AddFlags(fs)
 	}
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
-	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
-
-	flag.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
-	flag.StringVar(&o.jenkinsUserName, "jenkins-user", "jenkins-trigger", "Jenkins username")
-	flag.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
-	flag.StringVar(&o.jenkinsBearerTokenFile, "jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
-	flag.StringVar(&o.certFile, "cert-file", "", "Path to a PEM-encoded certificate file.")
-	flag.StringVar(&o.keyFile, "key-file", "", "Path to a PEM-encoded key file.")
-	flag.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
-	flag.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
-
-	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
-	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
-	flag.Parse()
+	fs.Parse(os.Args[1:])
 	return o
 }
 
 func main() {
+	logrusutil.ComponentInit("jenkins-operator")
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "jenkins-operator"}),
-	)
+
+	pjutil.ServePProf()
 
 	if _, err := labels.Parse(o.selector); err != nil {
 		logrus.WithError(err).Fatal("Error parsing label selector.")
@@ -131,10 +140,11 @@ func main() {
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config
 
-	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
+	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+		logrus.WithError(err).Fatal("Error getting ProwJob client for the infrastructure cluster.")
 	}
 
 	ac := &jenkins.AuthConfig{
@@ -142,7 +152,7 @@ func main() {
 	}
 
 	var tokens []string
-	tokens = append(tokens, o.githubTokenFile)
+	tokens = append(tokens, o.github.TokenPath)
 
 	if o.jenkinsTokenFile != "" {
 		tokens = append(tokens, o.jenkinsTokenFile)
@@ -153,7 +163,7 @@ func main() {
 	}
 
 	// Start the secret agent.
-	secretAgent := &config.SecretAgent{}
+	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start(tokens); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
@@ -182,35 +192,21 @@ func main() {
 		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
 	}
 
-	// Check if github endpoint has a valid url.
-	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-		}
+	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	var ghc *github.Client
-	if o.dryRun {
-		ghc = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-		kc = kube.NewFakeClient(o.deckURL)
-	} else {
-		ghc = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-	}
-
-	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)
+	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
 
-	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go m.PushMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	// Expose prometheus metrics
+	m.ExposeMetrics("jenkins-operator", cfg().PushGateway)
+
 	// Serve Jenkins logs here and proxy deck to use this endpoint
-	// instead of baking agent-specific logic in deck. This func also
-	// serves prometheus metrics.
+	// instead of baking agent-specific logic in deck
 	go serve(jc)
 	// gather metrics for the jobs handled by the jenkins controller.
 	go gather(c)
@@ -261,11 +257,9 @@ func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
 }
 
 // serve starts a http server and serves Jenkins logs
-// and prometheus metrics. Meant to be called inside
-// a goroutine.
+// and. Meant to be called inside a goroutine.
 func serve(jc *jenkins.Client) {
 	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
-	http.Handle("/metrics", promhttp.Handler())
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 

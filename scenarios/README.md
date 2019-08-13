@@ -1,3 +1,11 @@
+# DEPRECATION NOTICE
+
+*October 9, 2018* `scenarios/*.py` will be moved to become part of kubetest v2, so we are
+not taking PRs except for urgent bug fixes.
+
+Also please bump [bootstrap image](/images/bootstrap) and 
+[kubekins image](/images/kubekins-e2e) to take in any future changes.
+
 # Test scenarios
 
 Place scripts to run test scenarios inside this location.

@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
+	"k8s.io/test-infra/prow/gitattributes"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -48,26 +49,28 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	sizes := sizesOrDefault(config.Size)
 	return &pluginhelp.PluginHelp{
-			Description: fmt.Sprintf(`The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions):<ul>
+			Description: "The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions).",
+			Config: map[string]string{
+				"": fmt.Sprintf(`The plugin has the following thresholds:<ul>
 <li>size/XS:  0-%d</li>
 <li>size/S:   %d-%d</li>
 <li>size/M:   %d-%d</li>
-<li>size/L    %d-%d</li>
+<li>size/L:   %d-%d</li>
 <li>size/XL:  %d-%d</li>
 <li>size/XXL: %d+</li>
 </ul>`, sizes.S-1, sizes.S, sizes.M-1, sizes.M, sizes.L-1, sizes.L, sizes.Xl-1, sizes.Xl, sizes.Xxl-1, sizes.Xxl),
+			},
 		},
 		nil
 }
 
-func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, sizesOrDefault(pc.PluginConfig.Size), pc.Logger, pe)
 }
 
-// Strict subset of *github.Client methods.
+// Strict subset of github.Client methods.
 type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
@@ -88,7 +91,7 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 		sha   = pe.PullRequest.Base.SHA
 	)
 
-	g, err := genfiles.NewGroup(gc, owner, repo, sha)
+	gf, err := genfiles.NewGroup(gc, owner, repo, sha)
 	if err != nil {
 		switch err.(type) {
 		case *genfiles.ParseError:
@@ -99,6 +102,11 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 		}
 	}
 
+	ga, err := gitattributes.NewGroup(func() ([]byte, error) { return gc.GetFile(owner, repo, ".gitattributes", sha) })
+	if err != nil {
+		return err
+	}
+
 	changes, err := gc.GetPullRequestChanges(owner, repo, num)
 	if err != nil {
 		return fmt.Errorf("can not get PR changes for size plugin: %v", err)
@@ -106,7 +114,8 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 
 	var count int
 	for _, change := range changes {
-		if g.Match(change.Filename) {
+		// Skip generated and linguist-generated files.
+		if gf.Match(change.Filename) || ga.IsLinguistGenerated(change.Filename) {
 			continue
 		}
 
@@ -220,10 +229,18 @@ func isPRChanged(pe github.PullRequestEvent) bool {
 	}
 }
 
-func sizesOrDefault(sizes *plugins.Size) plugins.Size {
-	if sizes == nil {
-		return defaultSizes
+func defaultIfZero(value, defaultValue int) int {
+	if value == 0 {
+		return defaultValue
 	}
+	return value
+}
 
-	return *sizes
+func sizesOrDefault(sizes plugins.Size) plugins.Size {
+	sizes.S = defaultIfZero(sizes.S, defaultSizes.S)
+	sizes.M = defaultIfZero(sizes.M, defaultSizes.M)
+	sizes.L = defaultIfZero(sizes.L, defaultSizes.L)
+	sizes.Xl = defaultIfZero(sizes.Xl, defaultSizes.Xl)
+	sizes.Xxl = defaultIfZero(sizes.Xxl, defaultSizes.Xxl)
+	return sizes
 }

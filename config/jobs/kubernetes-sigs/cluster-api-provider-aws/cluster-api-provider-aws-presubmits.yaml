@@ -1,29 +1,77 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
-  - name: pull-cluster-api-provider-aws-make
-    agent: kubernetes
+  - name: pull-cluster-api-provider-aws-bazel-test
     always_run: true
-    context: pull-cluster-api-provider-aws-make
-    rerun_command: "/test pull-cluster-api-provider-aws-make"
-    trigger: "/test( all| pull-cluster-api-provider-aws-make)"
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - "--scenario=execute"
-        - "--"
-        - "make"
-        - "images"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+        command:
+        - "./scripts/ci-bazel-test.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: bazel-pr-test
+  - name: pull-cluster-api-provider-aws-bazel-build
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+        command:
+        - "./scripts/ci-bazel-build.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: bazel-pr-build
+  - name: pull-cluster-api-provider-aws-bazel-integration
+    always_run: true
+    optional: true
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+        command:
+        - "runner.sh"
+        - "./scripts/ci-bazel-integration.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
-        resources:
-          requests:
-            memory: "6Gi"
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: bazel-pr-integration
+  - name: pull-cluster-api-provider-aws-verify
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-experimental
+        command:
+        - "runner.sh"
+        - "make"
+        - "verify"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: verify

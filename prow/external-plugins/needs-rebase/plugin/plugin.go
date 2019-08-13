@@ -23,17 +23,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
-	pluginName         = "needs-rebase"
-	needsRebaseLabel   = "needs-rebase"
+	// PluginName is the name of this plugin
+	PluginName         = labels.NeedsRebase
 	needsRebaseMessage = "PR needs rebase."
 )
 
@@ -48,60 +49,85 @@ type githubClient interface {
 	IsMergeable(org, repo string, number int, sha string) (bool, error)
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	Query(context.Context, interface{}, map[string]interface{}) error
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
 
 type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-// func init() {
-// 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
-// }
-
-// func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-// 	return handleEvent(pc.Logger, pc.GitHubClient, pc.CommentPruner, &pre)
-// }
-
+// HelpProvider constructs the PluginHelp for this plugin that takes into account enabled repositories.
+// HelpProvider defines the type for function that construct the PluginHelp for plugins.
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
-			Description: `The needs-rebase plugin manages the '` + needsRebaseLabel + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.
+			Description: `The needs-rebase plugin manages the '` + labels.NeedsRebase + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.
 The plugin reacts to commit changes on PRs in addition to periodically scanning all open PRs for any changes to mergeability that could have resulted from changes in other PRs.`,
 		},
 		nil
 }
 
-func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
+// HandlePullRequestEvent handles a GitHub pull request event and adds or removes a
+// "needs-rebase" label based on whether the GitHub api considers the PR mergeable
+func HandlePullRequestEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
 		return nil
 	}
 
+	return handle(log, ghc, &pre.PullRequest)
+}
+
+// HandleIssueCommentEvent handles a GitHub issue comment event and adds or removes a
+// "needs-rebase" label if the issue is a PR based on whether the GitHub api considers
+// the PR mergeable
+func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.IssueCommentEvent) error {
+	if !ice.Issue.IsPullRequest() {
+		return nil
+	}
+	pr, err := ghc.GetPullRequest(ice.Repo.Owner.Login, ice.Repo.Name, ice.Issue.Number)
+	if err != nil {
+		return err
+	}
+
+	return handle(log, ghc, pr)
+}
+
+// handle handles a GitHub PR to determine if the "needs-rebase"
+// label needs to be added or removed. It depends on GitHub mergeability check
+// to decide the need for a rebase.
+func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
+	if pr.Merged {
+		return nil
+	}
 	// Before checking mergeability wait a few seconds to give github a chance to calculate it.
 	// This initial delay prevents us from always wasting the first API token.
 	sleep(time.Second * 5)
 
-	org := pre.Repo.Owner.Login
-	repo := pre.Repo.Name
-	number := pre.Number
-	sha := pre.PullRequest.Head.SHA
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+	number := pr.Number
+	sha := pr.Head.SHA
 
 	mergeable, err := ghc.IsMergeable(org, repo, number, sha)
 	if err != nil {
 		return err
 	}
-	labels, err := ghc.GetIssueLabels(org, repo, number)
+	issueLabels, err := ghc.GetIssueLabels(org, repo, number)
 	if err != nil {
 		return err
 	}
-	hasLabel := github.HasLabel(needsRebaseLabel, labels)
+	hasLabel := github.HasLabel(labels.NeedsRebase, issueLabels)
 
-	return takeAction(log, ghc, org, repo, number, pre.PullRequest.User.Login, hasLabel, mergeable)
+	return takeAction(log, ghc, org, repo, number, pr.User.Login, hasLabel, mergeable)
 }
 
+// HandleAll checks all orgs and repos that enabled this plugin for open PRs to
+// determine if the "needs-rebase" label needs to be added or removed. It
+// depends on GitHub's mergeability check to decide the need for a rebase.
 func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration) error {
 	log.Info("Checking all PRs.")
-	orgs, repos := config.EnabledReposForExternalPlugin(pluginName)
+	orgs, repos := config.EnabledReposForExternalPlugin(PluginName)
 	if len(orgs) == 0 && len(repos) == 0 {
-		log.Warnf("No repos have been configured for the %s plugin", pluginName)
+		log.Warnf("No repos have been configured for the %s plugin", PluginName)
 		return nil
 	}
 	var buf bytes.Buffer
@@ -133,7 +159,7 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 		})
 		hasLabel := false
 		for _, label := range pr.Labels.Nodes {
-			if label.Name == needsRebaseLabel {
+			if label.Name == labels.NeedsRebase {
 				hasLabel = true
 				break
 			}
@@ -155,17 +181,20 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 	return nil
 }
 
+// takeAction adds or removes the "needs-rebase" label based on the current
+// state of the PR (hasLabel and mergeable). It also handles adding and
+// removing GitHub comments notifying the PR author that a rebase is needed.
 func takeAction(log *logrus.Entry, ghc githubClient, org, repo string, num int, author string, hasLabel, mergeable bool) error {
 	if !mergeable && !hasLabel {
-		if err := ghc.AddLabel(org, repo, num, needsRebaseLabel); err != nil {
-			log.WithError(err).Errorf("Failed to add %q label.", needsRebaseLabel)
+		if err := ghc.AddLabel(org, repo, num, labels.NeedsRebase); err != nil {
+			log.WithError(err).Errorf("Failed to add %q label.", labels.NeedsRebase)
 		}
 		msg := plugins.FormatSimpleResponse(author, needsRebaseMessage)
 		return ghc.CreateComment(org, repo, num, msg)
 	} else if mergeable && hasLabel {
 		// remove label and prune comment
-		if err := ghc.RemoveLabel(org, repo, num, needsRebaseLabel); err != nil {
-			log.WithError(err).Errorf("Failed to remove %q label.", needsRebaseLabel)
+		if err := ghc.RemoveLabel(org, repo, num, labels.NeedsRebase); err != nil {
+			log.WithError(err).Errorf("Failed to remove %q label.", labels.NeedsRebase)
 		}
 		botName, err := ghc.BotName()
 		if err != nil {

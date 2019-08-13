@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["plugins.go"],
+    importmap = "k8s.io/test-infra/vendor/github.com/aws/aws-k8s-tester/ec2config/plugins",
+    importpath = "github.com/aws/aws-k8s-tester/ec2config/plugins",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/aws-k8s-tester/etcdconfig/plugins:go_default_library",
+        "//vendor/github.com/aws/aws-k8s-tester/kubeadmconfig/plugins:go_default_library",
+        "//vendor/github.com/aws/aws-k8s-tester/kubernetesconfig/plugins:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

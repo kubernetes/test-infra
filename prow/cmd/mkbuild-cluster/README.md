@@ -1,4 +1,4 @@
-# MkBuild-Cluster 
+# MkBuild-Cluster
 
 The `mkbuild-cluster` program helps create `cluster.yaml` files that [plank] accepts via the `--build-cluster` flag.
 
@@ -13,7 +13,7 @@ Create a new `cluster.yaml` to send to [plank] via `--build-cluster`:
 ```sh
 # Create initial entry
 bazel run //prow/cmd/mkbuild-cluster -- \
-  --project=P --zone=Z --cluster=C --alias=default > cluster.yaml
+  --project=P --zone=Z --cluster=C --alias=default --print-entry > cluster.yaml
 # Write secret with this entry
 kubectl create secret generic build-cluster --from-file=cluster.yaml
 ```
@@ -42,17 +42,42 @@ Append additional entries to `cluster.yaml`:
 
 ```sh
 # Get current values:
-kubectl get secrets/build-cluster -o yaml > old.yaml
+kubectl get secrets/build-cluster -o yaml > ~/old.yaml
 # Add new value
-cat old.yaml | bazel run //prow/cmd/mkbuild-cluster -- \
+cat ~/old.yaml | bazel run //prow/cmd/mkbuild-cluster -- \
   --project=P --zone=Z --cluster=C --alias=NEW_CLUSTER \
-  > updated.yaml
-kubectl apply -f updated.yaml
+  > ~/updated.yaml
+diff ~/old.yaml ~/updated.yaml
+kubectl apply -f ~/updated.yaml
 ```
 
 Note: restart plank to see the updated values.
 
 ## More options:
+
+### Credential errors
+
+By default we validate the new client works before printing out its credentials.
+
+The `--get-client-cert` flag may fix these errors.
+
+On some platform, MasterAuth has [no RBAC permissions](https://github.com/kubernetes/kubernetes/issues/65400) on the server.
+If you see an error of the following form, this is likely the case.
+
+```console
+Failed: authenticated client could not list pods: response has status "403 Forbidden" and body "{"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"pods is forbidden: User \"client\" cannot list pods in the namespace \"kube-system\"","reason":"Forbidden","details":{"kind":"pods"},"code":403}
+```
+
+You need to give the user access to pods in that cluster.
+
+```sh
+# Create the pod-reader role
+kubectl create clusterrole cluster-pod-admin --verb=* --resource=pods
+# Give the user access to read pods. The user in this example is 'client'.
+kubectl create clusterrolebinding cluster-pod-admin-binding --clusterrole=cluster-pod-admin --user=client
+```
+
+### All options
 
 ```sh
 # Full list of flags like --account, --print-entry, --get-client-cert, etc.

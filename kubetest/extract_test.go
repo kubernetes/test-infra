@@ -133,6 +133,16 @@ func TestExtractStrategies(t *testing.T) {
 			"v1.2.3+abcde",
 		},
 		{
+			"ci/gke-latest-1.13",
+			"https://storage.googleapis.com/kubernetes-release-gke/release",
+			"v1.2.3+abcde",
+		},
+		{
+			"ci/gke-channel-rapid",
+			"https://storage.googleapis.com/kubernetes-release-gke/release",
+			"v1.2.3+abcde",
+		},
+		{
 			"gs://whatever-bucket/ci/latest.txt",
 			"https://storage.googleapis.com/whatever-bucket/ci",
 			"v1.2.3+abcde",
@@ -164,6 +174,20 @@ func TestExtractStrategies(t *testing.T) {
 		if !strings.HasPrefix(path.Dir(url), "gs:/") {
 			return []byte{}, fmt.Errorf("url %s must starts with gs:/", path.Dir(url))
 		}
+
+		return []byte("v1.2.3+abcde"), nil
+	}
+
+	oldHTTPCat := httpCat
+	defer func() { httpCat = oldHTTPCat }()
+	httpCat = func(url string) ([]byte, error) {
+		if path.Ext(url) != ".txt" {
+			return []byte{}, fmt.Errorf("url %s must end with .txt", url)
+		}
+		if !strings.HasPrefix(url, "https://") {
+			return []byte{}, fmt.Errorf("url %s must starts with https://", url)
+		}
+
 		return []byte("v1.2.3+abcde"), nil
 	}
 

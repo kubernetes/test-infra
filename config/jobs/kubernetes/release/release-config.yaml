@@ -1,0 +1,119 @@
+presubmits:
+  kubernetes/release:
+  - name: pull-release-cluster-up
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes
+        - --repo=k8s.io/release=$(PULL_REFS)
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --down=false
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
+        - --test_args=--ginkgo.focus=definitely-not-a-real-focus
+        - --timeout=65m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-cluster-up
+      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-unit
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+      - image: golang:1.12
+        command:
+        - go
+        args:
+        - test
+        - ./...
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-unit
+      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-verify
+    always_run: true
+    optional: true
+    decorate: true
+    path_alias: k8s.io/release
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-verify
+      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-num-columns-recent: '30'
+# package tests
+periodics:
+- name: periodic-release-verify-packages-debs
+  interval: 6h
+  annotations:
+    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-debs
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: quay.io/k8s/release-tools:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-debs
+- name: periodic-release-verify-packages-rpms
+  interval: 6h
+  annotations:
+    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-rpms
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: quay.io/k8s/release-tools-centos:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-rpms

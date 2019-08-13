@@ -144,22 +144,22 @@ func TestUpdateComments(t *testing.T) {
 			},
 			newIssueComments: map[int][]*github.IssueComment{
 				3: {
-					makeGithubIssueComment(2, "IssueBody", "SomeLogin",
+					makeGitHubIssueComment(2, "IssueBody", "SomeLogin",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-					makeGithubIssueComment(3, "AnotherBody", "AnotherLogin",
+					makeGitHubIssueComment(3, "AnotherBody", "AnotherLogin",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},
 			newPullComments: map[int][]*github.PullRequestComment{
 				2: {
-					makeGithubPullComment(4, "Body", "Login",
+					makeGitHubPullComment(4, "Body", "Login",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.February, 1, 19, 30, 0, 0, time.UTC)),
 				},
 				3: {
-					makeGithubPullComment(5, "SecondBody", "OtherLogin",
+					makeGitHubPullComment(5, "SecondBody", "OtherLogin",
 						time.Date(2000, time.December, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC)),
 				},
@@ -190,22 +190,22 @@ func TestUpdateComments(t *testing.T) {
 			},
 			newIssueComments: map[int][]*github.IssueComment{
 				3: {
-					makeGithubIssueComment(2, "IssueBody", "SomeLogin",
+					makeGitHubIssueComment(2, "IssueBody", "SomeLogin",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
-					makeGithubIssueComment(3, "AnotherBody", "AnotherLogin",
+					makeGitHubIssueComment(3, "AnotherBody", "AnotherLogin",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				},
 			},
 			newPullComments: map[int][]*github.PullRequestComment{
 				2: {
-					makeGithubPullComment(4, "Body", "Login",
+					makeGitHubPullComment(4, "Body", "Login",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.February, 1, 19, 30, 0, 0, time.UTC)),
 				},
 				3: {
-					makeGithubPullComment(5, "SecondBody", "OtherLogin",
+					makeGitHubPullComment(5, "SecondBody", "OtherLogin",
 						time.Date(2000, time.December, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.November, 1, 19, 30, 0, 0, time.UTC)),
 				},
@@ -228,7 +228,7 @@ func TestUpdateComments(t *testing.T) {
 			newIssueComments: map[int][]*github.IssueComment{},
 			newPullComments: map[int][]*github.PullRequestComment{
 				12: {
-					makeGithubPullComment(1, "IssueBody", "SomeLogin",
+					makeGitHubPullComment(1, "IssueBody", "SomeLogin",
 						time.Date(2000, time.January, 1, 19, 30, 0, 0, time.UTC),
 						time.Date(2001, time.January, 1, 19, 30, 0, 0, time.UTC)),
 				},

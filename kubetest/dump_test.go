@@ -216,6 +216,9 @@ func Test_logDumperNode_dump(t *testing.T) {
 			command: "sudo journalctl --output=short-precise -k",
 		},
 		&mockCommand{
+			command: "sudo journalctl --output=short-precise",
+		},
+		&mockCommand{
 			command: "sudo systemctl list-units -t service --no-pager --no-legend --all",
 			stdout: []byte(
 				"kubelet.service                      loaded active running kubelet daemon\n" +
@@ -294,6 +297,7 @@ func Test_logDumperNode_dump(t *testing.T) {
 	expected := []string{
 		"nodename1/",
 		"nodename1/kern.log",
+		"nodename1/journal.log",
 		"nodename1/kubelet.log",
 		"nodename1/kube-controller-manager.log",
 		"nodename1/kube-controller-manager.log.1",

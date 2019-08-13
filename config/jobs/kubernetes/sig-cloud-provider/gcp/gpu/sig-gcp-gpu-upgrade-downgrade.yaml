@@ -1,0 +1,242 @@
+periodics:
+- cron: "0 4-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-stable2
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-1.12-1.13-cluster-upgrade
+- cron: "0 5-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-stable2
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-1.12-1.13-master-upgrade
+- cron: "0 1-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --extract=ci/k8s-beta
+      - --extract=ci/k8s-stable1
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-1.13-1.14-cluster-upgrade
+- cron: "0 7-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --extract=ci/k8s-beta
+      - --extract=ci/k8s-stable1
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-1.13-1.14-master-upgrade
+- cron: "0 3-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --extract=ci/latest
+      - --extract=ci/k8s-stable1
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-1.13-master-cluster-upgrade
+- cron: "0 9-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --extract=ci/latest
+      - --extract=ci/k8s-stable1
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-1.13-master-master-upgrade
+- cron: "0 10-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --env=TEST_ETCD_VERSION=3.0.17
+      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-beta
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-1.14-1.13-cluster-downgrade
+- cron: "0 11-23/12 * * *"
+  name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-ci-gce-device-plugin-gpu: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --env=TEST_ETCD_VERSION=3.0.17
+      - --extract=ci/k8s-stable1
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
+      - --timeout=150m
+      - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-tab-name: gce-gpu-master-1.13-cluster-downgrade

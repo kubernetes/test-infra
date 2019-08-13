@@ -29,11 +29,10 @@ import (
 var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
 
 type closeClient interface {
+	IsCollaborator(owner, repo, login string) (bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
 	ClosePR(owner, repo string, number int) error
-	IsMember(owner, login string) (bool, error)
-	AssignIssue(owner, repo string, number int, assignees []string) error
 	GetIssueLabels(owner, repo string, number int) ([]github.Label, error)
 }
 
@@ -65,47 +64,46 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 	number := e.Number
 	commentAuthor := e.User.Login
 
-	// Allow assignees and authors to close issues.
-	isAssignee := false
-	for _, assignee := range e.Assignees {
-		if commentAuthor == assignee.Login {
-			isAssignee = true
-			break
-		}
-	}
 	isAuthor := e.IssueAuthor.Login == commentAuthor
 
-	if !isAssignee && !isAuthor {
-		active, err := isActive(gc, org, repo, number)
-		if err != nil {
-			log.Infof("Cannot determine if issue is active: %v", err)
-			active = true // Fail active
-		}
-
-		if active {
-			// Try to assign the issue to the comment author
-			log.Infof("Assign to %s", commentAuthor)
-			if err := gc.AssignIssue(org, repo, number, []string{commentAuthor}); err != nil {
-				msg := "Assigning you to the issue failed."
-				if ok, merr := gc.IsMember(org, commentAuthor); merr == nil && !ok {
-					msg = "Can only assign issues to org members and/or repo collaborators."
-				} else if merr != nil {
-					log.WithError(merr).Errorf("Failed IsMember(%s, %s)", org, commentAuthor)
-				} else {
-					log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repo, number, commentAuthor)
-				}
-				resp := fmt.Sprintf("you can't close an active issue unless you authored it or you are assigned to it, %s.", msg)
-				log.Infof("Commenting \"%s\".", resp)
-				return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))
-			}
-		}
+	isCollaborator, err := gc.IsCollaborator(org, repo, commentAuthor)
+	if err != nil {
+		log.WithError(err).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repo, commentAuthor)
 	}
 
+	active, err := isActive(gc, org, repo, number)
+	if err != nil {
+		log.Infof("Cannot determine if issue is active: %v", err)
+		active = true // Fail active
+	}
+
+	// Only authors and collaborators are allowed to close active issues.
+	if !isAuthor && !isCollaborator && active {
+		response := "You can't close an active issue/PR unless you authored it or you are a collaborator."
+		log.Infof("Commenting \"%s\".", response)
+		return gc.CreateComment(
+			org,
+			repo,
+			number,
+			plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, response),
+		)
+	}
+
+	// Add a comment after closing the PR or issue
+	// to leave an audit trail of who asked to close it.
 	if e.IsPR {
 		log.Info("Closing PR.")
-		return gc.ClosePR(org, repo, number)
+		if err := gc.ClosePR(org, repo, number); err != nil {
+			return fmt.Errorf("Error closing PR: %v", err)
+		}
+		response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closed this PR.")
+		return gc.CreateComment(org, repo, number, response)
 	}
 
 	log.Info("Closing issue.")
-	return gc.CloseIssue(org, repo, number)
+	if err := gc.CloseIssue(org, repo, number); err != nil {
+		return fmt.Errorf("Error closing issue: %v", err)
+	}
+	response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closing this issue.")
+	return gc.CreateComment(org, repo, number, response)
 }

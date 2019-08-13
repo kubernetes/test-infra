@@ -9,7 +9,7 @@ go_library(
         "multierror.go",
         "prefix.go",
     ],
-    importmap = "vendor/github.com/hashicorp/go-multierror",
+    importmap = "k8s.io/test-infra/vendor/github.com/hashicorp/go-multierror",
     importpath = "github.com/hashicorp/go-multierror",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/hashicorp/errwrap:go_default_library"],

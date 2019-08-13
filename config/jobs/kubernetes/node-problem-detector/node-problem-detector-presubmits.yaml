@@ -1,0 +1,243 @@
+presubmits:
+  kubernetes/node-problem-detector:
+  - name: pull-npd-build
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh install-lib &&
+          make build
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
+
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
+  - name: pull-npd-test
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh install-lib &&
+          make test
+
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
+  - name: pull-npd-e2e-node
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          source pr.env &&
+          cd $(GOPATH)/src/k8s.io/kubernetes &&
+          /workspace/scenarios/kubernetes_e2e.py
+          --deployment=node
+          --provider=gce
+          --gcp-zone=us-west1-b
+          --node-tests=true
+          "--node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml --extra-envs=${EXTRA_ENVS}"
+          '--node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
+          '--test_args=--nodes=8 --focus=NodeProblemDetector'
+          --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
+  - name: pull-npd-e2e-kubernetes-gce-gci
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          source pr.env &&
+          /workspace/scenarios/kubernetes_e2e.py
+          --cluster=
+          --extract=ci/latest
+          --provider=gce
+          --gcp-node-image=gci
+          --gcp-zone=us-west1-b
+          --ginkgo-parallel=30
+          --test_args=--ginkgo.focus=NodeProblemDetector
+          --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
+  - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh -p $(PULL_NUMBER) -f pr &&
+          source pr.env &&
+          /workspace/scenarios/kubernetes_e2e.py
+          --cluster=
+          --extract=ci/latest
+          --provider=gce
+          --gcp-node-image=gci
+          --gcp-zone=us-west1-b
+          --ginkgo-parallel=30
+          --test_args=--ginkgo.focus=NodeProblemDetector
+          --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
+  - name: pull-npd-e2e-kubernetes-gce-ubuntu
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh -p $(PULL_NUMBER) pr &&
+          source pr.env &&
+          /workspace/scenarios/kubernetes_e2e.py
+          --cluster=
+          --extract=ci/latest
+          --provider=gce
+          --gcp-node-image=ubuntu
+          --gcp-zone=us-west1-b
+          --ginkgo-parallel=30
+          --test_args=--ginkgo.focus=NodeProblemDetector
+          --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
+  - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh -p $(PULL_NUMBER) -f pr &&
+          source pr.env &&
+          /workspace/scenarios/kubernetes_e2e.py
+          --cluster=
+          --extract=ci/latest
+          --provider=gce
+          --gcp-node-image=ubuntu
+          --gcp-zone=us-west1-b
+          --ginkgo-parallel=30
+          --test_args=--ginkgo.focus=NodeProblemDetector
+          --timeout=60m
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'

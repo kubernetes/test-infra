@@ -34,8 +34,8 @@ const pluginName = "milestonestatus"
 
 var (
 	statusRegex      = regexp.MustCompile(`(?m)^/status\s+(.+)$`)
-	mustBeSigLead    = "You must be a member of the [%s/%s](https://github.com/orgs/%s/teams/%s/members) github team to add status labels."
-	milestoneTeamMsg = "The milestone maintainers team is the Github team with ID: %d."
+	mustBeAuthorized = "You must be a member of the [%s/%s](https://github.com/orgs/%s/teams/%s/members) GitHub team to add status labels. If you believe you should be able to issue the /status command, please contact your %s and have them propose you as an additional delegate for this responsibility."
+	milestoneTeamMsg = "The milestone maintainers team is the GitHub team %q with ID: %d."
 	statusMap        = map[string]string{
 		"approved-for-milestone": "status/approved-for-milestone",
 		"in-progress":            "status/in-progress",
@@ -54,17 +54,21 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	msgForTeam := func(team plugins.Milestone) string {
+		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam, team.MaintainersID)
+	}
+
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The milestonestatus plugin allows members of the milestone maintainers Github team to specify the 'status/*' label that should apply to a pull request.",
+		Description: "The milestonestatus plugin allows members of the milestone maintainers GitHub team to specify the 'status/*' label that should apply to a pull request.",
 		Config: func() map[string]string {
 			configMap := make(map[string]string)
 			for _, repo := range enabledRepos {
 				team, exists := config.RepoMilestone[repo]
 				if exists {
-					configMap[repo] = fmt.Sprintf(milestoneTeamMsg, team)
+					configMap[repo] = msgForTeam(team)
 				}
 			}
-			configMap[""] = fmt.Sprintf(milestoneTeamMsg, config.RepoMilestone[""])
+			configMap[""] = msgForTeam(config.RepoMilestone[""])
 			return configMap
 		}(),
 	}
@@ -72,13 +76,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Usage:       "/status (approved-for-milestone|in-progress|in-review)",
 		Description: "Applies the 'status/' label to a PR.",
 		Featured:    false,
-		WhoCanUse:   "Members of the milestone maintainers Github team can use the '/status' command. This team is specified in the config by providing the Github team's ID.",
+		WhoCanUse:   "Members of the milestone maintainers GitHub team can use the '/status' command. This team is specified in the config by providing the GitHub team's ID.",
 		Examples:    []string{"/status approved-for-milestone", "/status in-progress", "/status in-review"},
 	})
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 
@@ -115,7 +119,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	}
 	if !found {
 		// not in the milestone maintainers team
-		msg := fmt.Sprintf(mustBeSigLead, org, milestone.MaintainersTeam, org, milestone.MaintainersTeam)
+		msg := fmt.Sprintf(mustBeAuthorized, org, milestone.MaintainersTeam, org, milestone.MaintainersTeam, milestone.MaintainersFriendlyName)
 		return gc.CreateComment(org, repo, e.Number, msg)
 	}
 

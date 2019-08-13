@@ -26,7 +26,7 @@ import (
 	"text/template"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/kube"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // Options configures the clonerefs tool
@@ -47,10 +47,14 @@ type Options struct {
 	GitUserEmail string `json:"git_user_email,omitempty"`
 
 	// GitRefs are the refs to clone
-	GitRefs []*kube.Refs `json:"refs"`
+	GitRefs []prowapi.Refs `json:"refs"`
 	// KeyFiles are files containing SSH keys to be used
 	// when cloning. Will be added to `ssh-agent`.
 	KeyFiles []string `json:"key_files,omitempty"`
+
+	// HostFingerPrints are ssh-keyscan host fingerprint lines to use
+	// when cloning. Will be added to ~/.ssh/known_hosts
+	HostFingerprints []string `json:"host_fingerprints,omitempty"`
 
 	// MaxParallelWorkers determines how many repositories
 	// can be cloned in parallel. If 0, interpreted as no
@@ -58,10 +62,11 @@ type Options struct {
 	MaxParallelWorkers int `json:"max_parallel_workers,omitempty"`
 
 	// used to hold flag values
-	refs      gitRefs
-	clonePath orgRepoFormat
-	cloneURI  orgRepoFormat
-	keys      stringSlice
+	refs       gitRefs
+	clonePath  orgRepoFormat
+	cloneURI   orgRepoFormat
+	keys       stringSlice
+	CookiePath string `json:"cookie_path,omitempty"`
 }
 
 // Validate ensures that the configuration options are valid
@@ -115,11 +120,6 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
-	BindOptions(o, flags)
-}
-
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
 	o.GitRefs = o.refs.gitRefs
@@ -140,22 +140,23 @@ func (o *Options) Complete(args []string) {
 	}
 }
 
-// BindOptions adds flags to the FlagSet that populate
+// AddFlags adds flags to the FlagSet that populate
 // the GCS upload options struct given.
-func BindOptions(options *Options, fs *flag.FlagSet) {
-	fs.StringVar(&options.SrcRoot, "src-root", "", "Where to root source checkouts")
-	fs.StringVar(&options.Log, "log", "", "Where to write logs")
-	fs.StringVar(&options.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
-	fs.StringVar(&options.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
-	fs.Var(&options.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
-	fs.Var(&options.keys, "ssh-key", "Path to SSH key to enable during cloning, can be provided more than once")
-	fs.Var(&options.clonePath, "clone-alias", "Format string for the path to clone to")
-	fs.Var(&options.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
-	fs.IntVar(&options.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
+func (o *Options) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.SrcRoot, "src-root", "", "Where to root source checkouts")
+	fs.StringVar(&o.Log, "log", "", "Where to write logs")
+	fs.StringVar(&o.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
+	fs.StringVar(&o.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
+	fs.Var(&o.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
+	fs.Var(&o.keys, "ssh-key", "Path to SSH key to enable during cloning, can be provided more than once")
+	fs.Var(&o.clonePath, "clone-alias", "Format string for the path to clone to")
+	fs.Var(&o.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
+	fs.IntVar(&o.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
+	fs.StringVar(&o.CookiePath, "cookiefile", "", "Path to git http.cookiefile")
 }
 
 type gitRefs struct {
-	gitRefs []*kube.Refs
+	gitRefs []prowapi.Refs
 }
 
 func (r *gitRefs) String() string {
@@ -166,7 +167,7 @@ func (r *gitRefs) String() string {
 	return representation.String()
 }
 
-// Set parses out a kube.Refs from the user string.
+// Set parses out a prowapi.Refs from the user string.
 // The following example shows all possible fields:
 //   org,repo=base-ref:base-sha[,pull-number:pull-sha]...
 // For the base ref and every pull number, the SHAs
@@ -177,7 +178,7 @@ func (r *gitRefs) Set(value string) error {
 	if err != nil {
 		return err
 	}
-	r.gitRefs = append(r.gitRefs, gitRef)
+	r.gitRefs = append(r.gitRefs, *gitRef)
 	return nil
 }
 

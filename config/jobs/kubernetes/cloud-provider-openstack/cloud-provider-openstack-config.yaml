@@ -1,18 +1,14 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: pull-cloud-provider-openstack-check
-    agent: kubernetes
     always_run: true
-    context: pull-cloud-provider-openstack-check
-    rerun_command: "/test pull-cloud-provider-openstack-check"
-    trigger: "(?m)^/test( all| pull-cloud-provider-openstack-check),?(\\s+|$)"
     branches:
     - master
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -23,18 +19,14 @@ presubmits:
         - check
 
   - name: pull-cloud-provider-openstack-test
-    agent: kubernetes
     always_run: true
-    context: pull-cloud-provider-openstack-test
-    rerun_command: "/test pull-cloud-provider-openstack-test"
-    trigger: "(?m)^/test( all| pull-cloud-provider-openstack-test),?(\\s+|$)"
     branches:
     - master
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -43,4 +35,3 @@ presubmits:
         - --
         - make
         - test
-

@@ -50,7 +50,9 @@ class JUnitParser(object):
         if child.find('skipped') is not None:
             self.skipped.append(name)
         elif child.find('failure') is not None:
-            time = float(child.attrib['time'])
+            time = 0.0
+            if 'time' in child.attrib:
+                time = float(child.attrib['time'])
             out = []
             for param in child.findall('system-out') + child.findall('system-err'):
                 if param.text:
@@ -252,17 +254,20 @@ class BuildHandler(view_base.BaseHandler):
         pr, pr_path, pr_digest = None, None, None
         repo = '%s/%s' % (self.app.config['default_org'],
                           self.app.config['default_repo'])
+        spyglass_link = ''
         external_config = get_build_config(prefix, self.app.config)
         if external_config is not None:
+            if external_config.get('spyglass'):
+                spyglass_link = 'https://' + external_config['prow_url'] + '/view/gcs/' + build_dir
             if '/pull/' in prefix:
                 pr, pr_path, pr_digest, repo = get_pr_info(prefix, self.app.config)
             if want_build_log and not build_log:
                 build_log, build_log_src = get_running_build_log(job, build,
                                                                  external_config["prow_url"])
 
-        # 'version' might be in either started or finished.
+        # 'revision' might be in either started or finished.
         # prefer finished.
-        version = finished and finished.get('version') or started and started.get('version')
+        version = finished and finished.get('revision') or started and started.get('revision')
         commit = version and version.split('+')[-1]
 
         refs = []
@@ -281,7 +286,7 @@ class BuildHandler(view_base.BaseHandler):
             build_log=build_log, build_log_src=build_log_src,
             issues=issues_fut.get_result(), repo=repo,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
-            testgrid_query=testgrid_query))
+            testgrid_query=testgrid_query, spyglass_link=spyglass_link))
 
 
 def get_build_config(prefix, config):
@@ -306,35 +311,20 @@ def get_running_pr_log(job, build, config):
         return get_running_build_log(job, build, config["prow_url"])
 
 def get_build_numbers(job_dir, before, indirect):
-    try:
-        if '/pull/' in job_dir and not indirect:
-            raise ValueError('bad code path for PR build list')
-        # If we have latest-build.txt, we can skip an expensive GCS ls call!
-        if before:
-            latest_build = int(before) - 1
-        else:
-            latest_build = int(gcs_async.read(job_dir + 'latest-build.txt').get_result())
-            # latest-build.txt has the most recent finished build. There might
-            # be newer builds that have started but not finished. Probe for them.
-            suffix = '/started.json' if not indirect else '.txt'
-            while gcs_async.read('%s%s%s' % (job_dir, latest_build + 1, suffix)).get_result():
-                latest_build += 1
-        return range(latest_build, max(0, latest_build - 40), -1)
-    except (ValueError, TypeError):
-        fstats = view_base.gcs_ls(job_dir)
-        fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
-                    reverse=True)
-        if indirect:
-            # find numbered builds
-            builds = [re.search(r'/(\d*)\.txt$', f.filename)
-                      for f in fstats if not f.is_dir]
-            builds = [m.group(1) for m in builds if m]
-        else:
-            builds = [os.path.basename(os.path.dirname(f.filename))
-                      for f in fstats if f.is_dir]
-        if before and before in builds:
-            builds = builds[builds.index(before) + 1:]
-        return builds[:40]
+    fstats = view_base.gcs_ls(job_dir)
+    fstats.sort(key=lambda f: view_base.pad_numbers(f.filename),
+                reverse=True)
+    if indirect:
+        # find numbered builds
+        builds = [re.search(r'/(\d*)\.txt$', f.filename)
+                  for f in fstats if not f.is_dir]
+        builds = [m.group(1) for m in builds if m]
+    else:
+        builds = [os.path.basename(os.path.dirname(f.filename))
+                  for f in fstats if f.is_dir]
+    if before and before in builds:
+        builds = builds[builds.index(before) + 1:]
+    return builds[:40]
 
 
 @view_base.memcache_memoize('build-list://', expires=60)

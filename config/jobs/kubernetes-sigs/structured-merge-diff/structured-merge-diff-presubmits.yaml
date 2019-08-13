@@ -1,0 +1,37 @@
+presubmits:
+  kubernetes-sigs/structured-merge-diff:
+  - name: pull-structured-merge-diff-test
+    labels:
+      preset-service-account: "true"
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - go
+        args:
+        - test
+        - ./...
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-test
+      testgrid-num-columns-recent: '30'
+  - name: pull-structured-merge-diff-gofmt
+    labels:
+      preset-service-account: "true"
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190806-012cf5f-master
+        command:
+        - bash
+        - -c
+        - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-gofmt
+      testgrid-num-columns-recent: '30'

@@ -51,6 +51,7 @@ class GithubWebhookRaw(ndb.Model):
     repo = ndb.StringProperty()
     number = ndb.IntegerProperty(indexed=False)
     event = ndb.StringProperty()
+    guid = ndb.StringProperty()
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     body = ndb.TextProperty(compressed=True)
 

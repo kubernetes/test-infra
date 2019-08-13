@@ -1,0 +1,46 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "test-input",
+    srcs = glob([
+        "testdata/artifacts/**",
+        "testdata/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "test-target",
+    srcs = glob([
+        "testTarget/presubmit/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//gopherage/pkg/cov/junit/calculation:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["xmlwriter.go"],
+    importpath = "k8s.io/test-infra/gopherage/pkg/cov/junit",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//gopherage/pkg/cov/junit/calculation:go_default_library",
+        "//vendor/golang.org/x/tools/cover:go_default_library",
+    ],
+)

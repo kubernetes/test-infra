@@ -3,6 +3,7 @@ default_external_services:
   gcs_bucket: kubernetes-jenkins/
   gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
   prow_url: prow.k8s.io
+  spyglass: true
 default_org: kubernetes
 default_repo: kubernetes
 external_services:
@@ -28,6 +29,7 @@ jobs:
   kubernetes-jenkins/pr-logs/directory/:
   - pull-kubernetes-bazel-build
   - pull-kubernetes-bazel-test
+  - pull-kubernetes-e2e-aks-engine-azure
   - pull-kubernetes-e2e-gce
   - pull-kubernetes-e2e-gce-100-performance
   - pull-kubernetes-e2e-gce-device-plugin-gpu

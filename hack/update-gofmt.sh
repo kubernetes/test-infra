@@ -18,4 +18,19 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -s -w
+if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
+  echo "Updating gofmt..." >&2
+elif ! command -v bazel &>/dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel run @io_k8s_test_infra//hack:update-gofmt
+  )
+  exit 0
+fi
+
+gofmt=$PWD/$1
+cd "$BUILD_WORKSPACE_DIRECTORY"
+find . -name "*.go" \( -not -path '*/vendor/*' -prune \) -exec "$gofmt" -s -w '{}' +

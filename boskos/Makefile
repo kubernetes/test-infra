@@ -20,44 +20,8 @@ HUB ?= gcr.io/k8s-testimages
 
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
-boskos:
-	go build k8s.io/test-infra/boskos/
-
-client:
-	go build -o client/client k8s.io/test-infra/boskos/client/
-
-reaper:
-	go build -o reaper/reaper k8s.io/test-infra/boskos/reaper/
-
-janitor:
-	go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
-
-metrics:
-	go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
-
-server-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o boskos k8s.io/test-infra/boskos/
-	docker build -t "$(HUB)/boskos:$(TAG)" .
-	docker push "$(HUB)/boskos:$(TAG)"
-	rm boskos
-
-reaper-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o reaper/reaper k8s.io/test-infra/boskos/reaper/
-	docker build -t "$(HUB)/reaper:$(TAG)" reaper
-	docker push "$(HUB)/reaper:$(TAG)"
-	rm reaper/reaper
-
-janitor-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
-	docker build --no-cache -t "$(HUB)/janitor:$(TAG)" janitor
-	docker push "$(HUB)/janitor:$(TAG)"
-	rm janitor/janitor
-
-metrics-image:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
-	docker build -t "$(HUB)/metrics:$(TAG)" metrics
-	docker push "$(HUB)/metrics:$(TAG)"
-	rm metrics/metrics
+images:
+	bazel run //boskos:push
 
 server-deployment: get-cluster-credentials
 	kubectl apply -f deployment.yaml
@@ -67,6 +31,9 @@ reaper-deployment: get-cluster-credentials
 
 janitor-deployment: get-cluster-credentials
 	kubectl apply -f janitor/deployment.yaml
+
+cleaner-deployment: get-cluster-credentials
+	kubectl apply -f mason/cleaner/deployment.yaml
 
 metrics-deployment: get-cluster-credentials
 	kubectl apply -f metrics/deployment.yaml
@@ -81,4 +48,4 @@ update-config: get-cluster-credentials
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-.PHONY: boskos client reaper janitor metrics server-image reaper-image janitor-image metrics-image server-deployment reaper-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials
+.PHONY: images server-deployment reaper-deployment cleaner-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials

@@ -18,6 +18,7 @@ package approve
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
@@ -26,7 +27,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
@@ -34,19 +38,19 @@ import (
 )
 
 const (
-	pluginName = "approve"
+	// PluginName defines this plugin's registered name.
+	PluginName = "approve"
 
 	approveCommand  = "APPROVE"
-	approvedLabel   = "approved"
 	cancelArgument  = "cancel"
 	lgtmCommand     = "LGTM"
 	noIssueArgument = "no-issue"
 )
 
 var (
-	associatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d+)`)
-	commandRegex         = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
-	notificationRegex    = regexp.MustCompile(`(?is)^\[` + approvers.ApprovalNotificationName + `\] *?([^\n]*)(?:\n\n(.*))?`)
+	associatedIssueRegexFormat = `(?:%s/[^/]+/issues/|#)(\d+)`
+	commandRegex               = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
+	notificationRegex          = regexp.MustCompile(`(?is)^\[` + approvers.ApprovalNotificationName + `\] *?([^\n]*)(?:\n\n(.*))?`)
 
 	// deprecatedBotNames are the names of the bots that previously handled approvals.
 	// Each can be removed once every PR approved by the old bot has been merged or unapproved.
@@ -72,7 +76,7 @@ type githubClient interface {
 }
 
 type ownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
 type state struct {
@@ -85,14 +89,12 @@ type state struct {
 	author    string
 	assignees []github.User
 	htmlURL   string
-
-	repoOptions *plugins.Approve
 }
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
-	plugins.RegisterReviewEventHandler(pluginName, handleReviewEvent, helpProvider)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
+	plugins.RegisterReviewEventHandler(PluginName, handleReviewEvent, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequestEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -112,14 +114,19 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	approveConfig := map[string]string{}
 	for _, repo := range enabledRepos {
 		parts := strings.Split(repo, "/")
-		if len(parts) != 2 {
+		var opts *plugins.Approve
+		switch len(parts) {
+		case 1:
+			opts = optionsForRepo(config, repo, "")
+		case 2:
+			opts = optionsForRepo(config, parts[0], parts[1])
+		default:
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
-		opts := optionsForRepo(config, parts[0], parts[1])
-		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove), willNot(opts.ReviewActsAsApprove))
+		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.LgtmActsAsApprove), willNot(opts.ConsiderReviewState()))
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The approve plugin implements a pull request approval process that manages the '` + approvedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
+		Description: `The approve plugin implements a pull request approval process that manages the '` + labels.Approved + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
 <br>
 <br>Per-repo configuration may be used to require that PRs link to an associated issue before approval is granted. It may also be used to specify that the PR authors implicitly approve their own PRs.
 <br>For more information see <a href="https://git.k8s.io/test-infra/prow/plugins/approve/approvers/README.md">here</a>.`,
@@ -135,17 +142,18 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleGenericComment(
 		pc.Logger,
 		pc.GitHubClient,
 		pc.OwnersClient,
+		pc.Config.GitHubOptions,
 		pc.PluginConfig,
 		&ce,
 	)
 }
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
+func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
 	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		return nil
 	}
@@ -174,6 +182,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 		log,
 		ghc,
 		repo,
+		githubConfig,
 		opts,
 		&state{
 			org:       ce.Repo.Owner.Login,
@@ -190,17 +199,18 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
-func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
+func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
 	return handleReview(
 		pc.Logger,
 		pc.GitHubClient,
 		pc.OwnersClient,
+		pc.Config.GitHubOptions,
 		pc.PluginConfig,
 		&re,
 	)
 }
 
-func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, re *github.ReviewEvent) error {
+func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, re *github.ReviewEvent) error {
 	if re.Action != github.ReviewActionSubmitted && re.Action != github.ReviewActionDismissed {
 		return nil
 	}
@@ -221,18 +231,11 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 
 	// Check for an approval command via review state. If none exists, don't
 	// handle this event.
-	if !isApprovalState(botName, opts.ReviewActsAsApprove, &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
+	if !isApprovalState(botName, opts.ConsiderReviewState(), &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
 		return nil
 	}
 
-	// This is a valid review state command. Get the pull request and handle it.
-	pr, err := ghc.GetPullRequest(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Number)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	repo, err := oc.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, pr.Base.Ref)
+	repo, err := oc.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Base.Ref)
 	if err != nil {
 		return err
 	}
@@ -241,13 +244,15 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 		log,
 		ghc,
 		repo,
+		githubConfig,
 		optionsForRepo(config, re.Repo.Owner.Login, re.Repo.Name),
 		&state{
 			org:       re.Repo.Owner.Login,
 			repo:      re.Repo.Name,
+			branch:    re.PullRequest.Base.Ref,
 			number:    re.PullRequest.Number,
-			body:      re.Review.Body,
-			author:    re.Review.User.Login,
+			body:      re.PullRequest.Body,
+			author:    re.PullRequest.User.Login,
 			assignees: re.PullRequest.Assignees,
 			htmlURL:   re.PullRequest.HTMLURL,
 		},
@@ -255,17 +260,18 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *
 
 }
 
-func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
 		pc.OwnersClient,
+		pc.Config.GitHubOptions,
 		pc.PluginConfig,
 		&pre,
 	)
 }
 
-func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, pre *github.PullRequestEvent) error {
+func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
 		pre.Action != github.PullRequestActionSynchronize &&
@@ -277,7 +283,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, con
 		return err
 	}
 	if pre.Action == github.PullRequestActionLabeled &&
-		(pre.Label.Name != approvedLabel || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
+		(pre.Label.Name != labels.Approved || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
 		return nil
 	}
 
@@ -290,6 +296,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, con
 		log,
 		ghc,
 		repo,
+		githubConfig,
 		optionsForRepo(config, pre.Repo.Owner.Login, pre.Repo.Name),
 		&state{
 			org:       pre.Repo.Owner.Login,
@@ -306,16 +313,20 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, con
 
 // Returns associated issue, or 0 if it can't find any.
 // This is really simple, and could be improved later.
-func findAssociatedIssue(body string) int {
+func findAssociatedIssue(body, org string) (int, error) {
+	associatedIssueRegex, err := regexp.Compile(fmt.Sprintf(associatedIssueRegexFormat, org))
+	if err != nil {
+		return 0, err
+	}
 	match := associatedIssueRegex.FindStringSubmatch(body)
 	if len(match) == 0 {
-		return 0
+		return 0, nil
 	}
 	v, err := strconv.Atoi(match[1])
 	if err != nil {
-		return 0
+		return 0, err
 	}
-	return v
+	return v, nil
 }
 
 // handle is the workhorse the will actually make updates to the PR.
@@ -333,7 +344,7 @@ func findAssociatedIssue(body string) int {
 // - Iff all files have been approved, the bot will add the "approved" label.
 // - Iff a cancel command is found, that reviewer will be removed from the approverSet
 // 	and the munger will remove the approved label if it has been applied
-func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state) error {
 	fetchErr := func(context string, err error) error {
 		return fmt.Errorf("failed to get %s for %s/%s#%d: %v", context, pr.org, pr.repo, pr.number, err)
 	}
@@ -346,13 +357,13 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	for _, change := range changes {
 		filenames = append(filenames, change.Filename)
 	}
-	labels, err := ghc.GetIssueLabels(pr.org, pr.repo, pr.number)
+	issueLabels, err := ghc.GetIssueLabels(pr.org, pr.repo, pr.number)
 	if err != nil {
 		return fetchErr("issue labels", err)
 	}
 	hasApprovedLabel := false
-	for _, label := range labels {
-		if label.Name == approvedLabel {
+	for _, label := range issueLabels {
+		if label.Name == labels.Approved {
 			hasApprovedLabel = true
 			break
 		}
@@ -382,12 +393,15 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 			int64(pr.number),
 		),
 	)
-	approversHandler.AssociatedIssue = findAssociatedIssue(pr.body)
+	approversHandler.AssociatedIssue, err = findAssociatedIssue(pr.body, pr.org)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to find associated issue from PR body: %v", err)
+	}
 	approversHandler.RequireIssue = opts.IssueRequired
 	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botName, hasApprovedLabel)
 
 	// Author implicitly approves their own PR if config allows it
-	if opts.ImplicitSelfApprove {
+	if opts.HasSelfApproval() {
 		approversHandler.AddAuthorSelfApprover(pr.author, pr.htmlURL+"#", false)
 	} else {
 		// Treat the author as an assignee, and suggest them if possible
@@ -400,8 +414,8 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove))
-	addApprovers(&approversHandler, approveComments, pr.author, opts.ReviewActsAsApprove)
+	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
+	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
 
 	for _, user := range pr.assignees {
 		approversHandler.AddAssignees(user.Login)
@@ -409,7 +423,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botName))
 	latestNotification := getLast(notifications)
-	newMessage := updateNotification(pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
+	newMessage := updateNotification(githubConfig.LinkURL, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
 	if newMessage != nil {
 		for _, notif := range notifications {
 			if err := ghc.DeleteComment(pr.org, pr.repo, notif.ID); err != nil {
@@ -423,13 +437,13 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 
 	if !approversHandler.IsApproved() {
 		if hasApprovedLabel {
-			if err := ghc.RemoveLabel(pr.org, pr.repo, pr.number, approvedLabel); err != nil {
-				log.WithError(err).Errorf("Failed to remove %q label from %s/%s#%d.", approvedLabel, pr.org, pr.repo, pr.number)
+			if err := ghc.RemoveLabel(pr.org, pr.repo, pr.number, labels.Approved); err != nil {
+				log.WithError(err).Errorf("Failed to remove %q label from %s/%s#%d.", labels.Approved, pr.org, pr.repo, pr.number)
 			}
 		}
 	} else if !hasApprovedLabel {
-		if err := ghc.AddLabel(pr.org, pr.repo, pr.number, approvedLabel); err != nil {
-			log.WithError(err).Errorf("Failed to add %q label to %s/%s#%d.", approvedLabel, pr.org, pr.repo, pr.number)
+		if err := ghc.AddLabel(pr.org, pr.repo, pr.number, labels.Approved); err != nil {
+			log.WithError(err).Errorf("Failed to add %q label to %s/%s#%d.", labels.Approved, pr.org, pr.repo, pr.number)
 		}
 	}
 	return nil
@@ -448,7 +462,7 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 		var lastAdded github.ListedIssueEvent
 		for _, event := range events {
 			// Only consider "approved" label added events.
-			if event.Event != github.IssueActionLabeled || event.Label.Name != approvedLabel {
+			if event.Event != github.IssueActionLabeled || event.Label.Name != labels.Approved {
 				continue
 			}
 			lastAdded = event
@@ -523,8 +537,8 @@ func notificationMatcher(botName string) func(*comment) bool {
 	}
 }
 
-func updateNotification(org, project, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
-	message := approvers.GetMessage(approversHandler, org, project, branch)
+func updateNotification(linkURL *url.URL, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
+	message := approvers.GetMessage(approversHandler, linkURL, org, repo, branch)
 	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
 		return nil
 	}
@@ -593,23 +607,36 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 // optionsForRepo gets the plugins.Approve struct that is applicable to the indicated repo.
 func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Approve {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
-	for i := range config.Approve {
-		if !strInSlice(org, config.Approve[i].Repos) && !strInSlice(fullName, config.Approve[i].Repos) {
-			continue
-		}
-		return &config.Approve[i]
-	}
-	// Default to no issue required and no implicit self approval.
-	return &plugins.Approve{}
-}
 
-func strInSlice(str string, slice []string) bool {
-	for _, elem := range slice {
-		if elem == str {
-			return true
+	a := func() *plugins.Approve {
+		// First search for repo config
+		for _, c := range config.Approve {
+			if !sets.NewString(c.Repos...).Has(fullName) {
+				continue
+			}
+			return &c
 		}
+
+		// If you don't find anything, loop again looking for an org config
+		for _, c := range config.Approve {
+			if !sets.NewString(c.Repos...).Has(org) {
+				continue
+			}
+			return &c
+		}
+
+		// Return an empty config, and use plugin defaults
+		return &plugins.Approve{}
+	}()
+	if a.DeprecatedImplicitSelfApprove == nil && a.RequireSelfApproval == nil && config.UseDeprecatedSelfApprove {
+		no := false
+		a.DeprecatedImplicitSelfApprove = &no
 	}
-	return false
+	if a.DeprecatedReviewActsAsApprove == nil && a.IgnoreReviewState == nil && config.UseDeprecatedReviewApprove {
+		no := false
+		a.DeprecatedReviewActsAsApprove = &no
+	}
+	return a
 }
 
 type comment struct {
@@ -635,7 +662,7 @@ func commentFromIssueComment(ic *github.IssueComment) *comment {
 }
 
 func commentsFromIssueComments(ics []github.IssueComment) []*comment {
-	comments := []*comment{}
+	comments := make([]*comment, 0, len(ics))
 	for i := range ics {
 		comments = append(comments, commentFromIssueComment(&ics[i]))
 	}
@@ -656,7 +683,7 @@ func commentFromReviewComment(rc *github.ReviewComment) *comment {
 }
 
 func commentsFromReviewComments(rcs []github.ReviewComment) []*comment {
-	comments := []*comment{}
+	comments := make([]*comment, 0, len(rcs))
 	for i := range rcs {
 		comments = append(comments, commentFromReviewComment(&rcs[i]))
 	}
@@ -678,7 +705,7 @@ func commentFromReview(review *github.Review) *comment {
 }
 
 func commentsFromReviews(reviews []github.Review) []*comment {
-	comments := []*comment{}
+	comments := make([]*comment, 0, len(reviews))
 	for i := range reviews {
 		comments = append(comments, commentFromReview(&reviews[i]))
 	}
@@ -686,7 +713,7 @@ func commentsFromReviews(reviews []github.Review) []*comment {
 }
 
 func filterComments(comments []*comment, filter func(*comment) bool) []*comment {
-	var filtered []*comment
+	filtered := make([]*comment, 0, len(comments))
 	for _, c := range comments {
 		if filter(c) {
 			filtered = append(filtered, c)

@@ -141,19 +141,19 @@ class HelperTest(unittest.TestCase):
     def test_tg_url(self):
         self.assertEqual(
             filters.do_tg_url('a#b'),
-            'https://k8s-testgrid.appspot.com/a#b')
+            'https://testgrid.k8s.io/a#b')
         self.assertEqual(
             filters.do_tg_url('a#b', '[low] test'),
-            'https://k8s-testgrid.appspot.com/a#b&include-filter-by-regex=%s' %
+            'https://testgrid.k8s.io/a#b&include-filter-by-regex=%s' %
             urllib.quote('^Overall$|\\[low\\]\\ test'))
 
     def test_gcs_browse_url(self):
         self.assertEqual(
             filters.do_gcs_browse_url('/k8s/foo'),
-            'http://gcsweb.k8s.io/gcs/k8s/foo/')
+            'https://gcsweb.k8s.io/gcs/k8s/foo/')
         self.assertEqual(
             filters.do_gcs_browse_url('/k8s/bar/'),
-            'http://gcsweb.k8s.io/gcs/k8s/bar/')
+            'https://gcsweb.k8s.io/gcs/k8s/bar/')
 
     def test_pod_name(self):
         self.assertEqual(filters.do_parse_pod_name("start pod 'client-c6671' to"), 'client-c6671')

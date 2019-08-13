@@ -1,9 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
 filters:
   ".*":
     approvers:
       - cblecker
       - spiffxp
       - fejta
+    labels:
+      - area/label_sync
   "labels\\.yaml":
     required_reviewers:
       - cblecker

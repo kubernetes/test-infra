@@ -17,6 +17,7 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
+  namespace: default
   name: gce-ssd-retain
 provisioner: kubernetes.io/gce-pd
 parameters:

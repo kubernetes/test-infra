@@ -20,6 +20,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -27,6 +28,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -36,10 +38,12 @@ import (
 var (
 	nodeName             = flag.String("node-name", "", "Name of the node this log exporter is running on")
 	gcsPath              = flag.String("gcs-path", "", "Path to the GCS directory under which to upload logs, for eg: gs://my-logs-bucket/logs")
+	journalPath          = flag.String("journal-path", "/var/log/journal", "Path where the systemd journal dir is mounted")
 	cloudProvider        = flag.String("cloud-provider", "", "Cloud provider for this node (gce/gke/aws/kubemark/..)")
 	gcloudAuthFilePath   = flag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
 	enableHollowNodeLogs = flag.Bool("enable-hollow-node-logs", false, "Enable uploading hollow node logs too. Relevant only for kubemark nodes")
 	sleepDuration        = flag.Duration("sleep-duration", 60*time.Second, "Duration to sleep before exiting with success. Useful for making pods schedule with hard anti-affinity when run as a job on a k8s cluster")
+	dumpSystemdJournal   = flag.Bool("dump-systemd-journal", false, "Whether to dump the full systemd journal")
 )
 
 var (
@@ -52,7 +56,7 @@ var (
 	// Cloud provider specific logfiles.
 	awsLogs      = []string{"cloud-init-output"}
 	gceLogs      = []string{"startupscript"}
-	kubemarkLogs = []string{}
+	kubemarkLogs = []string{"*-hollow-node-*"}
 
 	// System services/kernel related logfiles.
 	kernelLog            = "kern"
@@ -65,7 +69,7 @@ var (
 
 // Check if the config provided through the flags take valid values.
 func checkConfigValidity() error {
-	glog.Infof("Verifying if a valid config has been provided through the flags")
+	glog.Info("Verifying if a valid config has been provided through the flags")
 	if *nodeName == "" {
 		return fmt.Errorf("Flag --node-name has its value unspecified")
 	}
@@ -74,11 +78,8 @@ func checkConfigValidity() error {
 	}
 	if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
 		return fmt.Errorf("Could not find the gcloud service account file: %v", err)
-	} else {
-		cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("Failed to activate gcloud service account: %v", err)
-		}
+	} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
+		return fmt.Errorf("Failed to activate gcloud service account: %v", err)
 	}
 	return nil
 }
@@ -86,7 +87,7 @@ func checkConfigValidity() error {
 // Create logfile for systemd service in outputDir with the given journalctl outputMode.
 func createSystemdLogfile(service string, outputMode string, outputDir string) error {
 	// Generate the journalctl command.
-	journalCmdArgs := []string{fmt.Sprintf("--output=%v", outputMode), "-D", "/var/log/journal"}
+	journalCmdArgs := []string{fmt.Sprintf("--output=%v", outputMode), "-D", *journalPath}
 	if service == "kern" {
 		journalCmdArgs = append(journalCmdArgs, "-k")
 	} else {
@@ -106,6 +107,21 @@ func createSystemdLogfile(service string, outputMode string, outputDir string) e
 	return nil
 }
 
+// createFullSystemdLogfile creates logfile for full systemd journal in the outputDir.
+func createFullSystemdLogfile(outputDir string) error {
+	cmd := exec.Command("journalctl", "--output=short-precise", "-D", *journalPath)
+	// Run the command and record the output to a file.
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("Journalctl command failed: %v", err)
+	}
+	logfile := filepath.Join(outputDir, "systemd.log")
+	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
+		return fmt.Errorf("Writing full journalctl logs to file failed: %v", err)
+	}
+	return nil
+}
+
 // Create logfiles for systemd services in outputDir.
 func createSystemdLogfiles(outputDir string) {
 	services := append(systemdServices, nodeSystemdServices...)
@@ -120,33 +136,37 @@ func createSystemdLogfiles(outputDir string) {
 			glog.Warningf("Failed to record journalctl logs: %v", err)
 		}
 	}
+	if *dumpSystemdJournal {
+		if err := createFullSystemdLogfile(outputDir); err != nil {
+			glog.Warningf("Failed to record journalctl logs: %v", err)
+		}
+	}
 }
 
 // Copy logfiles specific to this node based on the cloud-provider, system services, etc
 // to a temporary directory. Also create logfiles for systemd services if journalctl is present.
 // We do not expect this function to see an error.
 func prepareLogfiles(logDir string) {
-	glog.Infof("Preparing logfiles relevant to this node")
+	glog.Info("Preparing logfiles relevant to this node")
 	logfiles := nodeLogs[:]
 
 	switch *cloudProvider {
 	case "gce", "gke":
 		logfiles = append(logfiles, gceLogs...)
-	case "kubemark":
-		// TODO(shyamjvs): Pick logs based on kubemark's real provider.
-		logfiles = append(logfiles, gceLogs...)
-		if *enableHollowNodeLogs {
-			logfiles = append(logfiles, kubemarkLogs...)
-		}
 	case "aws":
 		logfiles = append(logfiles, awsLogs...)
 	default:
 		glog.Errorf("Unknown cloud provider '%v' provided, skipping any provider specific logs", *cloudProvider)
 	}
 
+	// Grab kubemark logs too, if asked for.
+	if *enableHollowNodeLogs {
+		logfiles = append(logfiles, kubemarkLogs...)
+	}
+
 	// Select system/service specific logs.
 	if _, err := os.Stat("/workspace/etc/systemd/journald.conf"); err == nil {
-		glog.Infof("Journalctl found on host. Collecting systemd logs")
+		glog.Info("Journalctl found on host. Collecting systemd logs")
 		createSystemdLogfiles(logDir)
 	} else {
 		glog.Infof("Journalctl not found on host (%v). Collecting supervisord logs instead", err)
@@ -179,9 +199,8 @@ func uploadLogfilesToGCS(logDir string) error {
 	for uploadAttempt := 0; uploadAttempt < 3; uploadAttempt++ {
 		// Upload the files with compression (-z) and parallelism (-m) for speeding
 		// up, and set their ACL to make them publicly readable.
-		cmd := exec.Command("gsutil", "-m", "-q", "cp", "-a", "public-read", "-c",
-			"-z", "log,txt,xml", logDir+"/*", gcsLogPath)
-		if err = cmd.Run(); err != nil {
+		if err = runCommand("gsutil", "-m", "-q", "cp", "-a", "public-read", "-c",
+			"-z", "log,txt,xml", logDir+"/*", gcsLogPath); err != nil {
 			glog.Errorf("Attempt %v to upload to GCS failed: %v", uploadAttempt, err)
 			continue
 		}
@@ -208,6 +227,17 @@ func writeSuccessMarkerFile() error {
 	return nil
 }
 
+func runCommand(name string, arg ...string) error {
+	glog.Infof("Running: %s %s", name, strings.Join(arg, " "))
+	cmd := exec.Command(name, arg...)
+	var stderr, stdout bytes.Buffer
+	cmd.Stderr, cmd.Stdout = &stderr, &stdout
+	err := cmd.Run()
+	glog.Infof("Stdout:\n%s\n", stdout.String())
+	glog.Infof("Stderr:\n%s\n", stderr.String())
+	return err
+}
+
 func main() {
 	flag.Parse()
 	if err := checkConfigValidity(); err != nil {
@@ -224,7 +254,7 @@ func main() {
 	if err := uploadLogfilesToGCS(localTmpLogPath); err != nil {
 		glog.Fatalf("Could not upload logs to GCS: %v", err)
 	}
-	glog.Infof("Logs successfully uploaded")
+	glog.Info("Logs successfully uploaded")
 
 	glog.Infof("Entering sleep for a duration of %v seconds", *sleepDuration)
 	time.Sleep(*sleepDuration)

@@ -24,7 +24,7 @@
 #
 # for nodefs on the prow builds cluster
 # USE AT YOUR OWN RISK.
-# TODO(bentheelder): delete this once dynamic kubelet config is available
+# TODO: delete this once dynamic kubelet config is available
 
 
 from __future__ import print_function
@@ -35,7 +35,7 @@ import json
 import math
 
 # xref prow/Makefile get-build-cluster-credentials
-# TODO(bentheelder): perhaps make these configurable
+# TODO: perhaps make these configurable
 CLUSTER = 'prow'
 ZONE = 'us-central1-f'
 PROJECT = 'k8s-prow-builds'
@@ -68,6 +68,8 @@ def get_pool_sizes(project, zone, cluster):
         '--format=json',
     ]))
     for group in groups:
+        if group['name'] not in group_to_pool:
+            continue
         sizes[group_to_pool[group['name']]] += group['size']
 
     return sizes

@@ -1,0 +1,67 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("@bazel_gazelle//:def.bzl", "gazelle")
+load("//prow:def.bzl", "prow_image")
+
+# gazelle:prefix k8s.io/test-infra/testgrid/cmd/summarizer
+gazelle(
+    name = "gazelle",
+)
+
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "summarizer",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "server.go",
+        "summarizer.go",
+    ],
+    importpath = "k8s.io/test-infra/testgrid/cmd/summarizer",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//testgrid/cmd/summarizer/response:go_default_library",
+        "//testgrid/cmd/summarizer/summary:go_default_library",
+        "//testgrid/summary:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/grpc:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["summarizer_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//testgrid/cmd/summarizer/response:go_default_library",
+        "//testgrid/config:go_default_library",
+        "//testgrid/summary:go_default_library",
+        "//vendor/github.com/google/go-cmp/cmp:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//testgrid/cmd/summarizer/example:all-srcs",
+        "//testgrid/cmd/summarizer/response:all-srcs",
+        "//testgrid/cmd/summarizer/summary:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

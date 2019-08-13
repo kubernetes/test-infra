@@ -54,7 +54,7 @@
 </g>
 <!-- Gubernator -->
 <g id="node11" class="node"><title>Gubernator</title>
-<g id="a_node11"><a xlink:href="https://k8s-gubernator.appspot.com" xlink:title="Gubernator">
+<g id="a_node11"><a xlink:href="https://gubernator.k8s.io" xlink:title="Gubernator">
 <polygon fill="lightblue" stroke="black" points="772.494,-199.562 710,-212 647.506,-199.562 647.564,-179.438 772.436,-179.438 772.494,-199.562"/>
 <text text-anchor="middle" x="710" y="-190.3" font-family="Times,serif" font-size="14.00">Gubernator</text>
 </a>

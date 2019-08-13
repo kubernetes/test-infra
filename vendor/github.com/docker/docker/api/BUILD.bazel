@@ -7,7 +7,7 @@ go_library(
         "common_unix.go",
         "common_windows.go",
     ],
-    importmap = "vendor/github.com/docker/docker/api",
+    importmap = "k8s.io/test-infra/vendor/github.com/docker/docker/api",
     importpath = "github.com/docker/docker/api",
     visibility = ["//visibility:public"],
 )

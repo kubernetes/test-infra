@@ -17,33 +17,49 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-misspell=
-while getopts "m:" opt; do
-  case "${opt}" in
-    m)
-      misspell="${OPTARG}"
-      ;;
-  esac
-done
-
-if [[ -z "${misspell}" ]]; then
-  # Legacy non-Bazel mode. Maybe remove at some point?
-  go install ./vendor/github.com/client9/misspell/cmd/misspell
-  if ! which misspell >/dev/null 2>&1; then
-    echo "Can't find misspell - is your GOPATH 'bin' in your PATH?"
-    echo "  GOPATH: ${GOPATH}"
-    echo "  PATH:   ${PATH}"
-    exit 1
-  fi
-
-  git ls-files | grep -v -e vendor -e static -e third_party | xargs misspell -error
-  exit
+if [[ -n "${TEST_WORKSPACE:-}" ]]; then
+  echo "Validating spelling..." >&2
+elif ! command -v bazel &> /dev/null; then
+  echo "Install bazel at https://bazel.build" >&2
+  exit 1
+else
+  (
+    set -o xtrace
+    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-spelling
+  )
+  exit 0
 fi
 
+trap 'echo ERROR: found unexpected instance of "Git"hub, use github or GitHub' ERR
+
+# Unit test: Git"hub (remove ")
+# Appear to need to use this if statement on mac to get the not grep to work
+if find -L . -type f -not \( \
+  \( \
+    -path '*/vendor/*' \
+    -o -path '*/external/*' \
+    -o -path '*/static/*' \
+    -o -path '*/third_party/*' \
+    -o -path '*/node_modules/*' \
+    -o -path '*/localdata/*' \
+    -o -path '*/gubernator/*' \
+    -o -path '*/prow/bugzilla/client_test.go' \
+    \) -prune \
+    \) -exec grep -Hn 'Git'hub '{}' '+' ; then
+  false
+fi
+
+
+trap 'echo ERROR: bad spelling, fix with hack/update-spelling.sh' ERR
+
+# Unit test: lang auge (remove space)
 find -L . -type f -not \( \
   \( \
     -path '*/vendor/*' \
+    -o -path '*/external/*' \
     -o -path '*/static/*' \
     -o -path '*/third_party/*' \
+    -o -path '*/node_modules/*' \
+    -o -path '*/localdata/*' \
     \) -prune \
-  \) | xargs "${misspell}" -error
+    \) -exec "$@" '{}' '+'

@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/labels"
 )
 
 func formatLabels(labels []string) []string {
@@ -57,7 +58,7 @@ func TestSigMention(t *testing.T) {
 	}
 	testcases := []testCase{
 		{
-			name:              "Dont repeat when org member mentions sig",
+			name:              "Don't repeat when org member mentions sig",
 			body:              "@kubernetes/sig-node-misc",
 			expectedRepeats:   []string{},
 			expectedNewLabels: []string{"sig/node"},
@@ -66,7 +67,7 @@ func TestSigMention(t *testing.T) {
 			commenter:         orgMember,
 		},
 		{
-			name:              "Dont repeat or label when bot adds mentions sig",
+			name:              "Don't repeat or label when bot adds mentions sig",
 			body:              "@kubernetes/sig-node-misc",
 			expectedRepeats:   []string{},
 			expectedNewLabels: []string{},
@@ -78,8 +79,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat when non org adds one sig label (sig label already present)",
 			body:              "@kubernetes/sig-node-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-bugs"},
-			expectedNewLabels: []string{"kind/bug"},
-			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "kind/bug"},
+			expectedNewLabels: []string{labels.Bug},
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", labels.Bug},
 			issueLabels:       []string{"sig/node"},
 			commenter:         nonOrgMember,
 		},
@@ -93,20 +94,20 @@ func TestSigMention(t *testing.T) {
 			commenter:         nonOrgMember,
 		},
 		{
-			name:              "Dont repeat multiple if org member (all labels present).",
+			name:              "Don't repeat multiple if org member (all labels present).",
 			body:              "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{},
 			expectedNewLabels: []string{},
-			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			issueLabels:       []string{"sig/node", "sig/api-machinery", "kind/bug"},
+			repoLabels:        []string{"sig/node", "sig/api-machinery", labels.Bug},
+			issueLabels:       []string{"sig/node", "sig/api-machinery", labels.Bug},
 			commenter:         orgMember,
 		},
 		{
 			name:              "Repeat multiple valid labels from non org member",
 			body:              "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", "sig/api-machinery", labels.Bug},
+			repoLabels:        []string{"sig/node", "sig/api-machinery", labels.Bug},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
 		},
@@ -114,8 +115,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat multiple valid labels with a line break from non org member.",
 			body:              "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", "sig/api-machinery", labels.Bug},
+			repoLabels:        []string{"sig/node", "sig/api-machinery", labels.Bug},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
 		},
@@ -123,8 +124,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat Multiple Sig Labels Different Lines With Other Text",
 			body:              "Code Comment.  Design Review\n@kubernetes/sig-node-proposals\ncc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-proposals", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
-			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", "sig/api-machinery", labels.Bug},
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", labels.Bug},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
 		},
@@ -132,8 +133,8 @@ func TestSigMention(t *testing.T) {
 			name:              "Repeat when multiple label adding commands (sig labels present)",
 			body:              "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
 			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			expectedNewLabels: []string{"sig/node", "kind/bug"},
-			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "sig/testing", "kind/bug"},
+			expectedNewLabels: []string{"sig/node", labels.Bug},
+			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "sig/testing", labels.Bug},
 			issueLabels:       []string{"sig/api-machinery", "sig/testing"},
 			commenter:         nonOrgMember,
 		},
@@ -151,9 +152,9 @@ func TestSigMention(t *testing.T) {
 
 	for _, tc := range testcases {
 		fakeClient := &fakegithub.FakeClient{
-			OrgMembers:     map[string][]string{"org": {orgMember, bot}},
-			ExistingLabels: tc.repoLabels,
-			IssueComments:  make(map[int][]github.IssueComment),
+			OrgMembers:         map[string][]string{"org": {orgMember, bot}},
+			RepoLabelsExisting: tc.repoLabels,
+			IssueComments:      make(map[int][]github.IssueComment),
 		}
 		// Add initial labels to issue.
 		for _, label := range tc.issueLabels {
@@ -185,9 +186,9 @@ func TestSigMention(t *testing.T) {
 		// Check that all the correct labels (and only the correct labels) were added.
 		expectLabels := append(formatLabels(tc.expectedNewLabels), formatLabels(tc.issueLabels)...)
 		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.LabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.LabelsAdded)
+		sort.Strings(fakeClient.IssueLabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
+			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", tc.name, expectLabels, fakeClient.IssueLabelsAdded)
 		}
 
 		// Check that the comment contains the correct sig mentions repeats if it exists.

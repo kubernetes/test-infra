@@ -1,0 +1,44 @@
+{{define "title"}}PR History: {{.Name}}{{end}}
+{{define "pageTitle"}}PR History: <a style="color: inherit; text-decoration: underline;" href="{{.Link}}">{{.Name}}</a>{{end}}
+{{define "scripts"}}
+<style>
+  .run-success {
+    background-color: rgba(0, 255, 0, 0.3);
+  }
+  .run-failure {
+    background-color: rgba(255, 0, 0, 0.3);
+  }
+</style>
+{{end}}
+{{define "content"}}
+<div class="table-container">
+  <table id="history-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+    <thead>
+      <tr>
+        <th></th>
+        {{range .Commits}}
+        <th class="mdl-data-table__cell--non-numeric" colspan="{{.MaxWidth}}">
+          {{if .Link}}
+          <a href="{{.Link}}">{{.HashPrefix}}</a>
+          {{else}}
+          <span>{{.HashPrefix}}</span>
+          {{end}}
+        </th>
+        {{end}}
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Jobs}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">{{if .Link}}<a href="{{.Link}}">{{.Name}}</a>{{else}}{{.Name}}{{end}}</td>
+        {{range .Builds}}
+        <td class="mdl-data-table__cell--non-numeric {{if eq .Result "SUCCESS"}}run-success{{else if eq .Result "FAILURE"}}run-failure{{end}}">{{if .SpyglassLink}}<a href="{{.SpyglassLink}}">{{.ID}}</a>{{else}}{{.ID}}{{end}}</td>
+        {{end}}
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly lightMode "pr-history" .)}}

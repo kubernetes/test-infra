@@ -1,0 +1,43 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prow
+  namespace: prow-monitoring
+spec:
+  replicas: 2
+  storage:
+    volumeClaimTemplate:
+      metadata:
+        name: prometheus
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        storageClassName: "standard"
+        resources:
+          requests:
+            storage: 100Gi
+  retention: "30d"
+  serviceAccountName: prometheus-prow
+  alerting:
+    alertmanagers:
+      - namespace: prow-monitoring
+        name: alertmanager
+        port: http
+  enableAdminAPI: false
+  ruleSelector:
+    matchLabels:
+      role: alert-rules
+      prometheus: prow
+  serviceMonitorSelector:
+    matchExpressions:
+      - key: app
+        operator: Exists
+  version: v2.7.1
+  baseImage: docker.io/prom/prometheus
+  externalLabels: {}
+  listenLocal: false
+  nodeSelector: {}
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000

@@ -1,35 +1,26 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("//prow:def.bzl", "prow_image", "prow_push")
 
-docker_bundle(
-    name = "bundle",
-    images = {
-        "{STABLE_DOCKER_REPO}/commenter:{DOCKER_TAG}": ":commenter-image",
-        "{STABLE_DOCKER_REPO}/commenter:latest": ":commenter-image",
-        "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":commenter-image",
-    },
-    stamp = True,
-)
-
-docker_push(
-    name = "push",
-    bundle = ":bundle",
-)
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
-    "go_test",
-)
-
-go_image(
-    name = "commenter-image",
-    base = "@distroless-base//image",
+go_binary(
+    name = "commenter",
     embed = [":go_default_library"],
+)
+
+prow_image(
+    name = "image",
+    base = "@alpine-base//image",
+    visibility = ["//visibility:public"],
+)
+
+prow_push(
+    name = "push",
+    images = {
+        "{STABLE_DOCKER_REPO}/commenter:{DOCKER_TAG}": ":image",
+        "{STABLE_DOCKER_REPO}/commenter:latest": ":image",
+        "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":image",
+    },
 )
 
 go_library(
@@ -37,7 +28,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/robots/commenter",
     deps = [
-        "//prow/config:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
     ],
@@ -61,10 +52,4 @@ go_test(
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
     deps = ["//prow/github:go_default_library"],
-)
-
-# Delete after gazelle stops forcing its creation
-go_binary(
-    name = "commenter",
-    embed = [":go_default_library"],
 )

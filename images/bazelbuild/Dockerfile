@@ -13,9 +13,7 @@
 # limitations under the License.
 
 # Includes git, gcloud, and bazel.
-FROM ubuntu:16.04
-# TODO(bentheelder): consider replacing all maintainers with a test-infra-maintainers alias of some sort
-LABEL maintainer="bentheelder@google.com"
+FROM ubuntu:18.04
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -30,13 +28,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     openssh-client \
     python \
+    python2.7 \
+    python3 \
     python-pip \
     rpm \
     unzip \
     wget \
     zip \
     zlib1g-dev \
-    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --upgrade pip setuptools wheel
 
 RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \

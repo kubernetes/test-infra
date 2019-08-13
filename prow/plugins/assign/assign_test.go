@@ -17,6 +17,7 @@ limitations under the License.
 package assign
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -45,11 +46,21 @@ func (c *fakeClient) UnassignIssue(owner, repo string, number int, assignees []s
 
 func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
 	var missing github.MissingUsers
-	for _, who := range assignees {
-		if who != "evil" {
-			c.assigned[who]++
-		} else {
+	sort.Strings(assignees)
+	if len(assignees) > 10 {
+		for _, who := range assignees[10:] {
 			missing.Users = append(missing.Users, who)
+		}
+		for _, who := range assignees[:10] {
+			c.assigned[who]++
+		}
+	} else {
+		for _, who := range assignees {
+			if who != "evil" {
+				c.assigned[who]++
+			} else {
+				missing.Users = append(missing.Users, who)
+			}
 		}
 	}
 
@@ -222,6 +233,13 @@ func TestAssignAndReview(t *testing.T) {
 			assigned:  []string{"bert", "ernie"},
 		},
 		{
+			name:      "assign greater than 10 users",
+			body:      "/assign @user1 @user2 @user3 @user4 @user5 @user6 @user7 @user8 @user9 @user10 @user11 @user12 @user13",
+			commenter: "rando",
+			commented: true,
+			assigned:  []string{"user12", "user13", "user6", "user1", "user11", "user2", "user3", "user4", "user5", "user10"},
+		},
+		{
 			name:       "unassign buddies",
 			body:       "/unassign @ashitaka @eboshi",
 			commenter:  "san",
@@ -247,7 +265,7 @@ func TestAssignAndReview(t *testing.T) {
 		},
 		{
 			name:      "evil assignee",
-			body:      "/assign @evil @merlin",
+			body:      "/assign @evil @evil @evil @evil @merlin",
 			commenter: "innocent",
 			assigned:  []string{"merlin"},
 			commented: true,

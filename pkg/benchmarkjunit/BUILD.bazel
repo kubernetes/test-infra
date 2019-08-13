@@ -1,0 +1,53 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "main.go",
+        "parse.go",
+    ],
+    importpath = "k8s.io/test-infra/pkg/benchmarkjunit",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//testgrid/metadata/junit:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "benchmarkjunit",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+GO = "@go_sdk//:bin/go"
+
+go_test(
+    name = "go_default_test",
+    srcs = ["integration_test.go"],
+    args = [
+        "--go=../../$(location %s)" % GO,
+    ],
+    data = [
+        "//experiment/dummybenchmarks:all-srcs",
+        GO,
+        "@go_sdk//:files",
+    ],
+    embed = [":go_default_library"],
+    deps = ["//testgrid/metadata/junit:go_default_library"],
+)
