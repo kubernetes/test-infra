@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image")
 
 go_library(
@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/gerrit",
     visibility = ["//visibility:private"],
     deps = [
+        "//pkg/io:go_default_library",
         "//prow/config:go_default_library",
         "//prow/gerrit/adapter:go_default_library",
         "//prow/gerrit/client:go_default_library",
@@ -43,4 +44,11 @@ filegroup(
 prow_image(
     name = "image",
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["main_test.go"],
+    embed = [":go_default_library"],
+    deps = ["//pkg/io:go_default_library"],
 )
