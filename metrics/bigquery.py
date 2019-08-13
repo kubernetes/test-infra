@@ -82,7 +82,7 @@ class BigQuerier(object):
         cmd = [
             'bq', 'query', '--format=prettyjson',
             '--project_id=%s' % self.project,
-            '-n100000',  # Results may have more than 100 rows
+            '-n1000000',  # Results may have more than 100 rows
             query,
         ]
         with open(out_filename, 'w') as out_file:
