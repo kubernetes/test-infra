@@ -1,11 +1,13 @@
 periodics:
 - annotations:
-    description: Runs conformance tests using kubetest against kubernetes release 1.14 branch on GCE
-    testgrid-dashboards: sig-release-1.14-informing, sig-release-1.14-all, conformance-all, conformance-gce
+    description: Runs conformance tests using kubetest against kubernetes release
+      1.14 branch on GCE
+    testgrid-alert-stale-results-hours: "24"
+    testgrid-dashboards: sig-release-1.14-informing, sig-release-1.14-all, conformance-all,
+      conformance-gce
+    testgrid-num-columns-recent: "3"
+    testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: GCE, v1.14 (dev)
-    testgrid-num-failures-to-alert: '1'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '3'
   interval: 6h
   labels:
     preset-k8s-ssh: "true"
@@ -29,14 +31,15 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-node-kubelet, sig-node-cri-1.12
+    fork-per-release-periodic-interval: 24h
+    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-node-kubelet,
+      sig-node-cri-1.12
     testgrid-tab-name: node-kubelet-1.14
-  interval: 2h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-stable1
+  name: ci-kubernetes-node-kubelet-stable2
   spec:
     containers:
     - args:
@@ -60,11 +63,14 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.14
       name: ""
       resources: {}
-- interval: 1h
+- annotations:
+    testgrid-dashboards: sig-release-1.15-all
+    testgrid-tab-name: node-kubetlet-features-1.15
+  interval: 1h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-features-stable1
+  name: ci-kubernetes-node-kubelet-features-stable2
   spec:
     containers:
     - args:
@@ -88,10 +94,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.14
       name: ""
       resources: {}
-  annotations:
-    # TODO(Katharine): Figure out why/how these don't get added automatically.
-    testgrid-dashboards: sig-release-1.15-all
-    testgrid-tab-name: node-kubetlet-features-1.15
 - annotations:
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
     testgrid-tab-name: build-1.14
@@ -99,7 +101,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-stable1
+  name: ci-kubernetes-build-stable2
   spec:
     containers:
     - args:
@@ -110,7 +112,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-stable1
+      - --extra-publish-file=k8s-stable2
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
@@ -122,7 +124,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
     testgrid-tab-name: verify-1.14
   decorate: true
@@ -131,11 +133,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-stable1
+  name: ci-kubernetes-verify-stable2
   spec:
     containers:
     - args:
@@ -190,7 +192,10 @@ periodics:
       resources:
         requests:
           memory: 6Gi
-- interval: 6h
+- annotations:
+    testgrid-dashboards: sig-release-1.14-all
+    testgrid-tab-name: periodic-bazel-test-1.14
+  interval: 6h
   labels:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
@@ -222,18 +227,15 @@ periodics:
       resources:
         requests:
           memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-release-1.14-all
-    testgrid-tab-name: periodic-bazel-test-1.14
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
+    fork-per-release-periodic-interval: 24h
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
     testgrid-tab-name: integration-1.14
-  interval: 2h
+  interval: 6h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-stable1
+  name: ci-kubernetes-integration-stable2
   spec:
     containers:
     - args:
@@ -252,17 +254,17 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/24 * * *
+    testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all
+    testgrid-num-failures-to-alert: "4"
     testgrid-tab-name: gce-device-gpu-plugin-1.14
-    testgrid-num-failures-to-alert: '4'
-    testgrid-alert-stale-results-hours: '24'
-  cron: 0 3-23/6 * * *
+  cron: 0 8-23/12 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   spec:
     containers:
     - args:
@@ -271,7 +273,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/k8s-stable1
+      - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
@@ -282,16 +284,17 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-scalability-gce, google-gce
+    fork-per-release-cron: 0 8-20/12 * * *
+    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-scalability-gce,
+      google-gce
+    testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: gce-cos-1.14-scalability-100
-    testgrid-num-failures-to-alert: '1'
-  cron: 0 0/12 * * *
+  cron: 0 4-16/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   spec:
     containers:
     - args:
@@ -301,8 +304,8 @@ periodics:
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
-      - --cluster=e2e-big-stable1
-      - --extract=ci/k8s-stable1
+      - --cluster=e2e-big-stable2
+      - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -324,7 +327,7 @@ periodics:
       name: ""
       resources: {}
   tags:
-  - 'perfDashPrefix: gce-100Nodes-stable1'
+  - 'perfDashPrefix: gce-100Nodes-stable2'
   - 'perfDashJobType: performance'
 postsubmits:
   kubernetes/kubernetes:
@@ -421,7 +424,8 @@ presubmits:
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
         - --timeout=65m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.14
         name: ""
@@ -461,7 +465,8 @@ presubmits:
         - --provider=gke
         - --stage=gs://kubernetes-release-dev/ci
         - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
         - --timeout=65m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.14
         name: ""
@@ -577,7 +582,8 @@ presubmits:
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.14

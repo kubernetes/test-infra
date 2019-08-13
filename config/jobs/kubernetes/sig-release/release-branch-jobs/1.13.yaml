@@ -1,11 +1,13 @@
 periodics:
 - annotations:
-    description: Runs conformance tests using kubetest against kubernetes release 1.13 branch on GCE
-    testgrid-dashboards: sig-release-1.13-informing, sig-release-1.13-all, conformance-all, conformance-gce
+    description: Runs conformance tests using kubetest against kubernetes release
+      1.13 branch on GCE
+    testgrid-alert-stale-results-hours: "24"
+    testgrid-dashboards: sig-release-1.13-informing, sig-release-1.13-all, conformance-all,
+      conformance-gce
+    testgrid-num-columns-recent: "3"
+    testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: GCE, v1.13 (dev)
-    testgrid-num-failures-to-alert: '1'
-    testgrid-alert-stale-results-hours: '24'
-    testgrid-num-columns-recent: '3'
   interval: 6h
   labels:
     preset-k8s-ssh: "true"
@@ -29,14 +31,14 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.13
-  interval: 6h
+  interval: 24h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-stable2
+  name: ci-kubernetes-node-kubelet-stable3
   spec:
     containers:
     - args:
@@ -67,7 +69,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-stable2
+  name: ci-kubernetes-build-stable3
   spec:
     containers:
     - args:
@@ -78,7 +80,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-stable2
+      - --extra-publish-file=k8s-stable3
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20190703-1f4d616
@@ -90,14 +92,14 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all, google-unit
     testgrid-tab-name: verify-1.13
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-stable2
+  name: ci-kubernetes-verify-stable3
   spec:
     containers:
     - args:
@@ -182,14 +184,14 @@ periodics:
         requests:
           memory: 6Gi
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all, google-unit
     testgrid-tab-name: integration-1.13
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-stable2
+  name: ci-kubernetes-integration-stable3
   spec:
     containers:
     - args:
@@ -208,17 +210,17 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 8-23/24 * * *
+    fork-per-release-cron: ""
+    testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all
+    testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-device-gpu-plugin-1.13
-    testgrid-num-failures-to-alert: '2'
-    testgrid-alert-stale-results-hours: '24'
-  cron: 0 8-23/12 * * *
+  cron: 0 8-23/24 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable3
   spec:
     containers:
     - args:
@@ -227,7 +229,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/k8s-stable2
+      - --extract=ci/k8s-stable3
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -237,16 +239,17 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 8-20/12 * * *
-    testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all, sig-scalability-gce, google-gce
+    fork-per-release-cron: ""
+    testgrid-dashboards: sig-release-1.13-blocking, sig-release-1.13-all, sig-scalability-gce,
+      google-gce
+    testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: gce-cos-1.13-scalability-100
-    testgrid-num-failures-to-alert: '1'
-  cron: 0 4-16/12 * * *
+  cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   spec:
     containers:
     - args:
@@ -256,10 +259,10 @@ periodics:
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
-      - --cluster=e2e-big-stable2
+      - --cluster=e2e-big-stable3
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling
       - --env=SCHEDULER_TEST_ARGS=--profiling
-      - --extract=ci/k8s-stable2
+      - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -281,7 +284,7 @@ periodics:
       name: ""
       resources: {}
   tags:
-  - 'perfDashPrefix: gce-100Nodes-stable2'
+  - 'perfDashPrefix: gce-100Nodes-stable3'
   - 'perfDashJobType: performance'
 postsubmits:
   kubernetes/kubernetes:
@@ -349,6 +352,10 @@ postsubmits:
 presubmits:
   kubernetes/kubernetes:
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.13
     labels:
@@ -378,18 +385,17 @@ presubmits:
         - --provider=gce
         - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
         - --timeout=65m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.13
         name: ""
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
   - always_run: false
+    annotations:
+      testgrid-create-test-group: "true"
     branches:
     - release-1.13
     labels:
@@ -422,16 +428,17 @@ presubmits:
         - --provider=gke
         - --stage=gs://kubernetes-release-dev/ci
         - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+          --minStartupPods=8
         - --timeout=65m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.13
         name: ""
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-create-test-group: 'true'
   - always_run: true
+    annotations:
+      testgrid-create-test-group: "true"
     branches:
     - release-1.13
     labels:
@@ -473,9 +480,9 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-create-test-group: 'true'
   - always_run: false
+    annotations:
+      testgrid-create-test-group: "true"
     branches:
     - release-1.13
     labels:
@@ -517,9 +524,11 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-create-test-group: 'true'
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.13
     labels:
@@ -544,7 +553,8 @@ presubmits:
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]" --flakeAttempts=2
+        - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.13
@@ -552,11 +562,11 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.13
     labels:
@@ -581,11 +591,11 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.13
     labels:
@@ -616,11 +626,11 @@ presubmits:
             memory: 6Gi
         securityContext:
           privileged: true
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
   - always_run: true
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.13
     decorate: true
@@ -638,11 +648,9 @@ presubmits:
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.13
         name: main
         resources: {}
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
   - always_run: true
+    annotations:
+      testgrid-create-test-group: "true"
     branches:
     - release-1.13
     labels:
@@ -698,9 +706,11 @@ presubmits:
             memory: 6Gi
         securityContext:
           privileged: true
-    annotations:
-      testgrid-create-test-group: 'true'
   - always_run: false
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     branches:
     - release-1.13
     labels:
@@ -744,7 +754,3 @@ presubmits:
         resources:
           requests:
             memory: 6Gi
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
