@@ -185,5 +185,6 @@ plugin:
 
 ## Limitations / Going Forward
 
-- [] Embedded structs must include a tag name (i.e. must not be *spread*), otherwise the type can not be inferred from the YAML output.
-- [] Interface types, more specifically concrete types implementing a particular interface, can can not be inferred from the YAML output.
+- [ ] Embedded structs must include a tag name (i.e. must not be *spread*), otherwise the type can not be inferred from the YAML output.
+- [ ] Interface types, more specifically concrete types implementing a particular interface, can can not be inferred from the YAML output.
+- [ ] Upstream this functionality to `go-yaml` (or a fork) to leverage custom formatting of YAML and direct reflection on types for resolving embedded structs and interface types across multiple source files.
