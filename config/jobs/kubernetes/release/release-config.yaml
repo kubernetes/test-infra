@@ -46,10 +46,9 @@ presubmits:
       containers:
       - image: golang:1.12
         command:
-        - go
+        - make
         args:
         - test
-        - ./...
     annotations:
       testgrid-dashboards: sig-release-misc
       testgrid-tab-name: release-unit
