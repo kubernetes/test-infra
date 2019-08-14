@@ -249,13 +249,20 @@ slack:
     - k8s-ci-robot
 
 milestone_applier:
-  kubernetes/test-infra:
-    master: v1.16
+  kubernetes/enhancements:
+    master: v1.17
   kubernetes/kubernetes:
     master: v1.16
+    release-1.16: v1.16
     release-1.15: v1.15
     release-1.14: v1.14
     release-1.13: v1.13
+  kubernetes/release:
+    master: v1.16
+  kubernetes/sig-release:
+    master: v1.16
+  kubernetes/test-infra:
+    master: v1.16
 
 repo_milestone:
   # Default maintainer
@@ -502,6 +509,7 @@ plugins:
   kubernetes/enhancements:
   - blockade
   - milestone
+  - milestoneapplier
   - require-sig
   - stage
 
@@ -528,10 +536,12 @@ plugins:
   kubernetes/release:
   - blockade
   - milestone
+  - milestoneapplier
   - override
 
   kubernetes/sig-release:
   - milestone
+  - milestoneapplier
   - override
 
   kubernetes/test-infra:
