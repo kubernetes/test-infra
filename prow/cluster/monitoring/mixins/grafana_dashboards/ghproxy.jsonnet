@@ -80,47 +80,16 @@ dashboard.new(
         legend_rightSide=true,
         legend_values=true,
         legend_current=true,
-        min='0',
-        max='1',
-        formatY1='percentunit',
+        stack=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'avg(ghcache_disk_used/(ghcache_disk_used+ghcache_disk_free)) without(instance)',
-        legendFormat='% Used',
-    ))
-    .addTarget(prometheus.target(
-        'avg(ghcache_disk_used) without(instance)',
+        'avg(ghcache_disk_used) without (instance,pod)',
         legendFormat='GB Used',
     ))
     .addTarget(prometheus.target(
-        'avg(ghcache_disk_free) without(instance)',
+        'avg(ghcache_disk_free) without (instance,pod)',
         legendFormat='GB Free',
-    ))
-    .addSeriesOverride({
-              alias: 'GB Used',
-              lines: false,
-              yaxis: 2,
-            })
-    .addSeriesOverride({
-              alias: 'GB Free',
-              lines: false,
-              yaxis: 2,
-            })
-    .resetYaxes()
-    .addYaxis(
-      format='percentunit',
-      min=0,
-      max=1,
-      label=null,
-      show=true,
-    )
-    .addYaxis(
-      format='decgbytes',
-      min=0,
-      max=105,
-      label=null,
-      show=false,
-    ), gridPos={
+    )), gridPos={
     h: 6,
     w: 16,
     x: 0,
