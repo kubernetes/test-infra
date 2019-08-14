@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-experimental
         command:
         - "./scripts/ci-bazel-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-experimental
         command:
         - "./scripts/ci-bazel-build.sh"
     annotations:
@@ -35,7 +35,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-experimental
         command:
         - "runner.sh"
         - "./scripts/ci-bazel-integration.sh"
@@ -67,7 +67,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-experimental
         command:
         - "runner.sh"
         - "make"

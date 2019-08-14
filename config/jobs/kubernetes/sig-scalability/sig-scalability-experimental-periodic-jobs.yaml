@@ -12,7 +12,7 @@ periodics:
     testgrid-tab-name: gce-private-cluster-correctness
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --timeout=300
       - --bare
@@ -47,7 +47,7 @@ periodics:
     testgrid-tab-name: max-emptydir-vol-per-pod
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -88,7 +88,7 @@ periodics:
     testgrid-tab-name: max-configmap-vol-per-pod
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -129,7 +129,7 @@ periodics:
     testgrid-tab-name: max-downwardapi-vol-per-pod
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -170,7 +170,7 @@ periodics:
     testgrid-tab-name: max-secret-vol-per-pod
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -211,7 +211,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-pod
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -253,7 +253,7 @@ periodics:
     testgrid-tab-name: max-emptydir-vol-per-node
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -294,7 +294,7 @@ periodics:
     testgrid-tab-name: max-configmap-vol-per-node
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -335,7 +335,7 @@ periodics:
     testgrid-tab-name: max-downwardapi-vol-per-node
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -376,7 +376,7 @@ periodics:
     testgrid-tab-name: max-secret-vol-per-node
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -417,7 +417,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-node
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
