@@ -21,7 +21,6 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
-        "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/kube:go_default_library",
@@ -31,8 +30,10 @@ go_test(
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
         "//vendor/k8s.io/client-go/testing:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client/fake:go_default_library",
     ],
 )
 
@@ -42,7 +43,6 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/sinker",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
-        "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/kube:go_default_library",
@@ -56,6 +56,10 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/runtime/log:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/runtime/signals:go_default_library",
     ],
 )
 
