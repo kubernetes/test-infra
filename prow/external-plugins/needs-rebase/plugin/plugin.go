@@ -131,7 +131,7 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 		return nil
 	}
 	var buf bytes.Buffer
-	fmt.Fprint(&buf, "is:pr is:open")
+	fmt.Fprint(&buf, "archived: false is:pr is:open")
 	for _, org := range orgs {
 		fmt.Fprintf(&buf, " org:\"%s\"", org)
 	}
