@@ -20,12 +20,7 @@ package adapter
 import (
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/url"
-	"os"
-	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -57,33 +52,21 @@ type configAgent interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config config.Getter
-	kc     kubeClient
-	gc     gerritClient
+	config  config.Getter
+	kc      kubeClient
+	gc      gerritClient
+	tracker LastSyncTracker
+}
 
-	lastSyncFallback string
-
-	lastUpdate time.Time
+type LastSyncTracker interface {
+	Current() time.Time
+	Update(time.Time) error
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncFallback, cookiefilePath string, projects map[string][]string, kc *kube.Client, cfg config.Getter) (*Controller, error) {
-	if lastSyncFallback == "" {
-		return nil, errors.New("empty lastSyncFallback")
-	}
-
-	var lastUpdate time.Time
-	if buf, err := ioutil.ReadFile(lastSyncFallback); err == nil {
-		unix, err := strconv.ParseInt(string(buf), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		lastUpdate = time.Unix(unix, 0)
-	} else if err != nil && !os.IsNotExist(err) {
-		return nil, fmt.Errorf("failed to read lastSyncFallback: %v", err)
-	} else {
-		logrus.Warnf("lastSyncFallback not found: %s", lastSyncFallback)
-		lastUpdate = time.Now()
+func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, projects map[string][]string, kc *kube.Client, cfg config.Getter) (*Controller, error) {
+	if lastSyncTracker == nil {
+		return nil, errors.New("lastSyncTracker required")
 	}
 
 	c, err := client.NewClient(projects)
@@ -93,86 +76,33 @@ func NewController(lastSyncFallback, cookiefilePath string, projects map[string]
 	c.Start(cookiefilePath)
 
 	return &Controller{
-		kc:               kc,
-		config:           cfg,
-		gc:               c,
-		lastUpdate:       lastUpdate,
-		lastSyncFallback: lastSyncFallback,
+		kc:      kc,
+		config:  cfg,
+		gc:      c,
+		tracker: lastSyncTracker,
 	}, nil
-}
-
-func copyFile(srcPath, destPath string) error {
-	// fallback to copying the file instead
-	src, err := os.Open(srcPath)
-	if err != nil {
-		return err
-	}
-	dst, err := os.OpenFile(destPath, os.O_WRONLY, 0666)
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(dst, src)
-	if err != nil {
-		return err
-	}
-	dst.Sync()
-	dst.Close()
-	src.Close()
-	return nil
-}
-
-// SaveLastSync saves last sync time in Unix to a volume
-func (c *Controller) SaveLastSync(lastSync time.Time) error {
-	if c.lastSyncFallback == "" {
-		return nil
-	}
-
-	lastSyncUnix := strconv.FormatInt(lastSync.Unix(), 10)
-	logrus.Infof("Writing last sync: %s", lastSyncUnix)
-
-	tempFile, err := ioutil.TempFile(filepath.Dir(c.lastSyncFallback), "temp")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tempFile.Name())
-
-	err = ioutil.WriteFile(tempFile.Name(), []byte(lastSyncUnix), 0644)
-	if err != nil {
-		return err
-	}
-
-	err = os.Rename(tempFile.Name(), c.lastSyncFallback)
-	if err != nil {
-		logrus.WithError(err).Info("Rename failed, fallback to copyfile")
-		return copyFile(tempFile.Name(), c.lastSyncFallback)
-	}
-	return nil
 }
 
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() error {
-	syncTime := c.lastUpdate
+	syncTime := c.tracker.Current()
+	latest := syncTime
 
-	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.config().Gerrit.RateLimit) {
+	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
 		for _, change := range changes {
 			if err := c.ProcessChange(instance, change); err != nil {
 				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
 			}
-			if syncTime.Before(change.Updated.Time) {
-				syncTime = change.Updated.Time
+			if latest.Before(change.Updated.Time) {
+				latest = change.Updated.Time
 			}
 		}
 
 		logrus.Infof("Processed %d changes for instance %s", len(changes), instance)
 	}
 
-	c.lastUpdate = syncTime
-	if err := c.SaveLastSync(syncTime); err != nil {
-		logrus.WithError(err).Errorf("last sync %v, cannot save to path %v", syncTime, c.lastSyncFallback)
-	}
-
-	return nil
+	return c.tracker.Update(latest)
 }
 
 func makeCloneURI(instance, project string) (*url.URL, error) {
@@ -307,13 +237,14 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		if latestReport == nil {
 			logger.Warnf("Found nil latest report")
 		}
-		filter, err := messageFilter(c.lastUpdate, change, presubmits, latestReport, logger)
+		lastUpdate := c.tracker.Current()
+		filter, err := messageFilter(lastUpdate, change, presubmits, latestReport, logger)
 		if err != nil {
 			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
 		} else {
 			filters = append(filters, filter)
 		}
-		if change.Revisions[change.CurrentRevision].Created.Time.After(c.lastUpdate) {
+		if change.Revisions[change.CurrentRevision].Created.Time.After(lastUpdate) {
 			filters = append(filters, pjutil.TestAllFilter())
 		}
 		toTrigger, _, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)

@@ -132,6 +132,24 @@ func TestMakeCloneURI(t *testing.T) {
 	}
 }
 
+type fakeSync struct {
+	val  time.Time
+	lock sync.Mutex
+}
+
+func (s *fakeSync) Current() time.Time {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	return s.val
+}
+
+func (s *fakeSync) Update(t time.Time) error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.val = t
+	return nil
+}
+
 func TestCreateRefs(t *testing.T) {
 	reviewHost := "https://cat-review.example.com"
 	change := client.ChangeInfo{
@@ -664,10 +682,10 @@ func TestProcessChange(t *testing.T) {
 		fkc := &fkc{}
 
 		c := &Controller{
-			config:     fca.Config,
-			kc:         fkc,
-			gc:         &fgc{},
-			lastUpdate: timeNow.Add(-time.Minute),
+			config:  fca.Config,
+			kc:      fkc,
+			gc:      &fgc{},
+			tracker: &fakeSync{val: timeNow.Add(-time.Minute)},
 		}
 
 		err := c.ProcessChange("https://gerrit", tc.change)
