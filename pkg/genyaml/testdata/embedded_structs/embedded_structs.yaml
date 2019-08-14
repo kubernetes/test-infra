@@ -1,0 +1,20 @@
+# Address of building
+Address: 123 North Main Street
+
+
+# Bathroom in building
+bathroom:
+    # Height of Bathroom
+    height: 200
+
+    # Width of Bathroom
+    width: 100
+
+
+# Bedroom in building
+bedroom:
+    # Height of Bedroom
+    height: 200
+
+    # Width of Bedroom
+    width: 100

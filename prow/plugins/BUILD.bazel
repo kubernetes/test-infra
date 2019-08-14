@@ -49,6 +49,12 @@ go_library(
 )
 
 filegroup(
+    name = "config-src",
+    srcs = ["config.go"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],
