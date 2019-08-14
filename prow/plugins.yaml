@@ -664,6 +664,7 @@ plugins:
 
   kubernetes-sigs/cluster-api:
   - milestone
+  - release-note
 
   kubernetes-sigs/cluster-api-provider-aws:
   - milestone
