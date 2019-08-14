@@ -26,7 +26,7 @@ elif ! command -v bazel &>/dev/null; then
 else
   (
     set -o xtrace
-    bazel run @io_k8s_test_infra//hack:update-gofmt
+    bazel run //hack:update-gofmt
   )
   exit 0
 fi
