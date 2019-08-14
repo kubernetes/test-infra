@@ -547,7 +547,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:      "error fetching bug leaves a comment",
 			bugErrors: []int{123},
-			expectedComment: `org/repo#1:@user: An error was encountered searching the Bugzilla server at www.bugzilla for bug 123:
+			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla:
 > injected error getting bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
@@ -704,7 +704,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			bugs:      []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}},
 			bugErrors: []int{124},
 			options:   plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
-			expectedComment: `org/repo#1:@user: An error was encountered searching the Bugzilla server at www.bugzilla for dependent bug 124:
+			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla:
 > injected error getting bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
@@ -844,7 +844,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: An error was encountered searching the Bugzilla server at www.bugzilla for external trackers on bug 123:
+			expectedComment: `org/repo#1:@user: An error was encountered searching for external tracker bugs for bug 123 on the Bugzilla server at www.bugzilla:
 > injected error adding external bug to bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
