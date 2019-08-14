@@ -17,32 +17,19 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
-	"io/ioutil"
-	"k8s.io/test-infra/prow/flagutil"
-	"os"
+	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/issue_state"
 	"reflect"
-	"strconv"
 	"testing"
 
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/testgrid/issue_state"
 )
 
 func TestOptions(t *testing.T) {
-
-	tmpdir, err := ioutil.TempDir("", "tmpdir")
-	if err != nil {
-		t.Errorf("Unexpected error while creating temprorary dir: %v", err)
-	}
-	defer os.RemoveAll(tmpdir)
-	fd, err := ioutil.TempFile("", "tmpfile")
-	if err != nil {
-		t.Errorf("Unexpected error while creating temprorary file: %v", err)
-	}
-	tmpfile := fd.Name()
-	defer os.Remove(tmpfile)
 
 	testCases := []struct {
 		name     string
@@ -55,18 +42,22 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "missing GCS credentials when GCS provided as output, reject",
-			args: []string{"--github-org=testorg", "--github-repo=testrepo", "--output=gs://foo/bar"},
+			args: []string{"--repos=testorg/testrepo", "--output=gs://foo/bar", "--config=gs://some/config"},
 		},
 		{
 			name: "missing output, reject",
-			args: []string{"--github-org=testorg", "--github-repo=testrepo"},
+			args: []string{"--repos=testorg/testrepo", "--config=gs://some/config"},
+		},
+		{
+			name: "no config, reject",
+			args: []string{"--repos=testorg/testrepo", "--output=foo/bar"},
 		},
 		{
 			name: "both oneshot and poll-interval, reject",
 			args: []string{
-				"--github-org=testorg",
-				"--github-repo=testrepo",
+				"--repos=testorg/testrepo",
 				"--output=gs://foo/bar",
+				"--config=gs://some/config",
 				"--gcs-credentials-file=/usr/foo/creds.json",
 				"--oneshot",
 				"--poll-interval=1h",
@@ -75,44 +66,47 @@ func TestOptions(t *testing.T) {
 		{
 			name: "required options with gcs bucket output",
 			args: []string{
+				"--repos=testorg/testrepo",
+				"--output=gs://foo/bar",
+				"--config=gs://some/config",
+				"--gcs-credentials-file=/usr/foo/creds.json",
+			},
+			expected: &options{
+				repositories:   []string{"testorg/testrepo"},
+				output:         "gs://foo/bar",
+				configPath:     "gs://some/config",
+				gcsCredentials: "/usr/foo/creds.json",
+			},
+		},
+		{
+			name: "deprecated repo options",
+			args: []string{
 				"--github-org=testorg",
 				"--github-repo=testrepo",
 				"--output=gs://foo/bar",
+				"--config=gs://some/config",
 				"--gcs-credentials-file=/usr/foo/creds.json",
 			},
 			expected: &options{
 				organization:   "testorg",
 				repository:     "testrepo",
+				repositories:   []string{"testorg/testrepo"},
 				output:         "gs://foo/bar",
+				configPath:     "gs://some/config",
 				gcsCredentials: "/usr/foo/creds.json",
 			},
 		},
 		{
-			name: "required options with directory output",
+			name: "several repos with directory output",
 			args: []string{
-				"--github-org=testorg",
-				"--github-repo=testrepo",
-				"--output=" + tmpdir,
+				"--repos=org1/repo1,org2/repo2,org3/repo3",
+				"--output=/file/path",
+				"--config=gs://some/config",
 			},
 			expected: &options{
-				organization:   "testorg",
-				repository:     "testrepo",
-				output:         tmpdir,
-				gcsCredentials: "",
-				pollInterval:   "",
-			},
-		},
-		{
-			name: "required options with file output",
-			args: []string{
-				"--github-org=testorg",
-				"--github-repo=testrepo",
-				"--output=" + tmpfile,
-			},
-			expected: &options{
-				organization:   "testorg",
-				repository:     "testrepo",
-				output:         tmpfile,
+				repositories:   []string{"org1/repo1", "org2/repo2", "org3/repo3"},
+				output:         "/file/path",
+				configPath:     "gs://some/config",
 				gcsCredentials: "",
 				pollInterval:   "",
 			},
@@ -120,41 +114,44 @@ func TestOptions(t *testing.T) {
 		{
 			name: "oneshot with many options",
 			args: []string{
-				"--github-org=testorg",
-				"--github-repo=testrepo",
+				"--repos=testorg/testrepo",
 				"--github-endpoint=https://127.0.0.1:8888",
 				"--github-token-path=/usr/foo/tkpath",
 				"--output=gs://foo/bar",
+				"--config=gs://some/config",
 				"--gcs-credentials-file=/usr/foo/creds.json",
+				"--rate-limit=99",
 				"--oneshot",
 			},
 			expected: &options{
-				organization:   "testorg",
-				repository:     "testrepo",
+				repositories:   []string{"testorg/testrepo"},
 				output:         "gs://foo/bar",
+				configPath:     "gs://some/config",
 				gcsCredentials: "/usr/foo/creds.json",
 				oneshot:        true,
-				pollInterval:   "",
+				rateLimit:      99,
 			},
 		},
 		{
 			name: "poll-time with many options",
 			args: []string{
-				"--github-org=testorg",
-				"--github-repo=testrepo",
+				"--repos=testorg/testrepo",
 				"--github-endpoint=https://127.0.0.1:8888",
 				"--github-token-path=/usr/foo/tkpath",
 				"--output=gs://foo/bar",
+				"--config=gs://some/config",
 				"--gcs-credentials-file=/usr/foo/creds.json",
 				"--poll-interval=1h",
+				"--rate-limit=450",
 			},
 			expected: &options{
-				organization:   "testorg",
-				repository:     "testrepo",
+				repositories:   []string{"testorg/testrepo"},
 				output:         "gs://foo/bar",
+				configPath:     "gs://some/config",
 				gcsCredentials: "/usr/foo/creds.json",
 				oneshot:        false,
 				pollInterval:   "1h",
+				rateLimit:      450,
 			},
 		},
 	}
@@ -179,20 +176,24 @@ func TestPinIssues(t *testing.T) {
 	testCases := []struct {
 		issue         github.Issue
 		issueComments []github.IssueComment
+		testGroups    []string
 		expectedPins  []string
 	}{
 		{
 			issue: github.Issue{
 				Title:  "Body With No Target; ignore",
 				Number: 2,
-				Body:   "Don't capture this target: it's wrong",
+				Body:   "Don't capture this pin: it's wrong",
 			},
 		},
 		{
 			issue: github.Issue{
 				Title:  "Body with Single Target",
 				Number: 3,
-				Body:   "target:[Organization] Testing Name [sig-testing]",
+				Body:   "Pin:[Organization] Testing Name [sig-testing]",
+			},
+			testGroups: []string{
+				"[Organization] Testing Name [sig-testing]",
 			},
 			expectedPins: []string{
 				"[Organization] Testing Name [sig-testing]",
@@ -202,22 +203,33 @@ func TestPinIssues(t *testing.T) {
 			issue: github.Issue{
 				Title:  "Body with Multiple Targets",
 				Number: 4,
-				Body:   "target://project:test\r\ntarget://project:example",
+				Body:   "Pin:project:test\r\nPin:project:example",
+			},
+			testGroups: []string{
+				"project:test",
+				"project:example",
 			},
 			expectedPins: []string{
-				"//project:test",
-				"//project:example",
+				"project:test",
+				"project:example",
 			},
 		},
 		{
 			issue: github.Issue{
-				Title:  "Tolerate Whitespace",
+				Title:  "Tolerate Whitespace and Capitalization",
 				Number: 5,
-				Body:   "target:tolerateWindowsCR\r\ntarget:tolerateLinuxCR\ntarget:\t\ttrim-tabs\t",
+				Body:   "Pin:tolerateWindowsCR\r\npin:tolerateLinuxCR\npin:\t\ttrim-tabs\t",
 			},
 			issueComments: []github.IssueComment{
-				{Body: "target: trim leading space"},
-				{Body: "target:trim trailing space  "},
+				{Body: "Pin: trim leading space"},
+				{Body: "pin:trim trailing space  "},
+			},
+			testGroups: []string{
+				"tolerateWindowsCR",
+				"tolerateLinuxCR",
+				"trim-tabs",
+				"trim leading space",
+				"trim trailing space",
 			},
 			expectedPins: []string{
 				"tolerateWindowsCR",
@@ -233,10 +245,13 @@ func TestPinIssues(t *testing.T) {
 				Number: 6,
 			},
 			issueComments: []github.IssueComment{
-				{Body: "target://project:test"},
+				{Body: "Pin:project:test"},
+			},
+			testGroups: []string{
+				"project:test",
 			},
 			expectedPins: []string{
-				"//project:test",
+				"project:test",
 			},
 		},
 		{
@@ -245,14 +260,19 @@ func TestPinIssues(t *testing.T) {
 				Number: 7,
 			},
 			issueComments: []github.IssueComment{
-				{Body: "target://project:first\r\ntarget://project:second"},
-				{Body: "target://project:third"},
-				{Body: "This is a false target: it's not at the beginning of the line"},
+				{Body: "Pin:project:first\r\nPin:project:second"},
+				{Body: "Pin:project:third"},
+				{Body: "This is a false Pin: it's not at the beginning of the line"},
+			},
+			testGroups: []string{
+				"project:first",
+				"project:second",
+				"project:third",
 			},
 			expectedPins: []string{
-				"//project:first",
-				"//project:second",
-				"//project:third",
+				"project:first",
+				"project:second",
+				"project:third",
 			},
 		},
 		{
@@ -260,7 +280,20 @@ func TestPinIssues(t *testing.T) {
 				Title:       "Pull Request; ignore",
 				Number:      8,
 				PullRequest: &struct{}{},
-				Body:        "target://project:no",
+				Body:        "Pin:project:no",
+			},
+			testGroups: []string{
+				"project:no",
+			},
+		},
+		{
+			issue: github.Issue{
+				Title:  "Target doesn't match testgroup; ignore",
+				Number: 9,
+				Body:   "Pin:project:first",
+			},
+			testGroups: []string{
+				"project:second",
 			},
 		},
 	}
@@ -276,32 +309,69 @@ func TestPinIssues(t *testing.T) {
 					test.issue.Number: test.issueComments,
 				},
 			}
-			var o options
 
-			result, err := pinIssues(&g, o)
+			exampleRepo := []string{"repo/org"}
+
+			result := make(map[string]*issue_state.IssueState, 0)
+			for _, group := range test.testGroups {
+				result[group] = nil
+			}
+
+			err := pinIssues(&g, exampleRepo, result, context.Background())
 			if err != nil {
 				t.Errorf("Error in Issue Pinning: %e", err)
 			}
 
 			if test.expectedPins == nil {
-				if len(result.IssueInfo) != 0 {
-					t.Errorf("Expected no issue, but got %v", result.IssueInfo)
+				for _, issueState := range result {
+					if issueState != nil {
+						t.Errorf("Expecting no issue state, but got %v", issueState)
+					}
 				}
-			} else {
-				if len(result.IssueInfo) != 1 {
-					t.Errorf("Returned %d issues from one issue: %v", len(result.IssueInfo), result.IssueInfo)
-				}
+			}
 
-				expected := issue_state.IssueInfo{
-					Title:   test.issue.Title,
-					IssueId: strconv.Itoa(test.issue.Number),
-					RowIds:  test.expectedPins,
+			for _, expectedPin := range test.expectedPins {
+				if result[expectedPin] == nil {
+					t.Errorf("Expected 1 issue, but got nil test group %s", expectedPin)
+				} else if len(result[expectedPin].IssueInfo) != 1 {
+					t.Errorf("Expected 1 issue at %s, but got %v", expectedPin, result[expectedPin].IssueInfo)
+				} else if result[expectedPin].IssueInfo[0].Title != test.issue.Title {
+					t.Errorf("Wrong issue title; got %s, expected %s", result[expectedPin].IssueInfo[0].Title, test.issue.Title)
 				}
+			}
+		})
+	}
+}
 
-				if !reflect.DeepEqual(*result.IssueInfo[0], expected) {
-					t.Errorf("Targeter: Failed with %s, got %v, expected %v",
-						expected.Title, *result.IssueInfo[0], expected)
-				}
+func Test_getTestGroups(t *testing.T) {
+	testCases := []struct {
+		name     string
+		config   *config.Configuration
+		expected map[string]*issue_state.IssueState
+	}{
+		{
+			name: "Empty Config; empty map",
+		},
+		{
+			name: "Config; returns groups",
+			config: &config.Configuration{
+				TestGroups: []*config.TestGroup{
+					{Name: "Prime"},
+					{Name: "Second"},
+				},
+			},
+			expected: map[string]*issue_state.IssueState{
+				"Prime":  nil,
+				"Second": nil,
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			result := getTestGroups(test.config)
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("Got %v, expected %v", result, test.expected)
 			}
 		})
 	}

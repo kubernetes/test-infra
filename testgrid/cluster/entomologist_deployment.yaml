@@ -20,8 +20,8 @@ spec:
           args:
             - --output=gs://k8s-testgrid-canary
             - --gcs-credentials-file=/etc/gcp/k8s-testgrid.json
-            - --github-org=kubernetes
-            - --github-repo=test-infra
+            - --repos=kubernetes/test-infra
+            - --config=gs://k8s-testgrid/config
             - --github-token-path=/etc/github/token.txt
             - --github-endpoint=http://ghproxy
           volumeMounts:

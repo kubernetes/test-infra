@@ -30,7 +30,7 @@ import (
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
-func read(r io.Reader) (*Configuration, error) {
+func Unmarshal(r io.Reader) (*Configuration, error) {
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config: %v", err)
@@ -50,7 +50,7 @@ func ReadGCS(ctx context.Context, obj *storage.ObjectHandle) (*Configuration, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to open config: %v", err)
 	}
-	return read(r)
+	return Unmarshal(r)
 }
 
 // ReadPath reads the config from the specified local file path.
@@ -59,7 +59,7 @@ func ReadPath(path string) (*Configuration, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open: %v", err)
 	}
-	return read(f)
+	return Unmarshal(f)
 }
 
 // Read will read the Configuration proto message from a local or gs:// path.
