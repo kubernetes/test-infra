@@ -483,7 +483,8 @@ func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig 
 // and then checks if the owner is a trusted user.
 func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, owner, patch, fileName, org, repo string, nonTrustedUsers map[string][]string, repoAliases repoowners.RepoAliases) (map[string][]string, error) {
 	// only consider owners in the current patch
-	if !strings.Contains(patch, owner) {
+	newOwnerRe, _ := regexp.Compile(fmt.Sprintf(`\+\s*-\s*\b%s\b`, owner))
+	if !newOwnerRe.MatchString(patch) {
 		return nonTrustedUsers, nil
 	}
 
