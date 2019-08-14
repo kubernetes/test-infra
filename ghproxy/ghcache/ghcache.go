@@ -192,6 +192,7 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 
 	apiVersion := "v3"
 	if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
+		resp.Header.Set("Cache-Control", "no-store")
 		apiVersion = "v4"
 	}
 
