@@ -340,7 +340,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 		}
 
 		var dependents []bugzilla.Bug
-		if options.DependentBugStatuses != nil {
+		if options.DependentBugStatuses != nil || options.DependentBugTargetRelease != nil {
 			for _, id := range bug.DependsOn {
 				dependent, err := bc.GetBug(id)
 				if err != nil {
@@ -470,6 +470,21 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 			if !validStatuses.Has(bug.Status) {
 				valid = false
 				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", endpoint, bug.ID, strings.Join(*options.DependentBugStatuses, ", "), bug.Status))
+			}
+		}
+	}
+
+	if options.DependentBugTargetRelease != nil {
+		for _, bug := range dependents {
+			if len(bug.TargetRelease) == 0 {
+				valid = false
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but no target release was set", endpoint, bug.ID, *options.DependentBugTargetRelease))
+			} else if *options.DependentBugTargetRelease != bug.TargetRelease[0] {
+				// the BugZilla web UI shows one option for target release, but returns the
+				// field as a list in the REST API. We only care for the first item and it's
+				// not even clear if the list can have more than one item in the response
+				valid = false
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but it targets %q instead", endpoint, bug.ID, *options.DependentBugTargetRelease, bug.TargetRelease[0]))
 			}
 		}
 	}

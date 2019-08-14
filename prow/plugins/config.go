@@ -1061,9 +1061,12 @@ type BugzillaBranchOptions struct {
 	TargetRelease *string `json:"target_release,omitempty"`
 	// Statuses determine which statuses a bug may have to be valid
 	Statuses *[]string `json:"statuses,omitempty"`
+
 	// DependentBugStatuses determine which statuses a bug's dependent bugs may have
 	// to deem the child bug valid
 	DependentBugStatuses *[]string `json:"dependent_bug_statuses,omitempty"`
+	// DependentBugTargetRelease determines which release a bug's dependent bugs need to target to be valid
+	DependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
 
 	// StatusAfterValidation is the status which the bug will be moved to after being
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`

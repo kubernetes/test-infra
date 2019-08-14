@@ -1120,10 +1120,26 @@ func TestValidateBug(t *testing.T) {
 			why:        []string{"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
 		},
 		{
+			name:       "not matching dependent bug target release requirement means an invalid bug",
+			bug:        bugzilla.Bug{DependsOn: []int{1}},
+			dependents: []bugzilla.Bug{{ID: 1, TargetRelease: []string{"v2"}}},
+			options:    plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
+			valid:      false,
+			why:        []string{"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but it targets \"v2\" instead"},
+		},
+		{
+			name:       "not having a dependent bug target release means an invalid bug",
+			bug:        bugzilla.Bug{DependsOn: []int{1}},
+			dependents: []bugzilla.Bug{{ID: 1, TargetRelease: []string{}}},
+			options:    plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
+			valid:      false,
+			why:        []string{"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but no target release was set"},
+		},
+		{
 			name:       "matching all requirements means a valid bug",
 			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
-			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
-			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, Statuses: &modified, DependentBugStatuses: &modified},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED", TargetRelease: []string{"v2"}}},
+			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, Statuses: &modified, DependentBugStatuses: &modified, DependentBugTargetRelease: &two},
 			valid:      true,
 		},
 		{
