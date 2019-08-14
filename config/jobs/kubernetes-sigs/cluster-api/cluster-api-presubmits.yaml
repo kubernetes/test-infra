@@ -53,8 +53,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
         command:
-        - runner.sh
-        - make verify
+        - "runner.sh"
+        - "make"
+        - "verify"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-verify
