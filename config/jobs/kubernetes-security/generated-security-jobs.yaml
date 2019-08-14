@@ -2981,53 +2981,6 @@ presubmits:
     branches:
     - release-1.16
     cluster: security
-    context: pull-security-kubernetes-dependencies
-    decorate: true
-    decoration_config:
-      gcs_configuration:
-        bucket: kubernetes-security-prow
-        default_org: kubernetes
-        default_repo: kubernetes
-        path_strategy: legacy
-      gcs_credentials_secret: service-account
-      grace_period: 15s
-      timeout: 2h0m0s
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-dependencies
-    path_alias: k8s.io/kubernetes
-    rerun_command: /test pull-security-kubernetes-dependencies
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - make
-        - verify
-        command:
-        - runner.sh
-        env:
-        - name: WHAT
-          value: vendor vendor-licenses
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.16
-        name: main
-        resources: {}
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-dependencies,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.16
-    cluster: security
     context: pull-security-kubernetes-typecheck
     decorate: true
     decoration_config:
@@ -3064,63 +3017,6 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.16
-    cluster: security
-    context: pull-security-kubernetes-verify
-    decorate: true
-    decoration_config:
-      gcs_configuration:
-        bucket: kubernetes-security-prow
-        default_org: kubernetes
-        default_repo: kubernetes
-        path_strategy: legacy
-      gcs_credentials_secret: service-account
-      grace_period: 15s
-      timeout: 2h0m0s
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-verify
-    path_alias: k8s.io/kubernetes
-    rerun_command: /test pull-security-kubernetes-verify
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - ./hack/jenkins/verify-dockerized.sh
-        command:
-        - runner.sh
-        env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
-        - name: EXCLUDE_TYPECHECK
-          value: "y"
-        - name: EXCLUDE_GODEP
-          value: "y"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: release-1.16
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-1.16
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: "4"
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
