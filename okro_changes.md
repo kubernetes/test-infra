@@ -5,6 +5,9 @@ This is a list of all the changes made to this repository to support Okro use ca
 - Prow plugins (traiana/prow/plugins):
   - okro/undoer ([commit](https://github.com/traiana/test-infra/commit/42d85973f83e4f39cd592543be144cef7a4f6d09))
 
+- Support skipping the comment when reporting a prow job status to github by using a special annotation ([commit](https://github.com/traiana/test-infra/commit/2b053d7c41120885f339df988714ba65b6775de0))
+  - catalog-validator and domain-validator prow jobs create github comments by themselves, so the default prow job test result comment is unnecessary
+  
 - Avoid reading aws credentials from gcs credentials file ([commit](https://github.com/traiana/test-infra/commit/0aa71031f4eda26676630e0549b517bcca3fb959))
   - the secret used to mount the gcs credentials file contains 2 files: service-account.json, which used to contains the AWS
   credentials and is not used anymore (kiam is used instead), and a config file which contains the AWS region
