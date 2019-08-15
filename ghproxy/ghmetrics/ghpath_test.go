@@ -58,6 +58,8 @@ func Test_GetSimplifiedPath(t *testing.T) {
 		{name: "gists starred", args: args{path: "/gists/starred"}, want: "/gists/starred"},
 
 		{name: "notifications", args: args{path: "/notifications"}, want: "/notifications"},
+
+		{name: "graphql", args: args{path: "/graphql"}, want: "/graphql"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
