@@ -42,7 +42,7 @@ var (
 
 const (
 	PluginName = "bugzilla"
-	bugLink    = `[Bugzilla bug](%s/show_bug.cgi?id=%d)`
+	bugLink    = `[Bugzilla bug %d](%s/show_bug.cgi?id=%d)`
 )
 
 func init() {
@@ -354,7 +354,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 		needsValidLabel, needsInvalidLabel = valid, !valid
 		if valid {
 			log.Debug("Valid bug found.")
-			response = fmt.Sprintf(`This pull request references a valid `+bugLink+`.`, bc.Endpoint(), e.bugId)
+			response = fmt.Sprintf(`This pull request references `+bugLink+`, which is valid.`, e.bugId, bc.Endpoint(), e.bugId)
 			// if configured, move the bug to the new state
 			if options.StatusAfterValidation != nil && bug.Status != *options.StatusAfterValidation {
 				if err := bc.UpdateBug(e.bugId, bugzilla.BugUpdate{Status: *options.StatusAfterValidation}); err != nil {
@@ -379,9 +379,9 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			for _, reason := range why {
 				formattedReasons += fmt.Sprintf(" - %s\n", reason)
 			}
-			response = fmt.Sprintf(`This pull request references an invalid `+bugLink+`:
+			response = fmt.Sprintf(`This pull request references `+bugLink+`, which is invalid:
 %s
-Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.`, bc.Endpoint(), e.bugId, formattedReasons)
+Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.`, e.bugId, bc.Endpoint(), e.bugId, formattedReasons)
 		}
 	}
 
@@ -469,7 +469,7 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		for _, bug := range dependents {
 			if !validStatuses.Has(bug.Status) {
 				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", endpoint, bug.ID, strings.Join(*options.DependentBugStatuses, ", "), bug.Status))
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugStatuses, ", "), bug.Status))
 			}
 		}
 	}
@@ -478,13 +478,13 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		for _, bug := range dependents {
 			if len(bug.TargetRelease) == 0 {
 				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but no target release was set", endpoint, bug.ID, *options.DependentBugTargetRelease))
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but no target release was set", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease))
 			} else if *options.DependentBugTargetRelease != bug.TargetRelease[0] {
 				// the BugZilla web UI shows one option for target release, but returns the
 				// field as a list in the REST API. We only care for the first item and it's
 				// not even clear if the list can have more than one item in the response
 				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but it targets %q instead", endpoint, bug.ID, *options.DependentBugTargetRelease, bug.TargetRelease[0]))
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to target the %q release, but it targets %q instead", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease, bug.TargetRelease[0]))
 			}
 		}
 	}
@@ -519,7 +519,7 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			validStatuses.Insert(*options.StatusAfterValidation)
 		}
 		if !validStatuses.Has(bug.Status) {
-			return comment(fmt.Sprintf("The "+bugLink+" is in an unrecognized state (%s) and will not be moved to the %s state.", bc.Endpoint(), e.bugId, bug.Status, *options.StatusAfterMerge))
+			return comment(fmt.Sprintf(bugLink+" is in an unrecognized state (%s) and will not be moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, bug.Status, *options.StatusAfterMerge))
 		}
 	}
 
@@ -553,7 +553,7 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
 			return comment(formatError(fmt.Sprintf("updating to the %s state", *options.StatusAfterMerge), bc.Endpoint(), e.bugId, err))
 		}
-		return comment(fmt.Sprintf("All pull requests linked via external trackers have merged. The "+bugLink+" has been moved to the %s state.", bc.Endpoint(), e.bugId, *options.StatusAfterMerge))
+		return comment(fmt.Sprintf("All pull requests linked via external trackers have merged. "+bugLink+" has been moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, *options.StatusAfterMerge))
 	}
 	return nil
 }
