@@ -131,6 +131,8 @@ func GetSimplifiedPath(path string) string {
 		l("hub"),
 		l("rate_limit"),
 		l("teams"),
+		// end point for gh api v4
+		l("graphql"),
 		l("licenses"))
 
 	splitPath := strings.Split(path, "/")
