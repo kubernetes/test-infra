@@ -17,12 +17,14 @@ limitations under the License.
 package plank
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
@@ -47,6 +49,7 @@ type kubeClient interface {
 	GetProwJob(string) (prowapi.ProwJob, error)
 	ListProwJobs(string) ([]prowapi.ProwJob, error)
 	ReplaceProwJob(string, prowapi.ProwJob) (prowapi.ProwJob, error)
+	PatchProwJob(string, []byte) (prowapi.ProwJob, error)
 
 	CreatePod(v1.Pod) (coreapi.Pod, error)
 	ListPods(string) ([]coreapi.Pod, error)
@@ -349,6 +352,7 @@ func syncProwJobs(
 func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
+	prevPJ := pj
 
 	pod, podExists := pm[pj.ObjectMeta.Name]
 	if !podExists {
@@ -472,13 +476,13 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
-	return err
+	return c.patchProwjob(prevPJ, pj)
 }
 
 func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
+	prevPJ := pj
 
 	var id, pn string
 	pod, podExists := pm[pj.ObjectMeta.Name]
@@ -523,8 +527,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
-	return err
+	return c.patchProwjob(prevPJ, pj)
 }
 
 // TODO: No need to return the pod name since we already have the
@@ -563,4 +566,26 @@ func getPodBuildID(pod *coreapi.Pod) string {
 	}
 	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
+}
+
+func (c *Controller) patchProwjob(srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob) error {
+	srcPJData, err := json.Marshal(srcPJ)
+	if err != nil {
+		return fmt.Errorf("cannot create JSON patch: error marshal source prowjob: %v", err)
+	}
+
+	destPJData, err := json.Marshal(destPJ)
+	if err != nil {
+		return fmt.Errorf("cannot create JSON patch: error marshal dest prowjob: %v", err)
+	}
+
+	patch, err := jsonpatch.CreateMergePatch(srcPJData, destPJData)
+	if err != nil {
+		return fmt.Errorf("cannot create JSON patch: %v", err)
+	}
+
+	logrus.Infof("Created merge patch: %v", string(patch))
+
+	_, err = c.kc.PatchProwJob(srcPJ.Name, patch)
+	return err
 }
