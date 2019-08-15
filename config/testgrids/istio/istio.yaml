@@ -4,6 +4,8 @@ dashboard_groups:
   - istio-postsubmits-master
   - istio-presubmits-release-1.2
   - istio-postsubmits-release-1.2
+  - istio-presubmits-release-1.3
+  - istio-postsubmits-release-1.3
   - istio-presubmits-release-1.1
   - istio-postsubmits-release-1.1
   - istio-api-presubmits
@@ -12,6 +14,11 @@ dashboard_groups:
   - istio-proxy-postsubmits
   - istio-release
   - istio-infrastructure
+  - istio-tools
+  - istio-cni-presubmits-master
+  - istio-cni-postsubmits-master
+  - istio-cni-presubmits-release-1.3
+  - istio-cni-postsubmits-release-1.3
   - istio-gke
   name: istio
 dashboards:
@@ -43,6 +50,11 @@ dashboards:
     test_group_name: istio-codecov-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: release-test-master
+    name: release-test-master
+    test_group_name: release-test-master
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-framework-local-presubmit-tests-master
     name: integ-framework-local-presubmit-tests-master
     test_group_name: integ-framework-local-presubmit-tests-master
@@ -51,11 +63,6 @@ dashboards:
     description: integ-galley-local-presubmit-tests-master
     name: integ-galley-local-presubmit-tests-master
     test_group_name: integ-galley-local-presubmit-tests-master
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-istioctl-local-presubmit-tests-master
-    name: integ-istioctl-local-presubmit-tests-master
-    test_group_name: integ-istioctl-local-presubmit-tests-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-mixer-local-presubmit-tests-master
@@ -78,14 +85,14 @@ dashboards:
     test_group_name: integ-framework-k8s-presubmit-tests-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-galley-k8s-presubmit-tests-master
-    name: integ-galley-k8s-presubmit-tests-master
-    test_group_name: integ-galley-k8s-presubmit-tests-master
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-istioctl-k8s-presubmit-tests-master
     name: integ-istioctl-k8s-presubmit-tests-master
     test_group_name: integ-istioctl-k8s-presubmit-tests-master
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-galley-k8s-presubmit-tests-master
+    name: integ-galley-k8s-presubmit-tests-master
+    test_group_name: integ-galley-k8s-presubmit-tests-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: integ-mixer-k8s-presubmit-tests-master
@@ -113,19 +120,14 @@ dashboards:
     test_group_name: integ-new-install-k8s-presubmit-tests-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: test-e2e-mixer-no_auth-master
-    name: test-e2e-mixer-no_auth-master
-    test_group_name: test-e2e-mixer-no_auth-master
+    description: e2e-mixer-no_auth-master
+    name: e2e-mixer-no_auth-master
+    test_group_name: e2e-mixer-no_auth-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: istio-pilot-e2e-envoyv2-v1alpha3-master
     name: istio-pilot-e2e-envoyv2-v1alpha3-master
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-master
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-mixer-no_auth-master
-    name: e2e-mixer-no_auth-master
-    test_group_name: e2e-mixer-no_auth-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: e2e-dashboard-master
@@ -158,24 +160,14 @@ dashboards:
     test_group_name: e2e-simpleTestsMinProfile-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio-pilot-multicluster-e2e-master
-    name: istio-pilot-multicluster-e2e-master
-    test_group_name: istio-pilot-multicluster-e2e-master
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: e2e-simpleTests-cni-master
     name: e2e-simpleTests-cni-master
     test_group_name: e2e-simpleTests-cni-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio_auth_sds_e2e-master
-    name: istio_auth_sds_e2e-master
-    test_group_name: istio_auth_sds_e2e-master
-  - code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: release-test-master
-    name: release-test-master
-    test_group_name: release-test-master
+    description: istio-pilot-multicluster-e2e-master
+    name: istio-pilot-multicluster-e2e-master
+    test_group_name: istio-pilot-multicluster-e2e-master
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: istio_e2e_cloudfoundry-master
@@ -187,9 +179,121 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-conformance-local-postsubmit-tests-master
-    name: integ-conformance-local-postsubmit-tests-master
-    test_group_name: integ-conformance-local-postsubmit-tests-master
+    description: istio-unit-tests-master
+    name: istio-unit-tests-master
+    test_group_name: istio-unit-tests-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-racetest-master
+    name: istio-racetest-master
+    test_group_name: istio-racetest-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-codecov-master
+    name: istio-codecov-master
+    test_group_name: istio-codecov-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: release-test-master
+    name: release-test-master
+    test_group_name: release-test-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-mixer-no_auth-master
+    name: e2e-mixer-no_auth-master
+    test_group_name: e2e-mixer-no_auth-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-pilot-e2e-envoyv2-v1alpha3-master
+    name: istio-pilot-e2e-envoyv2-v1alpha3-master
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-dashboard-master
+    name: e2e-dashboard-master
+    test_group_name: e2e-dashboard-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-envoyv2-v1alpha3-master
+    name: e2e-bookInfoTests-envoyv2-v1alpha3-master
+    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-trustdomain-master
+    name: e2e-bookInfoTests-trustdomain-master
+    test_group_name: e2e-bookInfoTests-trustdomain-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
+    name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
+    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-master
+    name: e2e-simpleTests-master
+    test_group_name: e2e-simpleTests-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-distroless-master
+    name: e2e-simpleTests-distroless-master
+    test_group_name: e2e-simpleTests-distroless-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTestsMinProfile-master
+    name: e2e-simpleTestsMinProfile-master
+    test_group_name: e2e-simpleTestsMinProfile-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-cni-master
+    name: e2e-simpleTests-cni-master
+    test_group_name: e2e-simpleTests-cni-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-non-mcp-master
+    name: e2e-simpleTests-non-mcp-master
+    test_group_name: e2e-simpleTests-non-mcp-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-pilot-multicluster-e2e-master
+    name: istio-pilot-multicluster-e2e-master
+    test_group_name: istio-pilot-multicluster-e2e-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio_e2e_cloudfoundry-master
+    name: istio_e2e_cloudfoundry-master
+    test_group_name: istio_e2e_cloudfoundry-master
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -204,13 +308,6 @@ dashboards:
     description: integ-galley-local-postsubmit-tests-master
     name: integ-galley-local-postsubmit-tests-master
     test_group_name: integ-galley-local-postsubmit-tests-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-istioctl-local-postsubmit-tests-master
-    name: integ-istioctl-local-postsubmit-tests-master
-    test_group_name: integ-istioctl-local-postsubmit-tests-master
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -236,23 +333,16 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio-kind-simpleTest-master
-    name: istio-kind-simpleTest-master
-    test_group_name: istio-kind-simpleTest-master
+    description: integ-conformance-local-postsubmit-tests-master
+    name: integ-conformance-local-postsubmit-tests-master
+    test_group_name: integ-conformance-local-postsubmit-tests-master
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio-unit-tests-master
-    name: istio-unit-tests-master
-    test_group_name: istio-unit-tests-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-conformance-k8s-postsubmit-tests-master
-    name: integ-conformance-k8s-postsubmit-tests-master
-    test_group_name: integ-conformance-k8s-postsubmit-tests-master
+    description: istio-integ-race-native-tests-master
+    name: istio-integ-race-native-tests-master
+    test_group_name: istio-integ-race-native-tests-master
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -264,16 +354,16 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-galley-k8s-postsubmit-tests-master
-    name: integ-galley-k8s-postsubmit-tests-master
-    test_group_name: integ-galley-k8s-postsubmit-tests-master
+    description: integ-istioctl-k8s-postsubmit-tests-master
+    name: integ-istioctl-k8s-postsubmit-tests-master
+    test_group_name: integ-istioctl-k8s-postsubmit-tests-master
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-istioctl-k8s-postsubmit-tests-master
-    name: integ-istioctl-k8s-postsubmit-tests-master
-    test_group_name: integ-istioctl-k8s-postsubmit-tests-master
+    description: integ-galley-k8s-postsubmit-tests-master
+    name: integ-galley-k8s-postsubmit-tests-master
+    test_group_name: integ-galley-k8s-postsubmit-tests-master
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -306,93 +396,9 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-simpleTestsMinProfile-master
-    name: e2e-simpleTestsMinProfile-master
-    test_group_name: e2e-simpleTestsMinProfile-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio-integ-race-native-tests-master
-    name: istio-integ-race-native-tests-master
-    test_group_name: istio-integ-race-native-tests-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-simpleTests-master
-    name: e2e-simpleTests-master
-    test_group_name: e2e-simpleTests-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-simpleTests-non-mcp-master
-    name: e2e-simpleTests-non-mcp-master
-    test_group_name: e2e-simpleTests-non-mcp-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-envoyv2-v1alpha3-master
-    name: e2e-bookInfoTests-envoyv2-v1alpha3-master
-    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio-pilot-e2e-envoyv2-v1alpha3-master
-    name: istio-pilot-e2e-envoyv2-v1alpha3-master
-    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
-    name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
-    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
-    name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
-    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-mixer-no_auth-master
-    name: e2e-mixer-no_auth-master
-    test_group_name: e2e-mixer-no_auth-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: e2e-dashboard-master
-    name: e2e-dashboard-master
-    test_group_name: e2e-dashboard-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio_auth_sds_e2e-master
-    name: istio_auth_sds_e2e-master
-    test_group_name: istio_auth_sds_e2e-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio_e2e_cloudfoundry-master
-    name: istio_e2e_cloudfoundry-master
-    test_group_name: istio_e2e_cloudfoundry-master
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: integ-k8s-113-postsubmit-master
-    name: integ-k8s-113-postsubmit-master
-    test_group_name: integ-k8s-113-postsubmit-master
+    description: integ-conformance-k8s-postsubmit-tests-master
+    name: integ-conformance-k8s-postsubmit-tests-master
+    test_group_name: integ-conformance-k8s-postsubmit-tests-master
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -404,9 +410,16 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
-    description: istio-codecov-master
-    name: istio-codecov-master
-    test_group_name: istio-codecov-master
+    description: integ-k8s-113-postsubmit-master
+    name: integ-k8s-113-postsubmit-master
+    test_group_name: integ-k8s-113-postsubmit-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-114-postsubmit-master
+    name: integ-k8s-114-postsubmit-master
+    test_group_name: integ-k8s-114-postsubmit-master
   name: istio-postsubmits-master
 - dashboard_tab:
   - code_search_url_template:
@@ -624,91 +637,406 @@ dashboards:
     description: istio_auth_sds_e2e-release-1.2
     name: istio_auth_sds_e2e-release-1.2
     test_group_name: istio_auth_sds_e2e-release-1.2
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-daily
-    name: release-daily
-    test_group_name: release-daily
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: perf-for-daily-release
-    name: perf-for-daily-release
-    test_group_name: perf-for-daily-release
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-monthly
-    name: release-monthly
-    test_group_name: release-monthly
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-upgrade-tests-1.1.7
-    name: release-build-test-upgrade-tests-1.1.7
-    test_group_name: release-build-test-upgrade-tests-1.1.7
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-istio-unit-tests
-    name: release-build-test-istio-unit-tests
-    test_group_name: release-build-test-istio-unit-tests
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-istioctl-tests
-    name: release-build-test-istioctl-tests
-    test_group_name: release-build-test-istioctl-tests
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-e2e-pilot-no_auth
-    name: release-build-test-e2e-pilot-no_auth
-    test_group_name: release-build-test-e2e-pilot-no_auth
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-e2e-bookInfoTests
-    name: release-build-test-e2e-bookInfoTests
-    test_group_name: release-build-test-e2e-bookInfoTests
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-e2e-mixer-no_auth
-    name: release-build-test-e2e-mixer-no_auth
-    test_group_name: release-build-test-e2e-mixer-no_auth
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-e2e-dashboard
-    name: release-build-test-e2e-dashboard
-    test_group_name: release-build-test-e2e-dashboard
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build-test-e2e-stackdriver
-    name: release-build-test-e2e-stackdriver
-    test_group_name: release-build-test-e2e-stackdriver
-  - alert_options:
-      alert_mail_to_addresses: istio-oncall@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
-    description: release-build
-    name: release-build
-    test_group_name: release-build
   name: istio-postsubmits-release-1.2
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-unit-tests-release-1.3
+    name: istio-unit-tests-release-1.3
+    test_group_name: istio-unit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-lint-release-1.3
+    name: istio-lint-release-1.3
+    test_group_name: istio-lint-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-racetest-release-1.3
+    name: istio-racetest-release-1.3
+    test_group_name: istio-racetest-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-shellcheck-release-1.3
+    name: istio-shellcheck-release-1.3
+    test_group_name: istio-shellcheck-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-codecov-release-1.3
+    name: istio-codecov-release-1.3
+    test_group_name: istio-codecov-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: release-test-release-1.3
+    name: release-test-release-1.3
+    test_group_name: release-test-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-framework-local-presubmit-tests-release-1.3
+    name: integ-framework-local-presubmit-tests-release-1.3
+    test_group_name: integ-framework-local-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-galley-local-presubmit-tests-release-1.3
+    name: integ-galley-local-presubmit-tests-release-1.3
+    test_group_name: integ-galley-local-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-mixer-local-presubmit-tests-release-1.3
+    name: integ-mixer-local-presubmit-tests-release-1.3
+    test_group_name: integ-mixer-local-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-local-presubmit-tests-release-1.3
+    name: integ-pilot-local-presubmit-tests-release-1.3
+    test_group_name: integ-pilot-local-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-security-local-presubmit-tests-release-1.3
+    name: integ-security-local-presubmit-tests-release-1.3
+    test_group_name: integ-security-local-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-framework-k8s-presubmit-tests-release-1.3
+    name: integ-framework-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-framework-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-istioctl-k8s-presubmit-tests-release-1.3
+    name: integ-istioctl-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-istioctl-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-galley-k8s-presubmit-tests-release-1.3
+    name: integ-galley-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-galley-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-mixer-k8s-presubmit-tests-release-1.3
+    name: integ-mixer-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-mixer-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-k8s-presubmit-tests-release-1.3
+    name: integ-pilot-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-pilot-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-security-k8s-presubmit-tests-release-1.3
+    name: integ-security-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-security-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-telemetry-k8s-presubmit-tests-release-1.3
+    name: integ-telemetry-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-telemetry-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-new-install-k8s-presubmit-tests-release-1.3
+    name: integ-new-install-k8s-presubmit-tests-release-1.3
+    test_group_name: integ-new-install-k8s-presubmit-tests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-mixer-no_auth-release-1.3
+    name: e2e-mixer-no_auth-release-1.3
+    test_group_name: e2e-mixer-no_auth-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+    name: istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-dashboard-release-1.3
+    name: e2e-dashboard-release-1.3
+    test_group_name: e2e-dashboard-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+    name: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-trustdomain-release-1.3
+    name: e2e-bookInfoTests-trustdomain-release-1.3
+    test_group_name: e2e-bookInfoTests-trustdomain-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-release-1.3
+    name: e2e-simpleTests-release-1.3
+    test_group_name: e2e-simpleTests-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-distroless-release-1.3
+    name: e2e-simpleTests-distroless-release-1.3
+    test_group_name: e2e-simpleTests-distroless-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTestsMinProfile-release-1.3
+    name: e2e-simpleTestsMinProfile-release-1.3
+    test_group_name: e2e-simpleTestsMinProfile-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-cni-release-1.3
+    name: e2e-simpleTests-cni-release-1.3
+    test_group_name: e2e-simpleTests-cni-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-pilot-multicluster-e2e-release-1.3
+    name: istio-pilot-multicluster-e2e-release-1.3
+    test_group_name: istio-pilot-multicluster-e2e-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio_e2e_cloudfoundry-release-1.3
+    name: istio_e2e_cloudfoundry-release-1.3
+    test_group_name: istio_e2e_cloudfoundry-release-1.3
+  name: istio-presubmits-release-1.3
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-unit-tests-release-1.3
+    name: istio-unit-tests-release-1.3
+    test_group_name: istio-unit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-racetest-release-1.3
+    name: istio-racetest-release-1.3
+    test_group_name: istio-racetest-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-codecov-release-1.3
+    name: istio-codecov-release-1.3
+    test_group_name: istio-codecov-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: release-test-release-1.3
+    name: release-test-release-1.3
+    test_group_name: release-test-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-mixer-no_auth-release-1.3
+    name: e2e-mixer-no_auth-release-1.3
+    test_group_name: e2e-mixer-no_auth-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+    name: istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-dashboard-release-1.3
+    name: e2e-dashboard-release-1.3
+    test_group_name: e2e-dashboard-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+    name: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-trustdomain-release-1.3
+    name: e2e-bookInfoTests-trustdomain-release-1.3
+    test_group_name: e2e-bookInfoTests-trustdomain-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.3
+    name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.3
+    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-release-1.3
+    name: e2e-simpleTests-release-1.3
+    test_group_name: e2e-simpleTests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-distroless-release-1.3
+    name: e2e-simpleTests-distroless-release-1.3
+    test_group_name: e2e-simpleTests-distroless-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTestsMinProfile-release-1.3
+    name: e2e-simpleTestsMinProfile-release-1.3
+    test_group_name: e2e-simpleTestsMinProfile-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-cni-release-1.3
+    name: e2e-simpleTests-cni-release-1.3
+    test_group_name: e2e-simpleTests-cni-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: e2e-simpleTests-non-mcp-release-1.3
+    name: e2e-simpleTests-non-mcp-release-1.3
+    test_group_name: e2e-simpleTests-non-mcp-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-pilot-multicluster-e2e-release-1.3
+    name: istio-pilot-multicluster-e2e-release-1.3
+    test_group_name: istio-pilot-multicluster-e2e-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio_e2e_cloudfoundry-release-1.3
+    name: istio_e2e_cloudfoundry-release-1.3
+    test_group_name: istio_e2e_cloudfoundry-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-framework-local-postsubmit-tests-release-1.3
+    name: integ-framework-local-postsubmit-tests-release-1.3
+    test_group_name: integ-framework-local-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-galley-local-postsubmit-tests-release-1.3
+    name: integ-galley-local-postsubmit-tests-release-1.3
+    test_group_name: integ-galley-local-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-mixer-local-postsubmit-tests-release-1.3
+    name: integ-mixer-local-postsubmit-tests-release-1.3
+    test_group_name: integ-mixer-local-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-local-postsubmit-tests-release-1.3
+    name: integ-pilot-local-postsubmit-tests-release-1.3
+    test_group_name: integ-pilot-local-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-security-local-postsubmit-tests-release-1.3
+    name: integ-security-local-postsubmit-tests-release-1.3
+    test_group_name: integ-security-local-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-conformance-local-postsubmit-tests-release-1.3
+    name: integ-conformance-local-postsubmit-tests-release-1.3
+    test_group_name: integ-conformance-local-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: istio-integ-race-native-tests-release-1.3
+    name: istio-integ-race-native-tests-release-1.3
+    test_group_name: istio-integ-race-native-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-framework-k8s-postsubmit-tests-release-1.3
+    name: integ-framework-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-framework-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-istioctl-k8s-postsubmit-tests-release-1.3
+    name: integ-istioctl-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-istioctl-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-galley-k8s-postsubmit-tests-release-1.3
+    name: integ-galley-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-galley-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-mixer-k8s-postsubmit-tests-release-1.3
+    name: integ-mixer-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-mixer-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-pilot-k8s-postsubmit-tests-release-1.3
+    name: integ-pilot-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-pilot-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-security-k8s-postsubmit-tests-release-1.3
+    name: integ-security-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-security-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-telemetry-k8s-postsubmit-tests-release-1.3
+    name: integ-telemetry-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-telemetry-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-conformance-k8s-postsubmit-tests-release-1.3
+    name: integ-conformance-k8s-postsubmit-tests-release-1.3
+    test_group_name: integ-conformance-k8s-postsubmit-tests-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-112-postsubmit-release-1.3
+    name: integ-k8s-112-postsubmit-release-1.3
+    test_group_name: integ-k8s-112-postsubmit-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-113-postsubmit-release-1.3
+    name: integ-k8s-113-postsubmit-release-1.3
+    test_group_name: integ-k8s-113-postsubmit-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: integ-k8s-114-postsubmit-release-1.3
+    name: integ-k8s-114-postsubmit-release-1.3
+    test_group_name: integ-k8s-114-postsubmit-release-1.3
+  name: istio-postsubmits-release-1.3
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
@@ -839,8 +1167,20 @@ dashboards:
     description: api-presubmit
     name: api-presubmit
     test_group_name: api-presubmit
+  - code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: api-presubmit
+    name: api-presubmit
+    test_group_name: api-presubmit
   name: istio-api-presubmits
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: api-postsubmit
+    name: api-postsubmit
+    test_group_name: api-postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -865,8 +1205,30 @@ dashboards:
     description: proxy-presubmit-tsan
     name: proxy-presubmit-tsan
     test_group_name: proxy-presubmit-tsan
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: proxy-presubmit
+    name: proxy-presubmit
+    test_group_name: proxy-presubmit
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: proxy-presubmit-asan
+    name: proxy-presubmit-asan
+    test_group_name: proxy-presubmit-asan
+  - code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: proxy-presubmit-tsan
+    name: proxy-presubmit-tsan
+    test_group_name: proxy-presubmit-tsan
   name: istio-proxy-presubmits
 - dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
+    description: proxy-postsubmit
+    name: proxy-postsubmit
+    test_group_name: proxy-postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -915,9 +1277,191 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-trigger-daily-build-release-1.3
+    name: release-trigger-daily-build-release-1.3
+    test_group_name: release-trigger-daily-build-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-daily
+    name: release-daily
+    test_group_name: release-daily
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: perf-for-daily-release
+    name: perf-for-daily-release
+    test_group_name: perf-for-daily-release
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-monthly
+    name: release-monthly
+    test_group_name: release-monthly
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-daily
+    name: release-daily
+    test_group_name: release-daily
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: perf-for-daily-release
+    name: perf-for-daily-release
+    test_group_name: perf-for-daily-release
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-monthly
+    name: release-monthly
+    test_group_name: release-monthly
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
     description: release-build-test-e2e-simpleTests
     name: release-build-test-e2e-simpleTests
     test_group_name: release-build-test-e2e-simpleTests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-upgrade-tests-1.1.7
+    name: release-build-test-upgrade-tests-1.1.7
+    test_group_name: release-build-test-upgrade-tests-1.1.7
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-istio-unit-tests
+    name: release-build-test-istio-unit-tests
+    test_group_name: release-build-test-istio-unit-tests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-istioctl-tests
+    name: release-build-test-istioctl-tests
+    test_group_name: release-build-test-istioctl-tests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-pilot-no_auth
+    name: release-build-test-e2e-pilot-no_auth
+    test_group_name: release-build-test-e2e-pilot-no_auth
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-bookInfoTests
+    name: release-build-test-e2e-bookInfoTests
+    test_group_name: release-build-test-e2e-bookInfoTests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-mixer-no_auth
+    name: release-build-test-e2e-mixer-no_auth
+    test_group_name: release-build-test-e2e-mixer-no_auth
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-dashboard
+    name: release-build-test-e2e-dashboard
+    test_group_name: release-build-test-e2e-dashboard
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-stackdriver
+    name: release-build-test-e2e-stackdriver
+    test_group_name: release-build-test-e2e-stackdriver
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build
+    name: release-build
+    test_group_name: release-build
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-simpleTests
+    name: release-build-test-e2e-simpleTests
+    test_group_name: release-build-test-e2e-simpleTests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-upgrade-tests-1.1.7
+    name: release-build-test-upgrade-tests-1.1.7
+    test_group_name: release-build-test-upgrade-tests-1.1.7
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-istio-unit-tests
+    name: release-build-test-istio-unit-tests
+    test_group_name: release-build-test-istio-unit-tests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-istioctl-tests
+    name: release-build-test-istioctl-tests
+    test_group_name: release-build-test-istioctl-tests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-pilot-no_auth
+    name: release-build-test-e2e-pilot-no_auth
+    test_group_name: release-build-test-e2e-pilot-no_auth
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-bookInfoTests
+    name: release-build-test-e2e-bookInfoTests
+    test_group_name: release-build-test-e2e-bookInfoTests
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-mixer-no_auth
+    name: release-build-test-e2e-mixer-no_auth
+    test_group_name: release-build-test-e2e-mixer-no_auth
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-dashboard
+    name: release-build-test-e2e-dashboard
+    test_group_name: release-build-test-e2e-dashboard
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build-test-e2e-stackdriver
+    name: release-build-test-e2e-stackdriver
+    test_group_name: release-build-test-e2e-stackdriver
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio-releases/pipeline/compare/<start-custom-0>...<end-custom-0>
+    description: release-build
+    name: release-build
+    test_group_name: release-build
   name: istio-release
 - dashboard_tab:
   - alert_options:
@@ -934,6 +1478,117 @@ dashboards:
     name: monitoring-verify-gcsweb
     test_group_name: monitoring-verify-gcsweb
   name: istio-infrastructure
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
+    description: tools-push-build-tools-image
+    name: tools-push-build-tools-image
+    test_group_name: tools-push-build-tools-image
+  name: istio-tools
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-build-master
+    name: cni-build-master
+    test_group_name: cni-build-master
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-shellcheck-master
+    name: cni-shellcheck-master
+    test_group_name: cni-shellcheck-master
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-lint-master
+    name: cni-lint-master
+    test_group_name: cni-lint-master
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-install-master
+    name: cni-install-master
+    test_group_name: cni-install-master
+  name: istio-cni-presubmits-master
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-build-master
+    name: cni-build-master
+    test_group_name: cni-build-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-shellcheck-master
+    name: cni-shellcheck-master
+    test_group_name: cni-shellcheck-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-lint-master
+    name: cni-lint-master
+    test_group_name: cni-lint-master
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-install-master
+    name: cni-install-master
+    test_group_name: cni-install-master
+  name: istio-cni-postsubmits-master
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-build-release-1.3
+    name: cni-build-release-1.3
+    test_group_name: cni-build-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-shellcheck-release-1.3
+    name: cni-shellcheck-release-1.3
+    test_group_name: cni-shellcheck-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-lint-release-1.3
+    name: cni-lint-release-1.3
+    test_group_name: cni-lint-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-install-release-1.3
+    name: cni-install-release-1.3
+    test_group_name: cni-install-release-1.3
+  name: istio-cni-presubmits-release-1.3
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-build-release-1.3
+    name: cni-build-release-1.3
+    test_group_name: cni-build-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-shellcheck-release-1.3
+    name: cni-shellcheck-release-1.3
+    test_group_name: cni-shellcheck-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-lint-release-1.3
+    name: cni-lint-release-1.3
+    test_group_name: cni-lint-release-1.3
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/cni/compare/<start-custom-0>...<end-custom-0>
+    description: cni-install-release-1.3
+    name: cni-install-release-1.3
+    test_group_name: cni-install-release-1.3
+  name: istio-cni-postsubmits-release-1.3
 - name: istio-gke
 test_groups:
 - gcs_prefix: istio-prow/logs/test-infra-cleanup-GKE
@@ -956,20 +1611,132 @@ test_groups:
 - gcs_prefix: istio-prow/logs/release-trigger-daily-build-release-1.2
   name: release-trigger-daily-build-release-1.2
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-trigger-daily-build-release-1.3
+  name: release-trigger-daily-build-release-1.3
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/monitoring-verify-gcsweb
   name: monitoring-verify-gcsweb
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-conformance-local-postsubmit-tests-master
-  name: integ-conformance-local-postsubmit-tests-master
+- gcs_prefix: istio-prow/logs/proxy-postsubmit
+  name: proxy-postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/tools-push-build-tools-image
+  name: tools-push-build-tools-image
+- gcs_prefix: istio-prow/logs/api-postsubmit
+  name: api-postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-build-master
+  name: cni-build-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-shellcheck-master
+  name: cni-shellcheck-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-lint-master
+  name: cni-lint-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-install-master
+  name: cni-install-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-build-release-1.3
+  name: cni-build-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-shellcheck-release-1.3
+  name: cni-shellcheck-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-lint-release-1.3
+  name: cni-lint-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-install-release-1.3
+  name: cni-install-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-daily
+  name: release-daily
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/perf-for-daily-release
+  name: perf-for-daily-release
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-monthly
+  name: release-monthly
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-unit-tests-master
+  name: istio-unit-tests-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-racetest-master
+  name: istio-racetest-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-codecov-master
+  name: istio-codecov-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/release-test-master
+  name: release-test-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-mixer-no_auth-master
+  name: e2e-mixer-no_auth-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3-master
+  name: istio-pilot-e2e-envoyv2-v1alpha3-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-dashboard-master
+  name: e2e-dashboard-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-master
+  name: e2e-bookInfoTests-envoyv2-v1alpha3-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-trustdomain-master
+  name: e2e-bookInfoTests-trustdomain-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
+  name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-master
+  name: e2e-simpleTests-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-distroless-master
+  name: e2e-simpleTests-distroless-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile-master
+  name: e2e-simpleTestsMinProfile-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-cni-master
+  name: e2e-simpleTests-cni-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-non-mcp-master
+  name: e2e-simpleTests-non-mcp-master
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-pilot-multicluster-e2e-master
+  name: istio-pilot-multicluster-e2e-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio_e2e_cloudfoundry-master
+  name: istio_e2e_cloudfoundry-master
+  num_columns_recent: 20
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-framework-local-postsubmit-tests-master
   name: integ-framework-local-postsubmit-tests-master
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-galley-local-postsubmit-tests-master
   name: integ-galley-local-postsubmit-tests-master
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-istioctl-local-postsubmit-tests-master
-  name: integ-istioctl-local-postsubmit-tests-master
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-mixer-local-postsubmit-tests-master
   name: integ-mixer-local-postsubmit-tests-master
@@ -980,24 +1747,20 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-security-local-postsubmit-tests-master
   name: integ-security-local-postsubmit-tests-master
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-kind-simpleTest-master
-  name: istio-kind-simpleTest-master
+- gcs_prefix: istio-prow/logs/integ-conformance-local-postsubmit-tests-master
+  name: integ-conformance-local-postsubmit-tests-master
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-unit-tests-master
-  name: istio-unit-tests-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-conformance-k8s-postsubmit-tests-master
-  name: integ-conformance-k8s-postsubmit-tests-master
+- gcs_prefix: istio-prow/logs/istio-integ-race-native-tests-master
+  name: istio-integ-race-native-tests-master
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-framework-k8s-postsubmit-tests-master
   name: integ-framework-k8s-postsubmit-tests-master
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-galley-k8s-postsubmit-tests-master
-  name: integ-galley-k8s-postsubmit-tests-master
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-istioctl-k8s-postsubmit-tests-master
   name: integ-istioctl-k8s-postsubmit-tests-master
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-galley-k8s-postsubmit-tests-master
+  name: integ-galley-k8s-postsubmit-tests-master
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-mixer-k8s-postsubmit-tests-master
   name: integ-mixer-k8s-postsubmit-tests-master
@@ -1011,59 +1774,17 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-telemetry-k8s-postsubmit-tests-master
   name: integ-telemetry-k8s-postsubmit-tests-master
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile-master
-  name: e2e-simpleTestsMinProfile-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-integ-race-native-tests-master
-  name: istio-integ-race-native-tests-master
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-simpleTests-master
-  name: e2e-simpleTests-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-simpleTests-non-mcp-master
-  name: e2e-simpleTests-non-mcp-master
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-master
-  name: e2e-bookInfoTests-envoyv2-v1alpha3-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3-master
-  name: istio-pilot-e2e-envoyv2-v1alpha3-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
-  name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-latest-master
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
-  name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-master
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-mixer-no_auth-master
-  name: e2e-mixer-no_auth-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/e2e-dashboard-master
-  name: e2e-dashboard-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio_auth_sds_e2e-master
-  name: istio_auth_sds_e2e-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio_e2e_cloudfoundry-master
-  name: istio_e2e_cloudfoundry-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/integ-k8s-113-postsubmit-master
-  name: integ-k8s-113-postsubmit-master
+- gcs_prefix: istio-prow/logs/integ-conformance-k8s-postsubmit-tests-master
+  name: integ-conformance-k8s-postsubmit-tests-master
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-k8s-112-postsubmit-master
   name: integ-k8s-112-postsubmit-master
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/istio-codecov-master
-  name: istio-codecov-master
-  num_columns_recent: 20
+- gcs_prefix: istio-prow/logs/integ-k8s-113-postsubmit-master
+  name: integ-k8s-113-postsubmit-master
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-114-postsubmit-master
+  name: integ-k8s-114-postsubmit-master
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio-unit-tests
   name: istio-unit-tests
@@ -1144,20 +1865,125 @@ test_groups:
   name: istio_auth_sds_e2e-release-1.2
   num_columns_recent: 20
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/api-postsubmit
-  name: api-postsubmit
+- gcs_prefix: istio-prow/logs/istio-unit-tests-release-1.3
+  name: istio-unit-tests-release-1.3
+  num_columns_recent: 20
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-daily
-  name: release-daily
+- gcs_prefix: istio-prow/logs/istio-racetest-release-1.3
+  name: istio-racetest-release-1.3
+  num_columns_recent: 20
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/perf-for-daily-release
-  name: perf-for-daily-release
+- gcs_prefix: istio-prow/logs/istio-codecov-release-1.3
+  name: istio-codecov-release-1.3
+  num_columns_recent: 20
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/release-monthly
-  name: release-monthly
+- gcs_prefix: istio-prow/logs/release-test-release-1.3
+  name: release-test-release-1.3
+  num_columns_recent: 20
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/proxy-postsubmit
-  name: proxy-postsubmit
+- gcs_prefix: istio-prow/logs/e2e-mixer-no_auth-release-1.3
+  name: e2e-mixer-no_auth-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+  name: istio-pilot-e2e-envoyv2-v1alpha3-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-dashboard-release-1.3
+  name: e2e-dashboard-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+  name: e2e-bookInfoTests-envoyv2-v1alpha3-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-trustdomain-release-1.3
+  name: e2e-bookInfoTests-trustdomain-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.3
+  name: e2e-bookInfoTests-envoyv2-v1alpha3-non-mcp-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-release-1.3
+  name: e2e-simpleTests-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-distroless-release-1.3
+  name: e2e-simpleTests-distroless-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTestsMinProfile-release-1.3
+  name: e2e-simpleTestsMinProfile-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-cni-release-1.3
+  name: e2e-simpleTests-cni-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/e2e-simpleTests-non-mcp-release-1.3
+  name: e2e-simpleTests-non-mcp-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-pilot-multicluster-e2e-release-1.3
+  name: istio-pilot-multicluster-e2e-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio_e2e_cloudfoundry-release-1.3
+  name: istio_e2e_cloudfoundry-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-framework-local-postsubmit-tests-release-1.3
+  name: integ-framework-local-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-galley-local-postsubmit-tests-release-1.3
+  name: integ-galley-local-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-mixer-local-postsubmit-tests-release-1.3
+  name: integ-mixer-local-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-pilot-local-postsubmit-tests-release-1.3
+  name: integ-pilot-local-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-security-local-postsubmit-tests-release-1.3
+  name: integ-security-local-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-conformance-local-postsubmit-tests-release-1.3
+  name: integ-conformance-local-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/istio-integ-race-native-tests-release-1.3
+  name: istio-integ-race-native-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-framework-k8s-postsubmit-tests-release-1.3
+  name: integ-framework-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-istioctl-k8s-postsubmit-tests-release-1.3
+  name: integ-istioctl-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-galley-k8s-postsubmit-tests-release-1.3
+  name: integ-galley-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-mixer-k8s-postsubmit-tests-release-1.3
+  name: integ-mixer-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-pilot-k8s-postsubmit-tests-release-1.3
+  name: integ-pilot-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-security-k8s-postsubmit-tests-release-1.3
+  name: integ-security-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-telemetry-k8s-postsubmit-tests-release-1.3
+  name: integ-telemetry-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-conformance-k8s-postsubmit-tests-release-1.3
+  name: integ-conformance-k8s-postsubmit-tests-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-112-postsubmit-release-1.3
+  name: integ-k8s-112-postsubmit-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-113-postsubmit-release-1.3
+  name: integ-k8s-113-postsubmit-release-1.3
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-114-postsubmit-release-1.3
+  name: integ-k8s-114-postsubmit-release-1.3
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit
   name: proxy-presubmit
@@ -1174,9 +2000,6 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/istio-lint-master
   name: istio-lint-master
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/istio-racetest-master
-  name: istio-racetest-master
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/istio-shellcheck-master
   name: istio-shellcheck-master
   num_columns_recent: 20
@@ -1185,9 +2008,6 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-galley-local-presubmit-tests-master
   name: integ-galley-local-presubmit-tests-master
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/integ-istioctl-local-presubmit-tests-master
-  name: integ-istioctl-local-presubmit-tests-master
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-local-presubmit-tests-master
   name: integ-mixer-local-presubmit-tests-master
@@ -1201,11 +2021,11 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-framework-k8s-presubmit-tests-master
   name: integ-framework-k8s-presubmit-tests-master
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests-master
-  name: integ-galley-k8s-presubmit-tests-master
-  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-istioctl-k8s-presubmit-tests-master
   name: integ-istioctl-k8s-presubmit-tests-master
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests-master
+  name: integ-galley-k8s-presubmit-tests-master
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-presubmit-tests-master
   name: integ-mixer-k8s-presubmit-tests-master
@@ -1221,24 +2041,6 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-new-install-k8s-presubmit-tests-master
   name: integ-new-install-k8s-presubmit-tests-master
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/test-e2e-mixer-no_auth-master
-  name: test-e2e-mixer-no_auth-master
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-trustdomain-master
-  name: e2e-bookInfoTests-trustdomain-master
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTests-distroless-master
-  name: e2e-simpleTests-distroless-master
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-multicluster-e2e-master
-  name: istio-pilot-multicluster-e2e-master
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTests-cni-master
-  name: e2e-simpleTests-cni-master
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/release-test-master
-  name: release-test-master
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/test-e2e-mixer-no_auth
   name: test-e2e-mixer-no_auth
@@ -1302,6 +2104,51 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/release-test-release-1.2
   name: release-test-release-1.2
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/istio-lint-release-1.3
+  name: istio-lint-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/istio-shellcheck-release-1.3
+  name: istio-shellcheck-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-framework-local-presubmit-tests-release-1.3
+  name: integ-framework-local-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-galley-local-presubmit-tests-release-1.3
+  name: integ-galley-local-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-local-presubmit-tests-release-1.3
+  name: integ-mixer-local-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-local-presubmit-tests-release-1.3
+  name: integ-pilot-local-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-security-local-presubmit-tests-release-1.3
+  name: integ-security-local-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-framework-k8s-presubmit-tests-release-1.3
+  name: integ-framework-k8s-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-istioctl-k8s-presubmit-tests-release-1.3
+  name: integ-istioctl-k8s-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-galley-k8s-presubmit-tests-release-1.3
+  name: integ-galley-k8s-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-presubmit-tests-release-1.3
+  name: integ-mixer-k8s-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-k8s-presubmit-tests-release-1.3
+  name: integ-pilot-k8s-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-security-k8s-presubmit-tests-release-1.3
+  name: integ-security-k8s-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-telemetry-k8s-presubmit-tests-release-1.3
+  name: integ-telemetry-k8s-presubmit-tests-release-1.3
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-new-install-k8s-presubmit-tests-release-1.3
+  name: integ-new-install-k8s-presubmit-tests-release-1.3
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-simpleTests
   name: release-build-test-e2e-simpleTests
