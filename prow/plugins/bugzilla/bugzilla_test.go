@@ -567,7 +567,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			options:        plugins.BugzillaBranchOptions{}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
-			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details>
 
@@ -585,7 +585,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			options:        plugins.BugzillaBranchOptions{IsOpen: &open},
 			labels:         []string{"bugzilla/valid-bug"},
 			expectedLabels: []string{"bugzilla/invalid-bug"},
-			expectedComment: `org/repo#1:@user: This pull request references an invalid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123):
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is invalid:
  - expected the bug to be open, but it isn't
 
 Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
@@ -623,7 +623,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
-			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123). The bug has been moved to the UPDATED state.
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the UPDATED state.
 
 <details>
 
@@ -642,7 +642,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
-			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details>
 
@@ -661,7 +661,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			options:        plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
-			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123). The bug has been updated to refer to the pull request using the external bug tracker.
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been updated to refer to the pull request using the external bug tracker.
 
 <details>
 
@@ -685,7 +685,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			options:        plugins.BugzillaBranchOptions{AddExternalLink: &yes}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
-			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details>
 
@@ -724,7 +724,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			options:        plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
-			expectedComment: `org/repo#1:@user: This pull request references a valid [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123).
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
 
 <details>
 
@@ -747,7 +747,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. The [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
 
@@ -775,7 +775,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. The [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
 
@@ -870,7 +870,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
 			options: plugins.BugzillaBranchOptions{StatusAfterValidation: &updated, StatusAfterMerge: &modified}, // no requirements --> always valid
-			expectedComment: `org/repo#1:@user: The [Bugzilla bug](www.bugzilla/show_bug.cgi?id=123) is in an unrecognized state (CLOSED) and will not be moved to the MODIFIED state.
+			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) is in an unrecognized state (CLOSED) and will not be moved to the MODIFIED state.
 
 <details>
 
@@ -1117,7 +1117,7 @@ func TestValidateBug(t *testing.T) {
 			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
 			options:    plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
 			valid:      false,
-			why:        []string{"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
+			why:        []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
 		},
 		{
 			name:       "not matching dependent bug target release requirement means an invalid bug",
@@ -1125,7 +1125,7 @@ func TestValidateBug(t *testing.T) {
 			dependents: []bugzilla.Bug{{ID: 1, TargetRelease: []string{"v2"}}},
 			options:    plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
 			valid:      false,
-			why:        []string{"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but it targets \"v2\" instead"},
+			why:        []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but it targets \"v2\" instead"},
 		},
 		{
 			name:       "not having a dependent bug target release means an invalid bug",
@@ -1133,7 +1133,7 @@ func TestValidateBug(t *testing.T) {
 			dependents: []bugzilla.Bug{{ID: 1, TargetRelease: []string{}}},
 			options:    plugins.BugzillaBranchOptions{DependentBugTargetRelease: &one},
 			valid:      false,
-			why:        []string{"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but no target release was set"},
+			why:        []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to target the \"v1\" release, but no target release was set"},
 		},
 		{
 			name:       "matching all requirements means a valid bug",
@@ -1152,7 +1152,7 @@ func TestValidateBug(t *testing.T) {
 				"expected the bug to be open, but it isn't",
 				"expected the bug to target the \"v2\" release, but it targets \"v1\" instead",
 				"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead",
-				"expected dependent [Bugzilla bug](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead",
+				"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 			},
 		},
 	}
