@@ -346,15 +346,9 @@ func TestFixTestgridAnnotations(t *testing.T) {
 		isPresubmit bool
 	}{
 		{
-			name:        "update master-blocking to point at 1.15-blocking",
-			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking"},
-			isPresubmit: true,
-		},
-		{
-			name:        "update master-informing to point at 1.15-informing",
-			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-informing"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-informing"},
+			name:        "remove presubmit additions to dashboards",
+			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking, google-unit"},
+			expected:    map[string]string{},
 			isPresubmit: true,
 		},
 		{
@@ -362,12 +356,6 @@ func TestFixTestgridAnnotations(t *testing.T) {
 			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking"},
 			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking"},
 			isPresubmit: false,
-		},
-		{
-			name:        "update master-blocking to point at 1.15-blocking and leave other entries alone",
-			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking, google-unit"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit"},
-			isPresubmit: true,
 		},
 		{
 			name:        "drop 'description'",
@@ -378,8 +366,8 @@ func TestFixTestgridAnnotations(t *testing.T) {
 		{
 			name:        "update tab names",
 			annotations: map[string]string{testgridTabNameAnnotation: "foo master"},
-			expected:    map[string]string{testgridTabNameAnnotation: "foo 1.15"},
-			isPresubmit: true,
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all", testgridTabNameAnnotation: "foo 1.15"},
+			isPresubmit: false,
 		},
 	}
 
@@ -449,9 +437,10 @@ func TestGeneratePresubmits(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "pull-replace-some-things",
 					Annotations: map[string]string{
-						forkAnnotation:        "true",
-						replacementAnnotation: "foo -> {{.Version}}",
-						"some-annotation":     "yup",
+						forkAnnotation:                 "true",
+						replacementAnnotation:          "foo -> {{.Version}}",
+						"testgrid-generate-test-group": "true",
+						"some-annotation":              "yup",
 					},
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
