@@ -273,11 +273,19 @@ func fixTestgridAnnotations(annotations map[string]string, version string, isPre
 	didDashboards := false
 annotations:
 	for k, v := range annotations {
+		if isPresubmit {
+			// Forked presubmits do not get renamed, and so their annotations will be applied to master.
+			// In some cases, they will do things that are so explicitly contradictory the run will fail.
+			// Therefore, if we're forking a presubmit, just drop all testgrid config and defer to master.
+			if strings.HasPrefix(k, "testgrid-") {
+				continue
+			}
+		}
 		switch k {
 		case testgridDashboardsAnnotation:
 			fmt.Println(v)
 			v = r.Replace(v)
-			if !isPresubmit && !inOtherSigReleaseDashboard(v, version) {
+			if !inOtherSigReleaseDashboard(v, version) {
 				v += ", " + "sig-release-" + version + "-all"
 			}
 			didDashboards = true
