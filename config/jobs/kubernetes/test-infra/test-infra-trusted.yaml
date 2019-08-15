@@ -585,18 +585,13 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/cip-demo-staging/cip:20190801-v2.1.2-0-g356c232
+      - image: gcr.io/cip-demo-staging/cip:20190815-v2.2.0-7-g9bd0525
         command:
-        - multirun.sh
+        - cip
         args:
-        - /app/cip-docker-image.binary
-        - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
-        - k8s.gcr.io/k8s-staging-cluster-api-aws/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
-        - k8s.gcr.io/k8s-staging-coredns/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
-        - k8s.gcr.io/k8s-staging-csi/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
-        env:
-        - name: CIP_OPTS
-          value: "-dry-run=false"
+        - -manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
+        - -dry-run=false
         volumeMounts:
         - name: k8s-artifacts-prod-service-account-creds
           mountPath: /etc/k8s-artifacts-prod-service-account
@@ -964,29 +959,13 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: gcr.io/cip-demo-staging/cip:20190801-v2.1.2-0-g356c232
+    - image: gcr.io/cip-demo-staging/cip:20190815-v2.2.0-7-g9bd0525
       command:
-      - multirun.sh
+      - cip
       args:
-      # This is aided by Pod Utilities because of "decorate: true", which
-      # populates the manifest repo for us. There is also PULL_REFS and
-      # PULL_BASE_SHA defined for us.
-      #
-      # If you run mkpj for this postsubmit, the job will query you for the base
-      # ref to fetch (name of a branch, not a SHA, e.g. "master").
-      - /app/cip-docker-image.binary
-      - k8s.gcr.io/k8s-staging-cluster-api/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
-      - k8s.gcr.io/k8s-staging-coredns/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
-      - k8s.gcr.io/k8s-staging-csi/manifest.yaml,/etc/k8s-artifacts-prod-service-account/service-account.json
-      env:
-      - name: CIP_OPTS
-        value: "-dry-run=false"
-      # TODO: Uncomment this once
-      # https://github.com/GoogleCloudPlatform/k8s-container-image-promoter/issues/16
-      # lands.
-      #- name: CIP_OPTS
-      #  # Be aggressive about keeping the prod registry clean.
-      #  value: "-delete-extra-tags"
+      - -manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
+      - -dry-run=false
       volumeMounts:
       - name: k8s-artifacts-prod-service-account-creds
         mountPath: /etc/k8s-artifacts-prod-service-account
