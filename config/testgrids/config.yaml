@@ -932,15 +932,6 @@ dashboards:
   - name: cdk-gce-node
     test_group_name: canonical-kubernetes-e2e-gce
 
-- name: cos-cos1-k8sbeta
-- name: cos-cos1-k8sstable1
-- name: cos-cos1-k8sstable2
-- name: cos-cos1-k8sstable3
-- name: cos-cos2-k8sbeta
-- name: cos-cos2-k8sstable1
-- name: cos-cos2-k8sstable2
-- name: cos-cos2-k8sstable3
-
 - name: google-aws
 - name: google-gce
 - name: google-gce-compute-image-tools
@@ -2701,17 +2692,6 @@ dashboard_groups:
   - canonical-ubuntu2-k8sstable2
   - canonical-ubuntu2-k8sstable3
   - canonical-cdk
-
-- name: cos
-  dashboard_names:
-  - cos-cos1-k8sbeta
-  - cos-cos1-k8sstable1
-  - cos-cos1-k8sstable2
-  - cos-cos1-k8sstable3
-  - cos-cos2-k8sbeta
-  - cos-cos2-k8sstable1
-  - cos-cos2-k8sstable2
-  - cos-cos2-k8sstable3
 
 - name: google
   dashboard_names:
