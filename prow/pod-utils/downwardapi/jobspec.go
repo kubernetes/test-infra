@@ -96,7 +96,7 @@ const (
 	pullPullShaEnv      = "PULL_PULL_SHA"
 	pullPullShaShortEnv = "PULL_PULL_SHA_SHORT"
 
-	shortShaLength = 8
+	shortShaLength = 12
 )
 
 // EnvForSpec returns a mapping of environment variables
