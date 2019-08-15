@@ -30,6 +30,8 @@ import (
 )
 
 const (
+	SkipCommentAnnotation = "prow.k8s.io/report-skip-comment"
+
 	commentTag = "<!-- test report -->"
 )
 
@@ -155,6 +157,16 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 
 	if len(refs.Pulls) == 0 {
 		return nil
+	}
+
+	// If the job has the skip comment annotation, return without handling comments
+	for key, val := range pj.Annotations {
+		if key == SkipCommentAnnotation {
+			if val == "true" {
+				return nil
+			}
+			break
+		}
 	}
 
 	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
