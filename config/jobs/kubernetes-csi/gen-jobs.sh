@@ -25,7 +25,7 @@ latest_stable_k8s_version="1.15.0"
 latest_stable_k8s_minor_version="1.15"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190703-1f4d616-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix.
@@ -191,7 +191,7 @@ EOF
                         cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
     always_run: $(pull_alwaysrun "$tests")
-    optional: $(if [ "$kubernetes" = "1.15.0" ]; then echo true; else pull_optional "$tests"; fi)
+    optional: $(pull_optional "$tests")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
