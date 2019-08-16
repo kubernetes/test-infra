@@ -48,7 +48,7 @@ func messageFilter(lastUpdate time.Time, change client.ChangeInfo, presubmits []
 			}
 			for _, presubmit := range presubmits {
 				j, ok := jobs[presubmit.Name]
-				if ok && strings.ToLower(j.State) == string(v1.FailureState) {
+				if ok && (strings.ToLower(j.State) == string(v1.FailureState) || strings.ToLower(j.State) == string(v1.ErrorState)) {
 					failedContexts.Insert(presubmit.Name)
 				}
 			}
