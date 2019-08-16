@@ -302,7 +302,6 @@ py_binary(
     deps = [
         requirement("astroid"),
         requirement("backports.functools_lru_cache"),
-        requirement("configparser"),
         requirement("enum34"),
         requirement("influxdb"),
         requirement("isort"),
