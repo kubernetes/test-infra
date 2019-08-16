@@ -18,14 +18,27 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"cloud.google.com/go/storage"
+
 	"k8s.io/test-infra/pkg/io"
 )
+
+type fakeOpener struct{}
+
+func (o fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, error) {
+	return nil, storage.ErrObjectNotExist
+}
+
+func (o fakeOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+	return nil, errors.New("do not call Writer")
+}
 
 func TestSyncTime(t *testing.T) {
 
@@ -41,6 +54,7 @@ func TestSyncTime(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
+
 	st := syncTime{
 		path:   path,
 		opener: open,
@@ -70,5 +84,30 @@ func TestSyncTime(t *testing.T) {
 	}
 	if actual := st.Current(); !actual.After(cur) {
 		t.Errorf("Update(%v) did not move current value to after %v, got %v", later, cur, actual)
+	}
+
+	expected := later.Truncate(time.Second)
+	st = syncTime{
+		path:   path,
+		opener: open,
+		ctx:    ctx,
+	}
+	if err := st.init(); err != nil {
+		t.Fatalf("Failed init: %v", err)
+	}
+	if actual := st.Current(); !actual.Equal(expected) {
+		t.Errorf("init() failed to reload %v, got %v", expected, actual)
+	}
+
+	st = syncTime{
+		path:   path,
+		opener: fakeOpener{}, // return storage.ErrObjectNotExist on open
+		ctx:    ctx,
+	}
+	if err := st.init(); err != nil {
+		t.Fatalf("Failed init: %v", err)
+	}
+	if actual := st.Current(); now.After(actual) || actual.After(later) {
+		t.Fatalf("should initialize to start %v <= actual <= later %v, but got %v", now, later, actual)
 	}
 }

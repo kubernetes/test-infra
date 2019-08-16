@@ -123,7 +123,7 @@ func (st *syncTime) init() error {
 
 func (st *syncTime) currentInt() (int64, error) {
 	r, err := st.opener.Reader(st.ctx, st.path)
-	if os.IsNotExist(err) {
+	if io.IsNotExist(err) {
 		logrus.Warnf("lastSyncFallback not found at %q", st.path)
 		return 0, nil
 	} else if err != nil {
@@ -158,7 +158,7 @@ func (st *syncTime) Update(t time.Time) error {
 		return fmt.Errorf("open for write %q: %v", st.path, err)
 	}
 	lastSyncUnix := strconv.FormatInt(t.Unix(), 10)
-	if _, err := fmt.Print(w, lastSyncUnix); err != nil {
+	if _, err := fmt.Fprint(w, lastSyncUnix); err != nil {
 		io.LogClose(w)
 		return fmt.Errorf("write %q: %v", st.path, err)
 	}
