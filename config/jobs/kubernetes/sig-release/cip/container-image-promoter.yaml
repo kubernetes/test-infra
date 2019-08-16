@@ -17,3 +17,6 @@ presubmits:
         # /home/prow/go/src/github.com/{{.Org}}/{{.Repo}}, so just '.' should
         # suffice, but it's nice to be explicit.
         - -manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        # Without account keys (-key-files), we should not be trying to activate
+        # any service accounts.
+        - -no-service-account
