@@ -161,15 +161,15 @@ periodics:
           cpu: "4"
       securityContext:
         privileged: true
-- annotations:
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all
-    testgrid-tab-name: periodic-bazel-build-1.14
+- name: periodic-kubernetes-bazel-build-1-14
+  annotations:
+    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
+    testgrid-tab-name: bazel-build-1.14
   interval: 6h
   labels:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
-  name: periodic-kubernetes-bazel-build-1-14
   spec:
     containers:
     - args:
@@ -192,15 +192,15 @@ periodics:
       resources:
         requests:
           memory: 6Gi
-- annotations:
-    testgrid-dashboards: sig-release-1.14-all
-    testgrid-tab-name: periodic-bazel-test-1.14
+- name: periodic-kubernetes-bazel-test-1-14
+  annotations:
+    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
+    testgrid-tab-name: bazel-test-1.14
   interval: 6h
   labels:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
-  name: periodic-kubernetes-bazel-test-1-14
   spec:
     containers:
     - args:
@@ -331,16 +331,15 @@ periodics:
   - 'perfDashJobType: performance'
 postsubmits:
   kubernetes/kubernetes:
-  - annotations:
-      testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
-      testgrid-tab-name: bazel-build-1.14
+  - name: ci-kubernetes-bazel-build-1-14
+    annotations:
+      testgrid-dashboards: sig-release-1.14-all
     branches:
     - release-1.14
     labels:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    name: ci-kubernetes-bazel-build-1-14
     spec:
       containers:
       - args:
@@ -361,16 +360,15 @@ postsubmits:
         resources:
           requests:
             memory: 6Gi
-  - annotations:
-      testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
-      testgrid-tab-name: bazel-test-1.14
+  - name: ci-kubernetes-bazel-test-1-14
+    annotations:
+      testgrid-dashboards: sig-release-1.14-all
     branches:
     - release-1.14
     labels:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    name: ci-kubernetes-bazel-test-1-14
     spec:
       containers:
       - args:

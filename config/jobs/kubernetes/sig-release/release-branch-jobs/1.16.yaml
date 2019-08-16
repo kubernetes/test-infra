@@ -211,9 +211,11 @@ periodics:
   - 'perfDashPrefix: gce-100Nodes'
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
-- annotations:
-    testgrid-dashboards: google-unit, sig-release-1.16-all
-    testgrid-tab-name: periodic-bazel-build-1.16
+- name: periodic-kubernetes-bazel-build-1-16
+  annotations:
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-1.16-blocking, sig-release-1.16-all, google-unit
+    testgrid-tab-name: bazel-build-1.16
   decorate: true
   extra_refs:
   - base_ref: release-1.16
@@ -226,7 +228,6 @@ periodics:
   labels:
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
-  name: periodic-kubernetes-bazel-build-1-16
   spec:
     containers:
     - args:
@@ -246,9 +247,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-1.16
       name: ""
       resources: {}
-- annotations:
-    testgrid-dashboards: google-unit, sig-release-1.16-all
-    testgrid-tab-name: periodic-bazel-test-1.16
+- name: periodic-kubernetes-bazel-test-1-16
+  annotations:
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-dashboards: sig-release-1.16-blocking, sig-release-1.16-all, google-unit
+    testgrid-tab-name: bazel-test-1.16
   decorate: true
   extra_refs:
   - base_ref: release-1.16
@@ -261,7 +264,6 @@ periodics:
   labels:
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
-  name: periodic-kubernetes-bazel-test-1-16
   spec:
     containers:
     - args:
@@ -349,17 +351,15 @@ periodics:
         privileged: true
 postsubmits:
   kubernetes/kubernetes:
-  - annotations:
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-release-1.16-blocking, google-unit
-      testgrid-tab-name: bazel-build-1.16
+  - name: ci-kubernetes-bazel-build-1-16
+    annotations:
+      testgrid-dashboards: sig-release-1.16-all
     branches:
     - release-1.16
     labels:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    name: ci-kubernetes-bazel-build-1-16
     spec:
       containers:
       - args:
@@ -380,9 +380,9 @@ postsubmits:
         resources:
           requests:
             memory: 6Gi
-  - annotations:
-      testgrid-dashboards: sig-release-1.16-informing
-      testgrid-tab-name: bazel-test-1.16
+  - name: post-kubernetes-bazel-test-1-16
+    annotations:
+      testgrid-dashboards: sig-release-1.16-all
     branches:
     - release-1.16
     decorate: true
@@ -393,7 +393,6 @@ postsubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    name: post-kubernetes-bazel-test-1-16
     spec:
       containers:
       - args:
