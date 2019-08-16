@@ -23,7 +23,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        - --namespace=$(MY_POD_NAMESPACE)
+        #- --namespace=$(MY_POD_NAMESPACE)
         env:
         - name: MY_POD_NAMESPACE
           valueFrom:
