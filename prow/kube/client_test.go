@@ -272,26 +272,6 @@ func TestReplaceConfigMap(t *testing.T) {
 	}
 }
 
-func TestPatchProwjob(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPatch {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-		if r.URL.Path != "/apis/prow.k8s.io/v1/namespaces/ns/prowjobs/pj" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
-		}
-		if r.Header.Get("Content-Type") != "application/merge-patch+json" {
-			t.Errorf("Bad content-type: %s", r.Header.Get("Content-Type"))
-		}
-		fmt.Fprint(w, `{"metadata": {"name": "abcd"}}`)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if _, err := c.PatchProwJob("pj", []byte{}); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-}
-
 // TestNewClient messes around with certs and keys and such to just make sure
 // that our cert handling is done properly. We create root and client keys,
 // then server and client certificates, then ensure that the client can talk
