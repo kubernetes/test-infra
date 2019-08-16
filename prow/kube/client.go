@@ -535,7 +535,6 @@ func (c *Client) PatchProwJob(name string, patch []byte) (prowapi.ProwJob, error
 	var retJob prowapi.ProwJob
 	err := c.request(&request{
 		method:      http.MethodPatch,
-		contentType: "application/merge-patch+json",
 		path:        fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 		requestBody: &patch,
 	}, &retJob)
