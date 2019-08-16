@@ -129,7 +129,7 @@ presubmits:
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(StorageVersionHash|Audit|BlockVolume|CustomResourcePublishOpenAPI|CustomResourceWebhookConversion|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|VolumeSubpathEnvExpansion|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|gcePD-external --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:(StorageVersionHash|Audit|CustomResourcePublishOpenAPI|CustomResourceWebhookConversion|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
         - --timeout=180m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
         resources:
@@ -192,7 +192,7 @@ periodics:
       - --ginkgo-parallel=30
       - --provider=gce
       - --runtime-config=api/all=true
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|csi-hostpath-v0 --minStartupPods=8
       - --timeout=70m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
   annotations:
@@ -220,7 +220,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --runtime-config=api/all=true
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|CustomResourcePublishOpenAPI|CustomResourceWebhookConversion|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|VolumeSubpathEnvExpansion|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|gcePD-external --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|CustomResourcePublishOpenAPI|CustomResourceWebhookConversion|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
   annotations:
