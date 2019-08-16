@@ -799,6 +799,18 @@ func TestSpecFromJobBase(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			name: "Verify hidden property gets copied",
+			jobBase: config.JobBase{
+				Hidden: true,
+			},
+			verify: func(pj prowapi.ProwJobSpec) error {
+				if !pj.Hidden {
+					return errors.New("hidden property didnt get copied")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {
