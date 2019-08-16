@@ -171,7 +171,7 @@ def upload_string(gcs_path, text, dry):
     print('Run:', cmd, 'stdin=%s' % text, file=sys.stderr)
     if dry:
         return
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, encoding='utf8')
     proc.communicate(input=text)
     if proc.returncode != 0:
         raise RuntimeError(
