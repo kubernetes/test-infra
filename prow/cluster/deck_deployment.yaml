@@ -56,6 +56,7 @@ spec:
         - --github-token-path=/etc/github/oauth
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --github-graphql-endpoint=http://ghproxy/graphql
         - --github-oauth-config-file=/etc/githuboauth/secret
         volumeMounts:
         - name: oauth-config

@@ -39,6 +39,7 @@ spec:
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --github-graphql-endpoint=http://ghproxy/graphql
         volumeMounts:
         - name: config
           mountPath: /etc/config
