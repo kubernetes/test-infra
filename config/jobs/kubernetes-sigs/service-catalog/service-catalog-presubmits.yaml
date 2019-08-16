@@ -9,7 +9,7 @@ build_image_cfg: &build_image_cfg
 
 presubmits:
   kubernetes-sigs/service-catalog:
-  - name: pull-service-catalog-unit
+  - name: pull-service-catalog-test-unit
     always_run: true
     skip_report: false
     decorate: true
@@ -23,7 +23,7 @@ presubmits:
         env:
         - name: NO_DOCKER
           value: "1"
-  - name: pull-service-catalog-integration
+  - name: pull-service-catalog-test-integration
     <<: *build_image_cfg
     spec:
       containers:
@@ -37,6 +37,22 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+  - name: pull-service-catalog-test-e2e
+    <<: *build_image_cfg
+    # Setting that job optional to check how it behaves
+    optional: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
   - name: pull-build-all-images-for-amd64
     <<: *build_image_cfg
     spec:
