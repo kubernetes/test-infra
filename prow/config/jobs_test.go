@@ -641,6 +641,19 @@ func TestMergePreset(t *testing.T) {
 			numEnv: 1,
 		},
 		{
+			name:      "conflicting env",
+			jobLabels: map[string]string{"foo": "bar"},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{Env: []coreapi.EnvVar{{Name: "baz"}}}}},
+			buildSpec: &buildapi.BuildSpec{Template: &buildapi.TemplateInstantiationSpec{Env: []coreapi.EnvVar{{Name: "baz"}}}},
+			presets: []Preset{
+				{
+					Labels: map[string]string{"foo": "bar"},
+					Env:    []coreapi.EnvVar{{Name: "baz"}},
+				},
+			},
+			shouldError: true,
+		},
+		{
 			name:      "one vm",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
@@ -682,6 +695,81 @@ func TestMergePreset(t *testing.T) {
 				},
 			},
 			numVolMounts: 2,
+		},
+		{
+			name:      "default preset only",
+			jobLabels: map[string]string{"foo": "bar"},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
+			presets: []Preset{
+				{
+					Env: []coreapi.EnvVar{{Name: "baz"}},
+				},
+			},
+			numEnv: 1,
+		},
+		{
+			name:      "default and matching presets",
+			jobLabels: map[string]string{"foo": "bar"},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
+			presets: []Preset{
+				{
+					Env: []coreapi.EnvVar{{Name: "baz"}},
+				},
+				{
+					Labels:  map[string]string{"foo": "bar"},
+					Volumes: []coreapi.Volume{{Name: "qux"}},
+				},
+			},
+			numEnv: 1,
+			numVol: 1,
+		},
+		{
+			name:      "default and non-matching presets",
+			jobLabels: map[string]string{"foo": "bar"},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
+			presets: []Preset{
+				{
+					Env: []coreapi.EnvVar{{Name: "baz"}},
+				},
+				{
+					Labels:  map[string]string{"no": "match"},
+					Volumes: []coreapi.Volume{{Name: "qux"}},
+				},
+			},
+			numEnv: 1,
+		},
+		{
+			name:      "multiple default presets",
+			jobLabels: map[string]string{"foo": "bar"},
+			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
+			buildSpec: &buildapi.BuildSpec{},
+			presets: []Preset{
+				{
+					Env: []coreapi.EnvVar{{Name: "baz"}},
+				},
+				{
+					Env: []coreapi.EnvVar{{Name: "foo"}},
+				},
+				{
+					Volumes: []coreapi.Volume{{Name: "qux"}},
+				},
+			},
+			numEnv: 2,
+			numVol: 1,
+		},
+		{
+			name:      "default preset conflicts with job",
+			jobLabels: map[string]string{"foo": "bar"},
+			pod:       &coreapi.PodSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
+			presets: []Preset{
+				{
+					Volumes: []coreapi.Volume{{Name: "baz"}},
+				},
+			},
+			shouldError: true,
 		},
 	}
 	for _, tc := range tcs {
