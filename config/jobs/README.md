@@ -63,6 +63,8 @@ files here. eg:
   kubernetes e2e tests less susceptible to flakes
 - [`preset-aws-credentials: "true"`] ensures the prowjob has AWS credentials
   for kops tests in a well known location, with an env var pointint to it
+- [the default preset with no labels] is used to set the `GOPROXY` env var
+  for all jobs by default
 
 ## Job Examples
 
@@ -227,3 +229,4 @@ bazel run //experiment/config-forker -- \
 [`preset-service-account: "true"`]: https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/prow/config.yaml#L467-L483
 [`preset-pull-kubernetes-e2e: "true"`]: https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/config/jobs/kubernetes/sig-gcp/sig-gcp-gce-config.yaml#L2-L8
 [`preset-aws-credentials: "true"`]: https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/config/jobs/kubernetes/sig-aws/sig-aws-credentials.yaml#L3-L15
+[the default preset with no labels]: https://github.com/kubernetes/test-infra/blob/551edb4702e262989fe5d162a2c642c3201bf68e/prow/config.yaml#L630

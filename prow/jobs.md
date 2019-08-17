@@ -99,6 +99,13 @@ presets:
   - name: bar
     mountPath: /etc/bar
     readOnly: true
+- env:                     # a preset with no labels is applied to all jobs
+  - name: BAZ
+    value: qux
+  volumes:
+    # etc...
+  volumeMounts:
+    # etc...
 ```
 
 ## Standard Triggering and Execution Behavior for Jobs
