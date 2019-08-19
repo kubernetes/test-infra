@@ -44,7 +44,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: golang:1.12
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
         command:
         - make
         args:
