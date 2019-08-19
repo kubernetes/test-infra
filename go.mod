@@ -17,6 +17,7 @@ require (
 	github.com/aws/aws-sdk-go v1.16.36
 	github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c
 	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
+	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bwmarrin/snowflake v0.0.0
 	github.com/client9/misspell v0.3.4
 	github.com/denisenkom/go-mssqldb v0.0.0-20190111225525-2fea367d496d // indirect
@@ -39,9 +40,9 @@ require (
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.2.0
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
 	github.com/gomodule/redigo v1.7.0
-	github.com/google/go-cmp v0.3.0
+	github.com/google/go-cmp v0.3.1
 	github.com/google/go-containerregistry v0.0.0-20190401215819-f1df91a4a813 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -54,11 +55,13 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
-	github.com/hashicorp/golang-lru v0.5.1 // indirect
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
+	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
 	github.com/jinzhu/now v1.0.1 // indirect
+	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
@@ -79,6 +82,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v0.9.4
 	github.com/prometheus/procfs v0.0.3 // indirect
+	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
 	github.com/sirupsen/logrus v1.4.2
@@ -87,17 +91,18 @@ require (
 	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	go.opencensus.io v0.20.2 // indirect
-	golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5
-	golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
-	golang.org/x/net v0.0.0-20190403144856-b630fd6fe46b
+	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529
+	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
+	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
+	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
-	golang.org/x/tools v0.0.0-20190404132500-923d25813098
+	golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
 	google.golang.org/api v0.3.2
 	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
-	google.golang.org/grpc v1.19.1
+	google.golang.org/grpc v1.20.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
@@ -106,11 +111,11 @@ require (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/code-generator v0.0.0-20190704094409-6c2a4329ac29
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
-	k8s.io/klog v0.3.0
-	k8s.io/kubernetes v1.14.3 // indirect
+	k8s.io/klog v0.3.3
+	k8s.io/kubernetes v1.14.6 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/controller-runtime v0.2.0-beta.4
+	sigs.k8s.io/controller-runtime v0.2.0-rc.0
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4
 )
