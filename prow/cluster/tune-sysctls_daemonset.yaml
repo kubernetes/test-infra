@@ -23,7 +23,7 @@ spec:
       - operator: Exists
         effect: NoSchedule
       containers:
-      - name: setsysctls 
+      - name: setsysctls
         command:
         - sh
         - -c
