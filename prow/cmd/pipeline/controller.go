@@ -321,7 +321,16 @@ func (c *controller) createPipelineRun(context, namespace string, p *pipelinev1a
 	if err != nil {
 		return nil, err
 	}
-	return pc.client.TektonV1alpha1().PipelineRuns(namespace).Create(p)
+	p, err = pc.client.TektonV1alpha1().PipelineRuns(namespace).Create(p)
+	if err != nil {
+		return p, err
+	}
+	// Block until the pipelinerun is in the lister, otherwise we may attempt to create it again
+	err = wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
+		_, err := c.getPipelineRun(context, namespace, p.Name)
+		return err == nil, err
+	})
+	return p, err
 }
 
 func (c *controller) createPipelineResource(context, namespace string, pr *pipelinev1alpha1.PipelineResource) (*pipelinev1alpha1.PipelineResource, error) {
