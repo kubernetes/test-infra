@@ -88,6 +88,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        volumeMounts:
+          - name: ssh
+            mountPath: /root/.ssh
+            readOnly: true
+            items:
+              - key: ssh-private
+                path: google_compute_engine
+              - key: ssh-public
+                path: google_compute_engine.pub
       resources:
         requests:
           # these are both a bit below peak usage during build
@@ -95,3 +104,8 @@ presubmits:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
+      volumes:
+        - name: ssh
+          secret:
+            defaultMode: 0400
+            secretName: ssh-key-secret
