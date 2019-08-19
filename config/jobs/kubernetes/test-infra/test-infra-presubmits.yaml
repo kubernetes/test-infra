@@ -96,5 +96,6 @@ presubmits:
         - -c
         - config/jobs/.yamllint.conf
         - config/jobs
+        - prow/cluster
     annotations:
       testgrid-create-test-group: 'true'
