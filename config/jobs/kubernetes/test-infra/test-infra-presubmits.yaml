@@ -105,3 +105,20 @@ presubmits:
         - prow/cluster
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-test-infra-validate-manifests
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-create-test-group: 'true'
+    spec:
+      # Kubectl needs access the discovery info from the kube api in order
+      # to know the schema used for validation
+      automountServiceAccountToken: true
+      containers:
+      - image: launcher.gcr.io/google/bazel:0.29.1
+        command:
+        - bazel
+        - run
+        - //prow/cluster:production.create
+        - --
+        - --dry-run=true

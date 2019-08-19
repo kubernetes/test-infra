@@ -833,6 +833,9 @@ dashboards:
   - name: verify-yaml
     test_group_name: pull-test-infra-yamllint
     base_options: width=10
+  - name: verify-manifests
+    test_group_name: pull-test-infra-validate-manifests
+    base_options: width=10
 
 - name: presubmits-cluster-registry
   dashboard_tab:
