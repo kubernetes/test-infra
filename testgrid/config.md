@@ -117,10 +117,7 @@ dashboard_groups:
 
 ## Testing your configuration
 
-Run `bazel test //testgrid/...` to ensure the configuration is valid.
-
-This finds common problems such as malformed yaml, a tab referring to a
-non-existent test group, a test group never appearing on any tab, etc.
+Run [`bazel test //config/tests/testgrids/..`](/config/tests/testgrids) to ensure the configuration is valid.
 
 ## Advanced configuration
 See [`config.proto`] for an extensive list of configuration options. Here are some commonly-used ones.
