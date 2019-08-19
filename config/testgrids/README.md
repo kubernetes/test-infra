@@ -14,10 +14,8 @@ Any file put in this directory or a subdirectory will be picked up by [testgrid.
 
 ## Testing
 
-Run `bazel test //testgrid/...` to ensure the configuration is valid.
+Run `bazel test //config/jobs/tests/...` to ensure these configurations are valid.
 
 This finds common problems such as malformed yaml, a tab referring to a
-non-existent test group, a test group never appearing on any tab, etc.
-
-Run `bazel test //...` for slightly more advanced testing, such as ensuring that
-every job in our CI system appears somewhere in testgrid, etc.
+non-existent test group, a test group never appearing on any tab, etc. It also enforces some
+repository-specific conventions.
