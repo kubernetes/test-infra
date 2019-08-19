@@ -35,9 +35,9 @@ var (
 	ZapLogger = zap.Logger
 
 	// ZapLoggerTo returns a new Logger implementation using Zap which logs
-	// to the given destination, instead of stderr.  It otherise behaves like
+	// to the given destination, instead of stderr.  It otherwise behaves like
 	// ZapLogger.
-	ZapLoggerTo = zap.Logger
+	ZapLoggerTo = zap.LoggerTo
 
 	// SetLogger sets a concrete logging implementation for all deferred Loggers.
 	SetLogger = log.SetLogger
