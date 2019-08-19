@@ -81,12 +81,9 @@ func main() {
 	}
 
 	go func() {
-		logTick := time.NewTicker(time.Minute).C
 		configTick := time.NewTicker(*syncPeriod).C
 		for {
 			select {
-			case <-logTick:
-				r.LogStatus()
 			case <-configTick:
 				r.SyncConfig(*configPath)
 			}
