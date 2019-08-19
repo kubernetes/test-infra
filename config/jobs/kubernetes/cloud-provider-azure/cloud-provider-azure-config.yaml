@@ -66,7 +66,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
         args:
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=v1.15.0"
+        - "--repo=k8s.io/kubernetes=release-1.16"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
@@ -85,7 +85,7 @@ presubmits:
         - "--acsengine-agentpoolcount=2"
         - "--acsengine-admin-username=azureuser"
         - "--acsengine-creds=$AZURE_CREDENTIALS"
-        - "--acsengine-orchestratorRelease=1.15"
+        - "--acsengine-orchestratorRelease=1.16"
         - "--acsengine-mastervmsize=Standard_DS2_v2"
         - "--acsengine-agentvmsize=Standard_D4s_v3"
         - "--acsengine-ccm=True"
@@ -117,7 +117,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
         args:
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=v1.15.0"
+        - "--repo=k8s.io/kubernetes=release-1.16"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
@@ -137,7 +137,7 @@ presubmits:
         - "--acsengine-agentpoolcount=2"
         - "--acsengine-admin-username=azureuser"
         - "--acsengine-creds=$AZURE_CREDENTIALS"
-        - "--acsengine-orchestratorRelease=1.15"
+        - "--acsengine-orchestratorRelease=1.16"
         - "--acsengine-mastervmsize=Standard_DS2_v2"
         - "--acsengine-agentvmsize=Standard_D4s_v3"
         - "--acsengine-ccm=True"
