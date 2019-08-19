@@ -17,7 +17,6 @@ limitations under the License.
 package ranch
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -96,7 +95,6 @@ func NewRanch(config string, s *Storage, ttl time.Duration) (*Ranch, error) {
 			return nil, err
 		}
 	}
-	newRanch.LogStatus()
 	return newRanch, nil
 }
 
@@ -346,21 +344,6 @@ func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (m
 		}
 	}
 	return ret, nil
-}
-
-// LogStatus outputs current status of all resources
-func (r *Ranch) LogStatus() {
-	resources, err := r.Storage.GetResources()
-
-	if err != nil {
-		return
-	}
-
-	resJSON, err := json.Marshal(resources)
-	if err != nil {
-		logrus.WithError(err).Errorf("Fail to marshal Resources. %v", resources)
-	}
-	logrus.Infof("Current Resources : %v", string(resJSON))
 }
 
 // SyncConfig updates resource list from a file
