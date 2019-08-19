@@ -1,0 +1,33 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: prow-pipeline
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: prow-pipeline
+  template:
+    metadata:
+      labels:
+        app: prow-pipeline
+    spec:
+      # Using the service account defined in prow/cluster/pipeline_rbac.yaml
+      serviceAccountName: prow-pipeline
+      containers:
+      - name: pipeline
+        image: gcr.io/k8s-prow/pipeline:v20190814-9981dc3c5
+        args:
+        - --all-contexts
+        - --config=/etc/prow-config/config.yaml
+        volumeMounts:
+        - mountPath: /etc/prow-config
+          name: prow-config
+          readOnly: true
+      volumes:
+      - name: prow-config
+        configMap:
+          name: config

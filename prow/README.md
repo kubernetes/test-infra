@@ -45,6 +45,7 @@ For a sequence diagram of common usage and interactions flow, click [here](https
 - [Metrics](/prow/metrics/README.md)
 - ["Life of a Prow Job"](/prow/life_of_a_prow_job.md)
 - [Getting more out of Prow](/prow/more_prow.md)
+- [Using Prow with Tekton Pipelines](/prow/tekton.md)
 
 ## Useful Talks
 
