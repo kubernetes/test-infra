@@ -141,6 +141,7 @@ presubmits:
         - "--acsengine-mastervmsize=Standard_DS2_v2"
         - "--acsengine-agentvmsize=Standard_D4s_v3"
         - "--acsengine-ccm=True"
+        - "--acsengine-hyperkube=True"
         - "--acsengine-location=eastus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
@@ -217,6 +218,7 @@ periodics:
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
+      - --acsengine-hyperkube=True
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
@@ -274,6 +276,7 @@ periodics:
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
+      - --acsengine-hyperkube=True
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-autoscaler.json
@@ -511,6 +514,7 @@ periodics:
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
+      - --acsengine-hyperkube=True
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
