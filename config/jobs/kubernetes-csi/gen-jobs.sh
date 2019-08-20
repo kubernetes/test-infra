@@ -25,7 +25,7 @@ latest_stable_k8s_version="1.15.0"
 latest_stable_k8s_minor_version="1.15"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190819-0b0980f-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix.
@@ -42,6 +42,7 @@ node-driver-registrar
 single_kubernetes_repos="
 livenessprobe
 external-snapshotter
+external-resizer
 "
 
 # kubernetes-csi repos which only need unit testing.
@@ -318,6 +319,10 @@ EOF
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi
+      testgrid-tab-name: $(job_name "pull" "$repo" "$tests")
+      description: Kubernetes-CSI pull $tests job in $repo
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
