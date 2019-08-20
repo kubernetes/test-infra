@@ -850,28 +850,7 @@ dashboards:
 - name: google-unit
 - name: google-windows
 
-# SIG Release dashboards
-- name: sig-release-master-blocking
-- name: sig-release-master-informing
-  dashboard_tab:
-  - name: Conformance - OpenStack
-    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-    description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
-- name: sig-release-misc
-- name: sig-release-publishing-bot
-- name: sig-release-orphaned
-- name: sig-release-1.16-blocking
-- name: sig-release-1.16-informing
-- name: sig-release-1.16-all
-- name: sig-release-1.15-blocking
-- name: sig-release-1.15-informing
-- name: sig-release-1.15-all
-- name: sig-release-1.14-all
-- name: sig-release-1.14-blocking
-- name: sig-release-1.14-informing
-- name: sig-release-1.13-all
-- name: sig-release-1.13-blocking
-- name: sig-release-1.13-informing
+
 
 - name: wg-resource-management
   dashboard_tab:
@@ -2140,31 +2119,8 @@ dashboards:
   - name: ee19.03-node-ubuntu16.04-k8s1.14
     test_group_name: ee19.03-ubuntu16.04-k8s1.14.x-conformance
     description: k8s1.14.x node conformance test results for ee-19.03 on ubuntu16.04
-#
 
-- name: presubmits-release-notes-master
-  dashboard_tab:
-  - name: build-dev
-    test_group_name: pull-release-notes-build-dev
-    base_options: width=10
-  - name: build-prod
-    test_group_name: pull-release-notes-build-prod
-    base_options: width=10
-  - name: check-prettier
-    test_group_name: pull-release-notes-check-prettier
-    base_options: width=10
-  - name: doc
-    test_group_name: pull-release-notes-doc
-    base_options: width=10
-  - name: e2e
-    test_group_name: pull-release-notes-e2e
-    base_options: width=10
-  - name: lint
-    test_group_name: pull-release-notes-lint
-    base_options: width=10
-  - name: test
-    test_group_name: pull-release-notes-test
-    base_options: width=10
+
 
 - name: google-cel
   dashboard_tab:
@@ -2217,7 +2173,6 @@ dashboard_groups:
   - presubmits-poseidon
   - presubmits-kube-batch
   - presubmits-misc
-  - presubmits-release-notes-master
   - presubmits-cloud-provider-alibaba
 
 - name: sig-aws
@@ -2254,25 +2209,7 @@ dashboard_groups:
   - sig-node-docker
   - sig-node-node-problem-detector
 
-- name: sig-release
-  dashboard_names:
-  - sig-release-master-blocking
-  - sig-release-master-informing
-  - sig-release-misc
-  - sig-release-publishing-bot
-  - sig-release-orphaned
-  - sig-release-1.16-blocking
-  - sig-release-1.16-informing
-  - sig-release-1.16-all
-  - sig-release-1.15-all
-  - sig-release-1.15-blocking
-  - sig-release-1.15-informing
-  - sig-release-1.14-all
-  - sig-release-1.14-blocking
-  - sig-release-1.14-informing
-  - sig-release-1.13-all
-  - sig-release-1.13-blocking
-  - sig-release-1.13-informing
+
 
 - name: sig-scalability
   dashboard_names:
