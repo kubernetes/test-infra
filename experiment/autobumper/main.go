@@ -309,7 +309,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to start secrets agent")
 	}
 
-	gc := github.NewClient(sa.GetTokenGenerator(o.githubToken), github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	gc := github.NewClient(sa.GetTokenGenerator(o.githubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 
 	if err := cdToRootDir(); err != nil {
 		logrus.WithError(err).Fatal("Failed to change to root dir")

@@ -654,9 +654,9 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEnd
 	}
 
 	if dryRun {
-		return github.NewDryRunClient(secretAgent.GetTokenGenerator(tokenPath), graphqlEndpoint, hosts...), nil
+		return github.NewDryRunClient(secretAgent.GetTokenGenerator(tokenPath), secretAgent.Censor, graphqlEndpoint, hosts...), nil
 	}
-	c := github.NewClient(secretAgent.GetTokenGenerator(tokenPath), graphqlEndpoint, hosts...)
+	c := github.NewClient(secretAgent.GetTokenGenerator(tokenPath), secretAgent.Censor, graphqlEndpoint, hosts...)
 	if tokens > 0 && tokenBurst >= tokens {
 		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
 	}
