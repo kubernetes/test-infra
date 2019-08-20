@@ -194,7 +194,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -214,7 +214,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -222,7 +222,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --timeout=420m
       securityContext:
         privileged: true
@@ -252,7 +252,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -272,7 +272,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -280,7 +280,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-autoscaler.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --timeout=420m
       securityContext:
         privileged: true
@@ -312,7 +312,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -331,7 +331,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -339,7 +339,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|\[Slow\]
       - --timeout=420m
       securityContext:
@@ -370,7 +370,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -389,7 +389,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -397,7 +397,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=420m
       securityContext:
@@ -428,7 +428,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -446,7 +446,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_D4s_v3
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -454,12 +454,12 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       # Skip three kinds of test cases:
       # 1. regular resource usage tracking, haven't found the cause of the failures.
       # 2. DNS config map nameserver, the coredns configmap config in aks-engine is set to reconcile, making it impossible for the newly generated configmap in test cases to overwrite the original one. https://github.com/Azure/aks-engine/blob/master/parts/k8s/addons/coredns.yaml#L59
       # 3. validates MaxPods limit number of pods that are allowed to run, related to issue kubernetes/kubernetes#80177
       # 4. Checks that the node becomes unreachable, the externel IP is unavailable since the corresponding configuration in aks-engine is set to false.
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
       - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|should\sunmount|When\skubelet\srestarts|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun|DNS\sconfigMap\snameserver|Checks\sthat\sthe\snode\sbecomes\sunreachable --minStartupPods=8
       - --timeout=600m
       securityContext:
@@ -490,7 +490,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -510,7 +510,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -518,7 +518,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --timeout=420m
       securityContext:
         privileged: true
@@ -548,7 +548,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -567,7 +567,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -575,7 +575,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\]|\[Slow\]
       - --timeout=420m
       securityContext:
@@ -606,7 +606,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -625,7 +625,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -633,7 +633,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=420m
       securityContext:
@@ -664,7 +664,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/kubernetes=v1.15.0
+      - --repo=k8s.io/kubernetes=release-1.16
       - --repo=k8s.io/$(REPO_NAME)=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
@@ -683,7 +683,7 @@ periodics:
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
       - --acsengine-creds=$AZURE_CREDENTIALS
-      - --acsengine-orchestratorRelease=1.15
+      - --acsengine-orchestratorRelease=1.16
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
@@ -691,7 +691,7 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.37.3/aks-engine-v0.37.3-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       # Four kinds of cases should be skipped:
       # 1. ssh related cases
       # 2. PSP related cases, reason: https://github.com/Azure/aks-engine/blob/master/parts/k8s/addons/kubernetesmasteraddons-pod-security-policy.yaml#L41
