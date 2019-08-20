@@ -20,7 +20,6 @@ package secret
 import (
 	"bytes"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -122,27 +121,18 @@ func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		return raw, err
 	}
 
-	return f.agent.CensorBytes(raw), nil
+	return f.agent.Censor(raw), nil
 }
 
 const censored = "CENSORED"
 
 var censoredBytes = []byte(censored)
 
-// CensorBytes replaces sensitive parts of the content with a placeholder.
-func (a *Agent) CensorBytes(content []byte) []byte {
+// Censor replaces sensitive parts of the content with a placeholder.
+func (a *Agent) Censor(content []byte) []byte {
 	for sKey := range a.secretsMap {
 		secret := a.GetSecret(sKey)
 		content = bytes.ReplaceAll(content, secret, censoredBytes)
-	}
-	return content
-}
-
-// Censor replaces sensitive parts of the content with a placeholder.
-func (a *Agent) Censor(content string) string {
-	for sKey := range a.secretsMap {
-		secret := a.GetSecret(sKey)
-		content = strings.ReplaceAll(content, string(secret), censored)
 	}
 	return content
 }

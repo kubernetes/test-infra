@@ -153,7 +153,7 @@ func main() {
 		log.Fatalf("cannot setup Jenkins client: %v", err)
 	}
 
-	gc := github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.graphqlEndpoint, o.githubEndpoint)
+	gc := github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), secretAgent.Censor, o.graphqlEndpoint, o.githubEndpoint)
 
 	pr, err := gc.GetPullRequest(o.org, o.repo, o.num)
 	if err != nil {

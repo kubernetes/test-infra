@@ -249,6 +249,7 @@ type delegate struct {
 	fake     bool
 	throttle throttler
 	getToken func() []byte
+	censor   func([]byte) []byte
 
 	mut     sync.Mutex // protects botName and email
 	botName string
@@ -425,7 +426,7 @@ func (c *client) SetMax404Retries(max int) {
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
+func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
@@ -439,6 +440,7 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEn
 			client:        &http.Client{Timeout: maxRequestTime},
 			bases:         bases,
 			getToken:      getToken,
+			censor:        censor,
 			dry:           false,
 			maxRetries:    defaultMaxRetries,
 			max404Retries: defaultMax404Retries,
@@ -449,8 +451,8 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEn
 }
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
-	return NewClientWithFields(logrus.Fields{}, getToken, graphqlEndpoint, bases...)
+func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
+	return NewClientWithFields(logrus.Fields{}, getToken, censor, graphqlEndpoint, bases...)
 }
 
 // NewDryRunClientWithFields creates a new client that will not perform mutating actions
@@ -461,7 +463,7 @@ func NewClient(getToken func() []byte, graphqlEndpoint string, bases ...string) 
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
+func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
@@ -475,6 +477,7 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, gra
 			client:   &http.Client{Timeout: maxRequestTime},
 			bases:    bases,
 			getToken: getToken,
+			censor:   censor,
 			dry:      true,
 		},
 	}
@@ -488,8 +491,8 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, gra
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
-	return NewDryRunClientWithFields(logrus.Fields{}, getToken, graphqlEndpoint, bases...)
+func NewDryRunClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
+	return NewDryRunClientWithFields(logrus.Fields{}, getToken, censor, graphqlEndpoint, bases...)
 }
 
 // NewFakeClient creates a new client that will not perform any actions at all.
@@ -711,6 +714,7 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 		if err != nil {
 			return nil, err
 		}
+		b = c.censor(b)
 		buf = bytes.NewBuffer(b)
 	}
 	req, err := http.NewRequest(method, path, buf)
@@ -2984,7 +2988,7 @@ func (s *reloadingTokenSource) Token() (*oauth2.Token, error) {
 // See https://developer.github.com/v3/projects/#list-repository-projects
 func (c *client) GetRepoProjects(owner, repo string) ([]Project, error) {
 	c.log("GetOrgProjects", owner, repo)
-	path := (fmt.Sprintf("/repos/%s/%s/projects", owner, repo))
+	path := fmt.Sprintf("/repos/%s/%s/projects", owner, repo)
 	var projects []Project
 	err := c.readPaginatedResults(
 		path,
@@ -3007,7 +3011,7 @@ func (c *client) GetRepoProjects(owner, repo string) ([]Project, error) {
 // See https://developer.github.com/v3/projects/#list-organization-projects
 func (c *client) GetOrgProjects(org string) ([]Project, error) {
 	c.log("GetOrgProjects", org)
-	path := (fmt.Sprintf("/orgs/%s/projects", org))
+	path := fmt.Sprintf("/orgs/%s/projects", org)
 	var projects []Project
 	err := c.readPaginatedResults(
 		path,
@@ -3030,7 +3034,7 @@ func (c *client) GetOrgProjects(org string) ([]Project, error) {
 // See https://developer.github.com/v3/projects/columns/#list-project-columns
 func (c *client) GetProjectColumns(projectID int) ([]ProjectColumn, error) {
 	c.log("GetProjectColumns", projectID)
-	path := (fmt.Sprintf("/projects/%d/columns", projectID))
+	path := fmt.Sprintf("/projects/%d/columns", projectID)
 	var projectColumns []ProjectColumn
 	err := c.readPaginatedResults(
 		path,

@@ -102,9 +102,9 @@ func (o *GitHubOptions) GitHubClientWithLogFields(secretAgent *secret.Agent, dry
 	}
 
 	if dryRun {
-		return github.NewDryRunClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+		return github.NewDryRunClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 	}
-	return github.NewClientWithFields(fields, *generator, o.graphqlEndpoint, o.endpoint.Strings()...), nil
+	return github.NewClientWithFields(fields, *generator, secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...), nil
 }
 
 // GitHubClient returns a GitHub client.
