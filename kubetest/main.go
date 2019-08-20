@@ -256,8 +256,8 @@ func getDeployer(o *options) (deployer, error) {
 		return noneDeploy{}, nil
 	case "local":
 		return newLocalCluster(), nil
-	case "acsengine":
-		return newAcsEngine()
+	case "aksengine":
+		return newAksEngine()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
