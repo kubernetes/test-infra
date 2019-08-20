@@ -188,31 +188,68 @@ presubmits:
 postsubmits:
   kubernetes/cloud-provider-vsphere:
 
-  # Deploys the CCM and CSI images if both the unit and integration tests succeed.
+  # Deploys the images and binaries after all merges to master
   - name: post-cloud-provider-vsphere-deploy
     decorate: true
     labels:
       preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-cloud-provider-vsphere-e2e-config: "true"
     max_concurrency: 1
     branches:
     - ^master$
+    always_run: false
+    # Only build a new a image if something that could change binary changes
+    run_if_changed: '^(cmd|pkg)\/|cluster\/images\/controller-manager\/Dockerfile|Makefile'
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     spec:
       containers:
       - image: gcr.io/cloud-provider-vsphere/ci:05583732
+        resources:
+          requests:
+            cpu: "1000m"
         command:
         - "make"
         args:
-        - "deploy"
+        - "release-push"
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
+      testgrid-tab-name: post-deploy
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       testgrid-num-columns-recent: '20'
+      description: Pushes new images and binaries from master
+
+  # Deploys images and binaries for tagged releases
+  - name: post-cloud-provider-vsphere-release
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^v\d+\.\d+\.\d+(-(alpha|beta|rc)\.(\d)+)?$
+    always_run: false
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+        resources:
+          requests:
+            cpu: "1000m"
+        command:
+        - "make"
+        args:
+        - "release-push"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
+      testgrid-tab-name: release
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: releases new tagged images and binaries
 
 periodics:
 
