@@ -10,7 +10,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/cip-demo-staging/cip:20190816-v2.2.0-9-ga46090f
+      - image: gcr.io/k8s-staging-artifact-promoter/cip:20190820-v2.2.0-21-g15ee55c
         command:
         - cip
         args:
