@@ -2,7 +2,6 @@
 
 approvers:
 - amwat # oncall
-# - BenTheElder # emeritus
 - cjwagner # oncall
 - fejta # lead
 - ixdy # oncall
@@ -11,6 +10,8 @@ approvers:
 - michelle192837 # oncall
 - spiffxp # lead
 - stevekuznetsov # lead
+emeritus_approvers:
+- BenTheElder
 
 labels:
 - sig/testing
