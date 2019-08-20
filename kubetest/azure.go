@@ -46,6 +46,7 @@ import (
 
 var (
 	// azure specific flags
+	// TODO: Remove acs related flags after baking period
 	acsResourceName        = flag.String("acsengine-resource-name", "", "Azure Resource Name")
 	acsResourceGroupName   = flag.String("acsengine-resourcegroup-name", "", "Azure Resource Group Name")
 	acsLocation            = flag.String("acsengine-location", "", "Azure ACS location")
@@ -69,6 +70,7 @@ var (
 	acsAzureEnv            = flag.String("acsengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
 	acsIdentitySystem      = flag.String("acsengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	acsCustomCloudURL      = flag.String("acsengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
+	// aks flags
 	aksResourceName        = flag.String("aksengine-resource-name", "", "Azure Resource Name")
 	aksResourceGroupName   = flag.String("aksengine-resourcegroup-name", "", "Azure Resource Group Name")
 	aksLocation            = flag.String("aksengine-location", "", "Azure AKS location")
@@ -89,6 +91,9 @@ var (
 	aksOrchestratorRelease = flag.String("aksengine-orchestratorRelease", "", "Orchestrator Profile for aks-engine")
 	aksWinZipBuildScript   = flag.String("aksengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/aks-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for aks-engine")
 	aksNetworkPlugin       = flag.String("aksengine-networkPlugin", "azure", "Network pluging to use with aks-engine")
+	aksAzureEnv            = flag.String("acsengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
+	aksIdentitySystem      = flag.String("acsengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
+	aksCustomCloudURL      = flag.String("acsengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 )
 
@@ -234,16 +239,16 @@ func (c *Cluster) getAzCredentials() error {
 }
 
 func validateAzureStackCloudProfile() error {
-	if *aksLocation == "" {
+	if *acsLocation == "" {
 		return fmt.Errorf("no location specified for Azure Stack")
 	}
 
-	if *aksCustomCloudURL == "" {
+	if *acsCustomCloudURL == "" {
 		return fmt.Errorf("no custom cloud portal URL specified for Azure Stack")
 	}
 
-	if !strings.HasPrefix(*aksCustomCloudURL, fmt.Sprintf("https://portal.%s.", *aksLocation)) {
-		return fmt.Errorf("custom cloud portal URL needs to start with https://portal.%s. ", *aksLocation)
+	if !strings.HasPrefix(*acsCustomCloudURL, fmt.Sprintf("https://portal.%s.", *acsLocation)) {
+		return fmt.Errorf("custom cloud portal URL needs to start with https://portal.%s. ", *acsLocation)
 	}
 	return nil
 }
@@ -260,13 +265,72 @@ func randomAksEngineLocation() string {
 }
 
 func checkParams() error {
-	if strings.EqualFold(*aksAzureEnv, AzureStackCloud) {
+	if strings.EqualFold(*acsAzureEnv, AzureStackCloud) {
 		if err := validateAzureStackCloudProfile(); err != nil {
 			return err
 		}
-	} else if *aksLocation == "" {
+	} else if *acsLocation == "" {
 		*aksLocation = randomAksEngineLocation()
 	}
+	//TODO: remove acs related lines after baking period
+	if *acsResourceName != "" {
+		*aksResourceName = *acsResourceName
+	}
+	if *acsResourceGroupName != "" {
+		*aksResourceGroupName = *acsResourceGroupName
+	}
+	if *acsMasterVmSize != "" {
+		*aksMasterVmSize = *acsMasterVmSize
+	}
+	if *acsAgentVmSize != "" {
+		*aksAgentVmSize = *acsAgentVmSize
+	}
+	if *acsAdminUsername != "" {
+		*aksAdminUsername = *acsAdminUsername
+	}
+	if *acsAdminPassword != "" {
+		*aksAdminPassword = *acsAdminPassword
+	}
+	if *acsAgentPoolCount != 0 {
+		*aksAgentPoolCount = *acsAgentPoolCount
+	}
+	if *acsTemplateURL != "" {
+		*aksTemplateURL = *acsTemplateURL
+	}
+	if *acsDnsPrefix != "" {
+		*aksDnsPrefix = *acsDnsPrefix
+	}
+	if *acsEngineURL != "" {
+		*aksEngineURL = *acsEngineURL
+	}
+	if *acsEngineMD5 != "" {
+		*aksEngineMD5 = *acsEngineMD5
+	}
+	if *acsSSHPublicKeyPath != "" {
+		*aksSSHPublicKeyPath = *acsSSHPublicKeyPath
+	}
+	if *acsWinBinaries {
+		*aksWinBinaries = true
+	}
+	if *acsHyperKube {
+		*aksHyperKube = true
+	}
+	if *acsCcm {
+		*aksCcm = true
+	}
+	if *acsCredentialsFile != "" {
+		*aksCredentialsFile = *acsCredentialsFile
+	}
+	if *acsOrchestratorRelease != "" {
+		*aksOrchestratorRelease = *acsOrchestratorRelease
+	}
+	if *acsWinZipBuildScript != "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh" {
+		*aksWinZipBuildScript = *acsWinZipBuildScript
+	}
+	if *acsNetworkPlugin != "azure" {
+		*aksNetworkPlugin = *acsNetworkPlugin
+	}
+
 	if *aksCredentialsFile == "" {
 		return fmt.Errorf("no credentials file path specified")
 	}
@@ -285,6 +349,7 @@ func checkParams() error {
 	if *aksTemplateURL == "" {
 		return fmt.Errorf("no ApiModel URL specified.")
 	}
+
 	return nil
 }
 
