@@ -17,6 +17,7 @@ limitations under the License.
 package github
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/base64"
@@ -57,6 +58,9 @@ func getClient(url string) *client {
 		delegate: &delegate{
 			time:     &testTime{},
 			getToken: getToken,
+			censor: func(content []byte) []byte {
+				return content
+			},
 			client: &http.Client{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -229,6 +233,36 @@ func TestCreateComment(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	if err := c.CreateComment("k8s", "kuber", 5, "hello"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestCreateCommentCensored(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/comments" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ic IssueComment
+		if err := json.Unmarshal(b, &ic); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if ic.Body != "CENSORED" {
+			t.Errorf("Wrong body: %s", ic.Body)
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.delegate.censor = func(content []byte) []byte {
+		return bytes.ReplaceAll(content, []byte("hello"), []byte("CENSORED"))
+	}
 	if err := c.CreateComment("k8s", "kuber", 5, "hello"); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}

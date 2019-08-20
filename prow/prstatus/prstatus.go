@@ -193,6 +193,9 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 		}
 
+		noopCensor := func(content []byte) []byte {
+			return content
+		}
 		// If access token exists, get user login using the access token. This is a
 		// chance to validate whether the access token is consumable or not. If
 		// not, we invalidate the sessions and continue as if not logged in.
@@ -200,7 +203,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 		var user *github.User
 		var botName string
 		if ok && token.Valid() {
-			githubClient := github.NewClient(func() []byte { return []byte(token.AccessToken) }, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+			githubClient := github.NewClient(func() []byte { return []byte(token.AccessToken) }, noopCensor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 			var err error
 			botName, err = githubClient.BotName()
 			user = &github.User{Login: botName}
@@ -237,7 +240,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 
 			// Construct query
-			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, noopCensor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {

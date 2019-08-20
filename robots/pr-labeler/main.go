@@ -102,9 +102,9 @@ func main() {
 
 	var c client
 	if o.confirm {
-		c = github.NewClient(secretAgent.GetTokenGenerator(o.tokenPath), o.graphqlEndpoint, o.endpoint.Strings()...)
+		c = github.NewClient(secretAgent.GetTokenGenerator(o.tokenPath), secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.tokenPath), o.graphqlEndpoint, o.endpoint.Strings()...)
+		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.tokenPath), secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
 	}
 
 	// get all open PRs
