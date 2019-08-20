@@ -18,6 +18,7 @@ limitations under the License.
 package secret
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -116,21 +117,19 @@ type censoringFormatter struct {
 }
 
 func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	const censored = "CENSORED"
 	message := entry.Message
 	data := make(logrus.Fields, len(entry.Data))
 	for key, value := range entry.Data {
 		data[key] = value
 	}
 
-	for sKey := range f.agent.secretsMap {
-		secret := f.agent.GetSecret(sKey)
-		message = strings.ReplaceAll(message, string(secret), censored)
-
-		for key, value := range data {
-			if valueString, ok := value.(string); ok {
-				data[key] = strings.ReplaceAll(valueString, string(secret), censored)
-			}
+	message = f.agent.Censor(message)
+	for key, value := range data {
+		if valueString, ok := value.(string); ok {
+			data[key] = f.agent.Censor(valueString)
+		}
+		if valueStringer, ok := value.(fmt.Stringer); ok {
+			data[key] = f.agent.Censor(valueStringer.String())
 		}
 	}
 
@@ -142,6 +141,17 @@ func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		Message: message,
 		Caller:  entry.Caller,
 	})
+}
+
+const censored = "CENSORED"
+
+// Censor replaces sensitive parts of the content with a placeholder.
+func (a *Agent) Censor(content string) string {
+	for sKey := range a.secretsMap {
+		secret := a.GetSecret(sKey)
+		content = strings.ReplaceAll(content, string(secret), censored)
+	}
+	return content
 }
 
 // GetCensoringFormatter returns a logrus Formatter that censors values of the
