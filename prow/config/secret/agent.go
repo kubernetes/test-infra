@@ -18,7 +18,7 @@ limitations under the License.
 package secret
 
 import (
-	"fmt"
+	"bytes"
 	"os"
 	"strings"
 	"sync"
@@ -117,33 +117,26 @@ type censoringFormatter struct {
 }
 
 func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	message := entry.Message
-	data := make(logrus.Fields, len(entry.Data))
-	for key, value := range entry.Data {
-		data[key] = value
+	raw, err := f.delegate.Format(entry)
+	if err != nil {
+		return raw, err
 	}
 
-	message = f.agent.Censor(message)
-	for key, value := range data {
-		if valueString, ok := value.(string); ok {
-			data[key] = f.agent.Censor(valueString)
-		}
-		if valueStringer, ok := value.(fmt.Stringer); ok {
-			data[key] = f.agent.Censor(valueStringer.String())
-		}
-	}
-
-	return f.delegate.Format(&logrus.Entry{
-		Logger:  entry.Logger,
-		Data:    data,
-		Time:    entry.Time,
-		Level:   entry.Level,
-		Message: message,
-		Caller:  entry.Caller,
-	})
+	return f.agent.CensorBytes(raw), nil
 }
 
 const censored = "CENSORED"
+
+var censoredBytes = []byte(censored)
+
+// CensorBytes replaces sensitive parts of the content with a placeholder.
+func (a *Agent) CensorBytes(content []byte) []byte {
+	for sKey := range a.secretsMap {
+		secret := a.GetSecret(sKey)
+		content = bytes.ReplaceAll(content, secret, censoredBytes)
+	}
+	return content
+}
 
 // Censor replaces sensitive parts of the content with a placeholder.
 func (a *Agent) Censor(content string) string {
