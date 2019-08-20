@@ -27,17 +27,17 @@ import (
 )
 
 type fakeProwClient struct {
-	repalcedJobs map[string]*prowjobv1.ProwJob
+	replacedJobs map[string]*prowjobv1.ProwJob
 }
 
 func newFakeProwClient() *fakeProwClient {
 	return &fakeProwClient{
-		repalcedJobs: map[string]*prowjobv1.ProwJob{},
+		replacedJobs: map[string]*prowjobv1.ProwJob{},
 	}
 }
 
-func (c *fakeProwClient) ReplaceProwJob(name string, pj prowjobv1.ProwJob) (prowjobv1.ProwJob, error) {
-	c.repalcedJobs[name] = pj.DeepCopy()
+func (c *fakeProwClient) Update(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+	c.replacedJobs[pj.Name] = pj.DeepCopy()
 	return pj, nil
 }
 
@@ -462,7 +462,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 			}
 
 			replacedJobs := sets.NewString()
-			for _, pj := range pjc.repalcedJobs {
+			for _, pj := range pjc.replacedJobs {
 				if pj.Status.State != prowjobv1.AbortedState {
 					t.Errorf("%s: did not aborted the prow job: name=%s, state=%s", tc.name, pj.GetName(), pj.Status.State)
 				}
