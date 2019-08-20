@@ -26,7 +26,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
@@ -34,7 +36,6 @@ import (
 )
 
 const (
-	defaultSyncPeriod      = 10 * time.Minute
 	defaultRequestTTL      = 30 * time.Second
 	defaultRequestGCPeriod = time.Minute
 )
@@ -42,7 +43,6 @@ const (
 var (
 	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
-	syncPeriod        = flag.Duration("sync-period", defaultSyncPeriod, "Period at which to sync config")
 	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
 )
@@ -80,15 +80,18 @@ func main() {
 		Addr:    ":8080",
 	}
 
-	go func() {
-		configTick := time.NewTicker(*syncPeriod).C
-		for {
-			select {
-			case <-configTick:
-				r.SyncConfig(*configPath)
-			}
+	v := viper.New()
+	v.SetConfigFile(*configPath)
+	v.SetConfigType("yaml")
+	v.WatchConfig()
+	v.OnConfigChange(func(in fsnotify.Event) {
+		logrus.Infof("Updating Boskos Config")
+		if err := r.SyncConfig(*configPath); err != nil {
+			logrus.WithError(err).Errorf("Failed to update config")
+		} else {
+			logrus.Infof("Updated Boskos Config successfully")
 		}
-	}()
+	})
 
 	r.StartRequestGC(defaultRequestGCPeriod)
 
