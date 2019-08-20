@@ -50,6 +50,7 @@ csi-test
 csi-release-tools
 csi-lib-utils
 csi-driver-flex
+csi-proxy
 "
 
 # No Prow support in them yet.
@@ -358,6 +359,10 @@ EOF
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi
+      testgrid-tab-name: pull-kubernetes-csi-$repo
+      description: Kubernetes-CSI pull job on $repo
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
