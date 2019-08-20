@@ -611,6 +611,8 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-aws-fips-4.2
 - name: canary-openshift-ocp-installer-e2e-aws-fips-serial-4.2
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-aws-fips-serial-4.2
+- name: canary-openshift-ocp-installer-console-aws-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-console-aws-4.2
 - name: canary-openshift-ocp-installer-e2e-azure-4.2
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-azure-4.2
 - name: canary-openshift-ocp-installer-e2e-azure-serial-4.2
@@ -2028,6 +2030,10 @@ dashboards:
     - name: redhat-canary-openshift-ocp-installer-e2e-aws-fips-serial-4.2
       description: Runs Kubernetes serial e2e tests against an OpenShift 4.2 OCP cluster running on AWS with FIPS mode enabled.
       test_group_name: canary-openshift-ocp-installer-e2e-aws-fips-serial-4.2
+      base_options: width=10
+    - name: redhat-canary-openshift-ocp-installer-console-aws-4.2
+      description: Runs Kubernetes console e2e tests against an OpenShift 4.2 cluster.
+      test_group_name: canary-openshift-ocp-installer-console-aws-4.2
       base_options: width=10
     - name: redhat-canary-openshift-ocp-installer-e2e-azure-4.2
       description: Runs Kubernetes e2e tests against an OpenShift 4.2 OCP cluster running on Azure.
