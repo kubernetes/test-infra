@@ -49,3 +49,17 @@ presubmits:
           secretName: k8s-cip-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
+  # Run linter.
+  - name: pull-cip-lint
+    decorate: true
+    skip_report: true
+    always_run: true
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: golangci/golangci-lint:latest
+        command:
+        - "./lint.sh"
+    annotations:
+      testgrid-dashboards: sig-release-misc
