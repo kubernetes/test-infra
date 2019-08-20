@@ -651,6 +651,24 @@ approvers:
 }
 
 var ownersPatch = map[string]string{
+	"collaboratorAdditions": `@@ -1,4 +1,6 @@
+ reviewers:
+ - phippy
++- alice
+ approvers:
+ - zee
++- bob
+`,
+	"collaboratorRemovals": `@@ -1,8 +1,6 @@
+ reviewers:
+ - phippy
+ - alice
+-- bob
+ approvers:
+ - zee
+ - bob
+-- alice
+`,
 	"nonCollaboratorAdditions": `@@ -1,4 +1,6 @@
  reviewers:
 +- phippy
@@ -715,10 +733,20 @@ var ownersAliasesPatch = map[string]string{
    - phippy
    - zee
 `,
-	"collaboratorAdditions": `@@ -0,0 +1,3 @@
-+aliases:
-+ foo-reviewers:
-+ - alice
+	"collaboratorAdditions": `@@ -1,4 +1,5 @@
+ aliases:
+   foo-reviewers:
++  - alice
+   - phippy
+   - zee
+`,
+	"collaboratorRemovals": `@@ -1,6 +1,5 @@
+ aliases:
+   foo-reviewers:
+   - alice
+-  - bob
+   - phippy
+   - zee
 `,
 }
 
@@ -735,6 +763,22 @@ func TestNonCollaborators(t *testing.T) {
 		shouldLabel          bool
 		shouldComment        bool
 	}{
+		{
+			name:          "collaborators additions in OWNERS file",
+			filesChanged:  []string{"OWNERS"},
+			ownersFile:    "nonCollaborators",
+			ownersPatch:   "collaboratorAdditions",
+			shouldLabel:   false,
+			shouldComment: false,
+		},
+		{
+			name:          "collaborators removals in OWNERS file",
+			filesChanged:  []string{"OWNERS"},
+			ownersFile:    "nonCollaborators",
+			ownersPatch:   "collaboratorRemovals",
+			shouldLabel:   false,
+			shouldComment: false,
+		},
 		{
 			name:          "non-collaborators additions in OWNERS file",
 			filesChanged:  []string{"OWNERS"},
@@ -775,6 +819,24 @@ func TestNonCollaborators(t *testing.T) {
 			ownersFile:         "collaboratorsWithAliases",
 			ownersAliasesFile:  "nonCollaborators",
 			ownersAliasesPatch: "nonCollaboratorRemovals",
+			shouldLabel:        false,
+			shouldComment:      false,
+		},
+		{
+			name:               "collaborators additions in OWNERS_ALIASES file",
+			filesChanged:       []string{"OWNERS_ALIASES"},
+			ownersFile:         "collaboratorsWithAliases",
+			ownersAliasesFile:  "nonCollaborators",
+			ownersAliasesPatch: "collaboratorAdditions",
+			shouldLabel:        false,
+			shouldComment:      false,
+		},
+		{
+			name:               "collaborators removals in OWNERS_ALIASES file",
+			filesChanged:       []string{"OWNERS_ALIASES"},
+			ownersFile:         "collaboratorsWithAliases",
+			ownersAliasesFile:  "nonCollaborators",
+			ownersAliasesPatch: "collaboratorRemovals",
 			shouldLabel:        false,
 			shouldComment:      false,
 		},
