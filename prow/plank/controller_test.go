@@ -29,13 +29,18 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	kapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes/fake"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	clienttesting "k8s.io/client-go/testing"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/reporter"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -78,6 +83,8 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	return &fca{
 		c: &config.Config{
 			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "prowjobs",
+				PodNamespace:     "pods",
 				Plank: config.Plank{
 					Controller: config.Controller{
 						JobURLTemplate: template.Must(template.New("test").Parse("{{.ObjectMeta.Name}}/{{.Status.State}}")),
@@ -99,80 +106,6 @@ func (f *fca) Config() *config.Config {
 	f.Lock()
 	defer f.Unlock()
 	return f.c
-}
-
-type fkc struct {
-	sync.Mutex
-	prowjobs    []prowapi.ProwJob
-	pods        []v1.Pod
-	deletedPods []v1.Pod
-	err         error
-}
-
-func (f *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	f.prowjobs = append(f.prowjobs, pj)
-	return pj, nil
-}
-
-func (f *fkc) GetProwJob(name string) (prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	for _, pj := range f.prowjobs {
-		if pj.ObjectMeta.Name == name {
-			return pj, nil
-		}
-	}
-
-	return prowapi.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
-}
-
-func (f *fkc) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	return f.prowjobs, nil
-}
-
-func (f *fkc) ReplaceProwJob(name string, job prowapi.ProwJob) (prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	for i := range f.prowjobs {
-		if f.prowjobs[i].ObjectMeta.Name == name {
-			f.prowjobs[i] = job
-			return job, nil
-		}
-	}
-	return prowapi.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
-}
-
-func (f *fkc) CreatePod(pod v1.Pod) (v1.Pod, error) {
-	f.Lock()
-	defer f.Unlock()
-	if f.err != nil {
-		return v1.Pod{}, f.err
-	}
-	f.pods = append(f.pods, pod)
-	return pod, nil
-}
-
-func (f *fkc) ListPods(selector string) ([]v1.Pod, error) {
-	f.Lock()
-	defer f.Unlock()
-	return f.pods, nil
-}
-
-func (f *fkc) DeletePod(name string) error {
-	f.Lock()
-	defer f.Unlock()
-	for i := range f.pods {
-		if f.pods[i].ObjectMeta.Name == name {
-			f.deletedPods = append(f.deletedPods, f.pods[i])
-			f.pods = append(f.pods[:i], f.pods[i+1:]...)
-			return nil
-		}
-	}
-	return fmt.Errorf("did not find pod %s", name)
 }
 
 type fghc struct {
@@ -209,15 +142,15 @@ func TestTerminateDupes(t *testing.T) {
 		pjs                []prowapi.ProwJob
 		pm                 map[string]v1.Pod
 
-		terminatedPJs  map[string]struct{}
-		terminatedPods map[string]struct{}
+		terminatedPJs  sets.String
+		terminatedPods sets.String
 	}{
 		{
 			name: "terminate all duplicates",
 
 			pjs: []prowapi.ProwJob{
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest"},
+					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j1",
@@ -228,7 +161,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j1",
@@ -239,7 +172,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "older"},
+					ObjectMeta: metav1.ObjectMeta{Name: "older", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j1",
@@ -250,7 +183,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "complete"},
+					ObjectMeta: metav1.ObjectMeta{Name: "complete", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j1",
@@ -262,7 +195,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest_j2"},
+					ObjectMeta: metav1.ObjectMeta{Name: "newest_j2", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j2",
@@ -273,7 +206,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old_j2"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old_j2", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j2",
@@ -284,7 +217,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old_j3"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old_j3", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j3",
@@ -295,7 +228,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "new_j3"},
+					ObjectMeta: metav1.ObjectMeta{Name: "new_j3", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type: prowapi.PresubmitJob,
 						Job:  "j3",
@@ -307,9 +240,7 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 
-			terminatedPJs: map[string]struct{}{
-				"old": {}, "older": {}, "old_j2": {}, "old_j3": {},
-			},
+			terminatedPJs: sets.NewString("old", "older", "old_j2", "old_j3"),
 		},
 		{
 			name: "should also terminate pods",
@@ -317,7 +248,7 @@ func TestTerminateDupes(t *testing.T) {
 			allowCancellations: true,
 			pjs: []prowapi.ProwJob{
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "newest"},
+					ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type:    prowapi.PresubmitJob,
 						Job:     "j1",
@@ -329,7 +260,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: metav1.ObjectMeta{Name: "old"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: "prowjobs"},
 					Spec: prowapi.ProwJobSpec{
 						Type:    prowapi.PresubmitJob,
 						Job:     "j1",
@@ -342,28 +273,32 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 			pm: map[string]v1.Pod{
-				"newest": {ObjectMeta: metav1.ObjectMeta{Name: "newest"}},
-				"old":    {ObjectMeta: metav1.ObjectMeta{Name: "old"}},
+				"newest": {ObjectMeta: metav1.ObjectMeta{Name: "newest", Namespace: "prowjobs"}},
+				"old":    {ObjectMeta: metav1.ObjectMeta{Name: "old", Namespace: "prowjobs"}},
 			},
 
-			terminatedPJs: map[string]struct{}{
-				"old": {},
-			},
-			terminatedPods: map[string]struct{}{
-				"old": {},
-			},
+			terminatedPJs:  sets.NewString("old"),
+			terminatedPods: sets.NewString("old"),
 		},
 	}
 
 	for _, tc := range testcases {
-		var pods []v1.Pod
-		for _, pod := range tc.pm {
-			pods = append(pods, pod)
+		var prowJobs []runtime.Object
+		for i := range tc.pjs {
+			prowJobs = append(prowJobs, &tc.pjs[i])
 		}
-		fkc := &fkc{pods: pods, prowjobs: tc.pjs}
+		fakeProwJobClient := prowfake.NewSimpleClientset(prowJobs...)
+		var pods []runtime.Object
+		for name := range tc.pm {
+			pod := tc.pm[name]
+			pods = append(pods, &pod)
+		}
+		fakePodClient := fake.NewSimpleClientset(pods...)
 		fca := &fca{
 			c: &config.Config{
 				ProwConfig: config.ProwConfig{
+					ProwJobNamespace: "prowjobs",
+					PodNamespace:     "pods",
 					Plank: config.Plank{
 						Controller: config.Controller{
 							AllowCancellations: tc.allowCancellations,
@@ -374,41 +309,45 @@ func TestTerminateDupes(t *testing.T) {
 		}
 		log := logrus.NewEntry(logrus.StandardLogger())
 		c := Controller{
-			kc:     fkc,
-			pkcs:   map[string]kubeClient{kube.DefaultClusterAlias: fkc},
-			log:    log,
-			config: fca.Config,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			buildClients:  map[string]corev1.PodInterface{prowapi.DefaultClusterAlias: fakePodClient.CoreV1().Pods("pods")},
+			log:           log,
+			config:        fca.Config,
 		}
 
-		if err := c.terminateDupes(fkc.prowjobs, tc.pm); err != nil {
+		if err := c.terminateDupes(tc.pjs, tc.pm); err != nil {
 			t.Fatalf("Error terminating dupes: %v", err)
 		}
 
-		for terminatedName := range tc.terminatedPJs {
-			terminated := false
-			for _, pj := range fkc.prowjobs {
-				if pj.ObjectMeta.Name == terminatedName && !pj.Complete() {
-					t.Errorf("expected prowjob %q to be terminated!", terminatedName)
-				} else {
-					terminated = true
+		observedCompletedProwJobs := sets.NewString()
+		for _, action := range fakeProwJobClient.Fake.Actions() {
+			switch action := action.(type) {
+			case clienttesting.UpdateActionImpl:
+				if prowJob, ok := action.Object.(*prowapi.ProwJob); ok && prowJob.Complete() {
+					observedCompletedProwJobs.Insert(prowJob.Name)
 				}
-			}
-			if !terminated {
-				t.Errorf("expected prowjob %q to be terminated, got %+v", terminatedName, fkc.prowjobs)
 			}
 		}
-		for terminatedName := range tc.terminatedPods {
-			terminated := false
-			for _, deleted := range fkc.deletedPods {
-				if deleted.ObjectMeta.Name == terminatedName {
-					terminated = true
-				}
-			}
-			if !terminated {
-				t.Errorf("expected pod %q to be terminated, got terminated: %v", terminatedName, fkc.deletedPods)
-			}
+		if missing := tc.terminatedPJs.Difference(observedCompletedProwJobs); missing.Len() > 0 {
+			t.Errorf("%s: did not delete expected prowJobs: %v", tc.name, missing.List())
+		}
+		if extra := observedCompletedProwJobs.Difference(tc.terminatedPJs); extra.Len() > 0 {
+			t.Errorf("%s: found unexpectedly deleted prowJobs: %v", tc.name, extra.List())
 		}
 
+		observedTerminatedPods := sets.NewString()
+		for _, action := range fakePodClient.Fake.Actions() {
+			switch action := action.(type) {
+			case clienttesting.DeleteActionImpl:
+				observedTerminatedPods.Insert(action.Name)
+			}
+		}
+		if missing := tc.terminatedPods.Difference(observedTerminatedPods); missing.Len() > 0 {
+			t.Errorf("%s: did not delete expected pods: %v", tc.name, missing.List())
+		}
+		if extra := observedTerminatedPods.Difference(tc.terminatedPods); extra.Len() > 0 {
+			t.Errorf("%s: found unexpectedly deleted pods: %v", tc.name, extra.List())
+		}
 	}
 }
 
@@ -441,7 +380,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "start new pod",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "blabla",
+					Name:      "blabla",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "boop",
@@ -465,6 +405,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "pod with a max concurrency of 1",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "blabla",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Job:            "same",
 					Type:           prowapi.PeriodicJob,
@@ -482,7 +426,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				"default": {
 					{
 						ObjectMeta: metav1.ObjectMeta{
-							Name: "same-42",
+							Name:      "same-42",
+							Namespace: "pods",
 						},
 						Status: v1.PodStatus{
 							Phase: v1.PodRunning,
@@ -496,6 +441,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "trusted pod with a max concurrency of 1",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "blabla",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Job:            "same",
 					Type:           prowapi.PeriodicJob,
@@ -514,7 +463,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				"trusted": {
 					{
 						ObjectMeta: metav1.ObjectMeta{
-							Name: "same-42",
+							Name:      "same-42",
+							Namespace: "pods",
 						},
 						Status: v1.PodStatus{
 							Phase: v1.PodRunning,
@@ -529,7 +479,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "trusted pod with a max concurrency of 1 (can start)",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "some",
+					Name:      "some",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:            "some",
@@ -546,7 +497,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				"default": {
 					{
 						ObjectMeta: metav1.ObjectMeta{
-							Name: "other-42",
+							Name:      "other-42",
+							Namespace: "pods",
 						},
 						Status: v1.PodStatus{
 							Phase: v1.PodRunning,
@@ -568,7 +520,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "do not exceed global maxconcurrency",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "beer",
+					Name:      "beer",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "same",
@@ -587,7 +540,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "global maxconcurrency allows new jobs when possible",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "beer",
+					Name:      "beer",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "same",
@@ -612,6 +566,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "unprocessable prow job",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "beer",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "boop",
 					Type:    prowapi.PeriodicJob,
@@ -621,8 +579,12 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			pods:             map[string][]v1.Pod{"default": {}},
-			podErr:           kube.NewUnprocessableEntityError(errors.New("no way jose")),
+			pods: map[string][]v1.Pod{"default": {}},
+			podErr: &kapierrors.StatusError{ErrStatus: metav1.Status{
+				Status: metav1.StatusFailure,
+				Code:   http.StatusUnprocessableEntity,
+				Reason: metav1.StatusReasonInvalid,
+			}},
 			expectedState:    prowapi.ErrorState,
 			expectedComplete: true,
 			expectedReport:   true,
@@ -633,6 +595,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "conflict error starting pod",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "beer",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "boop",
 					Type:    prowapi.PeriodicJob,
@@ -642,13 +608,21 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			podErr:        kube.NewConflictError(errors.New("no way jose")),
+			podErr: &kapierrors.StatusError{ErrStatus: metav1.Status{
+				Status: metav1.StatusFailure,
+				Code:   http.StatusConflict,
+				Reason: metav1.StatusReasonAlreadyExists,
+			}},
 			expectedState: prowapi.TriggeredState,
 			expectError:   true,
 		},
 		{
 			name: "unknown error starting pod",
 			pj: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "beer",
+					Namespace: "prowjobs",
+				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "boop",
 					Type:    prowapi.PeriodicJob,
@@ -666,7 +640,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "running pod, failed prowjob update",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "foo",
+					Name:      "foo",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "boop",
@@ -681,7 +656,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				"default": {
 					{
 						ObjectMeta: metav1.ObjectMeta{
-							Name: "foo",
+							Name:      "foo",
+							Namespace: "pods",
 						},
 						Spec: v1.PodSpec{
 							Containers: []v1.Container{
@@ -720,23 +696,29 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				pm[pods[i].ObjectMeta.Name] = pods[i]
 			}
 		}
-		fc := &fkc{
-			prowjobs: []prowapi.ProwJob{tc.pj},
-		}
-		pkcs := map[string]kubeClient{}
+		fakeProwJobClient := prowfake.NewSimpleClientset(&tc.pj)
+		buildClients := map[string]corev1.PodInterface{}
 		for alias, pods := range tc.pods {
-			pkcs[alias] = &fkc{
-				pods: pods,
-				err:  tc.podErr,
+			var data []runtime.Object
+			for i := range pods {
+				pod := pods[i]
+				data = append(data, &pod)
 			}
+			fakeClient := fake.NewSimpleClientset(data...)
+			if tc.podErr != nil {
+				fakeClient.PrependReactor("create", "pods", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
+					return true, nil, tc.podErr
+				})
+			}
+			buildClients[alias] = fakeClient.CoreV1().Pods("pods")
 		}
 		c := Controller{
-			kc:          fc,
-			pkcs:        pkcs,
-			log:         logrus.NewEntry(logrus.StandardLogger()),
-			config:      newFakeConfigAgent(t, tc.maxConcurrency).Config,
-			totURL:      totServ.URL,
-			pendingJobs: make(map[string]int),
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			buildClients:  buildClients,
+			log:           logrus.NewEntry(logrus.StandardLogger()),
+			config:        newFakeConfigAgent(t, tc.maxConcurrency).Config,
+			totURL:        totServ.URL,
+			pendingJobs:   make(map[string]int),
 		}
 		if tc.pendingJobs != nil {
 			c.pendingJobs = tc.pendingJobs
@@ -761,7 +743,14 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			}
 		}
 
-		actual := fc.prowjobs[0]
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		if err != nil {
+			t.Errorf("for case %q could not list prowJobs from the client: %v", tc.name, err)
+		}
+		if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
+			t.Errorf("for case %q got %d created prowjobs", tc.name, len(actualProwJobs.Items)-1)
+		}
+		actual := actualProwJobs.Items[0]
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
 		}
@@ -769,15 +758,16 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			t.Errorf("for case %q got no pod name, expected one", tc.name)
 		}
 		for alias, expected := range tc.expectedNumPods {
-			if got := len(pkcs[alias].(*fkc).pods); got != expected {
+			actualPods, err := buildClients[alias].List(metav1.ListOptions{})
+			if err != nil {
+				t.Errorf("for case %q could not list pods from the client: %v", tc.name, err)
+			}
+			if got := len(actualPods.Items); got != expected {
 				t.Errorf("for case %q got %d pods for alias %q, but expected %d", tc.name, got, alias, expected)
 			}
 		}
 		if actual.Complete() != tc.expectedComplete {
 			t.Errorf("for case %q got wrong completion", tc.name)
-		}
-		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
-			t.Errorf("for case %q got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
 		}
 		if tc.expectedReport && numReports != 1 {
 			t.Errorf("for case %q wanted one report but got %d", tc.name, numReports)
@@ -824,7 +814,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "reset when pod goes missing",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-41",
+					Name:      "boop-41",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Type:    prowapi.PostsubmitJob,
@@ -845,7 +836,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "delete pod in unknown state",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-41",
+					Name:      "boop-41",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
@@ -858,7 +850,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "boop-41",
+						Name:      "boop-41",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase: v1.PodUnknown,
@@ -872,7 +865,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "succeeded pod",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-42",
+					Name:      "boop-42",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Type:    prowapi.BatchJob,
@@ -887,7 +881,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "boop-42",
+						Name:      "boop-42",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase: v1.PodSucceeded,
@@ -905,7 +900,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "failed pod",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-42",
+					Name:      "boop-42",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Type: prowapi.PresubmitJob,
@@ -924,7 +920,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "boop-42",
+						Name:      "boop-42",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase: v1.PodFailed,
@@ -941,7 +938,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "delete evicted pod",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-42",
+					Name:      "boop-42",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					PodSpec: &v1.PodSpec{Containers: []v1.Container{{Name: "test-name", Env: []v1.EnvVar{}}}},
@@ -954,7 +952,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "boop-42",
+						Name:      "boop-42",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase:  v1.PodFailed,
@@ -970,7 +969,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "don't delete evicted pod w/ error_on_eviction, complete PJ instead",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-42",
+					Name:      "boop-42",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					ErrorOnEviction: true,
@@ -984,7 +984,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "boop-42",
+						Name:      "boop-42",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase:  v1.PodFailed,
@@ -1002,7 +1003,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "running pod",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-42",
+					Name:      "boop-42",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{},
 				Status: prowapi.ProwJobStatus{
@@ -1013,7 +1015,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "boop-42",
+						Name:      "boop-42",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase: v1.PodRunning,
@@ -1027,7 +1030,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "pod changes url status",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "boop-42",
+					Name:      "boop-42",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{},
 				Status: prowapi.ProwJobStatus{
@@ -1039,7 +1043,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "boop-42",
+						Name:      "boop-42",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase: v1.PodSucceeded,
@@ -1057,7 +1062,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "unprocessable prow job",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "jose",
+					Name:      "jose",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{
 					Job:     "boop",
@@ -1069,7 +1075,11 @@ func TestSyncPendingJob(t *testing.T) {
 					State: prowapi.PendingState,
 				},
 			},
-			err:              kube.NewUnprocessableEntityError(errors.New("no way jose")),
+			err: &kapierrors.StatusError{ErrStatus: metav1.Status{
+				Status: metav1.StatusFailure,
+				Code:   http.StatusUnprocessableEntity,
+				Reason: metav1.StatusReasonInvalid,
+			}},
 			expectedState:    prowapi.ErrorState,
 			expectedComplete: true,
 			expectedReport:   true,
@@ -1079,7 +1089,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "stale pending prow job",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "nightmare",
+					Name:      "nightmare",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{},
 				Status: prowapi.ProwJobStatus{
@@ -1090,7 +1101,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "nightmare",
+						Name:      "nightmare",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase:     v1.PodPending,
@@ -1108,7 +1120,8 @@ func TestSyncPendingJob(t *testing.T) {
 			name: "stale running prow job",
 			pj: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "endless",
+					Name:      "endless",
+					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{},
 				Status: prowapi.ProwJobStatus{
@@ -1119,7 +1132,8 @@ func TestSyncPendingJob(t *testing.T) {
 			pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "endless",
+						Name:      "endless",
+						Namespace: "pods",
 					},
 					Status: v1.PodStatus{
 						Phase:     v1.PodRunning,
@@ -1142,20 +1156,28 @@ func TestSyncPendingJob(t *testing.T) {
 		for i := range tc.pods {
 			pm[tc.pods[i].ObjectMeta.Name] = tc.pods[i]
 		}
-		fc := &fkc{
-			prowjobs: []prowapi.ProwJob{tc.pj},
+		fakeProwJobClient := prowfake.NewSimpleClientset(&tc.pj)
+		var data []runtime.Object
+		for i := range tc.pods {
+			pod := tc.pods[i]
+			data = append(data, &pod)
 		}
-		fpc := &fkc{
-			pods: tc.pods,
-			err:  tc.err,
+		fakeClient := fake.NewSimpleClientset(data...)
+		if tc.err != nil {
+			fakeClient.PrependReactor("create", "pods", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, nil, tc.err
+			})
+		}
+		buildClients := map[string]corev1.PodInterface{
+			prowapi.DefaultClusterAlias: fakeClient.CoreV1().Pods("pods"),
 		}
 		c := Controller{
-			kc:          fc,
-			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
-			log:         logrus.NewEntry(logrus.StandardLogger()),
-			config:      newFakeConfigAgent(t, 0).Config,
-			totURL:      totServ.URL,
-			pendingJobs: make(map[string]int),
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			buildClients:  buildClients,
+			log:           logrus.NewEntry(logrus.StandardLogger()),
+			config:        newFakeConfigAgent(t, 0).Config,
+			totURL:        totServ.URL,
+			pendingJobs:   make(map[string]int),
 		}
 
 		reports := make(chan prowapi.ProwJob, 100)
@@ -1165,18 +1187,26 @@ func TestSyncPendingJob(t *testing.T) {
 		}
 		close(reports)
 
-		actual := fc.prowjobs[0]
+		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+		if err != nil {
+			t.Errorf("for case %q could not list prowJobs from the client: %v", tc.name, err)
+		}
+		if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
+			t.Errorf("for case %q got %d created prowjobs", tc.name, len(actualProwJobs.Items)-1)
+		}
+		actual := actualProwJobs.Items[0]
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
 		}
-		if len(fpc.pods) != tc.expectedNumPods {
-			t.Errorf("for case %q got %d pods, expected %d", tc.name, len(fpc.pods), tc.expectedNumPods)
+		actualPods, err := buildClients[prowapi.DefaultClusterAlias].List(metav1.ListOptions{})
+		if err != nil {
+			t.Errorf("for case %q could not list pods from the client: %v", tc.name, err)
+		}
+		if got := len(actualPods.Items); got != tc.expectedNumPods {
+			t.Errorf("for case %q got %d pods, expected %d", tc.name, len(actualPods.Items), tc.expectedNumPods)
 		}
 		if actual.Complete() != tc.expectedComplete {
 			t.Errorf("for case %q got wrong completion", tc.name)
-		}
-		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
-			t.Errorf("for case %q got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
 		}
 		if tc.expectedReport && len(reports) != 1 {
 			t.Errorf("for case %q wanted one report but got %d", tc.name, len(reports))
@@ -1212,6 +1242,7 @@ func TestOrderedJobs(t *testing.T) {
 		job.ObjectMeta.CreationTimestamp = metav1.Time{
 			Time: time.Now(),
 		}
+		job.Namespace = "prowjobs"
 		pjs = append(pjs, job)
 	}
 	expOut := []string{"ci-periodic-job-0", "ci-periodic-job-1", "ci-periodic-job-2"}
@@ -1221,24 +1252,24 @@ func TestOrderedJobs(t *testing.T) {
 		{1, 2, 0},
 		{2, 0, 1},
 	} {
-		newPjs := make([]prowapi.ProwJob, 3)
+		newPjs := make([]runtime.Object, 3)
 		for i := 0; i < len(pjs); i++ {
-			newPjs[i] = pjs[orders[i]]
+			newPjs[i] = &pjs[orders[i]]
 		}
-		fc := &fkc{
-			prowjobs: newPjs,
+		fakeProwJobClient := prowfake.NewSimpleClientset(newPjs...)
+		buildClients := map[string]corev1.PodInterface{
+			"trusted": fake.NewSimpleClientset().CoreV1().Pods("pods"),
 		}
-
 		log := logrus.NewEntry(logrus.StandardLogger())
 		c := Controller{
-			kc:          fc,
-			ghc:         &fghc{},
-			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
-			log:         log,
-			config:      newFakeConfigAgent(t, 0).Config,
-			totURL:      totServ.URL,
-			pendingJobs: make(map[string]int),
-			lock:        sync.RWMutex{},
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			ghc:           &fghc{},
+			buildClients:  buildClients,
+			log:           log,
+			config:        newFakeConfigAgent(t, 0).Config,
+			totURL:        totServ.URL,
+			pendingJobs:   make(map[string]int),
+			lock:          sync.RWMutex{},
 		}
 		if err := c.Sync(); err != nil {
 			t.Fatalf("Error on first sync: %v", err)
@@ -1264,53 +1295,79 @@ func TestPeriodic(t *testing.T) {
 
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 	defer totServ.Close()
-	fc := &fkc{
-		prowjobs: []prowapi.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil, nil)},
+	pj := pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil, nil)
+	pj.Namespace = "prowjobs"
+	fakeProwJobClient := prowfake.NewSimpleClientset(&pj)
+	buildClients := map[string]corev1.PodInterface{
+		prowapi.DefaultClusterAlias: fake.NewSimpleClientset().CoreV1().Pods("pods"),
+		"trusted":                   fake.NewSimpleClientset().CoreV1().Pods("pods"),
 	}
 	log := logrus.NewEntry(logrus.StandardLogger())
 	c := Controller{
-		kc:          fc,
-		ghc:         &fghc{},
-		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
-		log:         log,
-		config:      newFakeConfigAgent(t, 0).Config,
-		totURL:      totServ.URL,
-		pendingJobs: make(map[string]int),
-		lock:        sync.RWMutex{},
+		prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+		ghc:           &fghc{},
+		buildClients:  buildClients,
+		log:           log,
+		config:        newFakeConfigAgent(t, 0).Config,
+		totURL:        totServ.URL,
+		pendingJobs:   make(map[string]int),
+		lock:          sync.RWMutex{},
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
-	if len(fc.prowjobs[0].Spec.PodSpec.Containers) != 1 || fc.prowjobs[0].Spec.PodSpec.Containers[0].Name != "test-name" {
-		t.Fatalf("Sync step updated the pod spec: %#v", fc.prowjobs[0].Spec.PodSpec)
+	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("could not list prowJobs from the client: %v", err)
 	}
-	if len(fc.pods) != 1 {
-		t.Fatal("Didn't create pod on first sync.")
+	if len(afterFirstSync.Items) != 1 {
+		t.Fatalf("saw %d prowjobs after sync, not 1", len(afterFirstSync.Items))
 	}
-	if len(fc.pods[0].Spec.Containers) != 1 {
+	if len(afterFirstSync.Items[0].Spec.PodSpec.Containers) != 1 || afterFirstSync.Items[0].Spec.PodSpec.Containers[0].Name != "test-name" {
+		t.Fatalf("Sync step updated the pod spec: %#v", afterFirstSync.Items[0].Spec.PodSpec)
+	}
+	podsAfterSync, err := buildClients["trusted"].List(metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("could not list pods from the client: %v", err)
+	}
+	if len(podsAfterSync.Items) != 1 {
+	}
+	if len(podsAfterSync.Items[0].Spec.Containers) != 1 {
 		t.Fatal("Wiped container list.")
 	}
-	if len(fc.pods[0].Spec.Containers[0].Env) == 0 {
+	if len(podsAfterSync.Items[0].Spec.Containers[0].Env) == 0 {
 		t.Fatal("Container has no env set.")
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
-	if len(fc.pods) != 1 {
-		t.Fatalf("Wrong number of pods after second sync: %d", len(fc.pods))
+	podsAfterSecondSync, err := buildClients["trusted"].List(metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("could not list pods from the client: %v", err)
 	}
-	fc.pods[0].Status.Phase = v1.PodSucceeded
+	if len(podsAfterSecondSync.Items) != 1 {
+		t.Fatalf("Wrong number of pods after second sync: %d", len(podsAfterSecondSync.Items))
+	}
+	update := podsAfterSecondSync.Items[0].DeepCopy()
+	update.Status.Phase = v1.PodSucceeded
+	if _, err := buildClients["trusted"].Update(update); err != nil {
+		t.Fatalf("could not update pod to be succeeded: %v", err)
+	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on third sync: %v", err)
 	}
-	if !fc.prowjobs[0].Complete() {
+	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("could not list prowJobs from the client: %v", err)
+	}
+	if len(afterThirdSync.Items) != 1 {
+		t.Fatalf("Wrong number of prow jobs: %d", len(afterThirdSync.Items))
+	}
+	if !afterThirdSync.Items[0].Complete() {
 		t.Fatal("Prow job didn't complete.")
 	}
-	if fc.prowjobs[0].Status.State != prowapi.SuccessState {
-		t.Fatalf("Should be success: %v", fc.prowjobs[0].Status.State)
-	}
-	if len(fc.prowjobs) != 1 {
-		t.Fatalf("Wrong number of prow jobs: %d", len(fc.prowjobs))
+	if afterThirdSync.Items[0].Status.State != prowapi.SuccessState {
+		t.Fatalf("Should be success: %v", afterThirdSync.Items[0].Status.State)
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on fourth sync: %v", err)
@@ -1328,6 +1385,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			name: "avoid starting a triggered job",
 			pjs: []prowapi.ProwJob{
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "first",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -1340,6 +1400,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 					},
 				},
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "second",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -1359,6 +1422,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			name: "both triggered jobs can start",
 			pjs: []prowapi.ProwJob{
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "first",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -1371,6 +1437,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 					},
 				},
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "second",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -1390,6 +1459,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			name: "no triggered job can start",
 			pjs: []prowapi.ProwJob{
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "first",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -1402,6 +1474,9 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 					},
 				},
 				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "second",
+					},
 					Spec: prowapi.ProwJobSpec{
 						Job:            "test-bazel-build",
 						Type:           prowapi.PostsubmitJob,
@@ -1427,16 +1502,20 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		}
 		close(jobs)
 
-		fc := &fkc{
-			prowjobs: test.pjs,
+		var prowJobs []runtime.Object
+		for i := range test.pjs {
+			prowJobs = append(prowJobs, &test.pjs[i])
 		}
-		fpc := &fkc{}
+		fakeProwJobClient := prowfake.NewSimpleClientset(prowJobs...)
+		buildClients := map[string]corev1.PodInterface{
+			prowapi.DefaultClusterAlias: fake.NewSimpleClientset().CoreV1().Pods("pods"),
+		}
 		c := Controller{
-			kc:          fc,
-			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
-			log:         logrus.NewEntry(logrus.StandardLogger()),
-			config:      newFakeConfigAgent(t, 0).Config,
-			pendingJobs: test.pendingJobs,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			buildClients:  buildClients,
+			log:           logrus.NewEntry(logrus.StandardLogger()),
+			config:        newFakeConfigAgent(t, 0).Config,
+			pendingJobs:   test.pendingJobs,
 		}
 
 		reports := make(chan prowapi.ProwJob, len(test.pjs))
@@ -1444,8 +1523,12 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		pm := make(map[string]v1.Pod)
 
 		syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, reports, errors, pm)
-		if len(fpc.pods) != test.expectedPods {
-			t.Errorf("expected pods: %d, got: %d", test.expectedPods, len(fpc.pods))
+		podsAfterSync, err := buildClients[prowapi.DefaultClusterAlias].List(metav1.ListOptions{})
+		if err != nil {
+			t.Fatalf("could not list pods from the client: %v", err)
+		}
+		if len(podsAfterSync.Items) != test.expectedPods {
+			t.Errorf("expected pods: %d, got: %d", test.expectedPods, len(podsAfterSync.Items))
 		}
 	}
 }
@@ -1559,13 +1642,17 @@ func TestMaxConcurency(t *testing.T) {
 			if tc.pendingJobs == nil {
 				tc.pendingJobs = map[string]int{}
 			}
-			fpc := &fkc{}
+			var prowJobs []runtime.Object
+			for i := range tc.existingProwJobs {
+				prowJobs = append(prowJobs, &tc.existingProwJobs[i])
+			}
+			buildClients := map[string]corev1.PodInterface{}
 			c := Controller{
-				pjs:         tc.existingProwJobs,
-				pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
-				log:         logrus.NewEntry(logrus.StandardLogger()),
-				config:      newFakeConfigAgent(t, 0).Config,
-				pendingJobs: tc.pendingJobs,
+				pjs:          tc.existingProwJobs,
+				buildClients: buildClients,
+				log:          logrus.NewEntry(logrus.StandardLogger()),
+				config:       newFakeConfigAgent(t, 0).Config,
+				pendingJobs:  tc.pendingJobs,
 			}
 			logrus.SetLevel(logrus.DebugLevel)
 

@@ -30,7 +30,6 @@ import (
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobscheme "k8s.io/test-infra/prow/client/clientset/versioned/scheme"
-	prowjobsetv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	prowjobinfov1 "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
 	prowjoblisters "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -59,18 +58,6 @@ import (
 const (
 	controllerName = "prow-build-crd"
 )
-
-type pjClient struct {
-	pjc prowjobsetv1.ProwJobInterface
-}
-
-func (c *pjClient) ReplaceProwJob(name string, pj prowjobv1.ProwJob) (prowjobv1.ProwJob, error) {
-	npj, err := c.pjc.Update(&pj)
-	if npj != nil {
-		return *npj, err
-	}
-	return prowjobv1.ProwJob{}, err
-}
 
 type controller struct {
 	config config.Getter
@@ -372,16 +359,14 @@ func (c *controller) allowCancellations() bool {
 }
 
 func (c *controller) terminateDupProwJobs(ctx string, namespace string) error {
-	pjClient := &pjClient{
-		pjc: c.pjc.ProwV1().ProwJobs(c.config().ProwJobNamespace),
-	}
+	pjc := c.pjc.ProwV1().ProwJobs(c.config().ProwJobNamespace)
 	log := logrus.NewEntry(logrus.StandardLogger()).WithField("aborter", "build")
 
 	jobs, err := c.getProwJobs(namespace)
 	if err != nil {
 		return err
 	}
-	return pjutil.TerminateOlderJobs(pjClient, log, jobs, func(toCancel prowjobv1.ProwJob) error {
+	return pjutil.TerminateOlderJobs(pjc, log, jobs, func(toCancel prowjobv1.ProwJob) error {
 		if c.allowCancellations() {
 			if err := c.deleteBuild(ctx, namespace, toCancel.GetName()); err != nil && !apierrors.IsNotFound(err) {
 				return fmt.Errorf("deleting build: %v", err)
