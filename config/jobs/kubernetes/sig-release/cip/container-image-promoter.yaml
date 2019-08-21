@@ -63,6 +63,8 @@ presubmits:
       containers:
       - image: golangci/golangci-lint:latest
         command:
-        - "./lint.sh"
+        - "make"
+        args:
+        - "lint-ci"
     annotations:
       testgrid-dashboards: sig-release-misc
