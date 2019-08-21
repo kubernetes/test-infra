@@ -53,7 +53,7 @@ presubmits:
   # Run linter.
   - name: pull-cip-lint
     decorate: true
-    skip_report: true
+    skip_report: false
     always_run: true
     branches:
     - ^master$
