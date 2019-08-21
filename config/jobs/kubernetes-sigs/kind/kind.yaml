@@ -9,11 +9,17 @@ periodics:
     repo: kind
     base_ref: master
     path_alias: sigs.k8s.io/kind
+  labels:
+      preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190819-0b0980f-master
       command:
-      - "./hack/ci/build-all.sh"
+      - runner.sh
+      - ./hack/ci/build-all.sh
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
 # conformance test against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance
