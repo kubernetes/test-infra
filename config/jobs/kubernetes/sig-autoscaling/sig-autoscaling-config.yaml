@@ -190,7 +190,7 @@ periodics:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gce-autoscaling
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
+  name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa-cm
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -213,7 +213,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
-    testgrid-tab-name: gci-gce-autoscaling-hpa
+    testgrid-tab-name: gci-gce-autoscaling-hpa-cm
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   labels:
@@ -304,7 +304,7 @@ periodics:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gke-autoscaling
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa-cm
   labels:
     preset-gke-alpha-service: "true"
     preset-k8s-ssh: "true"
@@ -331,7 +331,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
-    testgrid-tab-name: gci-gke-autoscaling-hpa
+    testgrid-tab-name: gci-gke-autoscaling-hpa-cm
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   labels:
@@ -361,3 +361,30 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
     testgrid-tab-name: gci-gke-autoscaling-regional
+- interval: 30m
+  name: ci-kubernetes-e2e-autoscaling-hpa-cpu
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=120
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --gcp-node-image=gci
+      - --extract=ci/k8s-stable1
+      - --timeout=100m
+      - --test_args=--ginkgo.focus=\[Feature:HPA\]
+        --minStartupPods=8
+      - --ginkgo-parallel=1
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190819-0b0980f-master
+
+  annotations:
+    # TODO: add to release blocking dashboards once run is successful
+    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-tab-name: gce-cos-autoscaling-hpa-cpu
