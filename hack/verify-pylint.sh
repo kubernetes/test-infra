@@ -38,4 +38,4 @@ shopt -s extglob globstar
 
 # TODO(clarketm) there is no version of `pylint` that supports "both" PY2 and PY3
 # I am disabling pylint checks for python3 files until migration complete
-"$DIR/pylint_bin" !(metrics|triage|velodrome|hack|gubernator|external|vendor|testgrid|bazel-*)/**/*.py
+"$DIR/pylint_bin" !(kettle|metrics|triage|velodrome|hack|gubernator|external|vendor|testgrid|bazel-*)/**/*.py

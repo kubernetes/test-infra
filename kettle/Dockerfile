@@ -14,13 +14,12 @@
 
 FROM ubuntu:18.04
 
-ENV KETTLE_DB=/data/build.db
-ENV TZ=America/Los_Angeles
+ENV KETTLE_DB=/data/build.db TZ=America/Los_Angeles
 
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone
-
-RUN apt-get update && apt-get install -y \
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
+    && apt-get update \
+    && apt-get install -y \
     tzdata \
     curl \
     pv \
