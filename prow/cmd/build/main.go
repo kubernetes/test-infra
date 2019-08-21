@@ -111,6 +111,15 @@ type buildConfig struct {
 	informer cache.Informer
 }
 
+type listSingleItem struct{}
+
+func (_ listSingleItem) ApplyToList(opts *ctrlruntimeclient.ListOptions) {
+	if opts.Raw == nil {
+		opts.Raw = &metav1.ListOptions{}
+	}
+	opts.Raw.Limit = 1
+}
+
 // newBuildConfig returns a client and informer capable of mutating and monitoring the specified config.
 func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	// Assume watches receive updates, but resync every 30m in case something wonky happens
@@ -125,8 +134,7 @@ func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	// Ensure the knative-build CRD is deployed
 	// TODO(fejta): probably a better way to do this
 	buildList := &buildv1alpha1.BuildList{}
-	opts := &ctrlruntimeclient.ListOptions{Raw: &metav1.ListOptions{Limit: 1}}
-	if err := mgr.GetClient().List(context.TODO(), buildList, ctrlruntimeclient.UseListOptions(opts)); err != nil {
+	if err := mgr.GetClient().List(context.TODO(), buildList, listSingleItem{}); err != nil {
 		return nil, err
 	}
 	cache := mgr.GetCache()
