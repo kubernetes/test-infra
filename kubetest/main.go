@@ -256,8 +256,11 @@ func getDeployer(o *options) (deployer, error) {
 		return noneDeploy{}, nil
 	case "local":
 		return newLocalCluster(), nil
+	case "aksengine":
+		return newAksEngine()
+	//TODO: Remove acs related lines after baking period
 	case "acsengine":
-		return newAcsEngine()
+		return newAksEngine()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
