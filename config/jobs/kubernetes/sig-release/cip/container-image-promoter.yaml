@@ -55,7 +55,7 @@ presubmits:
   - name: pull-cip-unit-tests
     decorate: true
     path_alias: "sigs.k8s.io/k8s-container-image-promoter"
-    skip_report: true
+    skip_report: false
     always_run: true
     branches:
     - ^master$
