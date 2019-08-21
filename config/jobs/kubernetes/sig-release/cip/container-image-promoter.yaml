@@ -51,6 +51,23 @@ presubmits:
           secretName: k8s-cip-test-prod-service-account
     annotations:
       testgrid-dashboards: sig-release-misc
+  # Build all binaries and also run unit tests.
+  - name: pull-cip-unit-tests
+    decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    skip_report: true
+    always_run: true
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190819-0b0980f-master
+        command:
+        - "make"
+        args:
+        - "test-ci"
+    annotations:
+      testgrid-dashboards: sig-release-misc
   # Run linter.
   - name: pull-cip-lint
     decorate: true
