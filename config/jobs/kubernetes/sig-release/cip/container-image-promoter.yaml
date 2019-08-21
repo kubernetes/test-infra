@@ -25,6 +25,7 @@ presubmits:
   # Run promoter e2e tests.
   - name: pull-cip-e2e
     decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
     skip_report: false
     always_run: true
     # Because we run e2e tests, we cannot run more than 1 instance at a time
@@ -53,6 +54,7 @@ presubmits:
   # Run linter.
   - name: pull-cip-lint
     decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
     skip_report: false
     always_run: true
     branches:
