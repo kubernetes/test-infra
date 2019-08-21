@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sync"
 	"testing"
 	"text/template"
 	"time"
@@ -34,6 +35,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -2483,6 +2486,92 @@ func TestValidateTriggering(t *testing.T) {
 			err := validateTriggering(tc.presubmit)
 			if err != nil != tc.errExpected {
 				t.Errorf("Expected err: %t but got err %v", tc.errExpected, err)
+			}
+		})
+	}
+}
+
+func TestRefGetterForGitHubPullRequest(t *testing.T) {
+	testCases := []struct {
+		name   string
+		rg     *RefGetterForGitHubPullRequest
+		verify func(*RefGetterForGitHubPullRequest) error
+	}{
+		{
+			name: "Existing PullRequest is returned",
+			rg:   &RefGetterForGitHubPullRequest{pr: &github.PullRequest{ID: 123456}},
+			verify: func(rg *RefGetterForGitHubPullRequest) error {
+				if rg.pr == nil || rg.pr.ID != 123456 {
+					return fmt.Errorf("Expected refGetter to contain pr with id 123456, pr was %v", rg.pr)
+				}
+				return nil
+			},
+		},
+		{
+			name: "PullRequest is fetched, stored and returned",
+			rg: &RefGetterForGitHubPullRequest{
+				ghc: &fakegithub.FakeClient{
+					PullRequests: map[int]*github.PullRequest{0: {ID: 123456}}},
+			},
+			verify: func(rg *RefGetterForGitHubPullRequest) error {
+				pr, err := rg.PullRequest()
+				if err != nil {
+					return fmt.Errorf("failed to fetch PullRequest: %v", err)
+				}
+				if rg.pr == nil || rg.pr.ID != 123456 {
+					return fmt.Errorf("expected agent to contain pr with id 123456, pr was %v", rg.pr)
+				}
+				if pr.ID != 123456 {
+					return fmt.Errorf("expected returned pr.ID to be 123456, was %d", pr.ID)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Existing baseSHA is returned",
+			rg:   &RefGetterForGitHubPullRequest{baseSHA: "12345", pr: &github.PullRequest{}},
+			verify: func(rg *RefGetterForGitHubPullRequest) error {
+				baseSHA, err := rg.BaseSHA()
+				if err != nil {
+					return fmt.Errorf("error calling baseSHA: %v", err)
+				}
+				if rg.baseSHA != "12345" {
+					return fmt.Errorf("expected agent baseSHA to be 12345, was %q", rg.baseSHA)
+				}
+				if baseSHA != "12345" {
+					return fmt.Errorf("expected returned baseSHA to be 12345, was %q", baseSHA)
+				}
+				return nil
+			},
+		},
+		{
+			name: "BaseSHA is fetched, stored and returned",
+			rg: &RefGetterForGitHubPullRequest{
+				ghc: &fakegithub.FakeClient{
+					PullRequests: map[int]*github.PullRequest{0: {}},
+				},
+			},
+			verify: func(rg *RefGetterForGitHubPullRequest) error {
+				baseSHA, err := rg.BaseSHA()
+				if err != nil {
+					return fmt.Errorf("expected err to be nil, was %v", err)
+				}
+				if rg.baseSHA != fakegithub.TestRef {
+					return fmt.Errorf("expected baseSHA on agent to be %q, was %q", fakegithub.TestRef, rg.baseSHA)
+				}
+				if baseSHA != fakegithub.TestRef {
+					return fmt.Errorf("expected returned baseSHA to be %q, was %q", fakegithub.TestRef, baseSHA)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.rg.lock = &sync.Mutex{}
+			if err := tc.verify(tc.rg); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}
