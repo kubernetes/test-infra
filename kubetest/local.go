@@ -213,6 +213,14 @@ func (n localCluster) TestSetup() error {
 }
 
 func (n localCluster) Down() error {
+	processes := []string{
+		"cloud-controller-manager",
+		"hyperkube", // remove hyperkube when it is removed from local-up-cluster.sh
+		"kube-controller-manager",
+		"kube-proxy",
+		"kube-scheduler",
+		"kubelet",
+	}
 	// create docker client
 	cli, err := client.NewEnvClient()
 	if err != nil {
@@ -220,9 +228,9 @@ func (n localCluster) Down() error {
 	}
 	// make sure all containers are removed
 	removeAllContainers(cli)
-	err = control.FinishRunning(exec.Command("pkill", "hyperkube"))
+	err = control.FinishRunning(exec.Command("pkill", processes...))
 	if err != nil {
-		log.Printf("unable to kill hyperkube processes: %v", err)
+		log.Printf("unable to kill kubernetes processes: %v", err)
 	}
 	err = control.FinishRunning(exec.Command("pkill", "etcd"))
 	if err != nil {
