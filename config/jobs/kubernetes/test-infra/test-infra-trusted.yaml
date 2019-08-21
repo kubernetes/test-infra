@@ -585,7 +585,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-0-g9814d02
+      - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
         command:
         - cip
         args:
@@ -959,7 +959,7 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-0-g9814d02
+    - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
       command:
       - cip
       args:
