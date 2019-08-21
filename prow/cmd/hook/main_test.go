@@ -91,6 +91,15 @@ func Test_gatherOptions(t *testing.T) {
 				o.pluginConfig = "/random/value"
 			},
 		},
+		{
+			name: "explicitly set --plugin-help=false",
+			args: map[string]string{
+				"--plugin-help": "false",
+			},
+			expected: func(o *options) {
+				o.pluginHelp = false
+			},
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -102,6 +111,7 @@ func Test_gatherOptions(t *testing.T) {
 				gracePeriod:       180 * time.Second,
 				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				webhookSecretFile: "/etc/webhook/hmac",
+				pluginHelp:        true,
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
