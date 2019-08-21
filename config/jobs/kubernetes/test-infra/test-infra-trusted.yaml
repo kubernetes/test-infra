@@ -836,7 +836,7 @@ periodics:
     - name: slack
       secret:
         secretName: slack-usergroup-token
-- interval: 5m
+- interval: 12h
   name: ci-test-infra-resultstore-upload
   cluster: test-infra-trusted
   decorate: true
