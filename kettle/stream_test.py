@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -23,7 +23,7 @@ import make_db_test
 import model
 
 
-class FakeSub(object):
+class FakeSub:
     def __init__(self, pulls):
         self.pulls = pulls
         self.trace = []
@@ -39,7 +39,7 @@ class FakeSub(object):
         self.trace.append(['modify-ack', acks, time])
 
 
-class FakeTable(object):
+class FakeTable:
     def __init__(self, name, schema, trace=None):
         self.name = name
         self.schema = schema
@@ -50,12 +50,12 @@ class FakeTable(object):
         return []
 
 
-class Attrs(object):
+class Attrs:
     def __init__(self, attributes):
         self.attributes = attributes
 
 
-class FakeSchemaField(object):
+class FakeSchemaField:
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
 
@@ -115,10 +115,10 @@ class StreamTest(unittest.TestCase):
                  now - 5,
                  now,
                  True,
-                 u'SUCCESS',
+                 'SUCCESS',
                  None,
-                 u'gs://kubernetes-jenkins/logs/fake/123',
-                 u'fake',
+                 'gs://kubernetes-jenkins/logs/fake/123',
+                 'fake',
                  123,
                  [],
                  [{'name': 'Foo', 'time': 3.0},

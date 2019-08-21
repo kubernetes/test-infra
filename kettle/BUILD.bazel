@@ -11,12 +11,12 @@ py_test(
     # https://github.com/bazelbuild/bazel/issues/1973
     # https://github.com/bazelbuild/bazel/issues/2056
     local = True,
-    python_version = "PY2",
+    python_version = "PY3",
     deps = [
         requirement("certifi"),
         requirement("chardet"),
         requirement("idna"),
-        requirement("PyYAML"),
+        requirement("ruamel.yaml"),
         requirement("requests"),
         requirement("urllib3"),
     ],
@@ -28,7 +28,7 @@ py_binary(
         "make_db.py",
         "model.py",
     ],
-    python_version = "PY2",
+    python_version = "PY3",
 )
 
 # TODO(rmmh): re-enable when Bazel is fixed.
@@ -51,7 +51,7 @@ py_test(
         "model_test.py",
         ":package-srcs",
     ],
-    python_version = "PY2",
+    python_version = "PY3",
 )
 
 py_test(
@@ -65,12 +65,12 @@ py_test(
         "buckets.yaml",
         "schema.json",
     ],
-    python_version = "PY2",
+    python_version = "PY3",
     deps = [
         requirement("certifi"),
         requirement("chardet"),
         requirement("idna"),
-        requirement("PyYAML"),
+        requirement("ruamel.yaml"),
         requirement("requests"),
         requirement("urllib3"),
     ],
@@ -87,8 +87,8 @@ py_test(
     data = [":buckets.yaml"],
     # idem
     local = True,
-    python_version = "PY2",
-    deps = [requirement("PyYAML")],
+    python_version = "PY3",
+    deps = [requirement("ruamel.yaml")],
 )
 
 filegroup(
