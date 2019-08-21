@@ -26,6 +26,7 @@ presubmits:
   - name: pull-cip-e2e
     decorate: true
     skip_report: false
+    always_run: true
     # Because we run e2e tests, we cannot run more than 1 instance at a time
     # (the e2e test resources are not isolated across test runs).
     max_concurrency: 1
