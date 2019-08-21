@@ -14,7 +14,6 @@
 
 """Generates a SQLite DB containing test data downloaded from GCS."""
 
-from __future__ import print_function
 
 import argparse
 import logging
@@ -24,13 +23,13 @@ import re
 import signal
 import sys
 import time
-import urllib2
+import urllib.parse
 from xml.etree import cElementTree as ET
 
 import multiprocessing
 import multiprocessing.pool
 import requests
-import yaml
+import ruamel.yaml as yaml
 
 import model
 
@@ -41,7 +40,7 @@ def pad_numbers(string):
 
 WORKER_CLIENT = None  # used for multiprocessing
 
-class GCSClient(object):
+class GCSClient:
     def __init__(self, jobs_dir, metadata=None):
         self.jobs_dir = jobs_dir
         self.metadata = metadata or {}
@@ -55,7 +54,7 @@ class GCSClient(object):
 
         """
         url = 'https://www.googleapis.com/storage/v1/b/%s' % path
-        for retry in xrange(23):
+        for retry in range(23):
             try:
                 resp = self.session.get(url, params=params, stream=False)
                 if 400 <= resp.status_code < 500 and resp.status_code != 429:
@@ -63,7 +62,7 @@ class GCSClient(object):
                 resp.raise_for_status()
                 if as_json:
                     return resp.json()
-                return resp.content
+                return resp.text
             except requests.exceptions.RequestException:
                 logging.exception('request failed %s', url)
             time.sleep(random.random() * min(60, 2 ** retry))
@@ -78,7 +77,7 @@ class GCSClient(object):
     def get(self, path, as_json=False):
         """Get an object from GCS."""
         bucket, path = self._parse_uri(path)
-        return self._request('%s/o/%s' % (bucket, urllib2.quote(path, '')),
+        return self._request('%s/o/%s' % (bucket, urllib.parse.quote(path, '')),
                              {'alt': 'media'}, as_json=as_json)
 
     def ls(self, path, dirs=True, files=True, delim=True, item_field='name'):
@@ -140,7 +139,7 @@ class GCSClient(object):
             except (ValueError, TypeError):
                 pass
             else:
-                return False, (str(n) for n in xrange(latest_build, 0, -1))
+                return False, (str(n) for n in range(latest_build, 0, -1))
         # Invalid latest-build or bucket is using timestamps
         build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
         return True, sorted(
@@ -193,14 +192,16 @@ def mp_init_worker(jobs_dir, metadata, client_class, use_signal=True):
     global WORKER_CLIENT  # pylint: disable=global-statement
     WORKER_CLIENT = client_class(jobs_dir, metadata)
 
-def get_started_finished((job, build)):
+def get_started_finished(job_info):
+    (job, build) = job_info
     try:
         return WORKER_CLIENT.get_started_finished(job, build)
     except:
         logging.exception('failed to get tests for %s/%s', job, build)
         raise
 
-def get_junits((build_id, gcs_path)):
+def get_junits(build_info):
+    (build_id, gcs_path) = build_info
     try:
         junits = WORKER_CLIENT.get_junits_from_build(gcs_path)
         return build_id, gcs_path, junits
@@ -267,7 +268,7 @@ def remove_system_out(data):
             for parent in root.findall('*//system-out/..'):
                 for child in parent.findall('system-out'):
                     parent.remove(child)
-            return ET.tostring(root)
+            return ET.tostring(root, 'unicode')
         except ET.ParseError:
             pass
     return data
@@ -292,7 +293,7 @@ def download_junit(db, threads, client_class):
     for n, (build_id, build_path, junits) in enumerate(test_iterator, 1):
         print('%d/%d' % (n, len(builds_to_grab)),
               build_path, len(junits), len(''.join(junits.values())))
-        junits = {k: remove_system_out(v) for k, v in junits.iteritems()}
+        junits = {k: remove_system_out(v) for k, v in junits.items()}
 
         db.insert_build_junits(build_id, junits)
         if n % 100 == 0:
@@ -307,7 +308,7 @@ def main(db, jobs_dirs, threads, get_junit, client_class=GCSClient):
     """Collect test info in matching jobs."""
     get_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
                threads, client_class)
-    for bucket, metadata in jobs_dirs.iteritems():
+    for bucket, metadata in jobs_dirs.items():
         if not bucket.endswith('/'):
             bucket += '/'
         get_builds(db, bucket, metadata, threads, client_class)
@@ -340,6 +341,6 @@ def get_options(argv):
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
     main(model.Database(),
-         yaml.load(open(OPTIONS.buckets)),
+         yaml.safe_load(open(OPTIONS.buckets)),
          OPTIONS.threads,
          OPTIONS.junit)
