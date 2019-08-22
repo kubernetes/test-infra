@@ -19,8 +19,8 @@ go_library(
     importpath = "k8s.io/test-infra/velodrome/sql/testing",
     deps = [
         "//velodrome/sql:go_default_library",
-        "//vendor/github.com/jinzhu/gorm:go_default_library",
-        "//vendor/github.com/jinzhu/gorm/dialects/sqlite:go_default_library",
+        "@com_github_jinzhu_gorm//:go_default_library",
+        "@com_github_jinzhu_gorm//dialects/sqlite:go_default_library",
     ],
 )
 

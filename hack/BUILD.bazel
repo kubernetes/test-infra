@@ -45,27 +45,29 @@ nodejs_test(
     ],
 )
 
-MISSPELL = "//vendor/github.com/client9/misspell/cmd/misspell"
+MISSPELL = "@com_github_client9_misspell//cmd/misspell"
 
 sh_test(
     name = "verify-codegen",
     srcs = ["verify-codegen.sh"],
     args = [
         "$(location :update-codegen)",
-        "$(location //vendor/k8s.io/code-generator/cmd/client-gen)",
-        "$(location //vendor/k8s.io/code-generator/cmd/deepcopy-gen)",
-        "$(location //vendor/k8s.io/code-generator/cmd/informer-gen)",
-        "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
+        "$(location @io_k8s_code_generator//cmd/client-gen)",
+        "$(location @io_k8s_code_generator//cmd/deepcopy-gen)",
+        "$(location @io_k8s_code_generator//cmd/informer-gen)",
+        "$(location @io_k8s_code_generator//cmd/lister-gen)",
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",
         ":update-codegen",
-        "//vendor/k8s.io/code-generator/cmd/client-gen",
-        "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
-        "//vendor/k8s.io/code-generator/cmd/informer-gen",
-        "//vendor/k8s.io/code-generator/cmd/lister-gen",
+        "//:go.mod",
+        "//:go.sum",
         "@//:all-srcs",
         "@go_sdk//:files",
+        "@io_k8s_code_generator//cmd/client-gen",
+        "@io_k8s_code_generator//cmd/deepcopy-gen",
+        "@io_k8s_code_generator//cmd/informer-gen",
+        "@io_k8s_code_generator//cmd/lister-gen",
     ],
     tags = ["lint"],
 )
@@ -74,18 +76,20 @@ sh_binary(
     name = "update-codegen",
     srcs = ["update-codegen.sh"],
     args = [
-        "$(location //vendor/k8s.io/code-generator/cmd/client-gen)",
-        "$(location //vendor/k8s.io/code-generator/cmd/deepcopy-gen)",
-        "$(location //vendor/k8s.io/code-generator/cmd/informer-gen)",
-        "$(location //vendor/k8s.io/code-generator/cmd/lister-gen)",
+        "$(location @io_k8s_code_generator//cmd/client-gen)",
+        "$(location @io_k8s_code_generator//cmd/deepcopy-gen)",
+        "$(location @io_k8s_code_generator//cmd/informer-gen)",
+        "$(location @io_k8s_code_generator//cmd/lister-gen)",
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",
-        "//vendor/k8s.io/code-generator/cmd/client-gen",
-        "//vendor/k8s.io/code-generator/cmd/deepcopy-gen",
-        "//vendor/k8s.io/code-generator/cmd/informer-gen",
-        "//vendor/k8s.io/code-generator/cmd/lister-gen",
+        "//:go.mod",
+        "//:go.sum",
         "@go_sdk//:files",
+        "@io_k8s_code_generator//cmd/client-gen",
+        "@io_k8s_code_generator//cmd/deepcopy-gen",
+        "@io_k8s_code_generator//cmd/informer-gen",
+        "@io_k8s_code_generator//cmd/lister-gen",
     ],
 )
 
@@ -200,9 +204,9 @@ test_suite(
     tags = ["lint"],  # picks up all non-manual targets with this tag
 )
 
-GAZELLE = "//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle"
+GAZELLE = "@bazel_gazelle//cmd/gazelle"
 
-KAZEL = "//vendor/k8s.io/repo-infra/kazel"
+KAZEL = "@io_k8s_repo_infra//kazel"
 
 GO = "@go_sdk//:bin/go"
 
@@ -220,27 +224,6 @@ sh_binary(
         GO,
         KAZEL,
         ":update-bazel",
-    ],
-)
-
-GAZELLE_BOOT = "@bazel_gazelle//cmd/gazelle"
-
-KAZEL_BOOT = "@io_k8s_repo_infra//kazel"
-
-sh_binary(
-    name = "bootstrap-testinfra",
-    srcs = ["update-deps.sh"],
-    args = [
-        "$(location %s)" % GO,
-        "$(location %s)" % GAZELLE_BOOT,
-        "$(location %s)" % KAZEL_BOOT,
-        "$(location :update-bazel.sh)",
-    ],
-    data = [
-        GAZELLE_BOOT,
-        GO,
-        KAZEL_BOOT,
-        ":update-bazel.sh",
     ],
 )
 

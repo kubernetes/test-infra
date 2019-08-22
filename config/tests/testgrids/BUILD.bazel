@@ -17,7 +17,7 @@ go_test(
     deps = [
         "//prow/config:go_default_library",
         "//testgrid/config:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],
 )
 

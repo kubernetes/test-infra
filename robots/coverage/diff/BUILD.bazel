@@ -10,7 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//gopherage/pkg/cov/junit/calculation:go_default_library",
-        "//vendor/golang.org/x/tools/cover:go_default_library",
+        "@org_golang_x_tools//cover:go_default_library",
     ],
 )
 

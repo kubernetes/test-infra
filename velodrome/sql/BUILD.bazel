@@ -23,8 +23,8 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/velodrome/sql",
     deps = [
-        "//vendor/github.com/jinzhu/gorm:go_default_library",
-        "//vendor/github.com/spf13/cobra:go_default_library",
+        "@com_github_jinzhu_gorm//:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
     ],
 )
 

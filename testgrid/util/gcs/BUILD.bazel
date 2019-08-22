@@ -18,10 +18,10 @@ go_library(
     deps = [
         "//testgrid/metadata:go_default_library",
         "//testgrid/metadata/junit:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
-        "//vendor/google.golang.org/api/iterator:go_default_library",
-        "//vendor/google.golang.org/api/option:go_default_library",
-        "//vendor/vbom.ml/util/sortorder:go_default_library",
+        "@com_google_cloud_go//storage:go_default_library",
+        "@ml_vbom_util//sortorder:go_default_library",
+        "@org_golang_google_api//iterator:go_default_library",
+        "@org_golang_google_api//option:go_default_library",
     ],
 )
 

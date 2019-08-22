@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//boskos/common:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/credentials:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
     ],
 )
 

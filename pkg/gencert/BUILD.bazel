@@ -7,13 +7,13 @@ go_library(
     importpath = "k8s.io/test-infra/pkg/gencert",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/k8s.io/api/certificates/v1beta1:go_default_library",
-        "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
-        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
-        "//vendor/k8s.io/client-go/util/cert:go_default_library",
-        "//vendor/k8s.io/client-go/util/keyutil:go_default_library",
+        "@io_k8s_api//certificates/v1beta1:go_default_library",
+        "@io_k8s_api//core/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/wait:go_default_library",
+        "@io_k8s_client_go//kubernetes:go_default_library",
+        "@io_k8s_client_go//util/cert:go_default_library",
+        "@io_k8s_client_go//util/keyutil:go_default_library",
     ],
 )
 
@@ -22,10 +22,10 @@ go_test(
     srcs = ["gencert_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
-        "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
+        "@io_k8s_api//core/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_client_go//kubernetes:go_default_library",
+        "@io_k8s_client_go//kubernetes/fake:go_default_library",
     ],
 )
 
