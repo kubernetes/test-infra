@@ -138,17 +138,21 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 					repo = fmt.Sprintf("%s/%s", j.ExtraRefs[0].Org, j.ExtraRefs[0].Repo)
 				}
 			}
-			var linkTemplate *config.LinkTemplate
+			var codeSearchLinkTemplate, openBugLinkTemplate *config.LinkTemplate
 			if repo != "" {
-				linkTemplate = &config.LinkTemplate{
+				codeSearchLinkTemplate = &config.LinkTemplate{
 					Url: fmt.Sprintf("https://github.com/%s/compare/<start-custom-0>...<end-custom-0>", repo),
+				}
+				openBugLinkTemplate = &config.LinkTemplate{
+					Url: fmt.Sprintf("https://github.com/%s/issues/", repo),
 				}
 			}
 			dt := &config.DashboardTab{
 				Name:                  tabName,
 				TestGroupName:         testGroupName,
 				Description:           description,
-				CodeSearchUrlTemplate: linkTemplate,
+				CodeSearchUrlTemplate: codeSearchLinkTemplate,
+				OpenBugTemplate:       openBugLinkTemplate,
 			}
 			if firstDashboard {
 				firstDashboard = false
