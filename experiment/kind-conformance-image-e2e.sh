@@ -25,7 +25,7 @@ set -o xtrace
 # - get some fixes related to Kubernetes's build changing
 # - don't get surprised when kind changes between now and the next stable release
 # We should switch back to a release tag at the next release.
-STABLE_KIND_VERSION=3b6eeeebc67ae1f6acb7f1c922c5c51ed304aa51
+STABLE_KIND_VERSION=v0.5.1
 
 # our exit handler (trap)
 cleanup() {
