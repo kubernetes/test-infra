@@ -36,7 +36,7 @@ fi
 gazelle=$1
 kazel=$2
 
-gazelle_diff=$("$gazelle" fix --mode=diff --external=vendored)
+gazelle_diff=$("$gazelle" fix --mode=diff --external=external)
 kazel_diff=$("$kazel" --dry-run --print-diff --cfg-path=./hack/.kazelcfg.json)
 
 if [[ -n "${gazelle_diff}${kazel_diff}" ]]; then

@@ -39,11 +39,14 @@ do_clean=${5:-}
 
 ensure-in-gopath() {
   fake_gopath=$(mktemp -d -t codegen.gopath.XXXX)
-  trap 'rm -rf "$fake_gopath"' EXIT
 
   fake_repopath=$fake_gopath/src/k8s.io/test-infra
   mkdir -p "$(dirname "$fake_repopath")"
-  ln -s "$BUILD_WORKSPACE_DIRECTORY" "$fake_repopath"
+  if [[ -n "$do_clean" ]]; then
+    cp -LR "$BUILD_WORKSPACE_DIRECTORY/" "$fake_repopath"
+  else
+    cp -R "$BUILD_WORKSPACE_DIRECTORY/" "$fake_repopath"
+  fi
 
   export GOPATH=$fake_gopath
   export GOROOT=$go_sdk
@@ -107,7 +110,16 @@ gen-informer() {
 
 export GO111MODULE=off
 ensure-in-gopath
+old=${GOCACHE:-}
+export GOCACHE=$(mktemp -d -t codegen.gocache.XXXX)
+export GO111MODULE=on
+export GOPROXY=https://proxy.golang.org
+export GOSUMDB=sum.golang.org
+"$go_sdk/bin/go" mod vendor
+export GO111MODULE=off
+export GOCACHE=$old
 gen-deepcopy
 gen-client
 gen-lister
 gen-informer
+export GO111MODULE=on
