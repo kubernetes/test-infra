@@ -28,13 +28,6 @@ if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
 elif ! command -v bazel &>/dev/null; then
   echo "Install bazel at https://bazel.build" >&2
   exit 1
-elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
-  (
-    set -o xtrace
-    bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
-    bazel run @io_k8s_test_infra//hack:update-bazel
-  )
-  exit 0
 else
   (
     set -o xtrace
@@ -96,10 +89,8 @@ rm -rf vendor
 export GOPROXY=https://proxy.golang.org
 export GOSUMDB=sum.golang.org
 "$go" mod tidy
-"$go" mod vendor
-prune-vendor
-touch ./vendor/BUILD.bazel
-"$gazelle" update-repos --from_file=go.mod --to_macro=repos.bzl%go_repositories
-"${update_bazel[@]}"
+"$gazelle" update-repos \
+  --from_file=go.mod --to_macro=repos.bzl%go_repositories \
+  --build_file_generation=on --build_file_proto_mode=disable
 "${update_bazel[@]}"
 echo "SUCCESS: updated modules"
