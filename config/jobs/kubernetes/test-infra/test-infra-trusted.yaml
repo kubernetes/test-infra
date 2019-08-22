@@ -108,6 +108,10 @@ postsubmits:
       - name: creds
         secret:
           secretName: deployer-service-account
+    annotations:
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: deploy-prow
+      description: deploys the configured version of prow by running prow/deploy.sh
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
@@ -128,6 +132,10 @@ postsubmits:
       - name: creds
         secret:
           secretName: pusher-service-account
+    annotations:
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: push-prow
+      description: builds and pushes all prow on each commit by running prow/push.sh
   - name: post-test-infra-push-velodrome
     cluster: test-infra-trusted
     run_if_changed: '^velodrome/'
@@ -809,6 +817,10 @@ periodics:
       secret:
         secretName: k8s-ci-robot-ssh-keys
         defaultMode: 0400
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: autobump-prow
+    description: runs prow/autobump.sh to create/update a PR that bumps prow to the latest RC
 - cron: "30 * * * *"  # Run at half past the hour, every hour, every day
   name: ci-test-infra-update-slack-oncall
   cluster: test-infra-trusted
@@ -836,6 +848,11 @@ periodics:
     - name: slack
       secret:
         secretName: slack-usergroup-token
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: slack-oncall-updater
+    testgrid-alert-email: ktbry@google.com
+    description: runs experiment/slack-oncall-updater to update the membership of the test-infra-oncall slack usergroup
 - interval: 5m
   name: ci-test-infra-resultstore-upload
   cluster: test-infra-trusted
@@ -859,6 +876,10 @@ periodics:
     - name: creds
       secret:
         secretName: resultstore-service-account
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: resultstore-upload
+    description: transfer finished results into resultstore
 - cron: "54 * * * *"  # Every hour at 54 minutes past the hour
   name: ci-test-infra-branchprotector
   cluster: test-infra-trusted
@@ -895,6 +916,10 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: branchprotector
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
 - cron: "17 * * * *"  # Every hour at 17 minutes past the hour
   name: ci-test-infra-label-sync
   cluster: test-infra-trusted
@@ -932,6 +957,10 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: label_sync
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
 # ci-k8sio-cip runs daily, to make sure that the destination GCRs do not deviate
 # away from the intent of the manifest.
 - interval: 24h
