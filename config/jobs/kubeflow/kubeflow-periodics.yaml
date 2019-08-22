@@ -125,3 +125,23 @@ periodics:
   annotations:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow kfctl
+- name: kubeflow-periodic-project-cleanup
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+        command:
+        - "./test/tools/project-cleaner/project_cleaner.sh"
+        env:
+          - name: REPO_OWNER
+            value: kubeflow
+          - name: REPO_NAME
+            value: kubeflow
+          - name: BRANCH_NAME
+            value: master
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic job to cleanup ml-pipeline-test GCP project
