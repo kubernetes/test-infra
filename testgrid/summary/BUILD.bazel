@@ -19,5 +19,5 @@ go_library(
     srcs = ["summary.pb.go"],
     importpath = "k8s.io/test-infra/testgrid/summary",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
+    deps = ["@com_github_golang_protobuf//proto:go_default_library"],
 )

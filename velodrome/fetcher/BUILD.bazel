@@ -26,7 +26,7 @@ go_test(
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/sql/testing:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
+        "@com_github_google_go_github//github:go_default_library",
     ],
 )
 
@@ -43,12 +43,12 @@ go_library(
     importpath = "k8s.io/test-infra/velodrome/fetcher",
     deps = [
         "//velodrome/sql:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
-        "//vendor/github.com/jinzhu/gorm:go_default_library",
-        "//vendor/github.com/jinzhu/gorm/dialects/mysql:go_default_library",
-        "//vendor/github.com/spf13/cobra:go_default_library",
-        "//vendor/golang.org/x/oauth2:go_default_library",
+        "@com_github_golang_glog//:go_default_library",
+        "@com_github_google_go_github//github:go_default_library",
+        "@com_github_jinzhu_gorm//:go_default_library",
+        "@com_github_jinzhu_gorm//dialects/mysql:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
+        "@org_golang_x_oauth2//:go_default_library",
     ],
 )
 
