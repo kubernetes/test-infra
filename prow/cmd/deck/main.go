@@ -27,8 +27,6 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/trigger"
 	"net/http"
 	"net/url"
 	"os"
@@ -66,6 +64,8 @@ import (
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
+	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/prstatus"
 	"k8s.io/test-infra/prow/spyglass"
 
