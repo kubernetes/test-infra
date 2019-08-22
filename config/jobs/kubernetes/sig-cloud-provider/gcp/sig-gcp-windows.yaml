@@ -87,7 +87,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci-cross/latest
+      - --extract=ci/k8s-master
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -196,7 +196,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci-cross/latest
+      - --extract=ci/k8s-master
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
@@ -235,7 +235,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci-cross/latest
+      - --extract=ci/k8s-master
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
       - --provider=gce

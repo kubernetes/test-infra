@@ -49,7 +49,6 @@ const (
 	gcs                 // gs://bucket/prefix/v1.6.0-alpha.0
 	load                // Load a --save cluster
 	bazel               // A pre/postsubmit bazel build version, prefixed with bazel/
-	ciCross             // ci-cross/latest
 )
 
 type extractStrategy struct {
@@ -82,7 +81,6 @@ func (l *extractStrategies) Set(value string) error {
 		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`: version,
 		`^(gs://.*)$`:                 gcs,
 		`^(bazel/.*)$`:                bazel,
-		`^ci-cross/(.+)$`:             ciCross,
 	}
 
 	if len(*l) == 2 {
@@ -513,9 +511,6 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		return loadState(e.option, extractSrc)
 	case bazel:
 		return getKube("", e.option, extractSrc)
-	case ciCross:
-		prefix := "kubernetes-release-dev/ci-cross"
-		return setReleaseFromHTTP(prefix, e.option, extractSrc)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
 }

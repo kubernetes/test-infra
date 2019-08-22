@@ -28,7 +28,42 @@ presubmits:
             memory: "41Gi"
     annotations:
       testgrid-create-test-group: 'true'
+
 periodics:
+- interval: 1h
+  name: ci-kubernetes-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20190817-7b62498
+      args:
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=180
+      - --scenario=kubernetes_build
+      - --
+      - --allow-dup
+      - --extra-publish-file=k8s-master
+      - --hyperkube
+      - --registry=gcr.io/kubernetes-ci-images
+        # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-master-blocking
+    testgrid-tab-name: build-master
+    testgrid-alert-email: release-managers@kubernetes.io,kubernetes-release-team@googlegroups.com
+
 - interval: 5m
   name: ci-kubernetes-build-fast
   labels:
@@ -118,67 +153,3 @@ periodics:
     testgrid-alert-email: release-managers@kubernetes.io
     testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: build-packages-rpms
-
-- interval: 1h
-  name: ci-kubernetes-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190817-7b62498
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=180
-      - --scenario=kubernetes_build
-      - --
-      - --allow-dup
-      - --extra-publish-file=k8s-master
-      - --hyperkube
-      - --registry=gcr.io/kubernetes-ci-images
-        # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-          memory: "8Gi"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
-    fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-release-master-blocking
-    testgrid-tab-name: build-master
-    testgrid-alert-email: "kubernetes-release-team@googlegroups.com"
-
-- interval: 1h
-  name: ci-kubernetes-cross-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190817-7b62498
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=120
-      - --scenario=kubernetes_build
-      - --
-      - --hyperkube
-      - --registry=gcr.io/kubernetes-ci-images
-      - --suffix=-cross
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 7
-          memory: "41Gi"
-  annotations:
-    testgrid-dashboards: sig-release-misc
-    testgrid-tab-name: cross-build
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com

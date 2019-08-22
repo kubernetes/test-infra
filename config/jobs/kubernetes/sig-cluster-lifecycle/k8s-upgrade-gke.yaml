@@ -15,7 +15,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
@@ -24,7 +24,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\]|\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
 
 # The -parallel form of the test includes Slow tests, but skips Serial and Disruptive.
@@ -49,7 +49,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
@@ -59,7 +59,7 @@ periodics:
       - --skew
       - --timeout=1200m
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
-      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
 
   annotations:
@@ -81,7 +81,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
@@ -92,7 +92,7 @@ periodics:
       - --skew
       - --timeout=1200m
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
 
   annotations:
@@ -114,7 +114,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
@@ -124,7 +124,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
 
   annotations:
@@ -146,7 +146,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --extract=ci/k8s-stable1
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
@@ -155,7 +155,7 @@ periodics:
       - --provider=gke
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci-cross/latest --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
 
   annotations:
@@ -177,7 +177,7 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --extract=ci/k8s-stable2
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
@@ -615,7 +615,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=gke
       - --extract=ci/k8s-stable1
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-c
@@ -647,7 +647,7 @@ periodics:
       - --check-version-skew=false
       - --deployment=gke
       - --extract=ci/k8s-stable1
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-c
