@@ -202,11 +202,11 @@ func TestGetURL(t *testing.T) {
 		{
 			name: "fallback bucket - periodic",
 
-			jobName: "ci-kubernetes-cross-build",
+			jobName: "ci-kubernetes-build",
 			c:       c,
 			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
 
-			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-cross-build/latest-build.txt",
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-build/latest-build.txt",
 		},
 		{
 			name: "fallback bucket - unknown",
