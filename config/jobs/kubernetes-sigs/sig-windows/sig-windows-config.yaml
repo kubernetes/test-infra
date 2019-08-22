@@ -123,7 +123,7 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].[HPA]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=620m"
       securityContext:
         privileged: true
