@@ -130,6 +130,10 @@ periodics:
 - name: periodic-test-infra-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    testgrid-tab-name: retester
+    description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20190821-d4eea7f3f
@@ -266,6 +270,9 @@ periodics:
   labels:
     preset-service-account: "true"
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
     - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5

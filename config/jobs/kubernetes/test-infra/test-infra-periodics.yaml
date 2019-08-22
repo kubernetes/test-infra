@@ -18,6 +18,10 @@ periodics:
     - name: third
       image: busybox
       args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-periodics.yaml"]
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: build-smoke
+    description: basic job to ensure build controller works correctly
 - name: ci-test-infra-bazel
   decorate: true
   extra_refs:
@@ -38,6 +42,10 @@ periodics:
       - --config=ci
       - --nobuild_tests_only
       - //...
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: ci-bazel
+    description: Runs bazel test //... on the test-infra repo every hour
 
 - name: ci-test-infra-triage
   decorate: true
@@ -66,6 +74,10 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '18'
     testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: triage
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
 - name: metrics-bigquery
   interval: 24h
   spec:
@@ -97,6 +109,9 @@ periodics:
     - name: influxdb
       secret:
         secretName: velodrome-influxdb
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    description: Runs BigQuery queries to generate data for metrics.
 
 - name: metrics-kettle
   interval: 1h
@@ -135,3 +150,6 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Monitors Kettle's BigQuery database freshness.
