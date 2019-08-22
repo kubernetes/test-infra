@@ -25,10 +25,14 @@ import (
 	"os/exec"
 	"strings"
 
+	"k8s.io/test-infra/pkg/gencert"
+	"k8s.io/test-infra/prow/kube"
+
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
-
-	"k8s.io/test-infra/prow/kube"
+	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/yaml"
 )
 
@@ -103,6 +107,26 @@ func main() {
 	}
 }
 
+// createDefaultClient creates and returns a default kubernetes clientset
+func createDefaultClient(ctx string) (*kubernetes.Clientset, error) {
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{
+			CurrentContext: ctx,
+		},
+	).ClientConfig()
+	if err != nil {
+		return nil, fmt.Errorf("get config: %v", err)
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("create clientset: %v", err)
+	}
+
+	return clientset, nil
+}
+
 // useContext calls kubectl config use-context ctx
 func useContext(o options, ctx string) error {
 	_, cmd := command("kubectl", "config", "use-context", ctx)
@@ -117,11 +141,11 @@ func currentContext(o options) (string, error) {
 }
 
 // getCredentials calls gcloud container clusters get-credentials, usually preserving currentContext()
-func getCredentials(o options) error {
+func getCredentials(o options, useClientCert string) (string, error) {
 	if !o.changeContext {
 		cur, err := currentContext(o)
 		if err != nil {
-			return fmt.Errorf("read current-context: %v", err)
+			return "", fmt.Errorf("read current-context: %v", err)
 		}
 		defer useContext(o, cur)
 	}
@@ -132,8 +156,8 @@ func getCredentials(o options) error {
 	if set {
 		defer os.Setenv(useClientCertEnv, old)
 	}
-	if err := os.Setenv("CLOUDSDK_CONTAINER_USE_CLIENT_CERTIFICATE", "True"); err != nil {
-		return fmt.Errorf("failed to set %s: %v", useClientCertEnv, err)
+	if err := os.Setenv(useClientCertEnv, useClientCert); err != nil {
+		return "", fmt.Errorf("failed to set %s: %v", useClientCertEnv, err)
 	}
 	args, cmd := command(
 		"gcloud", "container", "clusters", "get-credentials", o.cluster,
@@ -141,9 +165,13 @@ func getCredentials(o options) error {
 		"--zone", o.zone,
 	)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%s: %v", strings.Join(args, " "), err)
+		return "", fmt.Errorf("%s: %v", strings.Join(args, " "), err)
 	}
-	return nil
+	newCtx, err := currentContext(o)
+	if err != nil {
+		return "", fmt.Errorf("read current-context: %v", err)
+	}
+	return newCtx, nil
 }
 
 // command creates an exec.Cmd with Stderr piped to os.Stderr and returns the args
@@ -170,7 +198,7 @@ func setAccount(account string) error {
 }
 
 // describeCluster returns details from gcloud container clusters describe.
-func describeCluster(o options) (*describe, error) {
+func describeCluster(o options, kubeContext string) (*describe, error) {
 	if o.account != "" {
 		act, err := getAccount()
 		if err != nil {
@@ -199,14 +227,25 @@ func describeCluster(o options) (*describe, error) {
 	if d.Endpoint == "" {
 		return nil, errors.New("empty endpoint")
 	}
-	if len(d.Auth.ClusterCACertificate) == 0 {
-		return nil, errors.New("empty clusterCaCertificate")
-	}
 
-	if len(d.Auth.ClientKey) == 0 {
+	// Only generate new certificate if necessary
+	if o.getClientCert && (len(d.Auth.ClusterCACertificate) == 0 || len(d.Auth.ClientKey) == 0 || len(d.Auth.ClientCertificate) == 0) {
+		clientset, err := createDefaultClient(kubeContext)
+		if err != nil {
+			return nil, fmt.Errorf("create client: %v", err)
+		}
+		certPEM, keyPEM, caPEM, err := gencert.CreateClusterAuthCredentials(clientset)
+		if err != nil {
+			return nil, fmt.Errorf("create cert and key: %v", err)
+		}
+		d.Auth.ClusterCACertificate = caPEM
+		d.Auth.ClientKey = keyPEM
+		d.Auth.ClientCertificate = certPEM
+	} else if len(d.Auth.ClusterCACertificate) == 0 {
+		return nil, errors.New("empty clusterCaCertificate")
+	} else if len(d.Auth.ClientKey) == 0 {
 		return nil, errors.New("empty clientKey, consider running with --get-client-cert")
-	}
-	if len(d.Auth.ClientCertificate) == 0 {
+	} else if len(d.Auth.ClientCertificate) == 0 {
 		return nil, errors.New("empty clientCertificate, consider running with --get-client-cert")
 	}
 
@@ -215,14 +254,22 @@ func describeCluster(o options) (*describe, error) {
 
 // do will get creds for the specified cluster and add them to the stdin secret
 func do(o options) error {
+	var kubeContext string
+	var err error
+
 	// Refresh credentials if requested
 	if o.getClientCert {
-		if err := getCredentials(o); err != nil {
-			return fmt.Errorf("get client cert: %v", err)
+		kubeContext, err = getCredentials(o, "True")
+		if err != nil {
+			kubeContext, err = getCredentials(o, "False")
+			if err != nil {
+				return fmt.Errorf("get client cert: %v", err)
+			}
 		}
 	}
+
 	// Create the new cluster entry
-	d, err := describeCluster(o)
+	d, err := describeCluster(o, kubeContext)
 	if err != nil {
 		return fmt.Errorf("describe auth: %v", err)
 	}
