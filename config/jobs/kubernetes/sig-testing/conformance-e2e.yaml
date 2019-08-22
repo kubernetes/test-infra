@@ -44,6 +44,9 @@ presubmits:
             cpu: 2000m
     annotations:
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-misc
+      description: Runs conformance tests using kind and the conformance image
+
 periodics:
   # conformance test using image against kubernetes master branch with `kind`
 - interval: 1h

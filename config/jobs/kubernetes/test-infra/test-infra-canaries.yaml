@@ -20,6 +20,8 @@ presubmits:
         - //...
     annotations:
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-canaries
+      testgrid-tab-name: test-infra-bazel
 # Testing to make sure things still update.
 periodics:
 - interval: 10m
