@@ -13,7 +13,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -73,7 +73,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -101,7 +101,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --deployment=gke
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
@@ -280,7 +280,7 @@ periodics:
       - --check-leaked-resources
       - --deployment=gke
       - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
-      - --extract=ci-cross/latest
+      - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=ubuntu
       - --gcp-project-type=gpu-project
