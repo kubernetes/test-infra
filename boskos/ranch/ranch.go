@@ -94,6 +94,7 @@ func NewRanch(config string, s *Storage, ttl time.Duration) (*Ranch, error) {
 		if err := newRanch.SyncConfig(config); err != nil {
 			return nil, err
 		}
+		logrus.Infof("Loaded Boskos configuration successfully")
 	}
 	return newRanch, nil
 }
@@ -355,6 +356,8 @@ func (r *Ranch) SyncConfig(configPath string) error {
 	if err := common.ValidateConfig(config); err != nil {
 		return err
 	}
+	r.resourcesLock.Lock()
+	defer r.resourcesLock.Unlock()
 	if err := r.Storage.SyncResources(config); err != nil {
 		return err
 	}
