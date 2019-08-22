@@ -25,6 +25,10 @@ periodics:
         requests:
           cpu: 5
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-janitor
+    description: Deletes old GCP resources from periodic jobs
 
 - interval: 1h
   name: maintenance-pull-janitor
@@ -46,6 +50,10 @@ periodics:
         requests:
           cpu: 5
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: pull-janitor
+    description: Deletes old GCP resources from presubmit jobs
 
 - interval: 1h
   name: maintenance-pull-scale-janitor
@@ -68,3 +76,7 @@ periodics:
         requests:
           cpu: 5
           memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: pull-scale-janitor
+    description: Deletes old GCP resources from scalability presubmit jobs

@@ -340,8 +340,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-csi/csi-driver-host-path",
 	"kubernetes-csi/external-attacher",
 	"kubernetes-csi/external-provisioner",
-	"kubernetes-csi/external-snapshotter",
-	"kubernetes-csi/livenessprobe",
 	"kubernetes-csi/node-driver-registrar",
 	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
 	"kubernetes-sigs/gcp-filestore-csi-driver",

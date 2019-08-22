@@ -165,7 +165,7 @@ message LinkOptionsTemplate {
 
 // A single tab on a dashboard.
 message DashboardTab {
-  reserved 14;
+  reserved 14, 16;
 
   // The name of the dashboard tab to display in the client.
   string name = 1;
@@ -215,6 +215,9 @@ message DashboardTab {
 
   // Configuration options for dashboard tab alerts.
   DashboardTabAlertOptions alert_options = 15;
+
+  // The URL template to visit when viewing an associated bug.
+  LinkTemplate open_bug_template = 17;
 }
 
 // Configuration options for dashboard tab alerts.

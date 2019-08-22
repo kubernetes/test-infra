@@ -17,6 +17,9 @@ presubmits:
     annotations:
       testgrid-num-columns-recent: '20'
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: pull-build-smoke
+      description: basic presubmit to ensure build controller works correctly
   - name: pull-test-infra-build-smoke-fail
     agent: knative-build
     decorate: true
@@ -34,6 +37,9 @@ presubmits:
     annotations:
       testgrid-num-columns-recent: '20'
       testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: pull-build-smoke-fail
+      description: basic presubmit to ensure build controller fails correctly (Will remove once we assert the behavior)
   - name: pull-test-infra-bazel
     branches:
     - master
