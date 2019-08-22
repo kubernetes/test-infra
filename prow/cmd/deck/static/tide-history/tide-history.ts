@@ -224,7 +224,7 @@ function redraw(): void {
     }
   }
   // Sort by descending time.
-  filteredRecs = filteredRecs.sort((a, b) => moment(b.time).unix() - moment(a.time).unix());
+  filteredRecs = filteredRecs.sort((a, b) => a.time > b.time ? -1 : (a.time < b.time ? 1 : 0));
   redrawRecords(filteredRecs);
 }
 
