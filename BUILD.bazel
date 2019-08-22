@@ -3,6 +3,7 @@
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 # gazelle:exclude hack
 # gazelle:exclude node_modules
+# gazelle:repository_macro repos.bzl%go_repositories
 
 load("@io_k8s_repo_infra//defs:run_in_workspace.bzl", "workspace_binary")
 load("@io_bazel_rules_go//go:def.bzl", "nogo")
@@ -133,7 +134,6 @@ filegroup(
         "//testgrid:all-srcs",
         "//triage:all-srcs",
         "//velodrome:all-srcs",
-        "//vendor:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
@@ -145,7 +145,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-exports_files(["tsconfig.json"])
+exports_files([
+    "tsconfig.json",
+    "go.mod",
+    "go.sum",
+])
 
 platform(
     name = "rbe_with_network",

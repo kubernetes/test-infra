@@ -13,7 +13,7 @@ go_test(
         "wrappers_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
+    deps = ["@com_github_google_go_github//github:go_default_library"],
 )
 
 go_library(
@@ -24,9 +24,9 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/pkg/ghclient",
     deps = [
-        "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
-        "//vendor/golang.org/x/oauth2:go_default_library",
+        "@com_github_golang_glog//:go_default_library",
+        "@com_github_google_go_github//github:go_default_library",
+        "@org_golang_x_oauth2//:go_default_library",
     ],
 )
 
