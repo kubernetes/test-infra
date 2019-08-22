@@ -22,7 +22,7 @@ if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
 elif ! command -v bazel &>/dev/null; then
   echo "Install bazel at https://bazel.build" >&2
   exit 1
-elif ! bazel query @io_k8s_test_infra//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle &>/dev/null; then
+elif ! bazel query @com_github_bazelbuild_bazel_gazelle//cmd/gazelle &>/dev/null; then
   (
     set -o xtrace
     bazel run @io_k8s_test_infra//hack:bootstrap-testinfra
@@ -47,6 +47,6 @@ if [[ ! -f go.mod ]]; then
     exit 1
 fi
 
-"$gazelle" fix --external=vendored
+set -o xtrace
+"$gazelle" fix --external=external
 "$kazel" --cfg-path=./hack/.kazelcfg.json
-"$gazelle" fix --external=vendored # TODO(fejta): remove this
