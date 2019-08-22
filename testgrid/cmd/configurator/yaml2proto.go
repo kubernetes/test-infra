@@ -122,6 +122,10 @@ func ReconcileDashboardTab(currentTab *config.DashboardTab, defaultTab *config.D
 	if currentTab.AlertOptions == nil {
 		currentTab.AlertOptions = defaultTab.AlertOptions
 	}
+
+	if currentTab.OpenBugTemplate == nil {
+		currentTab.OpenBugTemplate = defaultTab.OpenBugTemplate
+	}
 }
 
 // UpdateDefaults reads any default configuration from yamlData and updates the

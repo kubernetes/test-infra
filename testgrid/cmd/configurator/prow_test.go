@@ -26,6 +26,7 @@ import (
 
 const ProwDefaultGCSPath = "pathPrefix/"
 const ProwJobName = "TestJob"
+const ExampleRepository = "test/repo"
 
 func Test_applySingleProwjobAnnotations(t *testing.T) {
 	tests := []struct {
@@ -134,6 +135,9 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
 								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
+								},
 							},
 						},
 					},
@@ -178,6 +182,9 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
 								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
+								},
 								AlertOptions: &config.DashboardTabAlertOptions{
 									AlertMailToAddresses: "test@example.com",
 								},
@@ -193,6 +200,9 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 								TestGroupName: ProwJobName,
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
 								},
 							},
 						},
@@ -249,6 +259,9 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
 								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
+								},
 							},
 						},
 					},
@@ -296,6 +309,9 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
 								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
+								},
 							},
 						},
 					},
@@ -320,7 +336,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				Annotations: test.annotations,
 			}
 
-			err := applySingleProwjobAnnotations(result, fakeProwConfig(), job, test.prowJobType, "test/repo")
+			err := applySingleProwjobAnnotations(result, fakeProwConfig(), job, test.prowJobType, ExampleRepository)
 
 			if test.expectedConfig == nil {
 				if err == nil {
@@ -343,8 +359,8 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 
 	defaultConfig := &config.DefaultConfiguration{
 		DefaultTestGroup: &config.TestGroup{
-			GcsPrefix:        "originalConfigPrefix", //Overwritten
-			DaysOfResults:    5,                      //Kept
+			GcsPrefix:        "originalConfigPrefix", //Default is Overwritten
+			DaysOfResults:    5,                      //Default is Kept
 			NumColumnsRecent: 10,                     //Sometimes Overwritten; see test
 		},
 		DefaultDashboardTab: &config.DashboardTab{
@@ -353,6 +369,12 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 			ResultsText: "Default Text",        //Kept
 			AlertOptions: &config.DashboardTabAlertOptions{
 				AlertMailToAddresses: "default_admin@example.com", //Kept; see test
+			},
+			CodeSearchUrlTemplate: &config.LinkTemplate{ //Overwritten
+				Url: "https://example.com/code_search",
+			},
+			OpenBugTemplate: &config.LinkTemplate{ //Overwritten
+				Url: "https://example.com/open_bug",
 			},
 		},
 	}
@@ -438,6 +460,9 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
 								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
+								},
 								AlertOptions: &config.DashboardTabAlertOptions{
 									AlertMailToAddresses: "default_admin@example.com",
 								},
@@ -483,6 +508,9 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
 								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
+								},
 								AlertOptions: &config.DashboardTabAlertOptions{
 									AlertMailToAddresses: "test@example.com",
 								},
@@ -499,6 +527,9 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 								ResultsText:   "Default Text",
 								CodeSearchUrlTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/compare/<start-custom-0>...<end-custom-0>",
+								},
+								OpenBugTemplate: &config.LinkTemplate{
+									Url: "https://github.com/test/repo/issues/",
 								},
 								AlertOptions: &config.DashboardTabAlertOptions{
 									AlertMailToAddresses: "default_admin@example.com",
@@ -528,7 +559,7 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 				Annotations: test.annotations,
 			}
 
-			err := applySingleProwjobAnnotations(result, fakeProwConfig(), job, test.prowJobType, "test/repo")
+			err := applySingleProwjobAnnotations(result, fakeProwConfig(), job, test.prowJobType, ExampleRepository)
 
 			if test.expectedConfig == nil {
 				if err == nil {
