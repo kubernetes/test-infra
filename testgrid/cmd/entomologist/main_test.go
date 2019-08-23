@@ -19,17 +19,20 @@ package main
 import (
 	"context"
 	"flag"
-	"k8s.io/test-infra/testgrid/config"
-	"k8s.io/test-infra/testgrid/issue_state"
+	"fmt"
 	"reflect"
 	"testing"
+
+	"k8s.io/test-infra/pkg/io"
+	"k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/issue_state"
 
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
-func TestOptions(t *testing.T) {
+func Test_options(t *testing.T) {
 
 	testCases := []struct {
 		name     string
@@ -172,7 +175,7 @@ func TestOptions(t *testing.T) {
 	}
 }
 
-func TestPinIssues(t *testing.T) {
+func Test_pinIssues(t *testing.T) {
 	testCases := []struct {
 		issue         github.Issue
 		issueComments []github.IssueComment
@@ -376,3 +379,95 @@ func Test_getTestGroups(t *testing.T) {
 		})
 	}
 }
+
+func Test_writeIssueStates(t *testing.T) {
+	testCases := []struct {
+		name                string
+		newIssueStates      map[string]*issue_state.IssueState
+		previousIssueStates []string
+		expectWrite         []string
+	}{
+		{
+			name: "No Issue States and no state; no operation",
+		},
+		{
+			name: "Empty Issue States; delete file if it exists",
+			newIssueStates: map[string]*issue_state.IssueState{
+				"foo": nil,
+				"bar": nil,
+			},
+
+			previousIssueStates: []string{"/bugs-foo"},
+			expectWrite:         []string{"/bugs-foo"},
+		},
+		{
+			name: "New Issue States; create if non-nil",
+			newIssueStates: map[string]*issue_state.IssueState{
+				"baz": {
+					IssueInfo: []*issue_state.IssueInfo{
+						{Title: "Issue Title"},
+					},
+				},
+				"quux": nil,
+			},
+			expectWrite: []string{"/bugs-baz"},
+		},
+		{
+			name: "Existing Issue States; overwrite",
+			newIssueStates: map[string]*issue_state.IssueState{
+				"baz": {
+					IssueInfo: []*issue_state.IssueInfo{
+						{Title: "Issue Title"},
+					},
+				},
+			},
+			previousIssueStates: []string{"/bugs-baz"},
+			expectWrite:         []string{"/bugs-baz"},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			var client fakeClient
+			client.readTargets = test.previousIssueStates
+
+			err := writeIssueStates(test.newIssueStates, "", &client, context.Background())
+			if err != nil {
+				t.Errorf("Unexpected error: %e", err)
+			}
+
+			if !reflect.DeepEqual(client.writeTargets, test.expectWrite) {
+				t.Errorf("Unexpected writes; got %v, expected %v", client.writeTargets, test.expectWrite)
+			}
+		})
+	}
+}
+
+type fakeClient struct {
+	readTargets  []string
+	writeTargets []string
+}
+
+func (f *fakeClient) Reader(ctx context.Context, path string) (io.ReadCloser, error) {
+	for _, target := range f.readTargets {
+		if target == path {
+			return fakeReader{}, nil
+		}
+	}
+	return nil, fmt.Errorf("file not found")
+}
+
+func (f *fakeClient) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
+	f.writeTargets = append(f.writeTargets, path)
+	return fakeWriter{}, nil
+}
+
+type fakeReader struct{}
+
+func (fakeReader) Read(p []byte) (n int, err error) { return len(p), nil }
+func (fakeReader) Close() error                     { return nil }
+
+type fakeWriter struct{}
+
+func (fakeWriter) Write(p []byte) (n int, err error) { return len(p), nil }
+func (fakeWriter) Close() error                      { return nil }
