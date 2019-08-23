@@ -85,6 +85,7 @@ rollup_bundle(
     entry_point = ":plugin-help/plugin-help.ts",
     deps = [
         ":plugin_help",
+        "@npm//code-prettify",
         "@npm//dialog-polyfill",
     ],
 )
