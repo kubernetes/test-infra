@@ -7,14 +7,18 @@ load("//prow:def.bzl", "prefix", "prow_push", "tags")
 container_bundle(
     name = "release-hook",
     images = tags(
-      cmds = ["hook"],
-      targets = {},
+        cmds = [
+            "branchprotector",
+            "hook",
+            "tide",
+        ],
+        targets = {},
     ),
     stamp = True,
 )
 
 docker_push(
-    name = "release-push-hook",
+    name = "release-push-improbable",
     bundle = ":release-hook",
 )
 
