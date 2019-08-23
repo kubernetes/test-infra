@@ -17,7 +17,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -59,7 +59,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -101,7 +101,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -142,7 +142,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
