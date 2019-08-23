@@ -328,6 +328,7 @@ Examples:
 
 func main() {
 	exit = os.Exit
+	rand.Seed(time.Now().UTC().UnixNano())
 	randId = func() string {
 		return strconv.Itoa(rand.Int())
 	}
