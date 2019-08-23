@@ -194,6 +194,7 @@ func main() {
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway)
+	pjutil.ServePProf()
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,
