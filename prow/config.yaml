@@ -46,6 +46,7 @@ deck:
   rerun_auth_config:
     github_users:
       - mirandachrist
+      - clarketm
     github_team_ids:
       - 2009231 #test-infra-admins
 
