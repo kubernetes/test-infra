@@ -45,8 +45,20 @@ build:remote --define=EXECUTOR=remote
 build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
 build:remote --remote_timeout=3600
 
+# Minimize what is downloaded
+build:inmemory --experimental_inmemory_jdeps_files
+build:inmemory --experimental_inmemory_dotd_files
+
+# Minimize what is downloaded
+build:toplevel --config=inmemory
+build:toplevel --experimental_remote_download_outputs=toplevel
+
+build:minimal --config=inmemory
+build:minimal --experimental_remote_download_outputs=minimal
+
 # --google_credentials=some_file.json
 build:remote --google_default_credentials=true
+build:remote --config=toplevel
 
 # Compose the remote configs with an instance name
 # A couple examples below:
