@@ -54,7 +54,6 @@ func helpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 
 type server struct {
 	tokenGenerator func() []byte
-	prowURL        string
 	configAgent    *config.Agent
 	ghc            github.Client
 	log            *logrus.Entry
@@ -118,7 +117,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	s.log.WithFields(l.Data).Info("Requested a status refresh.")
 
 	// TODO: Retries
-	resp, err := http.Get(s.prowURL + "/prowjobs.js")
+	resp, err := http.Get(s.configAgent.Config().ProwURL + "/prowjobs.js")
 	if err != nil {
 		return err
 	}
@@ -182,7 +181,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 
 		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.ObjectMeta.Name)
-		if err := report.Report(s.ghc, reportTemplate, pj, reportTypes); err != nil {
+		if err := report.Report(s.ghc, reportTemplate, pj, reportTypes, s.configAgent.Config().ProwURL); err != nil {
 			s.log.WithError(err).WithFields(l.Data).Info("Failed report.")
 		}
 	}

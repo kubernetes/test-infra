@@ -19,7 +19,7 @@ limitations under the License.
 package reporter
 
 import (
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github/report"
 )
@@ -74,5 +74,5 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 // Report will report via reportlib
 func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	return []*v1.ProwJob{pj}, report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GitHubReporter.JobTypesToReport)
+	return []*v1.ProwJob{pj}, report.Report(c.gc, c.config().Plank.ReportTemplate, *pj, c.config().GitHubReporter.JobTypesToReport, c.config().ProwURL)
 }

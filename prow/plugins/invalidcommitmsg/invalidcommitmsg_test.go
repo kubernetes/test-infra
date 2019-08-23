@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -104,7 +105,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=k%2Fk).
 </details>
 `,
 		},
@@ -134,7 +135,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if tc.hasInvalidCommitMessageLabel {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("k/k#3:%s", invalidCommitMsgLabel))
 			}
-			if err := handle(fc, logrus.WithField("plugin", pluginName), event, &fakePruner{}); err != nil {
+			if err := handle(fc, logrus.WithField("plugin", pluginName), event, &fakePruner{}, "http.com"); err != nil {
 				t.Errorf("For case %s, didn't expect error from invalidcommitmsg plugin: %v", tc.name, err)
 			}
 
@@ -173,7 +174,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				t.Errorf("did not expect more than one comment to be created")
 			}
 			if len(comments) != 0 && comments[0] != tc.addedComment {
-				t.Errorf("expected comment to be \n%q\n but it was \n%q\n", tc.addedComment, comments[0])
+				t.Errorf("expected different comment: %v", diff.StringDiff(tc.addedComment, comments[0]))
 			}
 		})
 	}

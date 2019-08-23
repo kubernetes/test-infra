@@ -162,7 +162,7 @@ func TestCLALabels(t *testing.T) {
 			SHA:     tc.statusSHA,
 			State:   tc.state,
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), se); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), se, "http.com"); err != nil {
 			t.Errorf("For case %s, didn't expect error from cla plugin: %v", tc.name, err)
 			continue
 		}

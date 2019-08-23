@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/diff"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -210,7 +211,6 @@ func TestHandle(t *testing.T) {
 		expectedComment string
 		expectToggle    bool
 	}{
-
 		// breaking cases
 		// case: /approve in PR body
 		{
@@ -232,7 +232,7 @@ func TestHandle(t *testing.T) {
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -267,7 +267,7 @@ This pull-request has been approved by:
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -300,7 +300,7 @@ This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
 Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -336,7 +336,7 @@ This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
 Associated issue: *#42*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -382,7 +382,7 @@ This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*,
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -435,7 +435,7 @@ You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -520,7 +520,7 @@ This pull-request has been approved by: *<a href="" title="Approved">alice</a>*
 
 Associated issue: *#1*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -589,7 +589,7 @@ Approval requirements bypassed by manually added approval.
 
 This pull-request has been approved by:
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -635,7 +635,7 @@ This pull-request has been approved by:
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
 You can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -678,7 +678,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -713,7 +713,7 @@ This pull-request has been approved by:
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -744,7 +744,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -783,7 +783,7 @@ This pull-request has been approved by:
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -821,7 +821,7 @@ This pull-request has been approved by:
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -857,7 +857,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -897,7 +897,7 @@ This pull-request has been approved by:
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -932,7 +932,7 @@ This pull-request has been approved by:
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
 You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -963,7 +963,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -997,7 +997,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -1031,7 +1031,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -1098,6 +1098,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				author:    "cjwagner",
 				assignees: []github.User{{Login: "spxtr"}},
 			},
+			"http.com",
 		); err != nil {
 			t.Errorf("[%s] Unexpected error handling event: %v.", test.name, err)
 		}
@@ -1128,10 +1129,9 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				)
 			} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
 				t.Errorf(
-					"[%s] Expected the created notification to be:\n%s\n\nbut got:\n%s\n\n",
+					"[%s] Expected a different created notification: %v",
 					test.name,
-					expect,
-					got,
+					diff.StringDiff(expect, got),
 				)
 			}
 		} else {
@@ -1328,7 +1328,7 @@ func TestHandleGenericComment(t *testing.T) {
 
 	var handled bool
 	var gotState *state
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state) error {
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state, prowURL string) error {
 		gotState = pr
 		handled = true
 		return nil
@@ -1543,7 +1543,7 @@ func TestHandleReview(t *testing.T) {
 
 	var handled bool
 	var gotState *state
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, config config.GitHubOptions, opts *plugins.Approve, pr *state) error {
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, config config.GitHubOptions, opts *plugins.Approve, pr *state, prowURL string) error {
 		gotState = pr
 		handled = true
 		return nil
@@ -1708,7 +1708,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 	var handled bool
 	var gotState *state
-	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state) error {
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state, prowURL string) error {
 		gotState = pr
 		handled = true
 		return nil

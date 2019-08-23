@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/diff"
 
 	"net/url"
 	"reflect"
@@ -714,7 +715,7 @@ You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -726,10 +727,10 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "dev"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "dev", "http.com"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
-		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+		t.Errorf("incorrect message: %v", diff.StringDiff(*got, want))
 	}
 }
 
@@ -754,7 +755,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -768,10 +769,10 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master", "http.com"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
-		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+		t.Errorf("incorrect message: %v", diff.StringDiff(*got, want))
 	}
 }
 
@@ -796,7 +797,7 @@ You can assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a c
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -808,10 +809,10 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","bill"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master", "http.com"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
-		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+		t.Errorf("incorrect message: %v", diff.StringDiff(*got, want))
 	}
 }
 
@@ -838,7 +839,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 Associated issue: *#12345*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -852,10 +853,10 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master", "http.com"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
-		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+		t.Errorf("incorrect message: %v", diff.StringDiff(*got, want))
 	}
 }
 
@@ -881,7 +882,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 Associated issue requirement bypassed by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
@@ -895,10 +896,10 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master", "http.com"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
-		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+		t.Errorf("incorrect message: %v", diff.StringDiff(*got, want))
 	}
 }
 
@@ -924,7 +925,7 @@ You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -936,10 +937,10 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","doctor"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "org", "repo", "master", "http.com"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
-		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+		t.Errorf("incorrect message: %v", diff.StringDiff(*got, want))
 	}
 }
 
@@ -965,7 +966,7 @@ You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+The full list of commands accepted by this bot can be found [here](http.com/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
@@ -977,9 +978,9 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","doctor"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.mycorp.com"}, "org", "repo", "master"); got == nil {
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.mycorp.com"}, "org", "repo", "master", "http.com"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
-		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+		t.Errorf("incorrect message: %v", diff.StringDiff(*got, want))
 	}
 }

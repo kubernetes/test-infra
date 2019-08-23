@@ -19,9 +19,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -54,8 +52,8 @@ func (o *options) Validate() error {
 		}
 	}
 
-	if _, err := url.ParseRequestURI(o.prowURL); err != nil {
-		return fmt.Errorf("invalid -prow-url URI: %q", o.prowURL)
+	if len(o.prowURL) > 0 {
+		logrus.Warn("--prow-url is deprecated, set prow_url in config.yaml instead")
 	}
 
 	return nil
@@ -109,7 +107,6 @@ func main() {
 
 	serv := &server{
 		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
-		prowURL:        o.prowURL,
 		configAgent:    configAgent,
 		ghc:            githubClient,
 		log:            log,

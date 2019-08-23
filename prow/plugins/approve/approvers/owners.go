@@ -598,7 +598,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, linkURL *url.URL, org, repo, branch string) *string {
+func GetMessage(ap Approvers, linkURL *url.URL, org, repo, branch, prowURL string) *string {
 	linkURL.Path = org + "/" + repo
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 Approval requirements bypassed by manually added approval.
@@ -626,7 +626,7 @@ Associated issue requirement bypassed by:{{range $index, $approval := .ap.ListNo
 
 {{ end -}}
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo={{ .org }}%2F{{ .repo }}).
+The full list of commands accepted by this bot can be found [here]({{ .prowURL }}/bot-commands?repo={{ .org }}%2F{{ .repo }}).
 
 {{ if (or .ap.AreFilesApproved (call .ap.ManuallyApproved)) -}}
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
@@ -638,7 +638,7 @@ Needs approval from an approver in each of these files:
 {{range .ap.GetFiles .baseURL .branch}}{{.}}{{end}}
 Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
 Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "org": org, "repo": repo, "branch": branch})
+</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "org": org, "repo": repo, "branch": branch, "prowURL": prowURL})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")
 		return nil

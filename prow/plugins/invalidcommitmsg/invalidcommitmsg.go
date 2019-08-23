@@ -83,10 +83,10 @@ func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	if err != nil {
 		return err
 	}
-	return handle(pc.GitHubClient, pc.Logger, pr, cp)
+	return handle(pc.GitHubClient, pc.Logger, pr, cp, pc.PluginConfig.ProwURL)
 }
 
-func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp commentPruner) error {
+func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp commentPruner, prowURL string) error {
 	// Only consider actions indicating that the code diffs may have changed.
 	if !hasPRChanged(pr) {
 		return nil
@@ -146,7 +146,7 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 		})
 
 		log.Debugf("Commenting on PR to advise users of invalid commit messages")
-		if err := gc.CreateComment(org, repo, number, fmt.Sprintf(commentBody, dco.MarkdownSHAList(org, repo, invalidCommits), plugins.AboutThisBot)); err != nil {
+		if err := gc.CreateComment(org, repo, number, fmt.Sprintf(commentBody, dco.MarkdownSHAList(org, repo, invalidCommits), plugins.AboutThisBot(prowURL, org, repo))); err != nil {
 			log.WithError(err).Errorf("Could not create comment for invalid commit messages")
 		}
 	}

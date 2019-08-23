@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -64,6 +65,12 @@ func TestHandlePullRequest(t *testing.T) {
 			name:   "should not do anything on pull request edited",
 			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionEdited,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -72,6 +79,12 @@ func TestHandlePullRequest(t *testing.T) {
 			name:   "should add 'no' label & status context and add a comment if no commits have sign off",
 			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -82,21 +95,21 @@ func TestHandlePullRequest(t *testing.T) {
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha](https://github.com///commits/sha) not a sign off
+- [sha](https://github.com/org/repo/commits/sha) not a sign off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -104,6 +117,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			name:   "should add 'no' label & status context, remove old labels and add a comment if no commits have sign off",
 			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -114,22 +133,22 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  true,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
-			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
+			removedLabel:   fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha](https://github.com///commits/sha) not a sign off
+- [sha](https://github.com/org/repo/commits/sha) not a sign off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -137,6 +156,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			name:   "should update comment if labels and status are up to date and sign off is failing",
 			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -149,19 +174,19 @@ Instructions for interacting with me using PR comments are available [here](http
 			status:     github.StatusFailure,
 
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha](https://github.com///commits/sha) not a sign off
+- [sha](https://github.com/org/repo/commits/sha) not a sign off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -169,6 +194,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			name:   "should mark the PR as failed if just one commit is missing sign-off",
 			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -180,22 +211,22 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  true,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
-			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
+			removedLabel:   fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha](https://github.com///commits/sha) not signed off
+- [sha](https://github.com/org/repo/commits/sha) not signed off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -203,6 +234,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			name:   "should add label and update status context if all commits are signed-off",
 			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -213,13 +250,19 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusSuccess,
 		},
 		{
 			name:   "should add label and update status context and remove old labels if all commits are signed-off",
 			config: plugins.Dco{},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -230,8 +273,8 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   true,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
-			removedLabel:   fmt.Sprintf("/#3:%s", dcoNoLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
+			removedLabel:   fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusSuccess,
 		},
 		{
@@ -241,6 +284,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -257,7 +306,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusSuccess,
 		},
 		{
@@ -267,6 +316,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -290,7 +345,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusSuccess,
 		},
 		{
@@ -300,6 +355,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -323,21 +384,21 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha2](https://github.com///commits/sha2) not signed off
+- [sha2](https://github.com/org/repo/commits/sha2) not signed off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -348,6 +409,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -371,22 +438,22 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  true,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
-			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
+			removedLabel:   fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha2](https://github.com///commits/sha2) not signed off
+- [sha2](https://github.com/org/repo/commits/sha2) not signed off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -397,6 +464,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:             "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -413,21 +486,21 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha](https://github.com///commits/sha) not signed off
+- [sha](https://github.com/org/repo/commits/sha) not signed off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -439,6 +512,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:                   "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -455,7 +534,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusSuccess,
 		},
 		{
@@ -465,6 +544,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:                   "kubernetes",
 			},
 			pullRequestEvent: github.PullRequestEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				Action:      github.PullRequestActionOpened,
 				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -481,21 +566,21 @@ Instructions for interacting with me using PR comments are available [here](http
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha](https://github.com///commits/sha) not signed off
+- [sha](https://github.com/org/repo/commits/sha) not signed off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -508,7 +593,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				PullRequests:     map[int]*github.PullRequest{tc.pullRequestEvent.PullRequest.Number: &tc.pullRequestEvent.PullRequest},
 				IssueComments:    make(map[int][]github.IssueComment),
 				CommitMap: map[string][]github.RepositoryCommit{
-					"/#3": tc.commits,
+					"org/repo#3": tc.commits,
 				},
 				OrgMembers: map[string][]string{
 					"kubernetes": {"test"},
@@ -516,10 +601,10 @@ Instructions for interacting with me using PR comments are available [here](http
 				Collaborators: []string{"test-collaborator"},
 			}
 			if tc.hasDCOYes {
-				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("org/repo#3:%s", dcoYesLabel))
 			}
 			if tc.hasDCONo {
-				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("org/repo#3:%s", dcoNoLabel))
 			}
 			combinedStatus := &github.CombinedStatus{
 				Statuses: []github.Status{},
@@ -537,7 +622,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			fc.CombinedStatuses["sha"] = combinedStatus
 
-			if err := handlePullRequest(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.pullRequestEvent); err != nil {
+			if err := handlePullRequest(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.pullRequestEvent, "http.com"); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""
@@ -592,7 +677,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				t.Errorf("did not expect more than one comment to be created")
 			}
 			if len(comments) != 0 && comments[0] != tc.addedComment {
-				t.Errorf("expected comment to be %q but it was %q", tc.addedComment, comments[0])
+				t.Errorf("expected different comment: %v", diff.StringDiff(tc.addedComment, comments[0]))
 			}
 		})
 	}
@@ -626,6 +711,12 @@ func TestHandleComment(t *testing.T) {
 			name:   "should not do anything if comment does not match /check-dco",
 			config: plugins.Dco{},
 			commentEvent: github.GenericCommentEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				IssueState: "open",
 				Action:     github.GenericCommentActionCreated,
 				Body:       "not-the-trigger",
@@ -640,6 +731,12 @@ func TestHandleComment(t *testing.T) {
 			name:   "should add 'no' label & status context and add a comment if no commits have sign off",
 			config: plugins.Dco{},
 			commentEvent: github.GenericCommentEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				IssueState: "open",
 				Action:     github.GenericCommentActionCreated,
 				Body:       "/check-dco",
@@ -656,21 +753,21 @@ func TestHandleComment(t *testing.T) {
 			hasDCONo:   false,
 			hasDCOYes:  false,
 
-			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			addedLabel:     fmt.Sprintf("org/repo#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `org/repo#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
-:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+:memo: **Please follow instructions in the [contributing guide](https://github.com/org/repo/blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
 Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
 
 **The list of commits missing DCO signoff**:
 
-- [sha](https://github.com///commits/sha) not a sign off
+- [sha](https://github.com/org/repo/commits/sha) not a sign off
 
 <details>
 
-Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](http.com/bot-commands?repo=org%2Frepo).
 </details>
 `,
 		},
@@ -681,6 +778,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				TrustedOrg:             "kubernetes",
 			},
 			commentEvent: github.GenericCommentEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: "org",
+					},
+					Name: "repo",
+				},
 				IssueState: "open",
 				Action:     github.GenericCommentActionCreated,
 				Body:       "/check-dco",
@@ -712,17 +815,17 @@ Instructions for interacting with me using PR comments are available [here](http
 				PullRequests:     tc.pullRequests,
 				IssueComments:    make(map[int][]github.IssueComment),
 				CommitMap: map[string][]github.RepositoryCommit{
-					"/#3": tc.commits,
+					"org/repo#3": tc.commits,
 				},
 				OrgMembers: map[string][]string{
 					"kubernetes": {"test"},
 				},
 			}
 			if tc.hasDCOYes {
-				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoYesLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("org/repo#3:%s", dcoYesLabel))
 			}
 			if tc.hasDCONo {
-				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", dcoNoLabel))
+				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("org/repo#3:%s", dcoNoLabel))
 			}
 			combinedStatus := &github.CombinedStatus{
 				Statuses: []github.Status{},
@@ -740,7 +843,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			fc.CombinedStatuses["sha"] = combinedStatus
 
-			if err := handleComment(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.commentEvent); err != nil {
+			if err := handleComment(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.commentEvent, "http.com"); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""

@@ -26,11 +26,13 @@ import (
 // AboutThisBotWithoutCommands contains the message that explains how to interact with the bot.
 const AboutThisBotWithoutCommands = "Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository."
 
-// AboutThisBotCommands contains the message that links to the commands the bot understand.
-const AboutThisBotCommands = "I understand the commands that are listed [here](https://go.k8s.io/bot-commands)."
+// aboutThisBotCommands contains the message that links to the commands the bot understand.
+const aboutThisBotCommands = "I understand the commands that are listed [here](%s/bot-commands?repo=%s%%2F%s)."
 
-// AboutThisBot contains the text of both AboutThisBotWithoutCommands and AboutThisBotCommands.
-const AboutThisBot = AboutThisBotWithoutCommands + " " + AboutThisBotCommands
+// AboutThisBot contains the text of both AboutThisBotWithoutCommands and aboutThisBotCommands.
+func AboutThisBot(prowURL, org, repo string) string {
+	return AboutThisBotWithoutCommands + " " + fmt.Sprintf(aboutThisBotCommands, prowURL, org, repo)
+}
 
 // FormatResponse nicely formats a response to a generic reason.
 func FormatResponse(to, message, reason string) string {

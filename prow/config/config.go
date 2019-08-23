@@ -104,6 +104,9 @@ type ProwConfig struct {
 	// Defaults to "default".
 	PodNamespace string `json:"pod_namespace,omitempty"`
 
+	// ProwURL is the URL to use in help messages when referring to this deployment
+	ProwURL string `json:"prow_url"`
+
 	// LogLevel enables dynamically updating the log level of the
 	// standard logger that is used by all prow components.
 	//

@@ -128,7 +128,7 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 
 // Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType, prowURL string) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
@@ -172,7 +172,7 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 		}
 	}
 	if len(entries) > 0 {
-		comment, err := createComment(reportTemplate, pj, entries)
+		comment, err := createComment(reportTemplate, pj, entries, prowURL)
 		if err != nil {
 			return fmt.Errorf("generating comment: %v", err)
 		}
@@ -275,7 +275,7 @@ func createEntry(pj prowapi.ProwJob) string {
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entries []string) (string, error) {
+func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entries []string, prowURL string) (string, error) {
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
@@ -300,7 +300,7 @@ func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entrie
 		"",
 		"<details>",
 		"",
-		plugins.AboutThisBot,
+		plugins.AboutThisBot(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, prowURL),
 		"</details>",
 		commentTag,
 	}...)

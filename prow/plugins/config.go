@@ -51,6 +51,9 @@ type Configuration struct {
 	// Owners contains configuration related to handling OWNERS files.
 	Owners Owners `json:"owners,omitempty"`
 
+	// ProwURL is the URL to use in help messages when referring to this deployment
+	ProwURL string `json:"prow_url"`
+
 	// Built-in plugins specific configuration.
 	Approve                    []Approve                    `json:"approve,omitempty"`
 	UseDeprecatedSelfApprove   bool                         `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`

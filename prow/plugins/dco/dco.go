@@ -203,7 +203,7 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 
 // takeAction will take appropriate action on the pull request according to its
 // current state.
-func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment, trustedUser bool) error {
+func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment, trustedUser bool, prowURL string) error {
 	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
 
 	signedOff := len(commitsMissingDCO) == 0
@@ -273,7 +273,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		// failing commits
 		cp.PruneComments(shouldPrune(l))
 		l.Debugf("Commenting on PR to advise users of DCO check")
-		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, MarkdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
+		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, MarkdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot(prowURL, org, repo))); err != nil {
 			l.WithError(err).Warning("Could not create DCO not found comment.")
 		}
 	}
@@ -287,7 +287,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 // 4. Check the existing PR labels
 // 5. If signed off, apply appropriate labels and status context.
 // 6. If not signed off, apply appropriate labels and status context and add a comment.
-func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr github.PullRequest, addComment bool) error {
+func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr github.PullRequest, addComment bool, prowURL string) error {
 	l := log.WithField("pr", pr.Number)
 
 	var err error
@@ -318,7 +318,7 @@ func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.E
 		return err
 	}
 
-	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment, trustedUser)
+	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment, trustedUser, prowURL)
 }
 
 // MardkownSHAList prints the list of commits in a markdown-friendly way.
@@ -359,10 +359,10 @@ func handlePullRequestEvent(pc plugins.Agent, pe github.PullRequestEvent) error 
 		return err
 	}
 
-	return handlePullRequest(*config, pc.GitHubClient, cp, pc.Logger, pe)
+	return handlePullRequest(*config, pc.GitHubClient, cp, pc.Logger, pe, pc.PluginConfig.ProwURL)
 }
 
-func handlePullRequest(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, pe github.PullRequestEvent) error {
+func handlePullRequest(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, pe github.PullRequestEvent, prowURL string) error {
 	org := pe.Repo.Owner.Login
 	repo := pe.Repo.Name
 
@@ -379,7 +379,7 @@ func handlePullRequest(config plugins.Dco, gc gitHubClient, cp commentPruner, lo
 	shouldComment := pe.Action == github.PullRequestActionSynchronize ||
 		pe.Action == github.PullRequestActionOpened
 
-	return handle(config, gc, cp, log, org, repo, pe.PullRequest, shouldComment)
+	return handle(config, gc, cp, log, org, repo, pe.PullRequest, shouldComment, prowURL)
 }
 
 func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
@@ -390,10 +390,10 @@ func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 		return err
 	}
 
-	return handleComment(*config, pc.GitHubClient, cp, pc.Logger, ce)
+	return handleComment(*config, pc.GitHubClient, cp, pc.Logger, ce, pc.PluginConfig.ProwURL)
 }
 
-func handleComment(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, ce github.GenericCommentEvent) error {
+func handleComment(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, ce github.GenericCommentEvent, prowURL string) error {
 	// Only consider open PRs and new comments.
 	if ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated || !ce.IsPR {
 		return nil
@@ -411,5 +411,5 @@ func handleComment(config plugins.Dco, gc gitHubClient, cp commentPruner, log *l
 		return fmt.Errorf("error getting pull request for comment: %v", err)
 	}
 
-	return handle(config, gc, cp, log, org, repo, *pr, true)
+	return handle(config, gc, cp, log, org, repo, *pr, true, prowURL)
 }
