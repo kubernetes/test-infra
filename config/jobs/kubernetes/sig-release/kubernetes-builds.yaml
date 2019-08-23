@@ -107,7 +107,7 @@ periodics:
     path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-master
       imagePullPolicy: Always
       command:
       - make
@@ -137,7 +137,7 @@ periodics:
     path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-master
       imagePullPolicy: Always
       command:
       - make

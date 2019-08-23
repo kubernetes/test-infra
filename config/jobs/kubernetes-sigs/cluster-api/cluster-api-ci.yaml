@@ -11,7 +11,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-master
       command:
       - "./scripts/ci-build.sh"
   annotations:
@@ -29,7 +29,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-master
       command:
       - "./scripts/ci-test.sh"
       resources:
