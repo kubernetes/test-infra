@@ -31,6 +31,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/plugins",
     deps = [
+        "//pkg/genyaml:go_default_library",
         "//prow/bugzilla:go_default_library",
         "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/commentpruner:go_default_library",

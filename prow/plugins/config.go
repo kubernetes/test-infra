@@ -54,19 +54,20 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
+
 	Approve                    []Approve                    `json:"approve,omitempty"`
 	UseDeprecatedSelfApprove   bool                         `json:"use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019,omitempty"`
 	UseDeprecatedReviewApprove bool                         `json:"use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019,omitempty"`
 	Blockades                  []Blockade                   `json:"blockades,omitempty"`
 	Blunderbuss                Blunderbuss                  `json:"blunderbuss,omitempty"`
-	Bugzilla                   Bugzilla                     `json:"bugzilla"`
+	Bugzilla                   Bugzilla                     `json:"bugzilla,omitempty"`
 	Cat                        Cat                          `json:"cat,omitempty"`
 	CherryPickUnapproved       CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater              ConfigUpdater                `json:"config_updater,omitempty"`
 	Dco                        map[string]*Dco              `json:"dco,omitempty"`
-	Golint                     Golint                       `json:"golint"`
+	Golint                     Golint                       `json:"golint,omitempty"`
 	Heart                      Heart                        `json:"heart,omitempty"`
-	Label                      Label                        `json:"label"`
+	Label                      Label                        `json:"label,omitempty"`
 	Lgtm                       []Lgtm                       `json:"lgtm,omitempty"`
 	MilestoneApplier           map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
 	RepoMilestone              map[string]Milestone         `json:"repo_milestone,omitempty"`
@@ -76,7 +77,7 @@ type Configuration struct {
 	Retitle                    Retitle                      `json:"retitle,omitempty"`
 	Slack                      Slack                        `json:"slack,omitempty"`
 	SigMention                 SigMention                   `json:"sigmention,omitempty"`
-	Size                       Size                         `json:"size"`
+	Size                       Size                         `json:"size,omitempty"`
 	Triggers                   []Trigger                    `json:"triggers,omitempty"`
 	Welcome                    []Welcome                    `json:"welcome,omitempty"`
 }
