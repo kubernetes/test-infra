@@ -6,7 +6,7 @@ go_library(
     data = ["//prow/plugins:config-src"],
     importpath = "k8s.io/test-infra/pkg/genyaml",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/gopkg.in/yaml.v3:go_default_library"],
+    deps = ["@in_gopkg_yaml_v3//:go_default_library"],
 )
 
 go_test(
@@ -25,7 +25,7 @@ go_test(
         "//pkg/genyaml/testdata/pointer_types:go_default_library",
         "//pkg/genyaml/testdata/primitive_types:go_default_library",
         "//pkg/genyaml/testdata/private_members:go_default_library",
-        "//vendor/gopkg.in/yaml.v3:go_default_library",
+        "@in_gopkg_yaml_v3//:go_default_library",
     ],
 )
 

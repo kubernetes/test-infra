@@ -23,9 +23,9 @@ go_library(
         "//testgrid/metadata/junit:go_default_library",
         "//testgrid/state:go_default_library",
         "//testgrid/util/gcs:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
-        "//vendor/github.com/golang/protobuf/proto:go_default_library",
-        "//vendor/vbom.ml/util/sortorder:go_default_library",
+        "@com_github_golang_protobuf//proto:go_default_library",
+        "@com_google_cloud_go//storage:go_default_library",
+        "@ml_vbom_util//sortorder:go_default_library",
     ],
 )
 
@@ -50,6 +50,6 @@ go_test(
     deps = [
         "//testgrid/metadata/junit:go_default_library",
         "//testgrid/state:go_default_library",
-        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "@com_github_golang_protobuf//proto:go_default_library",
     ],
 )
