@@ -11,6 +11,7 @@ The video demos power features of testgrid, including:
 * Grouping
 * Dashboard groups
 * Summaries
+* Clustered Failures
 
 Please have a look!
 
@@ -100,6 +101,24 @@ Under **Options**
     reported, is based on the number of transitions from passing to failing (and
     vice versa) with more weight given to more recent transitions.
 *   **Sort by Name**: Sort alphabetically.
+
+## Clustered Failures
+
+You can display identified clustered failures in your test results grid in a
+dashboard tab. Select the ***Display Clustered Failures List*** toggle button to
+render a list/table of identified failure clusters at the bottom of the browser.
+
+Clusters can be grouped by:
+* test status
+* test status and error message
+
+The clustered failures table shows the test status, error message (if grouped by
+error message), and area of the clusters. The clusters are sorted by area in
+descending order.
+
+Selecting a row highlights the cells belonging to that cluster. Multiple row
+selection (with multiple cluster highlighting) is supported. To de-select a row,
+click on the selected row again.
 
 ## Configuration
 
