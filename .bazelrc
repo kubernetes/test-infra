@@ -60,6 +60,8 @@ build:minimal --experimental_remote_download_outputs=minimal
 build:remote --google_default_credentials=true
 build:remote --config=toplevel
 
+run:remote --experimental_remote_download_outputs=all --noexperimental_inmemory_jdeps_files --noexperimental_inmemory_dotd_files
+
 # Compose the remote configs with an instance name
 # A couple examples below:
 
