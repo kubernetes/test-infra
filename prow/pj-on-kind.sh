@@ -19,18 +19,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+TMP_PJ="$(mktemp)"
+TMP_POD="$(mktemp)"
+TMP_KIND_CONFIG="$(mktemp)"
+
+trap cleanup EXIT
+
 function main() {
   parseArgs "$@"
   ensureInstall
 
   # Generate PJ and Pod.
-  mkpj "--config-path=${config}" "${job_config}" "--job=${job}" > "${PWD}/pj.yaml"
-  mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=/output/${job}" > "${PWD}/pod.yaml"
+  mkpj "--config-path=${config}" "${job_config}" "--job=${job}" > "$TMP_PJ"
+  mkpod --build-id=snowflake "--prow-job=$TMP_PJ" --local "--out-dir=/output/${job}" > "$TMP_POD"
 
   # Deploy pod and watch.
   echo "Applying pod to the mkpod cluster. Configure kubectl for the mkpod cluster with:"
   echo '>  export KUBECONFIG="$(kind get kubeconfig-path --name="mkpod")"'
-  pod=$(kubectl apply -f "${PWD}/pod.yaml" | cut -d ' ' -f 1)
+  pod=$(kubectl apply -f "$TMP_POD" | cut -d ' ' -f 1)
   kubectl get "${pod}" -w
 }
 
@@ -92,8 +98,7 @@ function ensureInstall() {
       kind create cluster --name=mkpod "--config=${kind_config}" --wait=5m
     else
       # Create a temporary kind config file.
-      local temp_config="${PWD}/temp-mkpod-kind-config.yaml"
-      cat <<EOF > "${temp_config}"
+      cat <<EOF > "$TMP_KIND_CONFIG"
 kind: Cluster
 apiVersion: kind.sigs.k8s.io/v1alpha3
 nodes:
@@ -101,12 +106,15 @@ nodes:
       - containerPath: /output
         hostPath: ${out_dir}
 EOF
-      kind create cluster --name=mkpod "--config=${temp_config}" --wait=5m
-      rm "${temp_config}"
+      kind create cluster --name=mkpod "--config=$TMP_KIND_CONFIG" --wait=5m
     fi
   fi
   # Point kubectl at the mkpod cluster.
   export KUBECONFIG="$(kind get kubeconfig-path --name="mkpod")"
+}
+
+function cleanup() {
+    rm -f "$TMP_PJ" "$TMP_POD" "$TMP_KIND_CONFIG"
 }
 
 main "$@"
