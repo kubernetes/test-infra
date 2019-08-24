@@ -148,6 +148,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Non Org Member Can't Add",
@@ -175,6 +176,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Area Labels",
@@ -211,6 +213,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Priority-Area Mismatch)",
@@ -220,6 +223,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Area Labels (Some Valid)",
@@ -229,6 +233,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Committee Labels (Some Valid)",
@@ -238,6 +243,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("committee/steering"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Types of Labels Different Lines",
@@ -407,6 +413,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Remove custom label",
@@ -427,6 +434,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 	}
 
