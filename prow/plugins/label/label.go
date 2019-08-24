@@ -39,6 +39,30 @@ var (
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
 )
 
+const (
+	unknownLabelUsed  = "`%s` won't work for labeling this issue. Try `%s`"
+	labelUsageMessage = "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>"
+)
+
+func unique(slice *[]string) []string {
+	keys := make(map[string]bool)
+	for _, entry := range *slice {
+		keys[entry] = true
+	}
+	*slice = make([]string, len(keys))
+	for label := range keys {
+		*slice = append(*slice, label)
+	}
+	return *slice
+}
+
+func alert(withMessage string, andGitHubClient *githubClient, commentEvent *github.GenericCommentEvent, invalidLabelParameters *[]string) error {
+	*invalidLabelParameters = unique(invalidLabelParameters)
+	rawAlertText := fmt.Sprintf(withMessage, strings.Join(*invalidLabelParameters, ", "))
+	formattedAlertText := plugins.FormatResponseRaw(commentEvent.Body, commentEvent.HTMLURL, commentEvent.User.Login, rawAlertText)
+	return (*andGitHubClient).CreateComment(commentEvent.Repo.Owner.Login, commentEvent.Repo.Name, commentEvent.Number, formattedAlertText)
+}
+
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
@@ -62,11 +86,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
+		Usage:       labelUsageMessage,
 		Description: "Applies or removes a label from one of the recognized types of labels.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command on a PR.",
-		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh"},
+		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh", "/label <labelName>"},
 	})
 	return pluginHelp, nil
 }
@@ -96,7 +120,7 @@ func getLabelsFromREMatches(matches [][]string) (labels []string) {
 
 // getLabelsFromGenericMatches returns label matches with extra labels if those
 // have been configured in the plugin config.
-func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string) []string {
+func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string, invalidLabels *[]string) []string {
 	if len(additionalLabels) == 0 {
 		return nil
 	}
@@ -104,6 +128,7 @@ func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string) 
 	for _, match := range matches {
 		parts := strings.Split(match[0], " ")
 		if ((parts[0] != "/label") && (parts[0] != "/remove-label")) || len(parts) != 2 {
+			*invalidLabels = append(*invalidLabels, match[0])
 			continue
 		}
 		for _, l := range additionalLabels {
@@ -146,11 +171,9 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		labelsToAdd         []string
 		labelsToRemove      []string
 	)
-
 	// Get labels to add and labels to remove from regexp matches
-	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, additionalLabels)...)
-	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, additionalLabels)...)
-
+	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, additionalLabels, &nonexistent)...)
+	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, additionalLabels, &nonexistent)...)
 	// Add labels
 	for _, labelToAdd := range labelsToAdd {
 		if github.HasLabel(labelToAdd, labels) {
@@ -184,15 +207,14 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 	}
 
-	//TODO(grodrigues3): Once labels are standardized, make this reply with a comment.
 	if len(nonexistent) > 0 {
 		log.Infof("Nonexistent labels: %v", nonexistent)
+		return alert(unknownLabelUsed, &gc, e, &nonexistent)
 	}
 
 	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
-		msg := fmt.Sprintf(nonExistentLabelOnIssue, strings.Join(noSuchLabelsOnIssue, ", "))
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return alert(nonExistentLabelOnIssue, &gc, e, &noSuchLabelsOnIssue)
 	}
 
 	return nil
