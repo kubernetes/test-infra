@@ -116,8 +116,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/Azure/go-autorest",
-        sum = "h1:9DfMsQdUMEtg1jKRTjtkNZsvOuZXJOMl4dN1kiQwAc8=",
-        version = "v11.1.0+incompatible",
+        sum = "h1:viZ3tV5l4gE2Sw0xrasFHytCGtzYCrT+um/rrSQ1BfA=",
+        version = "v11.1.2+incompatible",
     )
     go_repository(
         name = "com_github_bazelbuild_bazel_gazelle",
@@ -622,8 +622,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/googleapis/gnostic",
-        sum = "h1:l6N3VoaVzTncYYW+9yOz2LJJammFZGBO13sqgEhpy9g=",
-        version = "v0.2.0",
+        sum = "h1:WeAefnSUHlBb0iJKwxFDZdbfGwkd7xRNuV+IpXMJhYk=",
+        version = "v0.3.1",
     )
     go_repository(
         name = "com_github_gophercloud_gophercloud",
@@ -950,8 +950,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/magiconair/properties",
-        sum = "h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDePerRcY=",
-        version = "v1.8.0",
+        sum = "h1:ZC2Vc7/ZFkGmsVC9KvOjumD+G5lXy2RtTKyzRKO2BQ4=",
+        version = "v1.8.1",
     )
     go_repository(
         name = "com_github_mailru_easyjson",
@@ -1030,8 +1030,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/Microsoft/go-winio",
-        sum = "h1:xAfWHN1IrQ0NJ9TBC0KBZoqLjzDTr1ML+4MywiUOryc=",
-        version = "v0.4.12",
+        sum = "h1:+hMXMk01us9KgxGb7ftKQt2Xpf5hH/yky+TDA+qxleU=",
+        version = "v0.4.14",
     )
     go_repository(
         name = "com_github_mitchellh_go_homedir",
@@ -1860,8 +1860,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "sigs.k8s.io/controller-runtime",
-        sum = "h1:49JLOielmXfrd44Cmk2c0eeIkQ/Vq4AvfqsZqya16/E=",
-        version = "v0.2.0-rc.0",
+        sum = "h1:5gL30PXOisGZl+Osi4CmLhvMUj77BO3wJeouKF2va50=",
+        version = "v0.2.0",
     )
     go_repository(
         name = "io_k8s_sigs_testing_frameworks",
@@ -1894,4 +1894,12 @@ def go_repositories():
         importpath = "gopkg.in/yaml.v3",
         sum = "h1:0efs3hwEZhFKsCoP8l6dDB1AZWMgnEl3yWXWRZTOaEA=",
         version = "v3.0.0-20190709130402-674ba3eaed22",
+    )
+    go_repository(
+        name = "com_github_docopt_docopt_go",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/docopt/docopt-go",
+        sum = "h1:bWDMxwH3px2JBh6AyO7hdCn/PkvCZXii8TGj7sbtEbQ=",
+        version = "v0.0.0-20180111231733-ee0de3bc6815",
     )
