@@ -127,11 +127,17 @@ periodics:
     description: Periodic testing of Kubeflow kfctl
 - name: kubeflow-periodic-project-cleanup
   interval: 1h
+  decorate: true
   labels:
     preset-service-account: "true"
+  extra_refs:
+  - org: kubeflow
+    repo: pipelines
+    base_ref: master
+    workdir: true
   spec:
     containers:
-      - image: gcr.io/kubeflow-ci/test-worker:latest
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-1c5f719-master
         imagePullPolicy: Always
         command:
         - "./test/tools/project-cleaner/project_cleaner.sh"
