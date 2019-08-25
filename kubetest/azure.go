@@ -270,9 +270,12 @@ func checkParams() error {
 			return err
 		}
 	} else if *acsLocation == "" {
-		*aksLocation = randomAksEngineLocation()
+		*acsLocation = randomAksEngineLocation()
 	}
 	//TODO: remove acs related lines after baking period
+	if *acsLocation != "" {
+		*aksLocation = *acsLocation
+	}
 	if *acsResourceName != "" {
 		*aksResourceName = *acsResourceName
 	}
