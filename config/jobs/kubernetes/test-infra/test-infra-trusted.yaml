@@ -6,7 +6,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.26.1
+      - image: launcher.gcr.io/google/bazel:0.28.1
         imagePullPolicy: Always
         command:
         - bazel
