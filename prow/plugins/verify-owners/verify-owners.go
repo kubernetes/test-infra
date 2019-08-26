@@ -45,7 +45,7 @@ const (
 	ownersAliasesFileName         = "OWNERS_ALIASES"
 	nonCollaboratorResponseFormat = `The following users are mentioned in %s file(s) but are not members of the %s org.
 
-Once all users have been added as members of the org, you can trigger verification by writing ` + "`/verify-owners`" + ` in a comment.`
+Once all users have been added as [members](%s) of the org, you can trigger verification by writing ` + "`/verify-owners`" + ` in a comment.`
 )
 
 var (
@@ -321,9 +321,9 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 
 		// prune old comments before adding a new one
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org))
+			return strings.Contains(comment.Body, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org, triggerConfig.JoinOrgURL))
 		})
-		if err := ghc.CreateComment(org, repo, number, markdownFriendlyComment(org, nonTrustedUsers)); err != nil {
+		if err := ghc.CreateComment(org, repo, number, markdownFriendlyComment(org, triggerConfig.JoinOrgURL, nonTrustedUsers)); err != nil {
 			log.WithError(err).Errorf("Could not create comment for listing non-collaborators in %s files", ownersFileName)
 		}
 	}
@@ -335,7 +335,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org))
+			return strings.Contains(comment.Body, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org, triggerConfig.JoinOrgURL))
 		})
 	}
 
@@ -408,9 +408,9 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 	return nil, owners
 }
 
-func markdownFriendlyComment(org string, nonTrustedUsers map[string][]string) string {
+func markdownFriendlyComment(org, joinOrgURL string, nonTrustedUsers map[string][]string) string {
 	var commentLines []string
-	commentLines = append(commentLines, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org))
+	commentLines = append(commentLines, fmt.Sprintf(nonCollaboratorResponseFormat, ownersFileName, org, joinOrgURL))
 
 	for user, ownersFiles := range nonTrustedUsers {
 		commentLines = append(commentLines, fmt.Sprintf("- %s", user))
