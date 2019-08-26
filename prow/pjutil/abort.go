@@ -29,8 +29,7 @@ import (
 
 // prowClient a minimalistic prow client required by the aborter
 type prowClient interface {
-	//ReplaceProwJob replaces the prow job with the given name
-	ReplaceProwJob(string, prowapi.ProwJob) (prowapi.ProwJob, error)
+	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 // ProwJobResourcesCleanup type for a callback function which it is expected to clean up
@@ -114,11 +113,11 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states")
 
-		npj, err := pjc.ReplaceProwJob(toCancel.ObjectMeta.Name, toCancel)
+		npj, err := pjc.Update(&toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[cancelIndex] = npj
+		pjs[cancelIndex] = *npj
 	}
 
 	return nil
