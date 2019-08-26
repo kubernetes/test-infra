@@ -30,13 +30,37 @@ import (
 )
 
 func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
-	if len(c.Config.Presubmits[pr.PullRequest.Base.Repo.FullName]) == 0 {
-		return nil
-	}
-
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
 	num := pr.PullRequest.Number
+
+	baseSHA := ""
+	baseSHAGetter := func() (string, error) {
+		var err error
+		baseSHA, err = c.GitHubClient.GetRef(org, repo, "heads/"+pr.PullRequest.Base.Ref)
+		if err != nil {
+			return "", fmt.Errorf("failed to get baseSHA: %v", err)
+		}
+		return baseSHA, nil
+	}
+	headSHAGetter := func() (string, error) {
+		return pr.PullRequest.Head.SHA, nil
+	}
+
+	presubmits, err := c.Config.GetPresubmits(c.GitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
+	if err != nil {
+		return fmt.Errorf("failed to get presubmits: %v", err)
+	}
+	if len(presubmits) == 0 {
+		return nil
+	}
+
+	if baseSHA == "" {
+		if _, err := baseSHAGetter(); err != nil {
+			return err
+		}
+	}
+
 	switch pr.Action {
 	case github.PullRequestActionOpened:
 		// When a PR is opened, if the author is in the org then build it.
@@ -48,7 +72,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
@@ -69,7 +93,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				}
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
 		}
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
@@ -91,10 +115,10 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 			return nil
 		} else if changes.Base.Ref.From != "" || changes.Base.Sha.From != "" {
 			// the base of the PR changed and we need to re-test it
-			return buildAllIfTrusted(c, trigger, pr)
+			return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
 		}
 	case github.PullRequestActionSynchronize:
-		return buildAllIfTrusted(c, trigger, pr)
+		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
 	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == labels.LGTM {
@@ -103,7 +127,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
 			}
 		}
 	}
@@ -119,7 +143,7 @@ func orgRepoAuthor(pr github.PullRequest) (string, string, login) {
 	return org, repo, login(author)
 }
 
-func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
+func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestEvent, baseSHA string, presubmits []config.Presubmit) error {
 	// When a PR is updated, check that the user is in the org or that an org
 	// member has said "/ok-to-test" before building. There's no need to ask
 	// for "/ok-to-test" because we do that once when the PR is created.
@@ -138,7 +162,7 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts)
+		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
 	}
 	return nil
 }
@@ -224,12 +248,12 @@ func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, 
 }
 
 // buildAll ensures that all builds that should run and will be required are built
-func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool) error {
+func buildAll(c Client, pr *github.PullRequest, eventGUID string, elideSkippedContexts bool, baseSHA string, presubmits []config.Presubmit) error {
 	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number)
-	toTest, toSkip, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, c.Config.Presubmits[pr.Base.Repo.FullName], c.Logger)
+	toTest, toSkip, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, presubmits, c.Logger)
 	if err != nil {
 		return err
 	}
-	return RunAndSkipJobs(c, pr, toTest, toSkip, eventGUID, elideSkippedContexts)
+	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, eventGUID, elideSkippedContexts)
 }

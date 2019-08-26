@@ -95,6 +95,10 @@ type kubeProwJobTriggerer struct {
 
 func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs, skippedJobs []config.Presubmit) error {
 	org, repo := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name
+	baseSHA, err := t.githubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+	if err != nil {
+		return fmt.Errorf("failed to get baseSHA: %v", err)
+	}
 	return trigger.RunAndSkipJobs(
 		trigger.Client{
 			GitHubClient:  t.githubClient,
@@ -102,7 +106,7 @@ func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs,
 			Config:        t.configAgent.Config(),
 			Logger:        logrus.WithField("client", "trigger"),
 		},
-		pr, requestedJobs, skippedJobs, "none", t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
+		pr, baseSHA, requestedJobs, skippedJobs, "none", t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
 	)
 }
 

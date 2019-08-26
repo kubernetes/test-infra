@@ -31,6 +31,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -136,6 +137,20 @@ type ProwConfig struct {
 	DefaultJobTimeout *metav1.Duration `json:"default_job_timeout,omitempty"`
 }
 
+// InRepoConfigEnabled returns whether InRepoConfig is enabled. Currently
+// a no-op that always returns false, as the underlying feature is not implemented
+// yet. See https://github.com/kubernetes/test-infra/issues/13370 for a current
+// status.
+func (pc *ProwConfig) InRepoConfigEnabled(identifier string) bool {
+	return false
+}
+
+// RefGetter is used to retrieve a Git Reference. Its purpose is
+// to be able to defer calling out to GitHub in the context of
+// inrepoconfig to make sure its only done when we actually need
+// to have that info.
+type RefGetter = func() (string, error)
+
 // PresubmitsStatic returns the presubmits in Prows main config.
 // **Warning:** This does not return dynamic Presubmits configured
 // inside the code repo, hence giving an incomplete view. Use
@@ -144,21 +159,129 @@ func (c *Config) PresubmitsStatic() map[string][]Presubmit {
 	return c.Presubmits
 }
 
+type refGetterForGitHubPullRequestClient interface {
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetRef(org, repo, ref string) (string, error)
+}
+
+// NewRefGetterForGitHubPullRequest returns a brand new RefGetterForGitHubPullRequest
+func NewRefGetterForGitHubPullRequest(ghc refGetterForGitHubPullRequestClient, org, repo string, number int) *RefGetterForGitHubPullRequest {
+	return &RefGetterForGitHubPullRequest{
+		ghc:    ghc,
+		org:    org,
+		repo:   repo,
+		number: number,
+		lock:   &sync.Mutex{},
+	}
+}
+
+// RefGetterForGitHubPullRequest is used to get the Presubmits for a GitHub PullRequest
+// when that PullRequest wasn't fetched yet. It will only fetch it if someone calls
+// its .PullRequest() func. It is threadsafe.
+type RefGetterForGitHubPullRequest struct {
+	ghc     refGetterForGitHubPullRequestClient
+	org     string
+	repo    string
+	number  int
+	lock    *sync.Mutex
+	pr      *github.PullRequest
+	baseSHA string
+}
+
+func (rg *RefGetterForGitHubPullRequest) PullRequest() (*github.PullRequest, error) {
+	rg.lock.Lock()
+	defer rg.lock.Unlock()
+	if rg.pr != nil {
+		return rg.pr, nil
+	}
+
+	pr, err := rg.ghc.GetPullRequest(rg.org, rg.repo, rg.number)
+	if err != nil {
+		return nil, err
+	}
+
+	rg.pr = pr
+	return rg.pr, nil
+}
+
+// HeadSHA is a RefGetter that returns the headSHA for the PullRequst
+func (rg *RefGetterForGitHubPullRequest) HeadSHA() (string, error) {
+	if rg.pr == nil {
+		if _, err := rg.PullRequest(); err != nil {
+			return "", err
+		}
+	}
+	return rg.pr.Head.SHA, nil
+}
+
+// BaseSHA is a RefGetter that returns the baseRef for the PullRequest
+func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
+	if rg.pr == nil {
+		if _, err := rg.PullRequest(); err != nil {
+			return "", err
+		}
+	}
+
+	// rg.PullRequest also wants the lock, so we must not acquire it before
+	// caling that
+	rg.lock.Lock()
+	defer rg.lock.Unlock()
+
+	if rg.baseSHA != "" {
+		return rg.baseSHA, nil
+	}
+
+	baseSHA, err := rg.ghc.GetRef(rg.org, rg.repo, "heads/"+rg.pr.Base.Ref)
+	if err != nil {
+		return "", err
+	}
+	rg.baseSHA = baseSHA
+
+	return rg.baseSHA, nil
+}
+
 // GetPresubmits will return all presumits for the given identifier.
 // Once https://github.com/kubernetes/test-infra/issues/13370 is resolved, it will
 // also return Presubmits that are versioned inside the tested repo, if that feature
 // is enabled.
-func (c *Config) GetPresubmits(gc *git.Client, identifier, baseSHA string, headRefs ...string) ([]Presubmit, error) {
+// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
+// also need the result of that GitHub call just keep a pointer to its result, bust must
+// nilcheck that pointer before accessing it.
+func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 	if gc == nil {
 		return nil, errors.New("gitClient is nil")
 	}
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
-	if baseSHA == "" {
-		return nil, errors.New("baseSHA is empty")
+	if !c.InRepoConfigEnabled(identifier) {
+		return c.Presubmits[identifier], nil
 	}
-	return c.Presubmits[identifier], nil
+
+	baseSHA, err := baseSHAGetter()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
+	}
+	var headSHAs []string
+	for _, headSHAGetter := range headSHAGetters {
+		headSHA, err := headSHAGetter()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get headRef: %v", err)
+		}
+		headSHAs = append(headSHAs, headSHA)
+	}
+	// Pending implementation of https://github.com/kubernetes/test-infra/issues/13370
+	_, _ = baseSHA, headSHAs
+	return nil, errors.New("inrepoconfig is not yet implemented :/")
+}
+
+// SetTestPresubmits allows to set the presubmits for identifier. It must be
+// used by testcode only
+func (jc *JobConfig) SetTestPresubmits(identifier string, presubmits []Presubmit) {
+	if jc.Presubmits == nil {
+		jc.Presubmits = map[string][]Presubmit{}
+	}
+	jc.Presubmits[identifier] = presubmits
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
