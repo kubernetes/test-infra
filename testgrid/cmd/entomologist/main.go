@@ -160,7 +160,6 @@ func main() {
 		}
 	}
 
-	// kick off goroutines
 	doOneshot := func(ctx context.Context) {
 		//Read test groups
 		reader, err := client.Reader(ctx, opt.configPath)
@@ -182,15 +181,12 @@ func main() {
 			return
 		}
 
-		for testGroup, issueState := range issueStates {
-			if issueState != nil {
-				if err := writeProto(opt.output, testGroup, issueState, client, ctx); err != nil {
-					logrus.WithError(err).Error("Could not write issue state")
-				}
-			}
+		if err := writeIssueStates(issueStates, opt.output, client, ctx); err != nil {
+			logrus.Errorf("Could not write issue states: %e", err)
 		}
 	}
 
+	// kick off goroutines
 	if opt.oneshot {
 		doOneshot(ctx)
 		return
@@ -216,17 +212,38 @@ func main() {
 	logrus.Info("Entomologist is closing...")
 }
 
+func writeIssueStates(issueStates map[string]*issue_state.IssueState, basePath string, client io.Opener, ctx context.Context) error {
+	for testGroup, issueState := range issueStates {
+		if issueState != nil {
+			if err := writeProto(basePath, testGroup, issueState, client, ctx); err != nil {
+				return err
+			}
+		} else {
+			// The bug state needs to be deleted, if it exists
+			if _, err := client.Reader(ctx, fullIssuePath(basePath, testGroup)); err == nil {
+				if err := writeProto(basePath, testGroup, nil, client, ctx); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func writeProto(path, testGroupName string, file *issue_state.IssueState, client io.Opener, ctx context.Context) error {
-	fullPath := fmt.Sprintf("%s/bugs-%s", path, testGroupName) //TestGrid expects filenames in this format
+	fullPath := fullIssuePath(path, testGroupName)
 	writer, err := client.Writer(ctx, fullPath)
 	if err != nil {
 		return fmt.Errorf("open writer to %s: %e", fullPath, err)
 	}
 	defer writer.Close()
 
-	out, err := proto.Marshal(file)
-	if err != nil {
-		return fmt.Errorf("marshal proto: %e", err)
+	var out []byte
+	if file != nil {
+		out, err = proto.Marshal(file)
+		if err != nil {
+			return fmt.Errorf("marshal proto: %e", err)
+		}
 	}
 	n, err := writer.Write(out)
 	if err != nil {
@@ -235,6 +252,11 @@ func writeProto(path, testGroupName string, file *issue_state.IssueState, client
 
 	logrus.Infof("Sending %d characters to %s", n, fullPath)
 	return nil
+}
+
+// Returns the path where the issue_state proto should be read/written
+func fullIssuePath(path, testGroupName string) string {
+	return fmt.Sprintf("%s/bugs-%s", path, testGroupName)
 }
 
 // Returns a map containing every test group as a key, with nil as a value
@@ -327,7 +349,6 @@ func pinIssues(client githubClient, repositories []string, testGroups map[string
 					newResult := issue_state.IssueInfo{
 						IssueId: strconv.Itoa(issue.Number),
 						Title:   issue.Title,
-						RowIds:  matchingTestGroups,
 					}
 
 					if issueStates == nil {
