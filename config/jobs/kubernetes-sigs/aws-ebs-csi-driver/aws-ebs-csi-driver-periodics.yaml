@@ -1,0 +1,23 @@
+periodics:
+- name: ci-aws-ebs-csi-driver-migration-test-latest
+  decorate: true
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-aws-credential-aws-oss-testing: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      command:
+      - runner.sh
+      args:
+      - make
+      - test-e2e-migration
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-aws-ebs-csi-driver
+    testgrid-tab-name: migration-test-latest
+    description: aws ebs csi driver migration test on latest kubernetes
+    testgrid-num-columns-recent: '30'

@@ -136,6 +136,6 @@ presubmits:
             privileged: true
     annotations:
       testgrid-dashboards: sig-aws-ebs-csi-driver
-      testgrid-tab-name: migration-test-latest
+      testgrid-tab-name: pull-migration-test-latest
       description: aws ebs csi driver migration test on latest kubernetes
       testgrid-num-columns-recent: '30'
