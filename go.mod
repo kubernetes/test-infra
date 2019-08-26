@@ -7,8 +7,8 @@ require (
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
-	github.com/Azure/go-autorest v11.1.0+incompatible
-	github.com/Microsoft/go-winio v0.4.12 // indirect
+	github.com/Azure/go-autorest v11.1.2+incompatible
+	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/NYTimes/gziphandler v0.0.0-20160419202541-63027b26b87e
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
@@ -48,6 +48,7 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
 	github.com/gorilla/csrf v1.6.0
 	github.com/gorilla/securecookie v1.1.1
@@ -69,6 +70,7 @@ require (
 	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lib/pq v1.0.0 // indirect
+	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.0.0-20171120080333-32fa128f234d // indirect
 	github.com/markbates/inflect v1.0.4 // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
@@ -102,23 +104,22 @@ require (
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
-	gomodules.xyz/jsonpatch/v2 v2.0.1 // indirect
 	google.golang.org/api v0.3.2
 	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
 	google.golang.org/grpc v1.20.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
-	k8s.io/apiextensions-apiserver v0.0.0-20190409022649-727a075fdec8
-	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
+	k8s.io/api v0.0.0-20190816222004-e3a6b8045b0b
+	k8s.io/apiextensions-apiserver v0.0.0-20190820064606-e49a3471dba5
+	k8s.io/apimachinery v0.0.0-20190816221834-a9f1d8a9c101
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/code-generator v0.0.0-20190704094409-6c2a4329ac29
+	k8s.io/code-generator v0.0.0-20190311093542-50b561225d70
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
 	k8s.io/klog v0.3.3
 	k8s.io/kubernetes v1.14.6 // indirect
 	k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/controller-runtime v0.2.0-rc.0
+	sigs.k8s.io/controller-runtime v0.2.0
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4
 )
