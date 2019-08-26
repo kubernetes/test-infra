@@ -361,6 +361,24 @@ sh_test(
     tags = ["lint"],
 )
 
+sh_binary(
+    name = "update-gopherage",
+    srcs = ["update-gopherage.sh"],
+    data = [
+        "//gopherage/cmd/html/static:zz.browser_bundle.es2015.js",
+    ],
+)
+
+sh_test(
+    name = "verify-gopherage",
+    srcs = ["verify-gopherage.sh"],
+    data = [
+        "//gopherage/cmd/html/static:browser_bundle.es2015.js",
+        "//gopherage/cmd/html/static:zz.browser_bundle.es2015.js",
+    ],
+    tags = ["lint"],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
