@@ -1207,6 +1207,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: ffa500
+        description: Issues or PRs related to deprecated documentation
+        name: triage/deprecated
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
       - color: 0052cc
