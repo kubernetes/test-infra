@@ -1612,8 +1612,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "k8s.io/client-go",
-        sum = "h1:U5Bt+dab9K8qaUmXINrkXO135kA11/i5Kg1RUydgaMQ=",
-        version = "v11.0.1-0.20190409021438-1a26190bd76a+incompatible",
+        sum = "h1:A5pdeNsAyGjohGD5QrSFEto0ndr0yDWnbgZIFWvNHp0=",
+        version = "v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible",
     )
     go_repository(
         name = "io_k8s_code_generator",
@@ -1636,8 +1636,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "k8s.io/klog",
-        sum = "h1:niceAagH1tzskmaie/icWd7ci1wbG7Bf2c6YGcQv+3c=",
-        version = "v0.3.3",
+        sum = "h1:lCJCxf/LIowc2IGS9TPjWDyXY4nOmdGdfcwwDQCOURQ=",
+        version = "v0.4.0",
     )
     go_repository(
         name = "io_k8s_kube_openapi",
