@@ -75,6 +75,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	var errors int
 	logrusutil.ComponentInit("config-bootstrapper")
 
 	o := gatherOptions()
@@ -114,6 +115,7 @@ func main() {
 			logrus.Infof("added to mock change: %s", relPath)
 		} else {
 			logrus.WithError(err).Warn("unexpected error determining relative path to file")
+			errors++
 		}
 		return nil
 	})
@@ -125,9 +127,14 @@ func main() {
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
 		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, nil, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
+			errors++
 		} else {
 			logger.Info("Successfully processed configmap")
 		}
+	}
+
+	if errors > 0 {
+		logrus.WithField("fail-count", errors).Fatalf("errors occurred during update")
 	}
 }
 
