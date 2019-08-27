@@ -629,6 +629,18 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-gcp-fips-4.2
 - name: canary-openshift-ocp-installer-e2e-gcp-fips-serial-4.2
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-gcp-fips-serial-4.2
+- name: canary-openshift-ocp-installer-e2e-aws-upi-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-aws-upi-4.2
+- name: canary-openshift-ocp-installer-e2e-vsphere-upi-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-vsphere-upi-4.2
+- name: canary-openshift-ocp-installer-e2e-vsphere-upi-serial-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-vsphere-upi-serial-4.2
+- name: canary-openshift-ocp-installer-e2e-metal-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-metal-4.2
+- name: canary-openshift-ocp-installer-e2e-metal-serial-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-metal-serial-4.2
+- name: canary-openshift-ocp-installer-e2e-openstack-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-openstack-4.2
 
 # OpenShift Dedicated integration
 - name: osd-int-4.1
@@ -2045,6 +2057,30 @@ dashboards:
     - name: redhat-canary-openshift-ocp-installer-e2e-gcp-fips-serial-4.2
       description: Runs Kubernetes serial e2e tests against an OpenShift 4.2 OCP cluster running on GCP with FIPS mode enabled.
       test_group_name: canary-openshift-ocp-installer-e2e-gcp-fips-serial-4.2
+      base_options: width=10
+    - name: redhat-canary-openshift-ocp-installer-e2e-aws-upi-4.2
+      description: Runs Kubernetes e2e tests against an OpenShift 4.2 OCP cluster running on a UPI AWS cluster.
+      test_group_name: canary-openshift-ocp-installer-e2e-aws-upi-4.2
+      base_options: width=10
+    - name: redhat-canary-openshift-ocp-installer-e2e-vsphere-upi-4.2
+      description: Runs Kubernetes e2e tests against an OpenShift 4.2 OCP cluster running on a UPI vSphere cluster.
+      test_group_name: canary-openshift-ocp-installer-e2e-vsphere-upi-4.2
+      base_options: width=10
+    - name: redhat-canary-openshift-ocp-installer-e2e-vsphere-upi-serial-4.2
+      description: Runs Kubernetes serial e2e tests against an OpenShift 4.2 OCP cluster running on a UPI vSphere cluster.
+      test_group_name: canary-openshift-ocp-installer-e2e-vsphere-upi-serial-4.2
+      base_options: width=10
+    - name: redhat-canary-openshift-ocp-installer-e2e-metal-4.2
+      description: Runs Kubernetes e2e tests against an OpenShift 4.2 OCP cluster running on a baremetal provisioned cluster.
+      test_group_name: canary-openshift-ocp-installer-e2e-metal-4.2
+      base_options: width=10
+    - name: redhat-canary-openshift-ocp-installer-e2e-metal-serial-4.2
+      description: Runs Kubernetes serial e2e tests against an OpenShift 4.2 OCP cluster running on a baremetal provisioned cluster.
+      test_group_name: canary-openshift-ocp-installer-e2e-metal-serial-4.2
+      base_options: width=10
+    - name: redhat-canary-openshift-ocp-installer-e2e-openstack-4.2
+      description: Runs Kubernetes e2e tests against an OpenShift 4.2 OCP cluster running on an Openstack cluster.
+      test_group_name: canary-openshift-ocp-installer-e2e-openstack-4.2
       base_options: width=10
 
 # OpenShift Dedicated integration dashboard
