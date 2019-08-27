@@ -1135,6 +1135,7 @@ dashboards:
 
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
+- name: sig-network-dualstack-azure-e2e
 - name: sig-network-netd
 - name: sig-node-cri-o
   dashboard_tab:
@@ -2195,6 +2196,7 @@ dashboard_groups:
   - sig-network-ingress-gce-e2e
   - sig-network-ingress-nginx
   - sig-network-netd
+  - sig-network-dualstack-azure-e2e
 
 - name: sig-node
   dashboard_names:
