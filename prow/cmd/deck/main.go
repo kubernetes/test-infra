@@ -279,6 +279,16 @@ func main() {
 	}
 	cfg := configAgent.Config
 
+	var pluginAgent *plugins.ConfigAgent
+	if o.pluginConfig != "" {
+		pluginAgent = &plugins.ConfigAgent{}
+		if err := pluginAgent.Load(o.pluginConfig); err != nil {
+			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
+		}
+	} else {
+		logrus.Info("No plugins configuration was provided to deck. You must provide one to reuse /test checks for rerun")
+	}
+
 	metrics.ExposeMetrics("deck", cfg().PushGateway)
 
 	// signal to the world that we are healthy
@@ -290,6 +300,7 @@ func main() {
 	// setup common handlers for local and deployed runs
 	mux.Handle("/static/", http.StripPrefix("/static", staticHandlerFromDir(o.staticFilesLocation)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(cfg)))
+	mux.Handle("/plugin-config", gziphandler.GzipHandler(handlePluginConfig(pluginAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, cfg)))
 
 	// Set up handlers for template pages.
@@ -329,7 +340,7 @@ func main() {
 	if runLocal {
 		mux = localOnlyMain(cfg, o, mux)
 	} else {
-		mux = prodOnlyMain(cfg, o, mux)
+		mux = prodOnlyMain(cfg, pluginAgent, o, mux)
 	}
 
 	// signal to the world that we're ready
@@ -442,7 +453,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeMux {
+func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options, mux *http.ServeMux) *http.ServeMux {
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
@@ -501,7 +512,6 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta)))
 	}
 
-	var pluginAgent *plugins.ConfigAgent
 	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
 	var githubClient prowgithub.RerunClient
 	// Enable Git OAuth feature if oauthURL is provided.
@@ -553,14 +563,6 @@ func prodOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeM
 			githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting GitHub client.")
-			}
-			if o.pluginConfig != "" {
-				pluginAgent = &plugins.ConfigAgent{}
-				if err := pluginAgent.Load(o.pluginConfig); err != nil {
-					logrus.WithError(err).Fatal("Error loading Prow plugin config.")
-				}
-			} else {
-				logrus.Info("No plugins configuration was provided to deck. You must provide one to reuse /test checks for rerun")
 			}
 		}
 
@@ -1241,28 +1243,22 @@ func validateLogRequest(r *http.Request) error {
 func handleProwJob(prowJobClient prowv1.ProwJobInterface) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
+		l := logrus.WithField("prowjob", name)
 		if name == "" {
 			http.Error(w, "request did not provide the 'prowjob' query parameter", http.StatusBadRequest)
 			return
 		}
+
 		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
 				// admins only care about errors other than not found
-				logrus.WithError(err).Warning("ProwJob not found.")
+				l.WithError(err).Warning("ProwJob not found.")
 			}
 			return
 		}
-		b, err := yaml.Marshal(&pj)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
-			logrus.WithError(err).Error("Error marshaling jobs.")
-			return
-		}
-		if _, err := w.Write(b); err != nil {
-			logrus.WithError(err).Error("Error writing job.")
-		}
+		handleSerialize(w, "prowjob", pj, l)
 	}
 }
 
@@ -1290,28 +1286,19 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 
 	// If the job is a presubmit and has an associated PR, and a plugin config is provided,
 	// do the same checks as for /test
-	if pj.Spec.Type == prowapi.PresubmitJob && pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 && pluginAgent != nil {
-		pcfg := pluginAgent.Config()
-		pull := pj.Spec.Refs.Pulls[0]
-		org := pj.Spec.Refs.Org
-		repo := pj.Spec.Refs.Repo
-		_, allowed, err := trigger.TrustedPullRequest(cli, pcfg.TriggerFor(org, repo), pull.Author, org, repo, pull.Number, nil)
-		return allowed, err
+	if pj.Spec.Type == prowapi.PresubmitJob && pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
+		if pluginAgent == nil {
+			logrus.Info("No plugin config was provided so we cannot check if the user would be allowed to use /test.")
+		} else {
+			pcfg := pluginAgent.Config()
+			pull := pj.Spec.Refs.Pulls[0]
+			org := pj.Spec.Refs.Org
+			repo := pj.Spec.Refs.Repo
+			_, allowed, err := trigger.TrustedPullRequest(cli, pcfg.TriggerFor(org, repo), pull.Author, org, repo, pull.Number, nil)
+			return allowed, err
+		}
 	}
 	return false, nil
-}
-
-func marshalJob(w http.ResponseWriter, pj prowapi.ProwJob, l *logrus.Entry) {
-	b, err := yaml.Marshal(&pj)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
-		l.WithError(err).Error("Error marshaling job.")
-		return
-	}
-	w.Header().Set("Content-Type", "text/plain")
-	if _, err := w.Write(b); err != nil {
-		l.WithError(err).Error("Error writing log.")
-	}
 }
 
 // handleRerun triggers a rerun of the given job if that features is enabled, it receives a
@@ -1337,7 +1324,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
 		switch r.Method {
 		case http.MethodGet:
-			marshalJob(w, newPJ, l)
+			handleSerialize(w, "prowjob", newPJ, l)
 		case http.MethodPost:
 			if !createProwJob {
 				http.Error(w, "Direct rerun feature is not enabled. Enable with the '--rerun-creates-job' flag.", http.StatusMethodNotAllowed)
@@ -1397,24 +1384,35 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 	}
 }
 
+func handleSerialize(w http.ResponseWriter, name string, data interface{}, l *logrus.Entry) {
+	setHeadersNoCaching(w)
+	b, err := yaml.Marshal(data)
+	if err != nil {
+		msg := fmt.Sprintf("Error marshaling %q.", name)
+		l.WithError(err).Error(msg)
+		http.Error(w, msg, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	buff := bytes.NewBuffer(b)
+	_, err = buff.WriteTo(w)
+	if err != nil {
+		msg := fmt.Sprintf("Error writing %q.", name)
+		l.WithError(err).Error(msg)
+		http.Error(w, msg, http.StatusInternalServerError)
+	}
+}
+
 func handleConfig(cfg config.Getter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: add the ability to query for portions of the config?
-		setHeadersNoCaching(w)
-		config := cfg()
-		b, err := yaml.Marshal(config)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling config.")
-			http.Error(w, "Failed to marhshal config.", http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/plain")
-		buff := bytes.NewBuffer(b)
-		_, err = buff.WriteTo(w)
-		if err != nil {
-			logrus.WithError(err).Error("Error writing config.")
-			http.Error(w, "Failed to write config.", http.StatusInternalServerError)
-		}
+		handleSerialize(w, "config.yaml", cfg(), logrus.WithField("handler", "/config"))
+	}
+}
+
+func handlePluginConfig(pluginAgent *plugins.ConfigAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handleSerialize(w, "plugins.yaml", pluginAgent.Config(), logrus.WithField("handler", "/plugin-config"))
 	}
 }
 

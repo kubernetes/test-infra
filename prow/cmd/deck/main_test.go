@@ -23,14 +23,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/gorilla/sessions"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"io"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/githuboauth"
-	"k8s.io/test-infra/prow/plugins"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -38,6 +32,13 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/gorilla/sessions"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/plugins"
 
 	"github.com/google/go-github/github"
 
@@ -1043,6 +1044,48 @@ func TestHandleConfig(t *testing.T) {
 		t.Fatalf("Error reading response body: %v", err)
 	}
 	var res config.Config
+	if err := yaml.Unmarshal(body, &res); err != nil {
+		t.Fatalf("Error unmarshaling: %v", err)
+	}
+	if !reflect.DeepEqual(c, res) {
+		t.Errorf("Invalid config. Got %v, expected %v", res, c)
+	}
+}
+
+func TestHandlePluginConfig(t *testing.T) {
+	c := plugins.Configuration{
+		Plugins: map[string][]string{
+			"org/repo": {
+				"approve",
+				"lgtm",
+			},
+		},
+		Blunderbuss: plugins.Blunderbuss{
+			ExcludeApprovers: true,
+		},
+	}
+	pluginAgent := &plugins.ConfigAgent{}
+	pluginAgent.Set(&c)
+	handler := handlePluginConfig(pluginAgent)
+	req, err := http.NewRequest(http.MethodGet, "/config", nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+	if h := rr.Header().Get("Content-Type"); h != "text/plain" {
+		t.Fatalf("Bad Content-Type, expected: 'text/plain', got: %v", h)
+	}
+	resp := rr.Result()
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error reading response body: %v", err)
+	}
+	var res plugins.Configuration
 	if err := yaml.Unmarshal(body, &res); err != nil {
 		t.Fatalf("Error unmarshaling: %v", err)
 	}
