@@ -1025,6 +1025,7 @@ func TestValidateBug(t *testing.T) {
 	open, closed := true, false
 	one, two := "v1", "v2"
 	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
+	closedStatus, closedErrata := []string{"CLOSED"}, []string{"CLOSED (ERRATA)"}
 	updated := "UPDATED"
 	var testCases = []struct {
 		name       string
@@ -1154,6 +1155,25 @@ func TestValidateBug(t *testing.T) {
 				"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 				"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 			},
+		},
+		{
+			name:    "matching closed status and matching resolution mean a valid bug",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options: plugins.BugzillaBranchOptions{Statuses: &closedErrata},
+			valid:   true,
+		},
+		{
+			name:    "matching closed status but unexpected resolution mean a invalid bug",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "NOTABUG"},
+			options: plugins.BugzillaBranchOptions{Statuses: &closedErrata},
+			valid:   false,
+			why:     []string{"expected the bug to be in one of the following states: CLOSED (ERRATA), but it is CLOSED (NOTABUG) instead"},
+		},
+		{
+			name:    "matching closed status and we do not care about status, means a valid bug",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "NOTABUG"},
+			options: plugins.BugzillaBranchOptions{Statuses: &closedStatus},
+			valid:   true,
 		},
 	}
 

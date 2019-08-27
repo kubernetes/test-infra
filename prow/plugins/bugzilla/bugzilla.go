@@ -458,18 +458,18 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		if options.StatusAfterValidation != nil {
 			validStatuses.Insert(*options.StatusAfterValidation)
 		}
-		if !validStatuses.Has(bug.Status) {
+		if !(validStatuses.Has(bug.StatusWithResolution()) || validStatuses.Has(bug.Status)) {
 			valid = false
-			errors = append(errors, fmt.Sprintf("expected the bug to be in one of the following states: %s, but it is %s instead", strings.Join(*options.Statuses, ", "), bug.Status))
+			errors = append(errors, fmt.Sprintf("expected the bug to be in one of the following states: %s, but it is %s instead", strings.Join(*options.Statuses, ", "), bug.StatusWithResolution()))
 		}
 	}
 
 	if options.DependentBugStatuses != nil {
 		validStatuses := sets.NewString(*options.DependentBugStatuses...)
 		for _, bug := range dependents {
-			if !validStatuses.Has(bug.Status) {
+			if !(validStatuses.Has(bug.StatusWithResolution()) || validStatuses.Has(bug.Status)) {
 				valid = false
-				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugStatuses, ", "), bug.Status))
+				errors = append(errors, fmt.Sprintf("expected dependent "+bugLink+" to be in one of the following states: %s, but it is %s instead", bug.ID, endpoint, bug.ID, strings.Join(*options.DependentBugStatuses, ", "), bug.StatusWithResolution()))
 			}
 		}
 	}
@@ -518,8 +518,8 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 		if options.StatusAfterValidation != nil {
 			validStatuses.Insert(*options.StatusAfterValidation)
 		}
-		if !validStatuses.Has(bug.Status) {
-			return comment(fmt.Sprintf(bugLink+" is in an unrecognized state (%s) and will not be moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, bug.Status, *options.StatusAfterMerge))
+		if !(validStatuses.Has(bug.StatusWithResolution()) || validStatuses.Has(bug.Status)) {
+			return comment(fmt.Sprintf(bugLink+" is in an unrecognized state (%s) and will not be moved to the %s state.", e.bugId, bc.Endpoint(), e.bugId, bug.StatusWithResolution(), *options.StatusAfterMerge))
 		}
 	}
 
