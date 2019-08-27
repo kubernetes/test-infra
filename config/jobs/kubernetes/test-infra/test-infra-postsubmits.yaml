@@ -67,6 +67,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: boskos-config-upload
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
       description: Update boskos configmap on test-infra pushes
 
   - name: maintenance-ci-testgrid-config-upload
@@ -86,8 +88,8 @@ postsubmits:
           requests:
             memory: "1Gi"
     annotations:
-      testgrid-num-failures-to-alert: '2'
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: testgrid-config-upload
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
       description: Compiles and uploads testgrid config on test-infra pushes

@@ -27,6 +27,7 @@ postsubmits:
         secret:
           secretName: oauth-token
     annotations:
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
   kubernetes/test-infra:
   - name: post-test-infra-push-alpine-bash
@@ -111,6 +112,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: deploy-prow
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
       description: deploys the configured version of prow by running prow/deploy.sh
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
@@ -135,6 +138,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
       description: builds and pushes all prow on each commit by running prow/push.sh
   - name: post-test-infra-push-velodrome
     cluster: test-infra-trusted
@@ -142,6 +147,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "velodrome"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the images under velodrome/
     decorate: true
     branches:
     - master
@@ -170,6 +178,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "boskos"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes boskos images
     decorate: true
     branches:
     - master
@@ -193,6 +204,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "kettle"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the kettle image
     run_if_changed: '^kettle/'
     decorate: true
     branches:
@@ -221,6 +235,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "planter"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the planter image
     run_if_changed: '^planter/'
     decorate: true
     branches:
@@ -250,6 +267,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "triage"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the triage image
     decorate: true
     branches:
     - master
@@ -278,6 +298,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "bazelbuild"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the bazelbuild test image
     decorate: true
     branches:
     - master
@@ -306,6 +329,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "bazel-krte"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the bazel-krte image
     decorate: true
     branches:
     - master
@@ -334,6 +360,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "bigquery"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the bigquery image
     decorate: true
     branches:
     - master
@@ -362,6 +391,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "bootstrap"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the bootstrap image
     decorate: true
     branches:
     - master
@@ -390,6 +422,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "cluster-api"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the cluster-api image
     decorate: true
     branches:
     - master
@@ -418,6 +453,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "gcloud"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the gcloud image
     decorate: true
     branches:
     - master
@@ -446,6 +484,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "kubekins-e2e"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the kubekins-e2e image
     decorate: true
     branches:
     - master
@@ -474,6 +515,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "kubekins-test"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the kubekins-test image
     decorate: true
     branches:
     - master
@@ -502,6 +546,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "kubemci"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the kubemci image
     decorate: true
     branches:
     - master
@@ -530,6 +577,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "gubernator"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the gubernator image
     decorate: true
     branches:
     - master
@@ -558,6 +608,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "image-builder"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the image builder's own image
     decorate: true
     branches:
     - master
@@ -619,7 +672,7 @@ postsubmits:
     run_if_changed: '^communication/slack-config'
     annotations:
       testgrid-num-failures-to-alert: "1"
-      testgrid-alert-email: ktbry@google.com
+      testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
       testgrid-dashboards: sig-contribex-slack-infra
     spec:
       containers:
@@ -645,7 +698,7 @@ postsubmits:
     run_if_changed: '^(slack|tempelis)'
     annotations:
       testgrid-num-failures-to-alert: "1"
-      testgrid-alert-email: ktbry@google.com
+      testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
       testgrid-dashboards: sig-contribex-slack-infra
     decorate: true
     branches:
@@ -677,7 +730,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-contribex-org
     testgrid-tab-name: ci-peribolos
-    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com
+    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '1'
   cluster: test-infra-trusted
   decorate: true
@@ -851,7 +904,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: slack-oncall-updater
-    testgrid-alert-email: ktbry@google.com
+    testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
     description: runs experiment/slack-oncall-updater to update the membership of the test-infra-oncall slack usergroup
 - interval: 5m
   name: ci-test-infra-resultstore-upload

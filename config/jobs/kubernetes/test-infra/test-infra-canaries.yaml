@@ -59,6 +59,7 @@ periodics:
       - name: GO111MODULE
         value: "on"
   annotations:
+    testgrid-alert-email: colew@google.com
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: benchmark-demo
     description: Demoing JUnit golang benchmark results.

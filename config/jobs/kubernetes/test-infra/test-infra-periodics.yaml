@@ -111,6 +111,8 @@ periodics:
         secretName: velodrome-influxdb
   annotations:
     testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '2'
     description: Runs BigQuery queries to generate data for metrics.
 
 - name: metrics-kettle
