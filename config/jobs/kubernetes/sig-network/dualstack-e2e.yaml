@@ -38,7 +38,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190812-5a136da-master
       args:
       - --job=$(JOB_NAME)
-      - --repo=k8s.io/$(REPO_NAME)=master
+      - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       - --service-account=/etc/service-account/service-account.json
       - --timeout=470
