@@ -50,7 +50,6 @@ type options struct {
 	jobConfigPath string
 	dryRun        flagutil.Bool
 	kubernetes    flagutil.KubernetesOptions
-	namespace     string
 }
 
 const (
@@ -66,7 +65,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.namespace, "namespace", "default", "The namespae sinker runs in. Will be used for leader election")
 
 	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
 	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
@@ -125,7 +123,7 @@ func main() {
 		MetricsBindAddress:      "0",
 		Namespace:               cfg().ProwJobNamespace,
 		LeaderElection:          true,
-		LeaderElectionNamespace: o.namespace,
+		LeaderElectionNamespace: configAgent.Config().ProwJobNamespace,
 		LeaderElectionID:        "prow-sinker-leaderlock",
 	}
 	mgr, err := manager.New(infrastructureClusterConfig, opts)
