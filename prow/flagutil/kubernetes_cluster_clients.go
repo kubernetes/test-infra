@@ -31,11 +31,11 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-// ExperimentalKubernetesOptions holds options for interacting with Kubernetes.
+// KubernetesOptions holds options for interacting with Kubernetes.
 // These options are both useful for clients interacting with ProwJobs
 // and other resources on the infrastructure cluster, as well as Pods
 // on build clusters.
-type ExperimentalKubernetesOptions struct {
+type KubernetesOptions struct {
 	buildCluster string
 	kubeconfig   string
 
@@ -50,14 +50,14 @@ type ExperimentalKubernetesOptions struct {
 }
 
 // AddFlags injects Kubernetes options into the given FlagSet.
-func (o *ExperimentalKubernetesOptions) AddFlags(fs *flag.FlagSet) {
+func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster. All clusters are used as build clusters. Cannot be combined with --kubeconfig.")
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default or whichever is passed to --context are used as build clusters. . Cannot be combined with --build-cluster.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 }
 
 // Validate validates Kubernetes options.
-func (o *ExperimentalKubernetesOptions) Validate(dryRun bool) error {
+func (o *KubernetesOptions) Validate(dryRun bool) error {
 	if dryRun && o.DeckURI == "" {
 		return errors.New("a dry-run was requested but required flag -deck-url was unset")
 	}
@@ -82,7 +82,7 @@ func (o *ExperimentalKubernetesOptions) Validate(dryRun bool) error {
 }
 
 // resolve loads all of the clients we need and caches them for future calls.
-func (o *ExperimentalKubernetesOptions) resolve(dryRun bool) (err error) {
+func (o *KubernetesOptions) resolve(dryRun bool) (err error) {
 	if o.resolved {
 		return nil
 	}
@@ -120,7 +120,7 @@ func (o *ExperimentalKubernetesOptions) resolve(dryRun bool) (err error) {
 }
 
 // ProwJobClientset returns a ProwJob clientset for use in informer factories.
-func (o *ExperimentalKubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (prowJobClientset prow.Interface, err error) {
+func (o *KubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (prowJobClientset prow.Interface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (o *ExperimentalKubernetesOptions) ProwJobClientset(namespace string, dryRu
 }
 
 // ProwJobClient returns a ProwJob client.
-func (o *ExperimentalKubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJobClient prowv1.ProwJobInterface, err error) {
+func (o *KubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJobClient prowv1.ProwJobInterface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (o *ExperimentalKubernetesOptions) ProwJobClient(namespace string, dryRun b
 }
 
 // InfrastructureClusterConfig returns the *rest.Config for the infrastructure cluster
-func (o *ExperimentalKubernetesOptions) InfrastructureClusterConfig(dryRun bool) (*rest.Config, error) {
+func (o *KubernetesOptions) InfrastructureClusterConfig(dryRun bool) (*rest.Config, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (o *ExperimentalKubernetesOptions) InfrastructureClusterConfig(dryRun bool)
 }
 
 // InfrastructureClusterClient returns a Kubernetes client for the infrastructure cluster.
-func (o *ExperimentalKubernetesOptions) InfrastructureClusterClient(dryRun bool) (kubernetesClient kubernetes.Interface, err error) {
+func (o *KubernetesOptions) InfrastructureClusterClient(dryRun bool) (kubernetesClient kubernetes.Interface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func (o *ExperimentalKubernetesOptions) InfrastructureClusterClient(dryRun bool)
 }
 
 // BuildClusterClients returns Pod clients for build clusters.
-func (o *ExperimentalKubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (buildClusterClients map[string]corev1.PodInterface, err error) {
+func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (buildClusterClients map[string]corev1.PodInterface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}

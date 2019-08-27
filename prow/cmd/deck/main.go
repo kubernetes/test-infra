@@ -82,7 +82,7 @@ type options struct {
 	configPath            string
 	jobConfigPath         string
 	buildCluster          string
-	kubernetes            prowflagutil.ExperimentalKubernetesOptions
+	kubernetes            prowflagutil.KubernetesOptions
 	github                prowflagutil.GitHubOptions
 	tideURL               string
 	hookURL               string

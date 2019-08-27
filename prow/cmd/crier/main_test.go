@@ -114,7 +114,7 @@ func TestOptions(t *testing.T) {
 				slackTokenFile: "/bar/baz",
 				configPath:     "foo",
 				dryrun:         true,
-				client: prowflagutil.ExperimentalKubernetesOptions{
+				client: prowflagutil.KubernetesOptions{
 					DeckURI: "http://www.example.com",
 				},
 				github:         defaultGitHubOptions,
