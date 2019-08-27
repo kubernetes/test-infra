@@ -50,7 +50,7 @@ type options struct {
 
 	dryRun     bool
 	runOnce    bool
-	kubernetes prowflagutil.ExperimentalKubernetesOptions
+	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions
 
 	maxRecordsPerPool int

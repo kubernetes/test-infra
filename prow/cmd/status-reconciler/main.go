@@ -49,7 +49,7 @@ type options struct {
 	continueOnError         bool
 	addedPresubmitBlacklist prowflagutil.Strings
 	dryRun                  bool
-	kubernetes              prowflagutil.ExperimentalKubernetesOptions
+	kubernetes              prowflagutil.KubernetesOptions
 	github                  prowflagutil.GitHubOptions
 
 	tokenBurst    int

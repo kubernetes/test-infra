@@ -32,13 +32,13 @@ func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 		{
 			name:        "all ok without dry-run",
 			dryRun:      false,
-			kubernetes:  &ExperimentalKubernetesOptions{},
+			kubernetes:  &KubernetesOptions{},
 			expectedErr: false,
 		},
 		{
 			name:   "all ok with dry-run",
 			dryRun: true,
-			kubernetes: &ExperimentalKubernetesOptions{
+			kubernetes: &KubernetesOptions{
 				DeckURI: "https://example.com",
 			},
 			expectedErr: false,
@@ -46,7 +46,7 @@ func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 		{
 			name:        "missing deck endpoint with dry-run",
 			dryRun:      true,
-			kubernetes:  &ExperimentalKubernetesOptions{},
+			kubernetes:  &KubernetesOptions{},
 			expectedErr: true,
 		},
 	}

@@ -95,7 +95,7 @@ func Test_gatherOptions(t *testing.T) {
 			expected := &options{
 				configPath: "yo",
 				dryRun:     true,
-				kubernetes: flagutil.ExperimentalKubernetesOptions{DeckURI: "http://whatever"},
+				kubernetes: flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)

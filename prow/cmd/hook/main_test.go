@@ -100,7 +100,7 @@ func Test_gatherOptions(t *testing.T) {
 				pluginConfig:      "/etc/plugins/plugins.yaml",
 				dryRun:            true,
 				gracePeriod:       180 * time.Second,
-				kubernetes:        flagutil.ExperimentalKubernetesOptions{DeckURI: "http://whatever"},
+				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				webhookSecretFile: "/etc/webhook/hmac",
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)

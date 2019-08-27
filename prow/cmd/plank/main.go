@@ -47,7 +47,7 @@ type options struct {
 	skipReport    bool
 
 	dryRun     bool
-	kubernetes prowflagutil.ExperimentalKubernetesOptions
+	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions
 }
 

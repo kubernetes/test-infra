@@ -53,7 +53,7 @@ type options struct {
 
 	dryRun      bool
 	gracePeriod time.Duration
-	kubernetes  prowflagutil.ExperimentalKubernetesOptions
+	kubernetes  prowflagutil.KubernetesOptions
 	github      prowflagutil.GitHubOptions
 	bugzilla    prowflagutil.BugzillaOptions
 

@@ -85,7 +85,7 @@ func Test_gatherOptions(t *testing.T) {
 				statusThrottle:    400,
 				maxRecordsPerPool: 1000,
 				github:            flagutil.GitHubOptions{},
-				kubernetes:        flagutil.ExperimentalKubernetesOptions{DeckURI: "http://whatever"},
+				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
