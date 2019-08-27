@@ -42,7 +42,7 @@ periodics:
           --timeout=300m \
           --test_args="--ginkgo.focus=\[Conformance\]"
         cd ../test-infra/gopherage
-        go build .
+        GO111MODULE=on go build .
         ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
         ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
@@ -110,7 +110,7 @@ periodics:
           --timeout=150m \
           --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8"
         cd ../test-infra/gopherage
-        go build .
+        GO111MODULE=on go build .
         ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
         ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
