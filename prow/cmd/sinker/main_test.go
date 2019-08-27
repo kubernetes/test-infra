@@ -523,7 +523,6 @@ func TestFlags(t *testing.T) {
 				dryRun: flagutil.Bool{
 					Explicit: true,
 				},
-				namespace: "default",
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
