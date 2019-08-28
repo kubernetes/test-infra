@@ -442,7 +442,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 			if err != nil {
 				return fmt.Errorf("failed to get latest gke version: %s", err)
 			}
-			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
+			return getKube("https://storage.googleapis.com/gke-release/release", version, extractSrc)
 		}
 
 		if strings.HasPrefix(e.option, "channel") {
@@ -451,7 +451,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 			if err != nil {
 				return fmt.Errorf("failed to get gke version from channel %s: %s", e.ciVersion, err)
 			}
-			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
+			return getKube("https://storage.googleapis.com/gke-release/release", version, extractSrc)
 		}
 
 		// TODO(krzyzacy): clean up gke-default logic
@@ -479,7 +479,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		return setReleaseFromGcs("kubernetes-release-dev/ci", "latest-"+mat[1], extractSrc)
 	case ci:
 		if strings.HasPrefix(e.option, "gke-") {
-			return setReleaseFromGcs("kubernetes-release-gke/release", e.option, extractSrc)
+			return setReleaseFromGcs("gke-release/release", e.option, extractSrc)
 		}
 
 		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
@@ -490,7 +490,7 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		release := e.option
 		re := regexp.MustCompile(`(v\d+\.\d+\.\d+-gke.\d+)$`) // v1.8.0-gke.0
 		if re.FindStringSubmatch(release) != nil {
-			url = "https://storage.googleapis.com/kubernetes-release-gke/release"
+			url = "https://storage.googleapis.com/gke-release/release"
 		} else if strings.Contains(release, "+") {
 			url = "https://storage.googleapis.com/kubernetes-release-dev/ci"
 		} else {
