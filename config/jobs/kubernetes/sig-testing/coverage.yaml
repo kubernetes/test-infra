@@ -46,7 +46,7 @@ periodics:
         ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
         ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
-        ./gopherage filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
         ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/conformance.html"
         ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
@@ -114,7 +114,7 @@ periodics:
         ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
         ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
-        ./gopherage filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/ "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
         ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/e2e.html"
         ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
