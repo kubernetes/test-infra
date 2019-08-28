@@ -80,23 +80,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-test
-  - name: pull-cluster-api-vendor-in-sync
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    skip_branches:
-    - gh-pages
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
-        command:
-        - runner.sh
-        - ./scripts/ci-is-vendor-in-sync.sh
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: pr-vendor
   - name: pull-cluster-api-integration
     labels:
       preset-dind-enabled: "true"
