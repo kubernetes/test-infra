@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:258.0.0-alpine
-COPY builder run.sh /
-CMD ["/run.sh"]
+EXTRA_ARG =
+
+push-prod:
+	bazel run //images/builder -- $(EXTRA_ARG) --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/kubekins-e2e
+
+push:
+	bazel run //images/builder -- $(EXTRA_ARG) --allow-dirty images/kubekins-e2e
+
+.PHONY: push push-prod help
