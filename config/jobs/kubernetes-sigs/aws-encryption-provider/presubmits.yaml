@@ -1,4 +1,4 @@
-presubumits:
+presubmits:
   kubernetes-sigs/aws-encryption-provider:
   - name: pull-aws-encryption-provider-verify
     decorate: true
@@ -14,7 +14,7 @@ presubumits:
         - name: GO111MODULE
           value: "on"
     annotations:
-      testgrid-dashboards: sig-cloud-provider-aws-encryption-provider
+      testgrid-dashboards: sig-aws-encryption-provider
       testgrid-tab-name: verify
       description: aws-encryption-provider verification
       testgrid-num-columns-recent: '30'
@@ -34,7 +34,7 @@ presubumits:
         - name: GO111MODULE
           value: "on"
     annotations:
-      testgrid-dashboards: sig-cloud-provider-aws-encryption-provider
+      testgrid-dashboards: sig-aws-encryption-provider
       testgrid-tab-name: unit-test
       description: aws-encryption-provider unit tests
       testgrid-num-columns-recent: '30'
