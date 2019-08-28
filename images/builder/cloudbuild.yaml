@@ -3,7 +3,7 @@ steps:
     args:
     - go
     - build
-    - -o=/images/builder/builder
+    - -o=./images/builder/builder
     - ./images/builder
     env:
     - CGO_ENABLED=0
