@@ -17,7 +17,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
