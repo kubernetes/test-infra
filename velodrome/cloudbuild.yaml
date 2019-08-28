@@ -15,7 +15,7 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
     - build
-    - --tag=gcr.io/$PROJECT_ID/github-$_COMPONENT:$_GIT_TAG'
+    - --tag=gcr.io/$PROJECT_ID/github-$_COMPONENT:$_GIT_TAG
     - .
     dir: velodrome/$_COMPONENT
 substitutions:
