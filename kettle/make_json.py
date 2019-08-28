@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -81,15 +81,15 @@ def parse_junit(xml):
 
 
 def buckets_yaml():
-    import yaml  # does not support pypy
+    import ruamel.yaml as yaml  # does not support pypy
     with open(os.path.dirname(os.path.abspath(__file__))+'/buckets.yaml') as fp:
-        return yaml.load(fp)
+        return yaml.safe_load(fp)
 
 # pypy compatibility hack
-def python_buckets_yaml(python='python2'):
+def python_buckets_yaml(python='python3'):
     return json.loads(subprocess.check_output(
-        [python, '-c', 'import json,yaml; print json.dumps(yaml.load(open("buckets.yaml")))'],
-        cwd=os.path.dirname(os.path.abspath(__file__))))
+        [python, '-c', 'import json, ruamel.yaml as yaml; print(json.dumps(yaml.safe_load(open("buckets.yaml"))))'],
+        cwd=os.path.dirname(os.path.abspath(__file__))).decode("utf-8"))
 
 for attempt in [python_buckets_yaml, buckets_yaml, lambda: python_buckets_yaml(python='python')]:
     try:
@@ -105,7 +105,7 @@ else:
 
 def path_to_job_and_number(path):
     assert not path.endswith('/')
-    for bucket, meta in BUCKETS.iteritems():
+    for bucket, meta in BUCKETS.items():
         if path.startswith(bucket):
             prefix = meta['prefix']
             break
@@ -171,7 +171,7 @@ def row_for_build(path, started, finished, results):
             if metadata.get('version') == build_version:
                 metadata.pop('version')
             for key, value in metadata.items():
-                if not isinstance(value, basestring):
+                if not isinstance(value, str):
                     # the schema specifies a string value. force it!
                     metadata[key] = json.dumps(value)
         if not metadata:
@@ -247,9 +247,9 @@ def main(db, opts, outfile):
 
     if rows_emitted:
         gen = db.insert_emitted(rows_emitted, incremental_table=incremental_table)
-        print >>sys.stderr, 'incremental progress gen #%d' % gen
+        print('incremental progress gen #%d' % gen, file=sys.stderr)
     else:
-        print >>sys.stderr, 'no rows emitted'
+        print('no rows emitted', file=sys.stderr)
     return 0
 
 

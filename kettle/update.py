@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -19,14 +19,14 @@ import os
 
 
 def call(cmd):
-    print '+', cmd
+    print('+', cmd)
     status = os.system(cmd)
     if status:
         raise OSError('invocation failed')
 
 
 def main():
-    call('time python make_db.py --buckets buckets.yaml --junit --threads 32')
+    call('time python3 make_db.py --buckets buckets.yaml --junit --threads 32')
 
     bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records=1000'
     mj_cmd = 'pypy make_json.py'
@@ -49,7 +49,7 @@ def main():
     call(mj_cmd + ' | pv | gzip > build_all.json.gz')
     call(bq_cmd + ' k8s-gubernator:build.all build_all.json.gz schema.json')
 
-    call('python stream.py --poll kubernetes-jenkins/gcs-changes/kettle '
+    call('python3 stream.py --poll kubernetes-jenkins/gcs-changes/kettle '
          ' --dataset k8s-gubernator:build --tables all:0 day:1 week:7 --stop_at=1')
 
 

@@ -12,29 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu
+FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y \
+ENV KETTLE_DB=/data/build.db TZ=America/Los_Angeles
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
+    && apt-get update \
+    && apt-get install -y \
     tzdata \
     curl \
     pv \
     time \
     sqlite3 \
-    python-pip \
+    python \
+    python3 \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL https://bitbucket.org/squeaky/portable-pypy/downloads/pypy-5.8-1-linux_x86_64-portable.tar.bz2 | tar xj -C opt
-RUN ln -s /opt/pypy*/bin/pypy /usr/bin
+RUN pip3 install requests google-cloud-pubsub==0.25.0 google-cloud-bigquery==0.24.0 influxdb ruamel.yaml==0.16
 
-ADD requirements.txt /kettle/
-RUN pip install -r /kettle/requirements.txt
+RUN curl -fsSL https://bitbucket.org/squeaky/portable-pypy/downloads/pypy3.6-7.1.1-beta-linux_x86_64-portable.tar.bz2 | tar xj -C opt  && \
+    ln -s /opt/pypy*/bin/pypy /usr/bin
 
-RUN curl -o installer https://sdk.cloud.google.com && bash installer --disable-prompts --install-dir=/ && rm installer && ln -s /google-cloud-sdk/bin/* /bin/
-
-ENV KETTLE_DB=/data/build.db
-ENV TZ=America/Los_Angeles
+RUN curl -o installer https://sdk.cloud.google.com && \
+    bash installer --disable-prompts --install-dir=/ && \
+    rm installer && \
+    ln -s /google-cloud-sdk/bin/* /bin/
 
 ADD *.py schema.json runner.sh buckets.yaml /kettle/
 
-CMD ["/kettle/runner.sh"]
 VOLUME ["/data"]
+
+CMD ["/kettle/runner.sh"]
