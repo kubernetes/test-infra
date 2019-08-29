@@ -49,6 +49,14 @@ container_image(
 prow_image(
     name = "image",
     base = ":janitor_image",
+    # the entrypoint must be sh
+    # https://github.com/kubernetes/test-infra/issues/5877
+    entrypoint = [
+        "/bin/sh",
+        "-c",
+        "/bin/echo started && /app/boskos/janitor/app.binary \"$@\"",
+        "--",
+    ],
     visibility = ["//visibility:public"],
 )
 
