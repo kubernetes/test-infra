@@ -757,6 +757,87 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kind,?($|\s.*)
   - agent: kubernetes
     always_run: false
+    branches:
+    - release-1.16
+    cluster: security
+    context: pull-security-kubernetes-e2e-kind
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-security-prow
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15s
+      timeout: 40m0s
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      path_alias: k8s.io/kubeadm
+      repo: kubeadm
+    - base_ref: master
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/kind
+      repo: kind
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+    name: pull-security-kubernetes-e2e-kind
+    optional: true
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-e2e-kind
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --provider=skeleton
+        - --deployment=kind
+        - --kind-binary-version=stable
+        - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
+        - --build=bazel
+        - --up
+        - --test
+        - --check-version-skew=false
+        - --down
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
+        - --ginkgo-parallel
+        - --timeout=30m
+        command:
+        - runner.sh
+        - kubetest
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190822-514a218-1.16
+        name: ""
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - hostPath:
+          path: /lib/modules
+          type: Directory
+        name: modules
+      - hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+        name: cgroup
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kind,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
     cluster: security
     context: pull-security-kubernetes-e2e-kind
     decorate: true
@@ -786,6 +867,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     rerun_command: /test pull-security-kubernetes-e2e-kind
     skip_branches:
+    - release-1.16
     - release-1.15
     - release-1.14
     - release-1.13
