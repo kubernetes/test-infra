@@ -4,8 +4,6 @@ build_image_cfg: &build_image_cfg
     timeout: 45m
   always_run: true
   skip_report: false
-  labels:
-    preset-dind-enabled: "true"
 
 presubmits:
   kubernetes-sigs/service-catalog:
@@ -25,6 +23,8 @@ presubmits:
           value: "1"
   - name: pull-service-catalog-test-integration
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
@@ -39,6 +39,9 @@ presubmits:
           privileged: true
   - name: pull-service-catalog-test-e2e
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     # Setting that job optional to check how it behaves
     optional: true
     spec:
@@ -55,6 +58,8 @@ presubmits:
             privileged: true
   - name: pull-build-all-images-for-amd64
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
@@ -69,6 +74,8 @@ presubmits:
           privileged: true
   - name: pull-build-all-images-for-arm
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
@@ -83,6 +90,8 @@ presubmits:
             privileged: true
   - name: pull-build-all-images-for-arm64
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
@@ -97,6 +106,8 @@ presubmits:
             privileged: true
   - name: pull-build-all-images-for-ppc64le
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
@@ -111,6 +122,8 @@ presubmits:
             privileged: true
   - name: pull-build-all-images-for-s390x
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
@@ -125,6 +138,8 @@ presubmits:
             privileged: true
   - name: pull-build-all-images-for-svcat
     <<: *build_image_cfg
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
