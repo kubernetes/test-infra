@@ -766,6 +766,11 @@ func prNumbers(prs []PullRequest) []int {
 }
 
 func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, error) {
+	batchLimit := c.config().Tide.BatchSizeLimit(sp.org, sp.repo)
+	if batchLimit < 0 {
+		sp.log.Debug("Batch merges disabled by configuration in this repo.")
+		return nil, nil
+	}
 	// we must choose the oldest PRs for the batch
 	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
 
@@ -809,7 +814,7 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 		} else if ok {
 			res = append(res, pr)
 			// TODO: Make this configurable per subpool.
-			if len(res) == 5 {
+			if batchLimit > 0 && len(res) >= batchLimit {
 				break
 			}
 		}
