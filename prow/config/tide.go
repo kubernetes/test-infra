@@ -132,6 +132,24 @@ type Tide struct {
 	// combined status; otherwise it may apply the branch protection setting or let user
 	// define their own options in case branch protection is not used.
 	ContextOptions TideContextPolicyOptions `json:"context_options,omitempty"`
+
+	// BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
+	// integer batch size limit as the value. The empty string key can be used as
+	// a global default.
+	// Special values:
+	//  0 => unlimited batch size
+	// -1 => batch merging disabled :(
+	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
+}
+
+func (t *Tide) BatchSizeLimit(org, repo string) int {
+	if limit, ok := t.BatchSizeLimitMap[fmt.Sprintf("%s/%s", org, repo)]; ok {
+		return limit
+	}
+	if limit, ok := t.BatchSizeLimitMap[org]; ok {
+		return limit
+	}
+	return t.BatchSizeLimitMap["*"]
 }
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is

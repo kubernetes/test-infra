@@ -797,7 +797,13 @@ func TestPickBatch(t *testing.T) {
 		sp.prs = append(sp.prs, pr)
 	}
 	ca := &config.Agent{}
-	ca.Set(&config.Config{})
+	ca.Set(&config.Config{
+		ProwConfig: config.ProwConfig{
+			Tide: config.Tide{
+				BatchSizeLimitMap: map[string]int{"*": 5},
+			},
+		},
+	})
 	c := &Controller{
 		logger: logrus.WithField("component", "tide"),
 		gc:     gc,

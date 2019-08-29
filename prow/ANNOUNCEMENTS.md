@@ -1,6 +1,9 @@
 # Announcements
 
 New features added to each component:
+ - *August 29, 2019* Added a `batch_size_limit` option to the Tide config that
+   allows the batch size limit to be specified globally, per org, or per repo.
+   Values default to 0 indicating no size limit. A value of -1 disables batches.
  - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`. 
  - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
    If you set `--oauth-url` but not `--cookie-secret-file`, add
