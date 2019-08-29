@@ -27,7 +27,7 @@ presubmits:
     <<: *build_image_cfg
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -43,7 +43,7 @@ presubmits:
     optional: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190813-5765933-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -57,7 +57,7 @@ presubmits:
     <<: *build_image_cfg
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -71,7 +71,7 @@ presubmits:
     <<: *build_image_cfg
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -85,7 +85,7 @@ presubmits:
     <<: *build_image_cfg
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -99,7 +99,7 @@ presubmits:
     <<: *build_image_cfg
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -113,7 +113,7 @@ presubmits:
     <<: *build_image_cfg
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -127,7 +127,7 @@ presubmits:
     <<: *build_image_cfg
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190828-850e922-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
