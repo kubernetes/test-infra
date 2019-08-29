@@ -52,6 +52,7 @@ presets:
             - --v=3
             - --logtostderr=false
             - --log_file=/var/log/glbc.log
+            - --enable-finalizer-add
             - --enable-finalizer-remove
             - --default-backend-service=kube-system/default-http-backend
             - --kubeconfig=/etc/srv/kubernetes/l7-lb-controller/kubeconfig
