@@ -377,7 +377,7 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
-      - --extract=ci/k8s-stable1
+      - --extract=ci/latest
       - --timeout=100m
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
