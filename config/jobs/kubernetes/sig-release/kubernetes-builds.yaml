@@ -97,26 +97,15 @@ periodics:
 - interval: 30m
   name: ci-release-build-packages-debs
   decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+    - image: gcr.io/k8s-staging-release-test/deb-builder:latest
       imagePullPolicy: Always
       command:
-      - runner.sh
+      - go
       args:
-      - make
-      - build-debs
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
+      - run
+      - /src/build.go
       resources:
         requests:
           cpu: 4
@@ -129,26 +118,12 @@ periodics:
 - interval: 30m
   name: ci-release-build-packages-rpms
   decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+    - image: gcr.io/k8s-staging-release-test/rpm-builder:latest
       imagePullPolicy: Always
       command:
-      - runner.sh
-      args:
-      - make
-      - build-rpms
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
+      - /home/builder/build.sh
       resources:
         requests:
           cpu: 4
