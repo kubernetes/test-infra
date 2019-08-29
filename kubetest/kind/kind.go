@@ -163,7 +163,7 @@ func (d *Deployer) getImportPath(path string) (string, error) {
 		return "", err
 	}
 	trimmed := strings.TrimSuffix(string(o), "\n")
-	log.Printf("kind.go:getImportPath(): %s\n", trimmed)
+	log.Printf("kind.go:getImportPath(): %s", trimmed)
 	return filepath.Join(trimmed, "src", path), nil
 }
 
@@ -213,13 +213,13 @@ func (d *Deployer) prepareKindBinary() error {
 		// ensure a stable kind binary.
 		kindPlatformBinary := fmt.Sprintf("kind-%s-%s", runtime.GOOS, runtime.GOARCH)
 		if haveStableBinary(d.kindBinaryPath, kindPlatformBinary) {
-			log.Printf("Found stable kind binary at %s", d.kindBinaryPath)
+			log.Printf("Found stable kind binary at %q", d.kindBinaryPath)
 			return nil
 		}
 		// we don't have it, so download it
 		binary := fmt.Sprintf("kind-%s-%s", runtime.GOOS, runtime.GOARCH)
 		url := fmt.Sprintf("https://github.com/kubernetes-sigs/kind/releases/download/%s/%s", kindBinaryStableTag, binary)
-		log.Printf("Downloading a stable kind binary from GitHub: %s, tag: %s\n", binary, kindBinaryStableTag)
+		log.Printf("Downloading a stable kind binary from GitHub: %s, tag: %s", binary, kindBinaryStableTag)
 		f, err := os.OpenFile(d.kindBinaryPath, os.O_RDWR|os.O_CREATE, 0770)
 		if err != nil {
 			return err
@@ -229,7 +229,7 @@ func (d *Deployer) prepareKindBinary() error {
 			return err
 		}
 	default:
-		return fmt.Errorf("uknown kind binary version value: %s", d.kindBinaryVersion)
+		return fmt.Errorf("unknown kind binary version value: %s", d.kindBinaryVersion)
 	}
 	return nil
 }
@@ -408,7 +408,7 @@ func (d *Deployer) TestSetup() error {
 
 // clusterExists checks if a kind cluster with 'name' exists
 func (d *Deployer) clusterExists() (bool, error) {
-	log.Printf("kind.go:clusterExists()")
+	log.Println("kind.go:clusterExists()")
 
 	cmd := exec.Command("kind")
 	cmd.Args = append(cmd.Args, []string{"get", "clusters"}...)
@@ -473,7 +473,7 @@ func (d *Deployer) KubectlCommand() (*exec.Cmd, error) {
 
 // downloadFromURL downloads from a url to f
 func downloadFromURL(url string, f *os.File) error {
-	log.Printf("kind.go:downloadFromURL(): %s\n", url)
+	log.Printf("kind.go:downloadFromURL(): %s", url)
 	// TODO(bentheelder): is this long enough?
 	timeout := time.Duration(60 * time.Second)
 	client := http.Client{
@@ -506,8 +506,7 @@ func haveStableBinary(expectedPath, kindPlatformBinary string) bool {
 	}
 	hashMatches := expectedHash == hash
 	if !hashMatches {
-		log.Printf("kind binary present with hash: %s at: %s", hash, expectedPath)
-		log.Printf("... but expected hash: %s", expectedHash)
+		log.Printf("kind binary present with hash %q at %q, but expected hash %q", hash, expectedPath, expectedHash)
 	}
 	return hashMatches
 }
@@ -567,7 +566,7 @@ func getKindBinaryFromRelease(release *kindRelease, assetName string) ([]byte, e
 	}
 	for _, a := range release.Assets {
 		if strings.Contains(a.Name, assetName) {
-			log.Printf("Downloading asset name %q for kind release tag %q\n", assetName, release.Tag)
+			log.Printf("Downloading asset name %q for kind release tag %q", assetName, release.Tag)
 			b, err := getFromURL(a.DownloadURL)
 			if err != nil {
 				return nil, err
