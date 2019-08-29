@@ -487,6 +487,8 @@ tide:
         dashboard:
           skip-unknown-contexts: true
           from-branch-protection: true
+  batch_size_limit:
+    "kubernetes/kubernetes": 15
 
 push_gateway:
   endpoint: pushgateway
