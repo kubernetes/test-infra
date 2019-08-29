@@ -197,6 +197,14 @@ func (a byStartTime) Len() int           { return len(a) }
 func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
 
+type byPJStartTime []prowapi.ProwJob
+
+func (a byPJStartTime) Len() int      { return len(a) }
+func (a byPJStartTime) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byPJStartTime) Less(i, j int) bool {
+	return a[i].Status.StartTime.Time.After(a[j].Status.StartTime.Time)
+}
+
 func (ja *JobAgent) update() error {
 	pjs, err := ja.kc.ListProwJobs(labels.Everything().String())
 	if err != nil {
@@ -247,7 +255,9 @@ func (ja *JobAgent) update() error {
 		}
 		njsIDMap[j.Spec.Job][buildID] = j
 	}
+
 	sort.Sort(byStartTime(njs))
+	sort.Sort(byPJStartTime(pjs))
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
