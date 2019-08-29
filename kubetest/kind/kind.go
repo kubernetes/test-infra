@@ -376,7 +376,7 @@ func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 
 	cmd := exec.Command("kind", args...)
 	if err := d.control.FinishRunning(cmd); err != nil {
-		return err
+		log.Printf("kind.go:DumpClusterLogs(): ignoring error: %v", err)
 	}
 	return nil
 }
