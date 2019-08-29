@@ -3757,7 +3757,7 @@ presubmits:
     name: pull-security-kubernetes-conformance-image-test
     optional: true
     rerun_command: /test pull-security-kubernetes-conformance-image-test
-    run_if_changed: conformance
+    run_if_changed: ^test/
     spec:
       containers:
       - args:
