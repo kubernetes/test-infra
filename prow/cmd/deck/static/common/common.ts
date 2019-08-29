@@ -1,5 +1,5 @@
 import moment from "moment";
-import {JobState, Pull} from "../api/prow";
+import {ProwJobState, Pull} from "../api/prow";
 
 // This file likes namespaces, so stick with it for now.
 /* tslint:disable:no-namespace */
@@ -41,7 +41,7 @@ export namespace cell {
     return c;
   }
 
-  export function state(s: JobState): HTMLTableDataCellElement {
+  export function state(s: ProwJobState): HTMLTableDataCellElement {
     const c = document.createElement("td");
     if (!s) {
       c.appendChild(document.createTextNode(""));
@@ -81,7 +81,7 @@ export namespace cell {
     return c;
   }
 
-  function stateToAdj(s: JobState): string {
+  function stateToAdj(s: ProwJobState): string {
     switch (s) {
       case "success":
         return "succeeded";
