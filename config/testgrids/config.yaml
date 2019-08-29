@@ -930,6 +930,7 @@ dashboards:
 - name: sig-aws-efs-csi-driver
 - name: sig-aws-eks-presubmits
 - name: sig-aws-eks-periodics
+- name: sig-aws-encryption-provider
 
 - name: sig-gcp-compute-persistent-disk-csi-driver
 - name: sig-multicluster-kubemci
@@ -1762,6 +1763,7 @@ dashboard_groups:
 
 - name: sig-aws
   dashboard_names:
+  - sig-aws-encryption-provider
   - sig-aws-alb-ingress-controller
   - sig-aws-cloud-provider-aws
   - sig-aws-ebs-csi-driver
