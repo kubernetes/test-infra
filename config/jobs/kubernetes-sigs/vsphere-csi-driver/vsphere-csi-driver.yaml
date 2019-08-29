@@ -92,6 +92,26 @@ presubmits:
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       description: Verifies the markdown has been linted
 
+  # Runs 'staticcheck' on appropriate sources
+  - name: pull-vsphere-csi-driver-verify-staticcheck
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-staticcheck\.sh'
+    optional: true
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+        command:
+        - make
+        args:
+        - staticcheck
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-tab-name: pr-verify-staticcheck
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies Go sources pass a static source checker
+
   # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
     always_run: false
