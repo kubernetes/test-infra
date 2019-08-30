@@ -120,6 +120,24 @@ presubmits:
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       description: Verifies the shell scripts have been linted
 
+  - name: pull-cloud-provider-vsphere-verify-staticcheck
+    always_run: false
+    run_if_changed: '^((cmd|pkg)/)|hack/check-staticcheck\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+        command:
+        - make
+        args:
+        - staticcheck
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-staticheck
+      description: Verifies the Golang sources pass a static source checker
+
   # Builds the CCM and CSI binaries.
   - name: pull-cloud-provider-vsphere-build
     decorate: true
