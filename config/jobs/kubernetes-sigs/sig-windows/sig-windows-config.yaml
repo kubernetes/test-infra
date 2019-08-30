@@ -172,7 +172,7 @@ periodics:
     testgrid-dashboards: sig-release-1.14-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-14-windows
     description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
-- interval: 6h
+- interval: 12h
   name: ci-kubernetes-e2e-aks-engine-azure-1-15-windows
   labels:
     preset-service-account: "true"
@@ -215,6 +215,48 @@ periodics:
     testgrid-dashboards: sig-release-1.15-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-15-windows
     description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
+- interval: 6h
+  name: ci-kubernetes-e2e-aks-engine-azure-1-16-windows
+  labels:
+    preset-service-account: "true"
+    preset-azure-acsengine: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=release-1.16"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=650"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--provider=skeleton"
+      - "--build=bazel"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-admin-password=AdminPassw0rd"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-winZipBuildScript=$WIN_BUILD"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
+      - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
+      - "--acsengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows, sig-release-1.16-informing
+    testgrid-tab-name: aks-engine-azure-1-16-windows
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 3h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
   labels:
