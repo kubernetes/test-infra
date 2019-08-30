@@ -190,7 +190,9 @@ func main() {
 	time.Sleep(time.Until(start.Add(cfg().Tide.SyncPeriod.Duration)))
 	interrupts.Tick(func() {
 		sync(c)
-	}, cfg().Tide.SyncPeriod.Duration)
+	}, func() time.Duration {
+		return cfg().Tide.SyncPeriod.Duration
+	})
 }
 
 func sync(c *tide.Controller) {

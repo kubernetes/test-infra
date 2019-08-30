@@ -115,7 +115,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	interrupts.Tick(func() {
+	interrupts.TickLiteral(func() {
 		start := time.Now()
 		if err := plugin.HandleAll(log, githubClient, pa.Config()); err != nil {
 			log.WithError(err).Error("Error during periodic update of all PRs.")

@@ -56,7 +56,7 @@ func serveMetrics() {
 // pushMetrics is meant to run in a goroutine and continuously push
 // metrics to the provided endpoint.
 func pushMetrics(component, endpoint string, interval time.Duration) {
-	interrupts.Tick(func() {
+	interrupts.TickLiteral(func() {
 		if err := push.FromGatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
 			logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
 		}

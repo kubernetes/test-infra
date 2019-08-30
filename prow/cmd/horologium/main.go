@@ -101,7 +101,7 @@ func main() {
 	// start a cron
 	cr := cron.New()
 	cr.Start()
-	interrupts.Tick(func() {
+	interrupts.TickLiteral(func() {
 		start := time.Now()
 		if err := sync(prowJobClient, configAgent.Config(), cr, start); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")

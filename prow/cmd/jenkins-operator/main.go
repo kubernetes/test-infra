@@ -214,14 +214,14 @@ func main() {
 	interrupts.ListenAndServe(server, 5*time.Second)
 
 	// gather metrics for the jobs handled by the jenkins controller.
-	interrupts.Tick(func() {
+	interrupts.TickLiteral(func() {
 		start := time.Now()
 		c.SyncMetrics()
 		logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 	}, 30*time.Second)
 
 	// run the controller
-	interrupts.Tick(func() {
+	interrupts.TickLiteral(func() {
 		start := time.Now()
 		if err := c.Sync(); err != nil {
 			logrus.WithError(err).Error("Error syncing.")

@@ -216,5 +216,7 @@ func main() {
 			logrus.WithError(err).Error("Error syncing.")
 		}
 		logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
-	}, cfg().Gerrit.TickInterval.Duration)
+	}, func() time.Duration {
+		return cfg().Gerrit.TickInterval.Duration
+	})
 }

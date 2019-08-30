@@ -166,19 +166,25 @@ func shutdown(server *http.Server, gracePeriod time.Duration) func() {
 	}
 }
 
-// Tick will do work on an interval until an interrupt is received.
-// This function is not blocking. Callers are expected to exit only
-// after WaitForGracefulShutdown returns to ensure all workers have
-// had time to shut down.
-func Tick(work func(), interval time.Duration) {
+// Tick will do work on a dynamically determined interval until an
+// interrupt is received. This function is not blocking. Callers are
+// expected to exit only after WaitForGracefulShutdown returns to
+// ensure all workers have had time to shut down.
+func Tick(work func(), interval func() time.Duration) {
+	before := time.Now()
 	sig := make(chan int, 1)
-	tick := time.Tick(interval)
 	single.wg.Add(1)
 	go func() {
 		defer single.wg.Done()
 		for {
+			now := time.Now()
+			nextTick := before.Add(interval())
+			sleep := now.Sub(nextTick)
+			if nextTick.After(now) {
+				sleep = 0 * time.Second
+			}
 			select {
-			case <-tick:
+			case <-time.After(sleep):
 				work()
 			case <-sig:
 				logrus.Info("Worker shutting down...")
@@ -189,5 +195,12 @@ func Tick(work func(), interval time.Duration) {
 
 	go wait(func() {
 		sig <- 1
+	})
+}
+
+// TickLiteral runs Tick with an unchanging interval.
+func TickLiteral(work func(), interval time.Duration) {
+	Tick(work, func() time.Duration {
+		return interval
 	})
 }
