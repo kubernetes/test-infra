@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20190828-ba003ad43
+        image: gcr.io/k8s-prow/status-reconciler:v20190830-b4b12a131
         imagePullPolicy: Always
         args:
         - --dry-run=false

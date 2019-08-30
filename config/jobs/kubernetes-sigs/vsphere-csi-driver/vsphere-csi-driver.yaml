@@ -8,7 +8,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-f011429-master
         command:
         - make
         args:
@@ -26,7 +26,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-f011429-master
         command:
         - make
         args:
@@ -44,7 +44,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-f011429-master
         command:
         - make
         args:
@@ -101,7 +101,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-7606b98-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190829-f011429-master
         command:
         - make
         args:
