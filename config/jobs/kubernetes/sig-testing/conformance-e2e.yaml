@@ -105,6 +105,7 @@ presubmits:
       testgrid-dashboards: sig-testing-kind
       description: Use kind to run e2e tests (+Conformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
       testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+      testgrid-num-failures-to-alert: "15"
 
 periodics:
   # conformance test using image against kubernetes master branch with `kind`
