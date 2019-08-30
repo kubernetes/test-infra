@@ -8,10 +8,8 @@ dashboard_groups:
   - istio-postsubmits-release-1.3
   - istio-presubmits-release-1.1
   - istio-postsubmits-release-1.1
-  - istio-api-presubmits
-  - istio-api-postsubmits
-  - istio-api-presubmits-release-1.3
-  - istio-api-postsubmits-release-1.3
+  - istio-api
+  - istio-api-release-1.3
   - istio-proxy-presubmits
   - istio-proxy-postsubmits
   - istio-proxy-presubmits-release-1.3
@@ -1566,17 +1564,15 @@ dashboards:
       url: https://github.com/istio/istio/issues/
     test_group_name: istio_auth_sds_e2e
   name: istio-postsubmits-release-1.1
-- name: istio-api-presubmits
-- name: istio-api-postsubmits
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
-    description: api-presubmit
-    name: api-presubmit
+    description: api-presubmit-master
+    name: api-presubmit-master
     open_bug_template:
       url: https://github.com/istio/api/issues/
-    test_group_name: api-presubmit
-  name: istio-api-presubmits-release-1.3
+    test_group_name: api-presubmit-master
+  name: istio-api
 - dashboard_tab:
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
@@ -1587,7 +1583,14 @@ dashboards:
     open_bug_template:
       url: https://github.com/istio/api/issues/
     test_group_name: api-postsubmit
-  name: istio-api-postsubmits-release-1.3
+  - code_search_url_template:
+      url: https://github.com/istio/api/compare/<start-custom-0>...<end-custom-0>
+    description: api-presubmit
+    name: api-presubmit
+    open_bug_template:
+      url: https://github.com/istio/api/issues/
+    test_group_name: api-presubmit
+  name: istio-api-release-1.3
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/proxy/compare/<start-custom-0>...<end-custom-0>
@@ -2168,51 +2171,6 @@ test_groups:
 - gcs_prefix: istio-prow/logs/monitoring-verify-gcsweb
   name: monitoring-verify-gcsweb
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/tools-containers
-  name: tools-containers
-- gcs_prefix: istio-prow/logs/cni-build-master
-  name: cni-build-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-shellcheck-master
-  name: cni-shellcheck-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-lint-master
-  name: cni-lint-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-install-master
-  name: cni-install-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-e2e-master
-  name: cni-e2e-master
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-build-release-1.3
-  name: cni-build-release-1.3
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-shellcheck-release-1.3
-  name: cni-shellcheck-release-1.3
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-lint-release-1.3
-  name: cni-lint-release-1.3
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-install-release-1.3
-  name: cni-install-release-1.3
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/cni-e2e-release-1.3
-  name: cni-e2e-release-1.3
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/proxy-postsubmit
-  name: proxy-postsubmit
-  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio-unit-tests-master
   name: istio-unit-tests-master
   num_columns_recent: 20
@@ -2538,6 +2496,11 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-k8s-116-postsubmit-release-1.3
   name: integ-k8s-116-postsubmit-release-1.3
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/api-postsubmit
+  name: api-postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/tools-containers
+  name: tools-containers
 - gcs_prefix: istio-prow/logs/release-daily
   name: release-daily
   num_failures_to_alert: 1
@@ -2547,9 +2510,104 @@ test_groups:
 - gcs_prefix: istio-prow/logs/release-monthly
   name: release-monthly
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/api-postsubmit
-  name: api-postsubmit
+- gcs_prefix: istio-prow/logs/cni-build-master
+  name: cni-build-master
+  num_columns_recent: 20
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-shellcheck-master
+  name: cni-shellcheck-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-lint-master
+  name: cni-lint-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-install-master
+  name: cni-install-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-e2e-master
+  name: cni-e2e-master
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-build-release-1.3
+  name: cni-build-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-shellcheck-release-1.3
+  name: cni-shellcheck-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-lint-release-1.3
+  name: cni-lint-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-install-release-1.3
+  name: cni-install-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/cni-e2e-release-1.3
+  name: cni-e2e-release-1.3
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/proxy-postsubmit
+  name: proxy-postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-simpleTests
+  name: release-build-test-e2e-simpleTests
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-upgrade-tests-1.1.7
+  name: release-build-test-upgrade-tests-1.1.7
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-istio-unit-tests
+  name: release-build-test-istio-unit-tests
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-istioctl-tests
+  name: release-build-test-istioctl-tests
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-pilot-no_auth
+  name: release-build-test-e2e-pilot-no_auth
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-bookInfoTests
+  name: release-build-test-e2e-bookInfoTests
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-mixer-no_auth
+  name: release-build-test-e2e-mixer-no_auth
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-dashboard
+  name: release-build-test-e2e-dashboard
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-stackdriver
+  name: release-build-test-e2e-stackdriver
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/release-build
+  name: release-build
+  num_columns_recent: 20
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit
+  name: proxy-presubmit
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit-asan
+  name: proxy-presubmit-asan
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit-tsan
+  name: proxy-presubmit-tsan
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/api-presubmit-master
+  name: api-presubmit-master
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/api-presubmit
+  name: api-presubmit
+  num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/istio-lint-master
   name: istio-lint-master
   num_columns_recent: 20
@@ -2703,55 +2761,3 @@ test_groups:
 - gcs_prefix: istio-prow/pr-logs/directory/integ-new-install-k8s-presubmit-tests-release-1.3
   name: integ-new-install-k8s-presubmit-tests-release-1.3
   num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit
-  name: proxy-presubmit
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit-asan
-  name: proxy-presubmit-asan
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/proxy-presubmit-tsan
-  name: proxy-presubmit-tsan
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/api-presubmit
-  name: api-presubmit
-  num_columns_recent: 20
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-simpleTests
-  name: release-build-test-e2e-simpleTests
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-upgrade-tests-1.1.7
-  name: release-build-test-upgrade-tests-1.1.7
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-istio-unit-tests
-  name: release-build-test-istio-unit-tests
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-istioctl-tests
-  name: release-build-test-istioctl-tests
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-pilot-no_auth
-  name: release-build-test-e2e-pilot-no_auth
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-bookInfoTests
-  name: release-build-test-e2e-bookInfoTests
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-mixer-no_auth
-  name: release-build-test-e2e-mixer-no_auth
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-dashboard
-  name: release-build-test-e2e-dashboard
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build-test-e2e-stackdriver
-  name: release-build-test-e2e-stackdriver
-  num_columns_recent: 20
-  num_failures_to_alert: 1
-- gcs_prefix: istio-prow/pr-logs/directory/release-build
-  name: release-build
-  num_columns_recent: 20
-  num_failures_to_alert: 1
