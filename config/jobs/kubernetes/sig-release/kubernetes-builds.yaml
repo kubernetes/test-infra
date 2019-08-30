@@ -105,7 +105,7 @@ periodics:
       - ./deb-builder
       args:
       - -distros
-      - -bionic
+      - bionic
       resources:
         requests:
           cpu: 4
