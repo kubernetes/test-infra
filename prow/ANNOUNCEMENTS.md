@@ -75,6 +75,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+- *September 16, 2019* `deck` will no longer serve build data via the `/data.js` endpoint. 
+   Instead, `ProwJob` definitions will be served via `/prowjobs.js`.
  - *September 8, 2019* The deprecated `job_url_prefix` option has been removed from Plank.
  - *May 2, 2019* All components exposing Prometheus metrics will now either push them
    to the Prometheus PushGateway, if configured, or serve them locally on port 9090 at

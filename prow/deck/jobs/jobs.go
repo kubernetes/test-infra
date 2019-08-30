@@ -48,29 +48,6 @@ func IsErrProwJobNotFound(err error) bool {
 	return err == errProwjobNotFound
 }
 
-// Job holds information about a job prow is running/has run.
-// TODO(#5216): Remove this, and all associated machinery.
-type Job struct {
-	Type        string               `json:"type"`
-	Refs        prowapi.Refs         `json:"refs"`
-	RefsKey     string               `json:"refs_key"`
-	Job         string               `json:"job"`
-	BuildID     string               `json:"build_id"`
-	Context     string               `json:"context"`
-	Started     string               `json:"started"`
-	Finished    string               `json:"finished"`
-	Duration    string               `json:"duration"`
-	State       string               `json:"state"`
-	Description string               `json:"description"`
-	URL         string               `json:"url"`
-	PodName     string               `json:"pod_name"`
-	Agent       prowapi.ProwJobAgent `json:"agent"`
-	ProwJob     string               `json:"prow_job"`
-
-	st time.Time
-	ft time.Time
-}
-
 type serviceClusterClient interface {
 	ListProwJobs(selector string) ([]prowapi.ProwJob, error)
 }
@@ -95,8 +72,6 @@ type JobAgent struct {
 	pkcs      map[string]PodLogClient
 	config    config.Getter
 	prowJobs  []prowapi.ProwJob
-	jobs      []Job
-	jobsMap   map[string]Job                        // pod name -> Job
 	jobsIDMap map[string]map[string]prowapi.ProwJob // job name -> id -> ProwJob
 	mut       sync.Mutex
 }
@@ -110,15 +85,6 @@ func (ja *JobAgent) Start() {
 			ja.tryUpdate()
 		}
 	}()
-}
-
-// Jobs returns a thread-safe snapshot of the current job state.
-func (ja *JobAgent) Jobs() []Job {
-	ja.mut.Lock()
-	defer ja.mut.Unlock()
-	res := make([]Job, len(ja.jobs))
-	copy(res, ja.jobs)
-	return res
 }
 
 // ProwJobs returns a thread-safe snapshot of the current prow jobs.
@@ -191,12 +157,6 @@ func (ja *JobAgent) tryUpdate() {
 	}
 }
 
-type byStartTime []Job
-
-func (a byStartTime) Len() int           { return len(a) }
-func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
-
 type byPJStartTime []prowapi.ProwJob
 
 func (a byPJStartTime) Len() int      { return len(a) }
@@ -210,60 +170,22 @@ func (ja *JobAgent) update() error {
 	if err != nil {
 		return err
 	}
-	var njs []Job
-	njsMap := make(map[string]Job)
-	njsIDMap := make(map[string]map[string]prowapi.ProwJob)
+	pjsIDMap := make(map[string]map[string]prowapi.ProwJob)
 	for _, j := range pjs {
-		ft := time.Time{}
-		if j.Status.CompletionTime != nil {
-			ft = j.Status.CompletionTime.Time
-		}
 		buildID := j.Status.BuildID
-		nj := Job{
-			Type:    string(j.Spec.Type),
-			Job:     j.Spec.Job,
-			Context: j.Spec.Context,
-			Agent:   j.Spec.Agent,
-			ProwJob: j.ObjectMeta.Name,
-			BuildID: buildID,
 
-			Started:     fmt.Sprintf("%d", j.Status.StartTime.Time.Unix()),
-			State:       string(j.Status.State),
-			Description: j.Status.Description,
-			PodName:     j.Status.PodName,
-			URL:         j.Status.URL,
+		if _, ok := pjsIDMap[j.Spec.Job]; !ok {
+			pjsIDMap[j.Spec.Job] = make(map[string]prowapi.ProwJob)
+		}
 
-			st: j.Status.StartTime.Time,
-			ft: ft,
-		}
-		if !nj.ft.IsZero() {
-			nj.Finished = nj.ft.Format(time.RFC3339Nano)
-			duration := nj.ft.Sub(nj.st)
-			duration -= duration % time.Second // strip fractional seconds
-			nj.Duration = duration.String()
-		}
-		if j.Spec.Refs != nil {
-			nj.Refs = *j.Spec.Refs
-			nj.RefsKey = j.Spec.Refs.String()
-		}
-		njs = append(njs, nj)
-		if nj.PodName != "" {
-			njsMap[nj.PodName] = nj
-		}
-		if _, ok := njsIDMap[j.Spec.Job]; !ok {
-			njsIDMap[j.Spec.Job] = make(map[string]prowapi.ProwJob)
-		}
-		njsIDMap[j.Spec.Job][buildID] = j
+		pjsIDMap[j.Spec.Job][buildID] = j
 	}
 
-	sort.Sort(byStartTime(njs))
 	sort.Sort(byPJStartTime(pjs))
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
 	ja.prowJobs = pjs
-	ja.jobs = njs
-	ja.jobsMap = njsMap
-	ja.jobsIDMap = njsIDMap
+	ja.jobsIDMap = pjsIDMap
 	return nil
 }

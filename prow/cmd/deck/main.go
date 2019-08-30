@@ -493,7 +493,6 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	cfgGetter := func() *prowapi.RerunAuthConfig { return &cfg().Deck.RerunAuthConfig }
 
 	// setup prod only handlers
-	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
@@ -742,19 +741,6 @@ func handleProwJobs(ja *jobs.JobAgent) http.HandlerFunc {
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling jobs.")
 			jd = []byte("{}")
-		}
-		writeJSONResponse(w, r, jd)
-	}
-}
-
-func handleData(ja *jobs.JobAgent) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		setHeadersNoCaching(w)
-		jobs := ja.Jobs()
-		jd, err := json.Marshal(jobs)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling jobs.")
-			jd = []byte("[]")
 		}
 		writeJSONResponse(w, r, jd)
 	}
