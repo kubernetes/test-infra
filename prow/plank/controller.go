@@ -182,6 +182,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	// fetch latest before replace
 	latestPJ, err := c.prowJobClient.Get(pj.ObjectMeta.Name, metav1.GetOptions{})
+	c.log.WithFields(pjutil.ProwJobFields(latestPJ)).Debug("Get ProwJob.")
 	if err != nil {
 		return err
 	}
@@ -191,12 +192,14 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	}
 	latestPJ.Status.PrevReportStates[reporter.GitHubReporterName] = latestPJ.Status.State
 	_, err = c.prowJobClient.Update(latestPJ)
+	c.log.WithFields(pjutil.ProwJobFields(latestPJ)).Debug("Update ProwJob.")
 	return err
 }
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
 	pjs, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: c.selector})
+	c.log.WithField("selector", c.selector).Debug("List ProwJobs.")
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
@@ -208,6 +211,7 @@ func (c *Controller) Sync() error {
 	pm := map[string]v1.Pod{}
 	for alias, client := range c.buildClients {
 		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
+		c.log.WithField("selector", selector).Debug("List Pods.")
 		if err != nil {
 			return fmt.Errorf("error listing pods in cluster %q: %v", alias, err)
 		}
@@ -300,6 +304,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi
 		// newer commits in GitHub pull requests.
 		if c.config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
+				c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
 				if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
 					return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
 				} else if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err != nil {
@@ -375,6 +380,8 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			if !ok {
 				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
+
+			c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{})
 
 		case coreapi.PodSucceeded:
@@ -400,6 +407,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 				if !ok {
 					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 				}
+				c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 				return client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{})
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
@@ -467,6 +475,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
 	_, err := c.prowJobClient.Update(&pj)
+	c.log.WithFields(pjutil.ProwJobFields(&pj)).Debug("Update ProwJob.")
 	return err
 }
 
@@ -517,6 +526,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
 	_, err := c.prowJobClient.Update(&pj)
+	c.log.WithFields(pjutil.ProwJobFields(&pj)).Debug("Update ProwJob.")
 	return err
 }
 
@@ -538,6 +548,7 @@ func (c *Controller) startPod(pj prowapi.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 	}
 	actual, err := client.Create(pod)
+	c.log.WithFields(pjutil.ProwJobFields(&pj)).Debug("Create Pod.")
 	if err != nil {
 		return "", "", err
 	}
