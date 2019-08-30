@@ -112,7 +112,7 @@ def print_deployments(components, env):
 
 
 def print_deployment(deployment, env):
-    print(string.Template(deployment).safe_substitute(**env), end=' ')
+    print(string.Template(deployment).safe_substitute(**env), end='')
     print('---')
 
 if __name__ == '__main__':
