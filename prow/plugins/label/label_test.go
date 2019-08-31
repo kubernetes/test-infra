@@ -57,6 +57,7 @@ func TestLabel(t *testing.T) {
 		expectedBotComment    bool
 		repoLabels            []string
 		issueLabels           []string
+		expectedCommentText   string
 	}
 	testcases := []testCase{
 		{
@@ -148,6 +149,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Non Org Member Can't Add",
@@ -175,6 +177,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Area Labels",
@@ -211,6 +214,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Priority-Area Mismatch)",
@@ -220,6 +224,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Area Labels (Some Valid)",
@@ -229,6 +234,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Committee Labels (Some Valid)",
@@ -238,6 +244,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("committee/steering"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add Multiple Types of Labels Different Lines",
@@ -407,6 +414,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Remove custom label",
@@ -427,6 +435,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `/remove-label orchestrator/jar` cannot be appled. These labels are supported: `orchestrator/foo, orchestrator/bar`",
 		},
 	}
 
@@ -479,6 +489,14 @@ func TestLabel(t *testing.T) {
 		}
 		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
 			t.Error("expected a bot comment but got none")
+		}
+		if tc.expectedBotComment && len(tc.expectedCommentText) > 0 {
+			if len(fakeClient.IssueComments) < 1 {
+				t.Errorf("expected actual: %v", fakeClient.IssueComments)
+			}
+			if len(fakeClient.IssueComments[1]) != 1 || strings.Index(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) == -1 {
+				t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
+			}
 		}
 	}
 }
