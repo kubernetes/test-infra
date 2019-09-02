@@ -396,6 +396,7 @@ periodics:
       - --acsengine-hyperkube=True
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --env=KUBE_FEATURE_GATES=ServiceLoadBalancerFinalizer=true
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
       - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
