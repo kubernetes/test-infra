@@ -30,3 +30,14 @@ variants:
     GO_VERSION: 1.11.13
     K8S_RELEASE: stable-1.13
     BAZEL_VERSION: 0.18.1
+# To support GKE tests which are currently behind OSS
+  '1.12':
+    CONFIG: '1.12'
+    GO_VERSION: 1.10.8
+    K8S_RELEASE: stable-1.12
+    BAZEL_VERSION: 0.18.1
+  '1.11':
+    CONFIG: '1.11'
+    GO_VERSION: 1.10.8
+    K8S_RELEASE: stable-1.11
+    BAZEL_VERSION: 0.14.0
