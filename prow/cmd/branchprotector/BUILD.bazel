@@ -16,6 +16,8 @@ k8s_object(
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    directory = "/",
+    files = [":branchprotector"],
     visibility = ["//visibility:public"],
 )
 
