@@ -123,3 +123,5 @@ require (
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4
 )
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
