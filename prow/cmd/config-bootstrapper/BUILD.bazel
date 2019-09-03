@@ -41,5 +41,7 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
+    directory = "/",
+    files = [":config-bootstrapper"],
     visibility = ["//visibility:public"],
 )

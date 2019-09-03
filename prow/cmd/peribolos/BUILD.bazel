@@ -124,5 +124,7 @@ k8s_objects(
 prow_image(
     name = "image",
     base = "@alpine-base//image",
+    directory = "/",
+    files = [":peribolos"],
     visibility = ["//visibility:public"],
 )
