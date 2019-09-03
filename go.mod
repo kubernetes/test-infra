@@ -3,18 +3,18 @@ module k8s.io/test-infra
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
 require (
-	cloud.google.com/go v0.37.4
+	cloud.google.com/go v0.38.0
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
-	github.com/Azure/go-autorest v11.1.2+incompatible
+	github.com/Azure/go-autorest v11.3.1+incompatible
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/NYTimes/gziphandler v0.0.0-20160419202541-63027b26b87e
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
-	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
-	github.com/aws/aws-sdk-go v1.16.36
+	github.com/aws/aws-k8s-tester v0.0.0-20190903163011-ed900c0aada7
+	github.com/aws/aws-sdk-go v1.23.13
 	github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c
 	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -37,7 +37,6 @@ require (
 	github.com/go-openapi/swag v0.0.0-20171111214437-cf0bdb963811 // indirect
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/gobuffalo/envy v1.6.15 // indirect
-	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.3.2
@@ -48,21 +47,18 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.0.0
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
-	github.com/googleapis/gnostic v0.3.1 // indirect
-	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
 	github.com/gorilla/csrf v1.6.0
+	github.com/gorilla/mux v1.6.2 // indirect
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
-	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
+	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
 	github.com/jinzhu/now v1.0.1 // indirect
-	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
@@ -80,9 +76,9 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.3.0
-	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
+	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v0.9.4
+	github.com/prometheus/client_golang v1.0.0
 	github.com/prometheus/procfs v0.0.3 // indirect
 	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
@@ -94,19 +90,17 @@ require (
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
-	go.opencensus.io v0.20.2 // indirect
 	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529
-	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
-	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
+	golang.org/x/lint v0.0.0-20190409202823-959b441ac422
+	golang.org/x/net v0.0.0-20190628185345-da137c7871d7
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
-	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c
 	golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
-	google.golang.org/api v0.3.2
-	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
-	google.golang.org/grpc v1.20.1
+	google.golang.org/api v0.7.0
+	google.golang.org/genproto v0.0.0-20190716160619-c506a9f90610
+	google.golang.org/grpc v1.23.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 	k8s.io/api v0.0.0-20190816222004-e3a6b8045b0b
