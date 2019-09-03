@@ -25,7 +25,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"k8s.io/test-infra/pkg/gencert"
+	"k8s.io/test-infra/pkg/gencred"
 	"k8s.io/test-infra/prow/kube"
 
 	"github.com/sirupsen/logrus"
@@ -234,7 +234,7 @@ func describeCluster(o options, kubeContext string) (*describe, error) {
 		if err != nil {
 			return nil, fmt.Errorf("create client: %v", err)
 		}
-		certPEM, keyPEM, caPEM, err := gencert.CreateClusterAuthCredentials(clientset)
+		certPEM, keyPEM, caPEM, err := gencred.CreateClusterCertificateCredentials(clientset)
 		if err != nil {
 			return nil, fmt.Errorf("create cert and key: %v", err)
 		}

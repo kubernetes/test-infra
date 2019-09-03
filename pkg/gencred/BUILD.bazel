@@ -2,16 +2,18 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["gencert.go"],
+    srcs = ["gencred.go"],
     data = ["//prow/plugins:config-src"],
-    importpath = "k8s.io/test-infra/pkg/gencert",
+    importpath = "k8s.io/test-infra/pkg/gencred",
     visibility = ["//visibility:public"],
     deps = [
         "@io_k8s_api//certificates/v1beta1:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",
+        "@io_k8s_api//rbac/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/util/wait:go_default_library",
         "@io_k8s_client_go//kubernetes:go_default_library",
+        "@io_k8s_client_go//plugin/pkg/client/auth:go_default_library",
         "@io_k8s_client_go//util/cert:go_default_library",
         "@io_k8s_client_go//util/keyutil:go_default_library",
     ],
@@ -19,7 +21,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["gencert_test.go"],
+    srcs = ["gencred_test.go"],
     embed = [":go_default_library"],
     deps = [
         "@io_k8s_api//core/v1:go_default_library",
