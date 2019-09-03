@@ -56,14 +56,6 @@ def go_repositories():
         version = "v0.0.0-20190120104749-174420ebee6c",
     )
     go_repository(
-        name = "com_github_apache_thrift",
-        build_file_generation = "on",
-        build_file_proto_mode = "disable",
-        importpath = "github.com/apache/thrift",
-        sum = "h1:pODnxUFNcjP9UTLZGTdeh+j16A8lJbRvD3rOtrk/7bs=",
-        version = "v0.12.0",
-    )
-    go_repository(
         name = "com_github_armon_consul_api",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
