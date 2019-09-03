@@ -254,7 +254,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.16-informing
+    testgrid-dashboards: sig-windows, sig-release-1.16-informing, sig-release-master-informing
     testgrid-tab-name: aks-engine-azure-1-16-windows
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 3h
