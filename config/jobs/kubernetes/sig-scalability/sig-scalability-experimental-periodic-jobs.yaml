@@ -19,6 +19,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=private-gce-test
+      - --env=HEAPSTER_MACHINE_TYPE=n1-standard-1
       - --env=KUBE_GCE_PRIVATE_CLUSTER=true
       - --extract=ci/latest
       - --gcp-master-image=gci
