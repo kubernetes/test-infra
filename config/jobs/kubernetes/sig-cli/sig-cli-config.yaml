@@ -223,9 +223,15 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190830-36b022d-master
 
   annotations:
-    testgrid-dashboards: sig-cli-master
+    testgrid-dashboards: sig-release-master-blocking, sig-cli-master
     testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gce
-    description: stable1 e2e tests run against a master gce cluster using a stable1 kubectl binary
+    testgrid-alert-email: "kubernetes-release-team@googlegroups.com"
+    description: "stable1 e2e tests run against a master gce cluster using a stable1 kubectl binary"
+    testgrid-num-columns-recent: "3"
+    testgrid-num-failures-to-alert: "2"
+    testgrid-alert-stale-results-hours: "24"
+    fork-per-release: "true"
+    fork-per-release-generic-suffix: "true"
 - interval: 1h
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
   labels:
