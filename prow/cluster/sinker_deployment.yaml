@@ -23,7 +23,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/sinker:v20190903-2d1aaee54
+        image: gcr.io/k8s-prow/sinker:v20190903-599c89c3c
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
