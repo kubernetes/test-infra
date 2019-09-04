@@ -313,6 +313,7 @@ func TestTrustedJobs(t *testing.T) {
 	// that uses a foo-trusted cluster
 	const trusted = "test-infra-trusted"
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
+	trustedDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use trusted clusters.
 	for _, pre := range c.AllPresubmits(nil) {
@@ -326,7 +327,7 @@ func TestTrustedJobs(t *testing.T) {
 		if post.Cluster != trusted {
 			continue
 		}
-		if post.SourcePath != trustedPath {
+		if post.SourcePath != trustedPath && !strings.HasPrefix(post.SourcePath, trustedDir) {
 			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
 		}
 	}
@@ -336,7 +337,7 @@ func TestTrustedJobs(t *testing.T) {
 		if per.Cluster != trusted {
 			continue
 		}
-		if per.SourcePath != trustedPath {
+		if per.SourcePath != trustedPath && !strings.HasPrefix(per.SourcePath, trustedDir) {
 			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
 		}
 	}
