@@ -1,7 +1,7 @@
 import moment from "moment";
 import {Job, JobState, JobType} from "../api/prow";
 import {cell, getCookieByName, icon} from "../common/common";
-import {getParameterByName} from "../common/urls";
+import {getParameterByName, relativeURL} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
 
@@ -672,7 +672,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
             const runButton = document.createElement('a');
             runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
             if (login === "" && !allowAnyone) {
-                runButton.href = `/github-login?dest=%2F?rerun=gh_redirect`;
+                runButton.href = `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
             } else {
                 runButton.onclick = async () => {
                     gtag("event", "rerun", {
@@ -688,7 +688,7 @@ function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob:
                     });
                     const data = await result.text();
                     if (result.status === 401) {
-                        window.location.href = window.location.origin + "/github-login?dest=%2F?rerun=gh_redirect";
+                        window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
                     } else {
                         rerunElement.innerHTML = data;
                     }

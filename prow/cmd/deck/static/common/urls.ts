@@ -25,3 +25,11 @@ export function parseQuery(query: string): {[key: string]: string | undefined} {
 export function getParameterByName(name: string): string | undefined {
   return parseQuery(location.search.substr(1))[name];
 }
+
+export function relativeURL(params: { [key: string]: string } = {}): string {
+  const url = new URL(location.href);
+  for (const key of Object.keys(params)) {
+    url.searchParams.append(key, params[key]);
+  }
+  return encodeURIComponent(url.pathname + url.search + url.hash);
+}
