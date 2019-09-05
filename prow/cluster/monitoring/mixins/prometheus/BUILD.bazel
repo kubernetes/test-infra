@@ -15,8 +15,6 @@ jsonnet_to_json(
     name = "prow_prometheusrule",
     src = "prow_prometheusrule.jsonnet",
     outs = ["prow_prometheusrule.yaml"],
-    #uncomment the following line when https://github.com/bazelbuild/rules_jsonnet/issues/114 has a fix.
-    #yaml_stream = True,
     visibility = ["//visibility:public"],
     deps = [":prom_lib"],
 )
