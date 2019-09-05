@@ -252,9 +252,6 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 // also need the result of that GitHub call just keep a pointer to its result, bust must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	if gc == nil {
-		return nil, errors.New("gitClient is nil")
-	}
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
@@ -262,6 +259,9 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		return c.Presubmits[identifier], nil
 	}
 
+	if gc == nil {
+		return nil, errors.New("gitClient is nil")
+	}
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
