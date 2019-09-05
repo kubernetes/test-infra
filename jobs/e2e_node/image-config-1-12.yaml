@@ -6,7 +6,7 @@ images:
     image: ubuntu-gke-1604-xenial-v20170420-1 # docker 1.12.6
     project: ubuntu-os-gke-cloud
   coreos-beta:
-    image: coreos-beta-1883-1-0-v20180911 # docker 18.06.1-ce
+    image: coreos-beta-1911-1-1-v20181011 # docker 18.06.1-ce
     project: coreos-cloud
     metadata: "user-data<test/e2e_node/jenkins/coreos-init.json"
   cos-stable1:
