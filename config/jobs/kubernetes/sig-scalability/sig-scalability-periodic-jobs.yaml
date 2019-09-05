@@ -85,6 +85,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
@@ -140,6 +141,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
@@ -198,6 +200,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -256,6 +259,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/density/600_nodes/high_density_override.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
