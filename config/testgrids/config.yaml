@@ -700,6 +700,7 @@ dashboards:
 - name: presubmits-cloud-provider-alibaba
 - name: sig-aws-ebs-csi-driver
 - name: sig-aws-efs-csi-driver
+- name: sig-aws-fsx-csi-driver
 - name: sig-aws-eks-presubmits
 - name: sig-aws-eks-periodics
 - name: sig-aws-encryption-provider
@@ -1091,6 +1092,7 @@ dashboard_groups:
   - sig-aws-cloud-provider-aws
   - sig-aws-ebs-csi-driver
   - sig-aws-efs-csi-driver
+  - sig-aws-fsx-csi-driver
   - sig-aws-eks-periodics
   - sig-aws-eks-presubmits
 
