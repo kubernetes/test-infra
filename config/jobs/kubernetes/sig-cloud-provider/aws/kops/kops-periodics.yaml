@@ -52,7 +52,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-aws, sig-release-1.16-all, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.16
+    testgrid-tab-name: kops-aws-beta
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-channelalpha
   labels:
@@ -286,7 +286,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.15
+    testgrid-tab-name: kops-aws-stable1
 - interval: 4h
   name: ci-kubernetes-e2e-kops-aws-stable2
   labels:
@@ -313,7 +313,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-aws, sig-release-1.14-all, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.14
+    testgrid-tab-name: kops-aws-stable2
 - interval: 6h
   name: ci-kubernetes-e2e-kops-aws-stable3
   labels:
@@ -340,7 +340,7 @@ periodics:
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.13
+    testgrid-tab-name: kops-aws-stable3
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-updown
   labels:
