@@ -284,6 +284,7 @@ Flags:
   -h, --help               help for heartbeat
       --period duration    Period to send heartbeats on (default 30s)
       --resource string    JSON resource lease object to send heartbeat for
+      --retries int        How many failed heartbeats to tolerate (default 10)
       --timeout duration   How long to send heartbeats for (default 5h0m0s)
 
 Global Flags:
@@ -294,7 +295,7 @@ Global Flags:
 		},
 		{
 			name: "failed heartbeat sends a request and fails",
-			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`},
+			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`, "--retries=0"},
 			responses: map[string]response{
 				"/update": {
 					code: http.StatusNotFound,
@@ -309,6 +310,32 @@ Global Flags:
 			}},
 			expectedCode: 1,
 			expectedOutput: `failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
+`,
+		},
+		{
+			name: "failed heartbeat sends a request, retries and fails",
+			args: []string{"heartbeat", "--period=100ms", "--timeout=250ms", `--resource={"type":"thing","name":"87527b0c-eac2-4f83-9a03-791b2239e093","state":"new","owner":"test","lastupdate":"2019-07-24T23:30:40.094116858Z","userdata":{}}`, "--retries=1"},
+			responses: map[string]response{
+				"/update": {
+					code: http.StatusNotFound,
+				},
+			},
+			expectedCalls: []request{{
+				method: http.MethodPost,
+				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+				header: map[string][]string{"Content-Type": {"application/json"}},
+				body: []byte(`{}
+`),
+			}, {
+				method: http.MethodPost,
+				url:    url.URL{Path: "/update", RawQuery: `owner=test&state=new&name=87527b0c-eac2-4f83-9a03-791b2239e093`},
+				header: map[string][]string{"Content-Type": {"application/json"}},
+				body: []byte(`{}
+`),
+			}},
+			expectedCode: 1,
+			expectedOutput: `failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
+failed to send heartbeat for resource "87527b0c-eac2-4f83-9a03-791b2239e093": status 404 Not Found, status code 404 updating 87527b0c-eac2-4f83-9a03-791b2239e093
 `,
 		},
 	}
