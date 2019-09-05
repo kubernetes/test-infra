@@ -154,28 +154,16 @@ func (l extractStrategies) Extract(project, zone, region string, extractSrc bool
 
 // Find get-kube.sh at PWD, in PATH or else download it.
 func ensureKube() (string, error) {
-	// Does get-kube.sh exist in pwd?
-	i, err := os.Stat("./get-kube.sh")
-	if err == nil && !i.IsDir() && i.Mode()&0111 > 0 {
-		return "./get-kube.sh", nil
-	}
-
-	// How about in the path?
-	p, err := exec.LookPath("get-kube.sh")
-	if err == nil {
-		return p, nil
-	}
-
-	// Download it to a temp file
+	// Always download hacked version to a temp file
 	f, err := ioutil.TempFile("", "get-kube")
 	if err != nil {
 		return "", err
 	}
 	defer f.Close()
-	if err := httpRead("https://get.k8s.io", f); err != nil {
+	if err := httpRead("https://raw.githubusercontent.com/krzyzacy/kubernetes/3f1c49f02d724215bc225465c55172d5c549755f/cluster/get-kube.sh", f); err != nil {
 		return "", err
 	}
-	i, err = f.Stat()
+	i, err := f.Stat()
 	if err != nil {
 		return "", err
 	}

@@ -23,7 +23,7 @@ push-prod:
 	bazel run //images/builder -- $(EXTRA_ARG) --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/kubekins-e2e
 
 push:
-	bazel run //images/builder -- $(EXTRA_ARG) --allow-dirty images/kubekins-e2e
+	bazel run //images/builder -- $(EXTRA_ARG) --allow-dirty images/kubekins-senlu-hack
 
 .PHONY: push push-prod help
 
