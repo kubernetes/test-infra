@@ -23,6 +23,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -31,12 +32,11 @@ import (
 const pluginName = "label"
 
 var (
-	defaultLabels           = []string{"kind", "priority", "area"}
-	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
-	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
-	customLabelRegex        = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
-	customRemoveLabelRegex  = regexp.MustCompile(`(?m)^/remove-label\s*(.*)$`)
-	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
+	defaultLabels          = []string{"kind", "priority", "area"}
+	labelRegex             = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
+	removeLabelRegex       = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*)$`)
+	customLabelRegex       = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
+	customRemoveLabelRegex = regexp.MustCompile(`(?m)^/remove-label\s*(.*)$`)
 )
 
 func init() {
@@ -66,7 +66,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "Applies or removes a label from one of the recognized types of labels.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command on a PR.",
-		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh"},
+		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh", "/label foo-bar-baz"},
 	})
 	return pluginHelp, nil
 }
@@ -96,20 +96,24 @@ func getLabelsFromREMatches(matches [][]string) (labels []string) {
 
 // getLabelsFromGenericMatches returns label matches with extra labels if those
 // have been configured in the plugin config.
-func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string) []string {
+func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string, invalidLabels *[]string) []string {
 	if len(additionalLabels) == 0 {
 		return nil
 	}
 	var labels []string
+	labelFilter := sets.String{}
+	for _, l := range additionalLabels {
+		labelFilter.Insert(strings.ToLower(l))
+	}
 	for _, match := range matches {
 		parts := strings.Split(match[0], " ")
 		if ((parts[0] != "/label") && (parts[0] != "/remove-label")) || len(parts) != 2 {
 			continue
 		}
-		for _, l := range additionalLabels {
-			if l == parts[1] {
-				labels = append(labels, parts[1])
-			}
+		if labelFilter.Has(strings.ToLower(parts[1])) {
+			labels = append(labels, parts[1])
+		} else {
+			*invalidLabels = append(*invalidLabels, match[0])
 		}
 	}
 	return labels
@@ -136,9 +140,9 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		return err
 	}
 
-	RepoLabelsExisting := map[string]string{}
+	RepoLabelsExisting := sets.String{}
 	for _, l := range repoLabels {
-		RepoLabelsExisting[strings.ToLower(l.Name)] = l.Name
+		RepoLabelsExisting.Insert(strings.ToLower(l.Name))
 	}
 	var (
 		nonexistent         []string
@@ -146,23 +150,21 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		labelsToAdd         []string
 		labelsToRemove      []string
 	)
-
 	// Get labels to add and labels to remove from regexp matches
-	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, additionalLabels)...)
-	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, additionalLabels)...)
-
+	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, additionalLabels, &nonexistent)...)
+	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, additionalLabels, &nonexistent)...)
 	// Add labels
 	for _, labelToAdd := range labelsToAdd {
 		if github.HasLabel(labelToAdd, labels) {
 			continue
 		}
 
-		if _, ok := RepoLabelsExisting[labelToAdd]; !ok {
+		if !RepoLabelsExisting.Has(labelToAdd) {
 			nonexistent = append(nonexistent, labelToAdd)
 			continue
 		}
 
-		if err := gc.AddLabel(org, repo, e.Number, RepoLabelsExisting[labelToAdd]); err != nil {
+		if err := gc.AddLabel(org, repo, e.Number, labelToAdd); err != nil {
 			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labelToAdd)
 		}
 	}
@@ -174,7 +176,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 			continue
 		}
 
-		if _, ok := RepoLabelsExisting[labelToRemove]; !ok {
+		if !RepoLabelsExisting.Has(labelToRemove) {
 			nonexistent = append(nonexistent, labelToRemove)
 			continue
 		}
@@ -184,14 +186,15 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 	}
 
-	//TODO(grodrigues3): Once labels are standardized, make this reply with a comment.
 	if len(nonexistent) > 0 {
 		log.Infof("Nonexistent labels: %v", nonexistent)
+		msg := fmt.Sprintf("The label(s) `%s` cannot be appled. These labels are supported: `%s`", strings.Join(nonexistent, ", "), strings.Join(additionalLabels, ", "))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
-		msg := fmt.Sprintf(nonExistentLabelOnIssue, strings.Join(noSuchLabelsOnIssue, ", "))
+		msg := fmt.Sprintf("Those labels are not set on the issue: `%v`", strings.Join(noSuchLabelsOnIssue, ", "))
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
