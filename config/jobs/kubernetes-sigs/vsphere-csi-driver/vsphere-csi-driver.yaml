@@ -3,7 +3,7 @@ presubmits:
 
   - name: pull-vsphere-csi-driver-verify-fmt
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
+    run_if_changed: '\.go$|hack\/check-format\.sh'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
@@ -21,7 +21,7 @@ presubmits:
 
   - name: pull-vsphere-csi-driver-verify-lint
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    run_if_changed: '\.go$|hack\/check-lint\.sh'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
@@ -39,7 +39,7 @@ presubmits:
 
   - name: pull-vsphere-csi-driver-verify-vet
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    run_if_changed: '\.go$|hack\/check-vet\.sh'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
@@ -95,7 +95,7 @@ presubmits:
   # Runs 'staticcheck' on appropriate sources
   - name: pull-vsphere-csi-driver-verify-staticcheck
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-staticcheck\.sh'
+    run_if_changed: '\.go$|hack\/check-staticcheck\.sh'
     optional: true
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
@@ -134,7 +134,7 @@ presubmits:
   # Executes the unit tests.
   - name: pull-vsphere-csi-driver-unit-test
     always_run: false
-    run_if_changed: '^(cmd|pkg|go.mod)'
+    run_if_changed: '\.go$|go\.mod'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     skip_submodules: true
