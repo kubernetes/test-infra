@@ -225,7 +225,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-cli-master
     testgrid-tab-name: skew-cluster-latest-kubectl-stable1-gce
-    testgrid-alert-email: "kubernetes-release-team@googlegroups.com"
+    testgrid-alert-email: "kubernetes-release-team@googlegroups.com, kubernetes-sig-cli@googlegroups.com"
     description: "stable1 e2e tests run against a master gce cluster using a stable1 kubectl binary"
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "2"
