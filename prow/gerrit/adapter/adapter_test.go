@@ -573,6 +573,41 @@ func TestProcessChange(t *testing.T) {
 			},
 			numPJ: 0,
 		},
+		{
+			name: "retest uses the latest report",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "retest-branch",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-3 * time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/retest",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 1 out of 2 passed\n✔️ foo-job SUCCESS - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						Date:           makeStamp(timeNow.Add(-2 * time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						Date:           makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+			},
+			numPJ: 2,
+		},
 	}
 
 	for _, tc := range testcases {

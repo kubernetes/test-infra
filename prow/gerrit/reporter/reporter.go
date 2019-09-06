@@ -299,3 +299,8 @@ func ParseReport(message string) *JobReport {
 	report.message = strings.TrimPrefix(message, report.header)
 	return report
 }
+
+// String implements Stringer for JobReport
+func (r *JobReport) String() string {
+	return fmt.Sprintf("%s\n%s", r.header, r.message)
+}

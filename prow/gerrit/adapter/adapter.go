@@ -216,6 +216,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 
 		var filters []pjutil.Filter
 		var latestReport *reporter.JobReport
+		var latestReportTime time.Time
 		account := c.gc.Account(instance)
 		// Should not happen, since this means auth failed
 		if account == nil {
@@ -227,15 +228,19 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			if message.Author.AccountID != account.AccountID {
 				continue
 			}
+			if message.Date.Before(latestReportTime) {
+				continue
+			}
 			report := reporter.ParseReport(message.Message)
 			if report != nil {
-				logger.Infof("Found latest report: %s", message.Message)
 				latestReport = report
-				break
+				latestReportTime = message.Date.Time
 			}
 		}
 		if latestReport == nil {
 			logger.Warnf("Found nil latest report")
+		} else {
+			logger.Infof("Found latest report: %s", latestReport)
 		}
 		lastUpdate := c.tracker.Current()
 		filter, err := messageFilter(lastUpdate, change, presubmits, latestReport, logger)
