@@ -97,7 +97,9 @@ func getExtraSubs(o options) map[string]string {
 	subs := map[string]string{}
 	for _, e := range envs {
 		e = strings.TrimSpace(e)
-		subs[e] = os.Getenv(e)
+		if e != "" {
+			subs[e] = os.Getenv(e)
+		}
 	}
 	return subs
 }
