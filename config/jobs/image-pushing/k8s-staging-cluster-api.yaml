@@ -11,13 +11,14 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190828-ce571c0
+          - image: gcr.io/k8s-testimages/image-builder:v20190906-d5d7ce3
             command:
               - /run.sh
             args:
               # this is the project GCB will run in, which is the same as the GCR images are pushed to.
               - --project=k8s-staging-cluster-api
               - --scratch-bucket=gs://k8s-staging-cluster-api-scratch
+              - --env-passthrough=PULL_BASE_REF
               - .
             env:
               - name: GOOGLE_APPLICATION_CREDENTIALS
