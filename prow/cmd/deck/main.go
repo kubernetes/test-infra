@@ -79,6 +79,18 @@ import (
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 )
 
+// Omittable ProwJob fields.
+const (
+	// Annotations maps to the serialized value of <ProwJob>.Annotations.
+	Annotations string = "annotations"
+	// Labels maps to the serialized value of <ProwJob>.Labels.
+	Labels string = "labels"
+	// DecorationConfig maps to the serialized value of <ProwJob>.Spec.DecorationConfig.
+	DecorationConfig string = "decoration_config"
+	// PodSpec maps to the serialized value of <ProwJob>.Spec.PodSpec.
+	PodSpec string = "pod_spec"
+)
+
 type options struct {
 	configPath            string
 	jobConfigPath         string
@@ -705,11 +717,25 @@ func handleProwJobs(ja *jobs.JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		jobs := ja.ProwJobs()
-		if v := r.URL.Query().Get("omit"); v == "pod_spec" {
+		omit := r.URL.Query().Get("omit")
+
+		if set := sets.NewString(strings.Split(omit, ",")...); set.Len() > 0 {
 			for i := range jobs {
-				jobs[i].Spec.PodSpec = nil
+				if set.Has(Annotations) {
+					jobs[i].Annotations = nil
+				}
+				if set.Has(Labels) {
+					jobs[i].Labels = nil
+				}
+				if set.Has(DecorationConfig) {
+					jobs[i].Spec.DecorationConfig = nil
+				}
+				if set.Has(PodSpec) {
+					jobs[i].Spec.PodSpec = nil
+				}
 			}
 		}
+
 		jd, err := json.Marshal(struct {
 			Items []prowapi.ProwJob `json:"items"`
 		}{jobs})

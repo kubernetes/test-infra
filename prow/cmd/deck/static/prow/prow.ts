@@ -1,18 +1,27 @@
 import moment from "moment";
-import {Job, JobState, JobType} from "../api/prow";
+import {ProwJob, ProwJobList, ProwJobState, ProwJobType, Pull} from "../api/prow";
 import {cell, getCookieByName, icon} from "../common/common";
 import {getParameterByName} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
 
-declare const allBuilds: Job[];
+declare const allBuilds: ProwJobList;
 declare const spyglass: boolean;
 declare const rerunCreatesJob: boolean;
 declare const csrfToken: string;
 declare const allowAnyone: boolean;
 
-function shortenBuildRefs(buildRef: string): string {
-    return buildRef && buildRef.replace(/:[0-9a-f]*/g, '');
+function genShortRefKey(baseRef: string, pulls: Pull[] = []) {
+    return [baseRef, ...pulls.map((p) => p.number)].filter((n) => n).join(",");
+}
+
+function genLongRefKey(baseRef: string, baseSha: string, pulls: Pull[] = []) {
+    return [
+        [baseRef, baseSha].filter((n) => n).join(":"),
+        ...pulls.map((p) => [p.number, p.sha].filter((n) => n).join(":")),
+    ]
+      .filter((n) => n)
+      .join(",");
 }
 
 interface RepoOptions {
@@ -25,7 +34,7 @@ interface RepoOptions {
     states: {[key: string]: boolean};
 }
 
-function optionsForRepo(repo: string): RepoOptions {
+function optionsForRepo(repository: string): RepoOptions {
     const opts: RepoOptions = {
         authors: {},
         batches: {},
@@ -36,22 +45,34 @@ function optionsForRepo(repo: string): RepoOptions {
         types: {},
     };
 
-    for (const build of allBuilds) {
-        opts.types[build.type] = true;
-        const repoKey = `${build.refs.org}/${build.refs.repo}`;
+    for (const build of allBuilds.items) {
+        const {
+            spec: {
+                type = "",
+                job = "",
+                refs: {
+                    org = "", repo = "", pulls = [], base_ref = "",
+                } = {},
+            },
+            status: {
+                state = "",
+            },
+        } = build;
+
+        opts.types[type] = true;
+        const repoKey = `${org}/${repo}`;
         if (repoKey) {
             opts.repos[repoKey] = true;
         }
-        if (!repo || repo === repoKey) {
-            opts.jobs[build.job] = true;
-            opts.states[build.state] = true;
-            if (build.type === "presubmit" &&
-                build.refs.pulls &&
-                build.refs.pulls.length > 0) {
-                opts.authors[build.refs.pulls[0].author] = true;
-                opts.pulls[build.refs.pulls[0].number] = true;
-            } else if (build.type === "batch") {
-                opts.batches[shortenBuildRefs(build.refs_key)] = true;
+        if (!repository || repository === repoKey) {
+            opts.jobs[job] = true;
+            opts.states[state] = true;
+
+            if (type === "presubmit" && pulls.length) {
+                opts.authors[pulls[0].author] = true;
+                opts.pulls[pulls[0].number] = true;
+            } else if (type === "batch") {
+                opts.batches[genShortRefKey(base_ref, pulls)] = true;
             }
         }
     }
@@ -61,7 +82,7 @@ function optionsForRepo(repo: string): RepoOptions {
 
 function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
     const ts = Object.keys(opts.types).sort();
-    const selectedType = addOptions(ts, "type") as JobType;
+    const selectedType = addOptions(ts, "type") as ProwJobType;
     const rs = Object.keys(opts.repos).filter((r) => r !== "/").sort();
     addOptions(rs, "repo");
     const js = Object.keys(opts.jobs).sort();
@@ -169,7 +190,7 @@ function handleUpKey(): void {
 
 window.onload = (): void => {
     const topNavigator = document.getElementById("top-navigator")!;
-    let navigatorTimeOut: number | undefined;
+    let navigatorTimeOut: any;
     const main = document.querySelector("main")! as HTMLElement;
     main.onscroll = () => {
         topNavigator.classList.add("hidden");
@@ -381,9 +402,10 @@ function equalSelected(sel: string, t: string): boolean {
     return sel === "" || sel === t;
 }
 
-function groupKey(build: Job): string {
-    const pr = (build.refs.pulls && build.refs.pulls.length === 1) ? build.refs.pulls[0].number : 0;
-    return `${build.refs.repo} ${pr} ${build.refs_key}`;
+function groupKey(build: ProwJob): string {
+    const {refs: {repo = "", pulls = [], base_ref = "", base_sha = ""} = {}} = build.spec;
+    const pr = pulls.length ? pulls[0].number : 0;
+    return `${repo} ${pr} ${genLongRefKey(base_ref, base_sha, pulls)}`;
 }
 
 // escapeRegexLiteral ensures the given string is escaped so that it is treated as
@@ -440,7 +462,7 @@ function redraw(fz: FuzzySearch): void {
     const repoSel = getSelection("repo");
     const opts = optionsForRepo(repoSel);
 
-    const typeSel = getSelection("type") as JobType;
+    const typeSel = getSelection("type") as ProwJobType;
     if (typeSel === "batch") {
         opts.pulls = opts.batches;
     }
@@ -460,62 +482,72 @@ function redraw(fz: FuzzySearch): void {
     redrawOptions(fz, opts);
 
     let lastKey = '';
-    const jobCountMap = new Map() as Map<JobState, number>;
+    const jobCountMap = new Map() as Map<ProwJobState, number>;
     const jobInterval: Array<[number, number]> = [[3600 * 3, 0], [3600 * 12, 0], [3600 * 48, 0]];
     let currentInterval = 0;
     const jobHistogram = new JobHistogram();
-    const now = moment().unix();
+    const now = Date.now() / 1000;
     let totalJob = 0;
     let displayedJob = 0;
-    for (let i = 0; i < allBuilds.length; i++) {
-        const build = allBuilds[i];
-        if (!equalSelected(typeSel, build.type)) {
+
+    for (let i = 0; i < allBuilds.items.length; i++) {
+        const build = allBuilds.items[i];
+        const {
+            metadata: {
+                name: prowJobName = "",
+            },
+            spec: {
+                type = "",
+                job = "",
+                refs: {org = "", repo = "", repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
+            },
+            status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
+        } = build;
+
+        if (!equalSelected(typeSel, type)) {
             continue;
         }
-        if (!equalSelected(repoSel, `${build.refs.org}/${build.refs.repo}`)) {
+        if (!equalSelected(repoSel, `${org}/${repo}`)) {
             continue;
         }
-        if (!equalSelected(stateSel, build.state)) {
+        if (!equalSelected(stateSel, state)) {
             continue;
         }
-        if (!jobSel.test(build.job)) {
+        if (!jobSel.test(job)) {
             continue;
         }
-        if (build.type === "presubmit") {
-            if (build.refs.pulls && build.refs.pulls.length > 0) {
-                const pull = build.refs.pulls[0];
-                if (!equalSelected(pullSel, pull.number.toString())) {
-                    continue;
-                }
-                if (!equalSelected(authorSel, pull.author)) {
-                    continue;
-                }
+        if (type === "presubmit" && pulls.length) {
+            const {number: prNumber, author} = pulls[0];
+
+            if (!equalSelected(pullSel, prNumber.toString())) {
+                continue;
             }
-        } else if (build.type === "batch" && !authorSel) {
-            if (!equalSelected(pullSel, shortenBuildRefs(build.refs_key))) {
+            if (!equalSelected(authorSel, author)) {
+                continue;
+            }
+        } else if (type === "batch" && !authorSel) {
+            if (!equalSelected(pullSel, genShortRefKey(base_ref, pulls))) {
                 continue;
             }
         } else if (pullSel || authorSel) {
             continue;
         }
 
-        if (!jobCountMap.has(build.state)) {
-            jobCountMap.set(build.state, 0);
-        }
         totalJob++;
-        jobCountMap.set(build.state, jobCountMap.get(build.state)! + 1);
+        jobCountMap.set(state, (jobCountMap.get(state) || 0) + 1);
 
         // accumulate a count of the percentage of successful jobs over each interval
-        const started = Number(build.started);
+        const started = Date.parse(startTime) / 1000;
+        const finished = Date.parse(completionTime) / 1000;
+        // const finished = completionTime ? Date.parse(completionTime): now;
+
+        const durationSec = completionTime ? finished - started : 0;
+        const durationStr = completionTime ? formatDuration(durationSec * 1000) : "";
+
         if (currentInterval >= 0 && (now - started) > jobInterval[currentInterval][0]) {
-            let successCount = jobCountMap.get("success");
-            if (!successCount) {
-                successCount = 0;
-            }
-            let failureCount = jobCountMap.get("failure");
-            if (!failureCount) {
-                failureCount = 0;
-            }
+            const successCount = jobCountMap.get("success") || 0;
+            const failureCount = jobCountMap.get("failure") || 0;
+
             const total = successCount + failureCount;
             if (total > 0) {
                 jobInterval[currentInterval][1] = successCount / total;
@@ -529,17 +561,17 @@ function redraw(fz: FuzzySearch): void {
         }
 
         if (displayedJob >= 500) {
-            jobHistogram.add(new JobSample(started, parseDuration(build.duration), build.state, -1));
+            jobHistogram.add(new JobSample(started, durationSec, state, -1));
             continue;
         } else {
-            jobHistogram.add(new JobSample(started, parseDuration(build.duration), build.state, builds.childElementCount));
+            jobHistogram.add(new JobSample(started, durationSec, state, builds.childElementCount));
         }
         displayedJob++;
         const r = document.createElement("tr");
-        r.appendChild(cell.state(build.state));
-        if (build.pod_name) {
+        r.appendChild(cell.state(state));
+        if (pod_name) {
             const logIcon = icon.create("description", "Build log");
-            logIcon.href = `log?job=${build.job}&id=${build.build_id}`;
+            logIcon.href = `log?job=${job}&id=${build_id}`;
             const c = document.createElement("td");
             c.classList.add("icon-cell");
             c.appendChild(logIcon);
@@ -547,35 +579,34 @@ function redraw(fz: FuzzySearch): void {
         } else {
             r.appendChild(cell.text(""));
         }
-        r.appendChild(createRerunCell(modal, rerunCommand, build.prow_job));
-        r.appendChild(createViewJobCell(build.prow_job));
+        r.appendChild(createRerunCell(modal, rerunCommand, prowJobName));
+        r.appendChild(createViewJobCell(prowJobName));
         const key = groupKey(build);
         if (key !== lastKey) {
             // This is a different PR or commit than the previous row.
             lastKey = key;
             r.className = "changed";
 
-            if (build.type === "periodic") {
+            if (type === "periodic") {
                 r.appendChild(cell.text(""));
             } else {
-                let repoLink = build.refs.repo_link;
+                let repoLink = repo_link;
                 if (!repoLink) {
-                    repoLink = `https://github.com/${build.refs.org}/${build.refs.repo}`;
+                    repoLink = `https://github.com/${org}/${repo}`;
                 }
-                r.appendChild(cell.link(`${build.refs.org}/${build.refs.repo}`, repoLink));
+                r.appendChild(cell.link(`${org}/${repo}`, repoLink));
             }
-            if (build.type === "presubmit") {
-                if (build.refs.pulls && build.refs.pulls.length > 0) {
-                    r.appendChild(cell.prRevision(`${build.refs.org}/${build.refs.repo}`, build.refs.pulls[0]));
+            if (type === "presubmit") {
+                if (pulls.length) {
+                    r.appendChild(cell.prRevision(`${org}/${repo}`, pulls[0]));
                 } else {
                     r.appendChild(cell.text(""));
                 }
-            } else if (build.type === "batch") {
+            } else if (type === "batch") {
                 r.appendChild(batchRevisionCell(build));
-            } else if (build.type === "postsubmit") {
-                r.appendChild(cell.commitRevision(`${build.refs.org}/${build.refs.repo}`, build.refs.base_ref || "",
-                    build.refs.base_sha || "", build.refs.base_link || ""));
-            } else if (build.type === "periodic") {
+            } else if (type === "postsubmit") {
+                r.appendChild(cell.commitRevision(`${org}/${repo}`, base_ref, base_sha, base_link));
+            } else if (type === "periodic") {
                 r.appendChild(cell.text(""));
             }
         } else {
@@ -584,26 +615,26 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.text(""));
         }
         if (spyglass) {
-            const buildIndex = build.url.indexOf('/build/');
+            const buildIndex = url.indexOf('/build/');
             if (buildIndex !== -1) {
-                const url = `${window.location.origin}/view/gcs/${build.url.substring(buildIndex + '/build/'.length)}`;
+                const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
+                r.appendChild(createSpyglassCell(gcsUrl));
+            } else if (url.includes('/view/')) {
                 r.appendChild(createSpyglassCell(url));
-            } else if (build.url.includes('/view/')) {
-                r.appendChild(createSpyglassCell(build.url));
             } else {
                 r.appendChild(cell.text(''));
             }
         } else {
             r.appendChild(cell.text(''));
         }
-        if (build.url === "") {
-            r.appendChild(cell.text(build.job));
+        if (url === "") {
+            r.appendChild(cell.text(job));
         } else {
-            r.appendChild(cell.link(build.job, build.url));
+            r.appendChild(cell.link(job, url));
         }
 
-        r.appendChild(cell.time(i.toString(), moment.unix(Number(build.started))));
-        r.appendChild(cell.text(build.duration));
+        r.appendChild(cell.time(i.toString(), moment.unix(started)));
+        r.appendChild(cell.text(durationStr));
         builds.appendChild(r);
     }
 
@@ -642,7 +673,7 @@ function redraw(fz: FuzzySearch): void {
     // if we aren't filtering the output, cap the histogram y axis to 2 hours because it
     // contains the bulk of our jobs
     let max = Number.MAX_SAFE_INTEGER;
-    if (totalJob === allBuilds.length) {
+    if (totalJob === allBuilds.items.length) {
         max = 2 * 3600;
     }
     drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now, max);
@@ -747,31 +778,33 @@ function copyToClipboardWithToast(text: string): void {
     toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
 }
 
-function batchRevisionCell(build: Job): HTMLTableDataCellElement {
+function batchRevisionCell(build: ProwJob): HTMLTableDataCellElement {
+    const {refs: {org = "", repo = "", pulls = []} = {}} = build.spec;
+
     const c = document.createElement("td");
-    if (!build.refs.pulls) {
+    if (!pulls.length) {
         return c;
     }
-    for (let i = 0; i < build.refs.pulls.length; i++) {
+    for (let i = 0; i < pulls.length; i++) {
         if (i !== 0) {
             c.appendChild(document.createTextNode(", "));
         }
+        const {link, number: prNumber} = pulls[i];
         const l = document.createElement("a");
-        const link = build.refs.pulls[i].link;
         if (link) {
             l.href = link;
         } else {
-            l.href = `https://github.com/${build.refs.org}/${build.refs.repo}/pull/${build.refs.pulls[i].number}`;
+            l.href = `https://github.com/${org}/${repo}/pull/${prNumber}`;
         }
-        l.text = build.refs.pulls[i].number.toString();
+        l.text = prNumber.toString();
         c.appendChild(document.createTextNode("#"));
         c.appendChild(l);
     }
     return c;
 }
 
-function drawJobBar(total: number, jobCountMap: Map<JobState, number>): void {
-  const states: JobState[] = ["success", "pending", "triggered", "error", "failure", "aborted", ""];
+function drawJobBar(total: number, jobCountMap: Map<ProwJobState, number>): void {
+  const states: ProwJobState[] = ["success", "pending", "triggered", "error", "failure", "aborted", ""];
   states.sort((s1, s2) => {
     return jobCountMap.get(s1)! - jobCountMap.get(s2)!;
   });
@@ -800,7 +833,7 @@ function drawJobBar(total: number, jobCountMap: Map<JobState, number>): void {
   });
 }
 
-function stateToAdj(state: JobState): string {
+function stateToAdj(state: ProwJobState): string {
     switch (state) {
         case "success":
             return "succeeded";
