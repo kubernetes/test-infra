@@ -92,6 +92,16 @@ func uploadWorkingDir(targetBucket string) (string, error) {
 	return uploaded, nil
 }
 
+func getExtraSubs(o options) map[string]string {
+	envs := strings.Split(o.envPassthrough, ",")
+	subs := map[string]string{}
+	for _, e := range envs {
+		e = strings.TrimSpace(e)
+		subs[e] = os.Getenv(e)
+	}
+	return subs
+}
+
 func runSingleJob(o options, jobName, uploaded, version string, subs map[string]string) error {
 	s := make([]string, 0, len(subs)+1)
 	for k, v := range subs {
@@ -195,7 +205,7 @@ func runBuildJobs(o options) []error {
 	}
 	if len(vs) == 0 {
 		log.Println("No variants.yaml, starting single build job...")
-		if err := runSingleJob(o, "build", uploaded, tag, nil); err != nil {
+		if err := runSingleJob(o, "build", uploaded, tag, getExtraSubs(o)); err != nil {
 			return []error{err}
 		}
 		return nil
@@ -206,11 +216,12 @@ func runBuildJobs(o options) []error {
 	w := sync.WaitGroup{}
 	w.Add(len(vs))
 	var errors []error
+	extraSubs := getExtraSubs(o)
 	for k, v := range vs {
 		go func(job string, vc map[string]string) {
 			defer w.Done()
 			log.Printf("Starting job %q...\n", job)
-			if err := runSingleJob(o, job, uploaded, tag, vc); err != nil {
+			if err := runSingleJob(o, job, uploaded, tag, mergeMaps(extraSubs, vc)); err != nil {
 				errors = append(errors, fmt.Errorf("job %q failed: %v", job, err))
 				log.Printf("Job %q failed: %v\n", job, err)
 			} else {
@@ -229,6 +240,17 @@ type options struct {
 	project        string
 	allowDirty     bool
 	variant        string
+	envPassthrough string
+}
+
+func mergeMaps(maps ...map[string]string) map[string]string {
+	out := map[string]string{}
+	for _, m := range maps {
+		for k, v := range m {
+			out[k] = v
+		}
+	}
+	return out
 }
 
 func parseFlags() options {
@@ -238,6 +260,7 @@ func parseFlags() options {
 	flag.StringVar(&o.project, "project", "", "If specified, use a non-default GCP project.")
 	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds.")
 	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")
+	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as subtitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		_, _ = fmt.Fprintln(os.Stderr, "expected an image directory to be provided")
