@@ -9,6 +9,9 @@ presubmits:
       - image: golang:1.12
         command:
         - ./hack/ci-check-everything.sh
+        resources:
+          requests:
+            cpu: 4000m
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: controller-runtime
