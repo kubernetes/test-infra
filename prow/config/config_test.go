@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -1131,6 +1132,7 @@ func TestValidConfigLoading(t *testing.T) {
 		expectError        bool
 		expectPodNameSpace string
 		expectEnv          map[string][]v1.EnvVar
+		verify             func(*Config) error
 	}{
 		{
 			name:       "one config",
@@ -1676,6 +1678,48 @@ periodics:
 			},
 			expectError: true,
 		},
+		{
+			name: "all repos contains repos from tide, presubmits and postsubmits",
+			prowConfig: `
+tide:
+  queries:
+  - repos:
+    - stranded/fish`,
+			jobConfigs: []string{`
+presubmits:
+  k/k:
+  - name: my-job
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			verify: func(c *Config) error {
+				if diff := c.AllRepos.Difference(sets.NewString("k/k", "k/test-infra", "stranded/fish")); len(diff) != 0 {
+					return fmt.Errorf("expected no diff, got %q", diff)
+				}
+				return nil
+			},
+		},
+		{
+			name: "no jobs doesn't make AllRepos a nilpointer",
+			verify: func(c *Config) error {
+				if c.AllRepos == nil {
+					return errors.New("config.AllRepos is nil")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1758,6 +1802,12 @@ periodics:
 						}
 					}
 				}
+			}
+		}
+
+		if tc.verify != nil {
+			if err := tc.verify(cfg); err != nil {
+				t.Fatalf("verify failed:  %v", err)
 			}
 		}
 	}

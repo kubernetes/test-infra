@@ -77,6 +77,10 @@ type JobConfig struct {
 
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
+
+	// AllRepos contains all Repos that have one or more jobs configured or
+	// for which a tide query is configured.
+	AllRepos sets.String `json:"-"`
 }
 
 // ProwConfig is config for all prow controllers
@@ -248,9 +252,6 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 // also need the result of that GitHub call just keep a pointer to its result, bust must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	if gc == nil {
-		return nil, errors.New("gitClient is nil")
-	}
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
@@ -258,6 +259,9 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		return c.Presubmits[identifier], nil
 	}
 
+	if gc == nil {
+		return nil, errors.New("gitClient is nil")
+	}
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
@@ -709,6 +713,12 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		return nil, err
 	}
 
+	nc.AllRepos = sets.String{}
+	for _, query := range nc.Tide.Queries {
+		for _, repo := range query.Repos {
+			nc.AllRepos.Insert(repo)
+		}
+	}
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
 	if jobConfig == "" {
@@ -889,16 +899,18 @@ func (c *Config) finalizeJobConfig() error {
 			return errors.New("no default GCS credentials secret provided for plank")
 		}
 
-		for _, vs := range c.Presubmits {
+		for repo, vs := range c.Presubmits {
 			for i := range vs {
 				setPresubmitDecorationDefaults(c, &vs[i])
 			}
+			c.AllRepos.Insert(repo)
 		}
 
-		for _, js := range c.Postsubmits {
+		for repo, js := range c.Postsubmits {
 			for i := range js {
 				setPostsubmitDecorationDefaults(c, &js[i])
 			}
+			c.AllRepos.Insert(repo)
 		}
 
 		for i := range c.Periodics {

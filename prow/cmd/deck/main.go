@@ -57,6 +57,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/git"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
@@ -398,7 +399,7 @@ func localOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.Serve
 	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "github-login.html", nil)))
 
 	if o.spyglass {
-		initSpyglass(cfg, o, mux, nil)
+		initSpyglass(cfg, o, mux, nil, nil, nil)
 	}
 
 	return mux
@@ -487,8 +488,28 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 
 	mux.Handle("/prowjob", gziphandler.GzipHandler(handleProwJob(prowJobClient)))
 
+	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
+	// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
+	// presubmits dynamically which we need for the PR history page.
+	var githubClient deckGitHubClient
+	var gitClient *git.Client
+	secretAgent := &secret.Agent{}
+	if o.github.TokenPath != "" {
+		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+			logrus.WithError(err).Fatal("Error starting secrets agent.")
+		}
+		githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client.")
+		}
+		gitClient, err = o.github.GitClient(secretAgent, o.dryRun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+	}
+
 	if o.spyglass {
-		initSpyglass(cfg, o, mux, ja)
+		initSpyglass(cfg, o, mux, ja, githubClient, gitClient)
 	}
 
 	if o.hookURL != "" {
@@ -512,8 +533,6 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta)))
 	}
 
-	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
-	var githubClient prowgithub.RerunClient
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
 	if o.oauthURL != "" {
@@ -555,32 +574,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		},
 		)
 
-		secretAgent := &secret.Agent{}
-		if o.github.TokenPath != "" {
-			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-				logrus.WithError(err).Fatal("Error starting secrets agent.")
-			}
-			githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting GitHub client.")
-			}
-		}
-
-		repoSet := make(map[string]bool)
-		for r := range cfg().Presubmits {
-			repoSet[r] = true
-		}
-		for _, q := range cfg().Tide.Queries {
-			for _, v := range q.Repos {
-				repoSet[v] = true
-			}
-		}
-		var repos []string
-		for k, v := range repoSet {
-			if v {
-				repos = append(repos, k)
-			}
-		}
+		repos := cfg().AllRepos.List()
 
 		prStatusAgent := prstatus.NewDashboardAgent(
 			repos,
@@ -625,7 +619,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	return mux
 }
 
-func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
+func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient *git.Client) {
 	var c *storage.Client
 	var err error
 	if o.gcsCredentialsFile == "" {
@@ -643,7 +637,7 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, cfg, o)))
 	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, c)))
-	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c)))
+	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c, gitHubClient, gitClient)))
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -798,10 +792,10 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client) h
 // The url must look like this:
 //
 // /pr-history?org=<org>&repo=<repo>&pr=<pr number>
-func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient *git.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient)
+		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient, gitHubClient, gitClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
 			logrus.WithField("url", r.URL).Info(msg)
@@ -1430,4 +1424,10 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 func isValidatedGitOAuthConfig(githubOAuthConfig *config.GitHubOAuthConfig) bool {
 	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
 		githubOAuthConfig.RedirectURL != ""
+}
+
+type deckGitHubClient interface {
+	prowgithub.RerunClient
+	GetPullRequest(org, repo string, number int) (*prowgithub.PullRequest, error)
+	GetRef(org, repo, ref string) (string, error)
 }
