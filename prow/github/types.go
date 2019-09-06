@@ -153,11 +153,12 @@ type CombinedStatus struct {
 
 // User is a GitHub user account.
 type User struct {
-	Login   string `json:"login"`
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	ID      int    `json:"id"`
-	HTMLURL string `json:"html_url"`
+	Login       string          `json:"login"`
+	Name        string          `json:"name"`
+	Email       string          `json:"email"`
+	ID          int             `json:"id"`
+	HTMLURL     string          `json:"html_url"`
+	Permissions RepoPermissions `json:"permissions"`
 }
 
 // NormLogin normalizes GitHub login strings
@@ -353,6 +354,14 @@ func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
 	*l = v
 	return nil
 }
+
+type TeamPermission string
+
+const (
+	RepoPull  TeamPermission = "pull"
+	RepoPush  TeamPermission = "push"
+	RepoAdmin TeamPermission = "admin"
+)
 
 // Branch contains general branch information.
 type Branch struct {
@@ -805,13 +814,14 @@ const (
 
 // Team is a github organizational team
 type Team struct {
-	ID           int    `json:"id,omitempty"`
-	Name         string `json:"name"`
-	Slug         string `json:"slug"`
-	Description  string `json:"description,omitempty"`
-	Privacy      string `json:"privacy,omitempty"`
-	Parent       *Team  `json:"parent,omitempty"`         // Only present in responses
-	ParentTeamID *int   `json:"parent_team_id,omitempty"` // Only valid in creates/edits
+	ID           int            `json:"id,omitempty"`
+	Name         string         `json:"name"`
+	Slug         string         `json:"slug"`
+	Description  string         `json:"description,omitempty"`
+	Privacy      string         `json:"privacy,omitempty"`
+	Parent       *Team          `json:"parent,omitempty"`         // Only present in responses
+	ParentTeamID *int           `json:"parent_team_id,omitempty"` // Only valid in creates/edits
+	Permission   TeamPermission `json:"permission"`
 }
 
 // TeamMember is a member of an organizational team

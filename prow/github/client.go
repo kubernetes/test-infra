@@ -152,6 +152,7 @@ type RepositoryClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) error
+	ListRepoTeams(org, repo string) ([]Team, error)
 }
 
 // TeamClient interface for team related API actions
@@ -2825,6 +2826,31 @@ func (c *client) CreateFork(owner, repo string) error {
 		exitCodes: []int{202},
 	}, nil)
 	return err
+}
+
+// ListRepoTeams gets a list of all the teams with access to a repository
+// See https://developer.github.com/v3/repos/#list-teams
+func (c *client) ListRepoTeams(org, repo string) ([]Team, error) {
+	c.log("ListRepoTeams", org, repo)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/teams", org, repo)
+	var teams []Team
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]Team{}
+		},
+		func(obj interface{}) {
+			teams = append(teams, *(obj.(*[]Team))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teams, nil
 }
 
 // ListIssueEvents gets a list events from GitHub's events API that pertain to the specified issue.

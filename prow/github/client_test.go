@@ -1423,7 +1423,10 @@ func TestIsCollaborator(t *testing.T) {
 }
 
 func TestListCollaborators(t *testing.T) {
-	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
+	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{
+		{Login: "foo", Permissions: RepoPermissions{Pull: true}},
+		{Login: "bar", Permissions: RepoPermissions{Push: true}},
+	})
 	defer ts.Close()
 	c := getClient(ts.URL)
 	users, err := c.ListCollaborators("org", "repo")
@@ -1436,11 +1439,37 @@ func TestListCollaborators(t *testing.T) {
 	if users[0].Login != "foo" {
 		t.Errorf("Wrong user login for index 0: %v", users[0])
 	}
+	if !reflect.DeepEqual(users[0].Permissions, RepoPermissions{Pull: true}) {
+		t.Errorf("Wrong permissions for index 0: %v", users[0])
+	}
 	if users[1].Login != "bar" {
 		t.Errorf("Wrong user login for index 1: %v", users[1])
 	}
+	if !reflect.DeepEqual(users[1].Permissions, RepoPermissions{Push: true}) {
+		t.Errorf("Wrong permissions for index 1: %v", users[1])
+	}
 }
 
+func TestListRepoTeams(t *testing.T) {
+	expectedTeams := []Team{
+		{ID: 1, Slug: "foo", Permission: RepoPull},
+		{ID: 2, Slug: "bar", Permission: RepoPush},
+		{ID: 3, Slug: "foobar", Permission: RepoAdmin},
+	}
+	ts := simpleTestServer(t, "/repos/org/repo/teams", expectedTeams)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teams, err := c.ListRepoTeams("org", "repo")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teams) != 3 {
+		t.Errorf("Expected three teams, found %d: %v", len(teams), teams)
+		return
+	}
+	if !reflect.DeepEqual(teams, expectedTeams) {
+		t.Errorf("Wrong list of teams, expected: %v, got: %v", expectedTeams, teams)
+	}
+}
 func TestListIssueEvents(t *testing.T) {
 	ts := simpleTestServer(
 		t,
