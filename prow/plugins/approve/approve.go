@@ -134,9 +134,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 					"ORGANIZATION/REPOSITORY",
 				},
 				DeprecatedImplicitSelfApprove: new(bool),
-				RequireSelfApproval: new(bool),
-				DeprecatedReviewActsAsApprove:   new(bool),
-				IgnoreReviewState:   new(bool),
+				RequireSelfApproval:           new(bool),
+				DeprecatedReviewActsAsApprove: new(bool),
+				IgnoreReviewState:             new(bool),
 			},
 		},
 	})
