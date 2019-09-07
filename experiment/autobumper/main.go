@@ -70,16 +70,13 @@ func parseOptions() options {
 	var o options
 	flag.StringVar(&o.githubLogin, "github-login", "", "The GitHub username to use.")
 	flag.StringVar(&o.githubToken, "github-token", "", "The path to the GitHub token file.")
-	flag.StringVar(&o.gitName, "git-name", "", "The name to use on the git commit. Requires --git-email. If not specified, uses the system default.")
-	flag.StringVar(&o.gitEmail, "git-email", "", "The email to use on the git commit. Requires --git-name. If not specified, uses the system default.")
+	flag.StringVar(&o.gitName, "git-name", "", "The name to use on the git commit. Requires --git-email. If not specified, uses values from the user associated with the access token.")
+	flag.StringVar(&o.gitEmail, "git-email", "", "The email to use on the git commit. Requires --git-name. If not specified, uses values from the user associated with the access token.")
 	flag.Parse()
 	return o
 }
 
 func validateOptions(o options) error {
-	if o.githubLogin == "" {
-		return fmt.Errorf("--github-login is mandatory")
-	}
 	if o.githubToken == "" {
 		return fmt.Errorf("--github-token is mandatory")
 	}
@@ -141,6 +138,22 @@ func main() {
 	}
 
 	gc := github.NewClient(sa.GetTokenGenerator(o.githubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+
+	if o.githubLogin == "" || o.gitName == "" || o.gitEmail == "" {
+		user, err := gc.BotUser()
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to get the user data for the provided GH token.")
+		}
+		if o.githubLogin == "" {
+			o.githubLogin = user.Login
+		}
+		if o.gitName == "" {
+			o.gitName = user.Name
+		}
+		if o.gitEmail == "" {
+			o.gitEmail = user.Email
+		}
+	}
 
 	if err := cdToRootDir(); err != nil {
 		logrus.WithError(err).Fatal("Failed to change to root dir")

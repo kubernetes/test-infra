@@ -98,20 +98,11 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}
 
-	n, err := updater.UpdatePR(o.org, o.repo, o.title, o.body, o.matchTitle, gc)
+	n, err := updater.EnsurePR(o.org, o.repo, o.title, o.body, o.source, o.branch, o.matchTitle, gc)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Failed to update %d", n)
-	}
-	if n == nil {
-		allowMods := true
-		pr, err := gc.CreatePullRequest(o.org, o.repo, o.title, o.body, o.source, o.branch, allowMods)
-		if err != nil {
-			logrus.WithError(err).Fatal("Failed to create PR")
-		}
-		n = &pr
+		logrus.WithError(err).Fatal("Failed to ensure PR exists.")
 	}
 
 	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", o.org, o.repo, *n, o.source, o.branch, o.title)
-
 	fmt.Println(*n)
 }
