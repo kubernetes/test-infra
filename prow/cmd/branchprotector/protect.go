@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -228,13 +229,15 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 		}
 	}
 
+	var errs []error
 	for _, repoName := range repos {
 		repo := org.GetRepo(repoName)
 		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
-			return fmt.Errorf("update %s: %v", repoName, err)
+			errs = append(errs, fmt.Errorf("update %s: %v", repoName, err))
 		}
 	}
-	return nil
+
+	return errorutil.NewAggregate(errs...)
 }
 
 // UpdateRepo updates all branches in the repo with the specified defaults
@@ -289,14 +292,16 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		}
 	}
 
+	var errs []error
 	for bn, githubBranch := range branches {
 		if branch, err := repo.GetBranch(bn); err != nil {
-			return fmt.Errorf("get %s: %v", bn, err)
+			errs = append(errs, fmt.Errorf("get %s: %v", bn, err))
 		} else if err = p.UpdateBranch(orgName, repoName, bn, *branch, githubBranch.Protected, collaborators, teams); err != nil {
-			return fmt.Errorf("update %s from protected=%t: %v", bn, githubBranch.Protected, err)
+			errs = append(errs, fmt.Errorf("update %s from protected=%t: %v", bn, githubBranch.Protected, err))
 		}
 	}
-	return nil
+
+	return errorutil.NewAggregate(errs...)
 }
 
 // authorizedCollaborators returns the list of Logins for users that are
