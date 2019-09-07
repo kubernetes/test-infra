@@ -404,6 +404,8 @@ require_matching_label:
   prs: true
   regexp: ^kind/
 
+retitle:
+  allow_closed_issues: true
 
 plugins:
   # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
