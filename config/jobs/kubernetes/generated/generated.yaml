@@ -3931,6 +3931,7 @@ periodics:
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
       - --timeout=180m
+      - --runtime-config=api/all=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
