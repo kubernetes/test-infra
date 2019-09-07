@@ -175,6 +175,7 @@ type TeamClient interface {
 // UserClient interface for user related API actions
 type UserClient interface {
 	BotName() (string, error)
+	BotUser() (*User, error)
 	Email() (string, error)
 }
 
@@ -252,9 +253,8 @@ type delegate struct {
 	getToken func() []byte
 	censor   func([]byte) []byte
 
-	mut     sync.Mutex // protects botName and email
-	botName string
-	email   string
+	mut      sync.Mutex // protects botName and email
+	userData *User
 }
 
 // WithFields clones the client, keeping the underlying delegate the same but adding
@@ -754,11 +754,10 @@ func (c *client) getUserData() error {
 	if err != nil {
 		return err
 	}
-	c.botName = u.Login
+	c.userData = &u
 	// email needs to be publicly accessible via the profile
 	// of the current account. Read below for more info
 	// https://developer.github.com/v3/users/#get-a-single-user
-	c.email = u.Email
 	return nil
 }
 
@@ -768,12 +767,26 @@ func (c *client) getUserData() error {
 func (c *client) BotName() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
-	if c.botName == "" {
+	if c.userData == nil {
 		if err := c.getUserData(); err != nil {
 			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
 		}
 	}
-	return c.botName, nil
+	return c.userData.Login, nil
+}
+
+// BotUser returns the user data of the authenticated identity.
+//
+// See https://developer.github.com/v3/users/#get-the-authenticated-user
+func (c *client) BotUser() (*User, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.userData == nil {
+		if err := c.getUserData(); err != nil {
+			return nil, fmt.Errorf("fetching bot name from GitHub: %v", err)
+		}
+	}
+	return c.userData, nil
 }
 
 // Email returns the user-configured email for the authenticated identity.
@@ -782,12 +795,12 @@ func (c *client) BotName() (string, error) {
 func (c *client) Email() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
-	if c.email == "" {
+	if c.userData == nil {
 		if err := c.getUserData(); err != nil {
 			return "", fmt.Errorf("fetching e-mail from GitHub: %v", err)
 		}
 	}
-	return c.email, nil
+	return c.userData.Email, nil
 }
 
 // IsMember returns whether or not the user is a member of the org.
