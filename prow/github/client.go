@@ -1521,7 +1521,7 @@ func (c *client) UpdatePullRequest(org, repo string, number int, title, body *st
 		op := "open"
 		data.State = &op
 	} else if open != nil {
-		cl := "clossed"
+		cl := "closed"
 		data.State = &cl
 	}
 	_, err := c.request(&request{
