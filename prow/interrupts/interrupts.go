@@ -56,14 +56,27 @@ type manager struct {
 // This must be called _first_ before any work is registered with the
 // manager, or there will be a deadlock.
 func handleInterrupt() {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
-	s := <-sig
+	signalsLock.Lock()
+	s := <-signals()
+	signalsLock.Unlock()
 	logrus.WithField("signal", s).Info("Received signal.")
 	single.c.L.Lock()
 	single.seenSignal = true
 	single.c.Broadcast()
 	single.c.L.Unlock()
+}
+
+// test initialization will set the signals channel in another goroutine
+// so we need to synchronize that in order to not trigger the race detector
+// even though we know that init() calls will be serial and the test init()
+// will fire first
+var signalsLock = sync.Mutex{}
+
+// signals allows for injection of mock signals in testing
+var signals = func() <-chan os.Signal {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
+	return sig
 }
 
 // wait executes the cancel when an interrupt is seen or if one has already
@@ -171,21 +184,26 @@ func shutdown(server *http.Server, gracePeriod time.Duration) func() {
 // expected to exit only after WaitForGracefulShutdown returns to
 // ensure all workers have had time to shut down.
 func Tick(work func(), interval func() time.Duration) {
-	before := time.Now()
+	before := time.Time{} // we want to do work right away
 	sig := make(chan int, 1)
 	single.wg.Add(1)
 	go func() {
 		defer single.wg.Done()
 		for {
 			now := time.Now()
-			nextTick := before.Add(interval())
-			sleep := now.Sub(nextTick)
-			if nextTick.After(now) {
-				sleep = 0 * time.Second
-			}
+			nextInterval := interval()
+			nextTick := before.Add(nextInterval)
+			sleep := nextTick.Sub(now)
+			logrus.WithFields(logrus.Fields{
+				"before":   before,
+				"now":      now,
+				"interval": nextInterval,
+				"sleep":    sleep,
+			}).Info("Resolved next tick interval.")
 			select {
 			case <-time.After(sleep):
 				work()
+				before = time.Now()
 			case <-sig:
 				logrus.Info("Worker shutting down...")
 				return
