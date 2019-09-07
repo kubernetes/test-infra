@@ -57,17 +57,10 @@ func UpdatePR(gc github.Client, org, repo string, images map[string]string, extr
 // UpdatePullRequest updates with github client "gc" the PR of github repo org/repo
 // with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
 func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string) error {
-	logrus.Info("Creating PR...")
-	n, err := updater.UpdatePR(org, repo, title, body, matchTitle, gc)
+	logrus.Info("Creating or updating PR...")
+	n, err := updater.EnsurePR(org, repo, title, body, source, branch, matchTitle, gc)
 	if err != nil {
-		return fmt.Errorf("failed to update %d: %v", n, err)
-	}
-	if n == nil {
-		pr, err := gc.CreatePullRequest(org, repo, title, body, source, branch, true)
-		if err != nil {
-			return fmt.Errorf("failed to create PR: %v", err)
-		}
-		n = &pr
+		return fmt.Errorf("failed to ensure PR exists: %v", err)
 	}
 
 	logrus.Infof("PR %s/%s#%d will merge %s into %s: %s", org, repo, *n, source, branch, title)
