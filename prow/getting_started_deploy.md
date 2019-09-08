@@ -499,7 +499,7 @@ See [how to configure tide][7] for more details.
 GitHub Oauth is required for [PR Status](https://prow.k8s.io/pr)
 and for the rerun button on [Prow Status](https://prow.k8s.io). 
 To enable these features, follow the
-instructions in [`github_oauth_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/pr_status_setup.md).
+instructions in [`github_oauth_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/github_oauth_setup.md).
 
 ### Configure SSL
 
