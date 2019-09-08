@@ -4,7 +4,7 @@ New features added to each component:
  - *August 29, 2019* Added a `batch_size_limit` option to the Tide config that
    allows the batch size limit to be specified globally, per org, or per repo.
    Values default to 0 indicating no size limit. A value of -1 disables batches.
- - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`. 
+ - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`.
  - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
    If you set `--oauth-url` but not `--cookie-secret-file`, add
    `--cookie-secret-file=/etc/cookie-secret` to your deck instance. The default value
@@ -75,6 +75,7 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *September 8, 2019* The deprecated `job_url_prefix` option has been removed from Plank.
  - *May 2, 2019* All components exposing Prometheus metrics will now either push them
    to the Prometheus PushGateway, if configured, or serve them locally on port 9090 at
    `/metrics`, if not configured (the default).
