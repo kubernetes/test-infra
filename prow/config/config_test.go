@@ -2349,26 +2349,6 @@ func TestValidateComponentConfig(t *testing.T) {
 		errExpected bool
 	}{
 		{
-			name: `JobURLPrefix and JobURLPrefixConfig["*"].URL set, err`,
-			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefix: "https://my-default-prow",
-				JobURLPrefixConfig: map[string]string{
-					"*": "https://my-alternate-prow",
-				},
-			}}},
-			errExpected: true,
-		},
-		{
-			name: `JobURLPrefix and JobURLPrefixConfig["*"].URL unset, no err`,
-			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
-				JobURLPrefix: "https://my-default-prow",
-				JobURLPrefixConfig: map[string]string{
-					"my-other-org": "https://my-alternate-prow",
-				},
-			}}},
-			errExpected: false,
-		},
-		{
 			name: "Valid default URL, no err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
 				JobURLPrefixConfig: map[string]string{"*": "https://my-prow"}}}},

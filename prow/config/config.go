@@ -377,11 +377,6 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
-	// Deprecated, use JobURLPrefixConfig instead
-	// JobURLPrefix is the host and path prefix under
-	// which job details will be viewable
-	// TODO @alvaroaleman: Remove in September 2019
-	JobURLPrefix string `json:"job_url_prefix,omitempty"`
 	// JobURLPrefixConfig is the host and path prefix under which job details
 	// will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
 	JobURLPrefixConfig map[string]string `json:"job_url_prefix_config,omitempty"`
@@ -957,9 +952,6 @@ func (c *Config) finalizeJobConfig() error {
 
 // validateComponentConfig validates the infrastructure component configuration
 func (c *Config) validateComponentConfig() error {
-	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"] != "" {
-		return errors.New(`Planks job_url_prefix must be unset when job_url_prefix_config["*"] is set. The former is deprecated, use the latter`)
-	}
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
 			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
@@ -1315,13 +1307,6 @@ func parseProwConfig(c *Config) error {
 
 	if c.Plank.JobURLPrefixConfig == nil {
 		c.Plank.JobURLPrefixConfig = map[string]string{}
-	}
-	if c.Plank.JobURLPrefix != "" && c.Plank.JobURLPrefixConfig["*"] == "" {
-		c.Plank.JobURLPrefixConfig["*"] = c.Plank.JobURLPrefix
-		// Set JobURLPrefix to an empty string to indicate we've moved
-		// it to JobURLPrefixConfig["*"] without overwriting the latter
-		// so validation succeeds
-		c.Plank.JobURLPrefix = ""
 	}
 
 	if c.GitHubOptions.LinkURLFromConfig == "" {
