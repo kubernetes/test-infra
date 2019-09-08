@@ -17,6 +17,8 @@ rules:
     verbs:
       - create
       - list
+      - get
+      - watch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1

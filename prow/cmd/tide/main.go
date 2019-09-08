@@ -25,10 +25,14 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/test-infra/prow/interrupts"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/pkg/io"
+	prowjobsv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -159,12 +163,38 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
 
-	kubeClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
+	if err := prowjobsv1.AddToScheme(scheme.Scheme); err != nil {
+		logrus.WithError(err).Fatal("failed to add ProwJobs to scheme.")
+	}
+	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		logrus.WithError(err).Fatal("Error getting kubeconfig.")
+	}
+	// Do not activate leader election here, as we do not use the `mgr` to control the lifecylcle of our cotrollers,
+	// this would just be a no-op.
+	mgr, err := manager.New(kubeCfg, manager.Options{Namespace: cfg().ProwJobNamespace, MetricsBindAddress: "0"})
+	if err != nil {
+		logrus.WithError(err).Fatal("Error constructing mgr.")
+	}
+	// Make sure the manager creates a cache for ProwJobs by requesting an informer
+	if _, err := mgr.GetCache().GetInformer(&prowjobsv1.ProwJob{}); err != nil {
+		logrus.WithError(err).Fatal("Error getting ProwJob informer.")
 	}
 
-	c, err := tide.NewController(githubSync, githubStatus, kubeClient, cfg, gitClient, o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	sig := signals.SetupSignalHandler()
+
+	go func() {
+		if err := mgr.Start(sig); err != nil {
+			logrus.WithError(err).Fatal("Mgr failed.")
+		}
+	}()
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer mgrSyncCtxCancel()
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+		logrus.Fatal("Timed out waiting for cachesync")
+	}
+
+	c, err := tide.NewController(githubSync, githubStatus, mgr.GetClient(), cfg, gitClient, o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
