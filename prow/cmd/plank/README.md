@@ -16,7 +16,8 @@ Only GCS is supported as the job log storage at the moment.
 plank:
   allow_cancellations: true # whether to delete ProwJobs' pod (true) or not (false) when new instances are triggered for the same PR
   # used to link to job results for decorated jobs (with pod utilities)
-  job_url_prefix: 'https://<domain>/view/gcs'
+  job_url_prefix_config:
+    '*': https://<domain>/view/gcs
   # used to link to job results for non decorated jobs (without pod utilities)
   job_url_template: 'https://<domain>/view/gcs/<bucket-name>/pr-logs/pull/{{.Spec.Refs.Repo}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}'
   report_template: '[Full PR test history](https://<domain>/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}})'
