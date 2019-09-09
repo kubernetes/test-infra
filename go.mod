@@ -113,7 +113,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.0.0-20190820064606-e49a3471dba5
 	k8s.io/apimachinery v0.0.0-20190816221834-a9f1d8a9c101
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/code-generator v0.0.0-20190311093542-50b561225d70
+	k8s.io/code-generator v0.0.0-20181128191024-b1289fc74931
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
 	k8s.io/klog v0.4.0
 	k8s.io/kubernetes v1.14.6 // indirect
