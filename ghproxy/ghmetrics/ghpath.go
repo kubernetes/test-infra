@@ -138,7 +138,7 @@ func GetSimplifiedPath(path string) string {
 	splitPath := strings.Split(path, "/")
 	resolvedPath, matches := resolve(tree, splitPath)
 	if !matches {
-		logrus.WithField("path", path).Warning("Path not handled. This is a bug in GHProxy, please open an issue against the kubernetes/test-infra repository with this error message.")
+		logrus.WithField("path", path).Debug("Path not handled. This is a bug in GHProxy, please open an issue against the kubernetes/test-infra repository with this error message.")
 		return unmatchedPath
 	}
 	return resolvedPath
