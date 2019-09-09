@@ -18,6 +18,7 @@ package bumper
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,11 +40,28 @@ const (
 	testImageRepo   = prowRepo
 )
 
-func Call(cmd string, args ...string) error {
+func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
 	c := exec.Command(cmd, args...)
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	c.Stdout = stdout
+	c.Stderr = stderr
 	return c.Run()
+}
+
+type Censor interface {
+	Censor(content []byte) []byte
+}
+
+type HideSecretsWriter struct {
+	Delegate io.Writer
+	Censor   Censor
+}
+
+func (w HideSecretsWriter) Write(content []byte) (int, error) {
+	_, err := w.Delegate.Write(w.Censor.Censor(content))
+	if err != nil {
+		return 0, err
+	}
+	return len(content), nil
 }
 
 // UpdatePR updates with github client "gc" the PR of github repo org/repo
@@ -109,27 +127,28 @@ func makeCommitSummary(images map[string]string) string {
 // "name" and "email" are used for git-commit command
 // "images" contains the tag replacements that have been made which is returned from "UpdateReferences([]string{"."}, extraFiles)"
 // "images" is used to generate commit message
-func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]string) error {
-	return GitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images))
+func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]string, stdout, stderr io.Writer) error {
+	return GitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images), stdout, stderr)
 }
 
 // GitCommitAndPush runs a sequence of git commands to
 // commit and push the changes the "remote" on "remoteBranch"
 // "name", "email", and "message" are used for git-commit command
-func GitCommitAndPush(remote, remoteBranch, name, email, message string) error {
+func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
 	logrus.Info("Making git commit...")
-	if err := Call("git", "add", "-A"); err != nil {
+
+	if err := Call(stdout, stderr, "git", "add", "-A"); err != nil {
 		return fmt.Errorf("failed to git add: %v", err)
 	}
 	commitArgs := []string{"commit", "-m", message}
 	if name != "" && email != "" {
 		commitArgs = append(commitArgs, "--author", fmt.Sprintf("%s <%s>", name, email))
 	}
-	if err := Call("git", commitArgs...); err != nil {
+	if err := Call(stdout, stderr, "git", commitArgs...); err != nil {
 		return fmt.Errorf("failed to git commit: %v", err)
 	}
 	logrus.Info("Pushing to remote...")
-	if err := Call("git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
+	if err := Call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
 		return fmt.Errorf("failed to git push: %v", err)
 	}
 	return nil
