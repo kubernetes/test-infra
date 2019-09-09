@@ -101,7 +101,8 @@ presubmits:
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
 
   - name: pull-kubernetes-e2e-gce-alpha-features
-    always_run: false
+    optional: true
+    run_if_changed: '^.*feature.*\.go'
     branches:
     - master
     labels:

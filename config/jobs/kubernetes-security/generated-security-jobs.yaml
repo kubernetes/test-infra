@@ -407,7 +407,9 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-e2e-gce-alpha-features
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-gce-alpha-features
+    run_if_changed: ^.*feature.*\.go
     spec:
       containers:
       - args:
