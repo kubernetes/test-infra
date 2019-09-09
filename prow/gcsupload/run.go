@@ -40,6 +40,8 @@ import (
 // to their destination in GCS, so the caller can
 // operate relative to the base of the GCS dir.
 func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
+	logrus.WithField("options", o).Debug("Uploading to GCS")
+
 	for extension, mediaType := range o.GCSConfiguration.MediaTypes {
 		mime.AddExtensionType("."+extension, mediaType)
 	}
