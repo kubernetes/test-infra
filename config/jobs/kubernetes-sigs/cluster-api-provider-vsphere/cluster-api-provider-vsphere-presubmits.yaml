@@ -74,7 +74,7 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: pull-cluster-api-provider-vsphere-verify-fmt
     always_run: false
-    run_if_changed: '^((cmd|pkg|(vendor/github.com/mbenkmann/goformat/goformat)|(vendor/golang.org/x/tools/cmd/goimports))/)|hack/check-format\.sh'
+    run_if_changed: '^((api|cmd|controllers|pkg|(vendor/github.com/mbenkmann/goformat/goformat)|(vendor/golang.org/x/tools/cmd/goimports))/)|hack/check-format\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -90,7 +90,7 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-lint
     always_run: false
-    run_if_changed: '^((cmd|pkg|(vendor/golang.org/x/lint/golint))/)|hack/check-lint\.sh'
+    run_if_changed: '^((api|cmd|controllers|pkg|(vendor/golang.org/x/lint/golint))/)|hack/check-lint\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -106,7 +106,7 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-vet
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    run_if_changed: '^((api|cmd|controllers|pkg)/)|hack/check-vet\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -159,7 +159,7 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-crds
     always_run: false
-    run_if_changed: '^((config|pkg|vendor)/)|hack/verify-crds\.sh'
+    run_if_changed: '^((api|config|controllers|pkg|vendor)/)|Makefile|hack/verify-crds\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -175,7 +175,7 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-test
     always_run: false
-    run_if_changed: '^((cmd|config|hack|pkg|vendor)/)|Makefile|(scripts/(ci-test|fetch_ext_bins)\.sh)'
+    run_if_changed: '^((api|cmd|config|controllers|hack|pkg|vendor)/)|Makefile|(scripts/(ci-test|fetch_ext_bins)\.sh)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     labels:
@@ -237,7 +237,7 @@ postsubmits:
     branches:
     - ^master$
     always_run: false
-    run_if_changed: '^(cmd|config|pkg|vendor)/|Dockerfile'
+    run_if_changed: '^(api|cmd|config|controllers|examples|pkg|vendor)/|Dockerfile'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 1
