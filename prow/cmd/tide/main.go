@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/test-infra/prow/interrupts"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
@@ -163,9 +162,6 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
 
-	if err := prowjobsv1.AddToScheme(scheme.Scheme); err != nil {
-		logrus.WithError(err).Fatal("failed to add ProwJobs to scheme.")
-	}
 	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kubeconfig.")

@@ -34,7 +34,6 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
-	"k8s.io/client-go/kubernetes/scheme"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -44,12 +43,6 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/history"
 )
-
-func init() {
-	if err := prowapi.SchemeBuilder.AddToScheme(scheme.Scheme); err != nil {
-		panic(fmt.Sprintf("failed to register scheme: %v", err))
-	}
-}
 
 func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
 	if len(actual) != len(expected) {
