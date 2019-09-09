@@ -229,3 +229,27 @@ presubmits:
         - --scenario=execute
         - --
         - ./test/verify.sh
+
+  - name: pull-cri-containerd-windows-cri
+    # TODO(random-liu): Change this to true after the test is stable.
+    always_run: false
+    max_concurrency: 8
+    decorate: true
+    skip_branches:
+    - v0.1
+    - release/1.0
+    - release/1.2
+    - release/1.3
+    decoration_config:
+      timeout: 100m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - name: pull-cri-containerd-windows-cri
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190819-0b0980f-master
+        command:
+        - runner.sh
+        args:
+        - ./test/windows/runner.sh
