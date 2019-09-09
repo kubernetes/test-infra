@@ -542,7 +542,7 @@ function redraw(fz: FuzzySearch): void {
         // const finished = completionTime ? Date.parse(completionTime): now;
 
         const durationSec = completionTime ? finished - started : 0;
-        const durationStr = completionTime ? formatDuration(durationSec * 1000) : "";
+        const durationStr = completionTime ? formatDuration(durationSec) : "";
 
         if (currentInterval >= 0 && (now - started) > jobInterval[currentInterval][0]) {
             const successCount = jobCountMap.get("success") || 0;
