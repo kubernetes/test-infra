@@ -51,22 +51,9 @@ shift 4
 cd "$BUILD_WORKSPACE_DIRECTORY"
 trap 'echo "FAILED" >&2' ERR
 
-prune-vendor() {
-  find vendor -type f \
-    -not -iname "*.c" \
-    -not -iname "*.go" \
-    -not -iname "*.h" \
-    -not -iname "*.proto" \
-    -not -iname "*.s" \
-    -not -iname "AUTHORS*" \
-    -not -iname "CONTRIBUTORS*" \
-    -not -iname "COPYING*" \
-    -not -iname "LICENSE*" \
-    -not -iname "NOTICE*" \
-    -delete
-}
-
 export GO111MODULE=on
+export GOPROXY=https://proxy.golang.org
+export GOSUMDB=sum.golang.org
 mode="${1:-}"
 shift || true
 case "$mode" in
@@ -86,11 +73,9 @@ case "$mode" in
 esac
 
 rm -rf vendor
-export GOPROXY=https://proxy.golang.org
-export GOSUMDB=sum.golang.org
 "$go" mod tidy
 "$gazelle" update-repos \
   --from_file=go.mod --to_macro=repos.bzl%go_repositories \
   --build_file_generation=on --build_file_proto_mode=disable
-"${update_bazel[@]}"
+"${update_bazel[@]}" # TODO(fejta): do we still need to do this?
 echo "SUCCESS: updated modules"
