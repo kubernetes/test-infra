@@ -25,7 +25,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-gcp-compute-persistent-disk-csi-driver
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Release 0.3
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.3
 - name: ci-gcp-compute-persistent-disk-csi-driver-release-0-4-k8s-master-integration
@@ -54,7 +54,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-gcp-compute-persistent-disk-csi-driver
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Release 0.4
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.4
 - name: ci-gcp-compute-persistent-disk-csi-driver-release-0-5-k8s-master-integration
@@ -83,7 +83,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-gcp-compute-persistent-disk-csi-driver
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Release 0.5
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.5
 - name: ci-gcp-compute-persistent-disk-csi-driver-release-0-4-k8s-1-13-5-integration
@@ -114,7 +114,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-gcp-compute-persistent-disk-csi-driver
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes v1.13.5 Driver Release 0.4
     description: Kubernetes Integration tests for Kubernetes 1.13.5 and Driver Release 0.4
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
@@ -143,7 +143,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-gcp-compute-persistent-disk-csi-driver
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
 - name: ci-gcp-compute-persistent-disk-csi-driver-stable-k8s-master-migration
@@ -179,7 +179,7 @@ periodics:
           # during the tests more like 3-20m is used
         cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-gcp-compute-persistent-disk-csi-driver
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Stable
     description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver Stable
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-migration
@@ -215,6 +215,6 @@ periodics:
           # during the tests more like 3-20m is used
         cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-gcp-compute-persistent-disk-csi-driver
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Latest
     description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver latest build

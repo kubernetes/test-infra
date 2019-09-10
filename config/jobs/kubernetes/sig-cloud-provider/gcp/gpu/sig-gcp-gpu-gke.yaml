@@ -173,6 +173,8 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-943aad7-master
   annotations:
+    testgrid-dashboards: sig-release-1.15-all
+    testgrid-tab-name: gke-device-plugin-gpu-p100-1.15
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '36'
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
@@ -231,8 +233,8 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-943aad7-master
   annotations:
-    testgrid-dashboards: sig-gcp-release-1.11
-    testgrid-tab-name: gke-device-plugin-gpu-1.13
+    testgrid-dashboards: sig-release-1.15-all
+    testgrid-tab-name: gke-device-plugin-gpu-1.15
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '24'
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2

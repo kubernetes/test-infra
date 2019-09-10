@@ -54,6 +54,7 @@ var (
 		"presubmits",
 		"sig",
 		"wg",
+		"provider",
 	}
 	dashboardPrefixes = [][]string{orgs, companies}
 
