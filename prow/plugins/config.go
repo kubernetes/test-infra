@@ -1134,6 +1134,39 @@ type BugzillaBranchOptions struct {
 	StatusAfterMerge *string `json:"status_after_merge,omitempty"`
 }
 
+type BugzillaBugStateSet map[BugzillaBugState]interface{}
+
+func NewBugzillaBugStateSet(states []BugzillaBugState) BugzillaBugStateSet {
+	set := make(BugzillaBugStateSet, len(states))
+	for _, state := range states {
+		set[state] = nil
+	}
+
+	return set
+}
+
+func (s BugzillaBugStateSet) Has(state BugzillaBugState) bool {
+	_, ok := s[state]
+	return ok
+}
+
+func statesMatch(first, second []BugzillaBugState) bool {
+	if len(first) != len(second) {
+		return false
+	}
+
+	firstSet := NewBugzillaBugStateSet(first)
+	secondSet := NewBugzillaBugStateSet(second)
+
+	for state := range firstSet {
+		if !secondSet.Has(state) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (o BugzillaBranchOptions) matches(other BugzillaBranchOptions) bool {
 	validateByDefaultMatch := o.ValidateByDefault == nil && other.ValidateByDefault == nil ||
 		(o.ValidateByDefault != nil && other.ValidateByDefault != nil && *o.ValidateByDefault == *other.ValidateByDefault)

@@ -767,3 +767,122 @@ func TestBugzillaBugState_AsBugUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestBugzillaBugStateSet_Has(t *testing.T) {
+	bugInProgress := BugzillaBugState{Status: "MODIFIED"}
+	bugErrata := BugzillaBugState{Status: "CLOSED", Resolution: "ERRATA"}
+	bugWontfix := BugzillaBugState{Status: "CLOSED", Resolution: "WONTFIX"}
+
+	testCases := []struct {
+		name   string
+		states []BugzillaBugState
+		state  BugzillaBugState
+
+		expectedLength int
+		expectedHas    bool
+	}{
+		{
+			name:           "empty set",
+			state:          bugInProgress,
+			expectedLength: 0,
+			expectedHas:    false,
+		},
+		{
+			name:           "membership",
+			states:         []BugzillaBugState{bugInProgress},
+			state:          bugInProgress,
+			expectedLength: 1,
+			expectedHas:    true,
+		},
+		{
+			name:           "non-membership",
+			states:         []BugzillaBugState{bugInProgress, bugErrata},
+			state:          bugWontfix,
+			expectedLength: 2,
+			expectedHas:    false,
+		},
+		{
+			name:           "actually a set",
+			states:         []BugzillaBugState{bugInProgress, bugInProgress, bugInProgress},
+			state:          bugInProgress,
+			expectedLength: 1,
+			expectedHas:    true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			set := NewBugzillaBugStateSet(tc.states)
+			if len(set) != tc.expectedLength {
+				t.Errorf("%s: expected set to have %d members, it has %d", tc.name, tc.expectedLength, len(set))
+			}
+			var not string
+			if !tc.expectedHas {
+				not = "not "
+			}
+			has := set.Has(tc.state)
+			if has != tc.expectedHas {
+				t.Errorf("%s: expected set to %scontain %v", tc.name, not, tc.state)
+			}
+		})
+	}
+}
+
+func TestStatesMatch(t *testing.T) {
+	modified := BugzillaBugState{Status: "MODIFIED"}
+	errata := BugzillaBugState{Status: "CLOSED", Resolution: "ERRATA"}
+	wontfix := BugzillaBugState{Status: "CLOSED", Resolution: "WONTFIX"}
+	testCases := []struct {
+		name          string
+		first, second []BugzillaBugState
+		expected      bool
+	}{
+		{
+			name:     "empty slices match",
+			expected: true,
+		},
+		{
+			name:  "one empty, one non-empty do not match",
+			first: []BugzillaBugState{modified},
+		},
+		{
+			name:     "identical slices match",
+			first:    []BugzillaBugState{modified},
+			second:   []BugzillaBugState{modified},
+			expected: true,
+		},
+		{
+			name:     "ordering does not matter",
+			first:    []BugzillaBugState{modified, errata},
+			second:   []BugzillaBugState{errata, modified},
+			expected: true,
+		},
+		{
+			name:     "different slices do not match",
+			first:    []BugzillaBugState{modified, errata},
+			second:   []BugzillaBugState{modified, wontfix},
+			expected: false,
+		},
+		{
+			name:     "suffix in first operand is not ignored",
+			first:    []BugzillaBugState{modified, errata},
+			second:   []BugzillaBugState{modified},
+			expected: false,
+		},
+		{
+			name:     "suffix in second operand is not ignored",
+			first:    []BugzillaBugState{modified},
+			second:   []BugzillaBugState{modified, errata},
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := statesMatch(tc.first, tc.second)
+			if actual != tc.expected {
+				t.Errorf("%s: expected %t, got %t", tc.name, tc.expected, actual)
+			}
+		})
+	}
+}
