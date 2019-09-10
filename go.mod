@@ -50,7 +50,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20181215224939-bdd8b1ecd793 // indirect
-	github.com/gorilla/csrf v1.6.0
+	github.com/gorilla/csrf v1.6.1
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.1.3
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
@@ -83,8 +83,8 @@ require (
 	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v0.9.4
-	github.com/prometheus/procfs v0.0.3 // indirect
-	github.com/rogpeppe/go-internal v1.3.0 // indirect
+	github.com/prometheus/procfs v0.0.4 // indirect
+	github.com/rogpeppe/go-internal v1.3.2 // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
 	github.com/sirupsen/logrus v1.4.2
