@@ -257,11 +257,7 @@ func TestSetTriggerDefaults(t *testing.T) {
 
 func TestSetCherryPickUnapprovedDefaults(t *testing.T) {
 	defaultBranchRegexp := `^release-.*$`
-	defaultComment := `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
-
-To approve the cherry-pick, please ping the *kubernetes/patch-release-team* in a comment when ready.
-
-See also [Kubernetes Patch Releases](https://github.com/kubernetes/sig-release/blob/master/releases/patch-releases.md)`
+	defaultComment := `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.`
 
 	testcases := []struct {
 		name string
