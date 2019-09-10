@@ -169,7 +169,7 @@ blockades:
   explanation: "Changes to certain release tools can affect our ability to test, build, and release Kubernetes. This PR must be explicitly approved by SIG Release repo admins."
 
 blunderbuss:
-  max_request_count: 2
+  max_request_count: 1
   use_status_availability: true
 
 cat:
