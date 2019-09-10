@@ -37,9 +37,7 @@ if ! git config user.name &>/dev/null && git config user.email &>/dev/null; then
     exit 1
 fi
 
-export GO111MODULE=on
 ./hack/update-deps.sh "$@"  # --patch or --minor
-
 
 git add -A
 if git diff --name-only --exit-code HEAD; then
@@ -47,7 +45,7 @@ if git diff --name-only --exit-code HEAD; then
     exit 0
 fi
 
-if ! bazel test //... -- -//vendor/...; then
+if ! bazel test //...; then
     echo "ERROR: update fails unit tests." >&2
     exit 1
 fi
