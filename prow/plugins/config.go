@@ -771,11 +771,7 @@ func (c *Configuration) setDefaults() {
 		c.CherryPickUnapproved.BranchRegexp = `^release-.*$`
 	}
 	if c.CherryPickUnapproved.Comment == "" {
-		c.CherryPickUnapproved.Comment = `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
-
-To approve the cherry-pick, please ping the *kubernetes/patch-release-team* in a comment when ready.
-
-See also [Kubernetes Patch Releases](https://github.com/kubernetes/sig-release/blob/master/releases/patch-releases.md)`
+		c.CherryPickUnapproved.Comment = `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.`
 	}
 
 	for i, rml := range c.RequireMatchingLabel {
