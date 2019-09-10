@@ -1218,8 +1218,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/procfs",
-        sum = "h1:CTwfnzjQ+8dS6MhHHu4YswVAD99sL2wjPqP+VkURmKE=",
-        version = "v0.0.3",
+        sum = "h1:w8DjqFMJDjuVwdZBQoOozr4MVWOnwF7RcL/7uxBjY78=",
+        version = "v0.0.4",
     )
     go_repository(
         name = "com_github_prometheus_tsdb",
@@ -1262,8 +1262,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/rogpeppe/go-internal",
-        sum = "h1:RR9dF3JtopPvtkroDZuVD7qquD0bnHlKSqaQhgwt8yk=",
-        version = "v1.3.0",
+        sum = "h1:XU784Pr0wdahMY2bYcyK6N1KuaRAdLtqD4qd8D18Bfs=",
+        version = "v1.3.2",
     )
     go_repository(
         name = "com_github_russross_blackfriday",
@@ -1884,8 +1884,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/gorilla/csrf",
-        sum = "h1:60oN1cFdncCE8tjwQ3QEkFND5k37lQPcRjnlvm7CIJ0=",
-        version = "v1.6.0",
+        sum = "h1:wua1OxOTarfqtUVfiSvzs2zTr3qV57cXVGclVETJXXc=",
+        version = "v1.6.1",
     )
     go_repository(
         name = "in_gopkg_yaml_v3",
