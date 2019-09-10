@@ -2,8 +2,11 @@ presubmits:
   kubernetes-sigs/controller-runtime:
   - name: pull-controller-runtime-test
     decorate: true
-    optional: true
+    always_run: true
     path_alias: sigs.k8s.io/controller-runtime
+    branches:
+    # The script this job runs is only in the master branch
+    - ^master$
     spec:
       containers:
       - image: golang:1.12
