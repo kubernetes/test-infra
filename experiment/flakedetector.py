@@ -34,30 +34,35 @@ import requests
 
 def main(): # pylint: disable=too-many-branches
     """Run flake detector."""
-    res = requests.get('https://prow.k8s.io/data.js')
+    res = requests.get(
+        'https://prow.k8s.io/prowjobs.js?omit=annotations,labels,decoration_config,pod_spec'
+    )
     job_results = res.json()
 
     jobs = {} # job -> {sha -> [results...]}
     commits = {} # sha -> {job -> [results...]}
-    for res in job_results:
-        if res['type'] != 'presubmit':
+    for res in job_results['items']:
+        spec = res['spec']
+        status = res['status']
+
+        if spec['type'] != 'presubmit':
             continue
-        if res['repo'] != 'kubernetes/kubernetes':
+        if spec['refs']['org'] != 'kubernetes' and spec['refs']['repo'] != 'kubernetes':
             continue
-        if res['state'] != 'success' and res['state'] != 'failure':
+        if status['state'] != 'success' and status['state'] != 'failure':
             continue
         # populate jobs
-        if res['job'] not in jobs:
-            jobs[res['job']] = {}
-        if res['pull_sha'] not in jobs[res['job']]:
-            jobs[res['job']][res['pull_sha']] = []
-        jobs[res['job']][res['pull_sha']].append(res['state'])
+        if spec['job'] not in jobs:
+            jobs[spec['job']] = {}
+        if spec['refs']['base_sha'] not in jobs[spec['job']]:
+            jobs[spec['job']][spec['refs']['base_sha']] = []
+        jobs[spec['job']][spec['refs']['base_sha']].append(status['state'])
         # populate commits
-        if res['pull_sha'] not in commits:
-            commits[res['pull_sha']] = {}
-        if res['job'] not in commits[res['pull_sha']]:
-            commits[res['pull_sha']][res['job']] = []
-        commits[res['pull_sha']][res['job']].append(res['state'])
+        if spec['refs']['base_sha'] not in commits:
+            commits[spec['refs']['base_sha']] = {}
+        if spec['job'] not in commits[spec['refs']['base_sha']]:
+            commits[spec['refs']['base_sha']][spec['job']] = []
+        commits[spec['refs']['base_sha']][spec['job']].append(status['state'])
 
     job_commits = {}
     job_flakes = {}
