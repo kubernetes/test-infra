@@ -31,7 +31,6 @@ presubmits:
     optional: false
     decorate: true
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
@@ -41,10 +40,26 @@ presubmits:
         securityContext:
           privileged: true
         command:
+        - "runner.sh"
         - "./scripts/ci-make.sh"
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
         resources:
           requests:
             memory: "6Gi"
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-make
