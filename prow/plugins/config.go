@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -1104,6 +1105,14 @@ func (s *BugzillaBugState) Matches(bug *bugzilla.Bug) bool {
 }
 
 // BugzillaBranchOptions describes how to check if a Bugzilla bug is valid or not.
+//
+// Note on `Status` vs `State` fields: `State` fields implement a superset of
+// functionality provided by the `Status` fields and are meant to eventually
+// supersede `Status` fields. Implementations using these structures should
+// *only* use `Status` fields or only `States` fields, never both. The
+// implementation mirrors `Status` fields into the matching `State` fields in
+// the `ResolveBugzillaOptions` method to handle existing config, and is also
+// able to sufficiently resolve the presence of both types of fields.
 type BugzillaBranchOptions struct {
 	// ValidateByDefault determines whether a validation check is run for all pull
 	// requests by default
@@ -1115,10 +1124,15 @@ type BugzillaBranchOptions struct {
 	TargetRelease *string `json:"target_release,omitempty"`
 	// Statuses determine which statuses a bug may have to be valid
 	Statuses *[]string `json:"statuses,omitempty"`
+	// ValidStates determine states in which the bug may be to be valid
+	ValidStates *[]BugzillaBugState `json:"valid_states,omitempty"`
 
 	// DependentBugStatuses determine which statuses a bug's dependent bugs may have
 	// to deem the child bug valid
 	DependentBugStatuses *[]string `json:"dependent_bug_statuses,omitempty"`
+	// DependentBugStates determine states in which a bug's dependents bugs may be
+	// to deem the child bug valid
+	DependentBugStates *[]BugzillaBugState `json:"dependent_bug_states,omitempty"`
 	// DependentBugTargetRelease determines which release a bug's dependent bugs need to target to be valid
 	DependentBugTargetRelease *string `json:"dependent_bug_target_release,omitempty"`
 
@@ -1126,12 +1140,19 @@ type BugzillaBranchOptions struct {
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `statuses`
 	// if others are set.
 	StatusAfterValidation *string `json:"status_after_validation,omitempty"`
+	// StateAfterValidation is the state to which the bug will be moved after being
+	// deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+	// if others are set.
+	StateAfterValidation *BugzillaBugState `json:"state_after_validation"`
 	// AddExternalLink determines whether the pull request will be added to the Bugzilla
 	// bug using the ExternalBug tracker API after being validated
 	AddExternalLink *bool `json:"add_external_link,omitempty"`
 	// StatusAfterMerge is the status which the bug will be moved to after all pull requests
 	// in the external bug tracker have been merged.
 	StatusAfterMerge *string `json:"status_after_merge,omitempty"`
+	// StateAfterMerge is the state to which the bug will be moved after all pull requests
+	// in the external bug tracker have been merged.
+	StateAfterMerge *BugzillaBugState `json:"state_after_merge,omitempty"`
 }
 
 type BugzillaBugStateSet map[BugzillaBugState]interface{}
@@ -1148,6 +1169,13 @@ func NewBugzillaBugStateSet(states []BugzillaBugState) BugzillaBugStateSet {
 func (s BugzillaBugStateSet) Has(state BugzillaBugState) bool {
 	_, ok := s[state]
 	return ok
+}
+
+func (s BugzillaBugStateSet) Insert(states ...BugzillaBugState) BugzillaBugStateSet {
+	for _, state := range states {
+		s[state] = nil
+	}
+	return s
 }
 
 func statesMatch(first, second []BugzillaBugState) bool {
@@ -1196,8 +1224,35 @@ func OptionsForItem(item string, config map[string]BugzillaBranchOptions) Bugzil
 	return ResolveBugzillaOptions(config[BugzillaOptionsWildcard], config[item])
 }
 
+func mergeStatusesIntoStates(states *[]BugzillaBugState, statuses *[]string) *[]BugzillaBugState {
+	var newStates []BugzillaBugState
+	stateSet := BugzillaBugStateSet{}
+
+	if states != nil {
+		stateSet = stateSet.Insert(*states...)
+	}
+	if statuses != nil {
+		for _, status := range *statuses {
+			stateSet = stateSet.Insert(BugzillaBugState{Status: status})
+		}
+	}
+
+	for state := range stateSet {
+		newStates = append(newStates, state)
+	}
+
+	if len(newStates) > 0 {
+		sort.Slice(newStates, func(i, j int) bool {
+			return newStates[i].Status < newStates[j].Status || (newStates[i].Status == newStates[j].Status && newStates[i].Resolution < newStates[j].Resolution)
+		})
+		return &newStates
+	}
+	return nil
+}
+
 // ResolveBugzillaOptions implements defaulting for a parent/child configuration,
-// preferring child fields where set.
+// preferring child fields where set. This method also reflects all "Status"
+// fields into matching `State` fields.
 func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchOptions {
 	output := BugzillaBranchOptions{}
 
@@ -1211,20 +1266,36 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	if parent.TargetRelease != nil {
 		output.TargetRelease = parent.TargetRelease
 	}
+	if parent.ValidStates != nil {
+		output.ValidStates = parent.ValidStates
+	}
 	if parent.Statuses != nil {
 		output.Statuses = parent.Statuses
+		output.ValidStates = mergeStatusesIntoStates(output.ValidStates, parent.Statuses)
+	}
+	if parent.DependentBugStates != nil {
+		output.DependentBugStates = parent.DependentBugStates
 	}
 	if parent.DependentBugStatuses != nil {
 		output.DependentBugStatuses = parent.DependentBugStatuses
+		output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, parent.DependentBugStatuses)
 	}
 	if parent.StatusAfterValidation != nil {
 		output.StatusAfterValidation = parent.StatusAfterValidation
+		output.StateAfterValidation = &BugzillaBugState{Status: *output.StatusAfterValidation}
+	}
+	if parent.StateAfterValidation != nil {
+		output.StateAfterValidation = parent.StateAfterValidation
 	}
 	if parent.AddExternalLink != nil {
 		output.AddExternalLink = parent.AddExternalLink
 	}
 	if parent.StatusAfterMerge != nil {
 		output.StatusAfterMerge = parent.StatusAfterMerge
+		output.StateAfterMerge = &BugzillaBugState{Status: *output.StatusAfterMerge}
+	}
+	if parent.StateAfterMerge != nil {
+		output.StateAfterMerge = parent.StateAfterMerge
 	}
 
 	// override with the child
@@ -1237,20 +1308,48 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	if child.TargetRelease != nil {
 		output.TargetRelease = child.TargetRelease
 	}
+
+	if child.ValidStates != nil {
+		output.ValidStates = child.ValidStates
+	}
 	if child.Statuses != nil {
 		output.Statuses = child.Statuses
+		if child.ValidStates == nil {
+			output.ValidStates = nil
+		}
+		output.ValidStates = mergeStatusesIntoStates(output.ValidStates, child.Statuses)
+	}
+
+	if child.DependentBugStates != nil {
+		output.DependentBugStates = child.DependentBugStates
 	}
 	if child.DependentBugStatuses != nil {
 		output.DependentBugStatuses = child.DependentBugStatuses
+		if child.DependentBugStates == nil {
+			output.DependentBugStates = nil
+		}
+		output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, child.DependentBugStatuses)
 	}
 	if child.StatusAfterValidation != nil {
 		output.StatusAfterValidation = child.StatusAfterValidation
+		if child.StateAfterValidation == nil {
+			output.StateAfterValidation = &BugzillaBugState{Status: *child.StatusAfterValidation}
+		}
+	}
+	if child.StateAfterValidation != nil {
+		output.StateAfterValidation = child.StateAfterValidation
 	}
 	if child.AddExternalLink != nil {
 		output.AddExternalLink = child.AddExternalLink
 	}
 	if child.StatusAfterMerge != nil {
 		output.StatusAfterMerge = child.StatusAfterMerge
+		if child.StateAfterMerge == nil {
+			output.StateAfterMerge = &BugzillaBugState{Status: *child.StatusAfterMerge}
+		}
+	}
+	if child.StateAfterMerge != nil {
+		output.StateAfterMerge = child.StateAfterMerge
 	}
 
 	return output
