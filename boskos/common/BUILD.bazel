@@ -41,6 +41,5 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["common_test.go"],
-    data = ["//boskos:testdata"],
     embed = [":go_default_library"],
 )
