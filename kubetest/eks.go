@@ -32,6 +32,7 @@ import (
 
 	"github.com/aws/aws-k8s-tester/eksconfig"
 	"github.com/aws/aws-k8s-tester/ekstester"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -321,5 +322,11 @@ func (dp *eksDeployer) fetchAWSK8sTester() error {
 	if err = util.EnsureExecutable(dp.cfg.AWSK8sTesterPath); err != nil {
 		return err
 	}
+	return nil
+}
+
+// KubernetesClientSet is an empty implement to make eksDeployer meet
+// the definition of interface ekstester.Deployer
+func (dp *eksDeployer) KubernetesClientSet() *kubernetes.Clientset {
 	return nil
 }
