@@ -28,6 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/labels"
 )
 
@@ -1049,6 +1050,59 @@ type BugzillaRepoOptions struct {
 	Branches map[string]BugzillaBranchOptions `json:"branches"`
 }
 
+// BugzillaBugState describes bug states in the Bugzilla plugin config, used
+// for example to specify states that bugs are supposed to be in or to which
+// they should be made after some action.
+type BugzillaBugState struct {
+	Status     string `json:"status,omitempty"`
+	Resolution string `json:"resolution,omitempty"`
+}
+
+// String converts a Bugzilla state into human-readable description
+func (s *BugzillaBugState) String() string {
+	return bugzilla.PrettyStatus(s.Status, s.Resolution)
+}
+
+// AsBugUpdate returns a BugUpdate struct for updating a given to bug to the
+// desired state. The returned struct will have only those fields set where the
+// state differs from the parameter bug. If the bug state matches the desired
+// state, returns nil. If the parameter bug is empty or a nil pointer, the
+// returned BugUpdate will have all fields set that are set in the state.
+func (s *BugzillaBugState) AsBugUpdate(bug *bugzilla.Bug) *bugzilla.BugUpdate {
+	if s == nil {
+		return nil
+	}
+
+	var ret *bugzilla.BugUpdate
+	var update bugzilla.BugUpdate
+
+	if s.Status != "" && (bug == nil || s.Status != bug.Status) {
+		ret = &update
+		update.Status = s.Status
+	}
+	if s.Resolution != "" && (bug == nil || s.Resolution != bug.Resolution) {
+		ret = &update
+		update.Resolution = s.Resolution
+	}
+
+	return ret
+}
+
+// Matches returns whether a given bug matches the state
+func (s *BugzillaBugState) Matches(bug *bugzilla.Bug) bool {
+	if s == nil || bug == nil {
+		return false
+	}
+	if s.Status != "" && s.Status != bug.Status {
+		return false
+	}
+
+	if s.Resolution != "" && s.Resolution != bug.Resolution {
+		return false
+	}
+	return true
+}
+
 // BugzillaBranchOptions describes how to check if a Bugzilla bug is valid or not.
 type BugzillaBranchOptions struct {
 	// ValidateByDefault determines whether a validation check is run for all pull
@@ -1140,7 +1194,7 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		output.StatusAfterMerge = parent.StatusAfterMerge
 	}
 
-	//override with the child
+	// override with the child
 	if child.ValidateByDefault != nil {
 		output.ValidateByDefault = child.ValidateByDefault
 	}

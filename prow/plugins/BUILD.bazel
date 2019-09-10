@@ -15,6 +15,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/bugzilla:go_default_library",
         "//prow/github:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
         "@io_k8s_sigs_yaml//:go_default_library",

@@ -23,6 +23,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/prow/bugzilla"
 )
 
 func TestValidateExternalPlugins(t *testing.T) {
@@ -594,6 +596,173 @@ orgs:
 		t.Run(testCase.name, func(t *testing.T) {
 			if actual, expected := config.OptionsForRepo(testCase.org, testCase.repo), testCase.expected; !reflect.DeepEqual(actual, expected) {
 				t.Errorf("%s: resolved incorrect options for %s/%s: %v", testCase.name, testCase.org, testCase.repo, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestBugzillaBugState_String(t *testing.T) {
+	testCases := []struct {
+		name     string
+		state    *BugzillaBugState
+		expected string
+	}{
+		{
+			name:     "empty struct",
+			state:    &BugzillaBugState{},
+			expected: "",
+		},
+		{
+			name:     "only status",
+			state:    &BugzillaBugState{Status: "CLOSED"},
+			expected: "CLOSED",
+		},
+		{
+			name:     "only resolution",
+			state:    &BugzillaBugState{Resolution: "NOTABUG"},
+			expected: "any status with resolution NOTABUG",
+		},
+		{
+			name:     "status and resolution",
+			state:    &BugzillaBugState{Status: "CLOSED", Resolution: "NOTABUG"},
+			expected: "CLOSED (NOTABUG)",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.state.String()
+			if actual != tc.expected {
+				t.Errorf("%s: expected %q, got %q", tc.name, tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestBugzillaBugState_Matches(t *testing.T) {
+	modified, closed, errata, notabug := "MODIFIED", "CLOSED", "ERRATA", "NOTABUG"
+	testCases := []struct {
+		name     string
+		state    *BugzillaBugState
+		bug      *bugzilla.Bug
+		expected bool
+	}{
+		{
+			name: "both pointers are nil -> false",
+		},
+		{
+			name: "state pointer is nil -> false",
+			bug:  &bugzilla.Bug{},
+		},
+		{
+			name:  "bug pointer is nil -> false",
+			state: &BugzillaBugState{},
+		},
+		{
+			name:     "statuses do not match -> false",
+			state:    &BugzillaBugState{Status: modified, Resolution: errata},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: false,
+		},
+		{
+			name:     "resolutions do not match -> false",
+			state:    &BugzillaBugState{Status: closed, Resolution: notabug},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: false,
+		},
+		{
+			name:     "no state enforced -> true",
+			state:    &BugzillaBugState{},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: true,
+		},
+		{
+			name:     "status match, resolution not enforced -> true",
+			state:    &BugzillaBugState{Status: closed},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: true,
+		},
+		{
+			name:     "status not enforced, resolution match -> true",
+			state:    &BugzillaBugState{Resolution: errata},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: true,
+		},
+		{
+			name:     "status and resolution match -> true",
+			state:    &BugzillaBugState{Status: closed, Resolution: errata},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.state.Matches(tc.bug)
+			if actual != tc.expected {
+				t.Errorf("%s: expected %t, got %t", tc.name, tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestBugzillaBugState_AsBugUpdate(t *testing.T) {
+	modified, closed, errata, notabug := "MODIFIED", "CLOSED", "ERRATA", "NOTABUG"
+	testCases := []struct {
+		name     string
+		state    *BugzillaBugState
+		bug      *bugzilla.Bug
+		expected *bugzilla.BugUpdate
+	}{
+		{
+			name:     "bug is nil so update contains whole state",
+			state:    &BugzillaBugState{Status: closed, Resolution: errata},
+			expected: &bugzilla.BugUpdate{Status: closed, Resolution: errata},
+		},
+		{
+			name:     "bug is empty so update contains whole state",
+			state:    &BugzillaBugState{Status: closed, Resolution: errata},
+			bug:      &bugzilla.Bug{},
+			expected: &bugzilla.BugUpdate{Status: closed, Resolution: errata},
+		},
+		{
+			name:     "state is empty so update is nil",
+			state:    &BugzillaBugState{},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: nil,
+		},
+		{
+			name:     "status differs so update contains it",
+			state:    &BugzillaBugState{Status: closed},
+			bug:      &bugzilla.Bug{Status: modified, Resolution: errata},
+			expected: &bugzilla.BugUpdate{Status: closed},
+		},
+		{
+			name:     "resolution differs so update contains it",
+			state:    &BugzillaBugState{Status: closed, Resolution: errata},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: notabug},
+			expected: &bugzilla.BugUpdate{Resolution: errata},
+		},
+		{
+			name:     "status and resolution match so update is nil",
+			state:    &BugzillaBugState{Status: closed, Resolution: errata},
+			bug:      &bugzilla.Bug{Status: closed, Resolution: errata},
+			expected: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.state.AsBugUpdate(tc.bug)
+			if tc.expected != actual {
+				if actual == nil {
+					t.Errorf("%s: unexpected nil", tc.name)
+				}
+				if tc.expected == nil {
+					t.Errorf("%s: expected nil, got %v", tc.name, actual)
+				}
+			}
+
+			if actual != nil && tc.expected != nil && *tc.expected != *actual {
+				t.Errorf("%s: BugUpdate differs from expected:\n%s", tc.name, diff.ObjectReflectDiff(*actual, *tc.expected))
 			}
 		})
 	}
