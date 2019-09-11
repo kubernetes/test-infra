@@ -549,11 +549,12 @@ func TestResolveBugzillaOptions(t *testing.T) {
 func TestOptionsForBranch(t *testing.T) {
 	open, closed := true, false
 	yes, no := true, false
-	globalDefault, globalBranchDefault, orgDefault, orgBranchDefault, repoDefault, repoBranch := "global-default", "global-branch-default", "my-org-default", "my-org-branch-default", "my-repo-default", "my-repo-branch"
-	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
+	globalDefault, globalBranchDefault, orgDefault, orgBranchDefault, repoDefault, repoBranch, legacyBranch := "global-default", "global-branch-default", "my-org-default", "my-org-branch-default", "my-repo-default", "my-repo-branch", "my-legacy-branch"
+	modified, verified := "MODIFIED", "VERIFIED"
 	post, pre, release, notabug := "POST", "PRE", "RELEASE_PENDING", "NOTABUG"
 	verifiedState, modifiedState := BugzillaBugState{Status: "VERIFIED"}, BugzillaBugState{Status: "MODIFIED"}
 	postState, preState, releaseState, notabugState := BugzillaBugState{Status: post}, BugzillaBugState{Status: pre}, BugzillaBugState{Status: release}, BugzillaBugState{Status: notabug}
+	closedErrata := BugzillaBugState{Status: "CLOSED", Resolution: "ERRATA"}
 
 	rawConfig := `default:
   "*":
@@ -567,25 +568,40 @@ orgs:
       "*":
         is_open: true
         target_release: my-org-default
-        status_after_validation: "PRE"
+        state_after_validation:
+          status: "PRE"
       "my-org-branch":
         target_release: my-org-branch-default
-        status_after_validation: "POST"
+        state_after_validation:
+          status: "POST"
     repos:
       my-repo:
         branches:
           "*":
             is_open: false
             target_release: my-repo-default
-            statuses:
-            - VERIFIED
+            valid_states:
+            - status: VERIFIED
             validate_by_default: false
-            status_after_merge: RELEASE_PENDING
+            state_after_merge:
+              status: RELEASE_PENDING
           "my-repo-branch":
             target_release: my-repo-branch
+            valid_states:
+            - status: MODIFIED
+            - status: CLOSED
+              resolution: ERRATA
+            validate_by_default: true
+            state_after_merge:
+              status: NOTABUG
+          "my-legacy-branch":
+            target_release: my-legacy-branch
             statuses:
             - MODIFIED
+            dependent_bug_statuses:
+            - VERIFIED
             validate_by_default: true
+            status_after_validation: MODIFIED
             status_after_merge: NOTABUG`
 	var config Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
@@ -616,28 +632,28 @@ orgs:
 			org:      "my-org",
 			repo:     "some-repo",
 			branch:   "some-branch",
-			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgDefault, StatusAfterValidation: &pre, StateAfterValidation: &preState},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgDefault, StateAfterValidation: &preState},
 		},
 		{
 			name:     "branch on configured org but not repo gets org branch default",
 			org:      "my-org",
 			repo:     "some-repo",
 			branch:   "my-org-branch",
-			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgBranchDefault, StatusAfterValidation: &post, StateAfterValidation: &postState},
+			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &orgBranchDefault, StateAfterValidation: &postState},
 		},
 		{
 			name:     "branch on configured org and repo gets repo default",
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "some-branch",
-			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, Statuses: &verified, ValidStates: &[]BugzillaBugState{verifiedState}, StatusAfterValidation: &pre, StateAfterValidation: &preState, StatusAfterMerge: &release, StateAfterMerge: &releaseState},
+			expected: BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &repoDefault, ValidStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &preState, StateAfterMerge: &releaseState},
 		},
 		{
 			name:     "branch on configured org and repo gets branch config",
 			org:      "my-org",
 			repo:     "my-repo",
 			branch:   "my-repo-branch",
-			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, Statuses: &modified, ValidStates: &[]BugzillaBugState{modifiedState}, StatusAfterValidation: &pre, StateAfterValidation: &preState, StatusAfterMerge: &notabug, StateAfterMerge: &notabugState},
+			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, ValidStates: &[]BugzillaBugState{modifiedState, closedErrata}, StateAfterValidation: &preState, StateAfterMerge: &notabugState},
 		},
 	}
 	for _, testCase := range testCases {
@@ -667,8 +683,8 @@ orgs:
 			org:  "my-org",
 			repo: "some-repo",
 			expected: map[string]BugzillaBranchOptions{
-				"*":             {IsOpen: &open, TargetRelease: &orgDefault, StatusAfterValidation: &pre, StateAfterValidation: &preState},
-				"my-org-branch": {IsOpen: &open, TargetRelease: &orgBranchDefault, StatusAfterValidation: &post, StateAfterValidation: &postState},
+				"*":             {IsOpen: &open, TargetRelease: &orgDefault, StateAfterValidation: &preState},
+				"my-org-branch": {IsOpen: &open, TargetRelease: &orgBranchDefault, StateAfterValidation: &postState},
 			},
 		},
 		{
@@ -677,37 +693,41 @@ orgs:
 			repo: "my-repo",
 			expected: map[string]BugzillaBranchOptions{
 				"*": {
-					ValidateByDefault:     &no,
-					IsOpen:                &closed,
-					TargetRelease:         &repoDefault,
-					Statuses:              &verified,
-					ValidStates:           &[]BugzillaBugState{verifiedState},
-					StatusAfterValidation: &pre,
-					StateAfterValidation:  &preState,
-					StatusAfterMerge:      &release,
-					StateAfterMerge:       &releaseState,
+					ValidateByDefault:    &no,
+					IsOpen:               &closed,
+					TargetRelease:        &repoDefault,
+					ValidStates:          &[]BugzillaBugState{verifiedState},
+					StateAfterValidation: &preState,
+					StateAfterMerge:      &releaseState,
 				},
 				"my-repo-branch": {
-					ValidateByDefault:     &yes,
-					IsOpen:                &closed,
-					TargetRelease:         &repoBranch,
-					Statuses:              &modified,
-					ValidStates:           &[]BugzillaBugState{modifiedState},
-					StatusAfterValidation: &pre,
-					StateAfterValidation:  &preState,
-					StatusAfterMerge:      &notabug,
-					StateAfterMerge:       &notabugState,
+					ValidateByDefault:    &yes,
+					IsOpen:               &closed,
+					TargetRelease:        &repoBranch,
+					ValidStates:          &[]BugzillaBugState{modifiedState, closedErrata},
+					StateAfterValidation: &preState,
+					StateAfterMerge:      &notabugState,
 				},
 				"my-org-branch": {
-					ValidateByDefault:     &no,
+					ValidateByDefault:    &no,
+					IsOpen:               &closed,
+					TargetRelease:        &repoDefault,
+					ValidStates:          &[]BugzillaBugState{verifiedState},
+					StateAfterValidation: &postState,
+					StateAfterMerge:      &releaseState,
+				},
+				"my-legacy-branch": {
+					ValidateByDefault:     &yes,
 					IsOpen:                &closed,
-					TargetRelease:         &repoDefault,
-					Statuses:              &verified,
-					ValidStates:           &[]BugzillaBugState{verifiedState},
-					StatusAfterValidation: &post,
-					StateAfterValidation:  &postState,
-					StatusAfterMerge:      &release,
-					StateAfterMerge:       &releaseState,
+					TargetRelease:         &legacyBranch,
+					Statuses:              &[]string{modified},
+					ValidStates:           &[]BugzillaBugState{modifiedState},
+					DependentBugStatuses:  &[]string{verified},
+					DependentBugStates:    &[]BugzillaBugState{verifiedState},
+					StatusAfterValidation: &modified,
+					StateAfterValidation:  &modifiedState,
+					StatusAfterMerge:      &notabug,
+					StateAfterMerge:       &notabugState,
 				},
 			},
 		},
