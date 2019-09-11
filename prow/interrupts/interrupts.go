@@ -57,8 +57,9 @@ type manager struct {
 // manager, or there will be a deadlock.
 func handleInterrupt() {
 	signalsLock.Lock()
-	s := <-signals()
+	sigChan := signals()
 	signalsLock.Unlock()
+	s := <-sigChan
 	logrus.WithField("signal", s).Info("Received signal.")
 	single.c.L.Lock()
 	single.seenSignal = true
@@ -190,16 +191,14 @@ func Tick(work func(), interval func() time.Duration) {
 	go func() {
 		defer single.wg.Done()
 		for {
-			now := time.Now()
 			nextInterval := interval()
 			nextTick := before.Add(nextInterval)
-			sleep := nextTick.Sub(now)
+			sleep := time.Until(nextTick)
 			logrus.WithFields(logrus.Fields{
 				"before":   before,
-				"now":      now,
 				"interval": nextInterval,
 				"sleep":    sleep,
-			}).Info("Resolved next tick interval.")
+			}).Debug("Resolved next tick interval.")
 			select {
 			case <-time.After(sleep):
 				work()
