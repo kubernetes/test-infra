@@ -33,6 +33,9 @@ const (
 	// this allows for multiple resources to be linked to one
 	// ProwJob.
 	ProwJobIDLabel = "prow.k8s.io/id"
+	// ProwBuildIDLabel is added in resources created by prow and
+	// carries the BuildID from a Prow Job's Status.
+	ProwBuildIDLabel = "prow.k8s.io/build-id"
 	// ProwJobAnnotation is added in resources created by prow and
 	// carries the name of the job that the pod is running. Since
 	// job names can be arbitrarily long, this is added as
