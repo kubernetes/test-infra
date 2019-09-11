@@ -17,7 +17,7 @@ postsubmits:
             args:
               # this is the project GCB will run in, which is the same as the GCR images are pushed to.
               - --project=k8s-staging-capi-openstack
-              - --scratch-bucket=gs://k8s-staging-capi-openstack-scratch
+              - --scratch-bucket=gs://k8s-staging-capi-openstack-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
             env:
