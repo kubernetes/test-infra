@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -86,11 +87,11 @@ func validateOptions(o options) error {
 	return nil
 }
 
-func updateConfig() error {
+func updateConfig(stdout, stderr io.Writer) error {
 	// Try to regenerate security job configs which use an explicit podutils image config
 	// TODO(krzyzacy): workaround before we resolve https://github.com/kubernetes/test-infra/issues/9783
 	logrus.Info("Updating generated config...")
-	return bumper.Call("bazel", "run", "//hack:update-config")
+	return bumper.Call(stdout, stderr, "bazel", "run", "//hack:update-config")
 }
 
 func getOncaller() (string, error) {
@@ -155,6 +156,9 @@ func main() {
 		}
 	}
 
+	stdout := bumper.HideSecretsWriter{Delegate: os.Stdout, Censor: sa}
+	stderr := bumper.HideSecretsWriter{Delegate: os.Stderr, Censor: sa}
+
 	if err := cdToRootDir(); err != nil {
 		logrus.WithError(err).Fatal("Failed to change to root dir")
 	}
@@ -162,12 +166,13 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to update references.")
 	}
-	if err := updateConfig(); err != nil {
+	if err := updateConfig(stdout, stderr); err != nil {
 		logrus.WithError(err).Fatal("Failed to update generated config.")
 	}
 
 	remoteBranch := "autobump"
-	if err := bumper.MakeGitCommit(fmt.Sprintf("git@github.com:%s/test-infra.git", o.githubLogin), remoteBranch, o.gitName, o.gitEmail, images); err != nil {
+
+	if err := bumper.MakeGitCommit(fmt.Sprintf("git@github.com:%s/test-infra.git", o.githubLogin), remoteBranch, o.gitName, o.gitEmail, images, stdout, stderr); err != nil {
 		logrus.WithError(err).Fatal("Failed to push changes.")
 	}
 
