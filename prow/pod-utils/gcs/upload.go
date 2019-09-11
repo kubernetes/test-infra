@@ -89,13 +89,6 @@ func FileUpload(file string) UploadFunc {
 	return FileUploadWithAttributes(file, nil)
 }
 
-// FileUploadWithMetadata returns an UploadFunc which copies all
-// data from the file on disk into GCS object and also sets the provided
-// metadata fields on the object.
-func FileUploadWithMetadata(file string, metadata map[string]string) UploadFunc {
-	return FileUploadWithAttributes(file, &storage.ObjectAttrs{Metadata: metadata})
-}
-
 // FileUploadWithAttributes returns an UploadFunc which copies all data
 // from the file on disk into GCS object and also sets the provided
 // attributes on the object.
