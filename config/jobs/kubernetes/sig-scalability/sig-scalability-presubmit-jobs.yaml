@@ -320,6 +320,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -378,6 +379,7 @@ presubmits:
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
             - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+            - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
           image: gcr.io/k8s-testimages/kubekins-e2e:v20190906-fc85258-master
