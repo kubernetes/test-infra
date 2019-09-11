@@ -82,8 +82,13 @@ func (o Options) Run() error {
 	wg.Wait()
 	close(output)
 
+	var hasFailedRecord bool
 	var results []clone.Record
 	for record := range output {
+		if record.Failed {
+			hasFailedRecord = true
+		}
+
 		results = append(results, record)
 	}
 
@@ -94,6 +99,10 @@ func (o Options) Run() error {
 
 	if err := ioutil.WriteFile(o.Log, logData, 0755); err != nil {
 		return fmt.Errorf("failed to write clone records: %v", err)
+	}
+
+	if o.Fail && hasFailedRecord {
+		return fmt.Errorf("one or more of the records are in failed state")
 	}
 
 	return nil

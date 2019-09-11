@@ -61,6 +61,8 @@ type Options struct {
 	// limit to parallelism
 	MaxParallelWorkers int `json:"max_parallel_workers,omitempty"`
 
+	Fail bool `json:"fail,omitempty"`
+
 	// used to hold flag values
 	refs       gitRefs
 	clonePath  orgRepoFormat
@@ -153,6 +155,7 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
 	fs.IntVar(&o.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
 	fs.StringVar(&o.CookiePath, "cookiefile", "", "Path to git http.cookiefile")
+	fs.BoolVar(&o.Fail, "fail", false, "Exit with failure if any of the refs can't be fetched.")
 }
 
 type gitRefs struct {
