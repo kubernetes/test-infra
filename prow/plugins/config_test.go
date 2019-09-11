@@ -395,7 +395,7 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:   "no child means a copy of parent is the output",
-			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, DependentBugStatuses: &[]string{verified}, StatusAfterValidation: &post},
+			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
 			expected: BugzillaBranchOptions{
 				ValidateByDefault:    &yes,
 				IsOpen:               &open,
@@ -407,7 +407,7 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:  "no parent means a copy of child is the output",
-			child: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, DependentBugStatuses: &[]string{verified}, StatusAfterValidation: &post},
+			child: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
 			expected: BugzillaBranchOptions{
 				ValidateByDefault:    &yes,
 				IsOpen:               &open,
@@ -419,38 +419,38 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:     "child overrides parent on IsOpen",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, StatusAfterValidation: &post},
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
 			child:    BugzillaBranchOptions{IsOpen: &closed},
 			expected: BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
 		},
 		{
 			name:     "child overrides parent on target release",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, StatusAfterValidation: &post},
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
 			child:    BugzillaBranchOptions{TargetRelease: &two},
 			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
 		},
 		{
-			name:     "child overrides parent on statuses",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, StatusAfterValidation: &post},
-			child:    BugzillaBranchOptions{Statuses: &[]string{verified}},
+			name:     "child overrides parent on states",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
+			child:    BugzillaBranchOptions{ValidStates: &[]BugzillaBugState{verifiedState}},
 			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
 		},
 		{
-			name:     "child overrides parent on status after validation",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, StatusAfterValidation: &post},
-			child:    BugzillaBranchOptions{StatusAfterValidation: &pre},
+			name:     "child overrides parent on state after validation",
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
+			child:    BugzillaBranchOptions{StateAfterValidation: &preState},
 			expected: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &preState},
 		},
 		{
 			name:     "child overrides parent on validation by default",
-			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, StatusAfterValidation: &post},
+			parent:   BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
 			child:    BugzillaBranchOptions{ValidateByDefault: &yes},
 			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
 		},
 		{
-			name:   "child overrides parent on dependent bug statuses",
-			parent: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, DependentBugStatuses: &[]string{verified}, StatusAfterValidation: &post},
-			child:  BugzillaBranchOptions{DependentBugStatuses: &[]string{modified}},
+			name:   "child overrides parent on dependent bug states",
+			parent: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState},
+			child:  BugzillaBranchOptions{DependentBugStates: &[]BugzillaBugState{modifiedState}},
 			expected: BugzillaBranchOptions{
 				IsOpen:               &open,
 				TargetRelease:        &one,
@@ -460,9 +460,9 @@ func TestResolveBugzillaOptions(t *testing.T) {
 			},
 		},
 		{
-			name:   "child overrides parent on status after merge",
-			parent: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, Statuses: &[]string{modified}, StatusAfterValidation: &post, StatusAfterMerge: &post},
-			child:  BugzillaBranchOptions{StatusAfterMerge: &pre},
+			name:   "child overrides parent on state after merge",
+			parent: BugzillaBranchOptions{IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
+			child:  BugzillaBranchOptions{StateAfterMerge: &preState},
 			expected: BugzillaBranchOptions{
 				IsOpen:               &open,
 				TargetRelease:        &one,
@@ -499,8 +499,8 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		},
 		{
 			name:   "child overrides parent on all fields",
-			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, Statuses: &[]string{verified}, DependentBugStatuses: &[]string{verified}, StatusAfterValidation: &post, StatusAfterMerge: &post},
-			child:  BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, Statuses: &[]string{modified}, DependentBugStatuses: &[]string{modified}, StatusAfterValidation: &pre, StatusAfterMerge: &pre},
+			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
+			child:  BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &preState, StateAfterMerge: &preState},
 			expected: BugzillaBranchOptions{
 				ValidateByDefault:    &no,
 				IsOpen:               &closed,
