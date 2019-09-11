@@ -25,13 +25,89 @@ set -o pipefail
 # a postsubmit job.
 
 # To use, point your kubeconfig at the correct cluster context and specify gcp
-# PROJECT and service account DESCRIPTION environment variables.
+# PROJECT and service account DESCRIPTION environment variables. Optionally, one can
+# supply the PROJECT_BUILD variable to attach the iam policy to the build cluster project.
 
-gcloud beta iam service-accounts create prow-deployer --project="${PROJECT}" --description="${DESCRIPTION}" --display-name="Prow Self Deployer SA"
-gcloud projects add-iam-policy-binding "${PROJECT}" --member="serviceAccount:prow-deployer@${PROJECT}.iam.gserviceaccount.com" --role roles/container.developer
-gcloud iam service-accounts keys create prow-deployer-sa-key.json --project="${PROJECT}"  --iam-account="prow-deployer@${PROJECT}.iam.gserviceaccount.com"
+# To enable prompts and run in "interactive" mode supply the "-i|--interactive" flag.
+# e.g.
+#  PROJECT="istio-testing" \
+#  PROJECT_BUILD="istio-prow-build" \
+#  DESCRIPTION="Used to deploy to the clusters in the istio-testing and istio-prow-build projects." \
+#  gcloud-deployer-service-account.sh --interactive
 
-kubectl create secret generic -n test-pods prow-deployer-service-account --from-file=service-account.json=prow-deployer-sa-key.json
+# Globals:
+PROJECT_BUILD="${PROJECT_BUILD:=''}"
+SERVICE_ACCOUNT="${SERVICE_ACCOUNT:='prow-deployer'}"
+# PROJECT => "required"
+# DESCRIPTION => "required"
 
-rm prow-deployer-sa-key.json
+# Options:
+INTERACTIVE=
 
+function cleanup() {
+  # For security reasons, delete private key regardless of exit code.
+  trap 'rm -f "$SERVICE_ACCOUNT-sa-key.json"' EXIT
+}
+
+function create_service_account() {
+  prompt "Create service-account: \"$SERVICE_ACCOUNT\" in Project: \"$PROJECT\""
+
+  # Create a service account for performing Prow deployments in a GCP project.
+  gcloud beta iam service-accounts create $SERVICE_ACCOUNT --project="$PROJECT" --description="$DESCRIPTION" --display-name="Prow Self Deployer SA"
+
+  # Add the `roles/container.admin` IAM policy binding to the service account in "service" cluster project.
+  # https://cloud.google.com/kubernetes-engine/docs/how-to/iam#container.admin
+  gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$SERVICE_ACCOUNT@$PROJECT.iam.gserviceaccount.com" --role "roles/container.admin"
+
+  # Generate private key and attach to the service account.
+  gcloud iam service-accounts keys create "$SERVICE_ACCOUNT-sa-key.json" --project="$PROJECT" --iam-account="$SERVICE_ACCOUNT@$PROJECT.iam.gserviceaccount.com"
+
+  if [ "$PROJECT_BUILD" ]; then
+    prompt "Apply iam policy to build Project: \"$PROJECT_BUILD\""
+
+    # Add the `roles/container.admin` IAM policy binding to the service account in "build" cluster project.
+    gcloud projects add-iam-policy-binding "$PROJECT_BUILD" --member="serviceAccount:$SERVICE_ACCOUNT@$PROJECT.iam.gserviceaccount.com" --role "roles/container.admin"
+  fi
+}
+
+function create_secret() {
+  prompt "Create cluster secret for Kube context: \"$(kubectl config current-context)\""
+
+  # Deploy the service-account secret to the cluster in the current context.
+  kubectl create secret generic -n test-pods "$SERVICE_ACCOUNT-service-account" --from-file="service-account.json=$SERVICE_ACCOUNT-sa-key.json"
+}
+
+function handle_options() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    -i | --interactive)
+      INTERACTIVE=1
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1" >&1
+      exit 1
+      ;;
+    esac
+  done
+}
+
+function prompt() {
+  if [ "$INTERACTIVE" ]; then
+    echo
+    read -r -n1 -p "$1 ? [y/n] "
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      exit 0
+    fi
+  fi
+}
+
+function main() {
+  cleanup
+  handle_options "$@"
+  create_service_account
+  create_secret
+}
+
+main "$@"
