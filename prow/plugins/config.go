@@ -1352,6 +1352,12 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		output.StateAfterMerge = child.StateAfterMerge
 	}
 
+	// Status fields should not be used anywhere now when they were mirrored to states
+	output.Statuses = nil
+	output.DependentBugStatuses = nil
+	output.StatusAfterMerge = nil
+	output.StatusAfterValidation = nil
+
 	return output
 }
 
