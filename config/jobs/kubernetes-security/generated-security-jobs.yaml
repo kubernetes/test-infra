@@ -3148,6 +3148,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
         - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
@@ -3352,6 +3353,7 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
+        - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
