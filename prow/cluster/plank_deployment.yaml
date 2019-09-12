@@ -34,7 +34,7 @@ spec:
       # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190911-0708557a1
+        image: gcr.io/k8s-prow/plank:v20190912-b38f9a963
         args:
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
