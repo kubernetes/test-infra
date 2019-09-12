@@ -2,6 +2,11 @@
 options:
   no_parent_owners: true
 
+# Oncallers with context on this
+reviewers:
+- Katharine
+
+# All oncallers
 approvers:
 - chases2
 - cjwagner
