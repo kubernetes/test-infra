@@ -154,12 +154,24 @@ func TestInterrupts(t *testing.T) {
 	// to catch the cases where the interval is requested too many times.
 	time.Sleep(100 * time.Millisecond)
 
+	var onInterruptCalled bool
+	OnInterrupt(func() {
+		lock.Lock()
+		onInterruptCalled = true
+		lock.Unlock()
+	})
+
 	done := sync.WaitGroup{}
 	done.Add(1)
 	go func() {
 		WaitForGracefulShutdown()
 		done.Done()
 	}()
+
+	if onInterruptCalled {
+		t.Error("work registered with OnInterrupt() was executed before interrupt")
+	}
+
 	// trigger the interrupt
 	interrupt <- syscall.Signal(1)
 	// wait for graceful shutdown to occur
@@ -189,6 +201,9 @@ func TestInterrupts(t *testing.T) {
 	}
 	if tickCalls != 2 {
 		t.Errorf("work registered with Tick() was called %d times, not %d; interval was requested %d times", tickCalls, 2, intervalCalls)
+	}
+	if !onInterruptCalled {
+		t.Error("work registered with OnInterrupt() was not executed on interrupt")
 	}
 	lock.Unlock()
 }

@@ -158,7 +158,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	defer gitClient.Clean()
 
 	kubeClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
 	if err != nil {
@@ -169,7 +168,12 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
-	defer c.Shutdown()
+	interrupts.OnInterrupt(func() {
+		c.Shutdown()
+		if err := gitClient.Clean(); err != nil {
+			logrus.WithError(err).Error("Could not clean up git client cache.")
+		}
+	})
 	http.Handle("/", c)
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}

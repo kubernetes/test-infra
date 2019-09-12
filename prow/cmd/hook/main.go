@@ -136,7 +136,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	defer gitClient.Clean()
 
 	var bugzillaClient bugzilla.Client
 	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
@@ -203,7 +202,12 @@ func main() {
 		Metrics:        promMetrics,
 		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 	}
-	defer server.GracefulShutdown()
+	interrupts.OnInterrupt(func() {
+		server.GracefulShutdown()
+		if err := gitClient.Clean(); err != nil {
+			logrus.WithError(err).Error("Could not clean up git client cache.")
+		}
+	})
 
 	health := pjutil.NewHealth()
 

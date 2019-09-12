@@ -226,3 +226,14 @@ func TickLiteral(work func(), interval time.Duration) {
 		return interval
 	})
 }
+
+// OnInterrupt ensures that work is done when an interrupt is fired
+// and that we wait for the work to be finished before we consider
+// the process cleaned up. This function is not blocking.
+func OnInterrupt(work func()) {
+	single.wg.Add(1)
+	go wait(func() {
+		work()
+		single.wg.Done()
+	})
+}
