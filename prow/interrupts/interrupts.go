@@ -91,15 +91,10 @@ func wait(cancel func()) {
 	cancel()
 }
 
-var gracePeriod = 1 * time.Minute
-
 // WaitForGracefulShutdown waits until all registered servers and workers
 // have had time to gracefully shut down, or times out. This function is
 // blocking.
 func WaitForGracefulShutdown() {
-	wait(func() {
-		logrus.Info("Interrupt received.")
-	})
 	finished := make(chan struct{})
 	go func() {
 		single.wg.Wait()
@@ -108,7 +103,7 @@ func WaitForGracefulShutdown() {
 	select {
 	case <-finished:
 		logrus.Info("All workers gracefully terminated, exiting.")
-	case <-time.After(gracePeriod):
+	case <-time.After(1 * time.Minute):
 		logrus.Warn("Timed out waiting for workers to gracefully terminate, exiting.")
 	}
 }
