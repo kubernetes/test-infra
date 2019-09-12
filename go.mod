@@ -123,3 +123,5 @@ require (
 	sigs.k8s.io/yaml v1.1.0
 	vbom.ml/util v0.0.0-20170409195630-256737ac55c4
 )
+
+go 1.13
