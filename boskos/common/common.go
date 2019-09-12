@@ -54,9 +54,10 @@ type UserData struct {
 // UserDataMap is the standard Map version of UserMap, it is used to ease UserMap creation.
 type UserDataMap map[string]string
 
-// LeasedResources is a list of resources name that used in order to create another resource by Mason
+// LeasedResources is a map of resource types to list of resource names that are used in order to create another resource by Mason
 type LeasedResources map[string][]string
 
+// Flatten returns a slice of all values from the map
 func (r *LeasedResources) Flatten() []string {
 	var resources []string
 	for _, value := range *r {
