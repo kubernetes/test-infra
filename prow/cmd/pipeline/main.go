@@ -21,13 +21,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -80,29 +79,13 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	return nil
 }
 
-// stopper returns a channel that remains open until an interrupt is received.
-func stopper() chan struct{} {
-	stop := make(chan struct{})
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		logrus.Warn("Interrupt received, attempting clean shutdown...")
-		close(stop)
-		<-c
-		logrus.Error("Second interrupt received, force exiting...")
-		os.Exit(1)
-	}()
-	return stop
-}
-
 type pipelineConfig struct {
 	client   pipelineset.Interface
 	informer pipelineinfov1alpha1.PipelineRunInformer
 }
 
 // newPipelineConfig returns a client and informer capable of mutating and monitoring the specified config.
-func newPipelineConfig(cfg rest.Config, stop chan struct{}) (*pipelineConfig, error) {
+func newPipelineConfig(cfg rest.Config, stop <-chan struct{}) (*pipelineConfig, error) {
 	bc, err := pipelineset.NewForConfig(&cfg)
 	if err != nil {
 		return nil, err
@@ -128,6 +111,8 @@ func main() {
 	logrusutil.ComponentInit("pipeline")
 
 	o := parseOptions()
+
+	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf()
 
@@ -155,8 +140,6 @@ func main() {
 		delete(configs, kube.InClusterContext)
 	}
 
-	stop := stopper()
-
 	kc, err := kubernetes.NewForConfig(&local)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to create local kubernetes client")
@@ -167,12 +150,12 @@ func main() {
 	}
 	pjif := prowjobinfo.NewSharedInformerFactory(pjc, 30*time.Minute)
 	pjif.Prow().V1().ProwJobs().Lister()
-	go pjif.Start(stop)
+	go pjif.Start(interrupts.Context().Done())
 
 	pipelineConfigs := map[string]pipelineConfig{}
 	for context, cfg := range configs {
 		var bc *pipelineConfig
-		bc, err = newPipelineConfig(cfg, stop)
+		bc, err = newPipelineConfig(cfg, interrupts.Context().Done())
 		if apierrors.IsNotFound(err) {
 			logrus.WithError(err).Warnf("Ignoring %s: knative pipeline CRD not deployed", context)
 			continue
@@ -197,7 +180,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating controller")
 	}
 
-	if err := controller.Run(2, stop); err != nil {
+	if err := controller.Run(2, interrupts.Context().Done()); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}
 	logrus.Info("Finished")
