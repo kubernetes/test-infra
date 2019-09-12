@@ -96,7 +96,6 @@ presubmits:
   - name: pull-vsphere-csi-driver-verify-staticcheck
     always_run: false
     run_if_changed: '\.go$|hack\/check-staticcheck\.sh'
-    optional: true
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
