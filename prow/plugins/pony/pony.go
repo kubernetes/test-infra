@@ -125,34 +125,37 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return nil
 	}
 	// Make sure they are requesting a pony
-	mat := match.FindStringSubmatch(e.Body)
-	if mat == nil {
+	mats := match.FindAllStringSubmatch(e.Body)
+	if mats == nil {
 		return nil
 	}
 
-	tag := mat[1]
-	org := e.Repo.Owner.Login
-	repo := e.Repo.Name
-	number := e.Number
+	for _, mat := range mats {
+		qry := mat[0]
+		tag := mat[1]
+		org := e.Repo.Owner.Login
+		repo := e.Repo.Name
+		number := e.Number
 
-	for i := 0; i < 5; i++ {
-		resp, err := p.readPony(tag)
-		if err != nil {
-			log.WithError(err).Println("Failed to get a pony")
-			continue
+		for i := 0; i < 5; i++ {
+			resp, err := p.readPony(tag)
+			if err != nil {
+				log.WithError(err).Println("Failed to get a pony")
+				continue
+			}
+			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 		}
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+
+		var msg string
+		if tag != "" {
+			msg = fmt.Sprintf("Couldn't find a pony matching the query: %s!", qry)
+		} else {
+			msg = "https://theponyapi.com appears to be down"
+		}
+		if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
+			log.WithError(err).Error("Failed to leave comment")
+		}
 	}
 
-	var msg string
-	if tag != "" {
-		msg = "Couldn't find a pony matching that query."
-	} else {
-		msg = "https://theponyapi.com appears to be down"
-	}
-	if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
-		log.WithError(err).Error("Failed to leave comment")
-	}
-
-	return errors.New("could not find a valid pony image")
+	return errors.New("could not find a valid pony image(s)")
 }
