@@ -201,8 +201,8 @@ func Tick(work func(), interval func() time.Duration) {
 			}).Debug("Resolved next tick interval.")
 			select {
 			case <-time.After(sleep):
-				work()
 				before = time.Now()
+				work()
 			case <-sig:
 				logrus.Info("Worker shutting down...")
 				return
