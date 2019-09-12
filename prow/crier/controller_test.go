@@ -17,9 +17,9 @@ limitations under the License.
 package crier
 
 import (
-	"context"
 	"reflect"
 	"sort"
+	"sync"
 	"testing"
 	"time"
 
@@ -223,21 +223,18 @@ func TestController_Run(t *testing.T) {
 			}
 			cs := fake.NewSimpleClientset()
 			nmwrk := 2
-			c := NewController(cs, q, inf, &rp, nmwrk)
+			wg := &sync.WaitGroup{}
+			c := NewController(cs, q, inf, &rp, nmwrk, wg)
 
-			done := make(chan struct{}, 1)
-			ctx, cancel := context.WithCancel(context.Background())
-			go func() {
-				c.Run(ctx)
-				close(done)
-			}()
+			stopCh := make(chan struct{})
+			go c.Run(stopCh)
 
 			wait.Poll(10*time.Millisecond, testTimeout, func() (done bool, err error) {
 				return c.queue.Len() == 0, nil
 			})
 
-			cancel()
-			<-done
+			close(stopCh)
+			wg.Wait()
 
 			if c.queue.Len() != 0 {
 				t.Errorf("%d messages were unconsumed", c.queue.Len())

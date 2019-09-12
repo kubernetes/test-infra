@@ -22,13 +22,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -86,6 +87,22 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	return nil
 }
 
+// stopper returns a channel that remains open until an interrupt is received.
+func stopper() chan struct{} {
+	stop := make(chan struct{})
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		logrus.Warn("Interrupt received, attempting clean shutdown...")
+		close(stop)
+		<-c
+		logrus.Error("Second interrupt received, force exiting...")
+		os.Exit(1)
+	}()
+	return stop
+}
+
 type buildConfig struct {
 	client ctrlruntimeclient.Client
 	// Only use the informer to add EventHandlers, for getting
@@ -104,7 +121,7 @@ func (_ listSingleItem) ApplyToList(opts *ctrlruntimeclient.ListOptions) {
 }
 
 // newBuildConfig returns a client and informer capable of mutating and monitoring the specified config.
-func newBuildConfig(cfg rest.Config, stop <-chan struct{}) (*buildConfig, error) {
+func newBuildConfig(cfg rest.Config, stop chan struct{}) (*buildConfig, error) {
 	// Assume watches receive updates, but resync every 30m in case something wonky happens
 	resyncInterval := 30 * time.Minute
 	// We construct a manager because it has a client whose Reader interface is backed by its cache, which
@@ -137,8 +154,6 @@ func main() {
 
 	o := parseOptions()
 
-	defer interrupts.WaitForGracefulShutdown()
-
 	pjutil.ServePProf()
 
 	if err := buildv1alpha1.AddToScheme(scheme.Scheme); err != nil {
@@ -169,6 +184,8 @@ func main() {
 		delete(configs, kube.InClusterContext)
 	}
 
+	stop := stopper()
+
 	kc, err := kubernetes.NewForConfig(&local)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create local kubernetes client")
@@ -179,12 +196,12 @@ func main() {
 	}
 	pjif := prowjobinfo.NewSharedInformerFactory(pjc, 30*time.Minute)
 	pjif.Prow().V1().ProwJobs().Lister()
-	go pjif.Start(interrupts.Context().Done())
+	go pjif.Start(stop)
 
 	buildConfigs := map[string]buildConfig{}
 	for context, cfg := range configs {
 		var bc *buildConfig
-		bc, err = newBuildConfig(cfg, interrupts.Context().Done())
+		bc, err = newBuildConfig(cfg, stop)
 		if apimeta.IsNoMatchError(err) {
 			logrus.WithError(err).Warnf("Ignoring %s: knative build CRD not deployed", context)
 			continue
@@ -209,7 +226,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating controller")
 	}
-	if err := controller.Run(2, interrupts.Context().Done()); err != nil {
+	if err := controller.Run(2, stop); err != nil {
 		logrus.WithError(err).Fatal("Error running controller")
 	}
 	logrus.Info("Finished")

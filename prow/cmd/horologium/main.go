@@ -27,7 +27,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/interrupts"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -79,8 +78,6 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	defer interrupts.WaitForGracefulShutdown()
-
 	pjutil.ServePProf()
 
 	if !o.dryRun.Explicit {
@@ -101,13 +98,14 @@ func main() {
 	// start a cron
 	cr := cron.New()
 	cr.Start()
-	interrupts.TickLiteral(func() {
+
+	for now := range time.Tick(1 * time.Minute) {
 		start := time.Now()
-		if err := sync(prowJobClient, configAgent.Config(), cr, start); err != nil {
+		if err := sync(prowJobClient, configAgent.Config(), cr, now); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")
 		}
-		logrus.WithField("duration", time.Since(start)).Info("Synced periodic jobs")
-	}, 1*time.Minute)
+		logrus.Infof("Sync time: %v", time.Since(start))
+	}
 }
 
 type prowJobClient interface {

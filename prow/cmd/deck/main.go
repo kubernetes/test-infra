@@ -49,7 +49,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/test-infra/prow/interrupts"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -284,7 +283,6 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	defer interrupts.WaitForGracefulShutdown()
 	pjutil.ServePProf()
 
 	// setup config agent, pod log clients etc.
@@ -403,8 +401,8 @@ func main() {
 		return
 	}
 	// setup done, actually start the server
-	server := &http.Server{Addr: ":8080", Handler: traceHandler(mux)}
-	interrupts.ListenAndServe(server, 5*time.Second)
+	logrus.WithError(http.ListenAndServe(":8080", traceHandler(mux))).Fatal("ListenAndServe returned.")
+
 }
 
 // localOnlyMain contains logic used only when running locally, and is mutually exclusive with

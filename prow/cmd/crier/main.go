@@ -17,17 +17,18 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"errors"
 	"flag"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pjutil"
 
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -159,8 +160,6 @@ func main() {
 
 	o := parseOptions()
 
-	defer interrupts.WaitForGracefulShutdown()
-
 	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
@@ -177,6 +176,9 @@ func main() {
 	prowjobInformerFactory := prowjobinformer.NewSharedInformerFactory(prowjobClientset, resync)
 
 	var controllers []*crier.Controller
+
+	// track all worker status before shutdown
+	wg := &sync.WaitGroup{}
 
 	if o.slackWorkers > 0 {
 		if cfg().SlackReporter == nil {
@@ -196,7 +198,8 @@ func main() {
 				kube.RateLimiter(slackReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				slackReporter,
-				o.slackWorkers))
+				o.slackWorkers,
+				wg))
 	}
 
 	if o.gerritWorkers > 0 {
@@ -213,7 +216,8 @@ func main() {
 				kube.RateLimiter(gerritReporter.GetName()),
 				informer,
 				gerritReporter,
-				o.gerritWorkers))
+				o.gerritWorkers,
+				wg))
 	}
 
 	if o.pubsubWorkers > 0 {
@@ -225,7 +229,8 @@ func main() {
 				kube.RateLimiter(pubsubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				pubsubReporter,
-				o.pubsubWorkers))
+				o.pubsubWorkers,
+				wg))
 	}
 
 	if o.githubWorkers > 0 {
@@ -249,18 +254,43 @@ func main() {
 				kube.RateLimiter(githubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				githubReporter,
-				o.githubWorkers))
+				o.githubWorkers,
+				wg))
 	}
 
 	if len(controllers) == 0 {
 		logrus.Fatalf("should have at least one controller to start crier.")
 	}
 
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+
 	// run the controller loop to process items
-	prowjobInformerFactory.Start(interrupts.Context().Done())
+	prowjobInformerFactory.Start(stopCh)
 	for _, controller := range controllers {
-		interrupts.Run(func(ctx context.Context) {
-			controller.Run(ctx)
-		})
+		go controller.Run(stopCh)
+	}
+
+	sigTerm := make(chan os.Signal, 1)
+	signal.Notify(sigTerm, syscall.SIGTERM)
+	signal.Notify(sigTerm, syscall.SIGINT)
+
+	<-sigTerm
+	logrus.Info("Crier received a termination signal and is shutting down...")
+	for range controllers {
+		stopCh <- struct{}{}
+	}
+
+	// waiting for all crier worker to finish
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		wg.Wait()
+	}()
+	select {
+	case <-c:
+		logrus.Info("All worker finished, exiting crier")
+	case <-time.After(10 * time.Second):
+		logrus.Info("timed out waiting for all worker to finish")
 	}
 }
