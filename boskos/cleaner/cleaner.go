@@ -104,7 +104,7 @@ func (c *Cleaner) recycleOne(res *common.Resource) {
 		return
 	}
 	if leasedResources != nil {
-		resources, err := c.client.AcquireByState(res.Name, common.Cleaning, leasedResources)
+		resources, err := c.client.AcquireByState(res.Name, common.Cleaning, leasedResources.Flatten())
 		if err != nil {
 			logrus.WithError(err).Warningf("could not acquire some leased resources for %s", res.Name)
 		}

@@ -76,7 +76,7 @@ func (fb *fakeBoskos) ReleaseAll(state string) error {
 	return nil
 }
 
-func testResource(name, rType, state, owner string, leasedResources []string) common.Resource {
+func testResource(name, rType, state, owner string, leasedResources common.LeasedResources) common.Resource {
 	res := common.NewResource(name, rType, state, owner, time.Now())
 	res.UserData.Set(mason.LeasedResources, &leasedResources)
 	return res
@@ -113,7 +113,7 @@ func TestRecycleResources(t *testing.T) {
 				testResource("static_1", "static", "dynamic_1", "", nil),
 				testResource("static_2", "static", "dynamic_1", "", nil),
 				testResource("static_3", "static", common.Free, "", nil),
-				testResource("dynamic_1", "dynamic", common.Free, "", []string{"static_1", "static_2"}),
+				testResource("dynamic_1", "dynamic", common.Free, "", common.LeasedResources{"fakeType": []string{"static_1", "static_2"}}),
 				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", nil),
 			},
 			drlcs: []common.DynamicResourceLifeCycle{
@@ -137,8 +137,8 @@ func TestRecycleResources(t *testing.T) {
 				testResource("static_1", "static", "dynamic_1", "", nil),
 				testResource("static_2", "static", "dynamic_1", "", nil),
 				testResource("static_3", "static", "dynamic_2", "", nil),
-				testResource("dynamic_1", "dynamic", common.ToBeDeleted, "", []string{"static_1", "static_2"}),
-				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", []string{"static_3"}),
+				testResource("dynamic_1", "dynamic", common.ToBeDeleted, "", common.LeasedResources{"fakeType": []string{"static_1", "static_2"}}),
+				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", common.LeasedResources{"fakeType": []string{"static_3"}}),
 			},
 			drlcs: []common.DynamicResourceLifeCycle{
 				{
@@ -161,8 +161,8 @@ func TestRecycleResources(t *testing.T) {
 				testResource("static_1", "static", "dynamic_1", "", nil),
 				testResource("static_2", "static", common.Free, "", nil),
 				testResource("static_3", "static", common.Free, "", nil),
-				testResource("dynamic_1", "dynamic", common.ToBeDeleted, "", []string{"static_1", "static_2"}),
-				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", []string{"static_3"}),
+				testResource("dynamic_1", "dynamic", common.ToBeDeleted, "", common.LeasedResources{"fakeType": []string{"static_1", "static_2"}}),
+				testResource("dynamic_2", "dynamic", common.ToBeDeleted, "", common.LeasedResources{"fakeType": []string{"static_3"}}),
 			},
 			drlcs: []common.DynamicResourceLifeCycle{
 				{
