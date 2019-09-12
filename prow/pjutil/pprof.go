@@ -20,8 +20,9 @@ package pjutil
 import (
 	"net/http"
 	"net/http/pprof"
+	"time"
 
-	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
 )
 
 // ServePProf sets up a handler for pprof debug endpoints and starts a server for them asynchronously.
@@ -35,7 +36,6 @@ func ServePProf() {
 	pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	go func() {
-		logrus.WithError(http.ListenAndServe(":6060", pprofMux)).Fatal("ListenAndServe returned while serving pprof data.")
-	}()
+	server := &http.Server{Addr: ":6060", Handler: pprofMux}
+	interrupts.ListenAndServe(server, 5*time.Second)
 }

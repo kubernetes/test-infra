@@ -17,8 +17,8 @@ limitations under the License.
 package statusreconciler
 
 import (
+	"context"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -145,7 +145,7 @@ type Controller struct {
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
 // reconciled on PRs in flight when blocking presubmits change
-func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.Delta) {
+func (c *Controller) Run(ctx context.Context, changes <-chan config.Delta) {
 	for {
 		select {
 		case change := <-changes:
@@ -154,7 +154,7 @@ func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.Delta) {
 				logrus.WithError(err).Error("Error reconciling statuses.")
 			}
 			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Statuses reconciled")
-		case <-stop:
+		case <-ctx.Done():
 			logrus.Info("status-reconciler is shutting down...")
 			return
 		}

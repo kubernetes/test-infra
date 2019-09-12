@@ -20,11 +20,11 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
@@ -79,11 +79,6 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 	log := logrus.StandardLogger().WithField("plugin", "cherrypick")
 
-	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
-	// We'll get SIGTERM first and then SIGKILL after our graceful termination
-	// deadline.
-	signal.Ignore(syscall.SIGTERM)
-
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
@@ -131,7 +126,10 @@ func main() {
 		repos: repos,
 	}
 
-	http.Handle("/", server)
-	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, HelpProvider)
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
+	mux := http.NewServeMux()
+	mux.Handle("/", server)
+	externalplugins.ServeExternalPluginHelp(mux, log, HelpProvider)
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: mux}
+	defer interrupts.WaitForGracefulShutdown()
+	interrupts.ListenAndServe(httpServer, 5*time.Second)
 }
