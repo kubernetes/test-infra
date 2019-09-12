@@ -94,6 +94,10 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 	return common.UserDataFromMap(common.UserDataMap{"fakeConfig": "unused"}), fc.err
 }
 
+func (fc *fakeConfig) Destruct(ctx context.Context, resource *common.Resource, leasedResources common.LeasedResources) error {
+	return resource.UserData.Set("destruct", "true")
+}
+
 // Create a fake client
 func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedResource) {
 	names := make(chan releasedResource, 100)
@@ -179,7 +183,7 @@ func TestRecycleLeasedResources(t *testing.T) {
 	res1.State = "type2_0"
 	rStorage.UpdateResource(res1)
 	res2, _ := rStorage.GetResource("type2_0")
-	res2.UserData.Set(LeasedResources, &[]string{"type1_0"})
+	res2.UserData.Set(LeasedResources, &common.LeasedResources{"type1": []string{"type1_0"}})
 	rStorage.UpdateResource(res2)
 	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
@@ -201,6 +205,41 @@ func TestRecycleLeasedResources(t *testing.T) {
 	if res1.State != common.Dirty {
 		t.Errorf("Resource state should be dirty, found %s", res1.State)
 	}
+}
+
+func TestRecycleDestruct(t *testing.T) {
+	tc := testConfig{
+		"type1": {
+			count: 1,
+		},
+		"type2": {
+			resourceNeeds: &common.ResourceNeeds{
+				"type1": 1,
+			},
+			count: 1,
+		},
+	}
+
+	rStorage, mClient, _ := createFakeBoskos(tc)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
+	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancel = cancel
+	m.start(ctx, m.recycleAll)
+	select {
+	case <-m.pending:
+		break
+	case <-time.After(1 * time.Second):
+		t.Errorf("Timeout")
+	}
+	m.Stop()
+	res2, _ := rStorage.GetResource("type2_0")
+	var actualDestruct string
+	res2.UserData.Extract("destruct", &actualDestruct)
+	if actualDestruct != "true" {
+		t.Errorf("recycle did not run destruct")
+	}
+
 }
 
 func TestRecycleNoLeasedResources(t *testing.T) {
@@ -231,6 +270,7 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 	m.Stop()
 	res1, _ := rStorage.GetResource("type1_0")
 	res2, _ := rStorage.GetResource("type2_0")
+
 	if res2.State != common.Cleaning {
 		t.Errorf("Resource state should be cleaning")
 	}
@@ -362,7 +402,7 @@ func TestFulfillOne(t *testing.T) {
 	}
 	*res, _ = rStorage.GetResource(res.Name)
 	var leasedResources common.LeasedResources
-	if res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
+	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
 		t.Errorf("unable to extract %s", LeasedResources)
 	}
 	if res.UserData.ToMap()[LeasedResources] != req.resource.UserData.ToMap()[LeasedResources] {
@@ -373,8 +413,9 @@ func TestFulfillOne(t *testing.T) {
 	if len(leasedResources) != 1 {
 		t.Errorf("there should be one leased resource, found %d", len(leasedResources))
 	}
-	if leasedResources[0] != leasedResource.Name {
-		t.Errorf("Leased resource don t match")
+	actualLeasedResource, ok := leasedResources[leasedResource.Type]
+	if !ok || actualLeasedResource[0] != leasedResource.Name {
+		t.Errorf("Leased resource don't match")
 	}
 }
 
@@ -420,14 +461,10 @@ loop:
 		}
 	}
 
-	leasedResourceFromRes := func(r common.Resource) (l []common.Resource) {
-		var leasedResources []string
-		r.UserData.Extract(LeasedResources, &leasedResources)
-		for _, name := range leasedResources {
-			r, _ := rStorage.GetResource(name)
-			l = append(l, r)
-		}
-		return
+	leasedResourceFromRes := func(r common.Resource) common.LeasedResources {
+		var leasedResources common.LeasedResources
+		_ = r.UserData.Extract(LeasedResources, &leasedResources)
+		return leasedResources
 	}
 
 	var resourcesToRelease []common.Resource
@@ -439,14 +476,11 @@ loop:
 			t.FailNow()
 		}
 		leasedResources := leasedResourceFromRes(*res)
-		if len(leasedResources) != 1 {
+		actualResources, ok := leasedResources["type1"]
+		if !ok || len(actualResources) != 1 {
 			t.Error("there should be 1 resource of type1")
 		}
-		for _, r := range leasedResources {
-			if r.Type != "type1" {
-				t.Error("resource should be of type type1")
-			}
-		}
+
 		resourcesToRelease = append(resourcesToRelease, *res)
 	}
 	if _, err := mClient.Acquire("type2", common.Free, "Used"); err == nil {

@@ -63,7 +63,7 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 		}
 	}
 	resourcesToRelease = append(resourcesToRelease, *res)
-	resources, err := c.basic.AcquireByState(res.Name, dest, leasedResources)
+	resources, err := c.basic.AcquireByState(res.Name, dest, leasedResources.Flatten())
 	if err != nil {
 		releaseOnFailure()
 		return nil, err
@@ -93,7 +93,7 @@ func (c *Client) ReleaseOne(name, dest string) (allErrors error) {
 			return
 		}
 	}
-	resourceNames = append(resourceNames, leasedResources...)
+	resourceNames = append(resourceNames, leasedResources.Flatten()...)
 	for _, n := range resourceNames {
 		if err := c.basic.ReleaseOne(n, dest); err != nil {
 			logrus.WithError(err).Warningf("failed to release resource %s", n)

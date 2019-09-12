@@ -34,6 +34,7 @@ const (
 // Masonable should be implemented by all configurations
 type Masonable interface {
 	Construct(context.Context, common.Resource, common.TypeToResources) (*common.UserData, error)
+	Destruct(context.Context, *common.Resource, common.LeasedResources) error
 }
 
 // ConfigConverter converts a string into a Masonable
@@ -256,7 +257,7 @@ func (m *Mason) freeOne(res *common.Resource) error {
 		return err
 	}
 	// And release leased resources as res.Name state
-	for _, name := range leasedResources {
+	for _, name := range leasedResources.Flatten() {
 		if err := m.client.ReleaseOne(name, res.Name); err != nil {
 			logrus.WithError(err).Errorf("unable to release %s to state %s", name, res.Name)
 			return err
@@ -293,7 +294,7 @@ func (m *Mason) recycleAll(ctx context.Context) {
 				if res, err := m.client.Acquire(r, common.Dirty, common.Cleaning); err != nil {
 					logrus.WithError(err).Debug("boskos acquire failed!")
 				} else {
-					if req, err := m.recycleOne(res); err != nil {
+					if req, err := m.recycleOne(ctx, res); err != nil {
 						logrus.WithError(err).Errorf("unable to recycle resource %s", res.Name)
 						if err := m.client.ReleaseOne(res.Name, common.Dirty); err != nil {
 							logrus.WithError(err).Errorf("Unable to release resources %s", res.Name)
@@ -307,7 +308,7 @@ func (m *Mason) recycleAll(ctx context.Context) {
 	}
 }
 
-func (m *Mason) recycleOne(res *common.Resource) (*requirements, error) {
+func (m *Mason) recycleOne(ctx context.Context, res *common.Resource) (*requirements, error) {
 	logrus.Infof("Resource %s is being recycled", res.Name)
 	configEntry, err := m.storage.GetDynamicResourceLifeCycle(res.Type)
 	if err != nil {
@@ -319,8 +320,32 @@ func (m *Mason) recycleOne(res *common.Resource) (*requirements, error) {
 	if err != nil {
 		logrus.WithError(err).Warningf("failed to extract %s from resource user data", LeasedResources)
 	}
+
+	errChan := make(chan error)
+
+	config, err := m.convertConfig(&configEntry)
+	if err != nil {
+		logrus.WithError(err).Errorf("failed to convert config type %s - \n%s", configEntry.Config.Type, configEntry.Config.Content)
+		return nil, err
+	}
+	go func() {
+		var err error
+		err = config.Destruct(ctx, res, leasedResources)
+		errChan <- err
+	}()
+
+	select {
+	case err = <-errChan:
+		if err != nil {
+			logrus.WithError(err).Errorf("failed to destruct resource %s", res.Name)
+			return nil, err
+		}
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+
 	if leasedResources != nil {
-		resources, err := m.client.AcquireByState(res.Name, common.Leased, leasedResources)
+		resources, err := m.client.AcquireByState(res.Name, common.Leased, leasedResources.Flatten())
 		if err != nil {
 			logrus.WithError(err).Warningf("could not acquire any leased resources for %s", res.Name)
 		}
@@ -405,10 +430,11 @@ func (m *Mason) fulfillOne(ctx context.Context, req *requirements) error {
 		}
 	}
 	if req.isFulFilled() {
-		var leasedResources common.LeasedResources
-		for _, lr := range req.fulfillment {
+		leasedResources := common.LeasedResources{}
+		for lrtype, lr := range req.fulfillment {
+			leasedResources[lrtype] = []string{}
 			for _, r := range lr {
-				leasedResources = append(leasedResources, r.Name)
+				leasedResources[lrtype] = append(leasedResources[lrtype], r.Name)
 			}
 		}
 		userData := &common.UserData{}

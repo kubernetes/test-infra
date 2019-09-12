@@ -55,7 +55,15 @@ type UserData struct {
 type UserDataMap map[string]string
 
 // LeasedResources is a list of resources name that used in order to create another resource by Mason
-type LeasedResources []string
+type LeasedResources map[string][]string
+
+func (r *LeasedResources) Flatten() []string {
+	var resources []string
+	for _, value := range *r {
+		resources = append(resources, value...)
+	}
+	return resources
+}
 
 // Item interfaces for resources and configs
 type Item interface {
