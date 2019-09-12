@@ -359,6 +359,9 @@ test_groups:
 - name: cloud-provider-oci-e2e-conformance-stable-v1.12
   gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci/e2e-conformance-stable-1.12
 
+- name: cloud-provider-oci-oke-e2e-conformance-stable-v1.13
+  gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.13
+
 - name: cloud-provider-oci-oke-e2e-conformance-stable-v1.12
   gcs_prefix: k8s-conformance-oracle-cloud/cloud-provider-oci-oke/e2e-conformance-stable-1.12
 
