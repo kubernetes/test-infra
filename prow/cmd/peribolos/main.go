@@ -201,6 +201,7 @@ func main() {
 			logrus.Fatalf("Configuration failed: %v", err)
 		}
 	}
+	logrus.Info("Finished syncing configuration.")
 }
 
 type dumpClient interface {
@@ -948,6 +949,12 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 		}
 		if err != nil {
 			updateErrors = append(updateErrors, fmt.Errorf("failed to update team %d(%s) permissions on repo %s to %s: %v", gt.ID, name, repo, permission, err))
+		}
+	}
+
+	for childName, childTeam := range team.Children {
+		if err := configureTeamRepos(client, githubTeams, childName, orgName, childTeam); err != nil {
+			updateErrors = append(updateErrors, fmt.Errorf("failed to configure %s child team %s repos: %v", orgName, childName, err))
 		}
 	}
 

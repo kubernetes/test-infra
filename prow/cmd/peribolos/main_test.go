@@ -2371,6 +2371,55 @@ func TestConfigureTeamRepos(t *testing.T) {
 			}},
 			expectedErr: true,
 		},
+		{
+			name:        "new requirement in child team config gets added",
+			githubTeams: map[string]github.Team{"team": {ID: 1}, "child": {ID: 2}},
+			teamName:    "team",
+			team: org.Team{
+				Children: map[string]org.Team{
+					"child": {
+						Repos: map[string]github.RepoPermissionLevel{
+							"read":        github.Read,
+							"write":       github.Write,
+							"admin":       github.Admin,
+							"other-admin": github.Admin,
+						},
+					},
+				},
+			},
+			existingRepos: map[int][]github.Repo{2: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+			expected: map[int][]github.Repo{2: {
+				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
+				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Push: true}},
+				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+				{Name: "other-admin", Permissions: github.RepoPermissions{Pull: true, Push: true, Admin: true}},
+			}},
+		},
+		{
+			name:        "failure in a child errors",
+			failRemove:  true,
+			githubTeams: map[string]github.Team{"team": {ID: 1}, "child": {ID: 2}},
+			teamName:    "team",
+			team: org.Team{
+				Repos: map[string]github.RepoPermissionLevel{},
+				Children: map[string]org.Team{
+					"child": {
+						Repos: map[string]github.RepoPermissionLevel{},
+					},
+				},
+			},
+			existingRepos: map[int][]github.Repo{2: {
+				{Name: "needs-deletion", Permissions: github.RepoPermissions{Pull: true}},
+			}},
+			expected: map[int][]github.Repo{2: {
+				{Name: "needs-deletion", Permissions: github.RepoPermissions{Pull: true}},
+			}},
+			expectedErr: true,
+		},
 	}
 
 	for _, testCase := range testCases {
