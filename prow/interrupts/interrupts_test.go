@@ -43,6 +43,7 @@ var interrupt = make(chan os.Signal, 1)
 // so we can inject our implementation of the interrupt channel
 func init() {
 	signalsLock.Lock()
+	gracePeriod = 0 * time.Second
 	signals = func() <-chan os.Signal {
 		return interrupt
 	}
