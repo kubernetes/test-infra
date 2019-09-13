@@ -21,6 +21,7 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      - --env=TEST_NGINX_LB_TIMEOUT=2h # TODO(82416): Clean up once we figure out a proper timeout
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
