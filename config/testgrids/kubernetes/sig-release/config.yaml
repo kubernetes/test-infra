@@ -18,7 +18,6 @@ dashboard_groups:
   - sig-release-1.13-informing
   - sig-release-1.13-all
   - sig-release-misc
-  - sig-release-orphaned
   - sig-release-publishing-bot
   - sig-release-release-notes-presubmits
 
@@ -44,7 +43,6 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
     description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
 - name: sig-release-misc
-- name: sig-release-orphaned
 - name: sig-release-publishing-bot
 - name: sig-release-release-notes-presubmits
   dashboard_tab:
