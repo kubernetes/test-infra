@@ -1160,6 +1160,66 @@ func TestValidateBug(t *testing.T) {
 				"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 			},
 		},
+		{
+			name:    "matching status means a valid bug when resolution is not required",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
+			valid:   true,
+		},
+		{
+			name:    "matching just status means an invalid bug when resolution does not match",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:   false,
+			why: []string{
+				"expected the bug to be in one of the following states: CLOSED (ERRATA), but it is CLOSED (LOL_GO_AWAY) instead",
+			},
+		},
+		{
+			name:    "matching status and resolution means a valid bug when both are required",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:   true,
+		},
+		{
+			name:    "matching resolution means a valid bug when status is not required",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Resolution: "ERRATA"}}},
+			valid:   true,
+		},
+		{
+			name:    "matching just resolution means an invalid bug when status does not match",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "RESOLVED", Resolution: "ERRATA"}}},
+			valid:   false,
+			why: []string{
+				"expected the bug to be in one of the following states: RESOLVED (ERRATA), but it is CLOSED (ERRATA) instead",
+			},
+		},
+		{
+			name:       "matching status on dependent bug means a valid bug when resolution is not required",
+			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
+			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
+			valid:      true,
+		},
+		{
+			name:       "matching just status on dependent bug means an invalid bug when resolution does not match",
+			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
+			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:      false,
+			why: []string{
+				"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: CLOSED (ERRATA), but it is CLOSED (LOL_GO_AWAY) instead",
+			},
+		},
+		{
+			name:       "matching status and resolution on dependent bug means a valid bug when both are required",
+			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "ERRATA"}},
+			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:      true,
+		},
 	}
 
 	for _, testCase := range testCases {
