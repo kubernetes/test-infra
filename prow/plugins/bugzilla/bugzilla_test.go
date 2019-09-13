@@ -657,6 +657,25 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
 		},
 		{
+			name:           "valid bug with status update removes invalid label, adds valid label, comments and updates status with resolution",
+			bugs:           []bugzilla.Bug{{ID: 123, Status: "MODIFIED"}},
+			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "VALIDATED"}}, // no requirements --> always valid
+			labels:         []string{"bugzilla/invalid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the CLOSED (VALIDATED) state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "VALIDATED"},
+		},
+		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and does not update status when it is already correct",
 			bugs:           []bugzilla.Bug{{ID: 123, Status: "UPDATED"}},
 			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated}, // no requirements --> always valid
@@ -755,6 +774,30 @@ In response to [this](http.com):
 
 Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
 </details>`,
+		},
+		{
+			name:   "valid bug on merged PR with one external link migrates to new state with resolution and comments",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "MODIFIED"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
+			options: plugins.BugzillaBranchOptions{StateAfterMerge: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "MERGED"}}, // no requirements --> always valid
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the CLOSED (MERGED) state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "MERGED"},
 		},
 		{
 			name:   "valid bug on merged PR with one external link migrates to new state and comments",
