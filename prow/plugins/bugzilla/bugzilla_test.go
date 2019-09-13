@@ -25,12 +25,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/pluginhelp"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -47,10 +47,12 @@ orgs:
       "*":
         is_open: true
         target_release: my-org-default
-        status_after_validation: "PRE"
+        state_after_validation:
+          status: "PRE"
       "my-org-branch":
         target_release: my-org-branch-default
-        status_after_validation: "POST"
+        state_after_validation:
+          status: "POST"
         add_external_link: true
     repos:
       my-repo:
@@ -58,14 +60,30 @@ orgs:
           "*":
             is_open: false
             target_release: my-repo-default
-            statuses:
-            - VALIDATED
+            valid_states:
+            - status: VALIDATED
           "my-repo-branch":
             target_release: my-repo-branch
-            statuses:
-            - MODIFIED
+            valid_states:
+            - status: MODIFIED
             add_external_link: true
-            status_after_merge: MODIFIED`
+            state_after_merge:
+              status: MODIFIED
+          "branch-that-likes-closed-bugs":
+            valid_states:
+            - status: VERIFIED
+            - status: CLOSED
+              resolution: ERRATA
+            dependent_bug_states:
+            - status: CLOSED
+              resolution: ERRATA
+            state_after_merge:
+              status: CLOSED
+              resolution: FIXED
+            state_after_validation:
+              status: CLOSED
+              resolution: VALIDATED`
+
 	var config plugins.Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -85,13 +103,14 @@ orgs:
 <li>on the "global-branch" branch, valid bugs must be closed and target the "global-branch-default" release.</li>
 </ul>`,
 			"my-org/some-repo": `The plugin has the following configuration:<ul>
-<li>by default, valid bugs must be open and target the "my-org-default" release. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
-<li>on the "my-org-branch" branch, valid bugs must be open and target the "my-org-branch-default" release. After being linked to a pull request, bugs will be moved to the "POST" state and updated to refer to the pull request using the external bug tracker.</li>
+<li>by default, valid bugs must be open and target the "my-org-default" release. After being linked to a pull request, bugs will be moved to the PRE state.</li>
+<li>on the "my-org-branch" branch, valid bugs must be open and target the "my-org-branch-default" release. After being linked to a pull request, bugs will be moved to the POST state and updated to refer to the pull request using the external bug tracker.</li>
 </ul>`,
 			"my-org/my-repo": `The plugin has the following configuration:<ul>
-<li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "PRE" state.</li>
-<li>on the "my-org-branch" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the "POST" state and updated to refer to the pull request using the external bug tracker.</li>
-<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the "PRE" state, updated to refer to the pull request using the external bug tracker, and moved to the "MODIFIED" state when all linked pull requests are merged.</li>
+<li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the PRE state.</li>
+<li>on the "branch-that-likes-closed-bugs" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VERIFIED, CLOSED (ERRATA). After being linked to a pull request, bugs will be moved to the CLOSED (VALIDATED) state and moved to the CLOSED (FIXED) state when all linked pull requests are merged.</li>
+<li>on the "my-org-branch" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the POST state and updated to refer to the pull request using the external bug tracker.</li>
+<li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the PRE state, updated to refer to the pull request using the external bug tracker, and moved to the MODIFIED state when all linked pull requests are merged.</li>
 </ul>`,
 		},
 		Commands: []pluginhelp.Command{{
@@ -509,8 +528,9 @@ Instructions for interacting with me using PR comments are available [here](http
 func TestHandle(t *testing.T) {
 	yes := true
 	open := true
-	updated, modified := "UPDATED", "MODIFIED"
-	verified := []string{"VERIFIED"}
+	updated := plugins.BugzillaBugState{Status: "UPDATED"}
+	modified := plugins.BugzillaBugState{Status: "MODIFIED"}
+	verified := []plugins.BugzillaBugState{{Status: "VERIFIED"}}
 	base := &event{
 		org: "org", repo: "repo", baseRef: "branch", number: 1, bugId: 123, body: "Bug 123: fixed it!", htmlUrl: "http.com", login: "user",
 	}
@@ -620,7 +640,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and updates status",
 			bugs:           []bugzilla.Bug{{ID: 123}},
-			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
+			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the UPDATED state.
@@ -637,9 +657,28 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "UPDATED"},
 		},
 		{
+			name:           "valid bug with status update removes invalid label, adds valid label, comments and updates status with resolution",
+			bugs:           []bugzilla.Bug{{ID: 123, Status: "MODIFIED"}},
+			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "VALIDATED"}}, // no requirements --> always valid
+			labels:         []string{"bugzilla/invalid-bug"},
+			expectedLabels: []string{"bugzilla/valid-bug"},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid. The bug has been moved to the CLOSED (VALIDATED) state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "VALIDATED"},
+		},
+		{
 			name:           "valid bug with status update removes invalid label, adds valid label, comments and does not update status when it is already correct",
-			bugs:           []bugzilla.Bug{{ID: 123, Status: updated}},
-			options:        plugins.BugzillaBranchOptions{StatusAfterValidation: &updated}, // no requirements --> always valid
+			bugs:           []bugzilla.Bug{{ID: 123, Status: "UPDATED"}},
+			options:        plugins.BugzillaBranchOptions{StateAfterValidation: &updated}, // no requirements --> always valid
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
@@ -703,7 +742,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			name:      "failure to fetch dependent bug results in a comment",
 			bugs:      []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}},
 			bugErrors: []int{124},
-			options:   plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
+			options:   plugins.BugzillaBranchOptions{DependentBugStates: &verified},
 			expectedComment: `org/repo#1:@user: An error was encountered searching for dependent bug 124 for bug 123 on the Bugzilla server at www.bugzilla:
 > injected error getting bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
@@ -721,7 +760,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name:           "valid bug with dependent bugs removes invalid label, adds valid label, comments",
 			bugs:           []bugzilla.Bug{{ID: 123, DependsOn: []int{124}}, {ID: 124, Status: "VERIFIED"}},
-			options:        plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
+			options:        plugins.BugzillaBranchOptions{DependentBugStates: &verified},
 			labels:         []string{"bugzilla/invalid-bug"},
 			expectedLabels: []string{"bugzilla/valid-bug"},
 			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is valid.
@@ -737,6 +776,30 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		},
 		{
+			name:   "valid bug on merged PR with one external link migrates to new state with resolution and comments",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123, Status: "MODIFIED"}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
+				Org:           base.org, Repo: base.repo, Num: base.number,
+			}},
+			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
+			options: plugins.BugzillaBranchOptions{StateAfterMerge: &plugins.BugzillaBugState{Status: "CLOSED", Resolution: "MERGED"}}, // no requirements --> always valid
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the CLOSED (MERGED) state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Resolution: "MERGED"},
+		},
+		{
 			name:   "valid bug on merged PR with one external link migrates to new state and comments",
 			merged: true,
 			bugs:   []bugzilla.Bug{{ID: 123}},
@@ -746,7 +809,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Org:           base.org, Repo: base.repo, Num: base.number,
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
-			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
@@ -774,7 +837,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Org:           base.org, Repo: base.repo, Num: 22,
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: true}},
-			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged. [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
@@ -802,7 +865,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Org:           base.org, Repo: base.repo, Num: 22,
 			}},
 			prs:         []github.PullRequest{{Number: base.number, Merged: true}, {Number: 22, Merged: false}},
-			options:     plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedBug: &bugzilla.Bug{ID: 123},
 		},
 		{
@@ -829,7 +892,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Org:           base.org, Repo: base.repo, Num: base.number,
 			}},
 			prs:         []github.PullRequest{{Number: base.number, Merged: true}},
-			options:     plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedBug: &bugzilla.Bug{ID: 123},
 		},
 		{
@@ -843,7 +906,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Org:           base.org, Repo: base.repo, Num: base.number,
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
-			options: plugins.BugzillaBranchOptions{StatusAfterMerge: &modified}, // no requirements --> always valid
+			options: plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedComment: `org/repo#1:@user: An error was encountered searching for external tracker bugs for bug 123 on the Bugzilla server at www.bugzilla:
 > injected error adding external bug to bug
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
@@ -869,7 +932,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				Org:           base.org, Repo: base.repo, Num: base.number,
 			}},
 			prs:     []github.PullRequest{{Number: base.number, Merged: true}},
-			options: plugins.BugzillaBranchOptions{StatusAfterValidation: &updated, StatusAfterMerge: &modified}, // no requirements --> always valid
+			options: plugins.BugzillaBranchOptions{StateAfterValidation: &updated, StateAfterMerge: &modified}, // no requirements --> always valid
 			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) is in an unrecognized state (CLOSED) and will not be moved to the MODIFIED state.
 
 <details>
@@ -1024,8 +1087,9 @@ func TestTitleMatch(t *testing.T) {
 func TestValidateBug(t *testing.T) {
 	open, closed := true, false
 	one, two := "v1", "v2"
-	verified, modified := []string{"VERIFIED"}, []string{"MODIFIED"}
-	updated := "UPDATED"
+	verified := []plugins.BugzillaBugState{{Status: "VERIFIED"}}
+	modified := []plugins.BugzillaBugState{{Status: "MODIFIED"}}
+	updated := plugins.BugzillaBugState{Status: "UPDATED"}
 	var testCases = []struct {
 		name       string
 		bug        bugzilla.Bug
@@ -1089,33 +1153,33 @@ func TestValidateBug(t *testing.T) {
 		{
 			name:    "matching status requirement means a valid bug",
 			bug:     bugzilla.Bug{Status: "MODIFIED"},
-			options: plugins.BugzillaBranchOptions{Statuses: &modified},
+			options: plugins.BugzillaBranchOptions{ValidStates: &modified},
 			valid:   true,
 		},
 		{
 			name:    "matching status requirement by being in the migrated state means a valid bug",
 			bug:     bugzilla.Bug{Status: "UPDATED"},
-			options: plugins.BugzillaBranchOptions{Statuses: &modified, StatusAfterValidation: &updated},
+			options: plugins.BugzillaBranchOptions{ValidStates: &modified, StateAfterValidation: &updated},
 			valid:   true,
 		},
 		{
 			name:    "not matching status requirement means an invalid bug",
 			bug:     bugzilla.Bug{Status: "MODIFIED"},
-			options: plugins.BugzillaBranchOptions{Statuses: &verified},
+			options: plugins.BugzillaBranchOptions{ValidStates: &verified},
 			valid:   false,
 			why:     []string{"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
 		},
 		{
 			name:    "dependent status requirement with no dependent bugs means a valid bug",
 			bug:     bugzilla.Bug{DependsOn: []int{}},
-			options: plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
+			options: plugins.BugzillaBranchOptions{DependentBugStates: &verified},
 			valid:   true,
 		},
 		{
 			name:       "not matching dependent bug status requirement means an invalid bug",
 			bug:        bugzilla.Bug{DependsOn: []int{1}},
 			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
-			options:    plugins.BugzillaBranchOptions{DependentBugStatuses: &verified},
+			options:    plugins.BugzillaBranchOptions{DependentBugStates: &verified},
 			valid:      false,
 			why:        []string{"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead"},
 		},
@@ -1139,14 +1203,14 @@ func TestValidateBug(t *testing.T) {
 			name:       "matching all requirements means a valid bug",
 			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
 			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED", TargetRelease: []string{"v2"}}},
-			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, Statuses: &modified, DependentBugStatuses: &modified, DependentBugTargetRelease: &two},
+			options:    plugins.BugzillaBranchOptions{IsOpen: &closed, TargetRelease: &one, ValidStates: &modified, DependentBugStates: &modified, DependentBugTargetRelease: &two},
 			valid:      true,
 		},
 		{
 			name:       "matching no requirements means an invalid bug",
 			bug:        bugzilla.Bug{IsOpen: false, TargetRelease: []string{"v1"}, Status: "MODIFIED", DependsOn: []int{1}},
 			dependents: []bugzilla.Bug{{ID: 1, Status: "MODIFIED"}},
-			options:    plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, Statuses: &verified, DependentBugStatuses: &verified},
+			options:    plugins.BugzillaBranchOptions{IsOpen: &open, TargetRelease: &two, ValidStates: &verified, DependentBugStates: &verified},
 			valid:      false,
 			why: []string{
 				"expected the bug to be open, but it isn't",
@@ -1154,6 +1218,66 @@ func TestValidateBug(t *testing.T) {
 				"expected the bug to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 				"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: VERIFIED, but it is MODIFIED instead",
 			},
+		},
+		{
+			name:    "matching status means a valid bug when resolution is not required",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
+			valid:   true,
+		},
+		{
+			name:    "matching just status means an invalid bug when resolution does not match",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:   false,
+			why: []string{
+				"expected the bug to be in one of the following states: CLOSED (ERRATA), but it is CLOSED (LOL_GO_AWAY) instead",
+			},
+		},
+		{
+			name:    "matching status and resolution means a valid bug when both are required",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:   true,
+		},
+		{
+			name:    "matching resolution means a valid bug when status is not required",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Resolution: "ERRATA"}}},
+			valid:   true,
+		},
+		{
+			name:    "matching just resolution means an invalid bug when status does not match",
+			bug:     bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			options: plugins.BugzillaBranchOptions{ValidStates: &[]plugins.BugzillaBugState{{Status: "RESOLVED", Resolution: "ERRATA"}}},
+			valid:   false,
+			why: []string{
+				"expected the bug to be in one of the following states: RESOLVED (ERRATA), but it is CLOSED (ERRATA) instead",
+			},
+		},
+		{
+			name:       "matching status on dependent bug means a valid bug when resolution is not required",
+			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
+			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED"}}},
+			valid:      true,
+		},
+		{
+			name:       "matching just status on dependent bug means an invalid bug when resolution does not match",
+			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "LOL_GO_AWAY"},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "LOL_GO_AWAY"}},
+			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:      false,
+			why: []string{
+				"expected dependent [Bugzilla bug 1](bugzilla.com/show_bug.cgi?id=1) to be in one of the following states: CLOSED (ERRATA), but it is CLOSED (LOL_GO_AWAY) instead",
+			},
+		},
+		{
+			name:       "matching status and resolution on dependent bug means a valid bug when both are required",
+			bug:        bugzilla.Bug{Status: "CLOSED", Resolution: "ERRATA"},
+			dependents: []bugzilla.Bug{{ID: 1, Status: "CLOSED", Resolution: "ERRATA"}},
+			options:    plugins.BugzillaBranchOptions{DependentBugStates: &[]plugins.BugzillaBugState{{Status: "CLOSED", Resolution: "ERRATA"}}},
+			valid:      true,
 		},
 	}
 
