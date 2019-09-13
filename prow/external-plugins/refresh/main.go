@@ -23,11 +23,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"strconv"
-	"time"
+	"syscall"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -87,6 +87,11 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 	log := logrus.StandardLogger().WithField("plugin", "refresh")
 
+	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
+	// We'll get SIGTERM first and then SIGKILL after our graceful termination
+	// deadline.
+	signal.Ignore(syscall.SIGTERM)
+
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, ""); err != nil {
 		log.WithError(err).Fatal("Error starting config agent.")
@@ -110,10 +115,7 @@ func main() {
 		log:            log,
 	}
 
-	mux := http.NewServeMux()
-	mux.Handle("/", serv)
-	externalplugins.ServeExternalPluginHelp(mux, log, helpProvider)
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: mux}
-	defer interrupts.WaitForGracefulShutdown()
-	interrupts.ListenAndServe(httpServer, 5*time.Second)
+	http.Handle("/", serv)
+	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, helpProvider)
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }

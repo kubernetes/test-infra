@@ -45,7 +45,6 @@ go_library(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/interrupts:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
@@ -60,6 +59,7 @@ go_library(
         "@io_k8s_sigs_controller_runtime//pkg/client:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/manager:go_default_library",
         "@io_k8s_sigs_controller_runtime//pkg/runtime/log:go_default_library",
+        "@io_k8s_sigs_controller_runtime//pkg/runtime/signals:go_default_library",
     ],
 )
 

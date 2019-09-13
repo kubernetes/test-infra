@@ -33,11 +33,11 @@ import (
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -94,8 +94,6 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
-
-	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf()
 
@@ -158,7 +156,7 @@ func main() {
 	if err := mgr.Add(&c); err != nil {
 		logrus.WithError(err).Fatal("failed to add controller to manager")
 	}
-	if err := mgr.Start(interrupts.Context().Done()); err != nil {
+	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
 }

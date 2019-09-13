@@ -21,9 +21,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
-	"k8s.io/test-infra/prow/interrupts"
+	"github.com/sirupsen/logrus"
 )
 
 const healthPort = 8081
@@ -38,8 +37,9 @@ type Health struct {
 func NewHealth() *Health {
 	healthMux := http.NewServeMux()
 	healthMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "OK") })
-	server := &http.Server{Addr: ":" + strconv.Itoa(healthPort), Handler: healthMux}
-	interrupts.ListenAndServe(server, 5*time.Second)
+	go func() {
+		logrus.WithError(http.ListenAndServe(":"+strconv.Itoa(healthPort), healthMux)).Fatal("ListenAndServe returned.")
+	}()
 	return &Health{
 		healthMux: healthMux,
 	}

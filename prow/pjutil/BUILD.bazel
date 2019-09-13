@@ -25,7 +25,6 @@ go_library(
         "//prow/gcsupload:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/reporter:go_default_library",
-        "//prow/interrupts:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",

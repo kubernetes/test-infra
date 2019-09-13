@@ -28,16 +28,14 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
-	"k8s.io/test-infra/prow/pjutil"
 )
 
 var (
@@ -144,13 +142,11 @@ func main() {
 	}
 
 	pjutil.ServePProf()
-	defer interrupts.WaitForGracefulShutdown()
 	metrics.ExposeMetrics("ghproxy", config.PushGateway{
 		Endpoint: o.pushGateway, Interval: &metav1.Duration{Duration: o.pushGatewayInterval}, ServeMetrics: o.serveMetrics})
 
 	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
-	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: proxy}
-	interrupts.ListenAndServe(server, 30*time.Second)
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), proxy))
 }
 
 func newReverseProxy(upstreamURL *url.URL, transport http.RoundTripper, timeout time.Duration) http.Handler {

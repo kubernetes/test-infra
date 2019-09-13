@@ -17,15 +17,17 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/bugzilla"
-	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -190,8 +192,6 @@ func main() {
 
 	promMetrics := hook.NewMetrics()
 
-	defer interrupts.WaitForGracefulShutdown()
-
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway)
 	pjutil.ServePProf()
@@ -220,5 +220,16 @@ func main() {
 
 	health.ServeReady()
 
-	interrupts.ListenAndServe(httpServer, o.gracePeriod)
+	// Shutdown gracefully on SIGTERM or SIGINT
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sig
+		logrus.Info("Hook is shutting down...")
+		ctx, cancel := context.WithTimeout(context.Background(), o.gracePeriod)
+		defer cancel()
+		httpServer.Shutdown(ctx)
+	}()
+
+	logrus.WithError(httpServer.ListenAndServe()).Warn("Server exited.")
 }

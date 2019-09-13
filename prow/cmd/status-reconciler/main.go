@@ -17,13 +17,13 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -95,8 +95,6 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	defer interrupts.WaitForGracefulShutdown()
-
 	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
@@ -131,8 +129,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
 	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), prowJobClient, githubClient, configAgent, pluginAgent)
-	interrupts.Run(func(ctx context.Context) {
-		c.Run(ctx, changes)
-	})
+	c.Run(sig, changes)
 }
