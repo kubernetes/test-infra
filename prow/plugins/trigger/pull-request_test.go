@@ -258,6 +258,30 @@ func TestHandlePullRequest(t *testing.T) {
 			ShouldBuild: false,
 			prAction:    github.PullRequestActionClosed,
 		},
+		{
+			name: "Trusted user labeled PR with ok-to-test should build",
+
+			Author:      "t",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionLabeled,
+			prLabel:     labels.OkToTest,
+		},
+		{
+			name: "Untrusted user labeled PR with ok-to-test should build",
+
+			Author:      "u",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionLabeled,
+			prLabel:     labels.OkToTest,
+		},
+		{
+			name: "Label added by a bot. Build should not be triggered in this case.",
+
+			Author:      "k8s-ci-robot",
+			prLabel:     labels.OkToTest,
+			prAction:    github.PullRequestActionLabeled,
+			ShouldBuild: false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
