@@ -452,71 +452,6 @@ presubmits:
   - agent: kubernetes
     always_run: false
     branches:
-    - master
-    cluster: security
-    context: pull-security-kubernetes-e2e-windows-gce
-    decorate: true
-    decoration_config:
-      gcs_configuration:
-        bucket: kubernetes-security-prow
-        default_org: kubernetes
-        default_repo: kubernetes
-        path_strategy: legacy
-      gcs_credentials_secret: service-account
-      grace_period: 15s
-      timeout: 2h0m0s
-    extra_refs:
-    - base_ref: master
-      org: yujuhong
-      path_alias: k8s.io/gce-k8s-windows-testing
-      repo: gce-k8s-windows-testing
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-e2e-gce-windows: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-e2e-windows-gce
-    optional: true
-    path_alias: k8s.io/kubernetes
-    rerun_command: /test pull-security-kubernetes-e2e-windows-gce
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --build=gce-windows-bazel
-        - --check-leaked-resources
-        - --cluster=
-        - --extract=local
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=8
-        - --provider=gce
-        - --gcp-nodes=2
-        - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
-        - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
-          --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
-        - --test-cmd-args=--node-os-distro=windows
-        - --timeout=120m
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-943aad7-master
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-windows-gce,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
     - release-1.13
     cluster: security
     context: pull-security-kubernetes-e2e-kind
@@ -4756,6 +4691,71 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-e2e-windows-gce
+    decorate: true
+    decoration_config:
+      gcs_configuration:
+        bucket: kubernetes-security-prow
+        default_org: kubernetes
+        default_repo: kubernetes
+        path_strategy: legacy
+      gcs_credentials_secret: service-account
+      grace_period: 15s
+      timeout: 2h0m0s
+    extra_refs:
+    - base_ref: master
+      org: yujuhong
+      path_alias: k8s.io/gce-k8s-windows-testing
+      repo: gce-k8s-windows-testing
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-gce-windows: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-e2e-windows-gce
+    optional: true
+    path_alias: k8s.io/kubernetes
+    rerun_command: /test pull-security-kubernetes-e2e-windows-gce
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --build=gce-windows-bazel
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=local
+        - --gcp-zone=us-west1-b
+        - --ginkgo-parallel=8
+        - --provider=gce
+        - --gcp-nodes=2
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+        - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
+          --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+        - --test-cmd-args=--node-os-distro=windows
+        - --timeout=120m
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-943aad7-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-windows-gce,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
