@@ -436,7 +436,7 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
-			expectedCommentText:   "The label(s) `/remove-label orchestrator/jar` cannot be appled. These labels are supported: `orchestrator/foo, orchestrator/bar`",
+			expectedCommentText:   "The label(s) `/remove-label orchestrator/jar` cannot be applied. These labels are supported: `orchestrator/foo, orchestrator/bar`",
 		},
 	}
 
