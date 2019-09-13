@@ -317,6 +317,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/prow/tide" href="#area/prow/tide">`area/prow/tide`</a> | Issues or PRs related to prow's tide component| label | |
 | <a id="area/prow/tot" href="#area/prow/tot">`area/prow/tot`</a> | Issues or PRs related to prow's tot component| label | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
+| <a id="kind/oncall-hotlist" href="#kind/oncall-hotlist">`kind/oncall-hotlist`</a> | Categorizes issue or PR as tracked by test-infra oncall.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/website, for both issues and PRs
 
