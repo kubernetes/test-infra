@@ -231,7 +231,7 @@ go_repositories()
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 
 new_git_repository(
-    name = "operator_framework_community_operators",
+    name = "com_github_operator_framework_community_operators",
     build_file_content = """
 exports_files([
     "upstream-community-operators/prometheus/alertmanager.crd.yaml",
@@ -240,9 +240,9 @@ exports_files([
     "upstream-community-operators/prometheus/servicemonitor.crd.yaml",
 ])
 """,
-    commit = "42131df7167ec0b264c892c1f3c49ba9a72142da",
+    commit = "efda5dc98fd580ab5f1115a50a28825ae4fe6562",
     remote = "https://github.com/operator-framework/community-operators.git",
-    shallow_since = "1559569397 +0200",
+    shallow_since = "1568320223 +0200",
 )
 
 http_archive(
