@@ -1,5 +1,5 @@
 # gazelle:prefix k8s.io/test-infra
-# gazelle:proto disable_global
+# gazelle:proto disable
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 # gazelle:exclude hack
 # gazelle:exclude node_modules
