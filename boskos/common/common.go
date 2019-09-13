@@ -57,6 +57,9 @@ type UserDataMap map[string]string
 // LeasedResources is a map of resource types to list of resource names that are used in order to create another resource by Mason
 type LeasedResources map[string][]string
 
+// LegacyLeasedResources is a list of resources name that used in order to create another resource by Mason
+type LegacyLeasedResource []string
+
 // Flatten returns a slice of all values from the map
 func (r *LeasedResources) Flatten() []string {
 	var resources []string

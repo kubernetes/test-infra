@@ -94,7 +94,7 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 	return common.UserDataFromMap(common.UserDataMap{"fakeConfig": "unused"}), fc.err
 }
 
-func (fc *fakeConfig) Destruct(ctx context.Context, resource *common.Resource, leasedResources common.LeasedResources) error {
+func (fc *fakeConfig) Destruct(ctx context.Context, resource *common.Resource, leasedResources interface{}) error {
 	return resource.UserData.Set("destruct", "true")
 }
 
@@ -184,6 +184,48 @@ func TestRecycleLeasedResources(t *testing.T) {
 	rStorage.UpdateResource(res1)
 	res2, _ := rStorage.GetResource("type2_0")
 	res2.UserData.Set(LeasedResources, &common.LeasedResources{"type1": []string{"type1_0"}})
+	rStorage.UpdateResource(res2)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
+	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancel = cancel
+	m.start(ctx, m.recycleAll)
+	select {
+	case <-m.pending:
+		break
+	case <-time.After(1 * time.Second):
+		t.Errorf("Timeout")
+	}
+	m.Stop()
+	res1, _ = rStorage.GetResource("type1_0")
+	res2, _ = rStorage.GetResource("type2_0")
+	if res2.State != common.Cleaning {
+		t.Errorf("Resource state should be cleaning, found %s", res2.State)
+	}
+	if res1.State != common.Dirty {
+		t.Errorf("Resource state should be dirty, found %s", res1.State)
+	}
+}
+
+func TestRecycleLegacyLeasedResources(t *testing.T) {
+	tc := testConfig{
+		"type1": {
+			count: 1,
+		},
+		"type2": {
+			resourceNeeds: &common.ResourceNeeds{
+				"type1": 1,
+			},
+			count: 1,
+		},
+	}
+
+	rStorage, mClient, _ := createFakeBoskos(tc)
+	res1, _ := rStorage.GetResource("type1_0")
+	res1.State = "type2_0"
+	rStorage.UpdateResource(res1)
+	res2, _ := rStorage.GetResource("type2_0")
+	res2.UserData.Set(LeasedResources, &common.LegacyLeasedResource{"type1_0"})
 	rStorage.UpdateResource(res2)
 	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)

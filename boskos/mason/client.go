@@ -55,15 +55,22 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	var leasedResources common.LeasedResources
-	if err = res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
+	leasedRes, err := CheckUserData(*res)
+	if err != nil {
 		if _, ok := err.(*common.UserDataNotFound); !ok {
 			logrus.WithError(err).Errorf("cannot parse %s from User Data", LeasedResources)
 			return nil, err
 		}
 	}
+	var legacyLeasedResources common.LegacyLeasedResource
+	switch leasedResources := leasedRes.(type) {
+	case common.LegacyLeasedResource:
+		legacyLeasedResources = leasedResources
+	case common.LeasedResources:
+		legacyLeasedResources = leasedResources.Flatten()
+	}
 	resourcesToRelease = append(resourcesToRelease, *res)
-	resources, err := c.basic.AcquireByState(res.Name, dest, leasedResources.Flatten())
+	resources, err := c.basic.AcquireByState(res.Name, dest, legacyLeasedResources)
 	if err != nil {
 		releaseOnFailure()
 		return nil, err
@@ -81,8 +88,10 @@ func (c *Client) ReleaseOne(name, dest string) (allErrors error) {
 		return
 	}
 	resourceNames := []string{name}
-	var leasedResources common.LeasedResources
-	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
+
+	leasedRes, err := CheckUserData(*res)
+
+	if err != nil {
 		if _, ok := err.(*common.UserDataNotFound); !ok {
 			logrus.WithError(err).Errorf("cannot parse %s from User Data", LeasedResources)
 			allErrors = multierror.Append(allErrors, err)
@@ -93,7 +102,16 @@ func (c *Client) ReleaseOne(name, dest string) (allErrors error) {
 			return
 		}
 	}
-	resourceNames = append(resourceNames, leasedResources.Flatten()...)
+
+	var legacyLeasedResources common.LegacyLeasedResource
+	switch leasedResources := leasedRes.(type) {
+	case common.LegacyLeasedResource:
+		legacyLeasedResources = leasedResources
+	case common.LeasedResources:
+		legacyLeasedResources = leasedResources.Flatten()
+	}
+
+	resourceNames = append(resourceNames, legacyLeasedResources...)
 	for _, n := range resourceNames {
 		if err := c.basic.ReleaseOne(n, dest); err != nil {
 			logrus.WithError(err).Warningf("failed to release resource %s", n)

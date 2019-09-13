@@ -61,7 +61,7 @@ func (m *fakeMasonAgent) Construct(context.Context, common.Resource, common.Type
 	return common.UserDataFromMap(ud), nil
 }
 
-func (m *fakeMasonAgent) Destruct(context.Context, *common.Resource, common.LeasedResources) error {
+func (m *fakeMasonAgent) Destruct(context.Context, *common.Resource, interface{}) error {
 	return nil
 }
 

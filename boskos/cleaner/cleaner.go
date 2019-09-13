@@ -98,13 +98,22 @@ func (c *Cleaner) recycleAll(ctx context.Context) {
 
 func (c *Cleaner) recycleOne(res *common.Resource) {
 	logrus.Infof("Resource %s is being recycled", res.Name)
-	leasedResources, err := mason.CheckUserData(*res)
+	leasedRes, err := mason.CheckUserData(*res)
 	if err != nil {
 		logrus.Warningf("could not find leased resources for %s", res.Name)
 		return
 	}
-	if leasedResources != nil {
-		resources, err := c.client.AcquireByState(res.Name, common.Cleaning, leasedResources.Flatten())
+
+	var legacyLeasedResources common.LegacyLeasedResource
+	switch leasedResources := leasedRes.(type) {
+	case common.LegacyLeasedResource:
+		legacyLeasedResources = leasedResources
+	case common.LeasedResources:
+		legacyLeasedResources = leasedResources.Flatten()
+	}
+
+	if legacyLeasedResources != nil {
+		resources, err := c.client.AcquireByState(res.Name, common.Cleaning, legacyLeasedResources)
 		if err != nil {
 			logrus.WithError(err).Warningf("could not acquire some leased resources for %s", res.Name)
 		}

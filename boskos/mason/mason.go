@@ -34,7 +34,7 @@ const (
 // Masonable should be implemented by all configurations
 type Masonable interface {
 	Construct(context.Context, common.Resource, common.TypeToResources) (*common.UserData, error)
-	Destruct(context.Context, *common.Resource, common.LeasedResources) error
+	Destruct(context.Context, *common.Resource, interface{}) error
 }
 
 // ConfigConverter converts a string into a Masonable
@@ -112,7 +112,7 @@ func NewMason(cleanerCount int, client boskosClient, waitPeriod, syncPeriod time
 }
 
 // CheckUserData helps with extracting leased resource data from the resource.
-func CheckUserData(res common.Resource) (common.LeasedResources, error) {
+func CheckUserData(res common.Resource) (interface{}, error) {
 	var leasedResources common.LeasedResources
 	if res.UserData == nil {
 		err := fmt.Errorf("user data is empty")
@@ -120,7 +120,11 @@ func CheckUserData(res common.Resource) (common.LeasedResources, error) {
 	}
 
 	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
-		return nil, err
+		var legacyLeasedResources common.LegacyLeasedResource
+		if err := res.UserData.Extract(LeasedResources, &legacyLeasedResources); err != nil {
+			return nil, err
+		}
+		return legacyLeasedResources, nil
 	}
 	return leasedResources, nil
 }
@@ -246,10 +250,19 @@ func (m *Mason) freeAll(ctx context.Context) {
 }
 
 func (m *Mason) freeOne(res *common.Resource) error {
-	leasedResources, err := CheckUserData(*res)
+	leasedRes, err := CheckUserData(*res)
 	if err != nil {
 		return err
 	}
+
+	var legacyLeasedResources common.LegacyLeasedResource
+	switch leasedResources := leasedRes.(type) {
+	case common.LegacyLeasedResource:
+		legacyLeasedResources = leasedResources
+	case common.LeasedResources:
+		legacyLeasedResources = leasedResources.Flatten()
+	}
+
 	// TODO: Implement a ReleaseMultiple in a transaction to prevent orphans
 	// Finally return the resource as free
 	if err := m.client.ReleaseOne(res.Name, common.Free); err != nil {
@@ -257,7 +270,7 @@ func (m *Mason) freeOne(res *common.Resource) error {
 		return err
 	}
 	// And release leased resources as res.Name state
-	for _, name := range leasedResources.Flatten() {
+	for _, name := range legacyLeasedResources {
 		if err := m.client.ReleaseOne(name, res.Name); err != nil {
 			logrus.WithError(err).Errorf("unable to release %s to state %s", name, res.Name)
 			return err
@@ -316,7 +329,7 @@ func (m *Mason) recycleOne(ctx context.Context, res *common.Resource) (*requirem
 		return nil, err
 	}
 
-	leasedResources, err := CheckUserData(*res)
+	leasedRes, err := CheckUserData(*res)
 	if err != nil {
 		logrus.WithError(err).Warningf("failed to extract %s from resource user data", LeasedResources)
 	}
@@ -330,7 +343,7 @@ func (m *Mason) recycleOne(ctx context.Context, res *common.Resource) (*requirem
 	}
 	go func() {
 		var err error
-		err = config.Destruct(ctx, res, leasedResources)
+		err = config.Destruct(ctx, res, leasedRes)
 		errChan <- err
 	}()
 
@@ -344,8 +357,16 @@ func (m *Mason) recycleOne(ctx context.Context, res *common.Resource) (*requirem
 		return nil, ctx.Err()
 	}
 
-	if leasedResources != nil {
-		resources, err := m.client.AcquireByState(res.Name, common.Leased, leasedResources.Flatten())
+	var legacyLeasedResources common.LegacyLeasedResource
+	switch leasedResources := leasedRes.(type) {
+	case common.LegacyLeasedResource:
+		legacyLeasedResources = leasedResources
+	case common.LeasedResources:
+		legacyLeasedResources = leasedResources.Flatten()
+	}
+
+	if legacyLeasedResources != nil {
+		resources, err := m.client.AcquireByState(res.Name, common.Leased, legacyLeasedResources)
 		if err != nil {
 			logrus.WithError(err).Warningf("could not acquire any leased resources for %s", res.Name)
 		}
