@@ -3,7 +3,6 @@
 # gazelle:exclude vendor/k8s.io/code-generator/_examples/
 # gazelle:exclude hack
 # gazelle:exclude node_modules
-# gazelle:repository_macro repos.bzl%go_repositories
 
 load("@io_k8s_repo_infra//defs:run_in_workspace.bzl", "workspace_binary")
 load("@io_bazel_rules_go//go:def.bzl", "nogo")
