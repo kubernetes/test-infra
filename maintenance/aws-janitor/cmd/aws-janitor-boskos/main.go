@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"k8s.io/klog"
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
 	awsboskos "k8s.io/test-infra/boskos/common/aws"
@@ -44,6 +45,7 @@ const (
 )
 
 func main() {
+	klog.InitFlags(nil)
 	flag.Parse()
 	if d, err := time.ParseDuration(*sweepSleep); err != nil {
 		sweepSleepDuration = time.Second * 30
