@@ -1125,6 +1125,12 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: f7c6c7
+        description: Categorizes issue or PR as tracked by test-infra oncall.
+        name: kind/oncall-hotlist
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/website:
     labels:
       - color: 0052cc
