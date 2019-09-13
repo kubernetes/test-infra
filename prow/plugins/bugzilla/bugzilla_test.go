@@ -68,7 +68,22 @@ orgs:
             - status: MODIFIED
             add_external_link: true
             state_after_merge:
-              status: MODIFIED`
+              status: MODIFIED
+          "branch-that-likes-closed-bugs":
+            valid_states:
+            - status: VERIFIED
+            - status: CLOSED
+              resolution: ERRATA
+            dependent_bug_states:
+            - status: CLOSED
+              resolution: ERRATA
+            state_after_merge:
+              status: CLOSED
+              resolution: FIXED
+            state_after_validation:
+              status: CLOSED
+              resolution: VALIDATED`
+
 	var config plugins.Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -93,6 +108,7 @@ orgs:
 </ul>`,
 			"my-org/my-repo": `The plugin has the following configuration:<ul>
 <li>by default, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the PRE state.</li>
+<li>on the "branch-that-likes-closed-bugs" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VERIFIED, CLOSED (ERRATA). After being linked to a pull request, bugs will be moved to the CLOSED (VALIDATED) state and moved to the CLOSED (FIXED) state when all linked pull requests are merged.</li>
 <li>on the "my-org-branch" branch, valid bugs must be closed, target the "my-repo-default" release, and be in one of the following states: VALIDATED. After being linked to a pull request, bugs will be moved to the POST state and updated to refer to the pull request using the external bug tracker.</li>
 <li>on the "my-repo-branch" branch, valid bugs must be closed, target the "my-repo-branch" release, and be in one of the following states: MODIFIED. After being linked to a pull request, bugs will be moved to the PRE state, updated to refer to the pull request using the external bug tracker, and moved to the MODIFIED state when all linked pull requests are merged.</li>
 </ul>`,
