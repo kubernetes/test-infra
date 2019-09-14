@@ -27,28 +27,28 @@ k8s_object(
     name = "alertmanager_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/alertmanager.crd.yaml",
 )
 
 k8s_object(
     name = "prometheus_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheus.crd.yaml",
 )
 
 k8s_object(
     name = "prometheusrule_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/prometheusrule.crd.yaml",
 )
 
 k8s_object(
     name = "servicemonitor_crd",
     cluster = "{STABLE_PROW_CLUSTER}",
     kind = None,
-    template = "@operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
+    template = "@com_github_operator_framework_community_operators//:upstream-community-operators/prometheus/servicemonitor.crd.yaml",
 )
 
 k8s_object(
