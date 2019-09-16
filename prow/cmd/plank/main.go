@@ -20,12 +20,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pjutil"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -92,6 +91,8 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 
 	configAgent := &config.Agent{}
@@ -130,43 +131,18 @@ func main() {
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway)
 	// gather metrics for the jobs handled by plank.
-	go gather(c)
+	interrupts.TickLiteral(func() {
+		start := time.Now()
+		c.SyncMetrics()
+		logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
+	}, 30*time.Second)
 
-	tick := time.Tick(30 * time.Second)
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-tick:
-			start := time.Now()
-			if err := c.Sync(); err != nil {
-				logrus.WithError(err).Error("Error syncing.")
-			}
-			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
-		case <-sig:
-			logrus.Info("Plank is shutting down...")
-			return
+	// run the controller
+	interrupts.TickLiteral(func() {
+		start := time.Now()
+		if err := c.Sync(); err != nil {
+			logrus.WithError(err).Error("Error syncing.")
 		}
-	}
-}
-
-// gather metrics from plank.
-// Meant to be called inside a goroutine.
-func gather(c *plank.Controller) {
-	tick := time.Tick(30 * time.Second)
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-tick:
-			start := time.Now()
-			c.SyncMetrics()
-			logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
-		case <-sig:
-			logrus.Debug("Plank gatherer is shutting down...")
-			return
-		}
-	}
+		logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+	}, 30*time.Second)
 }

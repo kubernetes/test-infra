@@ -21,14 +21,11 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"sync"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
+	"k8s.io/test-infra/prow/interrupts"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
@@ -119,6 +116,8 @@ func main() {
 
 	promMetrics := subscriber.NewMetrics()
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway)
 
@@ -132,11 +131,6 @@ func main() {
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
-	// Will call shutdown which will stop the errGroup
-	shutdownCtx, shutdown := context.WithCancel(context.Background())
-	errGroup, derivedCtx := errgroup.WithContext(shutdownCtx)
-	wg := sync.WaitGroup{}
-
 	// Setting up Push Server
 	logrus.Info("Setting up Push Server")
 	pushServer := &subscriber.PushServer{
@@ -148,45 +142,12 @@ func main() {
 	// Setting up Pull Server
 	logrus.Info("Setting up Pull Server")
 	pullServer := subscriber.NewPullServer(s)
-	errGroup.Go(func() error {
-		wg.Add(1)
-		defer wg.Done()
-		logrus.Info("Starting Pull Server")
-		err := pullServer.Run(derivedCtx)
-		logrus.WithError(err).Warn("Pull Server exited.")
-		return err
+	interrupts.Run(func(ctx context.Context) {
+		if err := pullServer.Run(ctx); err != nil {
+			logrus.WithError(err).Error("Failed to run Pull Server")
+		}
 	})
 
 	httpServer := &http.Server{Addr: ":" + strconv.Itoa(flagOptions.port)}
-	errGroup.Go(func() error {
-		wg.Add(1)
-		defer wg.Done()
-		logrus.Info("Starting HTTP Server")
-		err := httpServer.ListenAndServe()
-		logrus.WithError(err).Warn("HTTP Server exited.")
-		return err
-	})
-
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT)
-
-	select {
-	case <-shutdownCtx.Done():
-		err = shutdownCtx.Err()
-		break
-	case <-derivedCtx.Done():
-		err = derivedCtx.Err()
-		break
-	case <-sig:
-		break
-	}
-
-	logrus.WithError(err).Warn("Starting Shutdown")
-	shutdown()
-	// Shutdown gracefully on SIGTERM or SIGINT
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), flagOptions.gracePeriod)
-	defer cancel()
-	httpServer.Shutdown(timeoutCtx)
-	errGroup.Wait()
-	wg.Wait()
+	interrupts.ListenAndServe(httpServer, flagOptions.gracePeriod)
 }
