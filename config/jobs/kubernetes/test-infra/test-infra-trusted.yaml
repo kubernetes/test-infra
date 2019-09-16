@@ -6,7 +6,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.28.1
+      - image: launcher.gcr.io/google/bazel:0.29.1
         imagePullPolicy: Always
         command:
         - bazel
@@ -772,7 +772,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.28.1
+    - image: launcher.gcr.io/google/bazel:0.29.1
       imagePullPolicy: Always
       command:
       - bazel
@@ -915,7 +915,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.28.1
+    - image: launcher.gcr.io/google/bazel:0.29.1
       command:
       - bazel
       args:
