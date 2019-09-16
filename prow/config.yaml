@@ -390,6 +390,7 @@ tide:
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
+    - kubernetes/website
     labels:
     - lgtm
     - approved
