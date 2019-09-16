@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 const (
@@ -288,17 +289,19 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	}
 
 	// check if skip collaborators is enabled for this org/repo
-	skipCollaborators := skipCollaborators(config, org, repoName)
+	skipCollaborators := skipCollaborators(config, org, repoName)	
 
-	// check if the commentor is a collaborator
-	isCollaborator, err := gc.IsCollaborator(org, repoName, author)
+	// check if the commentor is a trusted user
+	t := gc.PluginConfig.TriggerFor(org, repoName)
+	isTrustedUser , err :=  trigger.TrustedUser(gc, t.OnlyOrgMembers, t.TrustedOrg, author, org, repoName)
+
 	if err != nil {
 		log.WithError(err).Error("Failed to check if author is a collaborator.")
 		return err // abort if we can't determine if commentor is a collaborator
-	}
+	}		
 
 	// if commentor isn't a collaborator, and we care about collaborators, abort
-	if !isAuthor && !skipCollaborators && !isCollaborator {
+	if !isAuthor && !skipCollaborators && !isTrustedUser {
 		resp := "changing LGTM is restricted to collaborators"
 		log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
 		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
