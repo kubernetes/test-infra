@@ -89,7 +89,7 @@ func (o *Options) Validate() error {
 	for _, ref := range o.GitRefs {
 		if _, seenOrg := seen[ref.Org]; seenOrg {
 			if seen[ref.Org].Has(ref.Repo) {
-				return errors.New("sync config for %s/%s provided more than once")
+				return fmt.Errorf("sync config for %s/%s provided more than once", ref.Org, ref.Repo)
 			}
 			seen[ref.Org].Insert(ref.Repo)
 		} else {
