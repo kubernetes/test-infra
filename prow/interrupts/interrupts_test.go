@@ -88,7 +88,14 @@ func TestInterrupts(t *testing.T) {
 	// caller like the interrupts library
 	var serverCalled bool
 	var serverCancelled bool
-	server := &http.Server{Addr: ":9999", Handler: http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	listener, err := net.Listen("tcp", "127.0.0.1:")
+	if err != nil {
+		t.Fatalf("could not listen on random port: %v", err)
+	}
+	if err := listener.Close(); err != nil {
+		t.Fatalf("could close listener: %v", err)
+	}
+	server := &http.Server{Addr: listener.Addr().String(), Handler: http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		lock.Lock()
 		serverCalled = true
 		lock.Unlock()
@@ -99,13 +106,20 @@ func TestInterrupts(t *testing.T) {
 		lock.Unlock()
 	})
 	ListenAndServe(server, 1*time.Microsecond)
-	if _, err := http.Get("http://127.0.0.1:9999"); err != nil {
+	if _, err := http.Get("http://" + listener.Addr().String()); err != nil {
 		t.Errorf("could not reach server registered with ListenAndServe(): %v", err)
 	}
 
 	var tlsServerCalled bool
 	var tlsServerCancelled bool
-	tlsServer := &http.Server{Addr: "127.0.0.1:9998", Handler: http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	tlsListener, err := net.Listen("tcp", "127.0.0.1:")
+	if err != nil {
+		t.Fatalf("could not listen on random port: %v", err)
+	}
+	if err := tlsListener.Close(); err != nil {
+		t.Fatalf("could close listener: %v", err)
+	}
+	tlsServer := &http.Server{Addr: tlsListener.Addr().String(), Handler: http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		lock.Lock()
 		tlsServerCalled = true
 		lock.Unlock()
@@ -121,7 +135,7 @@ func TestInterrupts(t *testing.T) {
 	}
 	ListenAndServeTLS(tlsServer, cert, key, 1*time.Microsecond)
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-	if _, err := client.Get("https://127.0.0.1:9998"); err != nil {
+	if _, err := client.Get("https://" + tlsListener.Addr().String()); err != nil {
 		t.Errorf("could not reach server registered with ListenAndServeTLS(): %v", err)
 	}
 
