@@ -18,6 +18,8 @@ package repoowners
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -25,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowConf "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
@@ -1205,6 +1208,118 @@ func TestExpandAliases(t *testing.T) {
 				test.expectedExpanded.List(),
 				got.List(),
 			)
+		}
+	}
+}
+
+func TestSaveSimpleConfig(t *testing.T) {
+	dir, err := ioutil.TempDir("", "simpleConfig")
+	if err != nil {
+		t.Errorf("unexpected error when creating temp dir")
+	}
+	defer os.RemoveAll(dir)
+
+	tests := []struct {
+		name     string
+		given    SimpleConfig
+		expected string
+	}{
+		{
+			name: "No expansions.",
+			given: SimpleConfig{
+				Config: Config{
+					Approvers: []string{"david", "sig-alias", "Alice"},
+					Reviewers: []string{"adam", "sig-alias"},
+				},
+			},
+			expected: `approvers:
+- david
+- sig-alias
+- Alice
+options: {}
+reviewers:
+- adam
+- sig-alias
+`,
+		},
+	}
+
+	for _, test := range tests {
+		file := filepath.Join(dir, fmt.Sprintf("%s.yaml", test.name))
+		err := SaveSimpleConfig(test.given, file)
+		if err != nil {
+			t.Errorf("unexpected error when writing simple config")
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			t.Errorf("unexpected error when reading file: %s", file)
+		}
+		s := string(b)
+		if test.expected != s {
+			t.Errorf("result '%s' is differ from expected: '%s'", s, test.expected)
+		}
+		simple, err := LoadSimpleConfig(b)
+		if !reflect.DeepEqual(simple, test.given) {
+			t.Errorf("unexpected error when loading simple config from: '%s'", diff.ObjectReflectDiff(simple, test.given))
+		}
+	}
+}
+
+func TestSaveFullConfig(t *testing.T) {
+	dir, err := ioutil.TempDir("", "fullConfig")
+	if err != nil {
+		t.Errorf("unexpected error when creating temp dir")
+	}
+	defer os.RemoveAll(dir)
+
+	tests := []struct {
+		name     string
+		given    FullConfig
+		expected string
+	}{
+		{
+			name: "No expansions.",
+			given: FullConfig{
+				Filters: map[string]Config{
+					".*": {
+						Approvers: []string{"alice", "bob", "carol", "david"},
+						Reviewers: []string{"adam", "bob", "carol"},
+					},
+				},
+			},
+			expected: `filters:
+  .*:
+    approvers:
+    - alice
+    - bob
+    - carol
+    - david
+    reviewers:
+    - adam
+    - bob
+    - carol
+options: {}
+`,
+		},
+	}
+
+	for _, test := range tests {
+		file := filepath.Join(dir, fmt.Sprintf("%s.yaml", test.name))
+		err := SaveFullConfig(test.given, file)
+		if err != nil {
+			t.Errorf("unexpected error when writing full config")
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			t.Errorf("unexpected error when reading file: %s", file)
+		}
+		s := string(b)
+		if test.expected != s {
+			t.Errorf("result '%s' is differ from expected: '%s'", s, test.expected)
+		}
+		full, err := LoadFullConfig(b)
+		if !reflect.DeepEqual(full, test.given) {
+			t.Errorf("unexpected error when loading simple config from: '%s'", diff.ObjectReflectDiff(full, test.given))
 		}
 	}
 }
