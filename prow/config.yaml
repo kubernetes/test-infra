@@ -390,6 +390,7 @@ tide:
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
+    # https://github.com/kubernetes/sig-release/tree/master/release-team/role-handbooks/docs#release-week-week-12
     - kubernetes/website
     labels:
     - lgtm
