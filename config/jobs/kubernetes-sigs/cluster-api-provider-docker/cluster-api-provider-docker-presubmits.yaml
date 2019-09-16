@@ -10,7 +10,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
         command:
         - "runner.sh"
         - "./hack/verify-all.sh"

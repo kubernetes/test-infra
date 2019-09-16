@@ -13,7 +13,7 @@ periodics:
       preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
       command:
       - runner.sh
       - ./hack/ci/build-all.sh
@@ -31,7 +31,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -77,7 +77,7 @@ periodics:
     nodeSelector:
       dedicated: "ubuntu"
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -123,7 +123,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -173,7 +173,7 @@ periodics:
     nodeSelector:
       dedicated: "ubuntu"
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -259,7 +259,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-1.13
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-1.13
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -297,7 +297,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -335,7 +335,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190911-069bf1f-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
