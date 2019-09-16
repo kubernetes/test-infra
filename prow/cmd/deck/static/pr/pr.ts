@@ -5,6 +5,7 @@ import {Label, PullRequest, UserData} from '../api/pr';
 import {ProwJob, ProwJobList, ProwJobState} from '../api/prow';
 import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
 import {getCookieByName, tidehistory} from '../common/common';
+import {relativeURL} from "../common/urls";
 
 declare const tideData: TideData;
 declare const allBuilds: ProwJobList;
@@ -1156,7 +1157,7 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
  * Redirect to initiate github login flow.
  */
 function forceGitHubLogin(): void {
-    window.location.href = window.location.origin + "/github-login?dest=%2Fpr";
+    window.location.href = window.location.origin + `/github-login?dest=${relativeURL()}`;
 }
 
 type VagueState = "succeeded" | "failed" | "pending" | "unknown";
