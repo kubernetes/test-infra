@@ -50,7 +50,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
         command:
         - ./boskos/update_prow_config.sh
         env:
@@ -81,7 +81,7 @@ postsubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
         command:
         - ./testgrid/config-upload.sh
         resources:
