@@ -43,7 +43,7 @@ var interrupt = make(chan os.Signal, 1)
 // so we can inject our implementation of the interrupt channel
 func init() {
 	signalsLock.Lock()
-	gracePeriod = 0 * time.Second
+	gracePeriod = time.Second
 	signals = func() <-chan os.Signal {
 		return interrupt
 	}
@@ -105,7 +105,9 @@ func TestInterrupts(t *testing.T) {
 		serverCancelled = true
 		lock.Unlock()
 	})
-	ListenAndServe(server, 1*time.Microsecond)
+	ListenAndServe(server, time.Second)
+	// wait for the server to start
+	time.Sleep(100 * time.Millisecond)
 	if _, err := http.Get("http://" + listener.Addr().String()); err != nil {
 		t.Errorf("could not reach server registered with ListenAndServe(): %v", err)
 	}
@@ -133,8 +135,10 @@ func TestInterrupts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not generate cert and key for TLS server: %v", err)
 	}
-	ListenAndServeTLS(tlsServer, cert, key, 1*time.Microsecond)
+	ListenAndServeTLS(tlsServer, cert, key, time.Second)
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+	// wait for the server to start
+	time.Sleep(100 * time.Millisecond)
 	if _, err := client.Get("https://" + tlsListener.Addr().String()); err != nil {
 		t.Errorf("could not reach server registered with ListenAndServeTLS(): %v", err)
 	}
