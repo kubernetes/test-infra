@@ -365,10 +365,11 @@ func TestProwJobToPod(t *testing.T) {
 	falseth := false
 	var sshKeyMode int32 = 0400
 	tests := []struct {
-		podName string
-		buildID string
-		labels  map[string]string
-		pjSpec  prowapi.ProwJobSpec
+		podName  string
+		buildID  string
+		labels   map[string]string
+		pjSpec   prowapi.ProwJobSpec
+		pjStatus prowapi.ProwJobStatus
 
 		expected *coreapi.Pod
 	}{
@@ -402,6 +403,9 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 			},
+			pjStatus: prowapi.ProwJobStatus{
+				BuildID: "blabla",
+			},
 
 			expected: &coreapi.Pod{
 				ObjectMeta: metav1.ObjectMeta{
@@ -415,6 +419,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "blabla",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -513,6 +518,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -734,6 +740,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -956,6 +963,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1202,6 +1210,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1432,6 +1441,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobIDLabel:    "pod",
 						"needstobe":            "inherited",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1617,6 +1627,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1787,7 +1798,7 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			pj := prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
+			pj := prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec, Status: test.pjStatus}
 			got, err := ProwJobToPod(pj, test.buildID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)

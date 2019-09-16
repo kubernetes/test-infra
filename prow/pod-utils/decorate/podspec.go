@@ -144,6 +144,7 @@ func LabelsAndAnnotationsForJob(pj prowapi.ProwJob) (map[string]string, map[stri
 		extraAnnotations = map[string]string{}
 	}
 	extraLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
+	extraLabels[kube.ProwBuildIDLabel] = pj.Status.BuildID
 	return LabelsAndAnnotationsForSpec(pj.Spec, extraLabels, extraAnnotations)
 }
 
