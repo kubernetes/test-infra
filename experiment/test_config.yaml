@@ -347,12 +347,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures:
     interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling:
-    interval: 4h
-    sigOwners: [sig-cloud-provider-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default:
     interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
@@ -381,12 +375,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
@@ -415,12 +403,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
@@ -480,12 +462,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures:
     interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling:
-    interval: 4h
-    sigOwners: [sig-cloud-provider-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-default:
     interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
@@ -514,12 +490,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-alphafeatures:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
@@ -548,12 +518,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling:
-    interval: 6h
-    sigOwners: [sig-cloud-provider-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
@@ -848,11 +812,6 @@ testSuites:
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\]
       --minStartupPods=8
-  autoscaling:
-    args:
-    - --timeout=600m
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:ClusterSizeAutoscalingScaleWithNAP\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   default:
     args:
     - --timeout=120m
