@@ -1218,8 +1218,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/procfs",
-        sum = "h1:w8DjqFMJDjuVwdZBQoOozr4MVWOnwF7RcL/7uxBjY78=",
-        version = "v0.0.4",
+        sum = "h1:3+auTFlqw+ZaQYJARz6ArODtkaIwtvBTx3N2NehQlL8=",
+        version = "v0.0.5",
     )
     go_repository(
         name = "com_github_prometheus_tsdb",
