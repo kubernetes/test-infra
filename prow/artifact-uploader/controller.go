@@ -32,7 +32,7 @@ import (
 	core "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -53,7 +53,7 @@ type item struct {
 	prowJobId     string
 }
 
-func NewController(client core.CoreV1Interface, prowJobClient *kube.Client, gcsConfig *gcsupload.Options) Controller {
+func NewController(client core.CoreV1Interface, prowJobClient prowv1.ProwJobInterface, gcsConfig *gcsupload.Options) Controller {
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	optionsModifier := func(options *metav1.ListOptions) {
 		req, _ := labels.NewRequirement(kube.ProwJobIDLabel, selection.Exists, []string{})
@@ -116,7 +116,7 @@ type Controller struct {
 	informer cache.Controller
 
 	client        core.CoreV1Interface
-	prowJobClient *kube.Client
+	prowJobClient prowv1.ProwJobInterface
 
 	gcsConfig *gcsupload.Options
 }
@@ -153,7 +153,7 @@ func (c *Controller) processNextItem() bool {
 
 	workItem := key.(item)
 
-	prowJob, err := c.prowJobClient.GetProwJob(workItem.prowJobId)
+	prowJob, err := c.prowJobClient.Get(workItem.prowJobId, metav1.GetOptions{})
 	if err != nil {
 		c.handleErr(err, workItem)
 		return true
