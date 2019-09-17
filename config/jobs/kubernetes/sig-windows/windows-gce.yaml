@@ -59,7 +59,7 @@ periodics:
       env:
       - name: OVERRIDE_NODE_BINARY_TAR_URL
         value: "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/kubernetes-node-windows-amd64.tar.gz"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
       resources:
         requests:
           memory: "8Gi"
@@ -97,7 +97,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-master
@@ -133,7 +133,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-1.16
@@ -169,7 +169,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-1.15
@@ -205,7 +205,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
   annotations:
     testgrid-dashboards: google-windows, sig-release-1.14-all, sig-windows
     testgrid-tab-name: gce-windows-1.14
@@ -244,7 +244,7 @@ periodics:
       env:
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-master-alpha-features
@@ -280,7 +280,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=240m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
   annotations:
     testgrid-dashboards: google-windows
     testgrid-tab-name: windows-gce-serial
@@ -323,7 +323,7 @@ presubmits:
         - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
         - --test-cmd-args=--node-os-distro=windows
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190914-ef4a69c-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
         resources:
           requests:
             memory: "6Gi"
