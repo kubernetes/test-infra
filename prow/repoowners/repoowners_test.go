@@ -1166,6 +1166,7 @@ func TestExpandAliases(t *testing.T) {
 	testAliases := RepoAliases{
 		"team/t1": sets.NewString("u1", "u2"),
 		"team/t2": sets.NewString("u1", "u3"),
+		"team/t3": sets.NewString(),
 	}
 	tests := []struct {
 		name             string
@@ -1196,6 +1197,11 @@ func TestExpandAliases(t *testing.T) {
 			name:             "Mixed casing in aliases.",
 			unexpanded:       sets.NewString("Team/T1"),
 			expectedExpanded: sets.NewString("u1", "u2"),
+		},
+		{
+			name:             "Empty team.",
+			unexpanded:       sets.NewString("Team/T3"),
+			expectedExpanded: sets.NewString(),
 		},
 	}
 
