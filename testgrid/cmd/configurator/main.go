@@ -324,11 +324,14 @@ func main() {
 		return
 	}
 
-	// Setup GCS client
+	// Set up GCS client if output is to GCS
 	var client *storage.Client
-	if opt.output != "" {
-		// Error returned if outputting to file; ignore for now
-		client, _ = gcs.ClientWithCreds(ctx, opt.creds)
+	if strings.HasPrefix(opt.output, "gs://") {
+		var err error
+		client, err = gcs.ClientWithCreds(ctx, opt.creds)
+		if err != nil {
+			log.Fatalf("failed to create gcs client: %v", err)
+		}
 	}
 
 	// Oneshot mode, write config and exit
