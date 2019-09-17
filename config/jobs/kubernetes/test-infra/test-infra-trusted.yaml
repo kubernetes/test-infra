@@ -664,40 +664,6 @@ postsubmits:
       - name: creds
         secret:
           secretName: deployer-service-account
-  - name: post-test-infra-upload-testgrid-config
-    cluster: test-infra-trusted
-    branches:
-    - master
-    labels:
-      preset-bazel-scratch-dir: "true"
-    env:
-    - name: GOOGLE_APPLICATION_CREDENTIALS
-      value: /etc/service-account/service-account.json
-    run_if_changed: '^config/(jobs|testgrids)/.*$'
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
-        command:
-        - ./testgrid/config-upload.sh
-        volumeMounts:
-        - name: testgrid-service-account
-          mountPath: /etc/service-account
-          readOnly: true
-        resources:
-          requests:
-            memory: "1Gi"
-      volumes:
-      - name: testgrid-service-account
-        secret:
-          secretName: testgrid-config-updater-service-account
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: testgrid-config-upload
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Compiles and uploads testgrid config on test-infra pushes
-
   kubernetes/k8s.io:
   - name: post-k8sio-cip
     cluster: test-infra-trusted
