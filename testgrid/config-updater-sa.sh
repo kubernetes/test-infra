@@ -17,27 +17,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# This script will create a 'prow-deployer' GCP service account with permissions
-# to deploy to the GKE cluster and load a service account key into the cluster's
+# This script will create a 'testgrid-config-updater' GCP service account with permissions
+# to update the TG config and load a service account key into the cluster's
 # test-pods namespace. This should only be done when the Prow instance is using a
 # separate build cluster and only trusted jobs are running in the service cluster.
-# Setting up a deployer service account is necessary for Prow to update itself with
+# Setting up this service account is necessary for Prow to update TG config with
 # a postsubmit job.
 
 # To use, point your kubeconfig at the correct cluster context and specify gcp
-# PROJECT and service account DESCRIPTION environment variables. Optionally, one can
-# supply the PROJECT_BUILD variable to attach the iam policy to the build cluster project.
+# PROJECT and service account DESCRIPTION environment variables.
 
 # To enable prompts and run in "interactive" mode supply the "-i|--interactive" flag.
 # e.g.
 #  PROJECT="istio-testing" \
-#  PROJECT_BUILD="istio-prow-build" \
-#  DESCRIPTION="Used to deploy to the clusters in the istio-testing and istio-prow-build projects." \
-#  gcloud-deployer-service-account.sh --interactive
+#  DESCRIPTION="Used to update the TestGrid config in the gs://k8s-testgrid bucket." \
+#  config-updater-sa.sh --interactive
 
 # Globals:
-PROJECT_BUILD="${PROJECT_BUILD:=}"
-SERVICE_ACCOUNT="${SERVICE_ACCOUNT:=prow-deployer}"
+SERVICE_ACCOUNT="${SERVICE_ACCOUNT:=testgrid-config-updater}"
 # PROJECT => "required"
 # DESCRIPTION => "required"
 
@@ -53,28 +50,21 @@ function create_service_account() {
   prompt "Create service-account: \"$SERVICE_ACCOUNT\" in Project: \"$PROJECT\""
 
   # Create a service account for performing Prow deployments in a GCP project.
-  gcloud beta iam service-accounts create $SERVICE_ACCOUNT --project="$PROJECT" --description="$DESCRIPTION" --display-name="Prow Self Deployer SA"
+  gcloud beta iam service-accounts create "${SERVICE_ACCOUNT}" --project="${PROJECT}" --description="${DESCRIPTION}" --display-name="TestGrid Config Updater SA"
 
-  # Add the `roles/container.admin` IAM policy binding to the service account in "service" cluster project.
-  # https://cloud.google.com/kubernetes-engine/docs/how-to/iam#container.admin
-  gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$SERVICE_ACCOUNT@$PROJECT.iam.gserviceaccount.com" --role "roles/container.admin"
+  # Add the `roles/storage.objectAdmin` IAM policy binding to the service account.
+  # https://cloud.google.com/iam/docs/understanding-roles#storage-roles
+  gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:${SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com" --role "roles/storage.objectAdmin"
 
   # Generate private key and attach to the service account.
-  gcloud iam service-accounts keys create "$SERVICE_ACCOUNT-sa-key.json" --project="$PROJECT" --iam-account="$SERVICE_ACCOUNT@$PROJECT.iam.gserviceaccount.com"
-
-  if [ "$PROJECT_BUILD" ]; then
-    prompt "Apply iam policy to build Project: \"$PROJECT_BUILD\""
-
-    # Add the `roles/container.admin` IAM policy binding to the service account in "build" cluster project.
-    gcloud projects add-iam-policy-binding "$PROJECT_BUILD" --member="serviceAccount:$SERVICE_ACCOUNT@$PROJECT.iam.gserviceaccount.com" --role "roles/container.admin"
-  fi
+  gcloud iam service-accounts keys create "${SERVICE_ACCOUNT}-sa-key.json" --project="${PROJECT}" --iam-account="${SERVICE_ACCOUNT}@${PROJECT}.iam.gserviceaccount.com"
 }
 
 function create_secret() {
   prompt "Create cluster secret for Kube context: \"$(kubectl config current-context)\""
 
   # Deploy the service-account secret to the cluster in the current context.
-  kubectl create secret generic -n test-pods "$SERVICE_ACCOUNT-service-account" --from-file="service-account.json=$SERVICE_ACCOUNT-sa-key.json"
+  kubectl create secret generic -n test-pods "${SERVICE_ACCOUNT}-service-account" --from-file="service-account.json=${SERVICE_ACCOUNT}-sa-key.json"
 }
 
 function handle_options() {
