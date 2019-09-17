@@ -23,11 +23,13 @@ import (
 
 	"github.com/andygrunwald/go-gerrit"
 
+	clienttesting "k8s.io/client-go/testing"
 	"k8s.io/test-infra/prow/gerrit/client"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -49,18 +51,6 @@ func (f *fca) Config() *config.Config {
 	f.Lock()
 	defer f.Unlock()
 	return f.c
-}
-
-type fkc struct {
-	sync.Mutex
-	prowjobs []prowapi.ProwJob
-}
-
-func (f *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	f.prowjobs = append(f.prowjobs, pj)
-	return pj, nil
 }
 
 type fgc struct{}
@@ -714,13 +704,13 @@ func TestProcessChange(t *testing.T) {
 			},
 		}
 
-		fkc := &fkc{}
+		fakeProwJobClient := prowfake.NewSimpleClientset()
 
 		c := &Controller{
-			config:  fca.Config,
-			kc:      fkc,
-			gc:      &fgc{},
-			tracker: &fakeSync{val: timeNow.Add(-time.Minute)},
+			config:        fca.Config,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			gc:            &fgc{},
+			tracker:       &fakeSync{val: timeNow.Add(-time.Minute)},
 		}
 
 		err := c.ProcessChange("https://gerrit", tc.change)
@@ -732,23 +722,33 @@ func TestProcessChange(t *testing.T) {
 			continue
 		}
 
-		if len(fkc.prowjobs) != tc.numPJ {
-			t.Errorf("tc %s - should make %d prowjob, got %d", tc.name, tc.numPJ, len(fkc.prowjobs))
+		var prowjobs []*prowapi.ProwJob
+		for _, action := range fakeProwJobClient.Fake.Actions() {
+			switch action := action.(type) {
+			case clienttesting.CreateActionImpl:
+				if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
+					prowjobs = append(prowjobs, prowjob)
+				}
+			}
 		}
 
-		if len(fkc.prowjobs) > 0 {
-			refs := fkc.prowjobs[0].Spec.Refs
+		if len(prowjobs) != tc.numPJ {
+			t.Errorf("tc %s - should make %d prowjob, got %d", tc.name, tc.numPJ, len(prowjobs))
+		}
+
+		if len(prowjobs) > 0 {
+			refs := prowjobs[0].Spec.Refs
 			if refs.Org != "gerrit" {
 				t.Errorf("%s: org %s != gerrit", tc.name, refs.Org)
 			}
 			if refs.Repo != tc.change.Project {
 				t.Errorf("%s: repo %s != expected %s", tc.name, refs.Repo, tc.change.Project)
 			}
-			if fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
-				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref)
+			if prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
+				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, prowjobs[0].Spec.Refs.Pulls[0].Ref)
 			}
-			if fkc.prowjobs[0].Spec.Refs.BaseSHA != "abc" {
-				t.Errorf("tc %s - BaseSHA should be abc, got %s", tc.name, fkc.prowjobs[0].Spec.Refs.BaseSHA)
+			if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
+				t.Errorf("tc %s - BaseSHA should be abc, got %s", tc.name, prowjobs[0].Spec.Refs.BaseSHA)
 			}
 		}
 	}
