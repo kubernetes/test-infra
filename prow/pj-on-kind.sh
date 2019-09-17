@@ -25,22 +25,26 @@ function main() {
 
   # Generate PJ and Pod.
   mkpj "--config-path=${config}" "${job_config}" "--job=${job}" > "${PWD}/pj.yaml"
-  mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=/output/${job}" > "${PWD}/pod.yaml"
+  mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}" > "${PWD}/pod.yaml"
+
+  # Add any k8s resources that the pod depends on to the kind cluster here. (secrets, configmaps, etc.)
 
   # Deploy pod and watch.
   echo "Applying pod to the mkpod cluster. Configure kubectl for the mkpod cluster with:"
-  echo '>  export KUBECONFIG="$(kind get kubeconfig-path --name="mkpod")"'
+  echo '>  export KUBECONFIG="$(kind get kubeconfig-path --name=mkpod)"'
   pod=$(kubectl apply -f "${PWD}/pod.yaml" | cut -d ' ' -f 1)
   kubectl get "${pod}" -w
 }
 
 # Prep and check args.
 function parseArgs() {
-  job="${1:-""}"
-  config="${CONFIG_PATH:-""}"
-  job_config="${JOB_CONFIG_PATH:-""}"
-  out_dir="${OUT_DIR:-"/tmp/prowjob-out"}"
-  kind_config="${KIND_CONFIG:-""}"
+  # Use node mounts under /mnt/disks/ so pods behave well on COS nodes too. https://cloud.google.com/container-optimized-os/docs/concepts/disks-and-filesystem
+  job="${1:-}"
+  config="${CONFIG_PATH:-}"
+  job_config="${JOB_CONFIG_PATH:-}"
+  out_dir="${OUT_DIR:-/mnt/disks/prowjob-out/${job}}"
+  kind_config="${KIND_CONFIG:-}"
+  node_dir="${NODE_DIR:-/mnt/disks/kind-node}"  # Any pod hostPath mounts should be under this dir to reach the true host via the kind node.
 
   local new_only="  (Only used when creating a new kind cluster.)"
   echo "job=${job}"
@@ -48,6 +52,7 @@ function parseArgs() {
   echo "JOB_CONFIG_PATH=${job_config}"
   echo "OUT_DIR=${out_dir} ${new_only}"
   echo "KIND_CONFIG=${kind_config} ${new_only}"
+  echo "NODE_DIR=${node_dir} ${new_only}"
 
   if [[ -z "${job}" ]]; then
     echo "Must specify a job name as the first argument."
@@ -77,7 +82,7 @@ function ensureInstall() {
   # Install kind and set up cluster if not already done.
   if ! command -v kind >/dev/null 2>&1; then
     echo "Installing kind..."
-    GO111MODULE="on" go get sigs.k8s.io/kind@v0.4.0
+    GO111MODULE="on" go get sigs.k8s.io/kind@v0.5.1
   fi
   local found="false"
   for clust in $(kind get clusters); do
@@ -98,8 +103,11 @@ kind: Cluster
 apiVersion: kind.sigs.k8s.io/v1alpha3
 nodes:
   - extraMounts:
-      - containerPath: /output
+      - containerPath: ${out_dir}
         hostPath: ${out_dir}
+      # host <-> node mount for hostPath volumes in Pods. (All hostPaths should be under ${node_dir} to reach the host.)
+      - containerPath: ${node_dir}
+        hostPath: ${node_dir}
 EOF
       kind create cluster --name=mkpod "--config=${temp_config}" --wait=5m
       rm "${temp_config}"
