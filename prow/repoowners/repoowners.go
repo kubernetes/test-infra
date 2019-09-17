@@ -311,7 +311,7 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 	// Make logins a copy of the original set to avoid modifying the original.
 	logins = logins.Union(nil)
 	for _, login := range logins.List() {
-		if expanded := a.ExpandAlias(login); len(expanded) > 0 {
+		if expanded, ok := a[github.NormLogin(login)]; ok {
 			logins.Delete(login)
 			logins = logins.Union(expanded)
 		}
