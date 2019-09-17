@@ -65,7 +65,7 @@ var (
 	}
 )
 
-var prowPath = flag.String("prow-config", "../../../prow/config.yaml", "Path to prow config")
+var prowPath = flag.String("prow-config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var protoPath = flag.String("config", "", "Path to TestGrid config proto")
 

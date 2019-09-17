@@ -211,7 +211,7 @@ job resource.
 
 [`bazel`]: https://bazel.build
 [`branch_protection.go`]: /prow/config/branch_protection.go
-[`config.yaml`]: /prow/config.yaml
+[`config.yaml`]: /config/prow/config.yaml
 [github branch protection]: https://help.github.com/articles/about-protected-branches/
 [`oneshot-job.yaml`]: oneshot-job.yaml
 [`planter.sh`]: /planter

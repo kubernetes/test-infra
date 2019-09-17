@@ -4,12 +4,12 @@ sh_binary(
     name = "mkpj",
     srcs = ["mkpj_binary"],
     args = [
-        "--config-path=$(location //prow:config.yaml)",
+        "--config-path=$(location //config/prow:config.yaml)",
         "--job-config-path=config/jobs",
     ],
     data = [
         ":prowjobs",
-        "//prow:config.yaml",
+        "//config/prow:config.yaml",
     ],
 )
 
@@ -49,6 +49,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//config/jobs/kubernetes-security:all-srcs",
+        "//config/prow:all-srcs",
         "//config/tests/jobs:all-srcs",
         "//config/tests/testgrids:all-srcs",
     ],

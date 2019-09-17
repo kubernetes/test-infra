@@ -345,9 +345,9 @@ config_updater:
     label_sync/labels.yaml:
       name: label-config
       namespace: test-pods
-    prow/config.yaml:
+    config/prow/config.yaml:
       name: config
-    prow/plugins.yaml:
+    config/prow/plugins.yaml:
       name: plugins
     config/jobs/**/*.yaml:
       name: job-config

@@ -416,15 +416,15 @@ type ConfigUpdater struct {
 	Maps map[string]ConfigMapSpec `json:"maps,omitempty"`
 	// The location of the prow configuration file inside the repository
 	// where the config-updater plugin is enabled. This needs to be relative
-	// to the root of the repository, eg. "prow/config.yaml" will match
-	// github.com/kubernetes/test-infra/prow/config.yaml assuming the config-updater
-	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/config.yaml".
+	// to the root of the repository, eg. "config/prow/config.yaml" will match
+	// github.com/kubernetes/test-infra/config/prow/config.yaml assuming the config-updater
+	// plugin is enabled for kubernetes/test-infra. Defaults to "config/prow/config.yaml".
 	ConfigFile string `json:"config_file,omitempty"`
 	// The location of the prow plugin configuration file inside the repository
 	// where the config-updater plugin is enabled. This needs to be relative
-	// to the root of the repository, eg. "prow/plugins.yaml" will match
-	// github.com/kubernetes/test-infra/prow/plugins.yaml assuming the config-updater
-	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/plugins.yaml".
+	// to the root of the repository, eg. "config/prow/plugins.yaml" will match
+	// github.com/kubernetes/test-infra/config/prow/plugins.yaml assuming the config-updater
+	// plugin is enabled for kubernetes/test-infra. Defaults to "config/prow/plugins.yaml".
 	PluginFile string `json:"plugin_file,omitempty"`
 	// If GZIP is true then files will be gzipped before insertion into
 	// their corresponding configmap
@@ -711,13 +711,13 @@ func (c *ConfigUpdater) SetDefaults() {
 	if len(c.Maps) == 0 {
 		cf := c.ConfigFile
 		if cf == "" {
-			cf = "prow/config.yaml"
+			cf = "config/prow/config.yaml"
 		} else {
 			logrus.Warnf(`config_file is deprecated, please switch to "maps": {"%s": "config"} before July 2018`, cf)
 		}
 		pf := c.PluginFile
 		if pf == "" {
-			pf = "prow/plugins.yaml"
+			pf = "config/prow/plugins.yaml"
 		} else {
 			logrus.Warnf(`plugin_file is deprecated, please switch to "maps": {"%s": "plugins"} before July 2018`, pf)
 		}

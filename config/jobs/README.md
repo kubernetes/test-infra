@@ -54,7 +54,7 @@ eg:
 
 Prow supports [Presets](/prow/jobs.md#presets) to define and patch in common
 env vars and volumes used for credentials or common job config. Some are
-defined centrally in [`prow/config.yaml`], while others can be defined in
+defined centrally in [`config/prow/config.yaml`], while others can be defined in
 files here. eg:
 
 - [`preset-service-account: "true"`] ensures the prowjob has a GCP service

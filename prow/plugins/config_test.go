@@ -104,8 +104,8 @@ func TestSetDefault_Maps(t *testing.T) {
 		{
 			name: "nothing",
 			expected: map[string]ConfigMapSpec{
-				"prow/config.yaml":  {Name: "config", Namespaces: []string{""}},
-				"prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
+				"config/prow/config.yaml":  {Name: "config", Namespaces: []string{""}},
+				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
 			},
 		},
 		{
@@ -127,8 +127,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				ConfigFile: "foo.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"foo.yaml":          {Name: "config", Namespaces: []string{""}},
-				"prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
+				"foo.yaml":                 {Name: "config", Namespaces: []string{""}},
+				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
 			},
 		},
 		{
@@ -137,8 +137,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "bar.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"bar.yaml":         {Name: "plugins", Namespaces: []string{""}},
-				"prow/config.yaml": {Name: "config", Namespaces: []string{""}},
+				"bar.yaml":                {Name: "plugins", Namespaces: []string{""}},
+				"config/prow/config.yaml": {Name: "config", Namespaces: []string{""}},
 			},
 		},
 		{

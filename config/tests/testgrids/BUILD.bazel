@@ -5,13 +5,13 @@ go_test(
     srcs = ["config_test.go"],
     args = [
         "--config=$(location testconf.pb)",
-        "--prow-config=$(location //prow:config.yaml)",
+        "--prow-config=$(location //config/prow:config.yaml)",
         "--job-config=config/jobs",
     ],
     data = [
         ":testconf.pb",
         "//config:prowjobs",
-        "//prow:config.yaml",
+        "//config/prow:config.yaml",
     ],
     rundir = ".",
     deps = [
@@ -27,12 +27,12 @@ genrule(
         "//config:testgrids",
         "//config:prowjobs",
         "//config:testgrid_default",
-        "//prow:config.yaml",
+        "//config/prow:config.yaml",
     ],
     outs = [":testconf.pb"],
     cmd = "./$(location //testgrid/cmd/configurator) \
            --yaml=config/testgrids \
-           --prow-config=$(location //prow:config.yaml) \
+           --prow-config=$(location //config/prow:config.yaml) \
            --prow-job-config=config/jobs \
            --default=$(location //config:testgrid_default) \
            --output=$@ \

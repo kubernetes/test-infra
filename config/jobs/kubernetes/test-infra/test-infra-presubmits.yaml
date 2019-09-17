@@ -63,7 +63,7 @@ presubmits:
   - name: pull-test-infra-gubernator
     branches:
     - master
-    run_if_changed: 'gubernator|prow/config.yaml'
+    run_if_changed: 'gubernator|config/prow/config.yaml'
     decorate: true
     labels:
       preset-service-account: "true"

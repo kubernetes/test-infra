@@ -21,7 +21,7 @@ go_test(
     data = [
         "//config:prowjobs",
         "//config:testgrids",
-        "//prow:config.yaml",
+        "//config/prow:config.yaml",
     ],
     embed = [":go_default_library"],
     deps = [

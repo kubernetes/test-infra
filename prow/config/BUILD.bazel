@@ -16,7 +16,7 @@ go_test(
     ],
     data = [
         "//config:prowjobs",
-        "//prow:configs",
+        "//config/prow:configs",
     ],
     embed = [":go_default_library"],
     deps = [

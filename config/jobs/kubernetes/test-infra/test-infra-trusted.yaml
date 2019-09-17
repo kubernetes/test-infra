@@ -1014,7 +1014,7 @@ periodics:
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
-      - --config-path=prow/config.yaml
+      - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --github-token-path=/etc/github/oauth
       - --confirm
