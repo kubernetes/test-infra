@@ -21,7 +21,6 @@ k8s_objects(
     objects = [
         ":testgrid-config",
         ":configurator",
-        ":updater",
     ],
 )
 
@@ -29,19 +28,6 @@ k8s_objects(
 CLUSTER = "gke_fejta-prod_us-central1-f_erick"
 
 ROOT = "gcr.io/fejta-prod/testgrid"
-
-# TODO(fejta): wrap this in a rule like for prow
-k8s_object(
-    name = "updater",
-    cluster = CLUSTER,
-    image_chroot = ROOT,
-    images = {
-        ROOT + "/updater:latest": "//testgrid/cmd/updater:image",
-    },
-    kind = "Deployment",
-    namespace = "testgrid",
-    template = "updater_deployment.yaml",
-)
 
 k8s_object(
     name = "configurator",
