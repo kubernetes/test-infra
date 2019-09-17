@@ -70,3 +70,26 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Update boskos configmap on test-infra pushes
+
+  - name: maintenance-ci-testgrid-config-upload
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    run_if_changed: '^config/(jobs|testgrids)/.*$'
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+        command:
+        - ./testgrid/config-upload.sh
+        resources:
+          requests:
+            memory: "1Gi"
+    annotations:
+      testgrid-dashboards: sig-testing-maintenance
+      testgrid-tab-name: testgrid-config-upload
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: Compiles and uploads testgrid config on test-infra pushes
