@@ -48,6 +48,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
@@ -210,6 +211,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         # TODO(krzyzacy): Figure out bazel built kubemark image
