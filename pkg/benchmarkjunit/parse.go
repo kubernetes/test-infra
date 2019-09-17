@@ -24,8 +24,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/testgrid/metadata/junit"
 )
 
 var (

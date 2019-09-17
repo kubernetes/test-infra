@@ -19,8 +19,8 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/GoogleCloudPlatform/testgrid/config"
 	"io/ioutil"
-	"k8s.io/test-infra/testgrid/config"
 	"os"
 	"reflect"
 	"testing"

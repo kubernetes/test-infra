@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"github.com/GoogleCloudPlatform/testgrid/config"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/testgrid/config"
 	"reflect"
 	"testing"
 )

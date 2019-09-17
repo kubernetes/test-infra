@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/GoogleCloudPlatform/testgrid/config"
 	"github.com/golang/protobuf/proto"
-	"k8s.io/test-infra/testgrid/config"
 	"sigs.k8s.io/yaml"
 )
 

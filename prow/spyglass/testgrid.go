@@ -25,8 +25,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 
+	tgconf "github.com/GoogleCloudPlatform/testgrid/config"
 	"k8s.io/test-infra/prow/config"
-	tgconf "k8s.io/test-infra/testgrid/config"
 )
 
 // TestGrid manages a TestGrid configuration, and handles lookups of TestGrid configuration.

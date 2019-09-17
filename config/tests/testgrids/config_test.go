@@ -29,8 +29,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	config_pb "github.com/GoogleCloudPlatform/testgrid/config"
 	prow_config "k8s.io/test-infra/prow/config"
-	config_pb "k8s.io/test-infra/testgrid/config"
 )
 
 type SQConfig struct {

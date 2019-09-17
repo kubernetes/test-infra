@@ -26,10 +26,10 @@ import (
 	"html/template"
 	"path/filepath"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"k8s.io/test-infra/testgrid/metadata"
 )
 
 const (

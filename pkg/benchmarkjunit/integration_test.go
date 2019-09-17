@@ -29,7 +29,7 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/test-infra/testgrid/metadata/junit"
+	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 )
 
 func createTempFile() (string, error) {

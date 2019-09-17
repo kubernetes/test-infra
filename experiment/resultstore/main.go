@@ -33,12 +33,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	"github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
+	"github.com/GoogleCloudPlatform/testgrid/resultstore"
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/testgrid/config"
-	"k8s.io/test-infra/testgrid/metadata"
-	"k8s.io/test-infra/testgrid/resultstore"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 var re = regexp.MustCompile(`( ?|^)\[[^]]+\]( |$)`)

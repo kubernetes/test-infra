@@ -29,8 +29,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	prowConfig "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/testgrid/util/gcs"
 	"sigs.k8s.io/yaml"
 
 	"cloud.google.com/go/storage"
