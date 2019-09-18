@@ -280,7 +280,9 @@ periodics:
       args:
       - bash
       - -c
-      - make e2e-test
+      - >-
+        ./test/build.sh install-lib &&
+        make e2e-test
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: xueweiz@google.com,zhenw@google.com,lantaol@google.com
