@@ -40,33 +40,3 @@ postsubmits:
       testgrid-dashboards: sig-testing-misc
       testgrid-tab-name: post-bazel
       description: Runs bazel test //... on the test-infra repo on each commit
-
-  - name: maintenance-boskos-config-upload
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-    run_if_changed: '^boskos/.*$'
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
-        command:
-        - ./boskos/update_prow_config.sh
-        env:
-        - name: PROW_SERVICE_ACCOUNT
-          value: /etc/prow-build-service/prow-build-service.json
-        volumeMounts:
-        - name: prow-build-service
-          mountPath: /etc/prow-build-service
-          readOnly: true
-      volumes:
-      - name: prow-build-service
-        secret:
-          secretName: prow-build-service
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: boskos-config-upload
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Update boskos configmap on test-infra pushes
