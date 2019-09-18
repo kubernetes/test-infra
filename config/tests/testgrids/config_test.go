@@ -158,7 +158,7 @@ func TestConfig(t *testing.T) {
 		found := false
 		for _, kind := range dashboardPrefixes {
 			for _, prefix := range kind {
-				if strings.HasPrefix(dashboard.Name, prefix+"-") || dashboard.Name == prefix {
+				if strings.HasPrefix(dashboard.Name, prefix) || dashboard.Name == prefix {
 					found = true
 					break
 				}
@@ -263,7 +263,7 @@ func TestConfig(t *testing.T) {
 		found := false
 		for _, kind := range dashboardPrefixes {
 			for _, prefix := range kind {
-				if strings.HasPrefix(dashboardGroup.Name, prefix+"-") || prefix == dashboardGroup.Name {
+				if strings.HasPrefix(dashboardGroup.Name, prefix) || prefix == dashboardGroup.Name {
 					found = true
 					break
 				}
@@ -299,7 +299,7 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Dashboard %v needs to be defined before adding to a dashboard group!", dashboard)
 			}
 
-			if !strings.HasPrefix(dashboard, dashboardGroup.Name+"-") {
+			if !strings.HasPrefix(dashboard, dashboardGroup.Name) {
 				t.Errorf("Dashboard %v in group %v must have the group name as a prefix", dashboard, dashboardGroup.Name)
 			}
 		}
