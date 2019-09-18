@@ -269,10 +269,6 @@ periodics:
         value: cos-73-11647-217-0
       - name: IMAGE_PROJECT
         value: cos-cloud
-      - name: SSH_USER
-        value: $USER
-      - name: SSH_KEY
-        value: $JENKINS_GCE_SSH_PRIVATE_KEY_FILE
       - name: BOSKOS_PROJECT_TYPE
         value: gce-project
       command:
@@ -282,7 +278,7 @@ periodics:
       - -c
       - >-
         ./test/build.sh install-lib &&
-        make e2e-test
+        SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: xueweiz@google.com,zhenw@google.com,lantaol@google.com
