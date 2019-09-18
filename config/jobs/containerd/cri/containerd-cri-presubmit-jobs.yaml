@@ -231,8 +231,7 @@ presubmits:
         - ./test/verify.sh
 
   - name: pull-cri-containerd-windows-cri
-    # TODO(random-liu): Change this to true after the test is stable.
-    always_run: false
+    always_run: true
     max_concurrency: 8
     decorate: true
     skip_branches:
