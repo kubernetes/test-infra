@@ -246,7 +246,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d326d2a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d7c7545-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:

@@ -66,7 +66,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-testimages/boskos:v20190326-21e7f896f
+        image: gcr.io/k8s-testimages/boskos:v20190621-ff01381
         args:
         - --config=/etc/config/config
         - --namespace=test-pods
