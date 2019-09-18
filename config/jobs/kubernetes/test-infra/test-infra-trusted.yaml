@@ -694,6 +694,35 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Compiles and uploads testgrid config on test-infra pushes
+  - name: post-test-infra-upload-boskos-config
+    cluster: test-infra-trusted
+    branches:
+    - master
+    run_if_changed: '^boskos/.*$'
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+        command:
+        - ./boskos/update_prow_config.sh
+        env:
+        - name: PROW_SERVICE_ACCOUNT
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+          readOnly: true
+      volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+    annotations:
+      testgrid-dashboards: sig-testing-maintenance
+      testgrid-tab-name: boskos-config-upload
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: Update boskos configmap on test-infra pushes
+
 
   kubernetes/k8s.io:
   - name: post-k8sio-cip
