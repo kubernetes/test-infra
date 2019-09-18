@@ -340,8 +340,6 @@ EOF
         args:
         - ./.prow.sh
         env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "${latest_stable_k8s_version}"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
