@@ -33,16 +33,20 @@ hostpath_example_repos="
 csi-driver-host-path
 external-attacher
 external-provisioner
+external-resizer
+external-snapshotter
+livenessprobe
 node-driver-registrar
 "
 
-# kubernetes-csi repos which only need to be tested against a single
-# Kubernetes version. We generate unit, stable and alpha jobs for these,
-# without specifying a Kubernetes version.
+# kubernetes-csi repos which only need to be tested against at most a
+# single Kubernetes version. We generate unit, stable and alpha jobs
+# for these, without specifying a Kubernetes version. What the repo
+# then tests in those jobs is entirely up to the repo.
+#
+# This list is currently empty, but such a job might be useful again
+# in the future, so the code generator code below is kept.
 single_kubernetes_repos="
-livenessprobe
-external-snapshotter
-external-resizer
 "
 
 # kubernetes-csi repos which only need unit testing.
@@ -61,7 +65,6 @@ csi-proxy
 # csi-driver-nfs
 # csi-lib-fc
 # csi-lib-iscsi
-# external-resizer
 
 # All branches that do *not* support Prow testing. All new branches
 # are expected to have that support, therefore these list should be
