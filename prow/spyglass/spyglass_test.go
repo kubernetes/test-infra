@@ -33,12 +33,12 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	tgconf "github.com/GoogleCloudPlatform/testgrid/config"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	tgconf "k8s.io/test-infra/testgrid/config"
 )
 
 var (

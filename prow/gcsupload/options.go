@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 // NewOptions returns an empty Options with no nil fields.

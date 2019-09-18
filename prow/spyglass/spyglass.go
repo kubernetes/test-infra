@@ -31,12 +31,12 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"k8s.io/test-infra/testgrid/metadata"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles

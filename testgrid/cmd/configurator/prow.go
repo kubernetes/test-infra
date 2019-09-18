@@ -18,7 +18,7 @@ package main
 
 import (
 	"fmt"
-	"k8s.io/test-infra/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/config"
 	"path"
 	"strconv"
 	"strings"

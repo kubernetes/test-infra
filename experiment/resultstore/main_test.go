@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/test-infra/testgrid/metadata"
-	"k8s.io/test-infra/testgrid/util/gcs"
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 )
 
 func TestInsertLink(t *testing.T) {
