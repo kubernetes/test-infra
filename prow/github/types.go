@@ -676,6 +676,7 @@ type Commit struct {
 // SingleCommit is the commit part received when requesting a single commit
 // https://developer.github.com/v3/repos/commits/#get-a-single-commit
 type SingleCommit struct {
+	SHA    string `json:"sha"`
 	Commit struct {
 		Tree struct {
 			SHA string `json:"sha"`

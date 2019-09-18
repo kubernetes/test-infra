@@ -129,6 +129,7 @@ type CommitClient interface {
 	CreateStatus(org, repo, SHA string, s Status) error
 	ListStatuses(org, repo, ref string) ([]Status, error)
 	GetSingleCommit(org, repo, SHA string) (SingleCommit, error)
+	ListCommits(org, repo, sha, path, author, since, until string) ([]SingleCommit, error)
 	GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error)
 	GetRef(org, repo, ref string) (string, error)
 	DeleteRef(org, repo, ref string) error
@@ -1715,6 +1716,40 @@ func (c *client) GetSingleCommit(org, repo, SHA string) (SingleCommit, error) {
 		exitCodes: []int{200},
 	}, &commit)
 	return commit, err
+}
+
+// List commits on a repository
+// If path is empty, then it is not used as parameter in the URL.
+// See https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository
+func (c *client) ListCommits(org, repo, sha, path, author, since, until string) ([]SingleCommit, error) {
+	c.log("ListCommits", org, repo, path)
+	url := fmt.Sprintf("/repos/%s/%s/commits", org, repo)
+	var args []string
+	if sha != "" {
+		args = append(args, fmt.Sprintf("sha=%s", sha))
+	}
+	if path != "" {
+		args = append(args, fmt.Sprintf("path=%s", path))
+	}
+	if author != "" {
+		args = append(args, fmt.Sprintf("author=%s", author))
+	}
+	if since != "" {
+		args = append(args, fmt.Sprintf("since=%s", since))
+	}
+	if until != "" {
+		args = append(args, fmt.Sprintf("until=%s", until))
+	}
+	if len(args) > 0 {
+		url = fmt.Sprintf("%s?%s", url, strings.Join(args, "&"))
+	}
+	var commits []SingleCommit
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      url,
+		exitCodes: []int{http.StatusOK},
+	}, &commits)
+	return commits, err
 }
 
 // GetBranches returns all branches in the repo.
