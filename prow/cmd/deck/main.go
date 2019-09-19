@@ -137,7 +137,7 @@ func (o *options) Validate() error {
 	if o.cookieSecretFile == "" && o.oauthURL != "" {
 		if _, err := os.Stat("/etc/cookie/secret"); err == nil {
 			o.cookieSecretFile = "/etc/cookie/secret"
-			logrus.Error("You haven't set --cookie-secret-file, but you're assuming it is set to '/etc/cookie/secret'. Add --cookie-secret-file=/etc/cookie/secret to your deck instance's arguments. Your configuration will stop working at the end of October 2019.")
+			logrus.Error("You haven't set --cookie-secret, but you're assuming it is set to '/etc/cookie/secret'. Add --cookie-secret=/etc/cookie/secret to your deck instance's arguments. Your configuration will stop working at the end of October 2019.")
 		}
 	}
 
