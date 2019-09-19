@@ -1,12 +1,40 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
 package(default_visibility = ["//prow:__subpackages__"])
 
 load("//prow:def.bzl", "BUILD_CLUSTER", "MULTI_KIND", "component", "release")
+load("//def:configmap.bzl", "k8s_configmap")
 
 # Usage:
 #   bazel run //prow/cluster:foo.apply
 
 release(
     "production",
+    component(
+        "boskos",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-cleaner",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-janitor",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-metrics",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
+    component(
+        "boskos-reaper",
+        "deployment",
+        cluster = BUILD_CLUSTER,
+    ),
     component("build", "deployment"),
     component("build_rbac", MULTI_KIND),
     component("cert-manager", MULTI_KIND),
@@ -45,6 +73,20 @@ release(
     ),
 )
 
+# TODO(fejta): do we want to auto-apply this?
+k8s_configmap(
+    name = "boskos-resources",
+    cluster = BUILD_CLUSTER,
+    data = {
+        "resources.yaml": ":boskos-resources.yaml",
+    },
+    labels = {
+        "app": "boskos",
+        "component": "config",
+    },
+    namespace = "test-pods",
+)
+
 component("starter", MULTI_KIND)
 
 filegroup(
@@ -62,4 +104,11 @@ filegroup(
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["boskos_test.go"],
+    data = [":boskos-resources.yaml"],
+    deps = ["//boskos/common:go_default_library"],
 )
