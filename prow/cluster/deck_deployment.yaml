@@ -57,6 +57,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-oauth-config-file=/etc/githuboauth/secret
+        - --cookie-secret=/etc/cookie/secret
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/githuboauth
