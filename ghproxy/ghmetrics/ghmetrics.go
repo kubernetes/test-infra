@@ -95,7 +95,7 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 // CollectGitHubRequestMetrics publishes the number of requests by API path to
 // `github_requests` on prometheus.
 func CollectGitHubRequestMetrics(tokenHash, path, statusCode string, roundTripTime float64) {
-	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": GetSimplifiedPath(path), "status": statusCode}).Observe(roundTripTime)
+	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "status": statusCode}).Observe(roundTripTime)
 }
 
 // timestampStringToTime takes a unix timestamp and returns a `time.Time`

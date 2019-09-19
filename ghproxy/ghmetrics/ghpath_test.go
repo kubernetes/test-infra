@@ -63,7 +63,7 @@ func Test_GetSimplifiedPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
 				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
@@ -196,7 +196,7 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
 				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
@@ -233,7 +233,7 @@ func Test_GetSimplifiedPathUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
 				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
@@ -263,7 +263,7 @@ func Test_GetSimplifiedPathUsers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
 				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
 			}
 		})
@@ -300,7 +300,7 @@ func Test_GetSimplifiedPathOrgs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
 				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
@@ -323,7 +323,7 @@ func Test_GetSimplifiedPathNotifications(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSimplifiedPath(tt.args.path); got != tt.want {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
 				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
