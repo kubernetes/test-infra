@@ -4803,7 +4803,7 @@ presubmits:
         - --acsengine-agentpoolcount=2
         - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows
           --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-scheduling\].SchedulerPreemption
-          --ginkgo.skip=\[LinuxOnly\]|GMSA|\[Serial\]
+          --ginkgo.skip=\[LinuxOnly\]|GMSA|\[Serial\]|Guestbook.application.should.create.and.stop.a.working.application
         - --timeout=450m
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-aks-engine-azure-windows
         image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d7c7545-master
