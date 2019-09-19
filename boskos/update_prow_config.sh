@@ -21,7 +21,10 @@ set -o pipefail
 
 # Script triggered by prow postsubmit job
 # Update boskos configmap in prow
-
+PROJECT="${PROJECT:-k8s-prow-builds}"
+ZONE="${ZONE:-us-central1-f}"
+CLUSTER="${CLUSTER:-prow}"
+NAMESPACE="${NAMESPACE:-test-pods}"
 TREE="$(dirname ${BASH_SOURCE[0]})/.."
 
 if [[ -a "${PROW_SERVICE_ACCOUNT:-}" ]] ; then
@@ -32,11 +35,7 @@ if ! [ -x "$(command -v kubectl)" ]; then
 	gcloud components install kubectl 
 fi
 
-pushd "${TREE}/boskos"
-make update-config
+pushd "${TREE}/prow/cluster"
+gcloud container clusters get-credentials "${CLUSTER}" --project="${PROJECT}" --zone="${ZONE}"
+kubectl create configmap resources --from-file=config=boskos-resources.yaml --dry-run -o yaml | kubectl --namespace="${NAMESPACE}" replace configmap resources -f -
 popd
-
-# switch back to default service account for uploading logs
-if [[ -a "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]] ; then
-	gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-fi
