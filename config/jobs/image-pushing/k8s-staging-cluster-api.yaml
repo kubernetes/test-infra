@@ -90,3 +90,33 @@ postsubmits:
           - name: creds
             secret:
               secretName: deployer-service-account
+  kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
+    - name: post-cluster-api-bootstrap-provider-push-images
+      cluster: test-infra-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20190906-d5d7ce3
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-capi-kubeadm
+              - --scratch-bucket=gs://k8s-staging-capi-kubeadm-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
