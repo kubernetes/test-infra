@@ -5,8 +5,8 @@ go_test(
     srcs = ["jobs_test.go"],
     data = [
         "//config:prowjobs",
+        "//config/prow:configs",
         "//jobs",
-        "//prow:configs",
         "//scenarios",
     ],
     deps = [

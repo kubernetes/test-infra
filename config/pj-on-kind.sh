@@ -20,7 +20,7 @@ set -o nounset
 set -o pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-export CONFIG_PATH="${root}/prow/config.yaml"
+export CONFIG_PATH="${root}/config/prow/config.yaml"
 export JOB_CONFIG_PATH="${root}/config/jobs"
 
 "${root}/prow/pj-on-kind.sh" "$@"

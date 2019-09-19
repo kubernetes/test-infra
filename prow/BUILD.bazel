@@ -51,11 +51,6 @@ prow_push(
 )
 
 filegroup(
-    name = "configs",
-    srcs = glob(["*.yaml"]),
-)
-
-filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],

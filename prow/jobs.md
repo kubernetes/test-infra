@@ -7,7 +7,7 @@ For a brief cookbook for jobs intended for [prow.k8s.io], please refer to
 
 ## How to configure new jobs
 
-To configure a new job you'll need to add an entry into [config.yaml](/prow/config.yaml).
+To configure a new job you'll need to add an entry into [config.yaml](/config/prow/config.yaml).
 If you have [update-config](/prow/plugins/updateconfig) plugin deployed then the
 config will be automatically updated once the PR is merged, else you will need
 to run `make update-config`. This does not require redeploying any binaries,

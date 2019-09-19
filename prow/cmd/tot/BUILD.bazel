@@ -20,7 +20,7 @@ go_test(
     srcs = ["main_test.go"],
     data = [
         "//config:prowjobs",
-        "//prow:configs",
+        "//config/prow:configs",
     ],
     embed = [":go_default_library"],
     deps = ["//prow/config:go_default_library"],

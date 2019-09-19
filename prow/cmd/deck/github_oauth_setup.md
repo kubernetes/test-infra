@@ -112,11 +112,11 @@ When testing locally, pass the path to your secrets to `deck` using the `--githu
 
 Run the command:
 
-`go build . && ./deck --config-path=../../config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth-url=/pr`
+`go build . && ./deck --config-path=../../../config/prow/config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth-url=/pr`
 
 Or, if you'd like to use bazel, run the command: 
 
-`bazel run //prow/cmd/deck -- --config-path=/absoluate/path/to/config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth-url=/pr`
+`bazel run //prow/cmd/deck -- --config-path=/absolute/path/to/config.yaml --github-oauth-config-file=<PATH_TO_YOUR_GITHUB_OAUTH_SECRET> --cookie-secret=<PATH_TO_YOUR_COOKIE_SECRET> --oauth-url=/pr`
 
 ## Using a test cluster
 If hosting your test instance on http instead of https, you will need to use the `--allow-insecure` flag in `deck`.

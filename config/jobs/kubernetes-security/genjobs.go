@@ -19,7 +19,7 @@ genjobs automatically generates the security repo presubmits from the
 kubernetes presubmits
 
 NOTE: this makes a few assumptions
-- $PWD/../../prow/config.yaml is where the config lives (unless you supply --config=)
+- $PWD/../../config/prow/config.yaml is where the config lives (unless you supply --config=)
 - $PWD/.. is where the job configs live (unless you supply --jobs=)
 - the output is job configs ($PWD/..) + /kubernetes-security/generated-security-jobs.yaml (unless you supply --output)
 */
@@ -47,7 +47,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-var configPath = flag.String("config", "", "path to prow/config.yaml, defaults to $PWD/../../prow/config.yaml")
+var configPath = flag.String("config", "", "path to config/prow/config.yaml, defaults to $PWD/../../config/prow/config.yaml")
 var jobsPath = flag.String("jobs", "", "path to prowjobs, defaults to $PWD/../")
 var outputPath = flag.String("output", "", "path to output the generated jobs to, defaults to $PWD/generated-security-jobs.yaml")
 
@@ -315,13 +315,13 @@ func copyFile(srcPath, destPath string) error {
 
 func main() {
 	flag.Parse()
-	// default to $PWD/prow/config.yaml
+	// default to $PWD/config/prow/config.yaml
 	pwd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Failed to get $PWD: %v", err)
 	}
 	if *configPath == "" {
-		*configPath = pwd + "/../../prow/config.yaml"
+		*configPath = pwd + "/../../config/prow/config.yaml"
 	}
 	if *jobsPath == "" {
 		*jobsPath = pwd + "/../"

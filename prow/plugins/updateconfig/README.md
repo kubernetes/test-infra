@@ -22,10 +22,10 @@ config_updater:
       name: thing2-config
       namespace: otherNamespace
     # Update the config configmap whenever config.yaml changes
-    prow/config.yaml:
+    config/prow/config.yaml:
       name: config
     # Update the plugin configmap whenever plugins.yaml changes
-    prow/plugins.yaml:
+    config/prow/plugins.yaml:
       name: plugin
     # Update the `this` or/and `that` key in the `data` configmap whenever `data.yaml` or/and `other-data.yaml` changes
     some/data.yaml:

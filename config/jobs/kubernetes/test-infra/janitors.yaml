@@ -17,7 +17,7 @@ periodics:
       - go
       - run
       - experiment/ci-janitor/main.go
-      - --config-path=prow/config.yaml
+      - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/janitor/gcp_janitor.py
       image: gcr.io/k8s-testimages/kubekins-e2e:v20190917-d7c7545-master

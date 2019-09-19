@@ -28,7 +28,7 @@ import ruamel.yaml as yaml
 
 TEST_CONFIG_YAML = "experiment/test_config.yaml"
 JOB_CONFIG = "config/jobs"
-PROW_CONFIG = "prow/config.yaml"
+PROW_CONFIG = "config/prow/config.yaml"
 BRANCH_JOB_DIR = "config/jobs/kubernetes/sig-release/release-branch-jobs"
 SECURITY_JOBS = "config/jobs/kubernetes-security/generated-security-jobs.yaml"
 

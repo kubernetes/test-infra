@@ -1,6 +1,6 @@
 # Configuring Tide
 
-Configuration of Tide is located under the [prow/config.yaml](/prow/config.yaml) file. All configuration for merge behavior and criteria belongs in the `tide` yaml struct, but it may be necessary to also configure presubmits for Tide to run against PRs (see ['Configuring Presubmit Jobs'](#configuring-presubmit-jobs) below).
+Configuration of Tide is located under the [config/prow/config.yaml](/config/prow/config.yaml) file. All configuration for merge behavior and criteria belongs in the `tide` yaml struct, but it may be necessary to also configure presubmits for Tide to run against PRs (see ['Configuring Presubmit Jobs'](#configuring-presubmit-jobs) below).
 
 This document will describe the fields of the `tide` configuration and how to populate them, but you can also check out the [GoDocs](https://godoc.org/github.com/kubernetes/test-infra/prow/config#Tide) for the most up to date configuration specification.
 

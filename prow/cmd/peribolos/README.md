@@ -170,7 +170,7 @@ See `bazel run //prow/cmd/peribolos -- --help` for the full and current list of 
 
 
 
-[`config.yaml`]: /prow/config.yaml
+[`config.yaml`]: /config/prow/config.yaml
 [edit team]: https://developer.github.com/v3/teams/#edit-team
 [edit org]: https://developer.github.com/v3/orgs/#edit-an-organization
 [peribolos]: https://en.wikipedia.org/wiki/Peribolos

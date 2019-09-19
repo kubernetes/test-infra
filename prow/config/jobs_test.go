@@ -31,7 +31,7 @@ import (
 )
 
 var c *Config
-var configPath = flag.String("config", "../config.yaml", "Path to prow config")
+var configPath = flag.String("config", "../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 

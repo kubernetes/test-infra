@@ -12,7 +12,7 @@ prow_image(
 go_binary(
     name = "hook",
     data = [
-        "//prow:configs",
+        "//config/prow:configs",
     ],
     embed = [":go_default_library"],
     pure = "on",
@@ -22,7 +22,7 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     data = [
-        "//prow:configs",
+        "//config/prow:configs",
     ],
     embed = [":go_default_library"],
     deps = [
