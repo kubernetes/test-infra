@@ -13,22 +13,28 @@ triggers:
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
+  elide_skipped_contexts: true
 - repos:
   - google/cadvisor
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  elide_skipped_contexts: true
 - repos:
   - containerd/cri
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
+  elide_skipped_contexts: true
 - repos:
   - kubeflow
   join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
+  elide_skipped_contexts: true
 - repos:
   - tensorflow/minigo
   join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
+  elide_skipped_contexts: true
 - repos:
   - bazelbuild
+  elide_skipped_contexts: true
 
 owners:
   mdyamlrepos:
