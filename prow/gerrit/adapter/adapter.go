@@ -28,15 +28,15 @@ import (
 	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/gerrit/reporter"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-type prowJobClient interface {
-	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+type kubeClient interface {
+	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
 }
 
 type gerritClient interface {
@@ -52,10 +52,10 @@ type configAgent interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config        config.Getter
-	prowJobClient prowJobClient
-	gc            gerritClient
-	tracker       LastSyncTracker
+	config  config.Getter
+	kc      kubeClient
+	gc      gerritClient
+	tracker LastSyncTracker
 }
 
 type LastSyncTracker interface {
@@ -64,7 +64,7 @@ type LastSyncTracker interface {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, projects map[string][]string, prowJobClient prowv1.ProwJobInterface, cfg config.Getter) (*Controller, error) {
+func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, projects map[string][]string, kc *kube.Client, cfg config.Getter) (*Controller, error) {
 	if lastSyncTracker == nil {
 		return nil, errors.New("lastSyncTracker required")
 	}
@@ -76,10 +76,10 @@ func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, proje
 	c.Start(cookiefilePath)
 
 	return &Controller{
-		prowJobClient: prowJobClient,
-		config:        cfg,
-		gc:            c,
-		tracker:       lastSyncTracker,
+		kc:      kc,
+		config:  cfg,
+		gc:      c,
+		tracker: lastSyncTracker,
 	}, nil
 }
 
@@ -281,7 +281,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		}
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
-		if _, err := c.prowJobClient.Create(&pj); err != nil {
+		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
 			logger.Infof("Triggered Prowjob %s", jSpec.spec.Job)

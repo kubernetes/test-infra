@@ -19,18 +19,15 @@ package main
 import (
 	"context"
 	"errors"
-	"flag"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 	"time"
 
 	"cloud.google.com/go/storage"
-	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/pkg/io"
-	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 type fakeOpener struct{}
@@ -41,87 +38,6 @@ func (o fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, err
 
 func (o fakeOpener) Writer(ctx context.Context, path string) (io.WriteCloser, error) {
 	return nil, errors.New("do not call Writer")
-}
-
-func TestFlags(t *testing.T) {
-	cases := []struct {
-		name     string
-		args     map[string]string
-		del      sets.String
-		expected func(*options)
-		err      bool
-	}{
-		{
-			name: "minimal flags work",
-		},
-		{
-			name: "expicitly set --dry-run=false",
-			args: map[string]string{
-				"--dry-run": "false",
-			},
-			expected: func(o *options) {
-				o.dryRun = false
-			},
-		},
-		{
-			name: "explicitly set --dry-run=true",
-			args: map[string]string{
-				"--dry-run": "true",
-			},
-			expected: func(o *options) {
-				o.dryRun = true
-			},
-		},
-		{
-			name:     "dry run defaults to false",
-			del:      sets.NewString("--dry-run"),
-			expected: func(o *options) {},
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			expected := &options{
-				projects:         client.ProjectsFlag{},
-				lastSyncFallback: "gs://path",
-				configPath:       "yo",
-				dryRun:           false,
-			}
-			expected.projects.Set("foo=bar")
-			if tc.expected != nil {
-				tc.expected(expected)
-			}
-			argMap := map[string]string{
-				"--gerrit-projects":    "foo=bar",
-				"--last-sync-fallback": "gs://path",
-				"--config-path":        "yo",
-				"--dry-run":            "false",
-			}
-			for k, v := range tc.args {
-				argMap[k] = v
-			}
-			for k := range tc.del {
-				delete(argMap, k)
-			}
-
-			var args []string
-			for k, v := range argMap {
-				args = append(args, k+"="+v)
-			}
-			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
-			actual := gatherOptions(fs, args...)
-			switch err := actual.Validate(); {
-			case err != nil:
-				if !tc.err {
-					t.Errorf("unexpected error: %v", err)
-				}
-			case tc.err:
-				t.Errorf("failed to receive expected error")
-			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
-			}
-		})
-	}
 }
 
 func TestSyncTime(t *testing.T) {
