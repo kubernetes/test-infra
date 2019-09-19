@@ -35,9 +35,6 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 
-	// TODO: Remove the need for this import; it's currently required to allow the plugin config loader to function correctly (it expects plugins to be initialised)
-	// See https://github.com/kubernetes/test-infra/pull/8933#issuecomment-411511180
-	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -97,7 +94,7 @@ func main() {
 	}
 
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Start(o.pluginConfig); err != nil {
+	if err := pa.Start(o.pluginConfig, false); err != nil {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
 	}
 

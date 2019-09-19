@@ -31,7 +31,7 @@ import (
 // Make sure that our plugins are valid.
 func TestPlugins(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Load("../../../config/prow/plugins.yaml"); err != nil {
+	if err := pa.Load("../../../config/prow/plugins.yaml", true); err != nil {
 		t.Fatalf("Could not load plugins: %v.", err)
 	}
 }

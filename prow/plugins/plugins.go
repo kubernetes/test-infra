@@ -19,11 +19,11 @@ package plugins
 import (
 	"errors"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
 	"io/ioutil"
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/test-infra/prow/bugzilla"
@@ -218,7 +218,9 @@ func NewFakeConfigAgent() ConfigAgent {
 
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or the configuration is invalid.
-func (pa *ConfigAgent) Load(path string) error {
+// If checkUnknownPlugins is true, unrecognized plugin names will make config
+// loading fail.
+func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -229,6 +231,11 @@ func (pa *ConfigAgent) Load(path string) error {
 	}
 	if err := np.Validate(); err != nil {
 		return err
+	}
+	if checkUnknownPlugins {
+		if err := np.ValidatePluginsUnknown(); err != nil {
+			return err
+		}
 	}
 
 	pa.Set(np)
@@ -254,14 +261,16 @@ func (pa *ConfigAgent) Set(pc *Configuration) {
 
 // Start starts polling path for plugin config. If the first attempt fails,
 // then start returns the error. Future errors will halt updates but not stop.
-func (pa *ConfigAgent) Start(path string) error {
-	if err := pa.Load(path); err != nil {
+// If checkUnknownPlugins is true, unrecognized plugin names will make config
+// loading fail.
+func (pa *ConfigAgent) Start(path string, checkUnknownPlugins bool) error {
+	if err := pa.Load(path, checkUnknownPlugins); err != nil {
 		return err
 	}
 	ticker := time.Tick(1 * time.Minute)
 	go func() {
 		for range ticker {
-			if err := pa.Load(path); err != nil {
+			if err := pa.Load(path, checkUnknownPlugins); err != nil {
 				logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
 			}
 		}

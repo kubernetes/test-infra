@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/bugzilla"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/labels"
 )
 
@@ -783,30 +784,34 @@ func (c *Configuration) setDefaults() {
 	}
 }
 
-// validatePlugins will return error if
-// there are unknown or duplicated plugins.
-func validatePlugins(plugins map[string][]string) error {
-	var errors []string
-	for _, configuration := range plugins {
-		for _, plugin := range configuration {
-			if _, ok := pluginHelp[plugin]; !ok {
-				errors = append(errors, fmt.Sprintf("unknown plugin: %s", plugin))
-			}
-		}
-	}
+// validatePluginsDupes will return an error if there are duplicated plugins.
+// It is sometimes a sign of misconfiguration and is always useless for a
+// plugin to be specified at both the org and repo levels.
+func validatePluginsDupes(plugins map[string][]string) error {
+	var errors []error
 	for repo, repoConfig := range plugins {
 		if strings.Contains(repo, "/") {
 			org := strings.Split(repo, "/")[0]
 			if dupes := findDuplicatedPluginConfig(repoConfig, plugins[org]); len(dupes) > 0 {
-				errors = append(errors, fmt.Sprintf("plugins %v are duplicated for %s and %s", dupes, repo, org))
+				errors = append(errors, fmt.Errorf("plugins %v are duplicated for %s and %s", dupes, repo, org))
 			}
 		}
 	}
+	return errorutil.NewAggregate(errors...)
+}
 
-	if len(errors) > 0 {
-		return fmt.Errorf("invalid plugin configuration:\n\t%v", strings.Join(errors, "\n\t"))
+// ValidatePluginsUnknown will return an error if there are any unrecognized
+// plugins configured.
+func (c *Configuration) ValidatePluginsUnknown() error {
+	var errors []error
+	for _, configuration := range c.Plugins {
+		for _, plugin := range configuration {
+			if _, ok := pluginHelp[plugin]; !ok {
+				errors = append(errors, fmt.Errorf("unknown plugin: %s", plugin))
+			}
+		}
 	}
-	return nil
+	return errorutil.NewAggregate(errors...)
 }
 
 func validateSizes(size Size) error {
@@ -962,7 +967,7 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 
-	if err := validatePlugins(c.Plugins); err != nil {
+	if err := validatePluginsDupes(c.Plugins); err != nil {
 		return err
 	}
 	if err := validateExternalPlugins(c.ExternalPlugins); err != nil {

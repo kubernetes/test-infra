@@ -28,7 +28,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-	_ "k8s.io/test-infra/prow/hook"
+	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/updateconfig"
@@ -89,7 +89,7 @@ func main() {
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig, true); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 
