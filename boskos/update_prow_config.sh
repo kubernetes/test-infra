@@ -29,12 +29,14 @@ if [[ -a "${PROW_SERVICE_ACCOUNT:-}" ]] ; then
 fi
 
 if ! [ -x "$(command -v kubectl)" ]; then
-	gcloud components install kubectl 
+	gcloud components install kubectl
 fi
 
-pushd "${TREE}/boskos"
-make update-config
-popd
+
+# TODO(fejta): deploy this using the bazel target
+gcloud container clusters get-credentials --project=k8s-prow-builds --zone=us-central1-f prow
+kubectl create configmap resources --from-file=config=prow/cluster/boskos-resources.yaml --dry-run -o yaml | \
+    kubectl --context=gke_k8s-prow-builds_us-central1-f_prow --namespace=test-pods replace configmap resources -f -
 
 # switch back to default service account for uploading logs
 if [[ -a "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]] ; then
