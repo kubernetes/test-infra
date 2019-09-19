@@ -265,8 +265,8 @@ periodics:
       env:
       - name: ZONE
         value: us-central1-a
-      - name: VM_IMAGE
-        value: cos-73-11647-217-0
+      - name: IMAGE_FAMILY
+        value: cos-73-lts
       - name: IMAGE_PROJECT
         value: cos-cloud
       - name: BOSKOS_PROJECT_TYPE
