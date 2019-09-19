@@ -50,6 +50,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/simplifypath"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -246,34 +247,57 @@ func traceHandler(h http.Handler) http.Handler {
 		trw := &traceResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 		h.ServeHTTP(trw, r)
 		latency := time.Since(t)
-		labels := prometheus.Labels{"path": getPathPrefix(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode)}
+		labels := prometheus.Labels{"path": simplifier.Simplify(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode)}
 		deckMetrics.httpRequestDuration.With(labels).Observe(latency.Seconds())
 		deckMetrics.httpResponseSize.With(labels).Observe(float64(trw.size))
 	})
 }
 
-func getPathPrefix(path string) string {
-	prefixes := []string{
-		"/tide",
-		"/plugin-help.js",
-		"/data.js",
-		"/prowjobs.js",
-		"/pr-data.js",
-		"/log",
-		"/rerun",
-		"/prowjob",
-		"/spyglass/",
-		"/view/",
-		"/job-history/",
-		"/pr-history/"}
+var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+	l("badge.svg"),
+	l("command-help"),
+	l("config"),
+	l("data.js"),
+	l("favicon.ico"),
+	l("github-login",
+		l("redirect")),
+	l("job-history",
+		v("job")),
+	l("log"),
+	l("plugin-config"),
+	l("plugin-help"),
+	l("plugins"),
+	l("pr"),
+	l("pr-data.js"),
+	l("pr-history"),
+	l("prowjob"),
+	l("prowjobs.js"),
+	l("rerun"),
+	l("spyglass",
+		l("static",
+			v("path")),
+		l("lens",
+			v("lens",
+				v("job")),
+		)),
+	l("static",
+		v("path")),
+	l("tide"),
+	l("tide-history"),
+	l("tide-history.js"),
+	l("tide.js"),
+	l("view",
+		v("job")),
+))
 
-	for _, p := range prefixes {
-		if strings.HasPrefix(path, p) {
-			return p
-		}
-	}
-	// for other cases
-	return "others"
+// l and v keep the tree legible
+
+func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
+	return simplifypath.L(fragment, children...)
+}
+
+func v(fragment string, children ...simplifypath.Node) simplifypath.Node {
+	return simplifypath.V(fragment, children...)
 }
 
 func main() {
