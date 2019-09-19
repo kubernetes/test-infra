@@ -15,11 +15,12 @@ release(
         MULTI_KIND,
         cluster = BUILD_CLUSTER,
     ),
-    component(
-        "boskos-cleaner",
-        MULTI_KIND,
-        cluster = BUILD_CLUSTER,
-    ),
+    # TODO(https://github.com/kubernetes/test-infra/issues/14405): wrong
+    #omponent(
+    #   "boskos-cleaner",
+    #   MULTI_KIND,
+    #   cluster = BUILD_CLUSTER,
+    #,
     component(
         "boskos-janitor",
         MULTI_KIND,
