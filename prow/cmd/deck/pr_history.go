@@ -311,7 +311,7 @@ func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client
 	}
 
 	elapsed := time.Now().Sub(start)
-	logrus.Infof("loaded %s in %v", url.Path, elapsed)
+	logrus.WithField("duration", elapsed.String()).Infof("loaded %s", url.Path)
 
 	return template, nil
 }
