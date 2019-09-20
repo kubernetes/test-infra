@@ -40,7 +40,7 @@ import (
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-	_ "k8s.io/test-infra/prow/hook"
+	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
