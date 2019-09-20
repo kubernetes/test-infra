@@ -813,6 +813,9 @@ dashboards:
   - name: gubernator
     test_group_name: pull-test-infra-gubernator
     base_options: width=10
+  - name: repo-infra
+    test_group_name: pull-repo-infra-tests
+    base_options: width=10
   - name: verify-file-perms
     test_group_name: pull-test-infra-verify-file-perms
     base_options: width=10
