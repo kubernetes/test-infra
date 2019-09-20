@@ -695,6 +695,8 @@ rules:
     verbs:
       - delete
       - list
+      - watch
+      - get
   - apiGroups:
       - ""
     resources:
