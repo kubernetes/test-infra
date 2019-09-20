@@ -30,8 +30,6 @@ else
   exit 0
 fi
 
-trap 'echo ERROR: security jobs changed, run hack/update-config.sh >&2' ERR
-
 echo -n "Running checkconfig with strict warnings..." >&2
 "$@" \
     --strict \
@@ -43,13 +41,3 @@ echo -n "Running checkconfig with strict warnings..." >&2
     --warnings=validate-urls \
     --warnings=unknown-fields
 echo PASS
-
-echo -n "Checking generated security jobs..." >&2
-d=$(diff config/jobs/kubernetes-security/generated-security-jobs.yaml hack/zz.security-jobs.yaml || true)
-if [[ -n "$d" ]]; then
-  echo "FAIL" >&2
-  echo "< unexpected" >&2
-  echo "> missing" >&2
-  echo "$d" >&2
-  false
-fi
