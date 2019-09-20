@@ -160,7 +160,7 @@ func TestHandleLog(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 	}
-	handler := handleLog(flc(0))
+	handler := handleLog(flc(0), logrus.WithField("handler", "/log"))
 	for _, tc := range testcases {
 		req, err := http.NewRequest(http.MethodGet, "", nil)
 		if err != nil {
@@ -234,7 +234,7 @@ func TestProwJob(t *testing.T) {
 			State: prowapi.PendingState,
 		},
 	})
-	handler := handleProwJob(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"))
+	handler := handleProwJob(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), logrus.WithField("handler", "/prowjob"))
 	req, err := http.NewRequest(http.MethodGet, "/prowjob?prowjob=wowsuch", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -432,7 +432,7 @@ func TestRerun(t *testing.T) {
 			ghc := mockGitHubConfigGetter{githubLogin: tc.login}
 			rc := &fakegithub.FakeClient{OrgMembers: map[string][]string{"org": {"org-member"}}}
 			pca := plugins.NewFakeConfigAgent()
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc, &pca)
+			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, configGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
 			handler.ServeHTTP(rr, req)
 			if rr.Code != tc.httpCode {
 				t.Fatalf("Bad error code: %d", rr.Code)
@@ -505,7 +505,7 @@ func TestTide(t *testing.T) {
 	if ta.pools[0].Org != "o" {
 		t.Errorf("Wrong org in pool. Got %s, expected o in %v", ta.pools[0].Org, ta.pools)
 	}
-	handler := handleTidePools(ca.Config, &ta)
+	handler := handleTidePools(ca.Config, &ta, logrus.WithField("handler", "/tide.js"))
 	req, err := http.NewRequest(http.MethodGet, "/tide.js", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -564,7 +564,7 @@ func TestTideHistory(t *testing.T) {
 		t.Fatalf("Expected tideAgent history:\n%#v\n,but got:\n%#v\n", testHist, ta.history)
 	}
 
-	handler := handleTideHistory(&ta)
+	handler := handleTideHistory(&ta, logrus.WithField("handler", "/tide-history.js"))
 	req, err := http.NewRequest(http.MethodGet, "/tide-history.js", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -609,7 +609,7 @@ func TestHelp(t *testing.T) {
 	ha := &helpAgent{
 		path: s.URL,
 	}
-	handler := handlePluginHelp(ha)
+	handler := handlePluginHelp(ha, logrus.WithField("handler", "/plugin-help.js"))
 	handleAndCheck := func() {
 		req, err := http.NewRequest(http.MethodGet, "/plugin-help.js", nil)
 		if err != nil {
@@ -1024,7 +1024,7 @@ func TestHandleConfig(t *testing.T) {
 	configGetter := func() *config.Config {
 		return &c
 	}
-	handler := handleConfig(configGetter)
+	handler := handleConfig(configGetter, logrus.WithField("handler", "/config"))
 	req, err := http.NewRequest(http.MethodGet, "/config", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)
@@ -1066,7 +1066,7 @@ func TestHandlePluginConfig(t *testing.T) {
 	}
 	pluginAgent := &plugins.ConfigAgent{}
 	pluginAgent.Set(&c)
-	handler := handlePluginConfig(pluginAgent)
+	handler := handlePluginConfig(pluginAgent, logrus.WithField("handler", "/plugin-config"))
 	req, err := http.NewRequest(http.MethodGet, "/config", nil)
 	if err != nil {
 		t.Fatalf("Error making request: %v", err)

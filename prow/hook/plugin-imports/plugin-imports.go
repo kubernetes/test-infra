@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hook
+package pluginimports
 
 // We need to empty import all enabled plugins so that they will be linked into
 // any hook binary.

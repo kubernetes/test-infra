@@ -11,7 +11,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/hook:go_default_library",
+        "//prow/hook/plugin-imports:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/updateconfig:go_default_library",
