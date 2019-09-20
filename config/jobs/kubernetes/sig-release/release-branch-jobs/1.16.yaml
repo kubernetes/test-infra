@@ -364,7 +364,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-e2e-gce-windows: "true"
-  name: ci-kubernetes-e2e-windows-gce-k8s-beta
+  name: ci-kubernetes-e2e-windows-gce-beta
   spec:
     containers:
     - command:
