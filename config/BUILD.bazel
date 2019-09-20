@@ -22,7 +22,7 @@ filegroup(
     name = "prowjobs",
     srcs = glob([
         "jobs/**/*.yaml",
-    ]) + ["//config/jobs/kubernetes-security:generated-jobs"],
+    ]),
 )
 
 filegroup(
@@ -48,7 +48,6 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//config/jobs/kubernetes-security:all-srcs",
         "//config/prow:all-srcs",
         "//config/tests/jobs:all-srcs",
         "//config/tests/testgrids:all-srcs",

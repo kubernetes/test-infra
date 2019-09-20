@@ -336,26 +336,6 @@ sh_test(
     tags = ["lint"],
 )
 
-genrule(
-    name = "generate-security-jobs",
-    srcs = [
-        "//config:all-srcs",
-        "//config/prow:config.yaml",
-    ],
-    outs = ["zz.security-jobs.yaml"],
-    # $@ == expected location for zz.security-jobs.yaml
-    cmd = "./$(location //config/jobs/kubernetes-security:genjobs) --config=config/prow/config.yaml --jobs=config/jobs --output=\"$@\"",
-    tools = ["//config/jobs/kubernetes-security:genjobs"],
-)
-
-sh_binary(
-    name = "update-config",
-    srcs = ["update-config.sh"],
-    data = [
-        ":zz.security-jobs.yaml",
-    ],
-)
-
 sh_test(
     name = "verify-config",
     srcs = ["verify-config.sh"],
@@ -366,9 +346,7 @@ sh_test(
         "--plugin-config=config/prow/plugins.yaml",
     ],
     data = [
-        ":zz.security-jobs.yaml",
         "//config:all-srcs",
-        "//config/jobs/kubernetes-security:all-srcs",
         "//config/prow:config.yaml",
         "//config/prow:plugins.yaml",
         "//prow/cmd/checkconfig",

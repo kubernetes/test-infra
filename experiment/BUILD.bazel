@@ -28,11 +28,9 @@ py_binary(
         "$(location //experiment/config-rotator)",
         "$(location //experiment/config-forker)",
         "$(location :generate_tests)",
-        "$(location //config/jobs/kubernetes-security:genjobs)",
     ],
     data = [
         ":generate_tests",
-        "//config/jobs/kubernetes-security:genjobs",
         "//experiment/config-forker",
         "//experiment/config-rotator",
     ],
