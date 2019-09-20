@@ -59,12 +59,13 @@ approve:
   - kubernetes/examples
   - kubernetes/federation
   - kubernetes/gengo
+  - kubernetes-incubator/ip-masq-agent
   - kubernetes/ingress-gce
   - kubernetes/ingress-nginx
   - kubernetes/klog
-  - kubernetes/kube-deploy
   - kubernetes/kubeadm
   - kubernetes/kubectl
+  - kubernetes/kube-deploy
   - kubernetes/kubernetes-template-project
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
@@ -72,11 +73,9 @@ approve:
   - kubernetes/perf-tests
   - kubernetes/publishing-bot
   - kubernetes/release
-  - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/utils
-  - kubernetes-incubator/ip-masq-agent
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
@@ -90,8 +89,9 @@ approve:
   - bazelbuild
   - kubernetes/community
   - kubernetes/org
-  - kubernetes/test-infra
+  - kubernetes/repo-infra
   - kubernetes-sigs/kind
+  - kubernetes/test-infra
   require_self_approval: false
   ignore_review_state: false
 - repos:
@@ -129,13 +129,9 @@ label:
 lgtm:
 - repos:
   - bazelbuild
-  review_acts_as_lgtm: true
-- repos:
-  - kubernetes/test-infra
-  review_acts_as_lgtm: true
-  store_tree_hash: true
-- repos:
+  - kubernetes/repo-infra
   - kubernetes-sigs/kind
+  - kubernetes/test-infra
   review_acts_as_lgtm: true
 
 blockades:
