@@ -19,10 +19,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+cd "$(git rev-parse --show-toplevel)"
+
 # Script triggered by prow postsubmit job
 # Update boskos configmap in prow
-
-TREE="$(dirname ${BASH_SOURCE[0]})/.."
 
 if [[ -a "${PROW_SERVICE_ACCOUNT:-}" ]] ; then
 	gcloud auth activate-service-account --key-file="${PROW_SERVICE_ACCOUNT}"
@@ -31,7 +31,6 @@ fi
 if ! [ -x "$(command -v kubectl)" ]; then
 	gcloud components install kubectl
 fi
-
 
 # TODO(fejta): deploy this using the bazel target
 gcloud container clusters get-credentials --project=k8s-prow-builds --zone=us-central1-f prow
