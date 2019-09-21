@@ -4,6 +4,9 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: k8s.io/repo-infra
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.29.1
