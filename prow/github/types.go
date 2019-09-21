@@ -821,7 +821,7 @@ type Team struct {
 	Privacy      string         `json:"privacy,omitempty"`
 	Parent       *Team          `json:"parent,omitempty"`         // Only present in responses
 	ParentTeamID *int           `json:"parent_team_id,omitempty"` // Only valid in creates/edits
-	Permission   TeamPermission `json:"permission"`
+	Permission   TeamPermission `json:"permission,omitempty"`
 }
 
 // TeamMember is a member of an organizational team
