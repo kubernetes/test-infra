@@ -68,7 +68,7 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.0.0-20190831074504-732c9ca86353
 	k8s.io/klog v0.4.0
-	k8s.io/repo-infra v0.0.0-20190806171332-9f4571ad7242
+	k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.2.1
 	sigs.k8s.io/yaml v1.1.0

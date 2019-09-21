@@ -53,6 +53,7 @@ github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c h1:WMSKgG
 github.com/bazelbuild/bazel-gazelle v0.0.0-20190402225339-e530fae7ce5c/go.mod h1:2/MtIee38Tr6xnPZql/rylbyA6Pf8eTqNiuJ7gIT/SA=
 github.com/bazelbuild/bazel-gazelle v0.18.1 h1:nJsPG30GPtJUtYmjU4NEpnGp3nsRFN46ROgh6pawuhw=
 github.com/bazelbuild/bazel-gazelle v0.18.1/go.mod h1:uOPRvTHyGNlMbjSOLTH2LaD2GfRrZNDIn6gVEHUZ4Ao=
+github.com/bazelbuild/buildtools v0.0.0-20180226164855-80c7f0d45d7e/go.mod h1:5JP0TXzWDHXv8qvxRC4InIazwdyDseBDbzESUMKk1yU=
 github.com/bazelbuild/buildtools v0.0.0-20190329162354-3f7be923c4b0/go.mod h1:5JP0TXzWDHXv8qvxRC4InIazwdyDseBDbzESUMKk1yU=
 github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9 h1:WHyHxJd9ZTyyXqlEuheY93v4cPJLBy0SIEshPCcK0xQ=
 github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9/go.mod h1:5JP0TXzWDHXv8qvxRC4InIazwdyDseBDbzESUMKk1yU=
@@ -478,6 +479,7 @@ go.uber.org/multierr v1.1.0 h1:HoEmRHQPVSqub6w2z2d2EOVs2fjyFRGyofhKuyDq0QI=
 go.uber.org/multierr v1.1.0/go.mod h1:wR5kodmAFQ0UK8QlbwjlSNy0Z68gJhDJUG5sjR94q/0=
 go.uber.org/zap v1.9.1 h1:XCJQEf3W6eZaVwhRBof6ImoYGJSITeKWsyeh3HFu/5o=
 go.uber.org/zap v1.9.1/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
+golang.org/x/build v0.0.0-20171220025321-125f04e1fc4b/go.mod h1:xwoxzDSBtVMfGm9EGvIEcwZxBYS/6ALXnEvsP1TooIk=
 golang.org/x/crypto v0.0.0-20180608092829-8ac0e0d97ce4/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20180820150726-614d502a4dac/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
@@ -707,6 +709,8 @@ k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95 h1:PQyAIB6SRdV0a3Vj/VA39L1u
 k8s.io/repo-infra v0.0.0-20190329054012-df02ded38f95/go.mod h1:+G1xBfZDfVFsm1Tj/HNCvg4QqWx8rJ2Fxpqr1rqp/gQ=
 k8s.io/repo-infra v0.0.0-20190806171332-9f4571ad7242 h1:eiNZkI7LBDg5uHcdUs7NKrv3IWgIomOD605zPeBU+w0=
 k8s.io/repo-infra v0.0.0-20190806171332-9f4571ad7242/go.mod h1:+G1xBfZDfVFsm1Tj/HNCvg4QqWx8rJ2Fxpqr1rqp/gQ=
+k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce h1:jIQbeKQfMFZT2gT2k6axlU42Uu7cW7DP8vBHeobDWtU=
+k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce/go.mod h1:ywXCnxDTuFaWiMd5MeC7Q3T3aRmWLuR0kf6q5lx/zWo=
 k8s.io/test-infra v0.0.0-20181019233642-2e10a0bbe9b3/go.mod h1:2NzXB13Ji0nqpyublHeiPC4FZwU0TknfvyaaNfl/BTA=
 k8s.io/test-infra v0.0.0-20190903215859-58805cb8c6c4/go.mod h1:D7pZIojdfj0WCmk9XEun96EFY3ArFxL7QdobtsK5TzU=
 k8s.io/utils v0.0.0-20181019225348-5e321f9a457c/go.mod h1:8k8uAuAQ0rXslZKaEWd0c3oVhZz7sSzSiPnVZayjIX0=

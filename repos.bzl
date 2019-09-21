@@ -1660,8 +1660,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "k8s.io/repo-infra",
-        sum = "h1:eiNZkI7LBDg5uHcdUs7NKrv3IWgIomOD605zPeBU+w0=",
-        version = "v0.0.0-20190806171332-9f4571ad7242",
+        sum = "h1:jIQbeKQfMFZT2gT2k6axlU42Uu7cW7DP8vBHeobDWtU=",
+        version = "v0.0.0-20190921032325-1fedfadec8ce",
     )
     go_repository(
         name = "io_k8s_sigs_yaml",
@@ -2055,4 +2055,12 @@ def go_repositories():
         importpath = "modernc.org/xc",
         sum = "h1:7ccXrupWZIS3twbUGrtKmHS2DXY6xegFua+6O3xgAFU=",
         version = "v1.0.0",
+    )
+    go_repository(
+        name = "org_golang_x_build",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "golang.org/x/build",
+        sum = "h1:Hgyq56/B1VbKi6tNXTJq3eo63zJbRzQr4uBZqiciilA=",
+        version = "v0.0.0-20171220025321-125f04e1fc4b",
     )
