@@ -1,5 +1,5 @@
 load("@py_deps//:requirements.bzl", "requirement")
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_test", "nodejs_binary")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary", "nodejs_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -221,7 +221,7 @@ test_suite(
 
 GAZELLE = "@bazel_gazelle//cmd/gazelle"
 
-KAZEL = "@io_k8s_repo_infra//kazel"
+KAZEL = "@io_k8s_repo_infra//cmd/kazel"
 
 GO = "@go_sdk//:bin/go"
 
