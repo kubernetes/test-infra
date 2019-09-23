@@ -30,6 +30,8 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-aws-fips-4.2
 - name: canary-openshift-ocp-installer-e2e-aws-fips-serial-4.2
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-aws-fips-serial-4.2
+- name: canary-openshift-ocp-installer-e2e-aws-mirrors-4.2
+  gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-aws-mirrors-4.2
 - name: canary-openshift-ocp-installer-e2e-aws-proxy-4.2
   gcs_prefix: origin-ci-test/logs/canary-openshift-ocp-installer-e2e-aws-proxy-4.2
 - name: canary-openshift-ocp-installer-e2e-aws-proxy-serial-4.2
