@@ -58,7 +58,6 @@ approve:
   - kubernetes/examples
   - kubernetes/federation
   - kubernetes/gengo
-  - kubernetes-incubator/ip-masq-agent
   - kubernetes/ingress-gce
   - kubernetes/ingress-nginx
   - kubernetes/klog
