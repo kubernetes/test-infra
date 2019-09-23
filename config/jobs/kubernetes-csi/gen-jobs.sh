@@ -69,11 +69,11 @@ csi-proxy
 # changes each time a new branch gets created.
 skip_branches_cluster_driver_registrar='^(release-1.0)$'
 skip_branches_csi_lib_utils='^(release-0.1|release-0.2)$'
-skip_branches_csi_test='^(release-0.3|release-1.0|saad-ali-patch-1|saad-ali-patch-2|v0.1.0|v0.2.0)$'
-skip_branches_external_attacher='^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|v0.1.0)$'
-skip_branches_external_provisioner='^(lpabon-patch-1|release-0.2.0|release-0.3.0|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|v0.1.0)$'
-skip_branches_external_snapshotter='^(errorhandling|k8s_1.12.0-beta.1|release-0.4|release-1.0|revert-72-pvclister|saad-ali-patch-1|saad-ali-patch-2|test-yang|updateSize)$'
-skip_branches_livenessprobe='^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$'
+skip_branches_csi_test='^(release-0.3|release-1.0|v0.1.0|v0.2.0)$'
+skip_branches_external_attacher='^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$'
+skip_branches_external_provisioner='^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$'
+skip_branches_external_snapshotter='^(k8s_1.12.0-beta.1|release-0.4|release-1.0)$'
+skip_branches_livenessprobe='^(release-0.4|release-1.0)$'
 skip_branches_node_driver_registrar='^(release-1.0)$'
 
 skip_branches () {

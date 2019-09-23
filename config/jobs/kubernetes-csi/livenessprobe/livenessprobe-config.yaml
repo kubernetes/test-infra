@@ -7,7 +7,7 @@ presubmits:
     optional: false
     decorate: true
     skip_report: false
-    skip_branches: ["^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$"]
+    skip_branches: ["^(release-0.4|release-1.0)$"]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -40,7 +40,7 @@ presubmits:
     optional: false
     decorate: true
     skip_report: false
-    skip_branches: ["^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$"]
+    skip_branches: ["^(release-0.4|release-1.0)$"]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -73,7 +73,7 @@ presubmits:
     optional: true
     decorate: true
     skip_report: false
-    skip_branches: ["^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$"]
+    skip_branches: ["^(release-0.4|release-1.0)$"]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

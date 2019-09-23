@@ -6,7 +6,7 @@ presubmits:
     always_run: true
     decorate: true
     skip_report: false
-    skip_branches: ["^(release-0.3|release-1.0|saad-ali-patch-1|saad-ali-patch-2|v0.1.0|v0.2.0)$"]
+    skip_branches: ["^(release-0.3|release-1.0|v0.1.0|v0.2.0)$"]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
