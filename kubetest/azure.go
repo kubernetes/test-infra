@@ -1011,8 +1011,29 @@ type GinkgoAzureFilCSIE2ETester struct {
 // Run executes custom ginkgo script
 func (t *GinkgoAzureFilCSIE2ETester) Run(control *process.Control, testArgs []string) error {
 	cmd := exec.Command("make", "e2e-test")
-	projectPath := util.K8s("azurefile-csi-driver")
+	projectPath := githubProjectPath("kubernetes-sigs", "azurefile-csi-driver")
 	cmd.Dir = projectPath
 	testErr := control.FinishRunning(cmd)
 	return testErr
+}
+
+func githubProjectPath(username, projectName string) {
+	gopathList := filepath.SplitList(build.Default.GOPATH)
+	found := false
+	var githubDir string
+	for _, gopath := range gopathList {
+		githubDir = filepath.Join(gopath, "src", "github.com", username)
+		if _, err := os.Stat(githubDir); !os.IsNotExist(err) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		// Default to the first item in GOPATH list.
+		githubDir = filepath.Join(gopathList[0], "src", "github.com", username)
+		log.Printf(
+			"Warning: Couldn't find directory src/github.com/%s under any of GOPATH %s, defaulting to %s",
+			username, build.Default.GOPATH, githubDir)
+	}
+	return filepath.Join(githubDir, projectName)
 }

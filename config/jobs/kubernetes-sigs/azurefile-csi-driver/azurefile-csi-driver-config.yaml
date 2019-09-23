@@ -2,9 +2,8 @@ presubmits:
   kubernetes-sigs/azurefile-csi-driver:
   - name: pull-azurefile-csi-driver-verify
     always_run: true
-    decorate: true
     branches:
-    - ^master$
+    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -22,9 +21,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-unit
     always_run: true
-    decorate: true
     branches:
-    - ^master$
+    - master
     labels:
       preset-service-account: "true"
     spec:
@@ -42,9 +40,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-sanity
     always_run: true
-    decorate: true
     branches:
-    - ^master$
+    - master
     labels:
       preset-service-account: "true"
       preset-cloudprovider-azure-cred: "true"
@@ -65,9 +62,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-integration
     always_run: true
-    decorate: true
     branches:
-    - ^master$
+    - master
     labels:
       preset-service-account: "true"
       preset-cloudprovider-azure-cred: "true"
@@ -88,9 +84,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e
     always_run: true
-    decorate: true
     branches:
-    - ^master$
+    - master
     labels:
       preset-service-account: "true"
       preset-cloudprovider-azure-cred: "true"
@@ -105,7 +100,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--timeout=450"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_e2e"
+        - "--scenario=execute"
         - --
         - "--gce-ssh="
         - "--test=true"
@@ -114,21 +109,23 @@ presubmits:
         - "--deployment=acsengine"
         - "--build=bazel"
         - "--provider=skeleton"
-        - "--ginkgo-parallel=30"
-        - "--test-azure-file-csi-driver-e2e=True"
+        - "--ginkgo-parallel=1"
         - "--acsengine-agentpoolcount=2"
         - "--acsengine-admin-username=azureuser"
         - "--acsengine-creds=$AZURE_CREDENTIALS"
         - "--acsengine-orchestratorRelease=1.16"
         - "--acsengine-mastervmsize=Standard_DS2_v2"
         - "--acsengine-agentvmsize=Standard_D4s_v3"
-        - "--acsengine-ccm=True"
-        - "--acsengine-hyperkube=True"
         - "--acsengine-location=eastus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
-        - "--timeout=30m"
+        - "--test-azure-file-csi-driver-e2e=True"
+        securityContext:
+          privileged: true
+        env:
+        - name: nodeid
+          value: nodeid
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-azurefile-csi-driver-e2e
