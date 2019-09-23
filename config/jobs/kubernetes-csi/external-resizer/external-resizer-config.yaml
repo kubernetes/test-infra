@@ -14,7 +14,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-external-resizer
       description: Kubernetes-CSI pull non-alpha job in external-resizer
     spec:
       containers:
@@ -47,7 +46,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-external-resizer-unit
       description: Kubernetes-CSI pull unit job in external-resizer
     spec:
       containers:
@@ -80,7 +78,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-external-resizer-alpha
       description: Kubernetes-CSI pull alpha job in external-resizer
     spec:
       containers:

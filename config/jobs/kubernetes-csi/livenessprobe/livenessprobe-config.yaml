@@ -14,7 +14,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-livenessprobe
       description: Kubernetes-CSI pull non-alpha job in livenessprobe
     spec:
       containers:
@@ -47,7 +46,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-livenessprobe-unit
       description: Kubernetes-CSI pull unit job in livenessprobe
     spec:
       containers:
@@ -80,7 +78,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-livenessprobe-alpha
       description: Kubernetes-CSI pull alpha job in livenessprobe
     spec:
       containers:

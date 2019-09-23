@@ -13,7 +13,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-csi-release-tools
       description: Kubernetes-CSI pull job on csi-release-tools
     spec:
       containers:

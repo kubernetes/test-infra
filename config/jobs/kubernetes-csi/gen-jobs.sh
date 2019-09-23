@@ -201,6 +201,9 @@ EOF
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi
+      description: Kubernetes-CSI pull $tests job in $repo, using deployment $deployment on Kubernetes ${kubernetes}
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -248,6 +251,9 @@ EOF
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi
+      description: Kubernetes-CSI pull $tests job in $repo, using deployment $deployment on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -281,6 +287,9 @@ EOF
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi
+      description: Kubernetes-CSI pull unit job in $repo
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -321,7 +330,6 @@ EOF
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: $(job_name "pull" "$repo" "$tests")
       description: Kubernetes-CSI pull $tests job in $repo
     spec:
       containers:
@@ -366,7 +374,6 @@ EOF
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-$repo
       description: Kubernetes-CSI pull job on $repo
     spec:
       containers:
