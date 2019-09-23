@@ -22,6 +22,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"go/build"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -932,7 +933,7 @@ func (c Cluster) TestSetup() error {
 		if err := os.Setenv("resourceGroup", c.resourceGroup); err != nil {
 			return err
 		}
-		if err := os.Setenv("location", c.Location); err != nil {
+		if err := os.Setenv("location", c.location); err != nil {
 			return err
 		}
 	}
@@ -976,7 +977,7 @@ func (c *Cluster) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	if *testCcm {
 		return &GinkgoCCMTester{}, nil
 	} else if *testAzureFileCSIDriverE2E {
-		return &GinkgoAzureFilCSIE2ETester{} nil
+		return &GinkgoAzureFilCSIE2ETester{}, nil
 	}
 
 	return &GinkgoScriptTester{}, nil
@@ -1017,7 +1018,7 @@ func (t *GinkgoAzureFilCSIE2ETester) Run(control *process.Control, testArgs []st
 	return testErr
 }
 
-func githubProjectPath(username, projectName string) {
+func githubProjectPath(username, projectName string) string {
 	gopathList := filepath.SplitList(build.Default.GOPATH)
 	found := false
 	var githubDir string
