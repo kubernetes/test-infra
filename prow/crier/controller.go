@@ -212,6 +212,7 @@ func (c *Controller) updateReportState(pj *v1.ProwJob) error {
 func (c *Controller) processNextItem() bool {
 	key, quit := c.queue.Get()
 	if quit {
+		logrus.Debug("Queue already shut down, exiting processNextItem")
 		return false
 	}
 
@@ -219,6 +220,8 @@ func (c *Controller) processNextItem() bool {
 
 	// assert the string out of the key (format `namespace/name`)
 	keyRaw := key.(string)
+	logrus.WithField("key", keyRaw).Debug("processing next key")
+
 	namespace, name, err := cache.SplitMetaNamespaceKey(keyRaw)
 	if err != nil {
 		logrus.WithError(err).WithField("prowjob", keyRaw).Error("invalid resource key")
