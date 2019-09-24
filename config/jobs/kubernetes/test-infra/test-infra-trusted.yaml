@@ -943,10 +943,7 @@ periodics:
       - //experiment/autobumper
       - --
       args:
-      - --github-login=k8s-ci-robot
       - --github-token=/etc/github-token/oauth
-      - --git-name=Kubernetes Prow Robot
-      - --git-email=k8s.ci.robot@gmail.com
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
