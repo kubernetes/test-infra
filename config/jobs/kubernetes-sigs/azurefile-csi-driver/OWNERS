@@ -1,2 +1,5 @@
 approvers:
 - andyzhangx
+
+labels:
+- area/provider/azure
