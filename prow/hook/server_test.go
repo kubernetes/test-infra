@@ -147,7 +147,7 @@ func TestServeHTTPErrors(t *testing.T) {
 				"content-type": "application/json",
 			},
 			Body: body,
-			Code: http.StatusOK,
+			Code: http.StatusMethodNotAllowed,
 		},
 	}
 

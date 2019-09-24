@@ -31,11 +31,6 @@ import (
 func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) (string, string, []byte, bool, int) {
 	defer r.Body.Close()
 
-	// Our health check uses GET, so just kick back a 200.
-	if r.Method == http.MethodGet {
-		return "", "", nil, false, http.StatusOK
-	}
-
 	// Header checks: It must be a POST with an event type and a signature.
 	if r.Method != http.MethodPost {
 		responseHTTPError(w, http.StatusMethodNotAllowed, "405 Method not allowed")

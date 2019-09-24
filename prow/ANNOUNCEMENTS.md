@@ -75,6 +75,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *September 24, 2019* Sending an http `GET` request to the `/hook` endpoint now returns a `405` 
+   (Method Not Allowed) instead of a `200` (OK).
  - *September 8, 2019* The deprecated `job_url_prefix` option has been removed from Plank.
  - *May 2, 2019* All components exposing Prometheus metrics will now either push them
    to the Prometheus PushGateway, if configured, or serve them locally on port 9090 at
