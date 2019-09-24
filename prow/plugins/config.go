@@ -646,7 +646,9 @@ func (c *Configuration) TriggerFor(org, repo string) Trigger {
 			}
 		}
 	}
-	return Trigger{}
+	t := Trigger{}
+	t.SetDefaults()
+	return t
 }
 
 var warnElideSkippedContexts time.Time
