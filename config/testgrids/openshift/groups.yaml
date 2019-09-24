@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: redhat
+  dashboard_names:
+  - redhat-osd-int
+  - redhat-osd-stage
+  - redhat-osd-prod
+  
