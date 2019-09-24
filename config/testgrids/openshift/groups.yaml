@@ -1,0 +1,14 @@
+dashboard_groups:
+- dashboard_names:
+  - redhat-openshift-ocp-release-4.1-blocking
+  - redhat-openshift-ocp-release-4.2-blocking
+  - redhat-openshift-ocp-release-4.2-informing
+  - redhat-openshift-ocp-release-4.3-blocking
+  - redhat-openshift-ocp-release-4.3-informing
+  - redhat-openshift-okd-release-4.1-blocking
+  - redhat-openshift-okd-release-4.2-blocking
+  - redhat-openshift-okd-release-4.3-blocking
+  - redhat-osd-int
+  - redhat-osd-prod
+  - redhat-osd-stage
+  name: redhat
