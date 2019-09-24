@@ -1018,7 +1018,7 @@ func (t *GinkgoAzureFilCSIDriverTester) Run(control *process.Control, testArgs [
 	return testErr
 }
 
-// githubProjectPath returns $GOPATH/src/github/<username>/<projectName>
+// githubProjectPath returns $GOPATH/src/github.com/<username>/<projectName>
 func githubProjectPath(username, projectName string) string {
 	gopathList := filepath.SplitList(build.Default.GOPATH)
 	found := false
