@@ -9,9 +9,14 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190920-5a67b1f-master
-        command:
-        - runner.sh
         args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--scenario=execute"
+        - --
         - make
         - verify
     annotations:
@@ -28,9 +33,14 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190920-5a67b1f-master
-        command:
-        - runner.sh
         args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--scenario=execute"
+        - --
         - make
         - unit-test
     annotations:
@@ -48,9 +58,14 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190920-5a67b1f-master
-        command:
-        - runner.sh
         args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--scenario=execute"
+        - --
         - make
         - sanity-test
         securityContext:
@@ -70,9 +85,14 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190920-5a67b1f-master
-        command:
-        - runner.sh
         args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--scenario=execute"
+        - --
         - make
         - integration-test
         securityContext:
@@ -89,13 +109,14 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-cloudprovider-azure-cred: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190920-5a67b1f-master
         args:
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=release-1.16"
-        - "--repo=github.com/kubernetes-sigs/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes"
+        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--timeout=450"
@@ -125,7 +146,7 @@ presubmits:
           privileged: true
         env:
         - name: nodeid
-          value: nodeid
+          value: CSINode
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-azurefile-csi-driver-e2e
