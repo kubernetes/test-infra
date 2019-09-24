@@ -258,7 +258,8 @@ func main() {
 
 	// run the controller loop to process items
 	prowjobInformerFactory.Start(interrupts.Context().Done())
-	for _, controller := range controllers {
+	for i := range controllers {
+		controller := controllers[i]
 		interrupts.Run(func(ctx context.Context) {
 			controller.Run(ctx)
 		})
