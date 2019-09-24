@@ -67,7 +67,7 @@ type testcase struct {
 
 func TestHandleGenericComment(t *testing.T) {
 	truth := true
-	lies := false
+	var lies bool
 	var testcases = []testcase{
 		{
 			name: "Not a PR.",

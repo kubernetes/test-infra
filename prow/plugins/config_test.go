@@ -188,6 +188,63 @@ func TestSetDefault_Maps(t *testing.T) {
 	}
 }
 
+func TestTriggerFor(t *testing.T) {
+	config := Configuration{
+		Triggers: []Trigger{
+			{
+				Repos:      []string{"kuber"},
+				TrustedOrg: "org1",
+			},
+			{
+				Repos:      []string{"k8s/k8s", "k8s/kuber"},
+				TrustedOrg: "org2",
+			},
+			{
+				Repos:      []string{"k8s/t-i"},
+				TrustedOrg: "org3",
+			},
+		},
+	}
+	config.setDefaults()
+
+	testCases := []struct {
+		name            string
+		org, repo       string
+		expectedTrusted string
+		check           func(Trigger) error
+	}{
+		{
+			name:            "org trigger",
+			org:             "kuber",
+			repo:            "kuber",
+			expectedTrusted: "org1",
+		},
+		{
+			name:            "repo trigger",
+			org:             "k8s",
+			repo:            "t-i",
+			expectedTrusted: "org3",
+		},
+		{
+			name: "default trigger",
+			org:  "other",
+			repo: "other",
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			actual := config.TriggerFor(tc.org, tc.repo)
+			if tc.expectedTrusted != actual.TrustedOrg {
+				t.Errorf("expected TrustedOrg to be %q, but got %q", tc.expectedTrusted, actual.TrustedOrg)
+			}
+			if actual.ElideSkippedContexts == nil {
+				t.Errorf("elide_skipped_contexts was not properly defaulted")
+			}
+		})
+	}
+}
+
 func TestSetTriggerDefaults(t *testing.T) {
 	tests := []struct {
 		name string

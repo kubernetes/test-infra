@@ -639,14 +639,17 @@ func (r RequireMatchingLabel) Describe() string {
 // a trigger can be listed for the repo itself or for the
 // owning organization
 func (c *Configuration) TriggerFor(org, repo string) Trigger {
+	orgRepo := fmt.Sprintf("%s/%s", org, repo)
 	for _, tr := range c.Triggers {
 		for _, r := range tr.Repos {
-			if r == org || r == fmt.Sprintf("%s/%s", org, repo) {
+			if r == org || r == orgRepo {
 				return tr
 			}
 		}
 	}
-	return Trigger{}
+	var tr Trigger
+	tr.SetDefaults()
+	return tr
 }
 
 var warnElideSkippedContexts time.Time
@@ -655,7 +658,7 @@ func (t *Trigger) SetDefaults() {
 	truth := true
 	if t.ElideSkippedContexts == nil {
 		t.ElideSkippedContexts = &truth
-	} else if !*t.ElideSkippedContexts {
+	} else {
 		warnDeprecated(&warnElideSkippedContexts, 5*time.Minute, "elide_skipped_contexts is deprecated and will be removed after Oct. 2019. Skipped contexts are now elided by default.")
 	}
 
