@@ -346,8 +346,9 @@ type Trigger struct {
 	// This is a security mitigation to only allow testing from trusted users.
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
 	// ElideSkippedContexts makes trigger not post "Skipped" contexts for jobs
-	// that could run but do not run.
-	ElideSkippedContexts bool `json:"elide_skipped_contexts,omitempty"`
+	// that could run but do not run. Defaults to true.
+	// THIS FIELD IS DEPRECATED AND WILL BE REMOVED AFTER OCTOBER 2019.
+	ElideSkippedContexts *bool `json:"elide_skipped_contexts,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.
@@ -648,6 +649,21 @@ func (c *Configuration) TriggerFor(org, repo string) Trigger {
 	return Trigger{}
 }
 
+var warnElideSkippedContexts time.Time
+
+func (t *Trigger) SetDefaults() {
+	truth := true
+	if t.ElideSkippedContexts == nil {
+		t.ElideSkippedContexts = &truth
+	} else if !*t.ElideSkippedContexts {
+		warnDeprecated(&warnElideSkippedContexts, 5*time.Minute, "elide_skipped_contexts is deprecated and will be removed after Oct. 2019. Skipped contexts are now elided by default.")
+	}
+
+	if t.TrustedOrg != "" && t.JoinOrgURL == "" {
+		t.JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", t.TrustedOrg)
+	}
+}
+
 // DcoFor finds the Dco for a repo, if one exists
 // a Dco can be listed for the repo itself or for the
 // owning organization
@@ -753,11 +769,8 @@ func (c *Configuration) setDefaults() {
 		c.Blunderbuss.ReviewerCount = new(int)
 		*c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
 	}
-	for i, trigger := range c.Triggers {
-		if trigger.TrustedOrg == "" || trigger.JoinOrgURL != "" {
-			continue
-		}
-		c.Triggers[i].JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", trigger.TrustedOrg)
+	for i := range c.Triggers {
+		c.Triggers[i].SetDefaults()
 	}
 	if c.SigMention.Regexp == "" {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
