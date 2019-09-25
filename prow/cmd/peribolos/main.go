@@ -48,7 +48,6 @@ type options struct {
 	confirm           bool
 	dump              string
 	dumpFull          bool
-	jobConfig         string
 	maximumDelta      float64
 	minAdmins         int
 	requireSelf       bool
@@ -80,7 +79,6 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.requireSelf, "require-self", true, "Ensure --github-token-path user is an admin")
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
 	flags.StringVar(&o.config, "config-path", "", "Path to org config.yaml")
-	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
@@ -119,10 +117,6 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	}
 	if o.config != "" && o.dump != "" {
 		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
-	}
-
-	if o.jobConfig != "" {
-		logrus.Warn("--job-config-path is deprecated and unused, stop using it before July 2019")
 	}
 
 	if o.dumpFull && o.dump == "" {
