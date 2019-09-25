@@ -89,8 +89,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       # TODO(https://github.com/kubernetes/kubernetes/issues/82818): Re-enable when debugged and fixed
       #- --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
-      # TODO(https://github.com/kubernetes/kubernetes/issues/82818): Re-enable when debugged and fixed
-      #- --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-name=ClusterLoaderV2
