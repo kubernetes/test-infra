@@ -32,6 +32,9 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
+      env:
+        - name: ENABLE_SECRET_FEATURE
+          value: true
 
 # max volumes per pod test cases
 - name: ci-kubernetes-storage-scalability-max-emptydir-vol-per-pod
