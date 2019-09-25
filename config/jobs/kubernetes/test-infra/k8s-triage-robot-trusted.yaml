@@ -1,6 +1,7 @@
 # this file should contain all periodic jobs that use the k8s-triage-robot token
 periodics:
 - name: periodic-api-review-help
+  cluster: test-infra-trusted
   interval: 1h
   decorate: true
   annotations:
@@ -47,6 +48,7 @@ periodics:
         secretName: triage-bot-token
 
 - name: periodic-test-infra-cla
+  cluster: test-infra-trusted
   interval: 1h
   decorate: true
   annotations:
@@ -87,6 +89,7 @@ periodics:
         secretName: triage-bot-token
 
 - name: periodic-test-infra-close
+  cluster: test-infra-trusted
   interval: 1h
   decorate: true
   annotations:
@@ -128,6 +131,7 @@ periodics:
         secretName: triage-bot-token
 
 - name: periodic-test-infra-retester
+  cluster: test-infra-trusted
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   decorate: true
   annotations:
@@ -180,6 +184,7 @@ periodics:
         secretName: triage-bot-token
 
 - name: periodic-test-infra-rotten
+  cluster: test-infra-trusted
   interval: 1h
   decorate: true
   annotations:
@@ -224,6 +229,7 @@ periodics:
         secretName: triage-bot-token
 
 - name: periodic-test-infra-stale
+  cluster: test-infra-trusted
   interval: 1h
   decorate: true
   annotations:
@@ -268,6 +274,7 @@ periodics:
         secretName: triage-bot-token
 
 - name: issue-creator
+  cluster: test-infra-trusted
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -299,6 +306,7 @@ periodics:
         secretName: triage-bot-token
 
 - name: periodic-enhancements-unfreeze
+  cluster: test-infra-trusted
   interval: 30m
   decorate: true
   annotations:
@@ -333,6 +341,7 @@ periodics:
 
 # periodically file / close bugs for repos based on presence of SECURITY_CONTACTS
 - name: periodic-secping
+  cluster: test-infra-trusted
   interval: 24h
   decorate: true
   annotations:

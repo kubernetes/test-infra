@@ -29,7 +29,7 @@ import ruamel.yaml
 PROW_BLACKLIST = [
     # Ruamel won't be able to successfully dump k8s-triage-robot-periodics
     # See https://bitbucket.org/ruamel/yaml/issues/258/applying-json-patch-breaks-comment
-    "k8s-triage-robot-periodics.yaml",
+    "k8s-triage-robot-trusted.yaml",
     # Generated security jobs are generated with the same name as kubernetes/kubernetes
     # presubmits, but we never want to migrate to the generated ones.
     "generated-security-jobs.yaml",
