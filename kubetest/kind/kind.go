@@ -46,7 +46,7 @@ const (
 	kindBinaryStable = "stable"
 
 	// If a new version of kind is released this value has to be updated.
-	kindBinaryStableTag = "0.2.0"
+	kindBinaryStableTag = "v0.5.1"
 
 	kindClusterNameDefault = "kind-kubetest"
 
@@ -63,13 +63,14 @@ var (
 			"or %q (download a stable binary).", kindBinaryBuild, kindBinaryStable))
 	kindClusterName = flag.String("kind-cluster-name", kindClusterNameDefault,
 		"(kind only) Name of the kind cluster.")
+	kindNodeImage = flag.String("kind-node-image", "", "(kind only) name:tag of the node image to start the cluster. If build is enabled, this is ignored and built image is used.")
 )
 
 var (
 	kindBinaryStableHashes = map[string]string{
-		"kind-linux-amd64":   "7566c0117d824731be5caee10fef0a88fb65e3508ee22a305dc17507ee87d874",
-		"kind-darwin-amd64":  "ce85d3ed3d03702af0e9c617098249aff2e0811e1202036b260b23df4551f3ad",
-		"kind-windows-amd64": "376862a3f6c449d91fccabfbae27a991e75177ad1111adbf2839a98f991eeef6",
+		"kind-linux-amd64":   "9a64f1774cdf24dad5f92e1299058b371c4e3f09d2f9eb281e91ed0777bd1e13",
+		"kind-darwin-amd64":  "b6a8fe2b3b53930a1afa4f91b033cdc24b0f6c628d993abaa9e40b57d261162a",
+		"kind-windows-amd64": "df327d1e7f8bb41dfd5b1a69c5bc7a8d4bad95bb933562ca367a3a45b6c6ca04",
 	}
 )
 
@@ -133,7 +134,7 @@ func initializeDeployer(ctl *process.Control, buildType string) (*Deployer, erro
 		kindBinaryDir:     kindBinaryDir,
 		kindBinaryPath:    filepath.Join(kindBinaryDir, "kind"),
 		kindBinaryVersion: *kindBinaryVersion,
-		kindNodeImage:     kindNodeImageLatest,
+		kindNodeImage:     *kindNodeImage,
 		kindClusterName:   *kindClusterName,
 	}
 	// Obtain the import paths for k8s and kind
@@ -239,23 +240,27 @@ func (d *Deployer) Build() error {
 	log.Println("kind.go:Build()")
 	// Adapt the build type if needed.
 	var buildType string
+	var buildNodeImage string
 	switch d.buildType {
 	case "":
 		// The default option is to use a pre-build image.
 		log.Println("Skipping the kind node image build.")
-		d.kindNodeImage = ""
 		return nil
 	case "quick":
 		// This is the default build type in kind.
 		buildType = "docker"
+		buildNodeImage = kindNodeImageLatest
 	default:
 		// Other types and 'bazel' are handled transparently here.
 		buildType = d.buildType
+		buildNodeImage = kindNodeImageLatest
 	}
 
 	args := []string{"build", "node-image", "--type=" + buildType, flagLogLevel, "--kube-root=" + d.importPathK8s}
-	if d.kindNodeImage != "" {
-		args = append(args, "--image="+d.kindNodeImage)
+	if buildNodeImage != "" {
+		args = append(args, "--image="+buildNodeImage)
+		// override user-specified node image
+		d.kindNodeImage = buildNodeImage
 	}
 	if d.kindBaseImage != "" {
 		args = append(args, "--base-image="+d.kindBaseImage)
