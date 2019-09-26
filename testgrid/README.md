@@ -15,7 +15,6 @@ The video demos power features of testgrid, including:
 * Grouping
 * Dashboard groups
 * Summaries
-* Clustered Failures
 
 Please have a look!
 
