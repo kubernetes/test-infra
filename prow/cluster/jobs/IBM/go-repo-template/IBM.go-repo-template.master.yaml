@@ -4,7 +4,7 @@ presubmits:
     branches:
     - ^master$
     decorate: true
-    name: build_oasis
+    name: build_go-repo-template
     path_alias: github.com/IBM/go-repo-template
     rerun_command: /test build
     spec:
@@ -21,24 +21,24 @@ presubmits:
     branches:
     - ^master$
     decorate: true
-    name: lint_oasis
+    name: check_go-repo-template
     path_alias: github.com/IBM/go-repo-template
-    rerun_command: /test lint
+    rerun_command: /test check
     spec:
       containers:
       - command:
         - make
-        - lint
+        - check
         image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?lint(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
   - always_run: true
     branches:
     - ^master$
     decorate: true
-    name: test_oasis
+    name: test_go-repo-template
     path_alias: github.com/IBM/go-repo-template
     rerun_command: /test test
     spec:
@@ -56,7 +56,7 @@ postsubmits:
   - branches:
     - ^master$
     decorate: true
-    name: build_oasis_postsubmit
+    name: build_go-repo-template_postsubmit
     path_alias: github.com/IBM/go-repo-template
     spec:
       containers:
@@ -70,13 +70,13 @@ postsubmits:
   - branches:
     - ^master$
     decorate: true
-    name: lint_oasis_postsubmit
+    name: check_go-repo-template_postsubmit
     path_alias: github.com/IBM/go-repo-template
     spec:
       containers:
       - command:
         - make
-        - lint
+        - check
         image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
         name: ""
         securityContext:
@@ -84,7 +84,7 @@ postsubmits:
   - branches:
     - ^master$
     decorate: true
-    name: test_oasis_postsubmit
+    name: test_go-repo-template_postsubmit
     path_alias: github.com/IBM/go-repo-template
     spec:
       containers:

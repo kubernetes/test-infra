@@ -21,19 +21,19 @@ presubmits:
     branches:
     - ^master$
     decorate: true
-    name: lint_tools
+    name: check_tools
     path_alias: github.com/multicloudlab/tools
-    rerun_command: /test lint
+    rerun_command: /test check
     spec:
       containers:
       - command:
         - make
-        - lint
+        - check
         image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?lint(?: .*?)?$'
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
   - always_run: true
     branches:
     - ^master$
@@ -70,13 +70,13 @@ postsubmits:
   - branches:
     - ^master$
     decorate: true
-    name: lint_tools_postsubmit
+    name: check_tools_postsubmit
     path_alias: github.com/multicloudlab/tools
     spec:
       containers:
       - command:
         - make
-        - lint
+        - check
         image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
         name: ""
         securityContext:
