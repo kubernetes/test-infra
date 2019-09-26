@@ -52,6 +52,28 @@ func K8s(topdir string, parts ...string) string {
 	return filepath.Join(p...)
 }
 
+// githubProjectPath returns $GOPATH/src/github.com/<username>/<projectName>
+func K8sSigs(projectName string) string {
+	gopathList := filepath.SplitList(build.Default.GOPATH)
+	found := false
+	var githubDir string
+	for _, gopath := range gopathList {
+		githubDir = filepath.Join(gopath, "src", "github.com", "kubernetes-sigs")
+		if _, err := os.Stat(githubDir); !os.IsNotExist(err) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		// Default to the first item in GOPATH list.
+		githubDir = filepath.Join(gopathList[0], "src", "github.com", "kubernetes-sigs")
+		log.Printf(
+			"Warning: Couldn't find directory src/github.com/kubernetes-sigs under any of GOPATH %s, defaulting to %s",
+			build.Default.GOPATH, githubDir)
+	}
+	return filepath.Join(githubDir, projectName)
+}
+
 // AppendError does append(errs, err) if err != nil
 func AppendError(errs []error, err error) []error {
 	if err != nil {

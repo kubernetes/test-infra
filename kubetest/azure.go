@@ -22,7 +22,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"go/build"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -930,10 +929,10 @@ func (c Cluster) TestSetup() error {
 	} else if *testAzureFileCSIDriver == true {
 		// Set env vars required by Azure File CSI driver tests.
 		// tenantId, subscriptionId, aadClientId, and aadClientSecret will be obtained from AZURE_CREDENTIAL
-		if err := os.Setenv("resourceGroup", c.resourceGroup); err != nil {
+		if err := os.Setenv("RESOURCE_GROUP", c.resourceGroup); err != nil {
 			return err
 		}
-		if err := os.Setenv("location", c.location); err != nil {
+		if err := os.Setenv("LOCATION", c.location); err != nil {
 			return err
 		}
 	}
@@ -1012,30 +1011,8 @@ type GinkgoAzureFilCSIDriverTester struct {
 // Run executes custom ginkgo script
 func (t *GinkgoAzureFilCSIDriverTester) Run(control *process.Control, testArgs []string) error {
 	cmd := exec.Command("make", "e2e-test")
-	projectPath := githubProjectPath("kubernetes-sigs", "azurefile-csi-driver")
+	projectPath := util.K8sSigs("azurefile-csi-driver")
 	cmd.Dir = projectPath
 	testErr := control.FinishRunning(cmd)
 	return testErr
-}
-
-// githubProjectPath returns $GOPATH/src/github.com/<username>/<projectName>
-func githubProjectPath(username, projectName string) string {
-	gopathList := filepath.SplitList(build.Default.GOPATH)
-	found := false
-	var githubDir string
-	for _, gopath := range gopathList {
-		githubDir = filepath.Join(gopath, "src", "github.com", username)
-		if _, err := os.Stat(githubDir); !os.IsNotExist(err) {
-			found = true
-			break
-		}
-	}
-	if !found {
-		// Default to the first item in GOPATH list.
-		githubDir = filepath.Join(gopathList[0], "src", "github.com", username)
-		log.Printf(
-			"Warning: Couldn't find directory src/github.com/%s under any of GOPATH %s, defaulting to %s",
-			username, build.Default.GOPATH, githubDir)
-	}
-	return filepath.Join(githubDir, projectName)
 }
