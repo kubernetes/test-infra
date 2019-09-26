@@ -2,6 +2,17 @@ module k8s.io/test-infra
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
+// Pin all k8s.io staging repositories to kubernetes-1.15.3.
+// When bumping Kubernetes dependencies, you should update each of these lines
+// to point to the same kubernetes-1.x.y release branch before running update-deps.sh.
+replace (
+	k8s.io/api => k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604
+	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20190918200256-06eb1244587a
+	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190612205613-18da4a14b22b
+)
+
 require (
 	cloud.google.com/go v0.44.3
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
@@ -17,7 +28,7 @@ require (
 	github.com/bwmarrin/snowflake v0.0.0
 	github.com/client9/misspell v0.3.4
 	github.com/djherbis/atime v1.0.0
-	github.com/docker/docker v0.0.0-20171206114025-5e5fadb3c020
+	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
@@ -39,8 +50,9 @@ require (
 	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
 	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
 	github.com/mattn/go-zglob v0.0.1
+	github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c // indirect
 	github.com/pelletier/go-toml v1.3.0
-	github.com/peterbourgon/diskv v0.0.0-20171120014656-2973218375c3
+	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v0.9.4
 	github.com/prometheus/procfs v0.0.5 // indirect
@@ -62,9 +74,9 @@ require (
 	google.golang.org/api v0.9.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-	k8s.io/api v0.0.0-20190816222004-e3a6b8045b0b
-	k8s.io/apiextensions-apiserver v0.0.0-20190820064606-e49a3471dba5
-	k8s.io/apimachinery v0.0.0-20190816221834-a9f1d8a9c101
+	k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
+	k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604
+	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.0.0-20190831074504-732c9ca86353
 	k8s.io/klog v0.4.0
