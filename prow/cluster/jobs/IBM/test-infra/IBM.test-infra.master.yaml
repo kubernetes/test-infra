@@ -1,6 +1,5 @@
 presubmits:
   IBM/test-infra:
-
   - name: pull-test-infra-prow-checkconfig
     branches:
       - ^master$
@@ -19,12 +18,11 @@ presubmits:
         - --exclude-warning=mismatched-tide
         - --exclude-warning=unknown-fields
         - --exclude-warning=non-decorated-jobs
-
-  - always_run: true
+  - name: build_test-infra
     branches:
     - ^master$
     decorate: true
-    name: build_test-infra
+    always_run: true
     path_alias: github.com/IBM/test-infra
     rerun_command: /test build
     spec:
@@ -37,11 +35,11 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - always_run: true
+  - name: check_test-infra
     branches:
     - ^master$
     decorate: true
-    name: check_test-infra
+    always_run: true
     path_alias: github.com/IBM/test-infra
     rerun_command: /test check
     spec:
@@ -54,11 +52,11 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - always_run: true
+  - name: test_test-infra
     branches:
     - ^master$
     decorate: true
-    name: test_test-infra
+    always_run: true
     path_alias: github.com/IBM/test-infra
     rerun_command: /test test
     spec:
