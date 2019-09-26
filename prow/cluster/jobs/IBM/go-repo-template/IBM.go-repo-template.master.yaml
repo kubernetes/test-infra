@@ -1,0 +1,97 @@
+presubmits:
+  IBM/go-repo-template:
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: build_oasis
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test build
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: lint_oasis
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test lint
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?lint(?: .*?)?$'
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: test_oasis
+    path_alias: github.com/IBM/go-repo-template
+    rerun_command: /test test
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+postsubmits:
+  IBM/go-repo-template:
+  - branches:
+    - ^master$
+    decorate: true
+    name: build_oasis_postsubmit
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - branches:
+    - ^master$
+    decorate: true
+    name: lint_oasis_postsubmit
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - branches:
+    - ^master$
+    decorate: true
+    name: test_oasis_postsubmit
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true

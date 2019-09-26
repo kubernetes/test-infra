@@ -1,0 +1,97 @@
+presubmits:
+  multicloudlab/tools:
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: build_tools
+    path_alias: github.com/multicloudlab/tools
+    rerun_command: /test build
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: lint_tools
+    path_alias: github.com/multicloudlab/tools
+    rerun_command: /test lint
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?lint(?: .*?)?$'
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: test_tools
+    path_alias: github.com/multicloudlab/tools
+    rerun_command: /test test
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+postsubmits:
+  multicloudlab/tools:
+  - branches:
+    - ^master$
+    decorate: true
+    name: build_tools_postsubmit
+    path_alias: github.com/multicloudlab/tools
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - branches:
+    - ^master$
+    decorate: true
+    name: lint_tools_postsubmit
+    path_alias: github.com/multicloudlab/tools
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - branches:
+    - ^master$
+    decorate: true
+    name: test_tools_postsubmit
+    path_alias: github.com/multicloudlab/tools
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true

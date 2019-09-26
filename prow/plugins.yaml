@@ -1,0 +1,90 @@
+triggers:
+- repos:
+  - multicloudlab
+  - IBM
+  trusted_org: multicloudlab
+  elide_skipped_contexts: true
+
+config_updater:
+  maps:
+    prow/config.yaml:
+      name: config
+    prow/plugins.yaml:
+      name: plugins
+    prow/cluster/jobs/**/*.yaml:
+      name: job-config
+
+plugins:
+  multicloudlab:
+  - approve
+  - assign
+  - blunderbuss
+  - golint
+  - help
+  - hold
+  - lgtm
+  - lifecycle
+  - size
+  - slackevents
+  - trigger
+  - verify-owners
+  - wip
+
+  multicloudlab/test-infra:
+  - config-updater
+
+  IBM/go-repo-template:
+  - approve
+  - assign
+  - blunderbuss
+  - golint
+  - help
+  - hold
+  - lgtm
+  - lifecycle
+  - size
+  - slackevents
+  - trigger
+  - verify-owners
+  - wip
+
+  IBM/test-infra:
+  - approve
+  - assign
+  - blunderbuss
+  - golint
+  - help
+  - hold
+  - lgtm
+  - lifecycle
+  - size
+  - slackevents
+  - trigger
+  - verify-owners
+  - wip
+
+external_plugins:
+  multicloudlab:
+  - name: needs-rebase
+    events:
+    - pull_request
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+  IBM/go-repo-template:
+  - name: needs-rebase
+    events:
+    - pull_request
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+  IBM/test-infra:
+  - name: needs-rebase
+    events:
+    - pull_request
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
