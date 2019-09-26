@@ -19,3 +19,55 @@ presubmits:
         - --exclude-warning=mismatched-tide
         - --exclude-warning=unknown-fields
         - --exclude-warning=non-decorated-jobs
+
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: build_test-infra
+    path_alias: github.com/IBM/test-infra
+    rerun_command: /test build
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: check_test-infra
+    path_alias: github.com/IBM/test-infra
+    rerun_command: /test check
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    name: test_test-infra
+    path_alias: github.com/IBM/test-infra
+    rerun_command: /test test
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
