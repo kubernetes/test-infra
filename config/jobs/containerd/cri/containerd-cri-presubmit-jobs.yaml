@@ -217,6 +217,7 @@ presubmits:
     always_run: true
     branches:
     - master
+    - release/1.3
     labels:
       preset-service-account: "true"
     spec:
