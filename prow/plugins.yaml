@@ -2,7 +2,7 @@ triggers:
 - repos:
   - multicloudlab
   - IBM
-  trusted_org: multicloudlab
+  trusted_org: IBM
   elide_skipped_contexts: true
 
 config_updater:
