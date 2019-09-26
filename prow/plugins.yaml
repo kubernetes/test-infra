@@ -30,9 +30,6 @@ plugins:
   - verify-owners
   - wip
 
-  multicloudlab/test-infra:
-  - config-updater
-
   IBM/go-repo-template:
   - approve
   - assign
@@ -62,6 +59,7 @@ plugins:
   - trigger
   - verify-owners
   - wip
+  - config-updater
 
 external_plugins:
   multicloudlab:
