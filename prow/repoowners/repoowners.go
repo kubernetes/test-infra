@@ -149,6 +149,7 @@ type RepoOwner interface {
 	RequiredReviewers(path string) sets.String
 	ParseSimpleConfig(path string) (SimpleConfig, error)
 	ParseFullConfig(path string) (FullConfig, error)
+	TopLevelApprovers() sets.String
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -752,4 +753,8 @@ func (o *RepoOwners) Reviewers(path string) sets.String {
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 	return o.entriesForFile(path, o.requiredReviewers, false)
+}
+
+func (o *RepoOwners) TopLevelApprovers() sets.String {
+	return o.entriesForFile(".", o.approvers, false)
 }

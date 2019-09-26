@@ -82,6 +82,7 @@ type Configuration struct {
 	Size                       Size                         `json:"size,omitempty"`
 	Triggers                   []Trigger                    `json:"triggers,omitempty"`
 	Welcome                    []Welcome                    `json:"welcome,omitempty"`
+	Override                   Override                     `json:"override"`
 }
 
 // Golint holds configuration for the golint plugin
@@ -1515,4 +1516,9 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 	}
 
 	return options
+}
+
+// Override holds options for the override plugin
+type Override struct {
+	AllowTopLevelOwners bool `json:"allow_top_level_owners,omitempty"`
 }

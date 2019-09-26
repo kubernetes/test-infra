@@ -149,6 +149,9 @@ func (fr fakeRepo) FindApproverOwnersForFile(path string) string {
 func (fr fakeRepo) IsNoParentOwners(path string) bool {
 	return false
 }
+func (fr fakeRepo) TopLevelApprovers() sets.String {
+	return nil
+}
 
 func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)

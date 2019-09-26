@@ -32,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const pluginName = "override"
@@ -53,15 +54,21 @@ type prowJobClient interface {
 	Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
+type ownersClient interface {
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
+}
+
 type overrideClient interface {
 	githubClient
 	prowJobClient
+	ownersClient
 	presubmitForContext(org, repo, context string) *config.Presubmit
 }
 
 type client struct {
 	gc            githubClient
 	jc            config.JobConfig
+	ownersClient  ownersClient
 	prowJobClient prowJobClient
 }
 
@@ -99,6 +106,10 @@ func (c client) presubmitForContext(org, repo, context string) *config.Presubmit
 	return nil
 }
 
+func (c client) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+	return c.ownersClient.LoadRepoOwners(org, repo, base)
+}
+
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
@@ -107,14 +118,27 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The override plugin allows repo admins to force a github status context to pass",
 	}
+	overrideConfig := plugins.Override{}
+	if config != nil {
+		overrideConfig = config.Override
+	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/override [context]",
 		Description: "Forces a github status context to green (one per line).",
 		Featured:    false,
-		WhoCanUse:   "Repo administrators",
+		WhoCanUse:   whoCanUse(overrideConfig),
 		Examples:    []string{"/override pull-repo-whatever", "/override ci/circleci", "/override deleted-job"},
 	})
 	return pluginHelp, nil
+}
+
+func whoCanUse(overrideConfig plugins.Override) string {
+	admins := "Repo administrators"
+	owners := ""
+	if overrideConfig.AllowTopLevelOwners {
+		owners = ", approvers in top level OWNERS file"
+	}
+	return admins + owners + "."
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
@@ -122,17 +146,30 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 		gc:            pc.GitHubClient,
 		jc:            pc.Config.JobConfig,
 		prowJobClient: pc.ProwJobClient,
+		ownersClient:  pc.OwnersClient,
 	}
-	return handle(c, pc.Logger, &e)
+	return handle(c, pc.Logger, &e, pc.PluginConfig.Override)
 }
 
-func authorized(gc githubClient, log *logrus.Entry, org, repo, user string) bool {
+func authorizedUser(gc githubClient, log *logrus.Entry, org, repo, user string) bool {
 	ok, err := gc.HasPermission(org, repo, user, github.RoleAdmin)
 	if err != nil {
 		log.WithError(err).Warnf("cannot determine whether %s is an admin of %s/%s", user, org, repo)
 		return false
 	}
 	return ok
+}
+
+func authorizedTopLevelOwner(oc ownersClient, allowTopLevelOwners bool, log *logrus.Entry, org, repo, user string, pr *github.PullRequest) bool {
+	if allowTopLevelOwners {
+		owners, err := oc.LoadRepoOwners(org, repo, pr.Base.Ref)
+		if err != nil {
+			log.WithError(err).Warnf("cannot determine whether %s is a top level owner of %s/%s", user, org, repo)
+			return false
+		}
+		return owners.TopLevelApprovers().Has(user)
+	}
+	return false
 }
 
 func description(user string) string {
@@ -147,7 +184,7 @@ func formatList(list []string) string {
 	return strings.Join(lines, "\n")
 }
 
-func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) error {
 
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -173,8 +210,9 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 		overrides.Insert(m[2])
 	}
 
-	if !authorized(oc, log, org, repo, user) {
-		resp := fmt.Sprintf("%s unauthorized: /override is restricted to repo administrators", user)
+	authorizedAsAdmin := authorizedUser(oc, log, org, repo, user)
+	if !authorizedAsAdmin && !options.AllowTopLevelOwners {
+		resp := fmt.Sprintf("%s unauthorized: /override is restricted to %s", user, whoCanUse(options))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
@@ -184,6 +222,14 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 		resp := fmt.Sprintf("Cannot get PR #%d in %s/%s", number, org, repo)
 		log.WithError(err).Warn(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+	}
+
+	if !authorizedAsAdmin {
+		if options.AllowTopLevelOwners && !authorizedTopLevelOwner(oc, options.AllowTopLevelOwners, log, org, repo, user, pr) {
+			resp := fmt.Sprintf("%s unauthorized: /override is restricted to %s", user, whoCanUse(options))
+			log.Debug(resp)
+			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		}
 	}
 
 	sha := pr.Head.SHA

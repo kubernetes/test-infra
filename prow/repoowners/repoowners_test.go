@@ -1329,3 +1329,18 @@ options: {}
 		}
 	}
 }
+
+func TestTopLevelApprovers(t *testing.T) {
+	expectedApprovers := []string{"alice", "bob"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			baseDir: regexpAll(expectedApprovers...),
+			leafDir: regexpAll("carl", "dave"),
+		},
+	}
+
+	foundApprovers := ro.TopLevelApprovers()
+	if !foundApprovers.Equal(sets.NewString(expectedApprovers...)) {
+		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedApprovers, foundApprovers)
+	}
+}

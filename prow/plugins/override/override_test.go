@@ -29,6 +29,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const (
@@ -40,11 +42,72 @@ const (
 	adminUser   = "admin-user"
 )
 
+type fakeRepoownersClient struct {
+	foc *fakeOwnersClient
+}
+
+func (froc *fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+	return froc.foc, nil
+}
+
+type fakeOwnersClient struct {
+	topLevelApprovers sets.String
+}
+
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
+	return foc.topLevelApprovers
+}
+
+func (foc *fakeOwnersClient) Approvers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
+	return ""
+}
+
+func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
+	return ""
+}
+
+func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
+	return false
+}
+
+func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
+	return repoowners.SimpleConfig{}, nil
+}
+
+func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
+	return repoowners.FullConfig{}, nil
+}
+
 type fakeClient struct {
 	comments   []string
 	statuses   map[string]github.Status
 	presubmits map[string]config.Presubmit
 	jobs       sets.String
+	owners     ownersClient
 }
 
 func (c *fakeClient) CreateComment(org, repo string, number int, comment string) error {
@@ -152,7 +215,11 @@ func (c *fakeClient) presubmitForContext(org, repo, context string) *config.Pres
 	return &p
 }
 
-func TestAuthorized(t *testing.T) {
+func (c *fakeClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+	return c.owners.LoadRepoOwners(org, repo, base)
+}
+
+func TestAuthorizedUser(t *testing.T) {
 	cases := []struct {
 		name     string
 		user     string
@@ -176,7 +243,7 @@ func TestAuthorized(t *testing.T) {
 	log := logrus.WithField("plugin", pluginName)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if actual := authorized(&fakeClient{}, log, fakeOrg, fakeRepo, tc.user); actual != tc.expected {
+			if actual := authorizedUser(&fakeClient{}, log, fakeOrg, fakeRepo, tc.user); actual != tc.expected {
 				t.Errorf("actual %t != expected %t", actual, tc.expected)
 			}
 		})
@@ -197,6 +264,8 @@ func TestHandle(t *testing.T) {
 		expected      map[string]github.Status
 		jobs          sets.String
 		checkComments []string
+		options       plugins.Override
+		approvers     []string
 		err           bool
 	}{
 		{
@@ -482,6 +551,47 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:      "override with allow_top_level_owners works",
+			comment:   "/override job",
+			user:      "code_owner",
+			options:   plugins.Override{AllowTopLevelOwners: true},
+			approvers: []string{"code_owner"},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description("code_owner"),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
+		{
+			name:    "override with allow_top_level_owners fails if user is not in OWNERS file",
+			comment: "/override job",
+			user:    "non_code_owner",
+			options: plugins.Override{AllowTopLevelOwners: true},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+		},
 	}
 
 	log := logrus.WithField("plugin", pluginName)
@@ -508,17 +618,23 @@ func TestHandle(t *testing.T) {
 			if tc.contexts == nil {
 				tc.contexts = map[string]github.Status{}
 			}
+			froc := &fakeRepoownersClient{
+				foc: &fakeOwnersClient{
+					topLevelApprovers: sets.NewString(tc.approvers...),
+				},
+			}
 			fc := fakeClient{
 				statuses:   tc.contexts,
 				presubmits: tc.presubmits,
 				jobs:       sets.String{},
+				owners:     froc,
 			}
 
 			if tc.jobs == nil {
 				tc.jobs = sets.String{}
 			}
 
-			err := handle(&fc, log, &event)
+			err := handle(&fc, log, &event, tc.options)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -532,5 +648,43 @@ func TestHandle(t *testing.T) {
 				t.Errorf("bad jobs: actual %#v != expected %#v", fc.jobs, tc.jobs)
 			}
 		})
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name        string
+		config      plugins.Configuration
+		expectedWho string
+	}{
+		{
+			name:        "WhoCanUse restricted to Repo administrators if no other options specified",
+			config:      plugins.Configuration{},
+			expectedWho: "Repo administrators.",
+		},
+		{
+			name: "WhoCanUse includes top level code OWNERS if allow_top_level_owners is set",
+			config: plugins.Configuration{
+				Override: plugins.Override{
+					AllowTopLevelOwners: true,
+				},
+			},
+			expectedWho: "Repo administrators, approvers in top level OWNERS file.",
+		},
+	}
+
+	for _, tc := range cases {
+		help, err := helpProvider(&tc.config, []string{})
+		if err != nil {
+			t.Errorf("%s: unexpected error: %v", tc.name, err)
+		}
+		switch {
+		case help == nil:
+			t.Errorf("%s: expected a valid plugin help object, got nil", tc.name)
+		case len(help.Commands) != 1:
+			t.Errorf("%s: expected a single command from plugin help, got: %v", tc.name, help.Commands)
+		case help.Commands[0].WhoCanUse != tc.expectedWho:
+			t.Errorf("%s: expected a single command with WhoCanUse set to %s, got %s instead", tc.name, tc.expectedWho, help.Commands[0].WhoCanUse)
+		}
 	}
 }
