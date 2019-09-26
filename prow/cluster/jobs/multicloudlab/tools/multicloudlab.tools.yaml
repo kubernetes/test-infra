@@ -3,9 +3,9 @@ presubmits:
 postsubmits:
   multicloudlab/tools:
     - name: tools-images
+      decorate: true
       branches:
         - ^master$
-      decorate: true
       labels:
         preset-service-account: "true"
       run_if_changed: 'docker/build-tools/Dockerfile'

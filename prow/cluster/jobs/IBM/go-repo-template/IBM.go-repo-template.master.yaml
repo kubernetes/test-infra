@@ -51,6 +51,7 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
 postsubmits:
   IBM/go-repo-template:
   - name: build_go-repo-template_postsubmit
