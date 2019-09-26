@@ -51,7 +51,7 @@ work: $(GOBIN)
 ############################################################
 # check section
 ############################################################
-check:
+check: fmt
 #check: fmt lint
 
 fmt: format-go format-protos format-python
