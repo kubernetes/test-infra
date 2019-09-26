@@ -51,6 +51,7 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
 postsubmits:
   multicloudlab/oasis:
   - name: build_oasis_postsubmit
