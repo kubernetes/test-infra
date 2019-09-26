@@ -72,7 +72,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
+			return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
@@ -93,7 +93,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				}
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
+			return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
 		}
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this
@@ -127,7 +127,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
+				return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
 			}
 		}
 	}
@@ -162,7 +162,7 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 			}
 		}
 		c.Logger.Info("Starting all jobs for updated PR.")
-		return buildAll(c, &pr.PullRequest, pr.GUID, trigger.ElideSkippedContexts, baseSHA, presubmits)
+		return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
 	}
 	return nil
 }

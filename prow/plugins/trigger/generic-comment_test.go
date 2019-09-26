@@ -62,10 +62,12 @@ type testcase struct {
 	Presubmits           map[string][]config.Presubmit
 	IssueLabels          []string
 	IgnoreOkToTest       bool
-	ElideSkippedContexts bool
+	ElideSkippedContexts *bool
 }
 
 func TestHandleGenericComment(t *testing.T) {
+	truth := true
+	var lies bool
 	var testcases = []testcase{
 		{
 			name: "Not a PR.",
@@ -200,7 +202,7 @@ func TestHandleGenericComment(t *testing.T) {
 			ShouldBuild: true,
 		},
 		{
-			name: "Wrong branch.",
+			name: "Wrong branch. Skipped statuses elided (by default).",
 
 			Author:       "trusted-member",
 			Body:         "/test all",
@@ -208,7 +210,19 @@ func TestHandleGenericComment(t *testing.T) {
 			IsPR:         true,
 			Branch:       "other",
 			ShouldBuild:  false,
-			ShouldReport: true,
+			ShouldReport: false,
+		},
+		{
+			name: "Wrong branch. Skipped statuses not elided.",
+
+			Author:               "trusted-member",
+			Body:                 "/test all",
+			State:                "open",
+			IsPR:                 true,
+			Branch:               "other",
+			ShouldBuild:          false,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name: "Wrong branch. Skipped statuses elided.",
@@ -219,7 +233,7 @@ func TestHandleGenericComment(t *testing.T) {
 			IsPR:                 true,
 			Branch:               "other",
 			ShouldBuild:          false,
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -431,8 +445,9 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldBuild:  false,
-			ShouldReport: true,
+			ShouldBuild:          false,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name:   "Retest of run_if_changed job that failed. Changes do not require the job. Skipped statuses elided.",
@@ -458,7 +473,7 @@ func TestHandleGenericComment(t *testing.T) {
 				},
 			},
 			ShouldBuild:          false,
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -558,7 +573,8 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: true,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name:   "branch-sharded job. no shard matches base branch. Skipped statuses elided.",
@@ -593,7 +609,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -620,7 +636,8 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: true,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run. Skipped statuses elided.",
@@ -646,7 +663,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -702,7 +719,7 @@ func TestHandleGenericComment(t *testing.T) {
 			StartsExactly: "pull-jub",
 		},
 		{
-			name:   "/test all of run_if_changed job that has passed and doesn't need to run",
+			name:   "/test all of run_if_changed job that has passed and doesn't need to run. Skipped statuses elided (by default)",
 			Author: "trusted-member",
 			Body:   "/test all",
 			State:  "open",
@@ -724,7 +741,33 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: true,
+			ShouldReport: false,
+		},
+		{
+			name:   "/test all of run_if_changed job that has passed and doesn't need to run. Skipped statuses not elided",
+			Author: "trusted-member",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							RunIfChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name:   "/test all of run_if_changed job that has passed and doesn't need to run. Skipped statuses elided.",
@@ -749,7 +792,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -869,6 +912,7 @@ func TestHandleGenericComment(t *testing.T) {
 			IgnoreOkToTest:       tc.IgnoreOkToTest,
 			ElideSkippedContexts: tc.ElideSkippedContexts,
 		}
+		trigger.SetDefaults()
 
 		log.Printf("running case %s", tc.name)
 		// In some cases handleGenericComment can be called twice for the same event.

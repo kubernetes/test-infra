@@ -329,6 +329,7 @@ func TestHandlePullRequest(t *testing.T) {
 			TrustedOrg:     "org",
 			OnlyOrgMembers: true,
 		}
+		trigger.SetDefaults()
 		if err := handlePR(c, trigger, pr); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
