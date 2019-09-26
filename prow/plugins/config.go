@@ -72,6 +72,7 @@ type Configuration struct {
 	MilestoneApplier           map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
 	RepoMilestone              map[string]Milestone         `json:"repo_milestone,omitempty"`
 	Project                    ProjectConfig                `json:"project_config,omitempty"`
+	ProjectManager             ProjectManager               `json:"project_manager,omitempty"`
 	RequireMatchingLabel       []RequireMatchingLabel       `json:"require_matching_label,omitempty"`
 	RequireSIG                 RequireSIG                   `json:"requiresig,omitempty"`
 	Retitle                    Retitle                      `json:"retitle,omitempty"`
@@ -457,6 +458,39 @@ type ProjectRepoConfig struct {
 	// A map of project name to default column; an issue/PR will be added
 	// to the default column if column name is not provided in the command
 	ProjectColumnMap map[string]string `json:"repo_default_column_map,omitempty"`
+}
+
+// ProjectManager represents the config for the ProjectManager plugin, holding top
+// level config options, configuration is a hierarchial structure with top level element
+// being org or org/repo with the list of projects as its children
+type ProjectManager struct {
+	OrgRepos map[string]ManagedOrgRepo `json:"orgsRepos,omitempty"`
+}
+
+// ManagedOrgRepo is used by the ProjectManager plugin to represent an Organisation
+// or Repository with a list of Projects
+type ManagedOrgRepo struct {
+	Projects map[string]ManagedProject `json:"projects,omitempty"`
+}
+
+// ManagedProject is used by the ProjectManager plugin to represent a Project
+// with a list of Columns
+type ManagedProject struct {
+	Columns []ManagedColumn `json:"columns,omitempty"`
+}
+
+// ManagedColumn is used by the ProjectQueries plugin to represent a project column
+// and the conditions to add a PR to that column
+type ManagedColumn struct {
+	// Either of ID or Name should be specified
+	ID   *int   `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	// State must be open, closed or all
+	State string `json:"state,omitempty"`
+	// all the labels here should match to the incoming event to be bale to add the card to the project
+	Labels []string `json:"labels,omitempty"`
+	// Configuration is effective is the issue events repo/Owner/Login matched the org
+	Org string `json:"org,omitempty"`
 }
 
 // MergeWarning is a config for the slackevents plugin's manual merge warnings.
@@ -918,6 +952,46 @@ func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {
 	return nil
 }
 
+func validateProjectManager(pm ProjectManager) error {
+
+	projectConfig := pm
+	// No ProjectManager configuration provided, we have nothing to validate
+	if len(projectConfig.OrgRepos) == 0 {
+		return nil
+	}
+
+	for orgRepoName, managedOrgRepo := range pm.OrgRepos {
+		if len(managedOrgRepo.Projects) == 0 {
+			return fmt.Errorf("Org/repo: %s, has no projects configured", orgRepoName)
+		}
+		for projectName, managedProject := range managedOrgRepo.Projects {
+			var labelSets []sets.String
+			if len(managedProject.Columns) == 0 {
+				return fmt.Errorf("Org/repo: %s, project %s, has no columns configured", orgRepoName, projectName)
+			}
+			for _, managedColumn := range managedProject.Columns {
+				if managedColumn.ID == nil && (len(managedColumn.Name) == 0) {
+					return fmt.Errorf("Org/repo: %s, project %s, column %v, has no name/id configured", orgRepoName, projectName, managedColumn)
+				}
+				if len(managedColumn.Labels) == 0 {
+					return fmt.Errorf("Org/repo: %s, project %s, column %s, has no labels configured", orgRepoName, projectName, managedColumn.Name)
+				}
+				if len(managedColumn.Org) == 0 {
+					return fmt.Errorf("Org/repo: %s, project %s, column %s, has no org configured", orgRepoName, projectName, managedColumn.Name)
+				}
+				s_set := sets.NewString(managedColumn.Labels...)
+				for _, labels := range labelSets {
+					if s_set.Equal(labels) {
+						return fmt.Errorf("Org/repo: %s, project %s, column %s has same labels configured as another column", orgRepoName, projectName, managedColumn.Name)
+					}
+				}
+				labelSets = append(labelSets, s_set)
+			}
+		}
+	}
+	return nil
+}
+
 func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
@@ -983,6 +1057,10 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 	if err := validateRequireMatchingLabel(c.RequireMatchingLabel); err != nil {
+		return err
+	}
+
+	if err := validateProjectManager(c.ProjectManager); err != nil {
 		return err
 	}
 

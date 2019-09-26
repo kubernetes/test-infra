@@ -35,6 +35,7 @@ go_library(
         "//prow/plugins/owners-label:go_default_library",
         "//prow/plugins/pony:go_default_library",
         "//prow/plugins/project:go_default_library",
+        "//prow/plugins/projectmanager:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/require-matching-label:go_default_library",
         "//prow/plugins/requiresig:go_default_library",

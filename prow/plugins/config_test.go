@@ -18,6 +18,7 @@ package plugins
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -512,6 +513,93 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			if actual, expected := ResolveBugzillaOptions(testCase.parent, testCase.child), testCase.expected; !reflect.DeepEqual(actual, expected) {
 				t.Errorf("%s: resolved incorrect options for parent and child: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+
+	var i int = 0
+	managedCol1 := ManagedColumn{ID: &i, Name: "col1", State: "open", Labels: []string{"area/conformance", "area/testing"}, Org: "org1"}
+	managedCol3 := ManagedColumn{ID: &i, Name: "col2", State: "open", Labels: []string{}, Org: "org2"}
+	managedColx := ManagedColumn{ID: &i, Name: "col2", State: "open", Labels: []string{"area/conformance", "area/testing"}, Org: "org2"}
+	invalidCol := ManagedColumn{State: "open", Labels: []string{"area/conformance", "area/testing2"}, Org: "org2"}
+	invalidOrg := ManagedColumn{Name: "col1", State: "open", Labels: []string{"area/conformance", "area/testing2"}, Org: ""}
+	managedProj2 := ManagedProject{Columns: []ManagedColumn{managedCol3}}
+	managedProjx := ManagedProject{Columns: []ManagedColumn{managedCol1, managedColx}}
+	managedOrgRepo2 := ManagedOrgRepo{Projects: map[string]ManagedProject{"project1": managedProj2}}
+	managedOrgRepox := ManagedOrgRepo{Projects: map[string]ManagedProject{"project1": managedProjx}}
+
+	projectManagerTestcases := []struct {
+		name        string
+		config      *Configuration
+		expectedErr string
+	}{
+		{
+			name: "No projects configured in a repo",
+			config: &Configuration{
+				ProjectManager: ProjectManager{
+					OrgRepos: map[string]ManagedOrgRepo{"org1": {Projects: map[string]ManagedProject{}}},
+				},
+			},
+			expectedErr: fmt.Sprintf("Org/repo: %s, has no projects configured", "org1"),
+		},
+		{
+			name: "No columns configured for a project",
+			config: &Configuration{
+				ProjectManager: ProjectManager{
+					OrgRepos: map[string]ManagedOrgRepo{"org1": {Projects: map[string]ManagedProject{"project1": {Columns: []ManagedColumn{}}}}},
+				},
+			},
+			expectedErr: fmt.Sprintf("Org/repo: %s, project %s, has no columns configured", "org1", "project1"),
+		},
+		{
+			name: "Columns does not have name or ID",
+			config: &Configuration{
+				ProjectManager: ProjectManager{
+					OrgRepos: map[string]ManagedOrgRepo{"org1": {Projects: map[string]ManagedProject{"project1": {Columns: []ManagedColumn{invalidCol}}}}},
+				},
+			},
+			expectedErr: fmt.Sprintf("Org/repo: %s, project %s, column %v, has no name/id configured", "org1", "project1", invalidCol),
+		},
+		{
+			name: "Columns does not have owner Org/repo",
+			config: &Configuration{
+				ProjectManager: ProjectManager{
+					OrgRepos: map[string]ManagedOrgRepo{"org1": {Projects: map[string]ManagedProject{"project1": {Columns: []ManagedColumn{invalidOrg}}}}},
+				},
+			},
+			expectedErr: fmt.Sprintf("Org/repo: %s, project %s, column %s, has no org configured", "org1", "project1", "col1"),
+		},
+		{
+			name: "No Labels specified in the column of the project",
+			config: &Configuration{
+				ProjectManager: ProjectManager{
+					OrgRepos: map[string]ManagedOrgRepo{"org1": managedOrgRepo2},
+				},
+			},
+			expectedErr: fmt.Sprintf("Org/repo: %s, project %s, column %s, has no labels configured", "org1", "project1", "col2"),
+		},
+		{
+			name: "Same Label specified to multiple column in a project",
+			config: &Configuration{
+				ProjectManager: ProjectManager{
+					OrgRepos: map[string]ManagedOrgRepo{"org1": managedOrgRepox},
+				},
+			},
+			expectedErr: fmt.Sprintf("Org/repo: %s, project %s, column %s has same labels configured as another column", "org1", "project1", "col2"),
+		},
+	}
+
+	for _, c := range projectManagerTestcases {
+		t.Run(c.name, func(t *testing.T) {
+			err := validateProjectManager(c.config.ProjectManager)
+			if err != nil && len(c.expectedErr) == 0 {
+				t.Fatalf("config validation error: %v", err)
+			}
+			if err == nil && len(c.expectedErr) > 0 {
+				t.Fatalf("config validation error: %v but expecting %v", err, c.expectedErr)
+			}
+			if err != nil && c.expectedErr != err.Error() {
+				t.Fatalf("Error running the test %s, \nexpected: %s, \nreceived: %s", c.name, c.expectedErr, err.Error())
 			}
 		})
 	}

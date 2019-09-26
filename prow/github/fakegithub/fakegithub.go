@@ -97,8 +97,10 @@ type FakeClient struct {
 	ColumnIDMap map[string]map[int]string
 
 	// The project and column names for an issue or PR
-	Project string
-	Column  string
+	Project            string
+	Column             string
+	OrgRepoIssueLabels map[string][]github.Label
+	OrgProjects        map[string][]github.Project
 }
 
 // BotName returns authenticated login.
@@ -507,6 +509,16 @@ func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectC
 	}
 
 	for project, columnIDMap := range f.ColumnIDMap {
+		if _, exists := columnIDMap[columnID]; exists {
+			for id := range columnIDMap {
+				// Make sure that we behave same as github API
+				// Create project will generate an error when the card already exist in the project
+				card, err := f.GetColumnProjectCard(id, projectCard.ContentURL)
+				if err == nil && card != nil {
+					return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
+				}
+			}
+		}
 		columnName, exists := columnIDMap[columnID]
 		if exists {
 			f.ColumnCardsMap[columnID] = append(
@@ -553,12 +565,22 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 	return nil
 }
 
-// GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
-func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
+// GetColumnProjectCards fetches project cards  under given column
+func (f *FakeClient) GetColumnProjectCards(columnID int) ([]github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
-	for _, existingCard := range f.ColumnCardsMap[columnID] {
+	return f.ColumnCardsMap[columnID], nil
+}
+
+// GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
+func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
+	cards, err := f.GetColumnProjectCards(columnID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, existingCard := range cards {
 		if existingCard.ContentURL == contentURL {
 			return &existingCard, nil
 		}
