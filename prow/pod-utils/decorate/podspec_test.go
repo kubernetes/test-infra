@@ -59,6 +59,16 @@ func TestCloneRefs(t *testing.T) {
 		Name:      "code",
 		MountPath: "/code-mount",
 	}
+	tmpMount := coreapi.VolumeMount{
+		Name:      "clonerefs-tmp",
+		MountPath: "/tmp",
+	}
+	tmpVolume := coreapi.Volume{
+		Name: "clonerefs-tmp",
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
+		},
+	}
 	envOrDie := func(opt clonerefs.Options) []coreapi.EnvVar {
 		e, err := cloneEnv(opt)
 		if err != nil {
@@ -187,8 +197,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "create clonerefs containers when extrarefs are set",
@@ -210,8 +221,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "append extrarefs after refs",
@@ -234,8 +246,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "append ssh secrets when set",
@@ -264,9 +277,10 @@ func TestCloneRefs(t *testing.T) {
 					codeMount,
 					sshMountOnly("super"),
 					sshMountOnly("secret"),
+					tmpMount,
 				},
 			},
-			volumes: []coreapi.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret")},
+			volumes: []coreapi.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret"), tmpVolume},
 		},
 		{
 			name: "include ssh host fingerprints when set",
@@ -290,8 +304,9 @@ func TestCloneRefs(t *testing.T) {
 					HostFingerprints: []string{"thumb", "pinky"},
 					Log:              CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "include cookiefile secrets when set",
@@ -316,9 +331,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, cookieMountOnly("oatmeal")},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount, cookieMountOnly("oatmeal")},
 			},
-			volumes: []coreapi.Volume{cookieVolumeOnly("oatmeal")},
+			volumes: []coreapi.Volume{tmpVolume, cookieVolumeOnly("oatmeal")},
 		},
 	}
 
@@ -545,6 +560,10 @@ func TestProwJobToPod(t *testing.T) {
 									Name:      "code",
 									MountPath: "/home/prow/go",
 								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
+								},
 								cookieMountOnly("yummy/.gitcookies"),
 							},
 						},
@@ -665,6 +684,12 @@ func TestProwJobToPod(t *testing.T) {
 								},
 							},
 						},
+						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							},
+						},
 						cookieVolumeOnly("yummy/.gitcookies"),
 						{
 							Name: "code",
@@ -766,6 +791,10 @@ func TestProwJobToPod(t *testing.T) {
 								{
 									Name:      "code",
 									MountPath: "/home/prow/go",
+								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
 								},
 								cookieMountOnly("yummy"),
 							},
@@ -887,6 +916,12 @@ func TestProwJobToPod(t *testing.T) {
 								},
 							},
 						},
+						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							},
+						},
 						cookieVolumeOnly("yummy"),
 						{
 							Name: "code",
@@ -999,6 +1034,10 @@ func TestProwJobToPod(t *testing.T) {
 									MountPath: "/secrets/ssh/ssh-2",
 									ReadOnly:  true,
 								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
+								},
 							},
 						},
 						{
@@ -1134,6 +1173,12 @@ func TestProwJobToPod(t *testing.T) {
 									SecretName:  "ssh-2",
 									DefaultMode: &sshKeyMode,
 								},
+							},
+						},
+						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
 							},
 						},
 						{
@@ -1246,6 +1291,10 @@ func TestProwJobToPod(t *testing.T) {
 									MountPath: "/secrets/ssh/ssh-2",
 									ReadOnly:  true,
 								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
+								},
 							},
 						},
 						{
@@ -1381,6 +1430,12 @@ func TestProwJobToPod(t *testing.T) {
 									SecretName:  "ssh-2",
 									DefaultMode: &sshKeyMode,
 								},
+							},
+						},
+						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
 							},
 						},
 						{

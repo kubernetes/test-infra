@@ -222,6 +222,25 @@ func cloneEnv(opt clonerefs.Options) ([]coreapi.EnvVar, error) {
 	return KubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}), nil
 }
 
+// tmpVolume creates an emptyDir volume and mount for a tmp folder
+// This is e.g. used by CloneRefs to store the known hosts file
+func tmpVolume(name string) (coreapi.Volume, coreapi.VolumeMount) {
+	v := coreapi.Volume{
+		Name: name,
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
+		},
+	}
+
+	vm := coreapi.VolumeMount{
+		Name:      name,
+		MountPath: "/tmp",
+		ReadOnly:  false,
+	}
+
+	return v, vm
+}
+
 // sshVolume converts a secret holding ssh keys into the corresponding volume and mount.
 //
 // This is used by CloneRefs to attach the mount to the clonerefs container.
@@ -324,6 +343,9 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		sshKeyPaths = append(sshKeyPaths, mount.MountPath)
 		cloneVolumes = append(cloneVolumes, volume)
 	}
+	volume, mount := tmpVolume("clonerefs-tmp")
+	cloneMounts = append(cloneMounts, mount)
+	cloneVolumes = append(cloneVolumes, volume)
 
 	var cloneArgs []string
 	var cookiefilePath string
