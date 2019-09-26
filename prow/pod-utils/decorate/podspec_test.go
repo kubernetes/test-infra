@@ -221,7 +221,7 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount ,tmpMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
 			volumes: []coreapi.Volume{tmpVolume},
 		},
