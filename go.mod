@@ -2,8 +2,6 @@ module k8s.io/test-infra
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
-replace github.com/shurcooL/go/ctxhttp => golang.org/x/net/context/ctxhttp v0.0.0-20190926025831-c00fd9afed17
-
 // Pin all k8s.io staging repositories to kubernetes-1.15.3.
 // When bumping Kubernetes dependencies, you should update each of these lines
 // to point to the same kubernetes-1.x.y release branch before running update-deps.sh.
