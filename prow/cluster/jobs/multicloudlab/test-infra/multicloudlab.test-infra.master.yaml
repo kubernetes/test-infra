@@ -1,6 +1,5 @@
 presubmits:
   # multicloudlab/test-infra:
-
   # - name: pull-test-infra-prow-checkconfig
   #   branches:
   #     - ^master$

@@ -1,10 +1,10 @@
 presubmits:
   multicloudlab/tools:
-  - always_run: true
+  - name: build_tools
+    always_run: true
     branches:
     - ^master$
     decorate: true
-    name: build_tools
     path_alias: github.com/multicloudlab/tools
     rerun_command: /test build
     spec:
@@ -17,11 +17,11 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - always_run: true
+  - name: check_tools
+    always_run: true
     branches:
     - ^master$
     decorate: true
-    name: check_tools
     path_alias: github.com/multicloudlab/tools
     rerun_command: /test check
     spec:
@@ -34,11 +34,11 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - always_run: true
+  - name: test_tools
+    always_run: true
     branches:
     - ^master$
     decorate: true
-    name: test_tools
     path_alias: github.com/multicloudlab/tools
     rerun_command: /test test
     spec:
@@ -53,10 +53,10 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
 postsubmits:
   multicloudlab/tools:
-  - branches:
+  - name: build_tools_postsubmit
+    branches:
     - ^master$
     decorate: true
-    name: build_tools_postsubmit
     path_alias: github.com/multicloudlab/tools
     spec:
       containers:
@@ -67,10 +67,10 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - branches:
+  - name: check_tools_postsubmit
+    branches:
     - ^master$
     decorate: true
-    name: check_tools_postsubmit
     path_alias: github.com/multicloudlab/tools
     spec:
       containers:
@@ -81,10 +81,10 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - branches:
+  - name: test_tools_postsubmit
+    branches:
     - ^master$
     decorate: true
-    name: test_tools_postsubmit
     path_alias: github.com/multicloudlab/tools
     spec:
       containers:

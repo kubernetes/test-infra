@@ -1,5 +1,5 @@
 periodics:
-- interval: 60m
+- interval: 120m
   name: echo-test
   decorate: true
   spec:

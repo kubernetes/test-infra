@@ -5,10 +5,10 @@ postsubmits:
     - name: tools-images
       branches:
         - ^master$
-      run_if_changed: 'docker/build-tools/Dockerfile'
       decorate: true
       labels:
         preset-service-account: "true"
+      run_if_changed: 'docker/build-tools/Dockerfile'
       spec:
         containers:
           - image: quay.io/multicloudlab/multicloudlab-builder:v20190925-b9788d0

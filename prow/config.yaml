@@ -23,7 +23,6 @@ tide:
     IBM/test-infra: squash
 
   target_url: http://35.227.205.240/tide
-
   queries:
   - repos:
     - multicloudlab/oasis
