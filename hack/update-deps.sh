@@ -13,77 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# Update vendor and bazel rules to match go.mod
-#
-# Usage:
-#   update-deps.sh [--patch|--minor] [packages]
-
-set -o nounset
 set -o errexit
+set -o nounset
 set -o pipefail
 
-if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
-  echo "Updating modules..." >&2
-elif ! command -v bazel &>/dev/null; then
+if ! command -v bazel &>/dev/null; then
   echo "Install bazel at https://bazel.build" >&2
   exit 1
-else
-  (
-    set -o xtrace
-    bazel run @io_k8s_test_infra//hack:update-deps -- "$@"
-  )
-  exit 0
 fi
 
-go=$(realpath "$1")
-export PATH=$(dirname "$go"):$PATH
-gazelle=$(realpath "$2")
-kazel=$(realpath "$3")
-update_bazel=(
-  $(realpath "$4")
-  "$gazelle"
-  "$kazel"
-)
-
-shift 4
-
-cd "$BUILD_WORKSPACE_DIRECTORY"
-trap 'echo "FAILED" >&2' ERR
-
-export GO111MODULE=on
-export GOPROXY=https://proxy.golang.org
-export GOSUMDB=sum.golang.org
-mode="${1:-}"
-shift || true
-case "$mode" in
---minor)
-    if [[ -z "$@" ]]; then
-      "$go" get -u ./...
-    else
-      "$go" get -u "$@"
-    fi
-    ;;
---patch)
-    if [[ -z "$@" ]]; then
-      "$go" get -u=patch ./...
-    else
-      "$go" get -u=patch "$@"
-    fi
-    ;;
-"")
-    # Just validate, or maybe manual go.mod edit
-    ;;
-*)
-    echo "Usage: $(basename "$0") [--patch|--minor] [packages]" >&2
-    exit 1
-    ;;
-esac
-
-rm -rf vendor
-"$go" mod tidy
-"$gazelle" update-repos \
-  --from_file=go.mod --to_macro=repos.bzl%go_repositories \
-  --build_file_generation=on --build_file_proto_mode=disable
-"${update_bazel[@]}" # TODO(fejta): do we still need to do this?
-echo "SUCCESS: updated modules"
+set -o xtrace
+bazel run @io_k8s_repo_infra//hack:update-deps -- "$@"

@@ -216,79 +216,15 @@ sh_test(
 
 test_suite(
     name = "verify-all",
+    tests = [
+        ":verify-linters",
+        "@io_k8s_repo_infra//hack:verify-all",
+    ],
+)
+
+test_suite(
+    name = "verify-linters",
     tags = ["lint"],  # picks up all non-manual targets with this tag
-)
-
-GAZELLE = "@bazel_gazelle//cmd/gazelle"
-
-KAZEL = "@io_k8s_repo_infra//cmd/kazel"
-
-GO = "@go_sdk//:bin/go"
-
-sh_binary(
-    name = "update-deps",
-    srcs = ["update-deps.sh"],
-    args = [
-        "$(location %s)" % GO,
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-        "$(location :update-bazel)",
-    ],
-    data = [
-        GAZELLE,
-        GO,
-        KAZEL,
-        ":update-bazel",
-    ],
-)
-
-sh_test(
-    name = "verify-deps",
-    srcs = ["verify-deps.sh"],
-    args = [
-        "$(location :update-deps)",
-        "$(location %s)" % GO,
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-        "$(location :update-bazel)",
-    ],
-    data = [
-        GAZELLE,
-        GO,
-        KAZEL,
-        ":update-bazel",
-        ":update-deps",
-        "@//:all-srcs",
-    ],
-    tags = ["lint"],
-)
-
-sh_binary(
-    name = "update-bazel",
-    srcs = ["update-bazel.sh"],
-    args = [
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-    ],
-    data = [
-        GAZELLE,
-        KAZEL,
-    ],
-)
-
-sh_test(
-    name = "verify-bazel",
-    srcs = ["verify-bazel.sh"],
-    args = [
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-    ],
-    data = [
-        "@//:all-srcs",
-        GAZELLE,
-        KAZEL,
-    ],
-    tags = ["lint"],
 )
 
 py_binary(
