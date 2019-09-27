@@ -105,6 +105,19 @@ func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
 	return r, nil
 }
 
+func (c *fakeClient) GetBranch(org, repo, branch string) (*github.Branch, error) {
+	bs, ok := c.branches[org+"/"+repo]
+	if !ok {
+		return nil, fmt.Errorf("Unknown repo: %s/%s", org, repo)
+	}
+	for _, b := range bs {
+		if b.Name == branch {
+			return &b, nil
+		}
+	}
+	return nil, fmt.Errorf("Unknown branch: %s", branch)
+}
+
 func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error) {
 	b, ok := c.branches[org+"/"+repo]
 	if !ok {
@@ -283,6 +296,7 @@ func TestProtect(t *testing.T) {
 	cases := []struct {
 		name                   string
 		branches               []string
+		defaultBranch          string
 		startUnprotected       bool
 		config                 string
 		archived               string
@@ -910,6 +924,27 @@ branch-protection:
 			},
 		},
 		{
+			name:          "only the default branch is protected",
+			branches:      []string{"kubernetes/test-infra=master", "kubernetes/test-infra=skip"},
+			defaultBranch: "master",
+			config: `
+branch-protection:
+  protect: true
+  includeDefaultBranchOnly: true
+  orgs:
+    kubernetes:
+`,
+
+			expected: []requirements{
+				{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{EnforceAdmins: &no},
+				},
+			},
+		},
+		{
 			name:     "org and repo level branch exclusions are combined",
 			branches: []string{"kubernetes/test-infra=master", "kubernetes/test-infra=skip", "kubernetes/test-infra=foobar1"},
 			config: `
@@ -1038,7 +1073,7 @@ branch-protection:
 			}
 			for org, r := range repos {
 				for rname := range r {
-					fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: rname == tc.archived})
+					fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: rname == tc.archived, DefaultBranch: tc.defaultBranch})
 				}
 			}
 

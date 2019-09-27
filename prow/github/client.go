@@ -138,6 +138,7 @@ type CommitClient interface {
 type RepositoryClient interface {
 	GetRepo(owner, name string) (Repo, error)
 	GetRepos(org string, isUser bool) ([]Repo, error)
+	GetBranch(org, repo, branch string) (*Branch, error)
 	GetBranches(org, repo string, onlyProtected bool) ([]Branch, error)
 	GetBranchProtection(org, repo, branch string) (*BranchProtection, error)
 	RemoveBranchProtection(org, repo, branch string) error
@@ -1747,6 +1748,20 @@ func (c *client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, er
 		return nil, err
 	}
 	return branches, nil
+}
+
+func (c *client) GetBranch(org, repo, branch string) (*Branch, error) {
+	c.log("GetBranch", org, repo, branch)
+	var b *Branch
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/branches/%s", org, repo, branch),
+		exitCodes: []int{200},
+	}, &b)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 // GetBranchProtection returns current protection object for the branch

@@ -139,6 +139,7 @@ type client interface {
 	GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error)
 	RemoveBranchProtection(org, repo, branch string) error
 	UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error
+	GetBranch(org, repo, branch string) (*github.Branch, error)
 	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
 	GetRepo(owner, name string) (github.Repo, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
@@ -262,18 +263,26 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 	}
 
 	branches := map[string]github.Branch{}
-	for _, onlyProtected := range []bool{false, true} { // put true second so b.Protected is set correctly
-		bs, err := p.client.GetBranches(orgName, repoName, onlyProtected)
+	if repo.IncludeDefaultBranchOnly != nil && *repo.IncludeDefaultBranchOnly {
+		b, err := p.client.GetBranch(orgName, repoName, githubRepo.DefaultBranch)
 		if err != nil {
-			return fmt.Errorf("list branches: %v", err)
+			return fmt.Errorf("get branch: %v", err)
 		}
-		for _, b := range bs {
-			_, ok := repo.Branches[b.Name]
-			if !ok && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
-				logrus.Infof("%s/%s=%s: excluded", orgName, repoName, b.Name)
-				continue
+		branches[b.Name] = *b
+	} else {
+		for _, onlyProtected := range []bool{false, true} { // put true second so b.Protected is set correctly
+			bs, err := p.client.GetBranches(orgName, repoName, onlyProtected)
+			if err != nil {
+				return fmt.Errorf("list branches: %v", err)
 			}
-			branches[b.Name] = b
+			for _, b := range bs {
+				_, ok := repo.Branches[b.Name]
+				if !ok && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
+					logrus.Infof("%s/%s=%s: excluded due to Exclude match", orgName, repoName, b.Name)
+					continue
+				}
+				branches[b.Name] = b
+			}
 		}
 	}
 
