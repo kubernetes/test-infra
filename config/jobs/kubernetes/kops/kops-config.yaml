@@ -243,16 +243,19 @@ periodics:
       - --scenario=execute
       - --
       - make
+      - kops-controller-push
       - gcs-publish-ci
       - GCS_LOCATION=gs://kops-ci/bin
+      - DOCKER_REGISTRY=gcr.io
+      - DOCKER_IMAGE_PREFIX=k8s-staging-kops/
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-release-misc
     testgrid-tab-name: kops-build
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
+
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
