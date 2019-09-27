@@ -231,6 +231,17 @@ func (r *Repo) RevParse(commitlike string) (string, error) {
 	return string(b), nil
 }
 
+// BranchExists returns true if branch exists in heads.
+func (r *Repo) BranchExists(branch string) bool {
+	heads := "origin"
+	r.logger.Infof("Checking if branch %s exists in %s.", branch, heads)
+	co := r.gitCommand("ls-remote", "--exit-code", "--heads", heads, branch)
+	if co.Run() == nil {
+		return true
+	}
+	return false
+}
+
 // CheckoutNewBranch creates a new branch and checks it out.
 func (r *Repo) CheckoutNewBranch(branch string) error {
 	r.logger.Infof("Create and checkout %s.", branch)
