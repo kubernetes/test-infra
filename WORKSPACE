@@ -166,9 +166,9 @@ k8s_repositories()
 
 git_repository(
     name = "io_k8s_repo_infra",
-    commit = "1fedfadec8ce38e3738e516fb47227f0abd79245",
+    commit = "ba920646cd8793c08fb89e746e103633bec86114",
     remote = "https://github.com/kubernetes/repo-infra.git",
-    shallow_since = "1569036205 -0700",
+    shallow_since = "1569559776 -0700",
 )
 
 # https://github.com/bazelbuild/rules_nodejs

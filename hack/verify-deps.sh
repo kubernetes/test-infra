@@ -13,55 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o nounset
 set -o errexit
+set -o nounset
 set -o pipefail
 
-if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
-  echo "Checking modules for changes..." >&2
-elif ! command -v bazel &>/dev/null; then
+if ! command -v bazel &>/dev/null; then
   echo "Install bazel at https://bazel.build" >&2
   exit 1
-else
-  (
-    set -o xtrace
-    bazel test --test_output=streamed //hack:verify-deps
-  )
-  exit 0
 fi
 
-
-tmpfiles=$TEST_TMPDIR/files
-
-(
-  mkdir -p "$tmpfiles"
-  rm -f bazel-*
-  cp -aL "." "$tmpfiles"
-  export BUILD_WORKSPACE_DIRECTORY=$tmpfiles
-  export HOME=$(realpath "$TEST_TMPDIR/home")
-  unset GOPATH
-  go=$(realpath "$2")
-  export PATH=$(dirname "$go"):$PATH
-  "$@"
-)
-
-(
-  # Remove the platform/binary for gazelle and kazel
-  gazelle=$(dirname "$3")
-  kazel=$(dirname "$4")
-  rm -rf {.,"$tmpfiles"}/{"$gazelle","$kazel"}
-)
-# Avoid diff -N so we handle empty files correctly
-diff=$(diff -upr \
-  -x ".git" \
-  -x "bazel-*" \
-  -x "_output" \
-  "." "$tmpfiles" 2>/dev/null || true)
-
-if [[ -n "${diff}" ]]; then
-  echo "${diff}" >&2
-  echo >&2
-  echo "ERROR: modules changed. Update with ./hack/update-deps.sh" >&2
-  exit 1
-fi
-echo "SUCCESS: modules up-to-date"
+set -o xtrace
+bazel test --test_output=streamed //hack:verify-deps
