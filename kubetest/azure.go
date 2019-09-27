@@ -95,6 +95,8 @@ var (
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
+	// Azure File CSI Driver flag
+	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 )
 
 const (
@@ -907,7 +909,6 @@ func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 }
 
 func (c Cluster) TestSetup() error {
-
 	// set env vars required by the ccm e2e tests
 	if *testCcm == true {
 		if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
@@ -925,10 +926,18 @@ func (c Cluster) TestSetup() error {
 		if err := os.Setenv("K8S_AZURE_LOCATION", c.location); err != nil {
 			return err
 		}
+	} else if *testAzureFileCSIDriver == true {
+		// Set env vars required by Azure File CSI driver tests.
+		// tenantId, subscriptionId, aadClientId, and aadClientSecret will be obtained from AZURE_CREDENTIAL
+		if err := os.Setenv("RESOURCE_GROUP", c.resourceGroup); err != nil {
+			return err
+		}
+		if err := os.Setenv("LOCATION", c.location); err != nil {
+			return err
+		}
 	}
 
 	// Download repo-list that defines repositories for Windows test images.
-
 	downloadUrl, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
 	if !ok {
 		// Env value for downloadUrl is not set, nothing to do
@@ -964,19 +973,21 @@ func (_ Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
 
 // BuildTester returns a standard ginkgo-script tester or a custom one if testCcm is enabled
 func (c *Cluster) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
-	if *testCcm != true {
-		return &GinkgoScriptTester{}, nil
+	if *testCcm == true {
+		return &GinkgoCCMTester{}, nil
+	} else if *testAzureFileCSIDriver == true {
+		return &GinkgoAzureFilCSIDriverTester{}, nil
 	}
-	log.Printf("running go tests directly")
-	return &GinkgoCustomTester{}, nil
+
+	return &GinkgoScriptTester{}, nil
 }
 
-// GinkgoCustomTester implements Tester by calling a custom ginkgo script
-type GinkgoCustomTester struct {
+// GinkgoCCMTester implements Tester by running E2E tests for Azure CCM
+type GinkgoCCMTester struct {
 }
 
 // Run executes custom ginkgo script
-func (t *GinkgoCustomTester) Run(control *process.Control, testArgs []string) error {
+func (t *GinkgoCCMTester) Run(control *process.Control, testArgs []string) error {
 	artifactsDir, ok := os.LookupEnv("ARTIFACTS")
 	if !ok {
 		artifactsDir = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
@@ -988,6 +999,19 @@ func (t *GinkgoCustomTester) Run(control *process.Control, testArgs []string) er
 	}
 	cmd := exec.Command("make", "test-ccm-e2e")
 	projectPath := util.K8s("cloud-provider-azure")
+	cmd.Dir = projectPath
+	testErr := control.FinishRunning(cmd)
+	return testErr
+}
+
+// GinkgoAzureFilCSIDriverTester implements Tester by running E2E tests for Azure File CSI Driver
+type GinkgoAzureFilCSIDriverTester struct {
+}
+
+// Run executes custom ginkgo script
+func (t *GinkgoAzureFilCSIDriverTester) Run(control *process.Control, testArgs []string) error {
+	cmd := exec.Command("make", "e2e-test")
+	projectPath := util.K8sSigs("azurefile-csi-driver")
 	cmd.Dir = projectPath
 	testErr := control.FinishRunning(cmd)
 	return testErr
