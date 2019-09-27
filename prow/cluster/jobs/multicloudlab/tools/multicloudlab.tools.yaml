@@ -11,7 +11,7 @@ postsubmits:
       run_if_changed: 'docker/build-tools/Dockerfile'
       spec:
         containers:
-          - image: quay.io/multicloudlab/multicloudlab-builder:v20190925-b9788d0
+          - image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
             # docker in docker
             securityContext:
               privileged: true
