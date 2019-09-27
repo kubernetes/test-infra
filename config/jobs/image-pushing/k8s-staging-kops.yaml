@@ -1,0 +1,32 @@
+postsubmits:
+  kubernetes/kops:
+  - name: kops-postsubmit-push-to-staging
+    cluster: test-infra-trusted
+    annotations:
+      # this is the name of some testgrid dashboard to report to.
+      testgrid-dashboards: sig-cluster-lifecycle-kops
+    decorate: true
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+        command:
+        - make
+        args:
+        - kops-controller-push
+        # Start by just pushing the image
+        #- gcs-publish-ci
+        - GCS_LOCATION=gs://kops-ci/bin
+        - DOCKER_REGISTRY=gcr.io
+        - DOCKER_IMAGE_PREFIX=k8s-staging-kops/
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+    volumes:
+    - name: creds
+      secret:
+        secretName: deployer-service-account
