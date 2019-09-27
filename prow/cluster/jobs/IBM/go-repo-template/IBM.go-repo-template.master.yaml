@@ -54,20 +54,6 @@ presubmits:
 
 postsubmits:
   IBM/go-repo-template:
-  - name: build_go-repo-template_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/go-repo-template
-    spec:
-      containers:
-      - command:
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
-        name: ""
-        securityContext:
-          privileged: true
   - name: check_go-repo-template_postsubmit
     branches:
     - ^master$
@@ -92,6 +78,36 @@ postsubmits:
       - command:
         - make
         - test
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build_go-repo-template_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_go-repo-template_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/go-repo-template
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - make
+        - images
         image: quay.io/multicloudlab/build-tools:2019-09-25T13-11-16
         name: ""
         securityContext:
