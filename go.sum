@@ -562,6 +562,7 @@ golang.org/x/net v0.0.0-20181114220301-adae6a3d119a/go.mod h1:mL1N/T3taQHkDXs73r
 golang.org/x/net v0.0.0-20181201002055-351d144fa1fc/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190125091013-d26f9f9a57f3/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+golang.org/x/net v0.0.0-20190206173232-65e2d4e15006/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190213061140-3a22650c66bd/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190311183353-d8887717615a h1:oWX7TPOiFAMXLq8o0ikBYfCJVlRHBcsciT5bXOrH628=
 golang.org/x/net v0.0.0-20190311183353-d8887717615a/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
@@ -728,8 +729,8 @@ k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604/go.mod h1:7H8s
 k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d h1:7Kns6qqhMAQWvGkxYOLSLRZ5hJO0/5pcE5lPGP2fxUw=
 k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d/go.mod h1:3jediapYqJ2w1BFw7lAZPCx7scubsTfosqHkhXCWJKw=
 k8s.io/apiserver v0.0.0-20190918200908-1e17798da8c1/go.mod h1:4FuDU+iKPjdsdQSN3GsEKZLB/feQsj1y9dhhBDVV2Ns=
-k8s.io/client-go v0.0.0-20190918200256-06eb1244587a h1:huOvPq1vO7dkuw9rZPYsLGpFmyGvy6L8q6mDItgkdQ4=
-k8s.io/client-go v0.0.0-20190918200256-06eb1244587a/go.mod h1:3YAcTbI2ArBRmhHns5vlHRX8YQqvkVYpz+U/N5i1mVU=
+k8s.io/client-go v12.0.0+incompatible h1:YlJxncpeVUC98/WMZKC3JZGk/OXQWCZjAB4Xr3B17RY=
+k8s.io/client-go v12.0.0+incompatible/go.mod h1:E95RaSlHr79aHaX0aGSwcPNfygDiPKOVXdmivCIZT0k=
 k8s.io/code-generator v0.0.0-20190612205613-18da4a14b22b h1:p+PRuwXWwk5e+UYvicGiavEupapqM5NOxUl3y1GkD6c=
 k8s.io/code-generator v0.0.0-20190612205613-18da4a14b22b/go.mod h1:G8bQwmHm2eafm5bgtX67XDZQ8CWKSGu9DekI+yN4Y5I=
 k8s.io/component-base v0.0.0-20190918200425-ed2f0867c778/go.mod h1:DFWQCXgXVLiWtzFaS17KxHdlUeUymP7FLxZSkmL9/jU=

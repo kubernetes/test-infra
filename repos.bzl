@@ -1616,8 +1616,8 @@ def go_repositories():
         build_file_proto_mode = "disable",
         importpath = "k8s.io/client-go",
         replace = "k8s.io/client-go",
-        sum = "h1:huOvPq1vO7dkuw9rZPYsLGpFmyGvy6L8q6mDItgkdQ4=",
-        version = "v0.0.0-20190918200256-06eb1244587a",
+        sum = "h1:YlJxncpeVUC98/WMZKC3JZGk/OXQWCZjAB4Xr3B17RY=",
+        version = "v12.0.0+incompatible",
     )
     go_repository(
         name = "io_k8s_code_generator",
