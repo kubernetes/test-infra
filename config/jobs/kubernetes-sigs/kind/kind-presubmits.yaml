@@ -41,8 +41,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    always_run: false
-    optional: true
+    always_run: true
     spec:
       # run on the ubuntu node pool, which has ipv6 modules
       tolerations:
