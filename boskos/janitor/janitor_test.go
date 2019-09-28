@@ -82,6 +82,20 @@ func (fb *fakeBoskos) ReleaseOne(name string, dest string) error {
 	return fmt.Errorf("no resource %v", name)
 }
 
+func (fb *fakeBoskos) UpdateOne(name string, state string, userdata *common.UserData) error {
+	fb.lock.Lock()
+	defer fb.lock.Unlock()
+
+	for idx := range fb.resources {
+		r := &fb.resources[idx]
+		if r.Name == name && r.State == state {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("no resource %v", name)
+}
+
 // waitTimeout waits for the waitgroup for the specified max timeout.
 // Returns true if waiting timed out.
 func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {

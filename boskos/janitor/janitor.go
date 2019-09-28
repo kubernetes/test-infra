@@ -90,6 +90,7 @@ func janitorClean(resource *common.Resource, flags []string) error {
 type boskosClient interface {
 	Acquire(rtype string, state string, dest string) (*common.Resource, error)
 	ReleaseOne(name string, dest string) error
+	UpdateOne(name string, state string, userdata *common.UserData) error
 }
 
 func setup(c boskosClient, janitorCount int, bufferSize int, cleanFunc clean, flags []string) chan *common.Resource {
@@ -110,7 +111,7 @@ func run(c boskosClient, buffer chan<- *common.Resource, rtypes []string) int {
 	for {
 		for r := range res {
 			if resource, err := c.Acquire(r, common.Dirty, common.Cleaning); err != nil {
-				logrus.WithError(err).Infof("no available resource %s", resource)
+				logrus.WithError(err).Infof("no available resource %s", r)
 				totalAcquire += res[r]
 				delete(res, r)
 			} else if resource == nil {
@@ -137,6 +138,14 @@ func run(c boskosClient, buffer chan<- *common.Resource, rtypes []string) int {
 func janitor(c boskosClient, buffer <-chan *common.Resource, fn clean, flags []string) {
 	for {
 		resource := <-buffer
+
+		go func(c boskosClient, resource string) {
+			for range time.Tick(time.Minute * 5) {
+				if err := c.UpdateOne(resource, common.Cleaning, nil); err != nil {
+					logrus.WithError(err).Warnf("Update %s failed", resource)
+				}
+			}
+		}(c, resource.Name)
 
 		dest := common.Free
 		if err := fn(resource, flags); err != nil {
