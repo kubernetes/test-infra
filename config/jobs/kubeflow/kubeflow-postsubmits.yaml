@@ -241,6 +241,8 @@ postsubmits:
       description: Postsubmit tests for kubeflow/arena.
   kubeflow/pipelines:
   - name: kubeflow-pipeline-postsubmit
+    branches:
+    - ^master$
     decorate: true
     labels:
       preset-service-account: "true"
