@@ -27,7 +27,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/interrupts"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/pkg/io"
@@ -177,13 +176,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting ProwJob informer.")
 	}
 
-	sig := signals.SetupSignalHandler()
-
-	go func() {
-		if err := mgr.Start(sig); err != nil {
+	interrupts.Run(func(ctx context.Context) {
+		if err := mgr.Start(ctx.Done()); err != nil {
 			logrus.WithError(err).Fatal("Mgr failed.")
 		}
-	}()
+	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer mgrSyncCtxCancel()
 	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
