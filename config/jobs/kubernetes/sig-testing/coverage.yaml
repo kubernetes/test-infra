@@ -129,3 +129,24 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
+- interval: 1h
+  name: ci-kubernetes-coverage-unit
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -c
+      - make test KUBE_COVER=y KUBE_COVER_OUTPUT_DIR="${ARTIFACTS}"
+      securityContext:
+        privileged: true
