@@ -444,3 +444,42 @@ periodics:
 #          - --test-cmd-name=ClusterLoaderV2
 #          - --timeout=40m
 #          - --use-logexporter
+
+- name: ci-kubernetes-storage-scalability
+  tags:
+    - "perfDashPrefix: storage"
+    - "perfDashJobType: storage-suite"
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-node: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: storage
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=360
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=1
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testsuite=testing/experimental/storage/pod-startup/suite.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=300m
+      - --use-logexporter
