@@ -580,6 +580,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 40m
     path_alias: k8s.io/kubernetes
@@ -597,34 +598,19 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
         command:
         - runner.sh
-        - kubetest
-        args:
-        # kind specific args
-        - --provider=skeleton
-        - --deployment=kind
-        - --kind-binary-version=build
-        - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
-        # generic e2e test args
-        - --build=bazel
-        - --up
-        - --test
-        - --check-version-skew=false
-        - --down
-        # specific e2e test args
-        # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
-        - --ginkgo-parallel
-        - --timeout=30m
+        - bash
+        - -c
+        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        env:
+        - name: FOCUS
+          value: ""
+        - name: SKIP
+          value: "\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|In-tree.Volumes.\\[Driver:.nfs\\]|PersistentVolumes.NFS|PodSecurityPolicy|Network.should.set.TCP.CLOSE_WAIT.timeout|Mount.propagation.should.propagate.mounts.to.the.host|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing.directories.when.readOnly.specified.in.the.volumeSource|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|RuntimeClass.should.run.a.Pod.requesting.a.RuntimeClass.with.a.configured.handler"
+        - name: PARALLEL
+          value: "true"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-        # kind needs /lib/modules and cgroups from the host
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             # TODO(BenTheElder): adjust these everywhere
@@ -633,15 +619,6 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
