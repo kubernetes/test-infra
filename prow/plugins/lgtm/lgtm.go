@@ -293,7 +293,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 
 	// check if the commentor is a trusted user
 	t := gc.PluginConfig.TriggerFor(org, repoName)
-	isTrustedUser , err :=  trigger.TrustedUser(gc, t.OnlyOrgMembers, t.TrustedOrg, author, org, repoName)
+	isTrustedUser, err :=  trigger.TrustedUser(gc, t.OnlyOrgMembers, t.TrustedOrg, author, org, repoName)
 
 	if err != nil {
 		log.WithError(err).Error("Failed to check if author is a collaborator.")
