@@ -45,7 +45,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190903-df3b2f0-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
