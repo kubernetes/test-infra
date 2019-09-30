@@ -20,6 +20,34 @@ periodics:
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
+- name: ci-kind-unit
+  interval: 6h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
+  always_run: true
+  labels:
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      command:
+      - runner.sh
+      # run the unit tests and copy coverage to where spyglass expects it
+      - bash
+      - -c
+      - make test; cp bin/coverage.out "${ARTIFACTS}/filtered.cov"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+    annotations:
+      testgrid-dashboards: sig-testing-kkind
+      testgrid-tab-name: ci unit test
+      testgrid-alert-email: bentheelder@google.com
+      description: kind CI unit test
 # conformance test against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance
