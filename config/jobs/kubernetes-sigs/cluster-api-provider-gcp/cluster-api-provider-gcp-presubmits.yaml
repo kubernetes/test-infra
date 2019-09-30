@@ -71,7 +71,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    always_run: false
+    always_run: true
     optional: true
     spec:
       containers:
