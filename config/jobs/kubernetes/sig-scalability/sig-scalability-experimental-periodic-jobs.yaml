@@ -448,7 +448,7 @@ periodics:
 - name: ci-kubernetes-storage-scalability
   tags:
     - "perfDashPrefix: storage"
-    - "perfDashJobType: storage-suite"
+    - "perfDashJobType: storage"
   interval: 6h
   labels:
     preset-service-account: "true"
