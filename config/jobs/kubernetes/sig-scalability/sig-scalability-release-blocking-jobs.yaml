@@ -21,12 +21,14 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      - --env=KUBE_GCE_PRIVATE_CLUSTER=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-node-size=g1-small
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
+      - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
       - --gcp-zone=us-east1-b
       - --ginkgo-parallel=40
       - --provider=gce
