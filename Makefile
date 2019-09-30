@@ -82,6 +82,9 @@ build:
 # 	@docker build . -f Dockerfile -t $(REGISTRY)/$(IMG):$(VERSION)
 # 	@docker push $(REGISTRY)/$(IMG):$(VERSION)
 
+build-tools-images: config-docker
+	@cd docker/build-tools && ./build-and-push.sh
+
 ############################################################
 # clean section
 ############################################################

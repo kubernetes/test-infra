@@ -1,0 +1,21 @@
+presubmits:
+
+postsubmits:
+  IBM/test-infra:
+  - name: tools-images
+    decorate: true
+    branches:
+    - ^master$
+    labels:
+      preset-service-account: "true"
+    run_if_changed: 'docker/build-tools/Dockerfile'
+    spec:
+      containers:
+      - image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
+        # docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - entrypoint
+        - make
+        - build-tools-images
