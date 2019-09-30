@@ -238,6 +238,15 @@ def commit_date(git, commit, call):
         return None
 
 
+def head_sha(git, call):
+    try:
+        return call([git, 'rev-parse', '--short', 'HEAD'],
+                    output=True, log_failures=False)
+    except subprocess.CalledProcessError:
+        logging.warning('Unable to fetch SHA for HEAD')
+        return None
+
+
 def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull.
 
@@ -297,6 +306,8 @@ def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=Fa
     # Lie about the date in merge commits: use sequential seconds after the
     # commit date of the tip of the parent branch we're checking into.
     merge_date = int(commit_date(git, 'HEAD', call) or time.time())
+
+    logging.info('SHA of %s is %s', repo_path, head_sha(git, call))
 
     git_merge_env = os.environ.copy()
     for ref, head in zip(refs, checkouts)[1:]:
