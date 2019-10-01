@@ -19,6 +19,7 @@ import {Coverage, parseCoverage} from 'io_k8s_test_infra/gopherage/cmd/html/stat
 import {inflate} from "pako/lib/inflate";
 
 declare const COVERAGE_FILE: string;
+declare const RENDERED_COVERAGE_URL: string;
 
 const NO_COVERAGE = Color('#FF0000');
 const FULL_COVERAGE = Color('#00FF00');
@@ -47,11 +48,19 @@ function renderChildren(parent: Node, coverage: Coverage, horizontal: boolean): 
       node.classList.add('leaf');
       const [filename, file] = child.files.entries().next().value;
       node.title = `${filename}: ${(file.coveredStatements / file.totalStatements * 100).toFixed(0)}%`;
-      node.style.backgroundColor = NO_COVERAGE.mix(FULL_COVERAGE, file.coveredStatements / file.totalStatements).hex();
+
+      const bgColor = NO_COVERAGE.mix(FULL_COVERAGE, file.coveredStatements / file.totalStatements);
+      node.style.backgroundColor = bgColor.hex();
       // Not having a border looks weird, but using a constant colour causes tiny boxes
       // to consist entirely of that colour. By using a border colour based on the
       // box colour, we still show some information.
-      node.style.borderColor = Color(node.style.backgroundColor).darken(0.3).hex();
+      node.style.borderColor = bgColor.darken(0.3).hex();
+
+      if (RENDERED_COVERAGE_URL) {
+        node.onclick = () => {
+          window.parent.location.href = `${RENDERED_COVERAGE_URL}#file${file.fileNumber}`;
+        };
+      }
     } else {
       renderChildren(node, child, !horizontal);
     }
@@ -66,5 +75,9 @@ window.onload = () => {
   const coverage = parseCoverage(content);
   document.getElementById('statement-coverage')!.innerText = `${(coverage.coveredStatements / coverage.totalStatements * 100).toFixed(0)}% (${coverage.coveredStatements.toLocaleString()} of ${coverage.totalStatements.toLocaleString()} statements)`;
   document.getElementById('file-coverage')!.innerText = `${(coverage.coveredFiles / coverage.totalFiles * 100).toFixed(0)}% (${coverage.coveredFiles.toLocaleString()} of ${coverage.totalFiles.toLocaleString()} files)`;
-  renderChildren(document.getElementById('treemap')!, coverage, true);
+  const treemapEl = document.getElementById('treemap')!;
+  renderChildren(treemapEl, coverage, true);
+  if (RENDERED_COVERAGE_URL) {
+    treemapEl.classList.add('interactive');
+  }
 };
