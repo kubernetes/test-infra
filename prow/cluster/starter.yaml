@@ -301,6 +301,7 @@ spec:
         image: gcr.io/k8s-prow/deck:v20191001-edcabf6dd
         args:
         - --config-path=/etc/config/config.yaml
+        - --plugin-config=/etc/plugins/plugins.yaml
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         - --github-token-path=/etc/github/oauth
@@ -313,6 +314,9 @@ spec:
           readOnly: true
         - name: oauth
           mountPath: /etc/github
+          readOnly: true
+        - name: plugins
+          mountPath: /etc/plugins
           readOnly: true
         livenessProbe:
           httpGet:
@@ -334,6 +338,9 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: plugins
+        configMap:
+          name: plugins
 ---
 apiVersion: v1
 kind: Service
