@@ -149,6 +149,22 @@
         if (modeLabel !== 'mode') {
             throw new Error('Expected to start with mode line.');
         }
+        // Well-formed coverage files are already sorted alphabetically, but Kubernetes'
+        // `make test` produces ill-formed coverage files. This does actually matter, so
+        // sort it ourselves.
+        lines.sort((a, b) => {
+            a = a.split(':', 2)[0];
+            b = b.split(':', 2)[0];
+            if (a < b) {
+                return -1;
+            }
+            else if (a > b) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        });
         const coverage = new Coverage(mode);
         let fileCounter = 0;
         for (const line of lines) {
