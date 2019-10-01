@@ -1,0 +1,30 @@
+postsubmits:
+  kubernetes-sigs/image-builder-konfigadm:
+    - name: post-image-builder-konfigadm
+      labels:
+        preset-dind-enabled: "true"
+        preset-image-builder-gcp-creds: "true"
+        preset-image-builder-aws-creds: "true"
+        preset-image-builder-azure-creds: "true"
+        preset-image-builder-vsphere-creds: "true"
+      branches:
+        - ^master$
+      always_run: false
+      run_if_changed: "^images/konfigadm/"
+      decorate: true
+      path_alias: sigs.k8s.io/image-builder
+      max_concurrency: 1
+      spec:
+        containers:
+          - image: google/cloud-sdk:264.0.0
+            resources:
+              requests:
+                cpu: "1000m"
+            command:
+              - ./images/konfigadm/build-all.sh
+            # we need privileged mode in order to do docker in docker
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-tab-name: post-deploy
+        description: Builds new images using Nested Virtualization on Google Cloud
