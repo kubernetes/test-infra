@@ -24,6 +24,8 @@ html {
 }
 .loglines .linetext span {
     white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 .line-highlighted {
     color: rgba(255, 224, 0, 1.0);
