@@ -229,10 +229,6 @@ func TestAccumulateBatch(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			config.FakeInRepoConfig = test.fakeInRepoConfig
-			defer func() {
-				config.FakeInRepoConfig = nil
-			}()
 
 			var pulls []PullRequest
 			for _, p := range test.pulls {
@@ -271,6 +267,7 @@ func TestAccumulateBatch(t *testing.T) {
 							Presubmits: map[string][]config.Presubmit{
 								"org/repo": test.presubmits,
 							},
+							FakeInRepoConfig: test.fakeInRepoConfig,
 						},
 					}
 				},
@@ -2164,10 +2161,6 @@ func TestIsPassing(t *testing.T) {
 }
 
 func TestPresubmitsByPull(t *testing.T) {
-	defer func() {
-		config.FakeInRepoConfig = nil
-	}()
-
 	samplePR := PullRequest{
 		Number:     githubql.Int(100),
 		HeadRefOID: githubql.String("sha"),
@@ -2409,12 +2402,12 @@ func TestPresubmitsByPull(t *testing.T) {
 			tc.expectedChangeCache = map[changeCacheKey][]string{}
 		}
 
-		config.FakeInRepoConfig = tc.fakeInRepoConfig
 		cfg := &config.Config{}
 		cfg.SetPresubmits(map[string][]config.Presubmit{
 			"/":       tc.presubmits,
 			"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
 		})
+		cfg.FakeInRepoConfig = tc.fakeInRepoConfig
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{
@@ -2939,10 +2932,6 @@ func TestPresubmitsForBatch(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config.FakeInRepoConfig = tc.inrepoconfig
-			defer func() {
-				config.FakeInRepoConfig = nil
-			}()
 
 			if tc.changedFiles == nil {
 				tc.changedFiles = &changedFilesAgent{
@@ -2970,6 +2959,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 							Presubmits: map[string][]config.Presubmit{
 								"org/repo": tc.jobs,
 							},
+							FakeInRepoConfig: tc.inrepoconfig,
 						},
 					}
 				},

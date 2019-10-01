@@ -81,6 +81,9 @@ type JobConfig struct {
 	// AllRepos contains all Repos that have one or more jobs configured or
 	// for which a tide query is configured.
 	AllRepos sets.String `json:"-"`
+
+	// FakeInRepoConfig is used for tests. Its key is the headSHA.
+	FakeInRepoConfig map[string][]Presubmit `json:"-"`
 }
 
 // ProwConfig is config for all prow controllers
@@ -145,8 +148,8 @@ type ProwConfig struct {
 // a no-op that always returns false, as the underlying feature is not implemented
 // yet. See https://github.com/kubernetes/test-infra/issues/13370 for a current
 // status.
-func (pc *ProwConfig) InRepoConfigEnabled(identifier string) bool {
-	return FakeInRepoConfig != nil
+func (jc *JobConfig) InRepoConfigEnabled(identifier string) bool {
+	return jc.FakeInRepoConfig != nil
 }
 
 // RefGetter is used to retrieve a Git Reference. Its purpose is
@@ -244,9 +247,6 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 	return rg.baseSHA, nil
 }
 
-// FakeInRepoConfig can be used in tests. Its key is the headSHA.
-var FakeInRepoConfig map[string][]Presubmit
-
 // GetPresubmits will return all presumits for the given identifier.
 // Once https://github.com/kubernetes/test-infra/issues/13370 is resolved, it will
 // also return Presubmits that are versioned inside the tested repo, if that feature
@@ -277,8 +277,8 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 	// Pending implementation of https://github.com/kubernetes/test-infra/issues/13370
 	// Currently, only a fake implementation exists for tests.
 	_ = baseSHA
-	if FakeInRepoConfig != nil {
-		return append(c.Presubmits[identifier], FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
+	if c.FakeInRepoConfig != nil {
+		return append(c.Presubmits[identifier], c.FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
 	}
 	return nil, errors.New("inrepoconfig is not yet implemented :/")
 }

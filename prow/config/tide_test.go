@@ -364,11 +364,10 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 	no := false
 	org, repo, branch := "org", "repo", "branch"
 	testCases := []struct {
-		name         string
-		config       Config
-		inrepoconfig map[string][]Presubmit
-		expected     TideContextPolicy
-		error        string
+		name     string
+		config   Config
+		expected TideContextPolicy
+		error    string
 	}{
 		{
 			name: "no policy - use prow jobs",
@@ -501,16 +500,20 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 		},
 		{
 			name: "jobs from inrepoconfig are considered",
-			inrepoconfig: map[string][]Presubmit{
-				"some-sha": {
-					{
-						AlwaysRun: true,
-						Reporter:  Reporter{Context: "ir0"},
-					},
-					{
-						AlwaysRun: true,
-						Optional:  true,
-						Reporter:  Reporter{Context: "ir1"},
+			config: Config{
+				JobConfig: JobConfig{
+					FakeInRepoConfig: map[string][]Presubmit{
+						"some-sha": {
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
+						},
 					},
 				},
 			},
@@ -522,19 +525,6 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 		},
 		{
 			name: "both static and inrepoconfig jobs are consired",
-			inrepoconfig: map[string][]Presubmit{
-				"some-sha": {
-					{
-						AlwaysRun: true,
-						Reporter:  Reporter{Context: "ir0"},
-					},
-					{
-						AlwaysRun: true,
-						Optional:  true,
-						Reporter:  Reporter{Context: "ir1"},
-					},
-				},
-			},
 			config: Config{
 				JobConfig: JobConfig{
 					Presubmits: map[string][]Presubmit{
@@ -554,6 +544,19 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 							},
 						},
 					},
+					FakeInRepoConfig: map[string][]Presubmit{
+						"some-sha": {
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
+						},
+					},
 				},
 			},
 			expected: TideContextPolicy{
@@ -566,10 +569,6 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			FakeInRepoConfig = tc.inrepoconfig
-			defer func() {
-				FakeInRepoConfig = nil
-			}()
 
 			baseSHAGetter := func() (string, error) {
 				return "baseSHA", nil
