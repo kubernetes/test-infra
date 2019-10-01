@@ -36,7 +36,8 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
       command:
       - runner.sh
-      - make unit
+      - make
+      - unit
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
