@@ -242,7 +242,8 @@ presubmits:
         - runner.sh
         - bash
         - -c
-        - wget -O "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && curl https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        # TODO(bentheelder): remove the mkdir after the next image bump
+        - mkdir -p "${PATH%%:*}" && wget -O "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && curl https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
         - name: FOCUS
           value: "."
