@@ -2,6 +2,7 @@
 
 approvers:
 - andyzhangx
+- awesomenix
 - brendandburns
 - feiskyer
 - justaugustus
@@ -10,5 +11,11 @@ approvers:
 - soggiest
 reviewers:
 - awesomenix
+- CecileRobertMichon
 - juan-lee
 - serbrech
+- vincepri
+
+labels:
+- sig/cluster-lifecycle
+- area/provider/azure
