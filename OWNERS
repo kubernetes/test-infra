@@ -1,6 +1,7 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
+- BenTheElder #oncall
 - chases2 # oncall
 - cjwagner # oncall
 - fejta # lead
@@ -10,7 +11,6 @@ approvers:
 - stevekuznetsov # lead
 emeritus_approvers:
 - amwat
-- BenTheElder
 - ixdy
 - krzyzacy
 
