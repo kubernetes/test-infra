@@ -290,13 +290,16 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-		cr, err := sc.config().GetTideContextPolicy(
-			sc.ghc,
-			sc.gc,
-			string(pr.Repository.Owner.Login),
-			string(pr.Repository.Name),
-			string(pr.BaseRef.Name),
-			string(pr.HeadRefOID))
+
+		org := string(pr.Repository.Owner.Login)
+		repo := string(pr.Repository.Name)
+		branch := string(pr.BaseRef.Name)
+		headSHA := string(pr.HeadRefOID)
+		baseSHAGetter := func() (string, error) {
+			return sc.ghc.GetRef(org, repo, "heads/"+branch)
+		}
+
+		cr, err := sc.config().GetTideContextPolicy(sc.gc, org, repo, branch, baseSHAGetter, headSHA)
 		if err != nil {
 			log.WithError(err).Error("setting up context register")
 			return
@@ -313,9 +316,9 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 		}
 		if wantState != strings.ToLower(string(actualState)) || wantDesc != actualDesc {
 			if err := sc.ghc.CreateStatus(
-				string(pr.Repository.Owner.Login),
-				string(pr.Repository.Name),
-				string(pr.HeadRefOID),
+				org,
+				repo,
+				headSHA,
 				github.Status{
 					Context:     statusContext,
 					State:       wantState,

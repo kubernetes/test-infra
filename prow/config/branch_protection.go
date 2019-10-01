@@ -232,7 +232,7 @@ type Branch struct {
 // GetBranchProtection returns the policy for a given branch.
 //
 // Handles merging any policies defined at repo/org/global levels into the branch policy.
-func (c *Config) GetBranchProtection(org, repo, branch string, presubmits map[string][]Presubmit) (*Policy, error) {
+func (c *Config) GetBranchProtection(org, repo, branch string, presubmits []Presubmit) (*Policy, error) {
 	if _, present := c.BranchProtection.Orgs[org]; !present {
 		return nil, nil // only consider branches in configured orgs
 	}
@@ -245,11 +245,11 @@ func (c *Config) GetBranchProtection(org, repo, branch string, presubmits map[st
 }
 
 // GetPolicy returns the protection policy for the branch, after merging in presubmits.
-func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits map[string][]Presubmit) (*Policy, error) {
+func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Presubmit) (*Policy, error) {
 	policy := b.Policy
 
 	// Automatically require contexts from prow which must always be present
-	if prowContexts, _, _ := BranchRequirements(org, repo, branch, presubmits); len(prowContexts) > 0 {
+	if prowContexts, _, _ := BranchRequirements(branch, presubmits); len(prowContexts) > 0 {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies {
@@ -300,11 +300,7 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits map[st
 //  - contexts that are always required to be present
 //  - contexts that are required, _if_ present
 //  - contexts that are always optional
-func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) ([]string, []string, []string) {
-	jobs, ok := presubmits[org+"/"+repo]
-	if !ok {
-		return nil, nil, nil
-	}
+func BranchRequirements(branch string, jobs []Presubmit) ([]string, []string, []string) {
 	var required, requiredIfPresent, optional []string
 	for _, j := range jobs {
 		if !j.CouldRun(branch) {

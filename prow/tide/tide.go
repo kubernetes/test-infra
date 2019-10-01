@@ -449,7 +449,7 @@ func (c *Controller) initSubpoolData(sp *subpool) error {
 	}
 	sp.cc = make(map[int]contextChecker, len(sp.prs))
 	for _, pr := range sp.prs {
-		sp.cc[int(pr.Number)], err = c.config().GetTideContextPolicy(c.ghc, c.gc, sp.org, sp.repo, sp.branch, string(pr.HeadRefOID))
+		sp.cc[int(pr.Number)], err = c.config().GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), string(pr.HeadRefOID))
 		if err != nil {
 			return fmt.Errorf("error setting up context checker for pr %d: %v", int(pr.Number), err)
 		}
