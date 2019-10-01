@@ -48,7 +48,7 @@ type ResourceNotFound struct {
 }
 
 func (r ResourceNotFound) Error() string {
-	return fmt.Sprintf("resource %s does not exist", r.name)
+	return fmt.Sprintf("no available resource %s, try again later.", r.name)
 }
 
 // ResourceTypeNotFound will be returned if requested resource type does not exist.
