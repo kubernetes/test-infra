@@ -26,7 +26,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,7 +36,6 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
@@ -333,75 +331,6 @@ func (c *controller) clean() {
 		isActivePeriodic[p.Name] = true
 	}
 
-<<<<<<< HEAD
-	// Get the jobs that we need to retain so horologium can continue working
-	// as intended.
-	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, prowapi.PeriodicJob)
-	for _, prowJob := range prowJobs.Items {
-		if prowJob.Spec.Type != prowapi.PeriodicJob {
-			continue
-		}
-
-		latestPJ := latestPeriodics[prowJob.Spec.Job]
-		if isActivePeriodic[prowJob.Spec.Job] && prowJob.ObjectMeta.Name == latestPJ.ObjectMeta.Name {
-			// Ignore deleting this one.
-			continue
-		}
-		if !prowJob.Complete() {
-			continue
-		}
-		isFinished.Insert(prowJob.ObjectMeta.Name)
-		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
-			continue
-		}
-		if err := c.prowJobClient.Delete(c.ctx, &prowJob); err == nil {
-			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-			metrics.prowJobsCleaned[reasonProwJobAgedPeriodic]++
-		} else {
-			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
-			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
-		}
-	}
-
-	// Now clean up old pods.
-	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	for _, client := range c.podClients {
-		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
-		if err != nil {
-			c.logger.WithError(err).Error("Error listing pods.")
-			return
-		}
-		metrics.podsCreated += len(pods.Items)
-		maxPodAge := c.config().Sinker.MaxPodAge.Duration
-		for _, pod := range pods.Items {
-			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
-			reason := reasonPodAged
-			if !isFinished.Has(pod.ObjectMeta.Name) {
-				// prowjob exists and is not marked as completed yet
-				// deleting the pod now will result in plank creating a brand new pod
-				clean = false
-			}
-			if !isExist.Has(pod.ObjectMeta.Name) {
-				// prowjob has gone, we want to clean orphan pods regardless of the state
-				reason = reasonPodOrphaned
-				clean = true
-			}
-
-			if !clean {
-				continue
-			}
-
-			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
-			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				metrics.podsRemoved[reason]++
-			} else {
-				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
-				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
-			}
-		}
-	}
-	
 	metrics.finishedAt = time.Now()
 	sinkerMetrics.podsCreated.Set(float64(metrics.podsCreated))
 	sinkerMetrics.timeUsed.Set(float64(metrics.getTimeUsed().Seconds()))

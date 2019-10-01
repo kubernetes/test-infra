@@ -28,12 +28,10 @@ import (
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	ktypes "k8s.io/apimachinery/pkg/types"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ktypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -107,7 +105,7 @@ type Controller struct {
 	skipReport bool
 
 	//prowJob Client
-	prowJobClient prowv1.ProwJobInterface
+	//prowJobClient prowv1.ProwJobInterface
 
 	// pod client
 	podClients []corev1.PodInterface
@@ -547,7 +545,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	c.managePodJobs()
+	c.managePodJobs(pj)
 	return c.patchProwjob(prevPJ, pj)
 }
 
@@ -609,7 +607,9 @@ func (c *Controller) patchProwjob(srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob)
 	_, err = c.prowJobClient.Patch(srcPJ.Name, ktypes.MergePatchType, patch)
 	c.log.WithFields(pjutil.ProwJobFields(&destPJ)).Debug("Patched ProwJob.")
 	return err
-	
+
+}
+
 type plankReconciliationMetrics struct {
 	podsCreated            int
 	startAt                time.Time
@@ -624,7 +624,7 @@ type plankReconciliationMetrics struct {
 // Get the jobs that we need to retain so horologium can continue working
 // as intended.
 // And clean up old pods.
-func (c *Controller) managePodJobs() {
+func (c *Controller) managePodJobs(pj prowapi.ProwJob) {
 
 	//Set the inital value of MaxProwJobAge
 	c.MaxProwJobAge = &metav1.Duration{Duration: 7 * 24 * time.Hour}
@@ -640,10 +640,6 @@ func (c *Controller) managePodJobs() {
 
 	isFinished := sets.NewString()
 	isExist := sets.NewString()
-	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun.Value)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating ProwJob client.")
-	}
 
 	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
 	if err != nil {
@@ -677,13 +673,18 @@ func (c *Controller) managePodJobs() {
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
-		if err := c.prowJobClient.Delete(prowJob.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
+		client, ok := c.buildClients[pj.ClusterAlias()]
+		if !ok {
+			c.log.WithError(err).Error("unknown cluster alias")
+		}
+		if err := client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 			c.log.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
 			metrics.prowJobsCleaned[reasonProwJobAgedPeriodic]++
 		} else {
 			c.log.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
 		}
+
 	}
 
 	// Now clean up old pods.
@@ -724,5 +725,5 @@ func (c *Controller) managePodJobs() {
 			}
 		}
 	}
->>>>>>> Moved logic for pod jobs from Sinker to Plank
+
 }
