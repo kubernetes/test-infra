@@ -3008,7 +3008,7 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 			expected: []string{"foo"},
 		},
 		{
-			name: "Multiple PRs",
+			name: "Multiple PRs, changes are de-duplicated",
 			prs: []PullRequest{
 				getPR("org", "repo", 1),
 				getPR("org", "repo", 2),
@@ -3019,7 +3019,7 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 					{org: "org", repo: "repo", number: 2}: {"foo", "bar"},
 				},
 			},
-			expected: []string{"foo", "foo", "bar"},
+			expected: []string{"bar", "foo"},
 		},
 	}
 

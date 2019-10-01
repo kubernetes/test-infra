@@ -1152,17 +1152,17 @@ func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvid
 
 func (c *changedFilesAgent) batchChanges(prs []PullRequest) config.ChangedFilesProvider {
 	return func() ([]string, error) {
-		var result []string
+		result := sets.String{}
 		for _, pr := range prs {
 			changes, err := c.prChanges(&pr)()
 			if err != nil {
 				return nil, err
 			}
 
-			result = append(result, changes...)
+			result.Insert(changes...)
 		}
 
-		return result, nil
+		return result.List(), nil
 	}
 }
 
