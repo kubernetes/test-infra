@@ -6,14 +6,12 @@ dashboard_groups:
   - sig-contribex-community
   - sig-contribex-slack-infra
   - sig-contribex-org
-  - sig-contribex-triagebot
 
 # Dashboards
 
 dashboards:
 - name: sig-contribex-community
 - name: sig-contribex-slack-infra
-- name: sig-contribex-triagebot
 - name: sig-contribex-org
   dashboard_tab:
     - name: post-peribolos

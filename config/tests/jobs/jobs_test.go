@@ -313,7 +313,6 @@ func TestTrustedJobs(t *testing.T) {
 	// that uses a foo-trusted cluster
 	const trusted = "test-infra-trusted"
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
-	triageBotTrustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "k8s-triage-robot-trusted.yaml")
 	trustedDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use trusted clusters.
@@ -333,12 +332,12 @@ func TestTrustedJobs(t *testing.T) {
 		}
 	}
 
-	// Trusted periodics must be defined in trustedPath or triageBotTrustedPath
+	// Trusted periodics must be defined in trustedPath
 	for _, per := range c.AllPeriodics() {
 		if per.Cluster != trusted {
 			continue
 		}
-		if per.SourcePath != trustedPath && per.SourcePath != triageBotTrustedPath && !strings.HasPrefix(per.SourcePath, trustedDir) {
+		if per.SourcePath != trustedPath && !strings.HasPrefix(per.SourcePath, trustedDir) {
 			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
 		}
 	}

@@ -109,13 +109,13 @@ class CalculateTest(unittest.TestCase):
                         'milestone': {'title': 'v1.10'},
                     }
                 }, 1),
-                make_comment_event(1, 'k8s-ci-robot',
+                make_comment_event(1, 'k8s-bot',
                     'failure in https://gubernator.k8s.io/build/bucket/job/123/', ts=2),
                 ('pull_request', {
                     'action': 'labeled',
                     'label': {'name': 'release-note-none', 'color': 'orange'},
                 }, 3),
-                make_comment_event(2, 'k8s-ci-robot', '<!-- META={"approvers":["o"]} -->', ts=4),
+                make_comment_event(2, 'k8s-merge-robot', '<!-- META={"approvers":["o"]} -->', ts=4),
             ], status_fetcher={'abcdef': {'e2e': ['failure', None, 'stuff is broken']}}.get
         ),
         (True, True, ['a', 'b', 'o'],
@@ -141,7 +141,7 @@ class CalculateTest(unittest.TestCase):
             make_comment_event(2, 'b', ts=2),
             make_comment_event(1, 'a', action='deleted', ts=3),
             make_comment_event(3, 'c', event='pull_request_review_comment', ts=4),
-            make_comment_event(4, 'k8s-ci-robot', ts=4),
+            make_comment_event(4, 'k8s-bot', ts=4),
             ('pull_request', {'action': 'synchronize', 'sender': {'login': 'auth'}}, 5),
             ('pull_request', {'action': 'labeled', 'sender': {'login': 'rev'},
                 'label': {'name': 'lgtm'}}, 6),
@@ -243,7 +243,7 @@ class CalculateTest(unittest.TestCase):
     def test_approvers(self):
         def expect(comment, result):
             self.assertEqual(result, classifier.get_approvers([{
-                'author': 'k8s-ci-robot', 'comment': comment}]))
+                'author': 'k8s-merge-robot', 'comment': comment}]))
 
         expect('nothing', [])
         expect('before\n<!-- META={approvers:[someone]} -->', ['someone'])
