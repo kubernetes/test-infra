@@ -307,7 +307,7 @@ def get_approvers(comments):
     """
     approvers = []
     for comment in comments:
-        if comment['author'] == 'k8s-merge-robot':
+        if comment['author'] == 'k8s-ci-robot':
             m = APPROVERS_RE.search(comment['comment'])
             if m:
                 approvers = m.group(1).replace('"', '').split(',')
@@ -320,11 +320,9 @@ def distill_events(events, distilled_events=None):
     relevant to determining user state.
     """
     bots = [
-        'k8s-bot',
         'k8s-ci-robot',
-        'k8s-merge-robot',
-        'k8s-oncall',
-        'k8s-reviewable',
+        'k8s-github-robot'
+        'k8s-triage-robot'
         'istio-testing',
     ]
     skip_comments = get_skip_comments(events, bots)

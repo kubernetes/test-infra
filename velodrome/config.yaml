@@ -7,7 +7,7 @@
 # contributions:
 #   plugin: count
 #   args:
-#     - --ignore-authors=k8s-merge-robot,k8s-reviewable,k8s-ci-robot
+#     - --ignore-authors=k8s-ci-robot,k8s-github-robot,k8s-triage-robot
 #     - --no-issues
 #     - --event=opened
 #     - --comments=.*
@@ -30,7 +30,7 @@ projects:
         contributions:
           plugin: count
           args:
-            - --ignore-authors=k8s-merge-robot,k8s-reviewable,k8s-ci-robot
+            - --ignore-authors=k8s-ci-robot,k8s-github-robot,k8s-triage-robot
             - --no-issues
             - --event=opened
             - --comments=.*
@@ -63,7 +63,7 @@ projects:
           plugin: count
           args:
             - --no-issues
-            - --ignore-authors=k8s-merge-robot
+            - --ignore-authors=k8s-ci-robot,k8s-github-robot,k8s-triage-robot
             - --event=labeled:lgtm
             - --comments=(?m)^/lgtm$
             - --log-author
@@ -71,7 +71,7 @@ projects:
           plugin: count
           args:
             - --no-issues
-            - --ignore-authors=k8s-merge-robot
+            - --ignore-authors=k8s-ci-robot,k8s-github-robot,k8s-triage-robot
             - --event=labeled:approved
             - --comments=(?m)^/approve$
             - --log-author
@@ -79,7 +79,7 @@ projects:
           plugin: count
           args:
             - --no-issues
-            - --ignore-authors=k8s-merge-robot,k8s-ci-robot
+            - --ignore-authors=k8s-ci-robot,k8s-github-robot,k8s-triage-robot
             - --comments=(?m)^@k8s-bot.*test this
       kubernetes/contrib: *kubernetes-transform
       kubernetes/ingress: *kubernetes-transform
