@@ -243,7 +243,7 @@ presubmits:
         - bash
         - -c
         # TODO(bentheelder): remove the mkdir after the next image bump
-        - mkdir -p "${PATH%%:*}" && wget -O "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && curl https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        - mkdir -p "${PATH%%:*}" && gsutil cp -P gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
         - name: FOCUS
           value: "."
