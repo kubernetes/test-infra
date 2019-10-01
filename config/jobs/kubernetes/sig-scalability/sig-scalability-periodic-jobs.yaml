@@ -49,6 +49,7 @@ periodics:
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
+      - --repo=github.com/containerd/cri=master
       - --root=/go/src
       - --timeout=60
       - --scenario=kubernetes_e2e
