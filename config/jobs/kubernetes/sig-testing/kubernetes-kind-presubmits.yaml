@@ -235,15 +235,6 @@ presubmits:
     decoration_config:
       timeout: 40m
     path_alias: k8s.io/kubernetes
-    extra_refs:
-    - org: kubernetes
-      repo: kubeadm
-      base_ref: master
-      path_alias: k8s.io/kubeadm
-    - org: kubernetes-sigs
-      repo: kind
-      base_ref: master
-      path_alias: sigs.k8s.io/kind
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
@@ -251,7 +242,7 @@ presubmits:
         - runner.sh
         - bash
         - -c
-        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        - wget -O "${PATH%%:*}/kind" https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/kind-linux-amd64 && curl https://storage.googleapis.com/bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
         env:
         - name: FOCUS
           value: "."
