@@ -147,6 +147,6 @@ periodics:
       - bash
       args:
       - -c
-      - make test KUBE_COVER=y KUBE_COVER_OUTPUT_DIR="${ARTIFACTS}"
+      - make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}"
       securityContext:
         privileged: true
