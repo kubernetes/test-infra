@@ -371,7 +371,7 @@ func TestBranchRequirements(t *testing.T) {
 		presubmits := map[string][]Presubmit{
 			"o/r": tc.config,
 		}
-		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("o", "r", "master", presubmits)
+		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("master", presubmits["o/r"])
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("%s: identified incorrect required contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActual, tc.masterExpected))
 		}
@@ -381,7 +381,7 @@ func TestBranchRequirements(t *testing.T) {
 		if !reflect.DeepEqual(masterActualIfPresent, tc.masterIfPresent) {
 			t.Errorf("%s: identified incorrect if-present contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActualIfPresent, tc.masterIfPresent))
 		}
-		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("o", "r", "other", presubmits)
+		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("other", presubmits["o/r"])
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("%s: identified incorrect required contexts on branch other: : %s", tc.name, diff.ObjectReflectDiff(otherActual, tc.otherExpected))
 		}
@@ -811,7 +811,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := tc.config.GetBranchProtection("org", "repo", "branch")
+			actual, err := tc.config.GetBranchProtection("org", "repo", "branch", tc.config.Presubmits["org/repo"])
 			switch {
 			case err != nil:
 				if !tc.err {
