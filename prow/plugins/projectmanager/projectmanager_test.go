@@ -17,6 +17,7 @@ limitations under the License.
 package projectmanager
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -38,18 +39,54 @@ func TestHandlePR(t *testing.T) {
 			00004: "testColumn2",
 		},
 	}
+	ie := github.IssueEvent{
+		Action: github.IssueActionOpened,
+		Issue: github.Issue{
+			ID:     2,
+			State:  "open",
+			Labels: []github.Label{{Name: "label1"}, {Name: "label2"}},
+		},
+		Repo: github.Repo{
+			Name: "someRepo",
+			Owner: github.User{
+				Login: "otherOrg",
+			},
+		},
+	}
+	ie2 := ie
+	ie2.Repo.Owner.Login = "otherOrg2"
+	// pe belongs to otherOrg/somerepo and has labels 'label1' and 'label2'
+	// this pe should land in testproject under column testColumn2
+	pe := github.IssueEvent{
+		Action: github.IssueActionOpened,
+		Issue: github.Issue{
+			ID:          2,
+			State:       "open",
+			Labels:      []github.Label{{Name: "label1"}, {Name: "label2"}},
+			PullRequest: &struct{}{},
+		},
+		Repo: github.Repo{
+			Name: "someRepo",
+			Owner: github.User{
+				Login: "otherOrg",
+			},
+		},
+	}
+	pe2 := pe
+	pe2.Repo.Owner.Login = "otherOrg2"
 	// all issues/PRs will be automatically be populated by these labels depending on which org they belong
 	labels := []string{"otherOrg/someRepo#1:label1", "otherOrg/someRepo#1:label2", "otherOrg/someRepo#2:label1", "otherOrg2/someRepo#1:label1"}
 	cases := []struct {
 		name                string
 		gc                  *fakegithub.FakeClient
 		projectManager      plugins.ProjectManager
-		pe                  github.PullRequestEvent
+		pe                  github.IssueEvent
+		ie                  github.IssueEvent
 		expectedColumnCards map[int][]github.ProjectCard
 		expectedError       error
 	}{
 		{
-			name: "add pull request to project column with no columnID",
+			name: "add Issue/PR to project column with no columnID",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -95,33 +132,18 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg/somerepo and has labels 'label1' and 'label2'
-			// this pe should land in testproject under column testColumn2
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg",
-					},
-				},
-			},
+			pe: pe,
+			ie: ie,
 			expectedColumnCards: map[int][]github.ProjectCard{
 				2: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 			},
 		},
 		{
-			name: "add pull request to project column with only columnID",
+			name: "add Issue/PR to project column with only columnID",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -169,33 +191,18 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg/somerepo and has labels 'label1' and 'label2'
-			// this pe should land in testproject under column id 1
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg",
-					},
-				},
-			},
+			pe: pe,
+			ie: ie,
 			expectedColumnCards: map[int][]github.ProjectCard{
 				1: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 			},
 		},
 		{
-			name: "don't add pull request with incorrect column name",
+			name: "don't add Issue/PR with incorrect column name",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -246,26 +253,12 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg/somerepo and has labels 'label1' and 'label2'
-			// this pe cannot be added to a non-existent column 'testColumn'
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg",
-					},
-				},
-			},
+			pe:                  pe,
+			ie:                  ie,
 			expectedColumnCards: map[int][]github.ProjectCard{},
 		},
 		{
-			name: "don't add pull request if all the labels do not match",
+			name: "don't add Issue/PR if all the labels do not match",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -316,26 +309,12 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg/somerepo and has labels 'label1' and 'label2'
-			// this pe cannot be added to a non-existent column 'testColumn'
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg",
-					},
-				},
-			},
+			pe:                  pe,
+			ie:                  ie,
 			expectedColumnCards: map[int][]github.ProjectCard{},
 		},
 		{
-			name: "add pull request using column name in multiple repos",
+			name: "add Issue/PR using column name in multiple repos",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -389,7 +368,7 @@ func TestHandlePR(t *testing.T) {
 										Name:   "testColumn",
 										State:  "open",
 										Org:    "otherOrg2",
-										Labels: []string{"label1", "label2"},
+										Labels: []string{"label1"},
 									},
 								},
 							},
@@ -403,7 +382,7 @@ func TestHandlePR(t *testing.T) {
 										Name:   "testColumn2",
 										State:  "open",
 										Org:    "otherOrg2",
-										Labels: []string{"label1", "label2"},
+										Labels: []string{"label1"},
 									},
 								},
 							},
@@ -411,39 +390,23 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg2/someRepo and hence has labels 'label1'
-			// this pe should be added to testProject.testColumn and testProject2.testColumn2
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg2",
-					},
-				},
-			},
+			pe: pe2,
+			ie: ie2,
 			expectedColumnCards: map[int][]github.ProjectCard{
 				4: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 				1: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 			},
 		},
 		{
-			name: "add pull request using column name in multirepo to multiple projects",
+			name: "add Issue/PR using column name in multirepo to multiple projects",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -519,39 +482,23 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg/someRepo and hence has labels 'label1' and 'label2'
-			// this pe should be added to testProject.testColumn in testRepo and testProject2.testColumn2 in testRepo2
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg",
-					},
-				},
-			},
+			pe: pe,
+			ie: ie,
 			expectedColumnCards: map[int][]github.ProjectCard{
 				4: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 				1: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 			},
 		},
 		{
-			name: "add pull request to multiple columns in a project, should realize conflict",
+			name: "add Issue/PR to multiple columns in a project, should realize conflict",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -578,9 +525,8 @@ func TestHandlePR(t *testing.T) {
 				},
 				ColumnCardsMap: map[int][]github.ProjectCard{1: {
 					{
-						ContentID:   2,
-						ContentURL:  "https://api.github.com/repos/otherOrg/someRepo/issues/1",
-						ContentType: "PullRequest",
+						ContentID:  2,
+						ContentURL: "https://api.github.com/repos/otherOrg/someRepo/issues/1",
 					},
 				}},
 				ColumnIDMap: columnIDMap,
@@ -609,34 +555,18 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg/someRepo and hence has labels 'label1' and 'label2'
-			// this pe should be added to testProject.testColumn and then match occurs to
-			// testProject.testColumn2 which will be ignored as the card is already in the project
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg",
-					},
-				},
-			},
+			pe: pe,
+			ie: ie,
 			expectedColumnCards: map[int][]github.ProjectCard{
 				1: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 			},
 		},
 		{
-			name: "add pull request using column name into org and repo projects",
+			name: "add Issue/PR using column name into org and repo projects",
 			gc: &fakegithub.FakeClient{
 				IssueLabelsAdded:   labels,
 				IssueLabelsRemoved: []string{},
@@ -712,67 +642,115 @@ func TestHandlePR(t *testing.T) {
 					},
 				},
 			},
-			// pe belongs to otherOrg/someRepo and hence has labels 'label1' and 'label2'
-			// this pe should be added to testProject.testColumn in the org testOrg  and testProject2.testColumn2 in testRepo2
-			pe: github.PullRequestEvent{
-				Action: github.PullRequestActionOpened,
-				Number: 1,
-				PullRequest: github.PullRequest{
-					ID:    2,
-					State: "open",
-				},
-				Repo: github.Repo{
-					Name: "someRepo",
-					Owner: github.User{
-						Login: "otherOrg",
-					},
-				},
-			},
+			pe: pe,
+			ie: ie,
 			expectedColumnCards: map[int][]github.ProjectCard{
 				4: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 				1: {
 					{
-						ContentID:   2,
-						ContentType: "PullRequest",
+						ContentID: 2,
 					},
 				},
 			},
 		},
 	}
 	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			err := handlePR(c.gc, c.projectManager, logrus.NewEntry(logrus.New()), c.pe)
+		t.Run(c.name+"[PullRequests]", func(t *testing.T) {
+			if !handleIssueActions[ie.Action] {
+				t.Logf("%s: Event with Action %s will not be processed by this plugin", c.name, c.ie.Action)
+				return
+			}
+			eData := eventData{
+				id:     c.pe.Issue.ID,
+				number: c.pe.Issue.Number,
+				isPR:   c.pe.Issue.IsPullRequest(),
+				org:    c.pe.Repo.Owner.Login,
+				repo:   c.pe.Repo.Name,
+				state:  c.pe.Issue.State,
+				labels: c.pe.Issue.Labels,
+				remove: (c.pe.Action == github.IssueActionUnlabeled),
+			}
+
+			err := handle(c.gc, c.projectManager, logrus.NewEntry(logrus.New()), eData)
 			if err != nil {
 				if c.expectedError == nil || c.expectedError.Error() != err.Error() {
 					// if we are not expecting an error or if the error did not match with
 					// what we are expecting
-					t.Fatalf("handlePR error: %v", err)
+					t.Fatalf("%s: handlePR error: %v", c.name, err)
 				}
 			}
-			if c.expectedColumnCards == nil || len(c.expectedColumnCards) == 0 {
-				return
-			}
-
-			for columnID, projectCards := range c.gc.ColumnCardsMap {
-				expectedProjectCards := c.expectedColumnCards[columnID]
-				if len(projectCards) != len(expectedProjectCards) {
-					t.Fatalf("handlePR error, number of projectCards did not match number of expectedProjectCards for columnID %d, projectCards: %v, expectedProjectCards: %v", columnID, projectCards, expectedProjectCards)
-				}
-				for projectCardIndex, projectCard := range projectCards {
-					expectedProjectCard := expectedProjectCards[projectCardIndex]
-					if projectCard.ContentID != expectedProjectCard.ContentID ||
-						projectCard.ContentType != expectedProjectCard.ContentType {
-						t.Fatalf("handlePR error, projectCard did not match expectedProjectCard for index: %d, projectCard: %v, expectedProjectCard %v", projectCardIndex, projectCard, expectedProjectCard)
-					}
-				}
+			err = checkCards(c.expectedColumnCards, c.gc.ColumnCardsMap, true)
+			if err != nil {
+				t.Fatalf("%s: %v", c.name, err)
 			}
 		})
 	}
+
+	for _, c := range cases {
+		t.Run(c.name+"[Issues]", func(t *testing.T) {
+			// reset the cards at the beginning of new test cycle.
+			c.gc.ColumnCardsMap = map[int][]github.ProjectCard{}
+			if !handleIssueActions[ie.Action] {
+				t.Logf("%s: Event with Action %s will not be processed by this plugin", c.name, c.ie.Action)
+				return
+			}
+			eData := eventData{
+				id:     c.ie.Issue.ID,
+				number: c.ie.Issue.Number,
+				isPR:   c.ie.Issue.IsPullRequest(),
+				org:    c.ie.Repo.Owner.Login,
+				repo:   c.ie.Repo.Name,
+				state:  c.ie.Issue.State,
+				labels: c.ie.Issue.Labels,
+				remove: (c.ie.Action == github.IssueActionUnlabeled),
+			}
+
+			err := handle(c.gc, c.projectManager, logrus.NewEntry(logrus.New()), eData)
+			if err != nil {
+				if c.expectedError == nil || c.expectedError.Error() != err.Error() {
+					// if we are not expecting an error or if the error did not match with
+					// what we are expecting
+					t.Fatalf("%s: handleIssue error: %v", c.name, err)
+				}
+			}
+			err = checkCards(c.expectedColumnCards, c.gc.ColumnCardsMap, false)
+			if err != nil {
+				t.Fatalf("%s: %v", c.name, err)
+			}
+		})
+	}
+}
+
+func checkCards(expectedColumnCards, projectColumnCards map[int][]github.ProjectCard, isPR bool) error {
+	if expectedColumnCards == nil || len(expectedColumnCards) == 0 {
+		return nil
+	}
+
+	for columnID, expectedCards := range expectedColumnCards {
+		projectCards := projectColumnCards[columnID]
+
+		//make sure all expectedCard are in projectCards
+		if len(expectedCards) > len(projectCards) {
+			return fmt.Errorf("Not all expected cards can be found for column: %d, \nexpected: %v\n found: %v", columnID, expectedCards, projectCards)
+		}
+		for _, card := range expectedCards {
+			found := false
+			for _, pcard := range projectCards {
+				if pcard.ContentID == card.ContentID {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("Unable to find project card: %v under column: %d", card, columnID)
+			}
+		}
+	}
+	return nil
 }
 
 func TestHelpProvider(t *testing.T) {
