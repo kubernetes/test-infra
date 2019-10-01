@@ -31,10 +31,7 @@ postsubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
         command:
         - runner.sh
-        # run the unit tests and copy coverage to where spyglass expects it
-        - bash
-        - -c
-        - make test; cp bin/coverage.out "${ARTIFACTS}/filtered.cov"
+        - make unit
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
