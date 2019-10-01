@@ -27,9 +27,9 @@ import ruamel.yaml
 
 # Prow files that will be ignored
 PROW_BLACKLIST = [
-    # Ruamel won't be able to successfully dump k8s-triage-robot-periodics
+    # Ruamel won't be able to successfully dump fejta-bot-periodics
     # See https://bitbucket.org/ruamel/yaml/issues/258/applying-json-patch-breaks-comment
-    "k8s-triage-robot-trusted.yaml",
+    "fejta-bot-periodics.yaml",
     # Generated security jobs are generated with the same name as kubernetes/kubernetes
     # presubmits, but we never want to migrate to the generated ones.
     "generated-security-jobs.yaml",
