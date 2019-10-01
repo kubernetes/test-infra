@@ -1191,12 +1191,12 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 	}
 
 	for _, pr := range sp.prs {
-		presubmits, err := c.config().GetPresubmits(c.gc, sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(string(pr.HeadRefOID)))
+		presubmitsForPull, err := c.config().GetPresubmits(c.gc, sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(string(pr.HeadRefOID)))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get presubmits for PR %d: %v", int(pr.Number), err)
 		}
 
-		for _, ps := range presubmits {
+		for _, ps := range presubmitsForPull {
 			if !ps.ContextRequired() {
 				continue
 			}
