@@ -1521,4 +1521,7 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 // Override holds options for the override plugin
 type Override struct {
 	AllowTopLevelOwners bool `json:"allow_top_level_owners,omitempty"`
+	// AllowedGitHubTeams is a map of repositories (eg "k/k") to list of GitHub team slugs,
+	// members of which are allowed to override contexts
+	AllowedGitHubTeams map[string][]string `json:"allowed_github_teams,omitempty"`
 }
