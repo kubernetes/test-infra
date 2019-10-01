@@ -573,6 +573,8 @@ func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	t.Kubeconfig = k.kubecfg
 	t.Provider = k.provider
 
+	t.ClusterID = k.cluster
+
 	if k.provider == "gce" {
 		t.GCEProject = k.gcpProject
 		if len(k.zones) > 0 {
