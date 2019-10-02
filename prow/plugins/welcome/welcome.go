@@ -99,6 +99,11 @@ func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) err
 		return nil
 	}
 
+	// ignore bots, we can't query their PRs
+	if pre.PullRequest.User.Type != github.UserTypeUser {
+		return nil
+	}
+
 	// search for PRs from the author in this repo
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
