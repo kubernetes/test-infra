@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/custom-reporter/guest-test-infra/tagutil"
+	"k8s.io/test-infra/prow/custom-reporter/guest-test-infra/versionutil"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -87,7 +87,7 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		tagNames = append(tagNames, tag.Name)
 	}
 
-	latestVersion, err := tagutil.GetLatestVersionTag(tagNames)
+	latestVersion, err := versionutil.GetLatestVersionTag(tagNames)
 	if err != nil {
 		return []*v1.ProwJob{pj}, fmt.Errorf("Error fetching latest version: %+v", err)
 	}

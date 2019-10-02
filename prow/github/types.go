@@ -996,8 +996,8 @@ type TagRequest struct {
 
 // GitObject represents a git reg object
 type GitObject struct {
-	SHA  string `json:"sha"`
-	URL  string `json:"url"`
+	SHA string `json:"sha"`
+	URL string `json:"url"`
 }
 
 // Tag represents a tag object.
@@ -1030,7 +1030,7 @@ type CommitObject struct {
 // RepositoryTag is a return tag object from List-tags api call
 // https://developer.github.com/v3/repos/#list-tags
 type RepositoryTag struct {
-	Name string `json:"name"`
+	Name   string       `json:"name"`
 	Object CommitObject `json:"commit"`
 }
 
@@ -1044,8 +1044,8 @@ type CreateRefReponseCommitObject struct {
 // CreateRefResponse is reponse from CreateRef api to github
 // https://developer.github.com/v3/git/refs/#create-a-reference
 type CreateRefResponse struct {
-	Ref string `json:"ref"`
-	NodeID string `json:"node_id"`
-	URL string `json:"url"`
+	Ref    string                       `json:"ref"`
+	NodeID string                       `json:"node_id"`
+	URL    string                       `json:"url"`
 	Object CreateRefReponseCommitObject `json:"object"`
 }

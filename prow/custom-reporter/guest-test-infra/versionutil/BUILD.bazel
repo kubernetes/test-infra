@@ -10,7 +10,7 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["tagger_test.go"],
+    srcs = ["util_test.go"],
     embed = [":go_default_library"],
     deps = [
 
@@ -19,8 +19,8 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["tagger.go"],
-    importpath = "k8s.io/test-infra/prow/custom-reporter/guest-test-infra/tagutil",
+    srcs = ["util.go"],
+    importpath = "k8s.io/test-infra/prow/custom-reporter/guest-test-infra/versionutil",
     deps = [
       "//prow/custom-reporter/guest-test-infra/version:go_default_library"
     ],

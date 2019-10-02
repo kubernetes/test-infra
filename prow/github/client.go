@@ -2326,13 +2326,13 @@ func (c *client) CreateRef(org, repo, ref, sha string) (CreateRefResponse, error
 		Ref string `json:"ref"`
 		SHA string `json:"sha"`
 	}
-	t := CreateRefRequest{Ref: ref, SHA:sha}
+	t := CreateRefRequest{Ref: ref, SHA: sha}
 	ret := new(CreateRefResponse)
 	_, err := c.request(&request{
-		method: http.MethodPost,
-		path: fmt.Sprintf("/repos/%s/%s/git/refs", org, repo),
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/repos/%s/%s/git/refs", org, repo),
 		requestBody: &t,
-		exitCodes: []int{201},
+		exitCodes:   []int{201},
 	}, ret)
 	if err != nil {
 		return *ret, err
@@ -3275,9 +3275,9 @@ func (c *client) ListTag(org, repo string) (*[]RepositoryTag, error) {
 func (c *client) CreateTag(org, repo string, t TagRequest) (Tag, error) {
 	ret := new(Tag)
 	_, err := c.request(&request{
-		method:    http.MethodPost,
-		path:      fmt.Sprintf("/repos/%s/%s/git/tags", org, repo),
-		exitCodes: []int{201},
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/repos/%s/%s/git/tags", org, repo),
+		exitCodes:   []int{201},
 		requestBody: &t,
 	}, ret)
 	fmt.Printf("returned tag: %+v\n", t)
