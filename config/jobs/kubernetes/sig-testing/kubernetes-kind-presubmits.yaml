@@ -301,7 +301,7 @@ presubmits:
           value: "."
         # TODO(bentheelder): reduce the skip list further
         - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|RuntimeClass|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|\[NodeFeature:PodReadinessGate\]|Dynamic.PV|Network.should.set.TCP.CLOSE_WAIT.timeout|Mount.propagation.should.propagate.mounts.to.the.host|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|RuntimeClass|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|\[NodeFeature:PodReadinessGate\]|Dynamic.PV|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity
         - name: PARALLEL
           value: "true"
         - name: BUILD_TYPE
