@@ -1,0 +1,9 @@
+aliases:
+  # business hours oncall for prow etc
+  test-infra-oncall:
+  - BenTheElder
+  - chases2
+  - cjwagner
+  - fejta
+  - Katharine
+  - michelle192837
