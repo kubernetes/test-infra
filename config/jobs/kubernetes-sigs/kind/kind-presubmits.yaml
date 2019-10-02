@@ -50,19 +50,20 @@ presubmits:
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes
     always_run: true
-    decorate: true
     labels:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    decoration_config:
-      timeout: 40m
+    decorate: true
     extra_refs:
     - org: kubernetes
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-master
