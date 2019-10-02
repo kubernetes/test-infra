@@ -47,6 +47,8 @@ deck:
         name: coverage
       required_files:
         - artifacts/filtered.cov
+      optional_files:
+        - artifacts/filtered.html
     announcement: "The old job viewer has been deprecated. If you need it, please contact #sig-testing on Slack."
   tide_update_period: 1s
   hidden_repos:
