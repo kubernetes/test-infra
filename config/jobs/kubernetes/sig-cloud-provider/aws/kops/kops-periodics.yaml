@@ -100,7 +100,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha --image kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+      - --kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha --image kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-west-2a
       - --provider=aws
@@ -191,7 +191,7 @@ periodics:
       - --env=KUBE_SSH_USER=ubuntu
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180122
+      - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20190816
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
