@@ -83,10 +83,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
-    extra_refs:
-    - base_ref: release-0.2
-      org: kubernetes-sigs
-      repo: cluster-api-provider-azure
+    branches:
+      - ^release-0.2$
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
@@ -102,10 +100,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
-    extra_refs:
-    - base_ref: release-0.2
-      org: kubernetes-sigs
-      repo: cluster-api-provider-azure
+    branches:
+      - ^release-0.2$
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
@@ -121,10 +117,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
-    extra_refs:
-    - base_ref: release-0.2
-      org: kubernetes-sigs
-      repo: cluster-api-provider-azure
+    branches:
+      - ^release-0.2$
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
@@ -140,10 +134,8 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
-    extra_refs:
-    - base_ref: release-0.2
-      org: kubernetes-sigs
-      repo: cluster-api-provider-azure
+    branches:
+      - ^release-0.2$
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:

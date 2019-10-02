@@ -444,7 +444,6 @@ tide:
     kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
-    kubernetes-sigs/cluster-api-provider-azure: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
@@ -463,11 +462,11 @@ tide:
   merge_label: tide/merge-method-merge
   context_options:
     orgs:
-     kubernetes:
-      repos:
-        dashboard:
-          skip-unknown-contexts: true
-          from-branch-protection: true
+      kubernetes:
+        repos:
+          dashboard:
+            skip-unknown-contexts: true
+            from-branch-protection: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
 
