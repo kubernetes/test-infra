@@ -256,7 +256,7 @@ milestone_applier:
   kubernetes/sig-release:
     master: v1.17
   kubernetes/test-infra:
-    master: v1.16
+    master: v1.17
 
 repo_milestone:
   # Default maintainer
