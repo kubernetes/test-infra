@@ -8,7 +8,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -29,7 +29,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"

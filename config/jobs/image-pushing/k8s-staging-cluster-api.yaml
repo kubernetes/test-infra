@@ -71,7 +71,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190906-d5d7ce3
+          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
             command:
               - /run.sh
             args:
