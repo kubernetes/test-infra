@@ -125,12 +125,32 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		}
 		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.LgtmActsAsApprove), willNot(opts.ConsiderReviewState()))
 	}
+
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Approve: []plugins.Approve{
+			{
+				Repos: []string{
+					"ORGANIZATION",
+					"ORGANIZATION/REPOSITORY",
+				},
+				DeprecatedImplicitSelfApprove: new(bool),
+				RequireSelfApproval:           new(bool),
+				DeprecatedReviewActsAsApprove: new(bool),
+				IgnoreReviewState:             new(bool),
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warn("cannot generate comments for approve plugin")
+	}
+
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The approve plugin implements a pull request approval process that manages the '` + labels.Approved + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
 <br>
 <br>Per-repo configuration may be used to require that PRs link to an associated issue before approval is granted. It may also be used to specify that the PR authors implicitly approve their own PRs.
 <br>For more information see <a href="https://git.k8s.io/test-infra/prow/plugins/approve/approvers/README.md">here</a>.`,
-		Config: approveConfig,
+		Config:  approveConfig,
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/approve [no-issue|cancel]",

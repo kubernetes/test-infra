@@ -61,18 +61,19 @@ package genyaml
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"go/ast"
 	"go/doc"
 	"go/parser"
 	"go/token"
-	yaml3 "gopkg.in/yaml.v3"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/clarketm/json"
+	yaml3 "gopkg.in/yaml.v3"
 )
 
 const (

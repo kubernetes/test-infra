@@ -26,6 +26,7 @@ require (
 	github.com/bazelbuild/bazel-gazelle v0.18.1
 	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
 	github.com/bwmarrin/snowflake v0.0.0
+	github.com/clarketm/json v1.13.0
 	github.com/client9/misspell v0.3.4
 	github.com/djherbis/atime v1.0.0
 	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0

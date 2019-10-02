@@ -1909,6 +1909,14 @@ def go_repositories():
         version = "v0.0.0-20180111231733-ee0de3bc6815",
     )
     go_repository(
+        name = "com_github_clarketm_json",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/clarketm/json",
+        sum = "h1:gvWCzx4JHbBeVPpSV9LVr+PXfRInRnDy80D9nnTLULs=",
+        version = "v1.13.0",
+    )
+    go_repository(
         name = "com_github_golang_lint",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
