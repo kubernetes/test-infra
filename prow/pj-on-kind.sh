@@ -24,9 +24,9 @@ function main() {
   ensureInstall
 
   # Generate PJ and Pod.
-  mkpj "--config-path=${config}" "${job_config}" "--job=${job}" > "${PWD}/pj.yaml"
-  mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}" > "${PWD}/pod.yaml"
-
+  docker run -i --rm -v "${PWD}:${PWD}" -v "${config}:${config}" ${job_config_mnt} -w "${PWD}" gcr.io/k8s-prow/mkpj "--config-path=${config}" "${job_config_flag}" "--job=${job}" > "${PWD}/pj.yaml"
+  docker run -i --rm -v "${PWD}:${PWD}" -w "${PWD}" gcr.io/k8s-prow/mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}" > "${PWD}/pod.yaml"
+ 
   # Add any k8s resources that the pod depends on to the kind cluster here. (secrets, configmaps, etc.)
 
   # Deploy pod and watch.
@@ -41,7 +41,7 @@ function parseArgs() {
   # Use node mounts under /mnt/disks/ so pods behave well on COS nodes too. https://cloud.google.com/container-optimized-os/docs/concepts/disks-and-filesystem
   job="${1:-}"
   config="${CONFIG_PATH:-}"
-  job_config="${JOB_CONFIG_PATH:-}"
+  job_config_path="${JOB_CONFIG_PATH:-}"
   out_dir="${OUT_DIR:-/mnt/disks/prowjob-out/${job}}"
   kind_config="${KIND_CONFIG:-}"
   node_dir="${NODE_DIR:-/mnt/disks/kind-node}"  # Any pod hostPath mounts should be under this dir to reach the true host via the kind node.
@@ -49,7 +49,7 @@ function parseArgs() {
   local new_only="  (Only used when creating a new kind cluster.)"
   echo "job=${job}"
   echo "CONFIG_PATH=${config}"
-  echo "JOB_CONFIG_PATH=${job_config}"
+  echo "JOB_CONFIG_PATH=${job_config_path}"
   echo "OUT_DIR=${out_dir} ${new_only}"
   echo "KIND_CONFIG=${kind_config} ${new_only}"
   echo "NODE_DIR=${node_dir} ${new_only}"
@@ -62,23 +62,16 @@ function parseArgs() {
     echo "Must specify config.yaml location via CONFIG_PATH env var."
     exit 2
   fi
-  if [[ -n "${job_config}" ]]; then
-    job_config="--job-config-path=${job_config}"
+  job_config_flag=""
+  job_config_mnt=""
+  if [[ -n "${job_config_path}" ]]; then
+    job_config_flag="--job-config-path=${job_config_path}"
+    job_config_mnt="-v ${job_config_path}:${job_config_path}"
   fi
 }
 
 # Ensures installation of prow tools, kind, and a kind cluster named "mkpod".
 function ensureInstall() {
-  # Install mkpj and mkpod if not already done.
-  if ! command -v mkpj >/dev/null 2>&1; then
-    echo "Installing mkpj..."
-    go get k8s.io/test-infra/prow/cmd/mkpj
-  fi
-  if ! command -v mkpod >/dev/null 2>&1; then
-    echo "Installing mkpod..."
-    go get k8s.io/test-infra/prow/cmd/mkpod
-  fi
-
   # Install kind and set up cluster if not already done.
   if ! command -v kind >/dev/null 2>&1; then
     echo "Installing kind..."
