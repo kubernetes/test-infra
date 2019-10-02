@@ -21,7 +21,6 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
-      - --env=KUBE_GCE_PRIVATE_CLUSTER=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
