@@ -30,15 +30,25 @@ deck:
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
     testgrid_root: https://testgrid.k8s.io/
-    viewers:
-      "started.json|finished.json":
-      - "metadata"
-      "build-log.txt":
-      - "buildlog"
-      "artifacts/junit.*\\.xml":
-      - "junit"
-      "artifacts/filtered.cov":
-      - "coverage"
+    lenses:
+    - lens:
+        name: metadata
+      required_files:
+      - started.json|finished.json
+    - lens:
+        name: buildlog
+      required_files:
+        - build-log.txt
+    - lens:
+        name: junit
+      required_files:
+        - artifacts/junit.*\.xml
+    - lens:
+        name: coverage
+      required_files:
+        - artifacts/filtered.cov
+      optional_files:
+        - artifacts/filtered.html
     announcement: "The old job viewer has been deprecated. If you need it, please contact #sig-testing on Slack."
   tide_update_period: 1s
   hidden_repos:
