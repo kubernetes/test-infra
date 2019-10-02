@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-experimental
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-experimental
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -35,7 +35,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-experimental
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -75,7 +75,7 @@ presubmits:
     optional: true
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-master
           args:
             - "--job=$(JOB_NAME)"
             - "--root=/go/src"

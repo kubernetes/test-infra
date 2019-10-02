@@ -43,7 +43,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-master
         args:
           - "--repo=k8s.io/kubernetes=master"
           - "--repo=sigs.k8s.io/cluster-api-provider-gcp=master"
