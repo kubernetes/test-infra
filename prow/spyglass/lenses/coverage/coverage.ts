@@ -28,7 +28,8 @@ const FULL_COVERAGE = Color('#00FF00');
 function renderChildren(parent: Node, coverage: Coverage, horizontal: boolean): void {
   let offset = 0;
   for (const child of coverage.children.values()) {
-    const node = document.createElement('div');
+    const node = document.createElement('a');
+    node.style.display = 'block';
     parent.appendChild(node);
     const percentage = child.totalStatements / coverage.totalStatements * 100;
     node.style.position = 'absolute';
@@ -57,9 +58,7 @@ function renderChildren(parent: Node, coverage: Coverage, horizontal: boolean): 
       node.style.borderColor = bgColor.darken(0.3).hex();
 
       if (RENDERED_COVERAGE_URL) {
-        node.onclick = () => {
-          window.parent.location.href = `${RENDERED_COVERAGE_URL}#file${file.fileNumber}`;
-        };
+        node.href = `${RENDERED_COVERAGE_URL}#file${file.fileNumber}`;
       }
     } else {
       renderChildren(node, child, !horizontal);
