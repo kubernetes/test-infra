@@ -134,6 +134,12 @@ type CommitClient interface {
 	DeleteRef(org, repo, ref string) error
 }
 
+type TagClient interface {
+	ListTag(org, repo string) (*[]RepositoryTag, error)
+	CreateTag(org, repo string, t TagRequest) (Tag, error)
+	CreateRef(org, repo, ref, sha string) (CreateRefResponse, error)
+}
+
 // RepositoryClient interface for repository related API actions
 type RepositoryClient interface {
 	GetRepo(owner, name string) (Repo, error)
@@ -220,6 +226,7 @@ type Client interface {
 	MilestoneClient
 	UserClient
 	HookClient
+	TagClient
 
 	Throttle(hourlyTokens, burst int)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
@@ -2312,6 +2319,27 @@ func (c *client) GetRef(org, repo, ref string) (string, error) {
 	return res.Object["sha"], err
 }
 
+// CreateRef creates the given ref
+// See https://developer.github.com/v3/git/refs/#create-a-reference
+func (c *client) CreateRef(org, repo, ref, sha string) (CreateRefResponse, error) {
+	type CreateRefRequest struct {
+		Ref string `json:"ref"`
+		SHA string `json:"sha"`
+	}
+	t := CreateRefRequest{Ref: ref, SHA:sha}
+	ret := new(CreateRefResponse)
+	_, err := c.request(&request{
+		method: http.MethodPost,
+		path: fmt.Sprintf("/repos/%s/%s/git/refs", org, repo),
+		requestBody: &t,
+		exitCodes: []int{201},
+	}, ret)
+	if err != nil {
+		return *ret, err
+	}
+	return *ret, nil
+}
+
 // DeleteRef deletes the given ref
 //
 // See https://developer.github.com/v3/git/refs/#delete-a-reference
@@ -3226,4 +3254,32 @@ func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 		return nil, err
 	}
 	return &team, err
+}
+
+// GetTagList fetches all tag for a repo
+func (c *client) ListTag(org, repo string) (*[]RepositoryTag, error) {
+	var tags []RepositoryTag
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/tags", org, repo),
+		exitCodes: []int{200},
+	}, &tags)
+	if err != nil {
+		return nil, err
+	}
+	return &tags, nil
+}
+
+// CreateTag creates a tag in github repo
+// https://developer.github.com/v3/git/tags/#create-a-tag-object
+func (c *client) CreateTag(org, repo string, t TagRequest) (Tag, error) {
+	ret := new(Tag)
+	_, err := c.request(&request{
+		method:    http.MethodPost,
+		path:      fmt.Sprintf("/repos/%s/%s/git/tags", org, repo),
+		exitCodes: []int{201},
+		requestBody: &t,
+	}, ret)
+	fmt.Printf("returned tag: %+v\n", t)
+	return *ret, err
 }

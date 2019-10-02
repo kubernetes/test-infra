@@ -971,3 +971,81 @@ type ProjectCard struct {
 	ContentType string `json:"content_type"`
 	ContentURL  string `json:"content_url"`
 }
+
+// TagType is one of the types of tag in github
+// refer to Type in https://developer.github.com/v3/git/tags/#create-a-tag-object
+type TagType string
+
+const (
+	TagTypeCommit TagType = "commit"
+
+	TagTypeBlob TagType = "blob"
+
+	TagTypeTree TagType = "tree"
+)
+
+// TagRequest is a github TagRequest object
+// https://developer.github.com/v3/git/tags/#create-a-tag-object
+type TagRequest struct {
+	Name    string  `json:"tag"`
+	Message string  `json:"message"`
+	Object  string  `json:"object"`
+	Type    TagType `json:"type"`
+	Tagger  User    `json:"tagger"`
+}
+
+// GitObject represents a git reg object
+type GitObject struct {
+	SHA  string `json:"sha"`
+	URL  string `json:"url"`
+}
+
+// Tag represents a tag object.
+// Tag Response to CreateTag request
+// refer // https://developer.github.com/v3/git/tags/#create-a-tag-object
+type Tag struct {
+	Tag          string                `json:"tag,omitempty"`
+	SHA          string                `json:"sha,omitempty"`
+	URL          string                `json:"url,omitempty"`
+	Message      string                `json:"message,omitempty"`
+	Tagger       User                  `json:"tagger,omitempty"`
+	Object       GitObject             `json:"object,omitempty"`
+	Verification SignatureVerification `json:"verification,omitempty"`
+	NodeID       string                `json:"node_id,omitempty"`
+}
+
+// SignatureVerification represents GPG signature verification.
+type SignatureVerification struct {
+	Verified  bool   `json:"verified,omitempty"`
+	Reason    string `json:"reason,omitempty"`
+	Signature string `json:"signature,omitempty"`
+	Payload   string `json:"payload,omitempty"`
+}
+
+// CommitObject represents a commit type git object
+type CommitObject struct {
+	Object GitObject
+}
+
+// RepositoryTag is a return tag object from List-tags api call
+// https://developer.github.com/v3/repos/#list-tags
+type RepositoryTag struct {
+	Name string `json:"name"`
+	Object CommitObject `json:"commit"`
+}
+
+// CreateRefReponseCommitObject Commit type obejct returned as response to CreateRef api
+// https://developer.github.com/v3/git/refs/#create-a-reference
+type CreateRefReponseCommitObject struct {
+	Type TagType `json:"type"`
+	GitObject
+}
+
+// CreateRefResponse is reponse from CreateRef api to github
+// https://developer.github.com/v3/git/refs/#create-a-reference
+type CreateRefResponse struct {
+	Ref string `json:"ref"`
+	NodeID string `json:"node_id"`
+	URL string `json:"url"`
+	Object CreateRefReponseCommitObject `json:"object"`
+}

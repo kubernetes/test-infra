@@ -23,7 +23,9 @@ import (
 	"os"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/api/option"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pjutil"
@@ -32,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
+	guesttestinfrareporter "k8s.io/test-infra/prow/custom-reporter/guest-test-infra/reporter"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	gerritreporter "k8s.io/test-infra/prow/gerrit/reporter"
@@ -53,13 +56,15 @@ type options struct {
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
 
-	configPath    string
-	jobConfigPath string
+	configPath         string
+	jobConfigPath      string
+	gcsCredentialsPath string
 
-	gerritWorkers int
-	pubsubWorkers int
-	githubWorkers int
-	slackWorkers  int
+	gerritWorkers         int
+	pubsubWorkers         int
+	githubWorkers         int
+	slackWorkers          int
+	guestTestInfraWorkers int
 
 	slackTokenFile string
 
@@ -84,7 +89,7 @@ func (o *options) validate() error {
 		o.githubWorkers = 1
 	}
 
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.guestTestInfraWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -110,6 +115,12 @@ func (o *options) validate() error {
 		}
 	}
 
+	if o.guestTestInfraWorkers > 0 {
+		if o.gcsCredentialsPath == "" {
+			return errors.New("--gcs-credential-file must be set")
+		}
+	}
+
 	if err := o.client.Validate(o.dryrun); err != nil {
 		return err
 	}
@@ -132,6 +143,9 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
 	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+
+	fs.IntVar(&o.guestTestInfraWorkers, "guest-test-infra-workers", 0, "number of guest-test-infra reporters (o means disabled)")
+	fs.StringVar(&o.gcsCredentialsPath, "gcs-credential-path", "", "path to gcs credential")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
 	fs.BoolVar(&o.dryrun, "dry-run", false, "Run in dry-run mode, not doing actual report (effective for github and Slack only)")
@@ -250,6 +264,33 @@ func main() {
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				githubReporter,
 				o.githubWorkers))
+	}
+
+	if o.guestTestInfraWorkers > 0 {
+		secretAgent := &secret.Agent{}
+		if o.github.TokenPath != "" {
+			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+				logrus.WithError(err).Fatal("Error starting secrets agent")
+			}
+		}
+
+		githubClient, err := o.github.GitHubClient(secretAgent, o.dryrun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client.")
+		}
+
+		storageClient, err := storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsPath))
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client.")
+		}
+
+		gtiReporter := guesttestinfrareporter.NewReporter(githubClient, *storageClient, v1.ProwJobAgent(o.reportAgent))
+		controllers = append(controllers, crier.NewController(
+			prowjobClientset,
+			kube.RateLimiter(gtiReporter.GetName()),
+			prowjobInformerFactory.Prow().V1().ProwJobs(),
+			gtiReporter,
+			o.guestTestInfraWorkers))
 	}
 
 	if len(controllers) == 0 {

@@ -1,0 +1,44 @@
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+load(
+    "@io_bazel_rules_go//go:def.bzl",
+    "go_library",
+    "go_test",
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["reporter_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/github:go_default_library",
+    ]
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["reporter.go"],
+    importpath = "k8s.io/test-infra/prow/custom-reporter/guest-test-infra/reporter",
+    deps = [
+      "//prow/apis/prowjobs/v1:go_default_library",
+      "//prow/custom-reporter/guest-test-infra/tagutil:go_default_library",
+      "//prow/github:go_default_library",
+      "@com_google_cloud_go//storage:go_default_library",
+    ]
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+)

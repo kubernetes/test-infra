@@ -20,6 +20,7 @@ require (
 	github.com/Azure/go-autorest v11.1.2+incompatible
 	github.com/GoogleCloudPlatform/testgrid v0.0.0-20190917190143-e27da30ca94e
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
 	github.com/aws/aws-sdk-go v1.16.36
@@ -33,12 +34,14 @@ require (
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
+	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/go-openapi/spec v0.19.2
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.2
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/gops v0.3.6 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/csrf v1.6.1
 	github.com/gorilla/securecookie v1.1.1
@@ -47,6 +50,7 @@ require (
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
+	github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19 // indirect
 	github.com/klauspost/pgzip v1.2.1
 	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
 	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
@@ -59,17 +63,20 @@ require (
 	github.com/prometheus/procfs v0.0.5 // indirect
 	github.com/rogpeppe/go-internal v1.3.2 // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
+	github.com/shirou/gopsutil v2.18.12+incompatible // indirect
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.2
 	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
+	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
 	golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
+	golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0
 	google.golang.org/api v0.9.0
@@ -83,6 +90,7 @@ require (
 	k8s.io/klog v0.4.0
 	k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce
 	mvdan.cc/xurls/v2 v2.0.0
+	rsc.io/goversion v1.2.0 // indirect
 	sigs.k8s.io/controller-runtime v0.2.1
 	sigs.k8s.io/yaml v1.1.0
 )

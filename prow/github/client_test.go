@@ -380,6 +380,35 @@ func TestGetRef(t *testing.T) {
 	}
 }
 
+func TestCreateRef(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/git/refs" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, `{"ref": "ref", "node_id": "nid", "url": "url", "object" :{"type":"commit"}}`)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	resp, err := c.CreateRef("k8s", "kuber", "heads/mastah", "sha")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else {
+		if resp.Ref != "ref" {
+			t.Errorf("Wrong Ref: %s", resp.Ref)
+		}
+		if resp.URL != "url" {
+			t.Errorf("wrong url: %s", resp.URL)
+		}
+		if resp.Object.Type != TagTypeCommit {
+			t.Errorf("wrong tag type: %s", resp.Object.Type)
+		}
+	}
+}
+
 func TestDeleteRef(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
