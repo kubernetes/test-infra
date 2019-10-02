@@ -73,8 +73,8 @@ var (
 )
 
 // AddPR records an PR in the client
-func (fc *fakeClient) AddPR(owner, repo, author string, number int) {
-	key := fmt.Sprintf("%s,%s,%s", owner, repo, author)
+func (fc *fakeClient) AddPR(owner, repo string, author github.User, number int) {
+	key := fmt.Sprintf("%s,%s,%s", github.NormLogin(owner), github.NormLogin(repo), github.NormLogin(author.Login))
 	if _, ok := fc.prs[key]; !ok {
 		fc.prs[key] = sets.Int{}
 	}
@@ -95,7 +95,7 @@ func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, 
 	}
 	// "find" results
 	owner, repo, author := fields[1], fields[2], fields[3]
-	key := fmt.Sprintf("%s,%s,%s", owner, repo, author)
+	key := fmt.Sprintf("%s,%s,%s", github.NormLogin(owner), github.NormLogin(repo), github.NormLogin(author))
 
 	issues := []github.Issue{}
 	for _, number := range fc.prs[key].List() {
@@ -106,7 +106,7 @@ func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, 
 	return issues, nil
 }
 
-func makeFakePullRequestEvent(owner, repo, author string, number int, action github.PullRequestEventAction) github.PullRequestEvent {
+func makeFakePullRequestEvent(owner, repo string, user github.User, number int, action github.PullRequestEventAction) github.PullRequestEvent {
 	return github.PullRequestEvent{
 		Action: action,
 		Number: number,
@@ -119,26 +119,45 @@ func makeFakePullRequestEvent(owner, repo, author string, number int, action git
 					Name: repo,
 				},
 			},
-			User: github.User{
-				Login: author,
-				Name:  author + "fullname",
-			},
+			User: user,
 		},
 	}
 }
 
 func TestHandlePR(t *testing.T) {
 	fc := newFakeClient()
+
+	newContributor := github.User{
+		Login: "newContributor",
+		Name:  "newContributor fullname",
+		Type:  github.UserTypeUser,
+	}
+	contributorA := github.User{
+		Login: "contributorA",
+		Name:  "contributorA fullname",
+		Type:  github.UserTypeUser,
+	}
+	contributorB := github.User{
+		Login: "contributorB",
+		Name:  "contributorB fullname",
+		Type:  github.UserTypeUser,
+	}
+	robot := github.User{
+		Login: "robot",
+		Name:  "robot fullname",
+		Type:  github.UserTypeBot,
+	}
+
 	// old PRs
-	fc.AddPR("kubernetes", "test-infra", "contributorA", 1)
-	fc.AddPR("kubernetes", "test-infra", "contributorB", 2)
-	fc.AddPR("kubernetes", "test-infra", "contributorB", 3)
+	fc.AddPR("kubernetes", "test-infra", contributorA, 1)
+	fc.AddPR("kubernetes", "test-infra", contributorB, 2)
+	fc.AddPR("kubernetes", "test-infra", contributorB, 3)
 
 	testCases := []struct {
 		name          string
 		repoOwner     string
 		repoName      string
-		author        string
+		author        github.User
 		prNumber      int
 		prAction      github.PullRequestEventAction
 		addPR         bool
@@ -148,7 +167,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "existing contributorA",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "contributorA",
+			author:        contributorA,
 			prNumber:      20,
 			prAction:      github.PullRequestActionOpened,
 			expectComment: false,
@@ -157,7 +176,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "existing contributorB",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "contributorB",
+			author:        contributorB,
 			prNumber:      40,
 			prAction:      github.PullRequestActionOpened,
 			expectComment: false,
@@ -166,7 +185,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "new contributor",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "newContributor",
+			author:        newContributor,
 			prAction:      github.PullRequestActionOpened,
 			prNumber:      50,
 			expectComment: true,
@@ -175,7 +194,7 @@ func TestHandlePR(t *testing.T) {
 			name:          "new contributor and API recorded PR already",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "newContributor",
+			author:        newContributor,
 			prAction:      github.PullRequestActionOpened,
 			prNumber:      50,
 			expectComment: true,
@@ -185,9 +204,18 @@ func TestHandlePR(t *testing.T) {
 			name:          "new contributor, not PR open event",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
-			author:        "newContributor",
+			author:        newContributor,
 			prAction:      github.PullRequestActionEdited,
 			prNumber:      50,
+			expectComment: false,
+		},
+		{
+			name:          "new contributor, but is a bot",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        robot,
+			prAction:      github.PullRequestActionOpened,
+			prNumber:      500,
 			expectComment: false,
 		},
 	}
