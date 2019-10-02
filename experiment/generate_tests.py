@@ -271,6 +271,8 @@ class E2ETest(object):
         dashboards = []
         if self.job.get('releaseBlocking'):
             dashboards.append('sig-release-%s-blocking' % version)
+        elif self.job.get('releaseInforming'):
+            dashboards.append('sig-release-%s-informing' % version)
         else:
             dashboards.append('sig-release-%s-all' % version)
         return dashboards
@@ -309,6 +311,9 @@ class E2ETest(object):
                                       fields[5])
             dashboards.append(dashboard)
         annotations['testgrid-dashboards'] = ', '.join(dashboards)
+        if 'testgridNumFailuresToAlert' in self.job:
+            annotations['testgrid-num-failures-to-alert'] = ('%s' %
+                                                             self.job['testgridNumFailuresToAlert'])
 
         return job_config, prow_config, tg_config
 
