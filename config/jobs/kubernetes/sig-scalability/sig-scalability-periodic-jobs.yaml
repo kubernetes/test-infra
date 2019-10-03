@@ -400,6 +400,42 @@ periodics:
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
 
+- name: ci-benchmark-nodelocal-dns-master
+  interval: 2h
+  tags:
+  - "perfDashPrefix: node-local-dns benchmark"
+  - "perfDashJobType: dnsBenchmark"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: node-local-dns
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-7ca508a-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=node-local-dns-benchmark
+      - --extract=ci/latest
+      - --gcp-nodes=3
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=node-local-dns
+      - --test-cmd-args=/workspace/_artifacts/out
+      - --test-cmd-args=/workspace/_artifacts
+      - --test-cmd-args=169.254.20.10
+      - --test-cmd-name=KubeDnsBenchmark
+      - --timeout=120m
+
 - name: ci-benchmark-microbenchmarks
   interval: 20m
   annotations:
