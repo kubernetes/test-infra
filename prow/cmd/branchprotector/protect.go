@@ -190,10 +190,7 @@ func (p *protector) protect() {
 	}
 
 	// Some repos with presubmits might not be listed in the branch-protection
-	// Using PresubmitsStatic here is safe because this is only about getting to
-	// know which repos exist. Repos that use in-repo config will appear here,
-	// because we generate a verification job for them
-	for repo := range p.cfg.PresubmitsStatic() {
+	for repo := range p.cfg.Presubmits {
 		if p.completedRepos[repo] == true {
 			continue
 		}
@@ -360,7 +357,7 @@ func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, 
 
 // UpdateBranch updates the branch with the specified configuration
 func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch config.Branch, protected bool, authorizedCollaborators, authorizedTeams []string) error {
-	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch, p.cfg.PresubmitsStatic()[orgName+"/"+repo])
+	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch)
 	if err != nil {
 		return fmt.Errorf("get policy: %v", err)
 	}

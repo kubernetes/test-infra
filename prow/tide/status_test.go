@@ -27,7 +27,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -380,9 +379,7 @@ func TestSetStatuses(t *testing.T) {
 		if tc.inPool {
 			pool[prKey(&pr)] = pr
 		}
-		fc := &fgc{
-			refs: map[string]string{"/ heads/": "SHA"},
-		}
+		fc := &fgc{}
 		ca := &config.Agent{}
 		ca.Set(&config.Config{})
 		// setStatuses logs instead of returning errors.
@@ -393,7 +390,7 @@ func TestSetStatuses(t *testing.T) {
 			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
 
-		sc := &statusController{ghc: fc, gc: &git.Client{}, config: ca.Config, logger: log}
+		sc := &statusController{ghc: fc, config: ca.Config, logger: log}
 		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{})
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)

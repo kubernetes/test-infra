@@ -59,7 +59,6 @@ go_test(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/git:go_default_library",
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
         "//prow/tide/blockers:go_default_library",
