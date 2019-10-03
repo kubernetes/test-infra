@@ -13,14 +13,6 @@ py_test(
     python_version = "PY3",
 )
 
-py_test(
-    name = "verify_boilerplate",
-    srcs = ["verify_boilerplate.py"],
-    data = ["//:all-srcs"],
-    python_version = "PY3",
-    tags = ["lint"],
-)
-
 sh_test(
     name = "verify-pylint",
     srcs = ["verify-pylint.sh"],
@@ -73,7 +65,7 @@ sh_test(
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         ":update-codegen",
         "//:go.mod",
         "//:go.sum",
@@ -97,7 +89,7 @@ sh_binary(
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         "//:go.mod",
         "//:go.sum",
         "@go_sdk//:files",
@@ -157,12 +149,12 @@ sh_binary(
     args = [
         "$(location %s)" % protoc,
         "$(location %s)" % protoc_gen_go,
-        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         protoc_grpc,
         proto_importmap,
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         "//:all-srcs",
         protoc,
         protoc_gen_go,
@@ -177,12 +169,12 @@ sh_test(
         "$(location %s)" % ":update-protos",
         "$(location %s)" % protoc,
         "$(location %s)" % protoc_gen_go,
-        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         protoc_grpc,
         proto_importmap,
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         ":update-protos",
         protoc,
         protoc_gen_go,
@@ -220,6 +212,7 @@ test_suite(
         ":verify-linters",
         # "@io_k8s_repo_infra//hack:verify-all", # TODO(fejta): golangci-lint
         "@io_k8s_repo_infra//hack:verify-bazel",
+        "@io_k8s_repo_infra//hack:verify-boilerplate",
         "@io_k8s_repo_infra//hack:verify-deps",
         "@io_k8s_repo_infra//hack:verify-gofmt",
     ],
