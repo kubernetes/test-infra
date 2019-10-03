@@ -55,15 +55,7 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
-  IBM/go-repo-template:
-  - name: needs-rebase
-    events:
-    - pull_request
-  - name: cherrypicker
-    events:
-      - issue_comment
-      - pull_request
-  IBM/test-infra:
+  IBM:
   - name: needs-rebase
     events:
     - pull_request
