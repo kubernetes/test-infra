@@ -19,7 +19,7 @@ package spyglass
 import (
 	"testing"
 
-	tgconf "github.com/GoogleCloudPlatform/testgrid/config"
+	tgconf "github.com/GoogleCloudPlatform/testgrid/pb/config"
 )
 
 func TestFindQuery(t *testing.T) {

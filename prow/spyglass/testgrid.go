@@ -26,13 +26,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	tgconf "github.com/GoogleCloudPlatform/testgrid/config"
+	tgconfpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"k8s.io/test-infra/prow/config"
 )
 
 // TestGrid manages a TestGrid configuration, and handles lookups of TestGrid configuration.
 type TestGrid struct {
 	mut    sync.RWMutex
-	c      *tgconf.Configuration
+	c      *tgconfpb.Configuration
 	conf   config.Getter
 	ctx    context.Context
 	client *storage.Client
@@ -100,13 +101,13 @@ func (tg *TestGrid) updateConfig() error {
 	return nil
 }
 
-func (tg *TestGrid) setConfig(c *tgconf.Configuration) {
+func (tg *TestGrid) setConfig(c *tgconfpb.Configuration) {
 	tg.mut.Lock()
 	defer tg.mut.Unlock()
 	tg.c = c
 }
 
-func (tg *TestGrid) config() *tgconf.Configuration {
+func (tg *TestGrid) config() *tgconfpb.Configuration {
 	tg.mut.RLock()
 	defer tg.mut.RUnlock()
 	return tg.c
