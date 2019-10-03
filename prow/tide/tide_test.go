@@ -2828,6 +2828,20 @@ func TestPresubmitsForBatch(t *testing.T) {
 			}},
 		},
 		{
+			name: "Jobs with branchconfig get picked",
+			prs:  []PullRequest{getPR("org", "repo", 1)},
+			jobs: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "foo"},
+				Brancher:  config.Brancher{Branches: []string{"master"}},
+			}},
+			expected: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "foo"},
+				Brancher:  config.Brancher{Branches: []string{"master"}},
+			}},
+		},
+		{
 			name: "Optional jobs are excluded",
 			prs:  []PullRequest{getPR("org", "repo", 1)},
 			jobs: []config.Presubmit{

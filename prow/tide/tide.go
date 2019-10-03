@@ -1239,7 +1239,7 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 			continue
 		}
 
-		shouldRun, err := ps.ShouldRun(baseSHA, c.changedFiles.batchChanges(prs), false, false)
+		shouldRun, err := ps.ShouldRun(baseBranch, c.changedFiles.batchChanges(prs), false, false)
 		if err != nil {
 			return nil, err
 		}
