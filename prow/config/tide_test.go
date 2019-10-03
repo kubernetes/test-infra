@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 )
@@ -497,20 +498,93 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				SkipUnknownContexts:       &yes,
 			},
 		},
+		{
+			name: "jobs from inrepoconfig are considered",
+			config: Config{
+				JobConfig: JobConfig{
+					FakeInRepoConfig: map[string][]Presubmit{
+						"some-sha": {
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts:          []string{"ir0"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"ir1"},
+			},
+		},
+		{
+			name: "both static and inrepoconfig jobs are consired",
+			config: Config{
+				JobConfig: JobConfig{
+					Presubmits: map[string][]Presubmit{
+						"org/repo": {
+							Presubmit{
+								Reporter: Reporter{
+									Context: "pr1",
+								},
+								AlwaysRun: true,
+							},
+							Presubmit{
+								Reporter: Reporter{
+									Context: "po1",
+								},
+								AlwaysRun: true,
+								Optional:  true,
+							},
+						},
+					},
+					FakeInRepoConfig: map[string][]Presubmit{
+						"some-sha": {
+							{
+								AlwaysRun: true,
+								Reporter:  Reporter{Context: "ir0"},
+							},
+							{
+								AlwaysRun: true,
+								Optional:  true,
+								Reporter:  Reporter{Context: "ir1"},
+							},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts:          []string{"ir0", "pr1"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{"ir1", "po1"},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
-		p, err := tc.config.GetTideContextPolicy(org, repo, branch)
-		if !reflect.DeepEqual(p, &tc.expected) {
-			t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
-		}
-		if err != nil {
-			if err.Error() != tc.error {
-				t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
+		t.Run(tc.name, func(t *testing.T) {
+
+			baseSHAGetter := func() (string, error) {
+				return "baseSHA", nil
 			}
-		} else if tc.error != "" {
-			t.Errorf("%s - expected error %v got nil", tc.name, tc.error)
-		}
+			p, err := tc.config.GetTideContextPolicy(&git.Client{}, org, repo, branch, baseSHAGetter, "some-sha")
+			if !reflect.DeepEqual(p, &tc.expected) {
+				t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
+			}
+			if err != nil {
+				if err.Error() != tc.error {
+					t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
+				}
+			} else if tc.error != "" {
+				t.Errorf("%s - expected error %v got nil", tc.name, tc.error)
+			}
+		})
 	}
 }
 
