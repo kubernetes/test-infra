@@ -272,6 +272,7 @@ func TestAccumulateBatch(t *testing.T) {
 					}
 				},
 				changedFiles: &changedFilesAgent{},
+				logger:       logrus.WithField("test", test.name),
 			}
 			merges, pending := c.accumulateBatch(subpool{org: "org", repo: "repo", prs: pulls, pjs: pjs, log: logrus.WithField("test", test.name)})
 			if (len(pending) > 0) != test.pending {
@@ -2424,6 +2425,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				changeCache:     tc.initialChangeCache,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
+			logger: logrus.WithField("test", tc.name),
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
@@ -2963,6 +2965,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 						},
 					}
 				},
+				logger: logrus.WithField("test", tc.name),
 			}
 
 			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "baseSHA", "master")

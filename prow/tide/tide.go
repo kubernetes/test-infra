@@ -1041,12 +1041,13 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 			spec = pjutil.BatchSpec(ps, refs)
 		}
 		pj := pjutil.NewProwJob(spec, ps.Labels, ps.Annotations)
+		log := c.logger.WithFields(pjutil.ProwJobFields(&pj))
 		start := time.Now()
 		if _, err := c.prowJobClient.Create(&pj); err != nil {
-			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
+			log.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 		}
-		c.logger.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
+		log.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 	}
 	return nil
 }
@@ -1195,23 +1196,32 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 		if err != nil {
 			return nil, fmt.Errorf("failed to get presubmits for PR %d: %v", int(pr.Number), err)
 		}
+		log := c.logger.WithFields(logrus.Fields{"repo": sp.repo, "org": sp.org, "base-sha": sp.sha, "base-branch": sp.branch, "pr": int(pr.Number)})
+		log.Debugf("Found %d possible presubmits", len(presubmitsForPull))
 
 		for _, ps := range presubmitsForPull {
 			if !ps.ContextRequired() {
 				continue
 			}
 
-			if shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false); err != nil {
+			shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false)
+			if err != nil {
 				return nil, err
-			} else if shouldRun {
-				record(int(pr.Number), ps)
 			}
+			if !shouldRun {
+				log.Debug("Presubmit excluded by ps.ShouldRun", "presubmit", ps.Context)
+				continue
+			}
+
+			record(int(pr.Number), ps)
 		}
 	}
 	return presubmits, nil
 }
 
 func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
+	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
+
 	var headRefGetters []config.RefGetter
 	for _, pr := range prs {
 		headRefGetters = append(headRefGetters, refGetterFactory(string(pr.HeadRefOID)))
@@ -1221,6 +1231,7 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 	if err != nil {
 		return nil, fmt.Errorf("failed to get presubmits for batch: %v", err)
 	}
+	log.Debugf("Found %d possible presubmits for batch", len(presubmits))
 
 	var result []config.Presubmit
 	for _, ps := range presubmits {
@@ -1233,12 +1244,14 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 			return nil, err
 		}
 		if !shouldRun {
+			log.Debug("Presubmit excluded by ps.ShouldRun", "presubmit", ps.Context)
 			continue
 		}
 
 		result = append(result, ps)
 	}
 
+	log.Debugf("After filtering, %d presubmits remained for batch", len(result))
 	return result, nil
 }
 
