@@ -67,6 +67,7 @@ type Configuration struct {
 	ConfigUpdater              ConfigUpdater                `json:"config_updater,omitempty"`
 	Dco                        map[string]*Dco              `json:"dco,omitempty"`
 	Golint                     Golint                       `json:"golint,omitempty"`
+	Goose                      Goose                        `json:"goose,omitempty"`
 	Heart                      Heart                        `json:"heart,omitempty"`
 	Label                      Label                        `json:"label,omitempty"`
 	Lgtm                       []Lgtm                       `json:"lgtm,omitempty"`
@@ -318,6 +319,12 @@ type Lgtm struct {
 // Cat contains the configuration for the cat plugin.
 type Cat struct {
 	// Path to file containing an api key for thecatapi.com
+	KeyPath string `json:"key_path,omitempty"`
+}
+
+// Goose contains the configuration for the goose plugin.
+type Goose struct {
+	// Path to file containing an api key for unsplash.com
 	KeyPath string `json:"key_path,omitempty"`
 }
 
