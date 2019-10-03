@@ -35,7 +35,6 @@ import (
 
 	"k8s.io/test-infra/pkg/io"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/blockers"
 )
@@ -60,7 +59,6 @@ type statusController struct {
 	logger *logrus.Entry
 	config config.Getter
 	ghc    githubClient
-	gc     *git.Client
 
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
 	// updated the 'poolPRs' field with a freshly updated pool.
@@ -290,16 +288,10 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-
-		org := string(pr.Repository.Owner.Login)
-		repo := string(pr.Repository.Name)
-		branch := string(pr.BaseRef.Name)
-		headSHA := string(pr.HeadRefOID)
-		baseSHAGetter := func() (string, error) {
-			return sc.ghc.GetRef(org, repo, "heads/"+branch)
-		}
-
-		cr, err := sc.config().GetTideContextPolicy(sc.gc, org, repo, branch, baseSHAGetter, headSHA)
+		cr, err := sc.config().GetTideContextPolicy(
+			string(pr.Repository.Owner.Login),
+			string(pr.Repository.Name),
+			string(pr.BaseRef.Name))
 		if err != nil {
 			log.WithError(err).Error("setting up context register")
 			return
@@ -316,9 +308,9 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 		}
 		if wantState != strings.ToLower(string(actualState)) || wantDesc != actualDesc {
 			if err := sc.ghc.CreateStatus(
-				org,
-				repo,
-				headSHA,
+				string(pr.Repository.Owner.Login),
+				string(pr.Repository.Name),
+				string(pr.HeadRefOID),
 				github.Status{
 					Context:     statusContext,
 					State:       wantState,
