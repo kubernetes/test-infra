@@ -1,0 +1,115 @@
+presubmits:
+  IBM/multicloud-operators-placementrule:
+  - name: build_multicloud-operators-placementrule
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-placementrule
+    rerun_command: /test build
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/IBM/multicloud-operators-placementrule:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_multicloud-operators-placementrule
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-placementrule
+    rerun_command: /test check
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/IBM/multicloud-operators-placementrule:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_multicloud-operators-placementrule
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-placementrule
+    rerun_command: /test test
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/IBM/multicloud-operators-placementrule:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/multicloud-operators-placementrule:
+  - name: check_multicloud-operators-placementrule_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-placementrule
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/IBM/multicloud-operators-placementrule:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_multicloud-operators-placementrule_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-placementrule
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/IBM/multicloud-operators-placementrule:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build_multicloud-operators-placementrule_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-placementrule
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/IBM/multicloud-operators-placementrule:2019-09-25T13-11-16
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_multicloud-operators-placementrule_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-placementrule
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
+        name: ""
+        securityContext:
+          privileged: true
