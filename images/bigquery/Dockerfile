@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install influxdb==5.2.2 google-cloud-bigquery==0.24.0 ruamel.yaml==0.16
 
-ENV GCLOUD_VERSION 195.0.0
+ENV GCLOUD_VERSION 265.0.0
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
