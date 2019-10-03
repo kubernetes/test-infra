@@ -129,6 +129,7 @@ filegroup(
         "//robots/issue-creator:all-srcs",
         "//robots/pr-creator:all-srcs",
         "//robots/pr-labeler:all-srcs",
+        "//robots/stable-image-suggester:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid:all-srcs",
         "//triage:all-srcs",
