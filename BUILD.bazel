@@ -81,6 +81,7 @@ filegroup(
         ["**"],
         exclude = [
             "bazel-*/**",
+            "node_modules/**",
             ".git/**",
             "*.db",
             "*.gz",
