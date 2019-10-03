@@ -32,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const pluginName = "override"
@@ -47,21 +48,29 @@ type githubClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	HasPermission(org, repo, user string, role ...string) (bool, error)
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
+	ListTeams(org string) ([]github.Team, error)
+	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 }
 
 type prowJobClient interface {
 	Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
+type ownersClient interface {
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
+}
+
 type overrideClient interface {
 	githubClient
 	prowJobClient
+	ownersClient
 	presubmitForContext(org, repo, context string) *config.Presubmit
 }
 
 type client struct {
 	gc            githubClient
 	jc            config.JobConfig
+	ownersClient  ownersClient
 	prowJobClient prowJobClient
 }
 
@@ -85,6 +94,12 @@ func (c client) ListStatuses(org, repo, ref string) ([]github.Status, error) {
 func (c client) HasPermission(org, repo, user string, role ...string) (bool, error) {
 	return c.gc.HasPermission(org, repo, user, role...)
 }
+func (c client) ListTeams(org string) ([]github.Team, error) {
+	return c.gc.ListTeams(org)
+}
+func (c client) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+	return c.gc.ListTeamMembers(id, role)
+}
 
 func (c client) Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	return c.prowJobClient.Create(pj)
@@ -99,6 +114,10 @@ func (c client) presubmitForContext(org, repo, context string) *config.Presubmit
 	return nil
 }
 
+func (c client) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+	return c.ownersClient.LoadRepoOwners(org, repo, base)
+}
+
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
 }
@@ -107,14 +126,41 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The override plugin allows repo admins to force a github status context to pass",
 	}
+	overrideConfig := plugins.Override{}
+	if config != nil {
+		overrideConfig = config.Override
+	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/override [context]",
 		Description: "Forces a github status context to green (one per line).",
 		Featured:    false,
-		WhoCanUse:   "Repo administrators",
+		WhoCanUse:   whoCanUse(overrideConfig, "", ""),
 		Examples:    []string{"/override pull-repo-whatever", "/override ci/circleci", "/override deleted-job"},
 	})
 	return pluginHelp, nil
+}
+
+func whoCanUse(overrideConfig plugins.Override, org, repo string) string {
+	admins := "Repo administrators"
+	owners := ""
+	teams := ""
+
+	if overrideConfig.AllowTopLevelOwners {
+		owners = ", approvers in top level OWNERS file"
+	}
+
+	if len(overrideConfig.AllowedGitHubTeams) > 0 {
+		repoRef := fmt.Sprintf("%s/%s", org, repo)
+		var allTeams []string
+		for r, allowedTeams := range overrideConfig.AllowedGitHubTeams {
+			if repoRef == "/" || r == repoRef {
+				allTeams = append(allTeams, fmt.Sprintf("%s: %s", r, strings.Join(allowedTeams, " ")))
+			}
+		}
+		teams = ", and the following github teams:" + strings.Join(allTeams, ", ")
+	}
+
+	return admins + owners + teams + "."
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
@@ -122,17 +168,72 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 		gc:            pc.GitHubClient,
 		jc:            pc.Config.JobConfig,
 		prowJobClient: pc.ProwJobClient,
+		ownersClient:  pc.OwnersClient,
 	}
-	return handle(c, pc.Logger, &e)
+	return handle(c, pc.Logger, &e, pc.PluginConfig.Override)
 }
 
-func authorized(gc githubClient, log *logrus.Entry, org, repo, user string) bool {
+func authorizedUser(gc githubClient, log *logrus.Entry, org, repo, user string) bool {
 	ok, err := gc.HasPermission(org, repo, user, github.RoleAdmin)
 	if err != nil {
 		log.WithError(err).Warnf("cannot determine whether %s is an admin of %s/%s", user, org, repo)
 		return false
 	}
 	return ok
+}
+
+func authorizedTopLevelOwner(oc ownersClient, allowTopLevelOwners bool, log *logrus.Entry, org, repo, user string, pr *github.PullRequest) bool {
+	if allowTopLevelOwners {
+		owners, err := oc.LoadRepoOwners(org, repo, pr.Base.Ref)
+		if err != nil {
+			log.WithError(err).Warnf("cannot determine whether %s is a top level owner of %s/%s", user, org, repo)
+			return false
+		}
+		return owners.TopLevelApprovers().Has(user)
+	}
+	return false
+}
+
+func validateGitHubTeamSlugs(teamSlugs map[string][]string, org, repo string, githubTeams []github.Team) error {
+	validSlugs := sets.NewString()
+	for _, team := range githubTeams {
+		validSlugs.Insert(team.Slug)
+	}
+	invalidSlugs := sets.NewString(teamSlugs[fmt.Sprintf("%s/%s", org, repo)]...).Difference(validSlugs)
+
+	if invalidSlugs.Len() > 0 {
+		return fmt.Errorf("invalid team slug(s): %s", strings.Join(invalidSlugs.List(), ","))
+	}
+	return nil
+}
+
+func authorizedGitHubTeamMember(gc githubClient, log *logrus.Entry, teamSlugs map[string][]string, org, repo, user string) bool {
+	teams, err := gc.ListTeams(org)
+	if err != nil {
+		log.WithError(err).Warnf("cannot get list of teams for org %s", org)
+		return false
+	}
+	if err := validateGitHubTeamSlugs(teamSlugs, org, repo, teams); err != nil {
+		log.WithError(err).Warnf("invalid team slug(s)")
+	}
+
+	for _, slug := range teamSlugs[fmt.Sprintf("%s/%s", org, repo)] {
+		for _, team := range teams {
+			if team.Slug == slug {
+				members, err := gc.ListTeamMembers(team.ID, github.RoleAll)
+				if err != nil {
+					log.WithError(err).Warnf("cannot find members of team %s in org %s", slug, org)
+					continue
+				}
+				for _, member := range members {
+					if member.Login == user {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
 }
 
 func description(user string) string {
@@ -147,7 +248,7 @@ func formatList(list []string) string {
 	return strings.Join(lines, "\n")
 }
 
-func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) error {
 
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -173,8 +274,12 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 		overrides.Insert(m[2])
 	}
 
-	if !authorized(oc, log, org, repo, user) {
-		resp := fmt.Sprintf("%s unauthorized: /override is restricted to repo administrators", user)
+	authorized := authorizedUser(oc, log, org, repo, user)
+	if !authorized && len(options.AllowedGitHubTeams) > 0 {
+		authorized = authorizedGitHubTeamMember(oc, log, options.AllowedGitHubTeams, org, repo, user)
+	}
+	if !authorized && !options.AllowTopLevelOwners {
+		resp := fmt.Sprintf("%s unauthorized: /override is restricted to %s", user, whoCanUse(options, org, repo))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
@@ -183,6 +288,12 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get PR #%d in %s/%s", number, org, repo)
 		log.WithError(err).Warn(resp)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+	}
+
+	if !authorized && !authorizedTopLevelOwner(oc, options.AllowTopLevelOwners, log, org, repo, user, pr) {
+		resp := fmt.Sprintf("%s unauthorized: /override is restricted to %s", user, whoCanUse(options, org, repo))
+		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 

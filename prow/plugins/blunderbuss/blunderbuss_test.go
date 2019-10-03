@@ -182,6 +182,10 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 	return *full, err
 }
 
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
+	return sets.String{}
+}
+
 var (
 	owners = map[string]string{
 		"a.go":  "1",

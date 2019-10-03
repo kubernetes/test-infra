@@ -29,6 +29,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const (
@@ -40,11 +42,72 @@ const (
 	adminUser   = "admin-user"
 )
 
+type fakeRepoownersClient struct {
+	foc *fakeOwnersClient
+}
+
+func (froc *fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+	return froc.foc, nil
+}
+
+type fakeOwnersClient struct {
+	topLevelApprovers sets.String
+}
+
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
+	return foc.topLevelApprovers
+}
+
+func (foc *fakeOwnersClient) Approvers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
+	return ""
+}
+
+func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
+	return ""
+}
+
+func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
+	return false
+}
+
+func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
+	return repoowners.SimpleConfig{}, nil
+}
+
+func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
+	return repoowners.FullConfig{}, nil
+}
+
 type fakeClient struct {
 	comments   []string
 	statuses   map[string]github.Status
 	presubmits map[string]config.Presubmit
 	jobs       sets.String
+	owners     ownersClient
 }
 
 func (c *fakeClient) CreateComment(org, repo string, number int, comment string) error {
@@ -133,6 +196,29 @@ func (c *fakeClient) GetRef(org, repo, ref string) (string, error) {
 	return fakeBaseSHA, nil
 }
 
+func (c *fakeClient) ListTeams(org string) ([]github.Team, error) {
+	if org == fakeOrg {
+		return []github.Team{
+			{
+				ID:   1,
+				Name: "team foo",
+				Slug: "team-foo",
+			},
+		}, nil
+	}
+	return []github.Team{}, nil
+}
+
+func (c *fakeClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+	if id == 1 {
+		return []github.TeamMember{
+			{Login: "user1"},
+			{Login: "user2"},
+		}, nil
+	}
+	return []github.TeamMember{}, nil
+}
+
 func (c *fakeClient) Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	if s := pj.Status.State; s != prowapi.SuccessState {
 		return pj, fmt.Errorf("bad status state: %s", s)
@@ -152,7 +238,11 @@ func (c *fakeClient) presubmitForContext(org, repo, context string) *config.Pres
 	return &p
 }
 
-func TestAuthorized(t *testing.T) {
+func (c *fakeClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+	return c.owners.LoadRepoOwners(org, repo, base)
+}
+
+func TestAuthorizedUser(t *testing.T) {
 	cases := []struct {
 		name     string
 		user     string
@@ -176,7 +266,7 @@ func TestAuthorized(t *testing.T) {
 	log := logrus.WithField("plugin", pluginName)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if actual := authorized(&fakeClient{}, log, fakeOrg, fakeRepo, tc.user); actual != tc.expected {
+			if actual := authorizedUser(&fakeClient{}, log, fakeOrg, fakeRepo, tc.user); actual != tc.expected {
 				t.Errorf("actual %t != expected %t", actual, tc.expected)
 			}
 		})
@@ -197,6 +287,8 @@ func TestHandle(t *testing.T) {
 		expected      map[string]github.Status
 		jobs          sets.String
 		checkComments []string
+		options       plugins.Override
+		approvers     []string
 		err           bool
 	}{
 		{
@@ -482,6 +574,95 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:      "override with allow_top_level_owners works",
+			comment:   "/override job",
+			user:      "code_owner",
+			options:   plugins.Override{AllowTopLevelOwners: true},
+			approvers: []string{"code_owner"},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description("code_owner"),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
+		{
+			name:    "override with allow_top_level_owners fails if user is not in OWNERS file",
+			comment: "/override job",
+			user:    "non_code_owner",
+			options: plugins.Override{AllowTopLevelOwners: true},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+		},
+		{
+			name:    "override with allowed_github_team allowed if user is in specified github team",
+			comment: "/override job",
+			user:    "user1",
+			options: plugins.Override{
+				AllowedGitHubTeams: map[string][]string{
+					fmt.Sprintf("%s/%s", fakeOrg, fakeRepo): {"team-foo"},
+				},
+			},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description("user1"),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
+		{
+			name:    "override does not fail due to invalid github team slug",
+			comment: "/override job",
+			user:    "user1",
+			options: plugins.Override{
+				AllowedGitHubTeams: map[string][]string{
+					fmt.Sprintf("%s/%s", fakeOrg, fakeRepo): {"team-foo", "invalid-team-slug"},
+				},
+			},
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description("user1"),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
 	}
 
 	log := logrus.WithField("plugin", pluginName)
@@ -508,17 +689,23 @@ func TestHandle(t *testing.T) {
 			if tc.contexts == nil {
 				tc.contexts = map[string]github.Status{}
 			}
+			froc := &fakeRepoownersClient{
+				foc: &fakeOwnersClient{
+					topLevelApprovers: sets.NewString(tc.approvers...),
+				},
+			}
 			fc := fakeClient{
 				statuses:   tc.contexts,
 				presubmits: tc.presubmits,
 				jobs:       sets.String{},
+				owners:     froc,
 			}
 
 			if tc.jobs == nil {
 				tc.jobs = sets.String{}
 			}
 
-			err := handle(&fc, log, &event)
+			err := handle(&fc, log, &event, tc.options)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -532,5 +719,156 @@ func TestHandle(t *testing.T) {
 				t.Errorf("bad jobs: actual %#v != expected %#v", fc.jobs, tc.jobs)
 			}
 		})
+	}
+}
+
+func TestHelpProvider(t *testing.T) {
+	cases := []struct {
+		name        string
+		config      plugins.Configuration
+		org         string
+		repo        string
+		expectedWho string
+	}{
+		{
+			name:        "WhoCanUse restricted to Repo administrators if no other options specified",
+			config:      plugins.Configuration{},
+			expectedWho: "Repo administrators.",
+		},
+		{
+			name: "WhoCanUse includes top level code OWNERS if allow_top_level_owners is set",
+			config: plugins.Configuration{
+				Override: plugins.Override{
+					AllowTopLevelOwners: true,
+				},
+			},
+			expectedWho: "Repo administrators, approvers in top level OWNERS file.",
+		},
+		{
+			name: "WhoCanUse includes specified github teams",
+			config: plugins.Configuration{
+				Override: plugins.Override{
+					AllowedGitHubTeams: map[string][]string{
+						"org1/repo1": {"team-foo", "team-bar"},
+					},
+				},
+			},
+			expectedWho: "Repo administrators, and the following github teams:" +
+				"org1/repo1: team-foo team-bar.",
+		},
+	}
+
+	for _, tc := range cases {
+		help, err := helpProvider(&tc.config, []string{})
+		if err != nil {
+			t.Errorf("%s: unexpected error: %v", tc.name, err)
+		}
+		switch {
+		case help == nil:
+			t.Errorf("%s: expected a valid plugin help object, got nil", tc.name)
+		case len(help.Commands) != 1:
+			t.Errorf("%s: expected a single command from plugin help, got: %v", tc.name, help.Commands)
+		case help.Commands[0].WhoCanUse != tc.expectedWho:
+			t.Errorf("%s: expected a single command with WhoCanUse set to %s, got %s instead", tc.name, tc.expectedWho, help.Commands[0].WhoCanUse)
+		}
+	}
+}
+
+func TestWhoCanUse(t *testing.T) {
+	override := plugins.Override{
+		AllowedGitHubTeams: map[string][]string{
+			"org1/repo1": {"team-foo", "team-bar"},
+			"org2/repo2": {"team-bar"},
+		},
+	}
+	expectedWho := "Repo administrators, and the following github teams:" +
+		"org1/repo1: team-foo team-bar."
+
+	who := whoCanUse(override, "org1", "repo1")
+	if who != expectedWho {
+		t.Errorf("expected %s, got %s", expectedWho, who)
+	}
+}
+
+func TestAuthorizedGitHubTeamMember(t *testing.T) {
+	repoRef := fmt.Sprintf("%s/%s", fakeOrg, fakeRepo)
+	cases := []struct {
+		name     string
+		slugs    map[string][]string
+		org      string
+		repo     string
+		user     string
+		expected bool
+	}{
+		{
+			name: "members of specified teams are authorized",
+			slugs: map[string][]string{
+				repoRef: {"team-foo"},
+			},
+			user:     "user1",
+			expected: true,
+		},
+		{
+			name: "non-members of specified teams are not authorized",
+			slugs: map[string][]string{
+				repoRef: {"team-foo"},
+			},
+			user: "non-member",
+		},
+		{
+			name: "only teams corresponding to the org/repo are considered",
+			slugs: map[string][]string{
+				"org/repo": {"team-foo"},
+			},
+			user: "member",
+		},
+	}
+	log := logrus.WithField("plugin", pluginName)
+	for _, tc := range cases {
+		authorized := authorizedGitHubTeamMember(&fakeClient{}, log, tc.slugs, fakeOrg, fakeRepo, tc.user)
+		if authorized != tc.expected {
+			t.Errorf("%s: actual: %v != expected %v", tc.name, authorized, tc.expected)
+		}
+	}
+}
+
+func TestValidateGitHubTeamSlugs(t *testing.T) {
+	githubTeams := []github.Team{
+		{
+			ID:   2,
+			Slug: "team-foo",
+		},
+		{
+			ID:   3,
+			Slug: "team-bar",
+		},
+	}
+
+	repoRef := fmt.Sprintf("%s/%s", fakeOrg, fakeRepo)
+	cases := []struct {
+		name      string
+		teamSlugs map[string][]string
+		err       error
+	}{
+		{
+			name: "validation failure for invalid team slug",
+			teamSlugs: map[string][]string{
+				repoRef: {"foo"},
+			},
+			err: fmt.Errorf("invalid team slug(s): foo"),
+		},
+		{
+			name: "no errors for valid team slugs",
+			teamSlugs: map[string][]string{
+				repoRef: {"team-foo", "team-bar"},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		err := validateGitHubTeamSlugs(tc.teamSlugs, fakeOrg, fakeRepo, githubTeams)
+		if !reflect.DeepEqual(err, tc.err) {
+			t.Errorf("%s: actual: %v != expected %v", tc.name, err, tc.err)
+		}
 	}
 }
