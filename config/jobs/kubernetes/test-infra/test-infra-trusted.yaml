@@ -722,7 +722,38 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Update boskos configmap on test-infra pushes
-
+  - name: post-test-infra-cip-prow
+    cluster: test-infra-trusted
+    decorate: true
+    run_if_changed: "^prow/cip-manifest.yaml$"
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
+        command:
+        - cip
+        args:
+        - -manifest=prow/cip-manifest.yaml
+        - -key-files=/etc/service-account/service-account.json
+        - -dry-run=false
+        volumeMounts:
+        - name: service-account
+          mountPath: /etc/service-account
+      volumes:
+      - name: service-account
+        secret:
+          secretName: pusher-service-account
+    annotations:
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: cip-prow
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: Uses the Container Image Promoter to promote images from gcr.io/k8s-prow-edge to gcr.io/k8s-prow.
 
   kubernetes/k8s.io:
   - name: post-k8sio-cip
