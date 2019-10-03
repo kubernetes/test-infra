@@ -48,6 +48,9 @@ The actual report logic is in the [github report library](/prow/github/report) f
 
 You can enable the Slack reporter in crier by specifying the `--slack-workers=n` and `--slack-token-file=path-to-tokenfile` flags.
 
+The `--slack-token-file` flag takes a path to a file containing a Slack [*OAuth Access Token*](https://api.slack.com/docs/oauth). The access token can be obtained after installing 
+a [Slack app](https://api.slack.com/apps) for the *workspace*. The app should have the [`chat:write:bot`](https://api.slack.com/scopes/chat:write:bot) scope granted in order to [post messages](https://api.slack.com/methods/chat.postMessage) to the configured Slack *channel*.
+
 In order for it to work, you must add the following to your `config.yaml`:
 
 ```
