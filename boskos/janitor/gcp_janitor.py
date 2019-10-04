@@ -36,6 +36,7 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'instances', None, 'zone', None, False, True),
     Resource('', 'compute', 'addresses', None, 'region', None, False, True),
     Resource('', 'compute', 'disks', None, 'zone', None, False, True),
+    Resource('', 'compute', 'disks', None, 'region', None, False, True),
     Resource('', 'compute', 'firewall-rules', None, None, None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
     Resource('', 'compute', 'forwarding-rules', None, None, None, False, True),
@@ -62,6 +63,7 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
     Resource('', 'compute', 'networks', None, '', None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
+    Resource('', 'compute', 'routers', None, 'region', None, False, True),
 
     # logging resources
     Resource('', 'logging', 'sinks', None, None, None, False, False),
