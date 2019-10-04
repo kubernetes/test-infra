@@ -22,7 +22,12 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/diff"
+
+	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
+	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -81,6 +86,207 @@ func assertEqual(t *testing.T, actual, expected interface{}) {
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("actual differs from expected:\n%s", diff.ObjectReflectDiff(expected, actual))
 	}
+}
+
+type fakeLister struct {
+}
+
+func (l fakeLister) List(selector labels.Selector) ([]*prowapi.ProwJob, error) {
+	return []*prowapi.ProwJob{
+		{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "pull-test-infra-bazel",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      "7785d7a6-e601-11e9-8512-da8015665453",
+				Labels: map[string]string{
+					"created-by-prow":          "true",
+					"event-GUID":               "770bab40-e601-11e9-8e50-08c45d902b6f",
+					"preset-bazel-scratch-dir": "true",
+					"preset-service-account":   "true",
+					"prow.k8s.io/job":          "pull-test-infra-bazel",
+					"prow.k8s.io/refs.org":     "kubernetes",
+					"prow.k8s.io/refs.pull":    "14543",
+					"prow.k8s.io/refs.repo":    "test-infra",
+					"prow.k8s.io/type":         "presubmit",
+				},
+				Annotations: map[string]string{
+					"prow.k8s.io/job":            "pull-test-infra-bazel",
+					"testgrid-create-test-group": "true",
+				},
+			},
+		},
+		{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "branch-ci-openshift-release-master-config-updates",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      "e44f91e5-e604-11e9-99c1-0a58ac10f9a6",
+				Labels: map[string]string{
+					"created-by-prow":       "true",
+					"event-GUID":            "e4216820-e604-11e9-8cf0-295472589b4f",
+					"prow.k8s.io/job":       "branch-ci-openshift-release-master-config-updates",
+					"prow.k8s.io/refs.org":  "openshift",
+					"prow.k8s.io/refs.repo": "release",
+					"prow.k8s.io/type":      "postsubmit",
+				},
+				Annotations: map[string]string{
+					"prow.k8s.io/job": "branch-ci-openshift-release-master-config-updates",
+				},
+			},
+		},
+	}, nil
+}
+
+func TestProwJobCollector(t *testing.T) {
+	expected := []struct {
+		labels     []*dto.LabelPair
+		gaugeValue float64
+	}{
+		{
+			labels: []*dto.LabelPair{
+				{
+					Name:  stringPointer("job_agent"),
+					Value: stringPointer("kubernetes"),
+				},
+				{
+					Name:  stringPointer("job_name"),
+					Value: stringPointer("pull-test-infra-bazel"),
+				},
+				{
+					Name:  stringPointer("job_namespace"),
+					Value: stringPointer("default"),
+				},
+				{
+					Name:  stringPointer("label_event_GUID"),
+					Value: stringPointer("770bab40-e601-11e9-8e50-08c45d902b6f"),
+				},
+				{
+					Name:  stringPointer("label_preset_bazel_scratch_dir"),
+					Value: stringPointer("true"),
+				},
+				{
+					Name:  stringPointer("label_preset_service_account"),
+					Value: stringPointer("true"),
+				},
+			},
+			gaugeValue: float64(1),
+		},
+		{
+			labels: []*dto.LabelPair{
+				{
+					Name:  stringPointer("annotation_prow_k8s_io_job"),
+					Value: stringPointer("pull-test-infra-bazel"),
+				},
+				{
+					Name:  stringPointer("annotation_testgrid_create_test_group"),
+					Value: stringPointer("true"),
+				},
+				{
+					Name:  stringPointer("job_agent"),
+					Value: stringPointer("kubernetes"),
+				},
+				{
+					Name:  stringPointer("job_name"),
+					Value: stringPointer("pull-test-infra-bazel"),
+				},
+				{
+					Name:  stringPointer("job_namespace"),
+					Value: stringPointer("default"),
+				},
+			},
+			gaugeValue: float64(1),
+		},
+		{
+			labels: []*dto.LabelPair{
+				{
+					Name:  stringPointer("job_agent"),
+					Value: stringPointer("kubernetes"),
+				},
+				{
+					Name:  stringPointer("job_name"),
+					Value: stringPointer("branch-ci-openshift-release-master-config-updates"),
+				},
+				{
+					Name:  stringPointer("job_namespace"),
+					Value: stringPointer("default"),
+				},
+				{
+					Name:  stringPointer("label_event_GUID"),
+					Value: stringPointer("e4216820-e604-11e9-8cf0-295472589b4f"),
+				},
+			},
+			gaugeValue: float64(1),
+		},
+		{
+			labels: []*dto.LabelPair{
+				{
+					Name:  stringPointer("annotation_prow_k8s_io_job"),
+					Value: stringPointer("branch-ci-openshift-release-master-config-updates"),
+				},
+				{
+					Name:  stringPointer("job_agent"),
+					Value: stringPointer("kubernetes"),
+				},
+				{
+					Name:  stringPointer("job_name"),
+					Value: stringPointer("branch-ci-openshift-release-master-config-updates"),
+				},
+				{
+					Name:  stringPointer("job_namespace"),
+					Value: stringPointer("default"),
+				},
+			},
+			gaugeValue: float64(1),
+		},
+	}
+
+	pjc := prowJobCollector{
+		lister: fakeLister{},
+	}
+	c := make(chan prometheus.Metric)
+	go pjc.Collect(c)
+
+	var metrics []prometheus.Metric
+
+	for {
+		select {
+		case msg := <-c:
+			metrics = append(metrics, msg)
+			logrus.WithField("len(metrics)", len(metrics)).Infof("received a metric")
+			if len(metrics) == 4 {
+				// will panic when sending more metrics afterwards
+				close(c)
+				goto ExitForLoop
+			}
+		case <-time.After(time.Second):
+			t.Fatalf("timeout")
+		}
+	}
+
+ExitForLoop:
+	if len(metrics) != 4 {
+		t.Fatalf("unexpected number '%d' of metrics sent by collector", len(metrics))
+	}
+
+	logrus.Info("get all 4 metrics")
+
+	for i, metric := range metrics {
+		out := &dto.Metric{}
+		if err := metric.Write(out); err != nil {
+			t.Fatal("unexpected error occurred when writing")
+		}
+		assertEqual(t, out.GetLabel(), expected[i].labels)
+		assertEqual(t, out.GetGauge().GetValue(), expected[i].gaugeValue)
+	}
+}
+
+func stringPointer(s string) *string {
+	return &s
 }
 
 func TestFilterWithBlacklist(t *testing.T) {
