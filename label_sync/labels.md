@@ -111,6 +111,7 @@ larger set of contributors to apply/remove them.
 | <a id="triage/support" href="#triage/support">`triage/support`</a> | Indicates an issue that is a support question. <br><br> This was previously `close/support`, `kind/support`, `question`, | humans | |
 | <a id="triage/unresolved" href="#triage/unresolved">`triage/unresolved`</a> | Indicates an issue that can not or will not be resolved. <br><br> This was previously `close/unresolved`, `invalid`, `wontfix`, | humans | |
 | <a id="ug/big-data" href="#ug/big-data">`ug/big-data`</a> | Categorizes an issue or PR as relevant to ug-big-data. <br><br> This was previously `sig/big-data`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="ug/vmware" href="#ug/vmware">`ug/vmware`</a> | Categorizes an issue or PR as relevant to ug-vmware.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/apply" href="#wg/apply">`wg/apply`</a> | Categorizes an issue or PR as relevant to wg-apply.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/component-standard" href="#wg/component-standard">`wg/component-standard`</a> | Categorizes an issue or PR as relevant to wg-component-standard.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/iot-edge" href="#wg/iot-edge">`wg/iot-edge`</a> | Categorizes an issue or PR as relevant to wg-iot-edge.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
