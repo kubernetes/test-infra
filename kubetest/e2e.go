@@ -603,35 +603,46 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 		return err
 	}
 
-	masterIP, err := control.Output(exec.Command(
+	masterIPs, err := control.Output(exec.Command(
 		"gcloud", "compute", "addresses", "describe",
 		os.Getenv("MASTER_NAME")+"-ip",
 		"--project="+o.gcpProject,
 		"--region="+o.gcpZone[:len(o.gcpZone)-2],
 		"--format=value(address)"))
 	if err != nil {
-		return fmt.Errorf("failed to get masterIP: %v", err)
+		return fmt.Errorf("failed to get masterIPs: %v", err)
 	}
-	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIPs))); err != nil {
 		return err
 	}
+	// Leaving this temporarily until https://github.com/kubernetes/perf-tests/issues/595 is closed
 	// MASTER_IP variable is required by the clusterloader. It requires to have master ip provided,
 	// due to master being unregistered.
-	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+	if err := os.Setenv("MASTER_IP", strings.TrimSpace(string(masterIPs))); err != nil {
+		return err
+	}
+	// MASTER_IPS variable is required by the clusterloader. It requires to have master ip(s) provided,
+	// due to master being unregistered.
+	if err := os.Setenv("MASTER_IPS", strings.TrimSpace(string(masterIPs))); err != nil {
 		return err
 	}
 
-	masterInternalIP, err := control.Output(exec.Command(
+	masterInternalIPs, err := control.Output(exec.Command(
 		"gcloud", "compute", "instances", "describe",
 		os.Getenv("MASTER_NAME"),
 		"--project="+o.gcpProject,
 		"--zone="+o.gcpZone,
 		"--format=value(networkInterfaces[0].networkIP)"))
 	if err != nil {
-		return fmt.Errorf("failed to get masterInternalIP: %v", err)
+		return fmt.Errorf("failed to get masterInternalIPs: %v", err)
 	}
+	// Leaving this temporarily until https://github.com/kubernetes/perf-tests/issues/595 is closed
 	// MASTER_INTERNAL_IP variable is needed by the clusterloader2 when running on kubemark clusters.
-	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIP))); err != nil {
+	if err := os.Setenv("MASTER_INTERNAL_IP", strings.TrimSpace(string(masterInternalIPs))); err != nil {
+		return err
+	}
+	// MASTER_INTERNAL_IPS variable is needed by the clusterloader2 when running on kubemark clusters.
+	if err := os.Setenv("MASTER_INTERNAL_IPS", strings.TrimSpace(string(masterInternalIPs))); err != nil {
 		return err
 	}
 
