@@ -41,7 +41,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -69,7 +69,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -94,7 +94,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - prow/deploy.sh
         args:
@@ -155,7 +155,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -213,7 +213,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -244,7 +244,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -275,7 +275,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -306,7 +306,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -337,7 +337,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -368,7 +368,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -399,7 +399,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -430,7 +430,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -461,7 +461,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -492,7 +492,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -523,7 +523,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -554,7 +554,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -585,7 +585,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -616,7 +616,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
@@ -647,7 +647,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
