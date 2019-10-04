@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -57,11 +58,13 @@ func (pjc prowJobCollector) Collect(ch chan<- prometheus.Metric) {
 		logrus.WithError(err).Error("Failed to list prow jobs")
 		return
 	}
-	for _, pj := range prowJobs {
+	//We need to filter out the latest jobs
+	//because sending the same sample twice would lead to prometheus runtime error
+	for _, pj := range getLatest(prowJobs) {
 		agent := string(pj.Spec.Agent)
 		pjLabelKeys, pjLabelValues := kubeLabelsToPrometheusLabels(filterWithBlacklist(pj.Labels), "label_")
-		pjLabelKeys = append([]string{"prow_job_name", "prow_job_namespace", "prow_job_agent"}, pjLabelKeys...)
-		pjLabelValues = append([]string{pj.Name, pj.Namespace, agent}, pjLabelValues...)
+		pjLabelKeys = append([]string{"job_name", "job_namespace", "job_agent"}, pjLabelKeys...)
+		pjLabelValues = append([]string{pj.Spec.Job, pj.Namespace, agent}, pjLabelValues...)
 		labelDesc := prometheus.NewDesc(
 			"prow_job_labels",
 			"Kubernetes labels converted to Prometheus labels.",
@@ -70,13 +73,13 @@ func (pjc prowJobCollector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			labelDesc,
 			prometheus.GaugeValue,
-			// always 1 since there is only 1 prow job for each namespace and each prow job name
+			// See README.md for details
 			float64(1),
 			pjLabelValues...,
 		)
 		pjAnnotationKeys, pjAnnotationValues := kubeLabelsToPrometheusLabels(pj.Annotations, "annotation_")
-		pjAnnotationKeys = append([]string{"prow_job_name", "prow_job_namespace", "prow_job_agent"}, pjAnnotationKeys...)
-		pjAnnotationValues = append([]string{pj.Name, pj.Namespace, agent}, pjAnnotationValues...)
+		pjAnnotationKeys = append([]string{"job_name", "job_namespace", "job_agent"}, pjAnnotationKeys...)
+		pjAnnotationValues = append([]string{pj.Spec.Job, pj.Namespace, agent}, pjAnnotationValues...)
 		annotationDesc := prometheus.NewDesc(
 			"prow_job_annotations",
 			"Kubernetes annotations converted to Prometheus labels.",
@@ -89,6 +92,23 @@ func (pjc prowJobCollector) Collect(ch chan<- prometheus.Metric) {
 			pjAnnotationValues...,
 		)
 	}
+}
+
+func getLatest(jobs []*prowapi.ProwJob) map[string]*prowapi.ProwJob {
+	latest := map[string]time.Time{}
+	latestJobs := map[string]*prowapi.ProwJob{}
+	for _, job := range jobs {
+		if _, ok := latest[job.Spec.Job]; !ok {
+			latest[job.Spec.Job] = job.Status.StartTime.Time
+			latestJobs[job.Spec.Job] = job
+			continue
+		}
+		if job.Status.StartTime.Time.After(latest[job.Spec.Job]) {
+			latest[job.Spec.Job] = job.Status.StartTime.Time
+			latestJobs[job.Spec.Job] = job
+		}
+	}
+	return latestJobs
 }
 
 var (

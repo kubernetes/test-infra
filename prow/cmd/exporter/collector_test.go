@@ -19,8 +19,12 @@ package main
 import (
 	"reflect"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 func TestKubeLabelsToPrometheusLabels(t *testing.T) {
@@ -115,6 +119,103 @@ func TestFilterWithBlacklist(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.description, func(t *testing.T) {
 			actual := filterWithBlacklist(tc.labels)
+			assertEqual(t, actual, tc.expected)
+		})
+	}
+}
+
+func TestGetLatest(t *testing.T) {
+	time1 := time.Now()
+	time2 := time1.Add(time.Minute)
+	time3 := time2.Add(time.Minute)
+
+	testcases := []struct {
+		description string
+		jobs        []*prowapi.ProwJob
+		expected    map[string]*prowapi.ProwJob
+	}{
+		{
+			description: "nil jobs",
+			jobs:        nil,
+			expected:    map[string]*prowapi.ProwJob{},
+		},
+		{
+			description: "jobs with or without StartTime",
+			jobs: []*prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job0",
+					},
+					Status: prowapi.ProwJobStatus{},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job1",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time1}},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job1",
+					},
+					Status: prowapi.ProwJobStatus{},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job2",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time1}},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job2",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time3}},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job2",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time2}},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job3",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time3}},
+				},
+			},
+			expected: map[string]*prowapi.ProwJob{
+				"job0": {
+					Spec: prowapi.ProwJobSpec{
+						Job: "job0",
+					},
+					Status: prowapi.ProwJobStatus{},
+				},
+				"job1": {
+					Spec: prowapi.ProwJobSpec{
+						Job: "job1",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time1}},
+				},
+				"job2": {
+					Spec: prowapi.ProwJobSpec{
+						Job: "job2",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time3}},
+				},
+				"job3": {
+					Spec: prowapi.ProwJobSpec{
+						Job: "job3",
+					},
+					Status: prowapi.ProwJobStatus{StartTime: metav1.Time{Time: time3}},
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			actual := getLatest(tc.jobs)
 			assertEqual(t, actual, tc.expected)
 		})
 	}
