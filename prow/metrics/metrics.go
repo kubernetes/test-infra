@@ -33,22 +33,33 @@ import (
 
 const metricsPort = 9090
 
-// ExposeMetrics chooses whether to serve or push metrics for the service
-func ExposeMetrics(component string, pushGateway config.PushGateway) {
+// ExposeMetricsWithRegistry chooses whether to serve or push metrics for the service with the registry
+func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, reg *prometheus.Registry) {
 	if pushGateway.Endpoint != "" {
 		pushMetrics(component, pushGateway.Endpoint, pushGateway.Interval.Duration)
 		if pushGateway.ServeMetrics {
-			serveMetrics()
+			serveMetrics(reg)
 		}
 	} else {
-		serveMetrics()
+		serveMetrics(reg)
 	}
 }
 
+// ExposeMetrics chooses whether to serve or push metrics for the service
+func ExposeMetrics(component string, pushGateway config.PushGateway) {
+	ExposeMetricsWithRegistry(component, pushGateway, nil)
+}
+
 // serveMetrics serves prometheus metrics for the service
-func serveMetrics() {
+func serveMetrics(reg *prometheus.Registry) {
+	var handler http.Handler
+	if reg == nil {
+		handler = promhttp.Handler()
+	} else {
+		handler = promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+	}
 	metricsMux := http.NewServeMux()
-	metricsMux.Handle("/metrics", promhttp.Handler())
+	metricsMux.Handle("/metrics", handler)
 	server := &http.Server{Addr: ":" + strconv.Itoa(metricsPort), Handler: metricsMux}
 	interrupts.ListenAndServe(server, 5*time.Second)
 }
