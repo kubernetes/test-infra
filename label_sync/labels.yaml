@@ -628,6 +628,12 @@ default:
       addedBy: anyone
       previously:
       - name: sig/big-data
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to ug-vmware.
+      name: ug/vmware
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: ee9900
       description: Denotes a PR that changes 100-499 lines, ignoring generated files.
       name: size/L
