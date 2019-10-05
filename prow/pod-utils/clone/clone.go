@@ -165,7 +165,7 @@ func (g *gitCtx) gitHeadTimestamp() (int, error) {
 		logrus.WithError(err).Debug("Could not obtain timestamp of git HEAD")
 		return 0, err
 	}
-	timestamp, convErr := strconv.Atoi(string(gitOutput))
+	timestamp, convErr := strconv.Atoi(strings.TrimSpace(string(gitOutput)))
 	if convErr != nil {
 		logrus.WithError(convErr).Errorf("Failed to parse timestamp %q", gitOutput)
 		return 0, convErr
