@@ -910,6 +910,22 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	}
 }
 
+// defaultPresubmits defaults the presubmits for one repo
+func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
+	for idx, ps := range presubmits {
+		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
+			return err
+		}
+	}
+	c.defaultPresubmitFields(presubmits)
+	if err := SetPresubmitRegexes(presubmits); err != nil {
+		return fmt.Errorf("could not set regex: %v", err)
+	}
+
+	return nil
+}
+
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
@@ -935,13 +951,6 @@ func (c *Config) finalizeJobConfig() error {
 		}
 		c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
 
-		for repo, vs := range c.Presubmits {
-			for i := range vs {
-				setPresubmitDecorationDefaults(c, &vs[i], repo)
-			}
-			c.AllRepos.Insert(repo)
-		}
-
 		for repo, js := range c.Postsubmits {
 			for i := range js {
 				setPostsubmitDecorationDefaults(c, &js[i], repo)
@@ -954,13 +963,14 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 
-	// Ensure that regexes are valid and set defaults.
-	for _, vs := range c.Presubmits {
-		c.defaultPresubmitFields(vs)
-		if err := SetPresubmitRegexes(vs); err != nil {
-			return fmt.Errorf("could not set regex: %v", err)
+	for repo, jobs := range c.Presubmits {
+		if err := defaultPresubmits(jobs, c, repo); err != nil {
+			return err
 		}
+		c.AllRepos.Insert(repo)
 	}
+
+	// Ensure that regexes are valid and set defaults.
 	for _, js := range c.Postsubmits {
 		c.defaultPostsubmitFields(js)
 		if err := SetPostsubmitRegexes(js); err != nil {
@@ -969,12 +979,6 @@ func (c *Config) finalizeJobConfig() error {
 	}
 
 	c.defaultPeriodicFields(c.Periodics)
-
-	for _, v := range c.AllPresubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
-			return err
-		}
-	}
 
 	for _, v := range c.AllPostsubmits(nil) {
 		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
