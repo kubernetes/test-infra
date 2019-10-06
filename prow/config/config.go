@@ -156,10 +156,7 @@ type InRepoConfig struct {
 	Enabled map[string]*bool `json:"enabled,omitempty"`
 }
 
-// InRepoConfigEnabled returns whether InRepoConfig is enabled. Currently
-// a no-op that always returns false, as the underlying feature is not implemented
-// yet. See https://github.com/kubernetes/test-infra/issues/13370 for a current
-// status.
+// InRepoConfigEnabled returns whether InRepoConfig is enabled for a given repository.
 func (c *Config) InRepoConfigEnabled(identifier string) bool {
 	// Used in tests
 	if c.FakeInRepoConfig != nil {
@@ -265,12 +262,11 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 	return rg.baseSHA, nil
 }
 
-// GetPresubmits will return all presumits for the given identifier.
-// Once https://github.com/kubernetes/test-infra/issues/13370 is resolved, it will
-// also return Presubmits that are versioned inside the tested repo, if that feature
+// GetPresubmits will return all presumits for the given identifier. This includes
+// Presubmits that are versioned inside the tested repo, if the `inrepoconfig feature
 // is enabled.
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
-// also need the result of that GitHub call just keep a pointer to its result, bust must
+// also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 	if identifier == "" {
@@ -292,13 +288,15 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		}
 		headSHAs = append(headSHAs, headSHA)
 	}
-	// Pending implementation of https://github.com/kubernetes/test-infra/issues/13370
-	// Currently, only a fake implementation exists for tests.
-	_ = baseSHA
 	if c.FakeInRepoConfig != nil {
 		return append(c.PresubmitsStatic[identifier], c.FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
 	}
-	return nil, errors.New("inrepoconfig is not yet implemented :/")
+	prowYAML, err := defaultProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(c.Presubmits[identifier], prowYAML.Presubmits...), nil
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories

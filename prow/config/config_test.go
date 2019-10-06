@@ -37,6 +37,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -3538,5 +3539,93 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				t.Errorf("Expected %t, got %t", tc.expected, result)
 			}
 		})
+	}
+}
+
+func TestGetPresubmitsDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T) {
+	t.Parallel()
+
+	var baseSHAGetterCalled, headSHAGetterCalled bool
+	baseSHAGetter := func() (string, error) {
+		baseSHAGetterCalled = true
+		return "", nil
+	}
+	headSHAGetter := func() (string, error) {
+		headSHAGetterCalled = true
+		return "", nil
+	}
+
+	c := &Config{}
+	if _, err := c.GetPresubmits(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+		t.Fatalf("error calling GetPresubmits: %v", err)
+	}
+	if baseSHAGetterCalled {
+		t.Error("baseSHAGetter got called")
+	}
+	if headSHAGetterCalled {
+		t.Error("headSHAGetter got called")
+	}
+}
+
+func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
+	t.Parallel()
+
+	org, repo := "org", "repo"
+	c := &Config{
+		ProwConfig: ProwConfig{
+			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+			PodNamespace: "default",
+		},
+		JobConfig: JobConfig{
+			Presubmits: map[string][]Presubmit{
+				org + "/" + repo: {{
+					JobBase:  JobBase{Name: "my-static-presubmit"},
+					Reporter: Reporter{Context: "my-static-presubmit"},
+				}},
+			},
+		},
+	}
+
+	prowYAMLContent := map[string][]byte{
+		"prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+	}
+
+	lg, gc, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making local git repo: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Error cleaning LocalGit: %v", err)
+		}
+		if err := gc.Clean(); err != nil {
+			t.Errorf("Error cleaning Client: %v", err)
+		}
+	}()
+
+	if err := lg.MakeFakeRepo(org, repo); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+
+	if err := lg.AddCommit(org, repo, prowYAMLContent); err != nil {
+		t.Fatalf("failed to add commit: %v", err)
+	}
+	baseSHA, err := lg.RevParse(org, repo, "master")
+	if err != nil {
+		t.Fatalf("failed to get baseSHA: %v", err)
+	}
+
+	presubmits, err := c.GetPresubmits(gc,
+		org+"/"+repo,
+		func() (string, error) { return baseSHA, nil },
+	)
+	if err != nil {
+		t.Fatalf("Error calling GetPresubmits: %v", err)
+	}
+
+	if n := len(presubmits); n != 2 ||
+		presubmits[0].Name != "my-static-presubmit" ||
+		presubmits[1].Name != "hans" {
+		t.Errorf(`expected exactly two presubmits named "my-static-presubmit" and "hans", got %d (%v)`, n, presubmits)
 	}
 }

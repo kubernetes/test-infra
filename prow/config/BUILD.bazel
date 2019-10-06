@@ -11,6 +11,7 @@ go_test(
     srcs = [
         "branch_protection_test.go",
         "config_test.go",
+        "inrepoconfig_test.go",
         "jobs_test.go",
         "tide_test.go",
     ],
@@ -23,6 +24,7 @@ go_test(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/git:go_default_library",
+        "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/kube:go_default_library",
@@ -43,6 +45,7 @@ go_library(
         "agent.go",
         "branch_protection.go",
         "config.go",
+        "inrepoconfig.go",
         "jobs.go",
         "tide.go",
     ],
