@@ -34,3 +34,5 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_chainer-operator/kubeflow-chainer-operator-postsubmit
 - name: kubeflow-arena-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_arena/kubeflow-arena-postsubmit
+- name: kubeflow-xgboost-operator-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_xgboost-operator/kubeflow-xgboost-operator-postsubmit

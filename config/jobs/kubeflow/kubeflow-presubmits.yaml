@@ -345,6 +345,19 @@ presubmits:
         args:
         - --test_result_folder
         - upgrade_test
+  kubeflow/xgboost-operator:
+  - name: kubeflow-xgboost-operator-presubmit
+    always_run: true         # Run for every PR, or only when requested.
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Presubmit tests for kubeflow/xgboost-operator.
+      testgrid-num-columns-recent: '30'
 #   - name: kubeflow-pipeline-e2e-test-gce-minikube
 #     always_run: true
 #     decorate: true
