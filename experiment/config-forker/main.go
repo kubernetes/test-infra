@@ -76,7 +76,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 
 func generatePresubmits(c config.JobConfig, version string) (map[string][]config.Presubmit, error) {
 	newPresubmits := map[string][]config.Presubmit{}
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic() {
 		for _, presubmit := range presubmits {
 			if presubmit.Annotations[forkAnnotation] != "true" {
 				continue
