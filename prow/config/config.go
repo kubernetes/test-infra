@@ -1420,6 +1420,9 @@ func validateAgent(v JobBase, podNamespace string) error {
 		// TODO(fejta): update plank to allow this (depends on client change)
 		return fmt.Errorf("namespace customization requires agent: %s or %s (found %q)", b, p, agent)
 	}
+	if agent == b {
+		logrus.Warningf("knative-build jobs types are no longer supported, these jobs will stop working Nov 2019")
+	}
 	return nil
 }
 
