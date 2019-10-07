@@ -805,7 +805,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: &Policy{Protect: no},
+			expected: nil,
 		},
 	}
 
