@@ -316,9 +316,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
@@ -429,9 +426,6 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu2-k8sbeta-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default:
@@ -557,15 +551,18 @@ jobs:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -608,15 +605,18 @@ jobs:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-slow:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable1-ingress:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
@@ -655,15 +655,18 @@ jobs:
   ci-kubernetes-e2e-gce-cos-k8sstable2-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable2-ingress:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
@@ -702,14 +705,18 @@ jobs:
   ci-kubernetes-e2e-gce-cos-k8sstable3-default:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable3-ingress:
     interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: [sig-cloud-provider-gcp]
