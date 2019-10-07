@@ -926,6 +926,21 @@ func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 	return nil
 }
 
+// defaultPostsubmits defaults the postsubmits for one repo
+func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
+	for idx, ps := range postsubmits {
+		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
+			return err
+		}
+	}
+	c.defaultPostsubmitFields(postsubmits)
+	if err := SetPostsubmitRegexes(postsubmits); err != nil {
+		return fmt.Errorf("could not set regex: %v", err)
+	}
+	return nil
+}
+
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
@@ -951,13 +966,6 @@ func (c *Config) finalizeJobConfig() error {
 		}
 		c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
 
-		for repo, js := range c.Postsubmits {
-			for i := range js {
-				setPostsubmitDecorationDefaults(c, &js[i], repo)
-			}
-			c.AllRepos.Insert(repo)
-		}
-
 		for i := range c.Periodics {
 			setPeriodicDecorationDefaults(c, &c.Periodics[i])
 		}
@@ -970,21 +978,14 @@ func (c *Config) finalizeJobConfig() error {
 		c.AllRepos.Insert(repo)
 	}
 
-	// Ensure that regexes are valid and set defaults.
-	for _, js := range c.Postsubmits {
-		c.defaultPostsubmitFields(js)
-		if err := SetPostsubmitRegexes(js); err != nil {
-			return fmt.Errorf("could not set regex: %v", err)
+	for repo, jobs := range c.Postsubmits {
+		if err := defaultPostsubmits(jobs, c, repo); err != nil {
+			return err
 		}
+		c.AllRepos.Insert(repo)
 	}
 
 	c.defaultPeriodicFields(c.Periodics)
-
-	for _, v := range c.AllPostsubmits(nil) {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
-			return err
-		}
-	}
 
 	for _, v := range c.AllPeriodics() {
 		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
