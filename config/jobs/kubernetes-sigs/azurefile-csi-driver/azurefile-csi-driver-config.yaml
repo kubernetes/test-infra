@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -32,7 +32,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -57,7 +57,7 @@ presubmits:
       preset-cloudprovider-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -84,7 +84,7 @@ presubmits:
       preset-cloudprovider-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -112,7 +112,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -121,6 +121,7 @@ presubmits:
         - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_e2e"
+        - "--timeout=450"
         - --
         - "--gce-ssh="
         - "--test=true"
@@ -141,6 +142,7 @@ presubmits:
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
         - "--test-azure-file-csi-driver=True"
+        - "--timeout=420m"
         securityContext:
           privileged: true
     annotations:
