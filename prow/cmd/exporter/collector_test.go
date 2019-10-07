@@ -23,8 +23,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/util/diff"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/sirupsen/logrus"
@@ -84,7 +84,7 @@ func TestKubeLabelsToPrometheusLabels(t *testing.T) {
 
 func assertEqual(t *testing.T, actual, expected interface{}) {
 	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf("actual differs from expected:\n%s", diff.ObjectReflectDiff(expected, actual))
+		t.Errorf("actual differs from expected:\n%s", cmp.Diff(expected, actual))
 	}
 }
 
