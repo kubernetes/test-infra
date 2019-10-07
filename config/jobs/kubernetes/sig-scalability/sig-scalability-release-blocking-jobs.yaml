@@ -67,6 +67,10 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
+      # TODO(mborsz): Revert cos override once we confirm that this version works.
+      - --env=KUBE_GCI_VERSION=cos-oss-scalability-r77-12371-83-0-b4295616-10-06
+      - --env=KUBE_GCE_MASTER_PROJECT=gke-node-images-test
+      - --env=KUBE_GCE_NODE_PROJECT=gke-node-images-test
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
