@@ -723,11 +723,16 @@ func (c *Cluster) buildHyperKube() error {
 	if err := c.dockerLogin(); err != nil {
 		return err
 	}
-	log.Println("Building and pushing hyperkube.")
-	pushHyperkube := util.K8s("kubernetes", "hack", "dev-push-hyperkube.sh")
-	cmd := exec.Command(pushHyperkube)
+	log.Println("Building hyperkube.")
+	cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "WHAT=cmd/hyperkube")
 	// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
 	cmd.Stdout = ioutil.Discard
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	log.Println("Pushing hyperkube.")
+	hyperkube_bin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
+	cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkube_bin))
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
