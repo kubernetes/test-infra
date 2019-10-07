@@ -31,6 +31,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	prowgithub "k8s.io/test-infra/prow/github"
 )
 
 const github = "github.com"
@@ -208,6 +210,7 @@ func (r *Repo) Clean() error {
 func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 	cmd := exec.Command(r.git, arg...)
 	cmd.Dir = r.Dir
+	r.logger.WithField("args", cmd.Args).WithField("dir", cmd.Dir).Debug("Constructed git command")
 	return cmd
 }
 
@@ -269,6 +272,42 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+// MergeAndCheckout merges the provided headSHAs in order onto baseSHA using the provided strategy.
+// Only the `merge` and `squash` strategies are supported.
+func (r *Repo) MergeAndCheckout(baseSHA string, headSHAs []string, mergeStrategy prowgithub.PullRequestMergeType) error {
+	if baseSHA == "" {
+		return errors.New("baseSHA must be set")
+	}
+	if len(headSHAs) == 0 {
+		return errors.New("at least one headSHA must be provided")
+	}
+	r.logger.Infof("Merging headSHAs %v onto base %s using strategy %s", headSHAs, baseSHA, mergeStrategy)
+
+	mergeFlag := ""
+	switch mergeStrategy {
+	case prowgithub.MergeMerge:
+		mergeFlag = "--no-ff"
+	case prowgithub.MergeSquash:
+		mergeFlag = "--squash"
+	default:
+		return fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
+	}
+
+	if b, err := r.gitCommand("checkout", baseSHA).CombinedOutput(); err != nil {
+		return fmt.Errorf("git checkout failed for revision %q: %v. output: %s", baseSHA, err, string(b))
+	}
+	if b, err := r.gitCommand("config", "user.email", "denna@protonmail.com").CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to set email prior to merging: %v. output: %s", err, string(b))
+	}
+	for _, headSHA := range headSHAs {
+		if b, err := r.gitCommand("merge", mergeFlag, "--no-stat", "-m merge", headSHA).CombinedOutput(); err != nil {
+			return fmt.Errorf("merge failed with error %v. output: %s", err, string(b))
+		}
+	}
+
+	return nil
 }
 
 // Am tries to apply the patch in the given path into the current branch
