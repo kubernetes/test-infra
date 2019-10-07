@@ -6,7 +6,7 @@ periodics:
     testgrid-tab-name: kind-master-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes master cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '3'
+    testgrid-num-columns-recent: '6'
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -47,7 +47,7 @@ periodics:
     testgrid-tab-name: kind-ipv6-master-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '3'
+    testgrid-num-columns-recent: '6'
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -102,7 +102,7 @@ periodics:
     testgrid-tab-name: kind-1.16-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.16 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '3'
+    testgrid-num-columns-recent: '6'
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -143,7 +143,7 @@ periodics:
     testgrid-tab-name: kind-ipv6-1.16-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.16 IPv6 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,kubernetes-release-team@googlegroups.com
-    testgrid-num-columns-recent: '3'
+    testgrid-num-columns-recent: '6'
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -184,7 +184,7 @@ periodics:
     testgrid-tab-name: kind-1.15-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.15 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-managers@kubernetes.io
-    testgrid-num-columns-recent: '3'
+    testgrid-num-columns-recent: '6'
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -225,7 +225,7 @@ periodics:
     testgrid-tab-name: kind-1.14-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.14 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-managers@kubernetes.io
-    testgrid-num-columns-recent: '3'
+    testgrid-num-columns-recent: '6'
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -266,7 +266,7 @@ periodics:
     testgrid-tab-name: kind-1.13-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.13 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-managers@kubernetes.io
-    testgrid-num-columns-recent: '3'
+    testgrid-num-columns-recent: '6'
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
