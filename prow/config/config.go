@@ -941,6 +941,17 @@ func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error 
 	return nil
 }
 
+// defaultPeriodics defaults periodics
+func defaultPeriodics(periodics []Periodic, c *Config) error {
+	c.defaultPeriodicFields(periodics)
+	for _, periodic := range periodics {
+		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, periodic.BuildSpec, c.Presets); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
@@ -985,12 +996,8 @@ func (c *Config) finalizeJobConfig() error {
 		c.AllRepos.Insert(repo)
 	}
 
-	c.defaultPeriodicFields(c.Periodics)
-
-	for _, v := range c.AllPeriodics() {
-		if err := resolvePresets(v.Name, v.Labels, v.Spec, v.BuildSpec, c.Presets); err != nil {
-			return err
-		}
+	if err := defaultPeriodics(c.Periodics, c); err != nil {
+		return err
 	}
 
 	return nil
