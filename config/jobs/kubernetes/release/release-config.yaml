@@ -60,42 +60,6 @@ presubmits:
       testgrid-tab-name: release-test
       testgrid-alert-email: release-managers@kubernetes.io
       testgrid-num-columns-recent: '30'
-  - name: pull-release-unit
-    always_run: true # TODO(fejta): merge with pull-release-test
-    decorate: true
-    path_alias: k8s.io/release
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
-        command:
-        - make
-        args:
-        - test
-    annotations:
-      testgrid-dashboards: sig-release-misc
-      testgrid-tab-name: release-unit
-      testgrid-alert-email: release-managers@kubernetes.io
-      testgrid-num-columns-recent: '30'
-  - name: pull-release-verify
-    always_run: true # TODO(fejta): merge with pull-release-test
-    optional: true
-    decorate: true
-    path_alias: k8s.io/release
-    labels:
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - verify
-    annotations:
-      testgrid-dashboards: sig-release-misc
-      testgrid-tab-name: release-verify
-      testgrid-alert-email: release-managers@kubernetes.io
-      testgrid-num-columns-recent: '30'
 # package tests
 periodics:
 - name: periodic-release-verify-packages-debs
