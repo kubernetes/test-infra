@@ -5,7 +5,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.28.1
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - bazel
         args:
@@ -19,7 +19,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.28.1
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - ./hack/verify-all.sh
     annotations:
