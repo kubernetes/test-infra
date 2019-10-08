@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"github.com/GoogleCloudPlatform/testgrid/config"
+	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"path"
 	"strconv"
 	"strings"
@@ -50,10 +51,10 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	mustNotMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "false"
 	dashboards, addToDashboards := j.Annotations[testgridDashboardsAnnotation]
 	mightMakeGroup := (mustMakeGroup || addToDashboards || jobType != prowapi.PresubmitJob) && !mustNotMakeGroup
-	var testGroup *config.TestGroup
+	var testGroup *configpb.TestGroup
 
 	if mightMakeGroup {
-		if testGroup = c.config.FindTestGroup(testGroupName); testGroup != nil {
+		if testGroup = config.FindTestGroup(testGroupName, c.config); testGroup != nil {
 			if mustMakeGroup {
 				return fmt.Errorf("test group %q already exists", testGroupName)
 			}
@@ -67,7 +68,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 				return fmt.Errorf("job %s: couldn't figure out a default decoration config", j.Name)
 			}
 
-			testGroup = &config.TestGroup{
+			testGroup = &configpb.TestGroup{
 				Name:      testGroupName,
 				GcsPrefix: path.Join(prefix, prowGCS.RootForSpec(&downwardapi.JobSpec{Job: j.Name, Type: jobType})),
 			}
@@ -77,7 +78,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 			c.config.TestGroups = append(c.config.TestGroups, testGroup)
 		}
 	} else {
-		testGroup = c.config.FindTestGroup(testGroupName)
+		testGroup = config.FindTestGroup(testGroupName, c.config)
 	}
 
 	if testGroup == nil {
@@ -129,7 +130,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 		firstDashboard := true
 		for _, dashboardName := range strings.Split(dashboards, ",") {
 			dashboardName = strings.TrimSpace(dashboardName)
-			d := c.config.FindDashboard(dashboardName)
+			d := config.FindDashboard(dashboardName, c.config)
 			if d == nil {
 				return fmt.Errorf("couldn't find dashboard %q for job %q", dashboardName, j.Name)
 			}
@@ -138,16 +139,16 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 					repo = fmt.Sprintf("%s/%s", j.ExtraRefs[0].Org, j.ExtraRefs[0].Repo)
 				}
 			}
-			var codeSearchLinkTemplate, openBugLinkTemplate *config.LinkTemplate
+			var codeSearchLinkTemplate, openBugLinkTemplate *configpb.LinkTemplate
 			if repo != "" {
-				codeSearchLinkTemplate = &config.LinkTemplate{
+				codeSearchLinkTemplate = &configpb.LinkTemplate{
 					Url: fmt.Sprintf("https://github.com/%s/compare/<start-custom-0>...<end-custom-0>", repo),
 				}
-				openBugLinkTemplate = &config.LinkTemplate{
+				openBugLinkTemplate = &configpb.LinkTemplate{
 					Url: fmt.Sprintf("https://github.com/%s/issues/", repo),
 				}
 			}
-			dt := &config.DashboardTab{
+			dt := &configpb.DashboardTab{
 				Name:                  tabName,
 				TestGroupName:         testGroupName,
 				Description:           description,
@@ -157,7 +158,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 			if firstDashboard {
 				firstDashboard = false
 				if emails, ok := j.Annotations[testgridEmailAnnotation]; ok {
-					dt.AlertOptions = &config.DashboardTabAlertOptions{AlertMailToAddresses: emails}
+					dt.AlertOptions = &configpb.DashboardTabAlertOptions{AlertMailToAddresses: emails}
 				}
 			}
 			if c.defaultConfig != nil {

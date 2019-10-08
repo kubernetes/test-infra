@@ -19,7 +19,7 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"io/ioutil"
 	"os"
 	"reflect"

@@ -29,7 +29,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	config_pb "github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/config"
+	config_pb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prow_config "k8s.io/test-infra/prow/config"
 )
 
@@ -80,7 +81,7 @@ func TestMain(m *testing.M) {
 	}
 
 	var err error
-	cfg, err = config_pb.Read(*protoPath, context.Background(), nil)
+	cfg, err = config.Read(*protoPath, context.Background(), nil)
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
