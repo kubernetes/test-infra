@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -45,7 +45,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -93,7 +93,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -154,7 +154,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -214,7 +214,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -276,7 +276,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -327,7 +327,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -349,7 +349,7 @@ periodics:
     testgrid-tab-name: scheduler
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=55
@@ -377,7 +377,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -412,7 +412,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191002-1ea0701-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
