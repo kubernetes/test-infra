@@ -63,6 +63,7 @@ filegroup(
         "//experiment/image-bumper:all-srcs",
         "//experiment/logviewer/gcsreader:all-srcs",
         "//experiment/manual-trigger:all-srcs",
+        "//experiment/prow-autobump:all-srcs",
         "//experiment/resultstore:all-srcs",
         "//experiment/service-account-creator:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
