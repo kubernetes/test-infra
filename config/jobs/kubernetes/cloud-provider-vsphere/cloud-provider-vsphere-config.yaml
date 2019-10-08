@@ -29,7 +29,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-fmt
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
+    run_if_changed: '\.go$|hack/check-format\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -47,7 +47,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-lint
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    run_if_changed: '\.go$|hack/check-lint\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -65,7 +65,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-vet
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    run_if_changed: '\.go$|hack/check-vet\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -122,7 +122,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-staticcheck
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-staticcheck\.sh'
+    run_if_changed: '\.go$|hack/check-staticcheck\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -145,7 +145,8 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
     skip_report: false
     spec:
       containers:
@@ -165,7 +166,8 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
     skip_report: false
     spec:
       containers:
@@ -188,7 +190,8 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
     skip_report: false
     spec:
       containers:
