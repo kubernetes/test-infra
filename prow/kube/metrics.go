@@ -78,10 +78,9 @@ func getJobLabelMap(pjs []prowapi.ProwJob) map[jobLabel]float64 {
 }
 
 func getJobLabel(pj prowapi.ProwJob) jobLabel {
-	jl := jobLabel{jobName: pj.Spec.Job, jobType: string(pj.Spec.Type), state: string(pj.Status.State)}
+	jl := jobLabel{jobNamespace: pj.Namespace, jobName: pj.Spec.Job, jobType: string(pj.Spec.Type), state: string(pj.Status.State)}
 
 	if pj.Spec.Refs != nil {
-		jl.jobNamespace = pj.Namespace
 		jl.org = pj.Spec.Refs.Org
 		jl.repo = pj.Spec.Refs.Repo
 		jl.baseRef = pj.Spec.Refs.BaseRef
