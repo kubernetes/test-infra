@@ -13,8 +13,8 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
         - --
         - make
@@ -37,8 +37,8 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
         - --
         - make
@@ -62,8 +62,8 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
         - --
         - make
@@ -89,8 +89,8 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-upstream/pr-logs"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
         - --
         - make
@@ -118,7 +118,7 @@ presubmits:
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--repo=k8s.io/kubernetes"
-        - "--repo=github.com/kubernetes-sigs/azurefile-csi-driver=$(PULL_REFS)"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_e2e"
         - "--timeout=450"
