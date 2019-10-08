@@ -389,6 +389,31 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
 
 - interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=520
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
+      - --env=CLUSTER_DNS_CORE_DNS=false,
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=500m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20190903-df3b2f0-master
+
+- interval: 30m
   name: ci-kubernetes-e2e-gci-gke-ingress
   labels:
     preset-service-account: "true"
