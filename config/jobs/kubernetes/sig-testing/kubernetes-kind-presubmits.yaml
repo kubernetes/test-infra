@@ -231,7 +231,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
-      timeout: 40m
+      timeout: 60m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -277,10 +277,10 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
+      preset-dind-memory-backed: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
-      timeout: 40m
+      timeout: 60m
     path_alias: k8s.io/kubernetes
     spec:
       containers:
