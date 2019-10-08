@@ -379,11 +379,31 @@ type Plank struct {
 	// stuck in running state. Defaults to two days.
 	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
-	// that request to have their PodSpecs decorated
+	// that request to have their PodSpecs decorated.
+	// This will be deprecated on April 2020, and it will be replaces with DefaultDecorationConfigs['*'] instead.
 	DefaultDecorationConfig *prowapi.DecorationConfig `json:"default_decoration_config,omitempty"`
+
+	// DefaultDecorationConfigs holds the default decoration config for specific values.
+	// This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
+	// if extraRefs[0] exists. The missing fields will be merged with the DefaultDecorationConfig.
+	// Use `org/repo`, `org` or `*` as a key.
+	DefaultDecorationConfigs map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
+
 	// JobURLPrefixConfig is the host and path prefix under which job details
 	// will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
 	JobURLPrefixConfig map[string]string `json:"job_url_prefix_config,omitempty"`
+}
+
+func (p Plank) GetDefaultDecorationConfigs(repo string) *prowapi.DecorationConfig {
+	def := p.DefaultDecorationConfigs["*"]
+	if dcByRepo, ok := p.DefaultDecorationConfigs[repo]; ok {
+		return dcByRepo.ApplyDefault(def)
+	}
+	org := strings.Split(repo, "/")[0]
+	if dcByOrg, ok := p.DefaultDecorationConfigs[org]; ok {
+		return dcByOrg.ApplyDefault(def)
+	}
+	return def
 }
 
 func (p Plank) GetJobURLPrefix(refs *prowapi.Refs) string {
@@ -864,21 +884,29 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	return c, nil
 }
 
-func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
+func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
 	if ps.Decorate {
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		def := c.Plank.GetDefaultDecorationConfigs(repo)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
-func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit) {
+func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
 	if ps.Decorate {
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		def := c.Plank.GetDefaultDecorationConfigs(repo)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
 func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	if ps.Decorate {
-		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(c.Plank.DefaultDecorationConfig)
+		var orgRepo string
+		if len(ps.UtilityConfig.ExtraRefs) > 0 {
+			orgRepo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
+		}
+
+		def := c.Plank.GetDefaultDecorationConfigs(orgRepo)
+		ps.DecorationConfig = ps.DecorationConfig.ApplyDefault(def)
 	}
 }
 
@@ -898,16 +926,25 @@ func (c *Config) finalizeJobConfig() error {
 			return errors.New("no default GCS credentials secret provided for plank")
 		}
 
+		if c.Plank.DefaultDecorationConfig != nil && len(c.Plank.DefaultDecorationConfigs) == 0 {
+			logrus.Warning("default_decoration_config will be deprecated on April 2020, and it will be replaced with default_decoration_configs['*'].")
+		}
+
+		if len(c.Plank.DefaultDecorationConfigs) == 0 {
+			c.Plank.DefaultDecorationConfigs = make(map[string]*prowapi.DecorationConfig)
+		}
+		c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
+
 		for repo, vs := range c.Presubmits {
 			for i := range vs {
-				setPresubmitDecorationDefaults(c, &vs[i])
+				setPresubmitDecorationDefaults(c, &vs[i], repo)
 			}
 			c.AllRepos.Insert(repo)
 		}
 
 		for repo, js := range c.Postsubmits {
 			for i := range js {
-				setPostsubmitDecorationDefaults(c, &js[i])
+				setPostsubmitDecorationDefaults(c, &js[i], repo)
 			}
 			c.AllRepos.Insert(repo)
 		}
