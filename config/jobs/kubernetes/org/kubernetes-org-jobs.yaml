@@ -10,6 +10,7 @@ presubmits:
         - bazel
         args:
         - test
+        - --config=ci
         - //...
     annotations:
       testgrid-num-columns-recent: '30'
