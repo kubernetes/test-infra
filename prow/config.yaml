@@ -81,5 +81,5 @@ presets:
 - env:
   - name: GOPROXY
     value: "https://proxy.golang.org"
-  - name: BUILD_WITH_CONTAINER
+  - name: BUILD_LOCALLY
     value: "0"
