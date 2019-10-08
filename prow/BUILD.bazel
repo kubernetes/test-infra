@@ -11,6 +11,7 @@ prow_push(
         cmds = [
             "admission",
             "artifact-uploader",
+            "autobump",
             "branchprotector",
             "build",
             "checkconfig",
@@ -73,6 +74,7 @@ filegroup(
         "//prow/cluster:all-srcs",
         "//prow/cmd/admission:all-srcs",
         "//prow/cmd/artifact-uploader:all-srcs",
+        "//prow/cmd/autobump:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
         "//prow/cmd/build:all-srcs",
         "//prow/cmd/checkconfig:all-srcs",

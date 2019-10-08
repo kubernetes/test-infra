@@ -664,37 +664,6 @@ postsubmits:
       - name: creds
         secret:
           secretName: deployer-service-account
-  - name: post-test-infra-push-prow-autobump
-    cluster: test-infra-trusted
-    run_if_changed: '^(robots/pr-creator|experiment/prow-autobump)/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "prow-autobump"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the prow-autobump image
-    decorate: true
-    branches:
-    - ^master$
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-prow
-        - experiment/prow-autobump/
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /creds/service-account.json
-        volumeMounts:
-        - name: creds
-          mountPath: /creds
-      volumes:
-      - name: creds
-        secret:
-          secretName: deployer-service-account
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:

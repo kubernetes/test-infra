@@ -68,7 +68,7 @@ main() {
 }
 
 user-from-token() {
-	user=$(curl -H "Authorization: token $(cat ${token})" "https://api.github.com/user" | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
+	user=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
 }
 
 ensure-git-config() {

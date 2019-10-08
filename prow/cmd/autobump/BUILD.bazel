@@ -5,7 +5,11 @@ container_image(
     base = "@gcloud-go//image",
     directory = "/",
     entrypoint = ["/autobump.sh"],
-    files = ["autobump.sh", "bump.sh", "//robots/pr-creator:pr-creator"],
+    files = [
+        "autobump.sh",
+        "bump.sh",
+        "//robots/pr-creator",
+    ],
     stamp = True,
     visibility = ["//visibility:public"],
 )

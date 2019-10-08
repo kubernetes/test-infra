@@ -34,11 +34,6 @@ set -o pipefail
 # - Any job config files that reference Prow images (e.g. branchprotector, peribolos, config-bootstrapper)
 #   - NOTE: This script only update gcr.io/k8s-prow/* images so it is safe to run on the entire job config.
 #   - NOTE: If you define all ProwJob config in config.yaml you can omit this entirely.
-
-COMPONENT_FILE_DIR="prow/cluster"
-CONFIG_PATH="config/prow/config.yaml"
-JOB_CONFIG_PATH="config/jobs"
-
 COMPONENT_FILE_DIR="${COMPONENT_FILE_DIR:-}"
 CONFIG_PATH="${CONFIG_PATH:-}"
 JOB_CONFIG_PATH="${JOB_CONFIG_PATH:-}"
