@@ -38,8 +38,30 @@ presubmits:
       testgrid-tab-name: release-cluster-up
       testgrid-alert-email: release-managers@kubernetes.io
       testgrid-num-columns-recent: '30'
-  - name: pull-release-unit
+  - name: pull-release-test
     always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: launcher.gcr.io/google/bazel:0.29.1
+        command:
+        - ../test-infra/hack/bazel.sh
+        args:
+        - test
+        - //...
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-test
+      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-unit
+    always_run: true # TODO(fejta): merge with pull-release-test
     decorate: true
     path_alias: k8s.io/release
     spec:
@@ -55,7 +77,7 @@ presubmits:
       testgrid-alert-email: release-managers@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-verify
-    always_run: true
+    always_run: true # TODO(fejta): merge with pull-release-test
     optional: true
     decorate: true
     path_alias: k8s.io/release
@@ -69,8 +91,6 @@ presubmits:
         args:
         - make
         - verify
-        securityContext:
-          privileged: true
     annotations:
       testgrid-dashboards: sig-release-misc
       testgrid-tab-name: release-verify
