@@ -198,6 +198,9 @@ postsubmits:
         - "push-images"
         securityContext:
           privileged: true
+    rerun_auth_config:
+      github_users:
+      - codenrhoden
     annotations:
       testgrid-dashboards: vmware-postsubmits-vsphere-csi-driver
       testgrid-num-columns-recent: '20'
