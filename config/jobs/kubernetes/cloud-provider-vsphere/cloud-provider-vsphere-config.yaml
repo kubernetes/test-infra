@@ -149,7 +149,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         command:
         - "make"
         args:
@@ -169,7 +169,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         command:
         - "make"
         args:
@@ -192,7 +192,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         command:
         - "make"
         args:
@@ -223,7 +223,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         resources:
           requests:
             cpu: "1000m"
@@ -254,7 +254,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         resources:
           requests:
             cpu: "1000m"
@@ -291,7 +291,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -329,7 +329,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -367,7 +367,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -405,7 +405,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -446,7 +446,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -482,7 +482,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -518,7 +518,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -554,7 +554,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
