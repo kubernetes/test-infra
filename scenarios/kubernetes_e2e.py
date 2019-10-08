@@ -484,6 +484,9 @@ def main(args):
             '--dump=%s' % mode.artifacts,
         ]
 
+    if args.cmd_extract:
+        runner_args.append('--extract=%s' % check_output(args.cmd_extract))
+
     if args.service_account:
         runner_args.append(
             '--gcp-service-account=%s' % mode.add_service_account(args.service_account))
@@ -663,6 +666,8 @@ def create_parser():
         '--gcs-shared',
         default='gs://kubernetes-jenkins/shared-results/',
         help='Get shared build from this bucket')
+    parser.add_argument(
+        '--cmd-extract', help='Extract k8s binary version defined via a command.')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
