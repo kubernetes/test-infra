@@ -29,7 +29,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-fmt
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
+    run_if_changed: '\.go$|hack/check-format\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -47,7 +47,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-lint
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    run_if_changed: '\.go$|hack/check-lint\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -65,7 +65,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-vet
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    run_if_changed: '\.go$|hack/check-vet\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -122,7 +122,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-staticcheck
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-staticcheck\.sh'
+    run_if_changed: '\.go$|hack/check-staticcheck\.sh'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
@@ -145,11 +145,12 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         command:
         - "make"
         args:
@@ -165,11 +166,12 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         command:
         - "make"
         args:
@@ -188,11 +190,12 @@ presubmits:
     - ^master$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         command:
         - "make"
         args:
@@ -223,7 +226,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         resources:
           requests:
             cpu: "1000m"
@@ -254,7 +257,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:05583732
+      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
         resources:
           requests:
             cpu: "1000m"
@@ -291,7 +294,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -329,7 +332,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -367,7 +370,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -405,7 +408,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -446,7 +449,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -482,7 +485,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -518,7 +521,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
@@ -554,7 +557,7 @@ periodics:
   skip_submodules: true
   spec:
     containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:05583732
+    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
       command:
       - "make"
       args:
