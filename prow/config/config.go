@@ -1044,6 +1044,25 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 	return nil
 }
 
+// validatePeriodics validates a set of periodics
+func validatePeriodics(periodics []Periodic, podNamespace string) error {
+
+	// validate no duplicated periodics
+	validPeriodics := sets.NewString()
+	// Ensure that the periodic durations are valid and specs exist.
+	for _, p := range periodics {
+		if validPeriodics.Has(p.Name) {
+			return fmt.Errorf("duplicated periodic job : %s", p.Name)
+		}
+		validPeriodics.Insert(p.Name)
+		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, podNamespace); err != nil {
+			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
+		}
+	}
+
+	return nil
+}
+
 // validateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
@@ -1062,18 +1081,10 @@ func (c *Config) validateJobConfig() error {
 		}
 	}
 
-	// validate no duplicated periodics
-	validPeriodics := sets.NewString()
-	// Ensure that the periodic durations are valid and specs exist.
-	for _, p := range c.AllPeriodics() {
-		if validPeriodics.Has(p.Name) {
-			return fmt.Errorf("duplicated periodic job : %s", p.Name)
-		}
-		validPeriodics.Insert(p.Name)
-		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
-		}
+	if err := validatePeriodics(c.Periodics, c.PodNamespace); err != nil {
+		return err
 	}
+
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
 	// for child jobs.
 	for j, p := range c.Periodics {
