@@ -20,11 +20,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"testing"
 	"time"
 )
+
+func mockExecCommand(tag string) func(command string, args ...string) *exec.Cmd {
+	return func(command string, args ...string) *exec.Cmd {
+		cmd := exec.Command("echo", tag)
+		return cmd
+	}
+}
 
 func TestGetKube(t *testing.T) {
 	cases := []struct {
@@ -208,6 +216,49 @@ func TestExtractStrategies(t *testing.T) {
 
 		if gotURL != tc.expectURL || gotVersion != tc.expectVersion {
 			t.Errorf("extractStrategy(%q).Extract() wanted getKube(%q, %q), got getKube(%q, %q)", tc.option, tc.expectURL, tc.expectVersion, gotURL, gotVersion)
+		}
+	}
+}
+
+func TestGetGitVersion(t *testing.T) {
+	cases := []struct {
+		tag           string
+		expectVersion string
+	}{
+		{
+			"v1.13.2-gke.6-1-g3d848154da00a4",
+			"v1.13.2-gke.6.1+3d848154da00a4",
+		},
+		{
+			"v1.15.0-gke.7",
+			"v1.15.0-gke.7",
+		},
+		{
+			"v1.1.0-subversion-1-g8d1612a2f0f542",
+			"v1.1.0-subversion.1+8d1612a2f0f542",
+		},
+		{
+			"v1.15.0",
+			"v1.15.0",
+		},
+		{
+			"v1.15.0-gke.7\n",
+			"v1.15.0-gke.7",
+		},
+	}
+
+	defer func() { gitExecCommand = exec.Command }()
+
+	for _, tc := range cases {
+		gitExecCommand = mockExecCommand(tc.tag)
+
+		tag, err := getGitVersion()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if tag != tc.expectVersion {
+			t.Fatalf("tag: %s did not match expected tag: %s", tag, tc.expectVersion)
 		}
 	}
 }

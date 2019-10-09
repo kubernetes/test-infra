@@ -39,6 +39,7 @@ type extractMode int
 const (
 	none    extractMode = iota
 	local               // local
+	git                 // A git tag version from the repository (e.g. v1.13.7-gke.29)
 	gci                 // gci/FAMILY
 	gciCi               // gci/FAMILY/CI_VERSION
 	gke                 // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
@@ -58,6 +59,8 @@ type extractStrategy struct {
 	value     string
 }
 
+var gitExecCommand = exec.Command
+
 type extractStrategies []extractStrategy
 
 func (l *extractStrategies) String() string {
@@ -72,6 +75,7 @@ func (l *extractStrategies) String() string {
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(local)`: local,
+		`^(git)`:   git,
 		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+)?)?$`: gke,
 		`^gci/([\w-]+)$`:              gci,
 		`^gci/([\w-]+)/(.+)$`:         gciCi,
@@ -305,6 +309,25 @@ var gsutilCat = func(url string) ([]byte, error) {
 	return control.Output(exec.Command("gsutil", "cat", url))
 }
 
+// getGitVersion gets the kube git version tag.
+func getGitVersion() (string, error) {
+	tag, err := gitExecCommand("git", "describe", "--tags", "--abbrev=14").Output()
+	if err != nil {
+		return "", err
+	}
+
+	gitTag := strings.TrimSpace(string(tag))
+	dashes := strings.Count(gitTag, "-")
+
+	if dashes == 3 {
+		gitTag = regexp.MustCompile(`-([0-9]+)-g([0-9a-f]{14})$`).ReplaceAllString(gitTag, `.$1+$2`)
+	} else if dashes == 2 {
+		gitTag = regexp.MustCompile(`-g([0-9a-f]{14})$`).ReplaceAllString(gitTag, `+$1`)
+	}
+
+	return gitTag, nil
+}
+
 func setReleaseFromGcs(prefix, suffix string, getSrc bool) error {
 	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
 	release, err := gsutilCat(fmt.Sprintf("gs://%v/%v.txt", prefix, suffix))
@@ -485,9 +508,21 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		return setReleaseFromHTTP("kubernetes-release-dev/ci", e.option, extractSrc)
 	case rc, stable:
 		return setReleaseFromHTTP("kubernetes-release/release", e.option, extractSrc)
-	case version:
+	case version, git:
 		var url string
-		release := e.option
+		var release string
+
+		if e.mode == version {
+			release = e.option
+		} else if e.mode == git {
+			tag, err := getGitVersion()
+			if err != nil {
+				return fmt.Errorf("unable to get kube git version: %v", err)
+			}
+
+			release = tag
+		}
+
 		re := regexp.MustCompile(`(v\d+\.\d+\.\d+-gke.\d+)$`) // v1.8.0-gke.0
 		if re.FindStringSubmatch(release) != nil {
 			url = "https://storage.googleapis.com/gke-release-staging/kubernetes/release"
