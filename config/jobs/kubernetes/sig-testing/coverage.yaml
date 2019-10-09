@@ -52,8 +52,6 @@ periodics:
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
-      - name: KUBE_BUILD_HYPERKUBE
-        value: "n"
       - name: KUBE_BUILD_CONFORMANCE
         value: "n"
       securityContext:
@@ -120,8 +118,6 @@ periodics:
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
-      - name: KUBE_BUILD_HYPERKUBE
-        value: "n"
       - name: KUBE_BUILD_CONFORMANCE
         value: "n"
       securityContext:
