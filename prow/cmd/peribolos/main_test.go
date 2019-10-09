@@ -1728,6 +1728,9 @@ func TestDumpOrgConfig(t *testing.T) {
 	pub := org.Privacy("")
 	secret := org.Secret
 	closed := org.Closed
+	repoName := "project"
+	repoDescription := "awesome testing project"
+	repoHomepage := "https://www.somewhe.re/something/"
 	cases := []struct {
 		name              string
 		orgOverride       string
@@ -1739,6 +1742,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		teamMembers       map[int][]string
 		maintainers       map[int][]string
 		repoPermissions   map[int][]github.Repo
+		repos             []github.Repo
 		expected          org.Config
 		err               bool
 	}{
@@ -1769,6 +1773,15 @@ func TestDumpOrgConfig(t *testing.T) {
 				{
 					Name: "fred",
 					ID:   -1,
+				},
+			},
+		},
+		{
+			name: "fails if GetTeams fails",
+			err:  true,
+			repos: []github.Repo{
+				{
+					Name: "fail",
 				},
 			},
 		},
@@ -1815,6 +1828,9 @@ func TestDumpOrgConfig(t *testing.T) {
 				5: {},
 				6: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}},
 				7: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}, {Name: "admin-repo", Permissions: github.RepoPermissions{Admin: true}}},
+			},
+			repos: []github.Repo{
+				{Name: repoName, Description: repoDescription, Homepage: repoHomepage, Private: false, HasIssues: true, HasProjects: true, HasWiki: true},
 			},
 			expected: org.Config{
 				Metadata: org.Metadata{
@@ -1869,6 +1885,19 @@ func TestDumpOrgConfig(t *testing.T) {
 				},
 				Members: []string{"george", "jungle", "banana"},
 				Admins:  []string{"james", "giant", "peach"},
+				Repos: map[string]org.Repo{
+					"project": {
+						Description:      &repoDescription,
+						HomePage:         &repoHomepage,
+						Private:          &no,
+						HasIssues:        &yes,
+						HasProjects:      &yes,
+						HasWiki:          &yes,
+						AllowMergeCommit: &no,
+						AllowRebaseMerge: &no,
+						AllowSquashMerge: &no,
+					},
+				},
 			},
 		},
 		{
@@ -1970,6 +1999,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				},
 				Members: []string{"george", "jungle", "banana"},
 				Admins:  []string{"james", "giant", "peach"},
+				Repos:   map[string]org.Repo{},
 			},
 		},
 	}
@@ -1989,6 +2019,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				teamMembers:     tc.teamMembers,
 				maintainers:     tc.maintainers,
 				repoPermissions: tc.repoPermissions,
+				repos:           tc.repos,
 			}
 			actual, err := dumpOrgConfig(fc, orgName, tc.ignoreSecretTeams)
 			switch {
@@ -2021,6 +2052,7 @@ type fakeDumpClient struct {
 	teamMembers     map[int][]string
 	maintainers     map[int][]string
 	repoPermissions map[int][]github.Repo
+	repos           []github.Repo
 }
 
 func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
@@ -2094,6 +2126,16 @@ func (c fakeDumpClient) ListTeamRepos(id int) ([]github.Repo, error) {
 	}
 
 	return c.repoPermissions[id], nil
+}
+
+func (c fakeDumpClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	for _, repo := range c.repos {
+		if repo.Name == "fail" {
+			return nil, fmt.Errorf("injected GetRepos error")
+		}
+	}
+
+	return c.repos, nil
 }
 
 func fixup(ret *org.Config) {

@@ -204,6 +204,7 @@ type dumpClient interface {
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	ListTeamRepos(id int) ([]github.Repo, error)
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
 }
 
 func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
@@ -328,6 +329,27 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	out.Teams = make(map[string]org.Team, len(tops))
 	for _, id := range tops {
 		out.Teams[names[id]] = makeChild(id)
+	}
+
+	repos, err := client.GetRepos(orgName, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list org repos: %v", err)
+	}
+	logrus.Debugf("Found %d repos", len(repos))
+	out.Repos = make(map[string]org.Repo, len(repos))
+	for idx, repo := range repos {
+		logrus.WithField("repo", repo.FullName).Debug("Recording repo.")
+		out.Repos[repos[idx].Name] = org.Repo{
+			Description:      &repos[idx].Description,
+			HomePage:         &repos[idx].Homepage,
+			Private:          &repos[idx].Private,
+			HasIssues:        &repos[idx].HasIssues,
+			HasProjects:      &repos[idx].HasProjects,
+			HasWiki:          &repos[idx].HasWiki,
+			AllowMergeCommit: &repos[idx].AllowMergeCommit,
+			AllowSquashMerge: &repos[idx].AllowSquashMerge,
+			AllowRebaseMerge: &repos[idx].AllowRebaseMerge,
+		}
 	}
 
 	return &out, nil

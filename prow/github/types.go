@@ -300,14 +300,22 @@ type PullRequestChange struct {
 // Repo contains general repository information.
 // See also https://developer.github.com/v3/repos/#get
 type Repo struct {
-	Owner         User   `json:"owner"`
-	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
-	HTMLURL       string `json:"html_url"`
-	Fork          bool   `json:"fork"`
-	DefaultBranch string `json:"default_branch"`
-	Archived      bool   `json:"archived"`
-
+	Owner             User   `json:"owner"`
+	Name              string `json:"name"`
+	FullName          string `json:"full_name"`
+	HTMLURL           string `json:"html_url"`
+	Fork              bool   `json:"fork"`
+	DefaultBranch     string `json:"default_branch"`
+	Archived          bool   `json:"archived"`
+	Private           bool   `json:"private"`
+	Description       string `json:"description"`
+	Homepage          string `json:"homepage"`
+	HasIssues         bool   `json:"has_issues"`
+	HasProjects       bool   `json:"has_projects"`
+	HasWiki           bool   `json:"has_wiki"`
+	AllowSquashMerge  bool   `json:"allow_squash_merge"`
+	AllowMergeCommit  bool   `json:"allow_merge_commit"`
+	AllowRebaseCommit bool   `json:"allow_rebase_commit"`
 	// Permissions reflect the permission level for the requester, so
 	// on a repository GET call this will be for the user whose token
 	// is being used, if listing a team's repos this will be for the

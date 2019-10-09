@@ -44,12 +44,26 @@ type Metadata struct {
 	MembersCanCreateRepositories *bool                       `json:"members_can_create_repositories,omitempty"`
 }
 
+// Repo declares metadata about the GitHub repository
+//
+// See https://developer.github.com/v3/repos/#edit
+type Repo struct {
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+	HomePage    *string `json:"homepage,omitempty"`
+	Private     *bool   `json:"private,omitempty"`
+	HasIssues   *bool   `json:"has_issues,omitempty"`
+	HasProjects *bool   `json:"has_projects,omitempty"`
+	HasWiki     *bool   `json:"has_wiki,omitempty"`
+}
+
 // Config declares org metadata as well as its people and teams.
 type Config struct {
 	Metadata
 	Teams   map[string]Team `json:"teams,omitempty"`
 	Members []string        `json:"members,omitempty"`
 	Admins  []string        `json:"admins,omitempty"`
+	Repos   map[string]Repo `json:"repos,omitempty"`
 }
 
 // TeamMetadata declares metadata about the github team.
