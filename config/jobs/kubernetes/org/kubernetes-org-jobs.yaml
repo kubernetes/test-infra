@@ -3,6 +3,9 @@ presubmits:
   - name: pull-org-test-all
     always_run: true
     decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.29.1
@@ -18,6 +21,9 @@ presubmits:
   - name: pull-org-verify-all
     always_run: true
     decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
     spec:
       containers:
       - image: launcher.gcr.io/google/bazel:0.29.1
