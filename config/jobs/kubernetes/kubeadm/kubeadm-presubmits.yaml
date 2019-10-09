@@ -10,3 +10,12 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
         command:
         - "./kinder/hack/verify-all.sh"
+  - name: pull-kubeadm-operator-verify
+    path_alias: "k8s.io/kubeadm"
+    decorate: true
+    run_if_changed: '^operator\/.*$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191008-b83b3fe-master
+        command:
+        - "./operator/hack/verify-all.sh"
