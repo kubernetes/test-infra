@@ -1024,12 +1024,29 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 	return nil
 }
 
+// validatePostsubmits validates the postsubmits for one repo
+func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
+	validPostsubmits := map[string][]Postsubmit{}
+
+	for _, ps := range postsubmits {
+		// Checking that no duplicate job in prow config exists on the same repo / branch.
+		for _, existingJob := range validPostsubmits[ps.Name] {
+			if existingJob.Brancher.Intersects(ps.Brancher) {
+				return fmt.Errorf("duplicated postsubmit job: %s", ps.Name)
+			}
+		}
+		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
+			return fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err)
+		}
+		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
+	}
+
+	return nil
+}
+
 // validateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
-	type orgRepoJobName struct {
-		orgRepo, jobName string
-	}
 
 	// Validate presubmits.
 	for _, jobs := range c.Presubmits {
@@ -1039,23 +1056,9 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	// Validate postsubmits.
-	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
-	validPostsubmits := map[orgRepoJobName][]Postsubmit{}
-	for repo, jobs := range c.Postsubmits {
-		for _, job := range jobs {
-			repoJobName := orgRepoJobName{repo, job.Name}
-			for _, existingJob := range validPostsubmits[repoJobName] {
-				if existingJob.Brancher.Intersects(job.Brancher) {
-					return fmt.Errorf("duplicated postsubmit job: %s", job.Name)
-				}
-			}
-			validPostsubmits[repoJobName] = append(validPostsubmits[repoJobName], job)
-		}
-	}
-
-	for _, j := range c.AllPostsubmits(nil) {
-		if err := validateJobBase(j.JobBase, prowapi.PostsubmitJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid postsubmit job %s: %v", j.Name, err)
+	for _, jobs := range c.Postsubmits {
+		if err := validatePostsubmits(jobs, c.PodNamespace); err != nil {
+			return err
 		}
 	}
 
