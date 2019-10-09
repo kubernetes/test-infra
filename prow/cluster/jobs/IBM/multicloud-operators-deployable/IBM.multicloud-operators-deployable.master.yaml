@@ -1,0 +1,115 @@
+presubmits:
+  IBM/multicloud-operators-deployable:
+  - name: build_multicloud-operators-deployable
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    rerun_command: /test build
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_multicloud-operators-deployable
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    rerun_command: /test check
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_multicloud-operators-deployable
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    rerun_command: /test test
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/multicloud-operators-deployable:
+  - name: check_multicloud-operators-deployable_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_multicloud-operators-deployable_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build_multicloud-operators-deployable_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_multicloud-operators-deployable_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
+        name: ""
+        securityContext:
+          privileged: true
