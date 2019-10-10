@@ -423,7 +423,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=node-local-dns-benchmark
-      - --env="KUBE_ENABLE_NODELOCAL_DNS=true"
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
       - --extract=ci/latest
       - --gcp-nodes=3
       - --gcp-zone=us-east1-b
