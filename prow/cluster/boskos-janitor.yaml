@@ -6,7 +6,7 @@ metadata:
     app: boskos-janitor
   namespace: test-pods
 spec:
-  replicas: 3  # 3 distributed janitor instances for gke
+  replicas: 8  # 8 distributed janitor instances for gke
   selector:
     matchLabels:
       app: boskos-janitor
