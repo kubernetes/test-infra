@@ -57,7 +57,7 @@ _Note_ that the `servicemonitor` has to have label `app` as key (value could be 
 We use [jsonnet](https://jsonnet.org) to generate the json files for grafana dashboards and [jsonnet-bundler](https://github.com/jsonnet-bundler/jsonnet-bundler) to manage the jsonnet libs.
 Developing a new dashboard can be achieved by
 
-* Create a new file `<dashhoard_name>.jsonnet` in folder [grafana_dashboards](grafana_dashboards).
+* Create a new file `<dashhoard_name>.jsonnet` in folder [grafana_dashboards](mixins/grafana_dashboards).
 * Add `bazel` target to [grafana_dashboards/BUILD.bazel](grafana_dashboards/BUILD.bazel) for generating the corresponding json file `<dashhoard_name>.json`.
 
     ```
@@ -67,11 +67,6 @@ Developing a new dashboard can be achieved by
     ```
 
 * Add `bazel` target to [dashboards_out/BUILD.bazel](grafana_dashboards/BUILD.bazel) for generating the configMap with the json file above.
-
-    ```
-    ### if you want to apply the configMaps
-    $ bazel run //prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply
-    ```
 
 * Use the configMap above in [grafana_deployment.yaml](grafana_deployment.yaml).
 

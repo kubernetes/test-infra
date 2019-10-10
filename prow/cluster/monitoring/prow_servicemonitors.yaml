@@ -169,3 +169,22 @@ spec:
   selector:
     matchLabels:
       app: tide
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: boskos
+  name: boskos
+  namespace: prow-monitoring
+spec:
+  endpoints:
+    - interval: 30s
+      port: default
+      scheme: http
+  namespaceSelector:
+    matchNames:
+      - test-pods
+  selector:
+    matchLabels:
+      app: boskos-metrics
