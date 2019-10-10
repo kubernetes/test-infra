@@ -169,6 +169,9 @@ blunderbuss:
 cat:
   key_path: /etc/cat-api/api-key
 
+goose:
+  key_path: /etc/unsplash-api/honk.txt
+
 heart:
   adorees:
   - mirandachrist

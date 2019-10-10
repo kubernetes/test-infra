@@ -71,6 +71,9 @@ spec:
         - name: cat-api
           mountPath: /etc/cat-api
           readOnly: true
+        - name: unsplash-api
+          mountPath: /etc/unsplash-api
+          readOnly: true
         livenessProbe:
           httpGet:
             path: /healthz
@@ -106,3 +109,6 @@ spec:
       - name: cat-api
         configMap:
           name: cat-api-key
+      - name: unsplash-api
+        secret:
+          secretName: unsplash-api-key
