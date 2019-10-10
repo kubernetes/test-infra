@@ -552,6 +552,7 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
 - name: google-gke-stackdriver
 - name: google-gke-upgrade
+- name: google-gce-upgrade
 - name: google-soak
 - name: google-unit
 - name: google-windows
@@ -898,6 +899,7 @@ dashboard_groups:
   - google-gke
   - google-gke-stackdriver
   - google-gke-upgrade
+  - google-gce-upgrade
   - google-kops-gce
   - google-rules_k8s
   - google-soak
