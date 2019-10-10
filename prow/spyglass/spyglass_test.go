@@ -20,13 +20,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"os"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
+
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
@@ -836,12 +837,14 @@ func TestRunToPR(t *testing.T) {
 		fca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					DefaultDecorationConfig: &prowapi.DecorationConfig{
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "kubernetes-jenkins",
-							DefaultOrg:   "kubernetes",
-							DefaultRepo:  "kubernetes",
-							PathStrategy: "legacy",
+					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+						"*": {
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "kubernetes-jenkins",
+								DefaultOrg:   "kubernetes",
+								DefaultRepo:  "kubernetes",
+								PathStrategy: "legacy",
+							},
 						},
 					},
 				},
@@ -1052,10 +1055,12 @@ func TestGCSPathRoundTrip(t *testing.T) {
 			c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfig: &prowapi.DecorationConfig{
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								DefaultOrg:  tc.defaultOrg,
-								DefaultRepo: tc.defaultRepo,
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									DefaultOrg:  tc.defaultOrg,
+									DefaultRepo: tc.defaultRepo,
+								},
 							},
 						},
 					},
