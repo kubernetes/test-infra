@@ -394,7 +394,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
@@ -421,7 +421,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gce-1.13-1.12-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
@@ -448,7 +448,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
@@ -474,7 +474,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gce-1.12-1.13-gci-kubectl-skew-serial
 - interval: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
@@ -751,7 +751,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gke-1.13-1.12-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
@@ -781,7 +781,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gke-1.13-1.12-gci-kubectl-skew-serial
 - interval: 12h
   name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
@@ -812,7 +812,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gke-1.12-1.13-gci-kubectl-skew
 - interval: 12h
   name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
@@ -841,5 +841,5 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: sig-release-1.13-all
     testgrid-tab-name: gke-1.12-1.13-gci-kubectl-skew-serial
