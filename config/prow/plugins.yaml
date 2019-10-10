@@ -469,6 +469,7 @@ plugins:
   - cla
   - dog
   - golint
+  - goose
   - heart
   - help
   - hold
@@ -569,6 +570,7 @@ plugins:
   - cat
   - cla
   - dog
+  - goose
   - heart
   - help
   - hold
@@ -595,6 +597,7 @@ plugins:
   - cat
   - cla
   - dog
+  - goose
   - heart
   - help
   - hold
@@ -622,6 +625,7 @@ plugins:
   - cat
   - cla
   - dog
+  - goose
   - heart
   - help
   - hold
@@ -648,6 +652,7 @@ plugins:
   - cat
   - cla
   - dog
+  - goose
   - heart
   - help
   - hold
