@@ -78,7 +78,7 @@ exports_files([
 
     http_archive(
         name = "io_bazel_rules_jsonnet",
-        sha256 = "59bf1edb53bc6b5adb804fbfabd796a019200d4ef4dd5cc7bdee03acc7686806",
-        strip_prefix = "rules_jsonnet-0.1.0",
-        urls = ["https://github.com/bazelbuild/rules_jsonnet/archive/0.1.0.tar.gz"],
+        sha256 = "68b5bcb0779599065da1056fc8df60d970cffe8e6832caf13819bb4d6e832459",
+        strip_prefix = "rules_jsonnet-0.2.0",
+        urls = ["https://github.com/bazelbuild/rules_jsonnet/archive/0.2.0.tar.gz"],
     )
