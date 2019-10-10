@@ -49,6 +49,7 @@ var (
 		"redhat",
 		"vmware",
 		"gardener",
+		"jetstack",
 	}
 	orgs = []string{
 		"conformance",
