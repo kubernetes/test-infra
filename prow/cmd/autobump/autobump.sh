@@ -52,7 +52,7 @@ main() {
 	git add -u
 	git commit -m "${title}"
 	echo -e "Pushing commit to ${user}/${FORK_GH_REPO}:autobump..." >&2
-	git push -f "https://${user}:$(cat "${token}")@github.com/${user}/${FORK_GH_REPO}" HEAD:autobump
+	git push -f "https://${user}:$(cat "${token}")@github.com/${user}/${FORK_GH_REPO}" HEAD:autobump 2>/dev/null
 
 	echo "Creating PR to merge ${user}:autobump into master..." >&2
 	comparison=$(extract-commit "${old_version}")...$(extract-commit "${version}")
