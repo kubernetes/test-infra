@@ -30,16 +30,18 @@ import (
 )
 
 var (
-	bufferSize  = 1 // Maximum holding resources
-	rTypes      common.CommaSeparatedStrings
-	poolSize    int
-	janitorPath = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
-	boskosURL   = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	bufferSize      = 1 // Maximum holding resources
+	rTypes          common.CommaSeparatedStrings
+	poolSize        int
+	updateFrequency time.Duration
+	janitorPath     = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
+	boskosURL       = flag.String("boskos-url", "http://boskos", "Boskos URL")
 )
 
 func init() {
 	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
 	flag.IntVar(&poolSize, "pool-size", 20, "number of concurrent janitor goroutine")
+	flag.DurationVar(&updateFrequency, "update-freqency", 5*time.Minute, "How often to heartbeat owning resources.")
 }
 
 func main() {
@@ -54,6 +56,14 @@ func main() {
 	if len(rTypes) == 0 {
 		logrus.Fatal("--resource-type must not be empty!")
 	}
+
+	go func(boskos boskosClient) {
+		for range time.Tick(updateFrequency) {
+			if err := boskos.SyncAll(); err != nil {
+				logrus.WithError(err).Warn("SyncAll failed")
+			}
+		}
+	}(boskos)
 
 	buffer := setup(boskos, poolSize, bufferSize, janitorClean, extraJanitorFlags)
 
@@ -90,7 +100,7 @@ func janitorClean(resource *common.Resource, flags []string) error {
 type boskosClient interface {
 	Acquire(rtype string, state string, dest string) (*common.Resource, error)
 	ReleaseOne(name string, dest string) error
-	UpdateOne(name string, state string, userdata *common.UserData) error
+	SyncAll() error
 }
 
 func setup(c boskosClient, janitorCount int, bufferSize int, cleanFunc clean, flags []string) chan *common.Resource {
@@ -138,14 +148,6 @@ func run(c boskosClient, buffer chan<- *common.Resource, rtypes []string) int {
 func janitor(c boskosClient, buffer <-chan *common.Resource, fn clean, flags []string) {
 	for {
 		resource := <-buffer
-
-		go func(c boskosClient, resource string) {
-			for range time.Tick(time.Minute * 5) {
-				if err := c.UpdateOne(resource, common.Cleaning, nil); err != nil {
-					logrus.WithError(err).Warnf("Update %s failed", resource)
-				}
-			}
-		}(c, resource.Name)
 
 		dest := common.Free
 		if err := fn(resource, flags); err != nil {
