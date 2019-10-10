@@ -14,8 +14,16 @@ presubmits:
     path_alias: "k8s.io/kubeadm"
     decorate: true
     run_if_changed: '^operator\/.*$'
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
         command:
         - "./operator/hack/verify-all.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m
