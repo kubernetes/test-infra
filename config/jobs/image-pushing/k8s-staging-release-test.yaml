@@ -1,0 +1,86 @@
+postsubmits:
+  kubernetes/release:
+    - name: post-release-push-image-k8s-cloud-builder
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-release-test
+              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/k8s-cloud-builder
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
+    - name: post-release-push-image-deb-builder
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-release-test
+              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - build/debs
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
+    - name: post-release-push-image-rpm-builder
+      cluster: test-infra-trusted
+      annotations:
+        testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
+        testgrid-alert-email: release-managers@kubernetes.io
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-release-test
+              - --scratch-bucket=gs://k8s-staging-release-test-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - build/rpms
+            env:
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /creds/service-account.json
+            volumeMounts:
+              - name: creds
+                mountPath: /creds
+        volumes:
+          - name: creds
+            secret:
+              secretName: deployer-service-account
