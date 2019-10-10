@@ -4,6 +4,7 @@ approvers:
 - andrewsykim
 - cheftako
 - hogepodge
+- justaugustus
 
 labels:
 - sig/cloud-provider
