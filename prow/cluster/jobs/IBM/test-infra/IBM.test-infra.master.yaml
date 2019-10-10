@@ -4,6 +4,8 @@ presubmits:
     branches:
       - ^master$
     decorate: true
+    path_alias: github.com/IBM/test-infra
+    rerun_command: /test checkconfig test-infra
     run_if_changed: '^prow/(config|plugins|cluster/jobs/.*)\.yaml$'
     spec:
       containers:
@@ -18,13 +20,14 @@ presubmits:
         - --exclude-warning=mismatched-tide
         - --exclude-warning=unknown-fields
         - --exclude-warning=non-decorated-jobs
+    trigger: '(?m)^/test (?:.*? )?checkconfig(?: .*?)?$'
   - name: build_test-infra
     branches:
     - ^master$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/test-infra
-    rerun_command: /test build
+    rerun_command: /test build test-infra
     spec:
       containers:
       - command:
@@ -41,7 +44,7 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: github.com/IBM/test-infra
-    rerun_command: /test check
+    rerun_command: /test check test-infra
     spec:
       containers:
       - command:
@@ -58,7 +61,7 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: github.com/IBM/test-infra
-    rerun_command: /test test
+    rerun_command: /test test test-infra
     spec:
       containers:
       - command:

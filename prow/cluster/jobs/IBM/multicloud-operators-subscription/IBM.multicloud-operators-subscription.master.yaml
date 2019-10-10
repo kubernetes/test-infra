@@ -6,7 +6,7 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: github.com/IBM/multicloud-operators-subscription
-    rerun_command: /test build
+    rerun_command: /test build multicloud-operators-subscription
     spec:
       containers:
       - command:
@@ -23,7 +23,7 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: github.com/IBM/multicloud-operators-subscription
-    rerun_command: /test check
+    rerun_command: /test check multicloud-operators-subscription
     spec:
       containers:
       - command:
@@ -40,7 +40,7 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: github.com/IBM/multicloud-operators-subscription
-    rerun_command: /test test
+    rerun_command: /test test multicloud-operators-subscription
     spec:
       containers:
       - command:

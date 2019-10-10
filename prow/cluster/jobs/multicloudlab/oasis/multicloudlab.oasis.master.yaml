@@ -6,7 +6,7 @@ presubmits:
     - ^master$
     decorate: true
     path_alias: github.com/multicloudlab/oasis
-    rerun_command: /test build
+    rerun_command: /test build oasis
     spec:
       containers:
       - command:
@@ -23,7 +23,7 @@ presubmits:
     - ^master$
     decorate: true
     path_alias: github.com/multicloudlab/oasis
-    rerun_command: /test check
+    rerun_command: /test check oasis
     spec:
       containers:
       - command:
@@ -40,7 +40,7 @@ presubmits:
     - ^master$
     decorate: true
     path_alias: github.com/multicloudlab/oasis
-    rerun_command: /test test
+    rerun_command: /test test oasis
     spec:
       containers:
       - command:
