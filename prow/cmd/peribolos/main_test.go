@@ -2483,3 +2483,184 @@ func TestConfigureTeamRepos(t *testing.T) {
 		}
 	}
 }
+
+type fakeRepoClient struct {
+	t     *testing.T
+	repos map[string]github.Repo
+}
+
+func (f fakeRepoClient) GetRepos(orgName string, isUser bool) ([]github.Repo, error) {
+	if orgName == "fail" {
+		return nil, fmt.Errorf("injected GetRepos failure")
+	}
+
+	repos := make([]github.Repo, 0, len(f.repos))
+	for _, repo := range f.repos {
+		repos = append(repos, repo)
+	}
+
+	// sort for deterministic output
+	sort.Slice(repos, func(i, j int) bool {
+		return repos[i].Name < repos[j].Name
+	})
+
+	return repos, nil
+}
+
+func (f fakeRepoClient) CreateRepo(owner string, isUser bool, repoReq github.RepoCreateRequest) (*github.Repo, error) {
+	if *repoReq.Name == "fail" {
+		return nil, fmt.Errorf("injected CreateRepo failure")
+	}
+
+	if _, hasRepo := f.repos[*repoReq.Name]; hasRepo {
+		f.t.Errorf("CreateRepo() called on repo that already exists")
+		return nil, fmt.Errorf("CreateRepo() called on repo that already exists")
+	}
+
+	repo := repoReq.ToRepo()
+	f.repos[*repoReq.Name] = *repo
+
+	return repo, nil
+}
+
+func makeFakeRepoClient(t *testing.T, repos ...github.Repo) fakeRepoClient {
+	fc := fakeRepoClient{
+		repos: make(map[string]github.Repo, len(repos)),
+		t:     t,
+	}
+	for _, repo := range repos {
+		fc.repos[repo.Name] = repo
+	}
+
+	return fc
+}
+
+func TestConfigureRepos(t *testing.T) {
+	orgName := "test-org"
+	isOrg := false
+
+	oldName := "old"
+	oldRepo := github.Repo{
+		Name:        oldName,
+		FullName:    fmt.Sprintf("%s/%s", orgName, oldName),
+		Description: "An old existing repository",
+	}
+
+	newName := "new"
+	newDescription := "A new repository."
+	newConfigRepo := org.Repo{
+		Description: &newDescription,
+	}
+	newRepo := github.Repo{
+		Name:        newName,
+		Description: newDescription,
+	}
+
+	fail := "fail"
+	failConfigRepo := org.Repo{
+		Description: &newDescription,
+	}
+
+	testCases := []struct {
+		description     string
+		orgConfig       org.Config
+		orgNameOverride string
+		repos           []github.Repo
+
+		expectError   bool
+		expectedRepos []github.Repo
+	}{
+		{
+			description:   "survives empty config",
+			expectedRepos: []github.Repo{},
+		},
+		{
+			description: "survives nil repos config",
+			orgConfig: org.Config{
+				Repos: nil,
+			},
+			expectedRepos: []github.Repo{},
+		},
+		{
+			description: "survives empty repos config",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{},
+			},
+			expectedRepos: []github.Repo{},
+		},
+		{
+			description: "nonexistent repo is created",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: newConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectedRepos: []github.Repo{newRepo, oldRepo},
+		},
+		{
+			// test current functionality: this test will need to change once
+			// we implement repository updates
+			description: "existing repo is unchanged",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: newConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectedRepos: []github.Repo{oldRepo},
+		},
+		{
+			description:     "GetRepos failure is propagated",
+			orgNameOverride: "fail",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: newConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectError:   true,
+			expectedRepos: []github.Repo{oldRepo},
+		},
+		{
+			description: "CreateRepo failure is propagated",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					fail: failConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectError:   true,
+			expectedRepos: []github.Repo{oldRepo},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			fc := makeFakeRepoClient(t, tc.repos...)
+			var err error
+			if len(tc.orgNameOverride) > 0 {
+				err = configureRepos(fc, tc.orgNameOverride, tc.orgConfig)
+			} else {
+				err = configureRepos(fc, orgName, tc.orgConfig)
+			}
+			if err != nil && !tc.expectError {
+				t.Errorf("%s: unexpected error: %v", tc.description, err)
+			}
+			if err == nil && tc.expectError {
+				t.Errorf("%s: expected error, got none", tc.description)
+			}
+
+			reposAfter, err := fc.GetRepos(orgName, isOrg)
+			if err != nil {
+				t.Fatalf("%s: unexpected GetRepos error: %v", tc.description, err)
+			}
+			if !reflect.DeepEqual(reposAfter, tc.expectedRepos) {
+				t.Errorf("%s: unexpected repos after configureRepos():\n%s", tc.description, diff.ObjectReflectDiff(reposAfter, tc.repos))
+			}
+		})
+	}
+}
