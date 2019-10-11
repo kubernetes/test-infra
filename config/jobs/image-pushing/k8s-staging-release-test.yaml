@@ -6,6 +6,7 @@ postsubmits:
         testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
+      run_if_changed: '^images\/'
       branches:
         - ^master$
       spec:
@@ -34,6 +35,7 @@ postsubmits:
         testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
+      run_if_changed: '^build\/'
       branches:
         - ^master$
       spec:
@@ -62,6 +64,7 @@ postsubmits:
         testgrid-dashboards: sig-release-image-pushes, sig-release-master-informing
         testgrid-alert-email: release-managers@kubernetes.io
       decorate: true
+      run_if_changed: '^build\/'
       branches:
         - ^master$
       spec:
