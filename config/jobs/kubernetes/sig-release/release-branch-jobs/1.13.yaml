@@ -276,7 +276,6 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/legacy/config.yaml
       - --test-cmd-args=--testconfig=testing/load/legacy/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/legacy/100_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter

@@ -40,7 +40,6 @@ presubmits:
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
         - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
@@ -323,7 +322,6 @@ presubmits:
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
         - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
         - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
