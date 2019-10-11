@@ -24,16 +24,16 @@ def repositories():
     )
     http_archive(
         name = "io_bazel_rules_docker",
-        sha256 = "e513c0ac6534810eb7a14bf025a0f159726753f97f74ab7863c650d26e01d677",
-        strip_prefix = "rules_docker-0.9.0",
-        urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.9.0.tar.gz"],
+        sha256 = "413bb1ec0895a8d3249a01edf24b82fd06af3c8633c9fb833a0cb1d4b234d46d",
+        strip_prefix = "rules_docker-0.12.0",
+        urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.12.0.tar.gz"],
     )
 
     git_repository(
         name = "io_bazel_rules_k8s",
-        commit = "e7ae2825f0296314ac1ecf13e4c9acef66597986",
+        commit = "9de8297b3bb96b010ddc69d025db058c72f7a609",
         remote = "https://github.com/bazelbuild/rules_k8s.git",
-        shallow_since = "1565892120 -0400",
+        shallow_since = "1570817943 -0400",
     )
 
     # https://github.com/bazelbuild/rules_nodejs
