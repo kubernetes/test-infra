@@ -1038,70 +1038,90 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
 }
 
+// validatePresubmits validates the presubmits for one repo
+func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
+	validPresubmits := map[string][]Presubmit{}
+
+	for _, ps := range presubmits {
+		// Checking that no duplicate job in prow config exists on the same branch.
+		for _, existingJob := range validPresubmits[ps.Name] {
+			if existingJob.Brancher.Intersects(ps.Brancher) {
+				return fmt.Errorf("duplicated presubmit job: %s", ps.Name)
+			}
+		}
+		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
+			return fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err)
+		}
+		if err := validateTriggering(ps); err != nil {
+			return err
+		}
+		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
+	}
+
+	return nil
+}
+
+// validatePostsubmits validates the postsubmits for one repo
+func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
+	validPostsubmits := map[string][]Postsubmit{}
+
+	for _, ps := range postsubmits {
+		// Checking that no duplicate job in prow config exists on the same repo / branch.
+		for _, existingJob := range validPostsubmits[ps.Name] {
+			if existingJob.Brancher.Intersects(ps.Brancher) {
+				return fmt.Errorf("duplicated postsubmit job: %s", ps.Name)
+			}
+		}
+		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
+			return fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err)
+		}
+		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
+	}
+
+	return nil
+}
+
+// validatePeriodics validates a set of periodics
+func validatePeriodics(periodics []Periodic, podNamespace string) error {
+
+	// validate no duplicated periodics
+	validPeriodics := sets.NewString()
+	// Ensure that the periodic durations are valid and specs exist.
+	for _, p := range periodics {
+		if validPeriodics.Has(p.Name) {
+			return fmt.Errorf("duplicated periodic job : %s", p.Name)
+		}
+		validPeriodics.Insert(p.Name)
+		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, podNamespace); err != nil {
+			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
+		}
+	}
+
+	return nil
+}
+
 // validateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
-	type orgRepoJobName struct {
-		orgRepo, jobName string
-	}
 
 	// Validate presubmits.
-	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
-	validPresubmits := map[orgRepoJobName][]Presubmit{}
-	for repo, jobs := range c.Presubmits {
-		for _, job := range jobs {
-			repoJobName := orgRepoJobName{repo, job.Name}
-			for _, existingJob := range validPresubmits[repoJobName] {
-				if existingJob.Brancher.Intersects(job.Brancher) {
-					return fmt.Errorf("duplicated presubmit job: %s", job.Name)
-				}
-			}
-			validPresubmits[repoJobName] = append(validPresubmits[repoJobName], job)
-		}
-	}
-
-	for _, v := range c.AllPresubmits(nil) {
-		if err := validateJobBase(v.JobBase, prowapi.PresubmitJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid presubmit job %s: %v", v.Name, err)
-		}
-		if err := validateTriggering(v); err != nil {
+	for _, jobs := range c.Presubmits {
+		if err := validatePresubmits(jobs, c.PodNamespace); err != nil {
 			return err
 		}
 	}
 
 	// Validate postsubmits.
-	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
-	validPostsubmits := map[orgRepoJobName][]Postsubmit{}
-	for repo, jobs := range c.Postsubmits {
-		for _, job := range jobs {
-			repoJobName := orgRepoJobName{repo, job.Name}
-			for _, existingJob := range validPostsubmits[repoJobName] {
-				if existingJob.Brancher.Intersects(job.Brancher) {
-					return fmt.Errorf("duplicated postsubmit job: %s", job.Name)
-				}
-			}
-			validPostsubmits[repoJobName] = append(validPostsubmits[repoJobName], job)
+	for _, jobs := range c.Postsubmits {
+		if err := validatePostsubmits(jobs, c.PodNamespace); err != nil {
+			return err
 		}
 	}
 
-	for _, j := range c.AllPostsubmits(nil) {
-		if err := validateJobBase(j.JobBase, prowapi.PostsubmitJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid postsubmit job %s: %v", j.Name, err)
-		}
+	if err := validatePeriodics(c.Periodics, c.PodNamespace); err != nil {
+		return err
 	}
 
-	// validate no duplicated periodics
-	validPeriodics := sets.NewString()
-	// Ensure that the periodic durations are valid and specs exist.
-	for _, p := range c.AllPeriodics() {
-		if validPeriodics.Has(p.Name) {
-			return fmt.Errorf("duplicated periodic job : %s", p.Name)
-		}
-		validPeriodics.Insert(p.Name)
-		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, c.PodNamespace); err != nil {
-			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
-		}
-	}
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
 	// for child jobs.
 	for j, p := range c.Periodics {
