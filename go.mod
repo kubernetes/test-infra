@@ -29,7 +29,7 @@ require (
 	github.com/clarketm/json v1.13.0
 	github.com/client9/misspell v0.3.4
 	github.com/djherbis/atime v1.0.0
-	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+	github.com/docker/docker v1.4.2-0.20180531152204-71cd53e4a197
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/fsouza/fake-gcs-server v0.0.0-20180612165233-e85be23bdaa8
@@ -39,6 +39,7 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/gomodule/redigo v1.7.0
 	github.com/google/go-cmp v0.3.1
+	github.com/google/go-containerregistry v0.0.0-20191010200024-a3d713f9b7f8 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/csrf v1.6.1
@@ -52,7 +53,6 @@ require (
 	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
 	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
 	github.com/mattn/go-zglob v0.0.1
-	github.com/morikuni/aec v0.0.0-20170113033406-39771216ff4c // indirect
 	github.com/pelletier/go-toml v1.3.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.8.1

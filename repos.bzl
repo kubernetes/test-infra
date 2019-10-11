@@ -271,24 +271,24 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/docker/distribution",
-        sum = "h1:FKH02LHYqSmeWd3GBh0KIkM8JBpw3RrShgtcWShdWJg=",
-        version = "v0.0.0-20170726174610-edc3ab29cdff",
+        sum = "h1:W1rhCpxfWMU0CaZSFWpmWfmB68zYZVksig+VC1ZbgI4=",
+        version = "v2.6.0-rc.1.0.20180327202408-83389a148052+incompatible",
     )
     go_repository(
         name = "com_github_docker_docker",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/docker/docker",
-        sum = "h1:w3NnFcKR5241cfmQU5ZZAsf0xcpId6mWOupTvJlUX2U=",
-        version = "v0.7.3-0.20190327010347-be7ac8be2ae0",
+        sum = "h1:7X3lPJrEEhoUt1UnISqyUB4phKf9aAKVMdFXD63DJO8=",
+        version = "v1.4.2-0.20180531152204-71cd53e4a197",
     )
     go_repository(
         name = "com_github_docker_go_connections",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/docker/go-connections",
-        sum = "h1:3lOnM9cSzgGwx8VfK/NGOW5fLQ0GjIlCkaktF+n1M6o=",
-        version = "v0.3.0",
+        sum = "h1:El9xVISelRB7BuFusrZozjnkIM5YnzCViNKohAFqRJQ=",
+        version = "v0.4.0",
     )
     go_repository(
         name = "com_github_docker_go_units",
@@ -535,8 +535,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/google/go-containerregistry",
-        sum = "h1:p6kvQYhOQUpogpCn1p/XI/A9UClYVyNTkYkKIijnl7M=",
-        version = "v0.0.0-20190401215819-f1df91a4a813",
+        sum = "h1:i2MA7D3vtR5uk9ZPzVp/IC9616kCPv0RScyRD/tVQGM=",
+        version = "v0.0.0-20191010200024-a3d713f9b7f8",
     )
     go_repository(
         name = "com_github_google_go_github",
@@ -1089,16 +1089,16 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/onsi/ginkgo",
-        sum = "h1:WSHQ+IS43OoUrWtD1/bbclrwK8TTH5hzp+umCiuxHgs=",
-        version = "v1.7.0",
+        sum = "h1:q/mM8GF/n0shIN8SaAZ0V+jnLPzen6WIVZdiwrRlMlo=",
+        version = "v1.10.1",
     )
     go_repository(
         name = "com_github_onsi_gomega",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/onsi/gomega",
-        sum = "h1:RE1xgDvH7imwFD45h+u2SgIfERHlS2yNG4DObb5BSKU=",
-        version = "v1.4.3",
+        sum = "h1:XPnZz8VVBHjVsy1vzJmRwIcSwiUO+JFfrv/xGiigmME=",
+        version = "v1.7.0",
     )
     go_repository(
         name = "com_github_opencontainers_go_digest",
@@ -2141,14 +2141,7 @@ def go_repositories():
         sum = "h1:PVXYcP1GkTl+XIAJnyJxOmK6CSG5Q1UcvoCvNO++5Kg=",
         version = "v0.18.0",
     )
-    go_repository(
-        name = "com_github_morikuni_aec",
-        build_file_generation = "on",
-        build_file_proto_mode = "disable",
-        importpath = "github.com/morikuni/aec",
-        sum = "h1:nXxl5PrvVm2L/wCy8dQu6DMTwH4oIuGN8GJDAlqDdVE=",
-        version = "v0.0.0-20170113033406-39771216ff4c",
-    )
+
     go_repository(
         name = "com_github_mxk_go_flowrate",
         build_file_generation = "on",
@@ -2219,5 +2212,29 @@ def go_repositories():
         build_file_proto_mode = "disable",
         importpath = "gotest.tools",
         sum = "h1:VsBPFP1AI068pPrMxtb/S8Zkgf9xEmTLJjfM+P5UIEo=",
+        version = "v2.2.0+incompatible",
+    )
+    go_repository(
+        name = "com_github_docker_cli",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/docker/cli",
+        sum = "h1:KrSeY2qJPl1blFLllwCMBIgwilomqEte/nb8dPhqY2o=",
+        version = "v0.0.0-20190925022749-754388324470",
+    )
+    go_repository(
+        name = "com_github_docker_docker_credential_helpers",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/docker/docker-credential-helpers",
+        sum = "h1:zI2p9+1NQYdnG6sMU26EX4aVGlqbInSQxQXLvzJ4RPQ=",
+        version = "v0.6.3",
+    )
+    go_repository(
+        name = "com_github_gotestyourself_gotestyourself",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/gotestyourself/gotestyourself",
+        sum = "h1:AQwinXlbQR2HvPjQZOmDhRqsv5mZf+Jb1RnSLxcqZcI=",
         version = "v2.2.0+incompatible",
     )

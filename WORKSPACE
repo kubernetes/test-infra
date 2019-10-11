@@ -25,9 +25,21 @@ load("@io_bazel_rules_docker//repositories:repositories.bzl", _container_reposit
 
 _container_repositories()
 
+load("@io_bazel_rules_docker//repositories:deps.bzl", _container_deps = "deps")
+
+_container_deps()
+
 load("@io_bazel_rules_docker//go:image.bzl", _go_repositories = "repositories")
 
 _go_repositories()
+
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", _k8s_repos = "k8s_repositories")
+
+_k8s_repos()
+
+load("@io_bazel_rules_k8s//k8s:k8s_go_deps.bzl", _k8s_go_repos = "deps")
+
+_k8s_go_repos()
 
 load("//:containers.bzl", _container_repos = "repositories")
 
