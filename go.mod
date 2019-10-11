@@ -82,6 +82,7 @@ require (
 	k8s.io/code-generator v0.0.0-20190831074504-732c9ca86353
 	k8s.io/klog v0.4.0
 	k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce
+	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.2.1
 	sigs.k8s.io/yaml v1.1.0
