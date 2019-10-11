@@ -221,7 +221,7 @@ func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient 
 			gcsConfig = presubmit.DecorationConfig.GCSConfiguration
 		} else {
 			// for undecorated jobs assume the default
-			gcsConfig = c.Plank.DefaultDecorationConfig.GCSConfiguration
+			gcsConfig = c.Plank.GetDefaultDecorationConfigs(fullRepo).GCSConfiguration
 		}
 
 		gcsPath, _, _ := gcsupload.PathsForJob(gcsConfig, &downwardapi.JobSpec{

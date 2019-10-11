@@ -364,12 +364,14 @@ func TestGetGCSDirsForPR(t *testing.T) {
 			config: &config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfig: &prowapi.DecorationConfig{
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								Bucket:       "krusty-krab",
-								PathStrategy: "legacy",
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									Bucket:       "krusty-krab",
+									PathStrategy: "legacy",
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+								},
 							},
 						},
 					},

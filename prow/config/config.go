@@ -977,27 +977,29 @@ func defaultPeriodics(periodics []Periodic, c *Config) error {
 // finalizeJobConfig mutates and fixes entries for jobspecs
 func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
-		if c.Plank.DefaultDecorationConfig == nil {
-			return errors.New("no default decoration config provided for plank")
-		}
-		if c.Plank.DefaultDecorationConfig.UtilityImages == nil {
-			return errors.New("no default decoration image pull specs provided for plank")
-		}
-		if c.Plank.DefaultDecorationConfig.GCSConfiguration == nil {
-			return errors.New("no default GCS decoration config provided for plank")
-		}
-		if c.Plank.DefaultDecorationConfig.GCSCredentialsSecret == "" {
-			return errors.New("no default GCS credentials secret provided for plank")
-		}
 
-		if c.Plank.DefaultDecorationConfig != nil && len(c.Plank.DefaultDecorationConfigs) == 0 {
+		if c.Plank.DefaultDecorationConfig != nil {
+			if len(c.Plank.DefaultDecorationConfigs) > 0 {
+				return errors.New("both default_decoration_config and default_decoration_configs are specified")
+			}
+
 			logrus.Warning("default_decoration_config will be deprecated on April 2020, and it will be replaced with default_decoration_configs['*'].")
+			c.Plank.DefaultDecorationConfigs = make(map[string]*prowapi.DecorationConfig)
+			c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
 		}
 
 		if len(c.Plank.DefaultDecorationConfigs) == 0 {
-			c.Plank.DefaultDecorationConfigs = make(map[string]*prowapi.DecorationConfig)
+			return errors.New("both default_decoration_config and default_decoration_configs['*'] are missing")
+
 		}
-		c.Plank.DefaultDecorationConfigs["*"] = c.Plank.DefaultDecorationConfig
+
+		if _, ok := c.Plank.DefaultDecorationConfigs["*"]; !ok {
+			return errors.New("default_decoration_configs['*'] is missing")
+		}
+
+		if err := c.Plank.DefaultDecorationConfigs["*"].Validate(); err != nil {
+			return fmt.Errorf("decoration config validation error: %v", err)
+		}
 
 		for i := range c.Periodics {
 			setPeriodicDecorationDefaults(c, &c.Periodics[i])
