@@ -1970,3 +1970,27 @@ func TestCombinedStatus(t *testing.T) {
 		t.Errorf("Wrong review IDs: %v", combined.Statuses)
 	}
 }
+
+func TestListTeamRepos(t *testing.T) {
+	ts := simpleTestServer(t, "/teams/1/repos",
+		[]Repo{
+			{
+				Name:        "repo-bar",
+				Permissions: RepoPermissions{Pull: true},
+			},
+			{
+				Name: "repo-invalid-permission-level",
+			},
+		},
+	)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	repos, err := c.ListTeamRepos(1)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(repos) != 1 {
+		t.Errorf("Expected one repo, found %d: %v", len(repos), repos)
+	} else if repos[0].Name != "repo-bar" {
+		t.Errorf("Wrong repos: %v", repos)
+	}
+}

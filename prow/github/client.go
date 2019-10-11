@@ -2613,7 +2613,11 @@ func (c *client) ListTeamRepos(id int) ([]Repo, error) {
 			return &[]Repo{}
 		},
 		func(obj interface{}) {
-			repos = append(repos, *(obj.(*[]Repo))...)
+			for _, repo := range *obj.(*[]Repo) {
+				if LevelFromPermissions(repo.Permissions) != None {
+					repos = append(repos, repo)
+				}
+			}
 		},
 	)
 	if err != nil {
