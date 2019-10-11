@@ -72,7 +72,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "kustomize-1-16"
+      - "kustomize-1.16"
       securityContext:
         privileged: true
       resources:
