@@ -162,8 +162,8 @@ type RefGetter = func() (string, error)
 // **Warning:** This does not return dynamic Presubmits configured
 // inside the code repo, hence giving an incomplete view. Use
 // `GetPresubmits` instead if possible.
-func (c *Config) PresubmitsStatic() map[string][]Presubmit {
-	return c.Presubmits
+func (jc *JobConfig) PresubmitsStatic() map[string][]Presubmit {
+	return jc.Presubmits
 }
 
 type refGetterForGitHubPullRequestClient interface {
