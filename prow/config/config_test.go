@@ -30,9 +30,10 @@ import (
 
 	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilpointer "k8s.io/utils/pointer"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -3406,6 +3407,77 @@ func TestSetPeriodicDecorationDefaults(t *testing.T) {
 			setPeriodicDecorationDefaults(tc.config, periodic)
 			if !reflect.DeepEqual(periodic.DecorationConfig, tc.expected) {
 				t.Fatalf("%v", diff.ObjectReflectDiff(periodic.DecorationConfig, tc.expected))
+			}
+		})
+	}
+}
+
+func TestInRepoConfigEnabled(t *testing.T) {
+	testCases := []struct {
+		name     string
+		config   Config
+		expected bool
+	}{
+		{
+			name: "FakeInRepoConfig takes highest precedence",
+			config: Config{
+				JobConfig: JobConfig{
+					FakeInRepoConfig: map[string][]Presubmit{}},
+			},
+			expected: true,
+		},
+		{
+			name: "Exact match",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"org/repo": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Orgname matches",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"org": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Globally enabled",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"*": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name:     "Disabled by default",
+			expected: false,
+		},
+	}
+
+	for idx := range testCases {
+		tc := testCases[idx]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			if result := tc.config.InRepoConfigEnabled("org/repo"); result != tc.expected {
+				t.Errorf("Expected %t, got %t", tc.expected, result)
 			}
 		})
 	}

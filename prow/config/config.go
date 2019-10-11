@@ -96,6 +96,7 @@ type ProwConfig struct {
 	Gerrit           Gerrit           `json:"gerrit,omitempty"`
 	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
 	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
+	InRepoConfig     InRepoConfig     `json:"in_repo_config"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -144,12 +145,33 @@ type ProwConfig struct {
 	DefaultJobTimeout *metav1.Duration `json:"default_job_timeout,omitempty"`
 }
 
+type InRepoConfig struct {
+	// Enabled describes whether InRepoConfig is enabled for a given repository. This can
+	// be set globally, per org or per repo using '*', 'org' or 'org/repo' as key. The
+	// narrowest match always takes precedence.
+	Enabled map[string]*bool
+}
+
 // InRepoConfigEnabled returns whether InRepoConfig is enabled. Currently
 // a no-op that always returns false, as the underlying feature is not implemented
 // yet. See https://github.com/kubernetes/test-infra/issues/13370 for a current
 // status.
-func (jc *JobConfig) InRepoConfigEnabled(identifier string) bool {
-	return jc.FakeInRepoConfig != nil
+func (c *Config) InRepoConfigEnabled(identifier string) bool {
+	// Used in tests
+	if c.FakeInRepoConfig != nil {
+		return true
+	}
+	if c.InRepoConfig.Enabled[identifier] != nil {
+		return *c.InRepoConfig.Enabled[identifier]
+	}
+	identifierSlashSplit := strings.Split(identifier, "/")
+	if len(identifierSlashSplit) == 2 && c.InRepoConfig.Enabled[identifierSlashSplit[0]] != nil {
+		return *c.InRepoConfig.Enabled[identifierSlashSplit[0]]
+	}
+	if c.InRepoConfig.Enabled["*"] != nil {
+		return *c.InRepoConfig.Enabled["*"]
+	}
+	return false
 }
 
 // RefGetter is used to retrieve a Git Reference. Its purpose is
