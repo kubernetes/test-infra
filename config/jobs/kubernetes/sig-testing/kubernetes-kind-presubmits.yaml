@@ -277,7 +277,7 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
-      preset-dind-memory-backed: "true"
+      preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decoration_config:
       timeout: 60m
