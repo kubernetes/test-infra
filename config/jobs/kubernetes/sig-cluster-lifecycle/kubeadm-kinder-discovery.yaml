@@ -72,7 +72,7 @@ periodics:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "discovery-1-16"
+      - "discovery-1.16"
       securityContext:
         privileged: true
       resources:
