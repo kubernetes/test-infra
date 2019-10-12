@@ -25,7 +25,7 @@ function main() {
 
   # Generate PJ and Pod.
   docker run -i --rm -v "${PWD}:${PWD}" -v "${config}:${config}" ${job_config_mnt} -w "${PWD}" gcr.io/k8s-prow/mkpj "--config-path=${config}" "${job_config_flag}" "--job=${job}" > "${PWD}/pj.yaml"
-  docker run -i --rm -v "${PWD}:${PWD}" -w "${PWD}" gcr.io/k8s-prow/mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}" > "${PWD}/pod.yaml"
+  docker run -i --rm -v "${PWD}:${PWD}" -w "${PWD}" gcr.io/k8s-prow/mkpod --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}/${job}" > "${PWD}/pod.yaml"
  
   # Add any k8s resources that the pod depends on to the kind cluster here. (secrets, configmaps, etc.)
 
@@ -42,7 +42,7 @@ function parseArgs() {
   job="${1:-}"
   config="${CONFIG_PATH:-}"
   job_config_path="${JOB_CONFIG_PATH:-}"
-  out_dir="${OUT_DIR:-/mnt/disks/prowjob-out/${job}}"
+  out_dir="${OUT_DIR:-/mnt/disks/prowjob-out}"
   kind_config="${KIND_CONFIG:-}"
   node_dir="${NODE_DIR:-/mnt/disks/kind-node}"  # Any pod hostPath mounts should be under this dir to reach the true host via the kind node.
 
