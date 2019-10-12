@@ -83,3 +83,5 @@ presets:
     value: "https://proxy.golang.org"
   - name: BUILD_LOCALLY
     value: "0"
+  - name: KUBEBUILDER_CONTROLPLANE_START_TIMEOUT
+    value: "100s"
