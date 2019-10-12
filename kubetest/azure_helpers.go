@@ -115,6 +115,11 @@ type KubernetesConfig struct {
 	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
 	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
 	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
+	KubeProxyMode                string            `json:"kubeProxyMode,omitempty"`
+	LoadBalancerSku              string            `json:"loadBalancerSku,omitempty"`
+	ExcludeMasterFromStandardLB  *bool             `json:"excludeMasterFromStandardLB,omitempty"`
+	ServiceCidr                  string            `json:"serviceCidr,omitempty"`
+	DNSServiceIP                 string            `json:"dnsServiceIP,omitempty"`
 }
 
 type OrchestratorProfile struct {
