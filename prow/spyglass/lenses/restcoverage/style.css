@@ -1,0 +1,64 @@
+body {
+    color: #fff;
+}
+
+div#report {
+    padding: 10px;
+}
+
+div#report-brief {
+    margin-left: 10px;
+    padding-bottom: 5px;
+}
+
+span#report-expander{
+    cursor: pointer;
+    color: #ff8caa;
+    text-decoration: underline;
+}
+
+.hidden {
+    display: none!important;
+}
+
+.info {
+    font-size: 17px;
+}
+
+.info-highlight {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+ul#paths li.path {
+    font-size: 16px;
+}
+
+ul#paths ul.methods {
+    list-style-type: none;
+    margin-bottom: 10px;
+    font-size: 15px;
+    padding:0;
+}
+
+ul#paths ul.methods li.method {
+    text-transform: uppercase;
+    margin: 0 10px;
+    cursor: pointer;
+}
+
+.active {
+    color: #a6a6a6;
+    text-decoration: underline;
+}
+
+.method-not-called {
+    font-size: 8px;
+    font-weight: bold;
+    color: #e92f2f;
+    vertical-align: middle;
+}
+
+.error {
+    color: #e92f2f;
+}

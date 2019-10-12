@@ -1,0 +1,59 @@
+{{define "header"}}
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{ define "body" }}
+<div id="report-brief">
+  <span class="info">
+      Total coverage: <span class="info-highlight">{{ printf "%.2f" .Percent }}&#37;</span>, unique hits: {{ .UniqueHits }}, expected unique hits: {{ .ExpectedUniqueHits }}
+  </span>
+  <span id="report-expander">details</span><i class="material-icons" style="font-size: 1em; vertical-align: middle;">unfold_more</i></span>
+</div>
+<div id="report" class="hidden">
+  <ul id="paths">
+  {{range $uri, $methods := .Endpoints}}
+    <li class="path">{{ $uri }}
+      <ul class="methods">
+      {{range $method, $stats := $methods}}
+        <li class="method">
+          <i class="material-icons" style="font-size: 1em; vertical-align: middle;">unfold_more</i>
+          {{ $method }}:{{ printf "%.2f" $stats.Percent }}&#37;
+          <span class="method-not-called">{{ if not $stats.MethodCalled }}not called{{end}}</span>
+        </li>
+        <li class="hidden">
+          <ul class="params">
+            {{ if $stats.Params.Query.Root.Items }}
+            <li>
+                <span class="param-type">query</span>{{ template "params" $stats.Params.Query.Root }}
+            </li>
+            {{ end }}
+            {{ if $stats.Params.Body.Root.Items }}
+            <li>
+              <span class="param-type">body</span>{{ template "params" $stats.Params.Body.Root }}
+            </li>
+            {{ end }}
+          </ul>
+        </li>
+      {{end}}
+      </ul>
+    </li>
+  {{end}}
+  </ul>
+</div>
+{{end}}
+
+{{ define "params" }}
+  {{ if .Items }}
+  <ul class="params">
+    {{ range $n, $v := .Items }}
+      <li {{ if not $v.Hits }} class="error" {{ end }}>
+      {{ $n }} - {{ $v.Hits }}
+      {{ if $v.Items }}
+        {{ template "params" $v }}
+      {{ end }}
+      </li>
+    {{ end }}
+  </ul>
+  {{ end }}
+{{ end }}
