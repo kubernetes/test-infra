@@ -118,7 +118,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
 			},
 			config: &Config{JobConfig: JobConfig{
-				Presubmits: map[string][]Presubmit{
+				PresubmitsStatic: map[string][]Presubmit{
 					org + "/" + repo: {{JobBase: JobBase{Name: "hans"}}},
 				},
 			}},

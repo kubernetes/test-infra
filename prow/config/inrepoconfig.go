@@ -26,8 +26,8 @@ type ProwYAML struct {
 }
 
 // ProwYAMLGetter is used to retrieve a ProwYAML. Tests should provide
-// their own implementation and set that on the *Config.
-type ProwYAMLGetter func(*Config, *git.Client, string, string, ...string) (*ProwYAML, error)
+// their own implementation and set that on the Config.
+type ProwYAMLGetter func(c *Config, gc *git.Client, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
 // Verify defaultProwYAMLGetter is a ProwYAMLGetter
 var _ ProwYAMLGetter = defaultProwYAMLGetter
@@ -111,7 +111,7 @@ func defaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 	if err := defaultPresubmits(p.Presubmits, c, identifier); err != nil {
 		return err
 	}
-	if err := validatePresubmits(append(p.Presubmits, c.Presubmits[identifier]...), c.PodNamespace); err != nil {
+	if err := validatePresubmits(append(p.Presubmits, c.PresubmitsStatic[identifier]...), c.PodNamespace); err != nil {
 		return err
 	}
 

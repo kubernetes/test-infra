@@ -85,8 +85,9 @@ type JobConfig struct {
 	// for which a tide query is configured.
 	AllRepos sets.String `json:"-"`
 
-	// FakeInRepoConfig is used for tests. Its key is the headSHA.
-	FakeInRepoConfig map[string][]Presubmit `json:"-"`
+	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
+	// provide their own implementation.
+	ProwYAMLGetter ProwYAMLGetter `json:"-"`
 }
 
 // ProwConfig is config for all prow controllers
@@ -158,10 +159,6 @@ type InRepoConfig struct {
 
 // InRepoConfigEnabled returns whether InRepoConfig is enabled for a given repository.
 func (c *Config) InRepoConfigEnabled(identifier string) bool {
-	// Used in tests
-	if c.FakeInRepoConfig != nil {
-		return true
-	}
 	if c.InRepoConfig.Enabled[identifier] != nil {
 		return *c.InRepoConfig.Enabled[identifier]
 	}
@@ -288,15 +285,12 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		}
 		headSHAs = append(headSHAs, headSHA)
 	}
-	if c.FakeInRepoConfig != nil {
-		return append(c.PresubmitsStatic[identifier], c.FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
-	}
-	prowYAML, err := defaultProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
 
-	return append(c.Presubmits[identifier], prowYAML.Presubmits...), nil
+	return append(c.PresubmitsStatic[identifier], prowYAML.Presubmits...), nil
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
@@ -767,6 +761,9 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 			nc.AllRepos.Insert(repo)
 		}
 	}
+
+	nc.ProwYAMLGetter = defaultProwYAMLGetter
+
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
 	if jobConfig == "" {

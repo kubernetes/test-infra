@@ -37,7 +37,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -1634,6 +1633,15 @@ postsubmits:
 			verify: func(c *Config) error {
 				if c.AllRepos == nil {
 					return errors.New("config.AllRepos is nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "prowYAMLGetter gets set",
+			verify: func(c *Config) error {
+				if c.ProwYAMLGetter == nil {
+					return errors.New("config.ProwYAMLGetter is nil")
 				}
 				return nil
 			},
@@ -3478,14 +3486,6 @@ func TestInRepoConfigEnabled(t *testing.T) {
 		expected bool
 	}{
 		{
-			name: "FakeInRepoConfig takes highest precedence",
-			config: Config{
-				JobConfig: JobConfig{
-					FakeInRepoConfig: map[string][]Presubmit{}},
-			},
-			expected: true,
-		},
-		{
 			name: "Exact match",
 			config: Config{
 				ProwConfig: ProwConfig{
@@ -3574,51 +3574,21 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 	c := &Config{
 		ProwConfig: ProwConfig{
 			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
-			PodNamespace: "default",
 		},
 		JobConfig: JobConfig{
-			Presubmits: map[string][]Presubmit{
+			PresubmitsStatic: map[string][]Presubmit{
 				org + "/" + repo: {{
 					JobBase:  JobBase{Name: "my-static-presubmit"},
 					Reporter: Reporter{Context: "my-static-presubmit"},
 				}},
 			},
+			ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{{
+				JobBase: JobBase{Name: "hans"},
+			}}),
 		},
 	}
 
-	prowYAMLContent := map[string][]byte{
-		"prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
-	}
-
-	lg, gc, err := localgit.New()
-	if err != nil {
-		t.Fatalf("Making local git repo: %v", err)
-	}
-	defer func() {
-		if err := lg.Clean(); err != nil {
-			t.Errorf("Error cleaning LocalGit: %v", err)
-		}
-		if err := gc.Clean(); err != nil {
-			t.Errorf("Error cleaning Client: %v", err)
-		}
-	}()
-
-	if err := lg.MakeFakeRepo(org, repo); err != nil {
-		t.Fatalf("Making fake repo: %v", err)
-	}
-
-	if err := lg.AddCommit(org, repo, prowYAMLContent); err != nil {
-		t.Fatalf("failed to add commit: %v", err)
-	}
-	baseSHA, err := lg.RevParse(org, repo, "master")
-	if err != nil {
-		t.Fatalf("failed to get baseSHA: %v", err)
-	}
-
-	presubmits, err := c.GetPresubmits(gc,
-		org+"/"+repo,
-		func() (string, error) { return baseSHA, nil },
-	)
+	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
 	if err != nil {
 		t.Fatalf("Error calling GetPresubmits: %v", err)
 	}
