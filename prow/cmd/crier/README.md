@@ -46,12 +46,64 @@ The actual report logic is in the [github report library](/prow/github/report) f
 
 ### [Slack reporter](/prow/slack/reporter)
 
+> **NOTE:** if enabling the slack reporter for the *first* time, Crier will message to the Slack channel for **all** ProwJobs matching the configured filtering criteria.
+
 You can enable the Slack reporter in crier by specifying the `--slack-workers=n` and `--slack-token-file=path-to-tokenfile` flags.
 
-The `--slack-token-file` flag takes a path to a file containing a Slack [*OAuth Access Token*](https://api.slack.com/docs/oauth). The access token can be obtained after installing 
-a [Slack app](https://api.slack.com/apps) for the *workspace*. The app should have the [`chat:write:bot`](https://api.slack.com/scopes/chat:write:bot) scope granted in order to [post messages](https://api.slack.com/methods/chat.postMessage) to the configured Slack *channel*.
+The `--slack-token-file` flag takes a path to a file containing a Slack [**OAuth Access Token**](https://api.slack.com/docs/oauth).
 
-In order for it to work, you must add the following to your `config.yaml`:
+The **OAuth Access Token** can be obtained as follows:
+1. Navigate to: https://api.slack.com/apps.
+1. Click **Create New App**.
+1. Provide an **App Name** (e.g. Prow Slack Reporter) and **Development Slack Workspace** (e.g. Kubernetes).
+1. Click **Permissions**.
+1. Add the `chat:write:bot` scope using the **Scopes** dropdown and **Save Changes**.
+1. Click **Install App to Workspace**
+1. Click **Allow** to authorize the Oauth scopes.
+1. Copy the **OAuth Access Token**.
+
+Once the *access token* is obtained, you can create a `secret` in the cluster using that value: 
+
+```shell
+kubectl create secret generic slack-token --from-literal=token=< access token >
+``` 
+
+Furthermore, to make this token available to **Crier**, mount the *slack-token* `secret` using a `volume` and set the `--slack-token-file` flag in the deployment spec.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crier
+  labels:
+    app: crier
+spec:
+  selector:
+    matchLabels:
+      app: crier
+  template:
+    metadata:
+      labels:
+        app: crier
+    spec:
+      containers:
+      - name: crier
+        image: gcr.io/k8s-prow/crier:v20191010-78fe9feb7
+        args:
+        - --slack-workers=1
+        - --slack-token-file=/etc/slack/token
+        - --dry-run=false
+        volumeMounts:
+        - name: slack
+          mountPath: /etc/slack
+          readOnly: true
+      volumes:
+      - name: slack
+        secret:
+          secretName: slack-token
+```
+
+Additionally, in order for it to work with Prow you must add the following to your `config.yaml`:
 
 ```
 slack_reporter:
