@@ -263,7 +263,7 @@ func TestAccumulateBatch(t *testing.T) {
 				config: func() *config.Config {
 					return &config.Config{
 						JobConfig: config.JobConfig{
-							Presubmits: map[string][]config.Presubmit{
+							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": test.presubmits,
 							},
 							FakeInRepoConfig: test.fakeInRepoConfig,
@@ -846,7 +846,7 @@ func TestPickBatch(t *testing.T) {
 			},
 		},
 		JobConfig: config.JobConfig{
-			Presubmits: map[string][]config.Presubmit{
+			PresubmitsStatic: map[string][]config.Presubmit{
 				"o/r": {{
 					AlwaysRun: true,
 					JobBase: config.JobBase{
@@ -876,8 +876,8 @@ func TestPickBatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
-	if !equality.Semantic.DeepEqual(presubmits, ca.Config().PresubmitsStatic()["o/r"]) {
-		t.Errorf("resolving presubmits failed, diff:\n%v\n", diff.ObjectReflectDiff(presubmits, ca.Config().PresubmitsStatic()["o/r"]))
+	if !equality.Semantic.DeepEqual(presubmits, ca.Config().PresubmitsStatic["o/r"]) {
+		t.Errorf("resolving presubmits failed, diff:\n%v\n", diff.ObjectReflectDiff(presubmits, ca.Config().PresubmitsStatic["o/r"]))
 	}
 	for _, testpr := range testprs {
 		var found bool
@@ -2976,7 +2976,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 				config: func() *config.Config {
 					return &config.Config{
 						JobConfig: config.JobConfig{
-							Presubmits: map[string][]config.Presubmit{
+							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": tc.jobs,
 							},
 							FakeInRepoConfig: tc.inrepoconfig,

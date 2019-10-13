@@ -97,7 +97,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 				},
 			},
 			JobConfig: config.JobConfig{
-				Presubmits: presubmitMap,
+				PresubmitsStatic: presubmitMap,
 			},
 		},
 	}

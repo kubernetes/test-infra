@@ -378,7 +378,7 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}
 
-	for repo, presubmits := range prowConfig.Presubmits {
+	for repo, presubmits := range prowConfig.PresubmitsStatic {
 		if hasAnyPrefix(repo, noPresubmitsInTestgridPrefixes) {
 			continue
 		}

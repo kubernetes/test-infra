@@ -163,21 +163,21 @@ func (c *Controller) Run(ctx context.Context, changes <-chan config.Delta) {
 
 func (c *Controller) reconcile(delta config.Delta) error {
 	var errors []error
-	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.PresubmitsStatic(), delta.After.PresubmitsStatic())); err != nil {
+	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)
 		}
 	}
 
-	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic(), delta.After.PresubmitsStatic())); err != nil {
+	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)
 		}
 	}
 
-	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.PresubmitsStatic(), delta.After.PresubmitsStatic())); err != nil {
+	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)

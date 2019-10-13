@@ -152,7 +152,7 @@ func main() {
 
 	var jobs []config.JobBase
 
-	for _, v := range conf.AllPresubmits(nil) {
+	for _, v := range conf.AllStaticPresubmits(nil) {
 		jobs = append(jobs, v.JobBase)
 	}
 	for _, v := range conf.AllPostsubmits(nil) {

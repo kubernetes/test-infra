@@ -499,7 +499,7 @@ func TestGeneratePresubmits(t *testing.T) {
 		},
 	}
 
-	result, err := generatePresubmits(config.JobConfig{Presubmits: presubmits}, "1.15")
+	result, err := generatePresubmits(config.JobConfig{PresubmitsStatic: presubmits}, "1.15")
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

@@ -383,7 +383,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							Presubmit{
 								Reporter: Reporter{
@@ -527,7 +527,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			name: "both static and inrepoconfig jobs are consired",
 			config: Config{
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							Presubmit{
 								Reporter: Reporter{
