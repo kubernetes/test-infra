@@ -18,7 +18,6 @@ package main
 
 import (
 	"flag"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -54,22 +53,20 @@ func main() {
 		if err := resources.CleanAll(sess, *region); err != nil {
 			klog.Fatalf("Error cleaning all resources: %v", err)
 		}
-	} else if ok, err := markAndSweep(sess, *region); err != nil {
+	} else if err := markAndSweep(sess, *region); err != nil {
 		klog.Fatalf("Error marking and sweeping resources: %v", err)
-	} else if !ok {
-		os.Exit(1)
 	}
 }
 
-func markAndSweep(sess *session.Session, region string) (bool, error) {
+func markAndSweep(sess *session.Session, region string) error {
 	s3p, err := s3path.GetPath(sess, *path)
 	if err != nil {
-		return false, errors.Wrapf(err, "-path %q isn't a valid S3 path", *path)
+		return errors.Wrapf(err, "-path %q isn't a valid S3 path", *path)
 	}
 
 	acct, err := account.GetAccount(sess, regions.Default)
 	if err != nil {
-		return false, errors.Wrap(err, "Error getting current user")
+		return errors.Wrap(err, "Error getting current user")
 	}
 	klog.V(1).Infof("account: %s", acct)
 
@@ -77,7 +74,7 @@ func markAndSweep(sess *session.Session, region string) (bool, error) {
 	if region == "" {
 		regionList, err = regions.GetAll(sess)
 		if err != nil {
-			return false, errors.Wrap(err, "Error getting available regions")
+			return errors.Wrap(err, "Error getting available regions")
 		}
 	} else {
 		regionList = []string{region}
@@ -86,27 +83,29 @@ func markAndSweep(sess *session.Session, region string) (bool, error) {
 
 	res, err := resources.LoadSet(sess, s3p, *maxTTL)
 	if err != nil {
-		return false, errors.Wrapf(err, "Error loading %q", *path)
+		return errors.Wrapf(err, "Error loading %q", *path)
 	}
 
 	for _, region := range regionList {
 		for _, typ := range resources.RegionalTypeList {
 			if err := typ.MarkAndSweep(sess, acct, region, res); err != nil {
-				return false, errors.Wrapf(err, "Error sweeping %T", typ)
+				return errors.Wrapf(err, "Error sweeping %T", typ)
 			}
 		}
 	}
 
 	for _, typ := range resources.GlobalTypeList {
 		if err := typ.MarkAndSweep(sess, acct, regions.Default, res); err != nil {
-			return false, errors.Wrapf(err, "Error sweeping %T", typ)
+			return errors.Wrapf(err, "Error sweeping %T", typ)
 		}
 	}
 
 	swept := res.MarkComplete()
 	if err := res.Save(sess, s3p); err != nil {
-		return false, errors.Wrapf(err, "Error saving %q", *path)
+		return errors.Wrapf(err, "Error saving %q", *path)
 	}
 
-	return swept == 0, nil
+	klog.Infof("swept %d resources", swept)
+
+	return nil
 }
