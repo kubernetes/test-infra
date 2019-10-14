@@ -19,7 +19,6 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -87,110 +86,6 @@ func Test_Options(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 			case test.expected != nil && !reflect.DeepEqual(*test.expected, actual):
 				t.Errorf("Mismatched Options: got %v, expected %v", actual, *test.expected)
-			}
-		})
-	}
-}
-
-func Test_readToConfig(t *testing.T) {
-	tests := []struct {
-		name          string
-		files         map[string]string
-		useDir        bool
-		expected      Config
-		expectFailure bool
-	}{
-		{
-			name: "Reads file",
-			files: map[string]string{
-				"1*.yaml": "dashboards:\n- name: Foo\n",
-			},
-			expected: Config{
-				config: &config.Configuration{
-					Dashboards: []*config.Dashboard{
-						{Name: "Foo"},
-					},
-				},
-			},
-		},
-		{
-			name: "Reads files in directory",
-			files: map[string]string{
-				"1*.yaml": "dashboards:\n- name: Foo\n",
-				"2*.yaml": "dashboards:\n- name: Bar\n",
-			},
-			useDir: true,
-			expected: Config{
-				config: &config.Configuration{
-					Dashboards: []*config.Dashboard{
-						{Name: "Foo"},
-						{Name: "Bar"},
-					},
-				},
-			},
-		},
-		{
-			name: "Invalid YAML: fails",
-			files: map[string]string{
-				"1*.yaml": "gibberish",
-			},
-			expectFailure: true,
-		},
-		{
-			name: "Won't read non-YAML",
-			files: map[string]string{
-				"1*.yml": "dashboards:\n- name: Foo\n",
-				"2*.txt": "dashboards:\n- name: Bar\n",
-			},
-			expected: Config{
-				config: &config.Configuration{
-					Dashboards: []*config.Dashboard{
-						{Name: "Foo"},
-					},
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			inputs := make([]string, 0)
-			directory, err := ioutil.TempDir("", "")
-			if err != nil {
-				t.Fatalf("Error in creating temporary dir: %v", err)
-			}
-			defer os.RemoveAll(directory)
-
-			for fileName, fileContents := range test.files {
-				file, err := ioutil.TempFile(directory, fileName)
-				if err != nil {
-					t.Fatalf("Error in creating temporary file %s: %v", fileName, err)
-				}
-				if _, err := file.WriteString(fileContents); err != nil {
-					t.Fatalf("Error in writing temporary file %s: %v", fileName, err)
-				}
-				inputs = append(inputs, file.Name())
-				if err := file.Close(); err != nil {
-					t.Fatalf("Error in closing temporary file %s: %v", fileName, err)
-				}
-			}
-
-			var result Config
-			var readErr error
-			if test.useDir {
-				readErr = readToConfig(&result, []string{directory})
-			} else {
-				readErr = readToConfig(&result, inputs)
-			}
-
-			if test.expectFailure && readErr == nil {
-				t.Error("Expected error, but got none")
-			}
-			if !test.expectFailure && readErr != nil {
-				t.Errorf("Unexpected error: %v", readErr)
-			}
-			if !test.expectFailure && !reflect.DeepEqual(result, test.expected) {
-				t.Errorf("Mismatched results: got %v, expected %v", result.config, test.expected.config)
 			}
 		})
 	}
