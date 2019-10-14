@@ -51,29 +51,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-  - name: coverage_multicloud-operators-deployable
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/multicloud-operators-deployable
-    rerun_command: /test coverage multicloud-operators-deployable
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-multicloud-operators-deployable-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?coverage(?: .*?)?$'
 
 postsubmits:
   IBM/multicloud-operators-deployable:
@@ -103,6 +80,26 @@ postsubmits:
         - test
         image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
         name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_multicloud-operators-deployable_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-deployable
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-multicloud-operators-deployable-codecov-token
+              key: codecov-token
         securityContext:
           privileged: true
   - name: build_multicloud-operators-deployable_postsubmit

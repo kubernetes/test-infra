@@ -51,29 +51,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-  - name: coverage_multicloud-operators-channel
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/multicloud-operators-channel
-    rerun_command: /test coverage multicloud-operators-channel
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-multicloud-operators-channel-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?coverage(?: .*?)?$'
 
 postsubmits:
   IBM/multicloud-operators-channel:
@@ -103,6 +80,26 @@ postsubmits:
         - test
         image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
         name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_multicloud-operators-channel_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-channel
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-multicloud-operators-channel-codecov-token
+              key: codecov-token
         securityContext:
           privileged: true
   - name: build_multicloud-operators-channel_postsubmit

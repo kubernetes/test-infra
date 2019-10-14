@@ -51,29 +51,6 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-  - name: coverage_oasis
-    always_run: true
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/multicloudlab/oasis
-    rerun_command: /test coverage oasis
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: multicloudlab-oasis-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?coverage(?: .*?)?$'
 
 postsubmits:
   multicloudlab/oasis:
@@ -117,5 +94,25 @@ postsubmits:
         - test
         image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
         name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_oasis_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/multicloudlab/oasis
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: multicloudlab-oasis-codecov-token
+              key: codecov-token
         securityContext:
           privileged: true
