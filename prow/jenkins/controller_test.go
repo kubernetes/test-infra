@@ -25,10 +25,12 @@ import (
 	"sync"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -178,6 +180,9 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
+	fakeClock := clock.NewFakeClock(time.Now().Truncate(1 * time.Second))
+	pendingTime := metav1.NewTime(fakeClock.Now())
+
 	var testcases = []struct {
 		name           string
 		pj             prowapi.ProwJob
@@ -186,12 +191,13 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		builds         map[string]Build
 		err            error
 
-		expectedState    prowapi.ProwJobState
-		expectedBuild    bool
-		expectedComplete bool
-		expectedReport   bool
-		expectedEnqueued bool
-		expectedError    bool
+		expectedState       prowapi.ProwJobState
+		expectedBuild       bool
+		expectedComplete    bool
+		expectedReport      bool
+		expectedEnqueued    bool
+		expectedError       bool
+		expectedPendingTime *metav1.Time
 	}{
 		{
 			name: "start new job",
@@ -207,10 +213,11 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			expectedBuild:    true,
-			expectedReport:   true,
-			expectedState:    prowapi.PendingState,
-			expectedEnqueued: true,
+			expectedBuild:       true,
+			expectedReport:      true,
+			expectedState:       prowapi.PendingState,
+			expectedEnqueued:    true,
+			expectedPendingTime: &pendingTime,
 		},
 		{
 			name: "start new job, error",
@@ -273,12 +280,13 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			pendingJobs:      map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
-			maxConcurrency:   21,
-			expectedBuild:    true,
-			expectedReport:   true,
-			expectedState:    prowapi.PendingState,
-			expectedEnqueued: true,
+			pendingJobs:         map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
+			maxConcurrency:      21,
+			expectedBuild:       true,
+			expectedReport:      true,
+			expectedState:       prowapi.PendingState,
+			expectedEnqueued:    true,
+			expectedPendingTime: &pendingTime,
 		},
 	}
 	for _, tc := range testcases {
@@ -300,6 +308,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			totURL:        totServ.URL,
 			lock:          sync.RWMutex{},
 			pendingJobs:   make(map[string]int),
+			clock:         fakeClock,
 		}
 		if tc.pendingJobs != nil {
 			c.pendingJobs = tc.pendingJobs
@@ -346,6 +355,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		}
 		if tc.expectedEnqueued && actual.Status.Description != "Jenkins job enqueued." {
 			t.Errorf("expected enqueued prowjob, got %v", actual)
+		}
+		if !reflect.DeepEqual(actual.Status.PendingTime, tc.expectedPendingTime) {
+			t.Errorf("for case %q got pending time %v, expected %v", tc.name, actual.Status.PendingTime, tc.expectedPendingTime)
 		}
 	}
 }
@@ -527,6 +539,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			totURL:        totServ.URL,
 			lock:          sync.RWMutex{},
 			pendingJobs:   make(map[string]int),
+			clock:         clock.RealClock{},
 		}
 
 		reports := make(chan prowapi.ProwJob, 100)
@@ -630,6 +643,7 @@ func TestBatch(t *testing.T) {
 		totURL:        totServ.URL,
 		pendingJobs:   make(map[string]int),
 		lock:          sync.RWMutex{},
+		clock:         clock.RealClock{},
 	}
 
 	if err := c.Sync(); err != nil {
@@ -817,6 +831,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			cfg:           newFakeConfigAgent(t, 0, nil).Config,
 			totURL:        totServ.URL,
 			pendingJobs:   test.pendingJobs,
+			clock:         clock.RealClock{},
 		}
 
 		reports := make(chan<- prowapi.ProwJob, len(test.pjs))
@@ -1026,6 +1041,7 @@ func TestOperatorConfig(t *testing.T) {
 		c := Controller{
 			cfg:      newFakeConfigAgent(t, 10, test.operators).Config,
 			selector: test.labelSelector,
+			clock:    clock.RealClock{},
 		}
 
 		got := c.config()
