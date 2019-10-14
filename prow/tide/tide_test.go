@@ -34,9 +34,10 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
-	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	clienttesting "k8s.io/client-go/testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/localgit"
@@ -1356,13 +1357,13 @@ func TestTakeAction(t *testing.T) {
 			return prs
 		}
 		fgc := fgc{mergeErrs: tc.mergeErrs}
-		client := fakectrlruntimeclient.NewFakeClient()
+		fakeProwJobClient := fake.NewSimpleClientset()
 		c := &Controller{
 			logger:        logrus.WithField("controller", "tide"),
 			gc:            gc,
 			config:        ca.Config,
 			ghc:           &fgc,
-			prowJobClient: client,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			changedFiles: &changedFilesAgent{
 				ghc:             &fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
@@ -1382,19 +1383,17 @@ func TestTakeAction(t *testing.T) {
 			t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 		}
 
-		prowJobs := &prowapi.ProwJobList{}
-		if err := client.List(context.Background(), prowJobs); err != nil {
-			t.Fatalf("failed to list ProwJobs: %v", err)
-		}
-		numCreated := len(prowJobs.Items)
-
+		numCreated := 0
 		var batchJobs []*prowapi.ProwJob
-		for _, pj := range prowJobs.Items {
-			if pj.Spec.Type == prowapi.BatchJob {
-				batchJobs = append(batchJobs, &pj)
+		for _, action := range fakeProwJobClient.Actions() {
+			switch action := action.(type) {
+			case clienttesting.CreateActionImpl:
+				numCreated++
+				if prowJob, ok := action.Object.(*prowapi.ProwJob); ok && prowJob.Spec.Type == prowapi.BatchJob {
+					batchJobs = append(batchJobs, prowJob)
+				}
 			}
 		}
-
 		if tc.triggered != numCreated {
 			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", numCreated, tc.triggered)
 		}
@@ -1647,6 +1646,7 @@ func TestSync(t *testing.T) {
 				"org/repo B":       "SHA",
 			},
 		}
+		fakeProwJobClient := fake.NewSimpleClientset()
 		ca := &config.Agent{}
 		ca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
@@ -1675,7 +1675,7 @@ func TestSync(t *testing.T) {
 			config:        ca.Config,
 			ghc:           fgc,
 			gc:            &git.Client{},
-			prowJobClient: fakectrlruntimeclient.NewFakeClient(),
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			logger:        logrus.WithField("controller", "sync"),
 			sc:            sc,
 			changedFiles: &changedFilesAgent{

@@ -17,21 +17,12 @@ limitations under the License.
 package v1
 
 import (
-	"fmt"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	"k8s.io/test-infra/prow/apis/prowjobs"
 )
-
-func init() {
-	if err := AddToScheme(scheme.Scheme); err != nil {
-		panic(fmt.Sprintf("failed to add prowjob api to scheme: %v", err))
-	}
-}
 
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: prowjobs.GroupName, Version: "v1"}
