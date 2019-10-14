@@ -51,6 +51,29 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+  - name: coverage_multicloud-operators-subscription
+    always_run: true
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-subscription
+    rerun_command: /test coverage multicloud-operators-subscription
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-multicloud-operators-subscription-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?coverage(?: .*?)?$'
 
 postsubmits:
   IBM/multicloud-operators-subscription:
