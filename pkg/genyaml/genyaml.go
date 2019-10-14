@@ -258,6 +258,7 @@ func (cm *CommentMap) genDocMap(path string) error {
 
 	for _, t := range pkg.Types {
 		if typeSpec, ok := t.Decl.Specs[0].(*ast.TypeSpec); ok {
+
 			var lst []*ast.Field
 
 			// Support struct type, interface type, and type alias.
