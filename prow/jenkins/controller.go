@@ -25,6 +25,7 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/clock"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -78,7 +79,8 @@ type Controller struct {
 
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
-	pjs []prowapi.ProwJob
+	pjs   []prowapi.ProwJob
+	clock clock.Clock
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -100,6 +102,7 @@ func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github
 		node:          n,
 		totURL:        totURL,
 		pendingJobs:   make(map[string]int),
+		clock:         clock.RealClock{},
 	}, nil
 }
 
@@ -419,12 +422,18 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 			pj.Status.URL = c.cfg().StatusErrorLink
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
+			now := metav1.NewTime(c.clock.Now())
+			pj.Status.PendingTime = &now
 			pj.Status.State = prowapi.PendingState
 			pj.Status.Description = "Jenkins job enqueued."
 		}
 	} else {
 		// If a Jenkins build already exists for this job, advance the ProwJob to Pending and
 		// it should be handled by syncPendingJob in the next sync.
+		if pj.Status.PendingTime == nil {
+			now := metav1.NewTime(c.clock.Now())
+			pj.Status.PendingTime = &now
+		}
 		pj.Status.State = prowapi.PendingState
 		pj.Status.Description = "Jenkins job enqueued."
 	}
