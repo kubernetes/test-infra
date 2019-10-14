@@ -4,21 +4,20 @@ plank:
   job_url_prefix_config:
     '*': https://prow.k8s.io/view/gcs/
   pod_pending_timeout: 60m
-  default_decoration_configs:
-    '*':
-      timeout: 2h
-      grace_period: 15s
-      utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20191011-80f304f54"
-        initupload: "gcr.io/k8s-prow/initupload:v20191011-80f304f54"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20191011-80f304f54"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20191011-80f304f54"
-      gcs_configuration:
-        bucket: "kubernetes-jenkins"
-        path_strategy: "legacy"
-        default_org: "kubernetes"
-        default_repo: "kubernetes"
-      gcs_credentials_secret: "service-account"
+  default_decoration_config:
+    timeout: 2h
+    grace_period: 15s
+    utility_images:
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20191011-80f304f54"
+      initupload: "gcr.io/k8s-prow/initupload:v20191011-80f304f54"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20191011-80f304f54"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20191011-80f304f54"
+    gcs_configuration:
+      bucket: "kubernetes-jenkins"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "service-account"
 
 sinker:
   resync_period: 1m
