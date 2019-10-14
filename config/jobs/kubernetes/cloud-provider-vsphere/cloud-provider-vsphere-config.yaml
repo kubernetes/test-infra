@@ -34,7 +34,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191012-482f444-master
         command:
         - make
         args:
@@ -52,7 +52,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191012-482f444-master
         command:
         - make
         args:
@@ -70,7 +70,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191012-482f444-master
         command:
         - make
         args:
@@ -127,7 +127,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191012-482f444-master
         command:
         - make
         args:
