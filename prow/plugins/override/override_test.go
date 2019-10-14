@@ -103,11 +103,19 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 }
 
 type fakeClient struct {
-	comments   []string
-	statuses   map[string]github.Status
-	presubmits map[string]config.Presubmit
-	jobs       sets.String
-	owners     ownersClient
+	comments []string
+	statuses map[string]github.Status
+	ps       map[string]config.Presubmit
+	jobs     sets.String
+	owners   ownersClient
+}
+
+func (c *fakeClient) presubmits(_, _ string, _ config.RefGetter, _ string) ([]config.Presubmit, error) {
+	var result []config.Presubmit
+	for _, p := range c.ps {
+		result = append(result, p)
+	}
+	return result, nil
 }
 
 func (c *fakeClient) CreateComment(org, repo string, number int, comment string) error {
@@ -228,14 +236,6 @@ func (c *fakeClient) Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	}
 	c.jobs.Insert(pj.Spec.Context)
 	return pj, nil
-}
-
-func (c *fakeClient) presubmitForContext(org, repo, context string) *config.Presubmit {
-	p, ok := c.presubmits[context]
-	if !ok {
-		return nil
-	}
-	return &p
 }
 
 func (c *fakeClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
@@ -695,10 +695,10 @@ func TestHandle(t *testing.T) {
 				},
 			}
 			fc := fakeClient{
-				statuses:   tc.contexts,
-				presubmits: tc.presubmits,
-				jobs:       sets.String{},
-				owners:     froc,
+				statuses: tc.contexts,
+				ps:       tc.presubmits,
+				jobs:     sets.String{},
+				owners:   froc,
 			}
 
 			if tc.jobs == nil {

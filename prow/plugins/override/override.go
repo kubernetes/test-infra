@@ -28,6 +28,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -64,49 +65,61 @@ type overrideClient interface {
 	githubClient
 	prowJobClient
 	ownersClient
-	presubmitForContext(org, repo, context string) *config.Presubmit
+	presubmits(org, repo string, baseSHAGetter config.RefGetter, headSHA string) ([]config.Presubmit, error)
 }
 
 type client struct {
-	gc            githubClient
-	jc            config.JobConfig
+	ghc           githubClient
+	gc            *git.Client
+	config        *config.Config
 	ownersClient  ownersClient
 	prowJobClient prowJobClient
 }
 
 func (c client) CreateComment(owner, repo string, number int, comment string) error {
-	return c.gc.CreateComment(owner, repo, number, comment)
+	return c.ghc.CreateComment(owner, repo, number, comment)
 }
 func (c client) CreateStatus(org, repo, ref string, s github.Status) error {
-	return c.gc.CreateStatus(org, repo, ref, s)
+	return c.ghc.CreateStatus(org, repo, ref, s)
 }
 
 func (c client) GetRef(org, repo, ref string) (string, error) {
-	return c.gc.GetRef(org, repo, ref)
+	return c.ghc.GetRef(org, repo, ref)
 }
 
 func (c client) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
-	return c.gc.GetPullRequest(org, repo, number)
+	return c.ghc.GetPullRequest(org, repo, number)
 }
 func (c client) ListStatuses(org, repo, ref string) ([]github.Status, error) {
-	return c.gc.ListStatuses(org, repo, ref)
+	return c.ghc.ListStatuses(org, repo, ref)
 }
 func (c client) HasPermission(org, repo, user string, role ...string) (bool, error) {
-	return c.gc.HasPermission(org, repo, user, role...)
+	return c.ghc.HasPermission(org, repo, user, role...)
 }
 func (c client) ListTeams(org string) ([]github.Team, error) {
-	return c.gc.ListTeams(org)
+	return c.ghc.ListTeams(org)
 }
 func (c client) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
-	return c.gc.ListTeamMembers(id, role)
+	return c.ghc.ListTeamMembers(id, role)
 }
 
 func (c client) Create(pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	return c.prowJobClient.Create(pj)
 }
 
-func (c client) presubmitForContext(org, repo, context string) *config.Presubmit {
-	for _, p := range c.jc.AllPresubmits([]string{org + "/" + repo}) {
+func (c client) presubmits(org, repo string, baseSHAGetter config.RefGetter, headSHA string) ([]config.Presubmit, error) {
+	headSHAGetter := func() (string, error) {
+		return headSHA, nil
+	}
+	presubmits, err := c.config.GetPresubmits(c.gc, org+"/"+repo, baseSHAGetter, headSHAGetter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get presubmits: %v", err)
+	}
+	return presubmits, nil
+}
+
+func presubmitForContext(presubmits []config.Presubmit, context string) *config.Presubmit {
+	for _, p := range presubmits {
 		if p.Context == context {
 			return &p
 		}
@@ -165,8 +178,9 @@ func whoCanUse(overrideConfig plugins.Override, org, repo string) string {
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
 	c := client{
-		gc:            pc.GitHubClient,
-		jc:            pc.Config.JobConfig,
+		gc:            pc.GitClient,
+		ghc:           pc.GitHubClient,
+		config:        pc.Config,
 		prowJobClient: pc.ProwJobClient,
 		ownersClient:  pc.OwnersClient,
 	}
@@ -334,13 +348,21 @@ Only the following contexts were expected:
 		oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}()
 
+	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
+	presubmits, err := oc.presubmits(org, repo, baseSHAGetter, sha)
+	if err != nil {
+		msg := fmt.Sprintf("Failed to get presubmits")
+		log.WithError(err).Error(msg)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
+	}
 	for _, status := range statuses {
 		if status.State == github.StatusSuccess || !overrides.Has(status.Context) {
 			continue
 		}
 		// First create the overridden prow result if necessary
-		if pre := oc.presubmitForContext(org, repo, status.Context); pre != nil {
-			baseSHA, err := oc.GetRef(org, repo, "heads/"+pr.Base.Ref)
+		pre := presubmitForContext(presubmits, status.Context)
+		if pre != nil {
+			baseSHA, err := baseSHAGetter()
 			if err != nil {
 				resp := fmt.Sprintf("Cannot get base ref of PR")
 				log.WithError(err).Warn(resp)
@@ -373,4 +395,17 @@ Only the following contexts were expected:
 		done.Insert(status.Context)
 	}
 	return nil
+}
+
+// shaGetterFactory is a closure to retrieve a sha once. It is not threadsafe.
+func shaGetterFactory(oc overrideClient, org, repo, ref string) func() (string, error) {
+	var baseSHA string
+	return func() (string, error) {
+		if baseSHA != "" {
+			return baseSHA, nil
+		}
+		var err error
+		baseSHA, err = oc.GetRef(org, repo, "heads/"+ref)
+		return baseSHA, err
+	}
 }
