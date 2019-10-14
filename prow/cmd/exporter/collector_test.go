@@ -142,11 +142,13 @@ func (l fakeLister) List(selector labels.Selector) ([]*prowapi.ProwJob, error) {
 	}, nil
 }
 
+type labelsAndValue struct {
+	labels     []*dto.LabelPair
+	gaugeValue float64
+}
+
 func TestProwJobCollector(t *testing.T) {
-	expected := []struct {
-		labels     []*dto.LabelPair
-		gaugeValue float64
-	}{
+	expected := []labelsAndValue{
 		{
 			labels: []*dto.LabelPair{
 				{
@@ -275,14 +277,45 @@ ExitForLoop:
 
 	logrus.Info("get all 4 metrics")
 
-	for i, metric := range metrics {
+	var actual []labelsAndValue
+	for _, metric := range metrics {
 		out := &dto.Metric{}
 		if err := metric.Write(out); err != nil {
 			t.Fatal("unexpected error occurred when writing")
 		}
-		assertEqual(t, out.GetLabel(), expected[i].labels)
-		assertEqual(t, out.GetGauge().GetValue(), expected[i].gaugeValue)
+		actual = append(actual, labelsAndValue{labels: out.GetLabel(), gaugeValue: out.GetGauge().GetValue()})
 	}
+	if equalIgnoreOrder(expected, actual) != true {
+		t.Fatalf("equalIgnoreOrder failed")
+	}
+}
+
+func equalIgnoreOrder(values1 []labelsAndValue, values2 []labelsAndValue) bool {
+	if len(values1) != len(values2) {
+		return false
+	}
+	for _, v1 := range values1 {
+		if !contains(values2, v1) {
+			logrus.WithField("v1", v1).WithField("values2", values2).Errorf("v1 not in values2")
+			return false
+		}
+	}
+	for _, v2 := range values2 {
+		if !contains(values1, v2) {
+			logrus.WithField("v2", v2).WithField("values1", values1).Errorf("v2 not in values1")
+			return false
+		}
+	}
+	return true
+}
+
+func contains(values []labelsAndValue, value labelsAndValue) bool {
+	for _, v := range values {
+		if reflect.DeepEqual(v.gaugeValue, value.gaugeValue) && reflect.DeepEqual(v.labels, value.labels) {
+			return true
+		}
+	}
+	return false
 }
 
 func stringPointer(s string) *string {
