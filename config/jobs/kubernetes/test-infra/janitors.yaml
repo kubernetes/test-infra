@@ -29,6 +29,10 @@ periodics:
       secret:
         defaultMode: 256
         secretName: aws-cred-new
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-aws-janitor
+    description: Deletes old AWS resources
 
 - interval: 24h
   name: maintenance-ci-janitor
