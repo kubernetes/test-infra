@@ -33,11 +33,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
@@ -49,6 +50,11 @@ import (
 
 // For mocking out sleep during unit tests.
 var sleep = time.Sleep
+
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
+}
 
 type githubClient interface {
 	CreateStatus(string, string, string, github.Status) error
@@ -68,11 +74,10 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	ctx           context.Context
 	logger        *logrus.Entry
 	config        config.Getter
 	ghc           githubClient
-	prowJobClient ctrlruntimeclient.Client
+	prowJobClient prowJobClient
 	gc            *git.Client
 
 	sc *statusController
@@ -194,7 +199,7 @@ func init() {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus github.Client, prowJobClient ctrlruntimeclient.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -214,7 +219,6 @@ func NewController(ghcSync, ghcStatus github.Client, prowJobClient ctrlruntimecl
 	}
 	go sc.run()
 	return &Controller{
-		ctx:           context.Background(),
 		logger:        logger.WithField("controller", "sync"),
 		ghc:           ghcSync,
 		prowJobClient: prowJobClient,
@@ -303,8 +307,8 @@ func (c *Controller) Sync() error {
 	var err error
 	if len(prs) > 0 {
 		start := time.Now()
-		pjList := &prowapi.ProwJobList{}
-		if err := c.prowJobClient.List(c.ctx, pjList, ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace)); err != nil {
+		pjList, err := c.prowJobClient.List(metav1.ListOptions{})
+		if err != nil {
 			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
 		}
@@ -1039,7 +1043,7 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		pj := pjutil.NewProwJob(spec, ps.Labels, ps.Annotations)
 		log := c.logger.WithFields(pjutil.ProwJobFields(&pj))
 		start := time.Now()
-		if err := c.prowJobClient.Create(c.ctx, &pj); err != nil {
+		if _, err := c.prowJobClient.Create(&pj); err != nil {
 			log.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 		}

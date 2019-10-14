@@ -132,6 +132,9 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
+	if err := prowapi.AddToScheme(mgr.GetScheme()); err != nil {
+		logrus.WithError(err).Fatal("Error adding prow api to scheme")
+	}
 
 	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
 	if err != nil {
