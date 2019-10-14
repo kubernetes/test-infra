@@ -55,10 +55,15 @@ func scanln(ctx context.Context) (string, error) {
 }
 
 func readMount(ctx context.Context, mount coreapi.VolumeMount) (string, error) {
-	fmt.Fprintf(os.Stderr, "local %s path (%q mount): ", mount.MountPath, mount.Name)
+	defaultMount := "mounts/" + mount.Name
+
+	fmt.Fprintf(os.Stderr, "local %s path (%q mount, default %q): ", mount.MountPath, mount.Name, defaultMount)
 	out, err := scanln(ctx)
 	if err != nil {
 		return "", fmt.Errorf("scan: %v", err)
+	}
+	if out == "" {
+		out = defaultMount
 	}
 	return realPath(out)
 }
