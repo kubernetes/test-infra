@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/metrics/prowjobs"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -90,6 +91,9 @@ func main() {
 	}
 	informerFactory := prowjobinformer.NewSharedInformerFactoryWithOptions(pjClientset, 0, prowjobinformer.WithNamespace(cfg().ProwJobNamespace))
 	pjLister := informerFactory.Prow().V1().ProwJobs().Lister()
+
+	prometheus.MustRegister(prowjobs.NewProwJobLifecycleHistogramVec(informerFactory.Prow().V1().ProwJobs().Informer()))
+
 	go informerFactory.Start(interrupts.Context().Done())
 
 	registry := mustRegister("exporter", pjLister)
