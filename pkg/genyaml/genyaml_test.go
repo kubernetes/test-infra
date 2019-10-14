@@ -19,8 +19,13 @@ package genyaml
 import (
 	"bytes"
 	"encoding/json"
-	yaml3 "gopkg.in/yaml.v3"
 	"io/ioutil"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	yaml3 "gopkg.in/yaml.v3"
+	simplealiases "k8s.io/test-infra/pkg/genyaml/testdata/alias_simple_types"
 	aliases "k8s.io/test-infra/pkg/genyaml/testdata/alias_types"
 	embedded "k8s.io/test-infra/pkg/genyaml/testdata/embedded_structs"
 	interfaces "k8s.io/test-infra/pkg/genyaml/testdata/interface_types"
@@ -31,9 +36,6 @@ import (
 	pointers "k8s.io/test-infra/pkg/genyaml/testdata/pointer_types"
 	primitives "k8s.io/test-infra/pkg/genyaml/testdata/primitive_types"
 	private "k8s.io/test-infra/pkg/genyaml/testdata/private_members"
-	"path/filepath"
-	"strings"
-	"testing"
 )
 
 const (
@@ -317,6 +319,13 @@ func TestGenYAML(t *testing.T) {
 			name: "alias types",
 			structObj: &aliases.Alias{
 				StringField: "string",
+			},
+			expected: true,
+		},
+		{
+			name: "alias simple types",
+			structObj: &simplealiases.SimpleAliases{
+				AliasField: simplealiases.Alias("string"),
 			},
 			expected: true,
 		},
