@@ -183,13 +183,14 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_system_pod_metrics.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=70m
@@ -249,6 +250,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_system_pod_metrics.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
@@ -305,13 +307,14 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/600_nodes/high_density_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_system_pod_metrics.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
       # docker-in-docker needs privileged mode
