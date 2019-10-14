@@ -587,11 +587,9 @@ func fakeProwConfig() *prowConfig.Config {
 	return &prowConfig.Config{
 		ProwConfig: prowConfig.ProwConfig{
 			Plank: prowConfig.Plank{
-				DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
-					"*": {
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							PathPrefix: ProwDefaultGCSPath,
-						},
+				DefaultDecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						PathPrefix: ProwDefaultGCSPath,
 					},
 				},
 			},
