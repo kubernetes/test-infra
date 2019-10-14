@@ -258,7 +258,6 @@ func (cm *CommentMap) genDocMap(path string) error {
 
 	for _, t := range pkg.Types {
 		if typeSpec, ok := t.Decl.Specs[0].(*ast.TypeSpec); ok {
-
 			var lst []*ast.Field
 
 			// Support struct type, interface type, and type alias.
@@ -268,10 +267,13 @@ func (cm *CommentMap) genDocMap(path string) error {
 			case *ast.StructType:
 				lst = typ.Fields.List
 			case *ast.Ident:
-				if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.InterfaceType); ok {
-					lst = alias.Methods.List
-				} else if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.StructType); ok {
-					lst = alias.Fields.List
+				// ensure that aliases for non-struct/interface types continue to work
+				if typ.Obj != nil {
+					if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.InterfaceType); ok {
+						lst = alias.Methods.List
+					} else if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.StructType); ok {
+						lst = alias.Fields.List
+					}
 				}
 			}
 
