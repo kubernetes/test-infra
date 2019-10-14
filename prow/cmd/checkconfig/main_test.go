@@ -1035,3 +1035,79 @@ func TestVerifyOwnersPresence(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateTriggers(t *testing.T) {
+	testCases := []struct {
+		description string
+		pcfg        *plugins.Configuration
+		cfg         *config.Config
+
+		expected string
+	}{
+		{
+			description: "non-gerrit repo with trigger enabled",
+			pcfg:        &plugins.Configuration{Plugins: map[string][]string{"k/k": {"trigger"}}},
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					Presubmits: map[string][]config.Presubmit{
+						"k/k": {{JobBase: config.JobBase{Name: "testjob"}}},
+					},
+					Postsubmits: map[string][]config.Postsubmit{
+						"k/k": {{JobBase: config.JobBase{Name: "testjob"}}},
+					},
+				},
+			},
+			expected: "",
+		},
+		{
+			description: "non-gerrit repo without trigger enabled",
+			pcfg:        &plugins.Configuration{Plugins: map[string][]string{"k/k": {"blunderbuss"}}},
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					Presubmits: map[string][]config.Presubmit{
+						"k/k": {{JobBase: config.JobBase{Name: "testjob"}}},
+					},
+					Postsubmits: map[string][]config.Postsubmit{
+						"k/k": {{JobBase: config.JobBase{Name: "testjob"}}},
+					},
+				},
+			},
+			expected: "the following repos have jobs configured but do not have the trigger plugin enabled: repo: k/k",
+		},
+		{
+			description: "gerrit repo without trigger enabled",
+			pcfg: &plugins.Configuration{
+				Plugins: map[string][]string{
+					"https://kunit-review.googlesource.com/linux": {"blunderbuss"},
+				},
+			},
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					Presubmits: map[string][]config.Presubmit{
+						"https://kunit-review.googlesource.com/linux": {
+							{JobBase: config.JobBase{Name: "testjob"}},
+						},
+					},
+					Postsubmits: map[string][]config.Postsubmit{
+						"https://kunit-review.googlesource.com/linux": {
+							{JobBase: config.JobBase{Name: "testjob"}},
+						},
+					},
+				},
+			},
+			expected: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			var errMessage string
+			if err := validateTriggers(tc.cfg, tc.pcfg); err != nil {
+				errMessage = err.Error()
+			}
+			if errMessage != tc.expected {
+				t.Errorf("result differs:\n%s", diff.StringDiff(tc.expected, errMessage))
+			}
+		})
+	}
+}

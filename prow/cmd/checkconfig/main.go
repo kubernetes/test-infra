@@ -935,8 +935,18 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	configured := newOrgRepoConfig(map[string]sets.String{}, configuredRepos)
 	enabled := enabledOrgReposForPlugin(pcfg, trigger.PluginName, false)
 
-	if missing := configured.difference(enabled).items(); len(missing) > 0 {
-		return fmt.Errorf("the following repos have jobs configured but do not have the %s plugin enabled: %s", trigger.PluginName, strings.Join(missing, ", "))
+	missing := configured.difference(enabled).items()
+	var missNotGerrit []string
+	if len(missing) > 0 {
+		for _, repo := range missing {
+			if !strings.Contains(repo, "googlesource.com") {
+				missNotGerrit = append(missNotGerrit, repo)
+			}
+		}
+	}
+
+	if len(missNotGerrit) > 0 {
+		return fmt.Errorf("the following repos have jobs configured but do not have the %s plugin enabled: %s", trigger.PluginName, strings.Join(missNotGerrit, ", "))
 	}
 	return nil
 }
