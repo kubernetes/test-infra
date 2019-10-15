@@ -1269,7 +1269,8 @@ func TestTakeAction(t *testing.T) {
 
 	for _, tc := range testcases {
 		ca := &config.Agent{}
-		cfg := &config.Config{}
+		pjNamespace := "pj-ns"
+		cfg := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: pjNamespace}}
 		if err := cfg.SetPresubmits(
 			map[string][]config.Presubmit{
 				"o/r": {
@@ -1390,6 +1391,9 @@ func TestTakeAction(t *testing.T) {
 
 		var batchJobs []*prowapi.ProwJob
 		for _, pj := range prowJobs.Items {
+			if pj.Namespace != pjNamespace {
+				t.Errorf("prowjob %q didn't have expected namespace %q but %q", pj.Name, pjNamespace, pj.Namespace)
+			}
 			if pj.Spec.Type == prowapi.BatchJob {
 				batchJobs = append(batchJobs, &pj)
 			}

@@ -1037,6 +1037,7 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 			spec = pjutil.BatchSpec(ps, refs)
 		}
 		pj := pjutil.NewProwJob(spec, ps.Labels, ps.Annotations)
+		pj.Namespace = c.config().ProwJobNamespace
 		log := c.logger.WithFields(pjutil.ProwJobFields(&pj))
 		start := time.Now()
 		if err := c.prowJobClient.Create(c.ctx, &pj); err != nil {
