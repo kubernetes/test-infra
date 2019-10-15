@@ -47,18 +47,16 @@ ul#paths ul.methods li.method {
     cursor: pointer;
 }
 
-.active {
-    color: #a6a6a6;
-    text-decoration: underline;
-}
-
 .method-not-called {
     font-size: 8px;
     font-weight: bold;
-    color: #e92f2f;
     vertical-align: middle;
 }
 
+.warn {
+    color: #ffc376;
+}
+
 .error {
-    color: #e92f2f;
+    color: #ff7676;
 }

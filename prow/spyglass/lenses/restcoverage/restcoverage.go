@@ -12,6 +12,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	// DefaultWarningThreshold returns default threshold for warning class
+	DefaultWarningThreshold = 40.0
+	// DefaultErrorThreshold returns default threshold for error class
+	DefaultErrorThreshold = 10.0
+)
+
 type Lens struct{}
 
 // Coverage represents a REST API statistics
@@ -20,6 +27,7 @@ type Coverage struct {
 	ExpectedUniqueHits int                             `json:"expectedUniqueHits"`
 	Percent            float64                         `json:"percent"`
 	Endpoints          map[string]map[string]*Endpoint `json:"endpoints"`
+	*Thresholds
 }
 
 // Endpoint represents a basic statistics structure which is used to calculate REST API coverage
@@ -50,6 +58,12 @@ type Trie struct {
 type Node struct {
 	Hits  int              `json:"hits"`
 	Items map[string]*Node `json:"items,omitempty"`
+}
+
+// Thresholds sets color (yellow or red) to highlight coverage percent
+type Thresholds struct {
+	Warning float64 `json:"threshold_warning"`
+	Error   float64 `json:"threshold_error"`
 }
 
 func init() {
@@ -84,12 +98,22 @@ func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data 
 
 // Body returns the displayed HTML for the <body>
 func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
-	var cov Coverage
+	var (
+		cov Coverage
+		err error
+	)
+
+	cov.Thresholds, err = getThresholds(config)
+	if err != nil {
+		logrus.Errorf("Invalid config: %v", err)
+		return fmt.Sprintf("Invalid config: %v", err)
+	}
 
 	if len(artifacts) != 1 {
 		logrus.Errorf("Invalid artifacts: %v", artifacts)
 		return "Either artifact is not passed or it is too many of them! Let's call it an error :)"
 	}
+
 	covJSON, err := artifacts[0].ReadAll()
 	if err != nil {
 		logrus.Errorf("Failed to read artifact: %v", err)
@@ -114,4 +138,24 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	}
 
 	return buf.String()
+}
+
+func getThresholds(config json.RawMessage) (*Thresholds, error) {
+	var thresholds Thresholds
+
+	if len(config) == 0 {
+		thresholds.Error = DefaultErrorThreshold
+		thresholds.Warning = DefaultWarningThreshold
+		return &thresholds, nil
+	}
+
+	if err := json.Unmarshal(config, &thresholds); err != nil {
+		return nil, err
+	}
+
+	if thresholds.Error > thresholds.Warning {
+		return nil, fmt.Errorf("errorThreshold %.2f is bigger than warningThreshold %.2f", thresholds.Error, thresholds.Warning)
+	}
+
+	return &thresholds, nil
 }
