@@ -21,7 +21,7 @@ dashboard_groups:
   - sig-release-misc
   - sig-release-publishing-bot
   - sig-release-release-notes-presubmits
-  - sig-release-shadow-master-blocking
+  - sig-release-prototype-master-blocking
 
 # Dashboards
 
@@ -70,4 +70,4 @@ dashboards:
   - name: test
     test_group_name: pull-release-notes-test
     base_options: width=10
-- name: sig-release-shadow-master-blocking
+- name: sig-release-prototype-master-blocking
