@@ -66,10 +66,11 @@ periodics:
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.42.0/aks-engine-v0.42.0-linux-amd64.tar.gz
       - --timeout=450m
       # can enable [sig-network] tests too once we validate the job is successfully working
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\] --ginkgo.skip=\[Feature:IPv6DualStackAlphaFeature:Phase2\]
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
          privileged: true
   annotations:
     testgrid-dashboards: sig-network-dualstack-azure-e2e
     testgrid-tab-name: dualstack-azure-e2e
+    testgrid-alert-email: anish.ramasekar@gmail.com
     description: "Dual-stack e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
