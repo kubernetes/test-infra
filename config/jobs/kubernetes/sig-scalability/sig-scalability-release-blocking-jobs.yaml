@@ -93,7 +93,6 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_system_pod_metrics.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
@@ -161,7 +160,6 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_pvs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_system_pod_metrics.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
