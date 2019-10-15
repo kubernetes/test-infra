@@ -65,6 +65,8 @@ The following lenses are available:
   hiding the rest behind expandable folders. You can configure what it considers "interesting" by
   providing `highlight_regexes`, a list of regexes to highlight. If not specified, it uses defaults
   optimised for highlighting Kubernetes test results.
+- `coverage`: displays go coverage content
+- `restcoverage`: displays REST API statistics
 
 #### Example Configuration
 
