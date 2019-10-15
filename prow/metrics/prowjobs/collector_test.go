@@ -209,7 +209,7 @@ func TestProwJobLifecycleCollectorUpdate(t *testing.T) {
 	for _, tt := range tests {
 		for x := 0; x < len(tt.oldJobStates); x++ {
 			t.Run(fmt.Sprintf(tt.name, tt.oldJobStates[x], tt.newJobStates[x]), func(t *testing.T) {
-				histogramVec := newHistogramVec()
+				histogramVec := newGenericProwJobHistogramVec()
 				tt.args.oldJob.Status.State = tt.oldJobStates[x]
 				tt.args.newJob.Status.State = tt.newJobStates[x]
 				update(histogramVec, tt.args.oldJob, tt.args.newJob)
