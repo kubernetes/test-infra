@@ -163,7 +163,7 @@ func tagFromName(name string) string {
 }
 
 func componentFromName(name string) string {
-	s := strings.Split(strings.Split(name, ":")[0], "/")
+	s := strings.SplitN(strings.Split(name, ":")[0], "/", 3)
 	return s[len(s)-1]
 }
 
