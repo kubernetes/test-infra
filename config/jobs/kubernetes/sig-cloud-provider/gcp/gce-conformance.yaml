@@ -1,15 +1,16 @@
 periodics:
-- interval: 6h
+- interval: 3h
   name: ci-kubernetes-gce-conformance-latest
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: sig-release-master-informing, conformance-all, conformance-gce
+    testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
     testgrid-tab-name: GCE, master (dev)
     description: Runs conformance tests using kubetest against kubernetes master on GCE
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '3'
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

@@ -3,12 +3,11 @@ periodics:
     description: Runs conformance tests using kubetest against kubernetes release
       1.14 branch on GCE
     testgrid-alert-stale-results-hours: "24"
-    testgrid-dashboards: sig-release-1.14-informing, sig-release-1.14-all, conformance-all,
-      conformance-gce
+    testgrid-dashboards: sig-release-1.14-blocking, conformance-all, conformance-gce
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: GCE, v1.14 (dev)
-  interval: 6h
+  interval: 3h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
