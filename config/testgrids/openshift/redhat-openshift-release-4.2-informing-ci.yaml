@@ -1,6 +1,6 @@
 dashboards:
 - dashboard_tab:
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -19,7 +19,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -38,7 +38,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-to-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -57,7 +57,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -76,7 +76,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1-to-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -95,7 +95,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -114,7 +114,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-azure-upgrade-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -133,7 +133,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -152,7 +152,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-serial-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -171,7 +171,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-gcp-upgrade-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -190,7 +190,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-openstack-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -209,7 +209,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-origin-installer-e2e-openstack-serial-4.2
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
