@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:stretch
+FROM debian:buster
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
