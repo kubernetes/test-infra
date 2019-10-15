@@ -1,6 +1,6 @@
 dashboards:
 - dashboard_tab:
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
@@ -19,7 +19,7 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-4.1
-  - base_options: width=10
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
