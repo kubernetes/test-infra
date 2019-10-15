@@ -29,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1fake "k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -385,10 +384,6 @@ func TestClean(t *testing.T) {
 		},
 	}
 	deletedPodsTrusted := sets.NewString("old-failed-trusted")
-
-	if err := prowv1.AddToScheme(scheme.Scheme); err != nil {
-		t.Fatalf("failed to add prowv1 to scheme: %v", err)
-	}
 
 	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
