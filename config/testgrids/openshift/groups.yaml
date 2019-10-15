@@ -1,16 +1,17 @@
 dashboard_groups:
 - dashboard_names:
-  - redhat-openshift-ocp-release-4.1-blocking
-  - redhat-openshift-ocp-release-4.2-blocking
-  - redhat-openshift-ocp-release-4.2-informing
-  - redhat-openshift-ocp-release-4.3-blocking
-  - redhat-openshift-ocp-release-4.3-informing
-  - redhat-openshift-okd-release-4.1-blocking
-  - redhat-openshift-okd-release-4.1-informing
-  - redhat-openshift-okd-release-4.2-blocking
-  - redhat-openshift-okd-release-4.2-informing
-  - redhat-openshift-okd-release-4.3-blocking
-  - redhat-openshift-okd-release-4.3-informing
+  - redhat-openshift-informing
+  - redhat-openshift-release-4.1-blocking-ci
+  - redhat-openshift-release-4.1-blocking-ocp
+  - redhat-openshift-release-4.1-informing-ci
+  - redhat-openshift-release-4.2-blocking-ci
+  - redhat-openshift-release-4.2-blocking-ocp
+  - redhat-openshift-release-4.2-informing-ci
+  - redhat-openshift-release-4.2-informing-ocp
+  - redhat-openshift-release-4.3-blocking-ci
+  - redhat-openshift-release-4.3-blocking-ocp
+  - redhat-openshift-release-4.3-informing-ci
+  - redhat-openshift-release-4.3-informing-ocp
   - redhat-osd-int
   - redhat-osd-prod
   - redhat-osd-stage
