@@ -102,10 +102,7 @@ periodics:
     - image: gcr.io/k8s-staging-release-test/deb-builder:latest
       imagePullPolicy: Always
       command:
-      - ./deb-builder
-      args:
-      - -distros
-      - bionic
+      - ./debs
       resources:
         requests:
           cpu: 4
