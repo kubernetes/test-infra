@@ -49,7 +49,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && python -m pip install --upgrade pip setuptools wheel
+    && python -m pip install --upgrade pip setuptools wheel \
+    && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
+    && update-alternatives --set arptables /usr/sbin/arptables-legacy \
+    && update-alternatives --set ebtables /usr/sbin/ebtables-legacy
 
 # Install gcloud
 
