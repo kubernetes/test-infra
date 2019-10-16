@@ -81,7 +81,7 @@ RUN echo "Installing Packages ..." \
         --path-update=false \
         --usage-reporting=false \
     && gcloud components install kubectl \
-    && echo "Installing docker ..." \
+    && echo "Installing Docker ..." \
     && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
     && add-apt-repository \
         "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
