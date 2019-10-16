@@ -40,6 +40,7 @@ postsubmits:
       decorate: true
       branches:
         - ^master$
+        - ^release-0.4$
       spec:
         containers:
           - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
