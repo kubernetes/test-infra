@@ -159,7 +159,12 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to update references.")
 	}
 
-	if len(images) == 0 {
+	changed, err := bumper.HasChanges()
+	if err != nil {
+		logrus.WithError(err).Fatal("error occurred when checking changes")
+	}
+
+	if !changed {
 		logrus.Info("no images updated, exiting ...")
 		return
 	}
