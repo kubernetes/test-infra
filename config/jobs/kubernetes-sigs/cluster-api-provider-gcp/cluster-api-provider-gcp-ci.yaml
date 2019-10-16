@@ -35,6 +35,8 @@ periodics:
     testgrid-tab-name: unit tests
 - name: ci-cluster-api-provider-gcp-make-conformance-master
   interval: 3h
+  branches:
+  - master
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -79,6 +81,8 @@ periodics:
     testgrid-tab-name: e2e-tests-master
 - name: ci-cluster-api-provider-gcp-make-conformance-stable
   interval: 3h
+  branches:
+  - release-0.2
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -123,6 +127,8 @@ periodics:
     testgrid-tab-name: e2e-tests-stable
 - name: ci-cluster-api-provider-gcp-make-conformance-stable-k8s-ci-artifacts
   interval: 3h
+  branches:
+  - release-0.2
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
