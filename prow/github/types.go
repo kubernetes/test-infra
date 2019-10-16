@@ -352,7 +352,7 @@ type RepoCreateRequest struct {
 	LicenseTemplate   *string `json:"license_template,omitempty"`
 }
 
-func (r RepoCreateRequest) ToRepo() *Repo {
+func (r RepoRequest) ToRepo() *Repo {
 	setString := func(dest, src *string) {
 		if src != nil {
 			*dest = *src
@@ -377,6 +377,27 @@ func (r RepoCreateRequest) ToRepo() *Repo {
 	setBool(&repo.AllowRebaseMerge, r.AllowRebaseMerge)
 
 	return &repo
+}
+
+// RepoUpdateRequest contains metadata used for updating a repository
+// See also: https://developer.github.com/v3/repos/#edit
+type RepoUpdateRequest struct {
+	RepoRequest `json:",omitempty"`
+
+	DefaultBranch *string `json:"default_branch,omitempty"`
+	Archived      *bool   `json:"archived,omitempty"`
+}
+
+func (r RepoUpdateRequest) ToRepo() *Repo {
+	repo := r.RepoRequest.ToRepo()
+	if r.DefaultBranch != nil {
+		repo.DefaultBranch = *r.DefaultBranch
+	}
+	if r.Archived != nil {
+		repo.Archived = *r.Archived
+	}
+
+	return repo
 }
 
 // RepoPermissions describes which permission level an entity has in a
