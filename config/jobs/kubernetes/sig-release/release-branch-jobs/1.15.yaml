@@ -147,7 +147,7 @@ periodics:
       - --extra-publish-file=k8s-stable1
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-testimages/bootstrap:v20191015-70267a4
+      image: gcr.io/k8s-testimages/bootstrap:v20191001-e584f29
       name: ""
       resources:
         requests:
@@ -295,7 +295,7 @@ periodics:
       - --branch=release-1.15
       - --force
       - --prow
-      image: gcr.io/k8s-testimages/bootstrap:v20191015-70267a4
+      image: gcr.io/k8s-testimages/bootstrap:v20191001-e584f29
       name: ""
       resources:
         requests:
