@@ -52,8 +52,8 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test alternative discovery methods for kubeadm join"
     testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "4"
-    testgrid-alert-stale-results-hours: "8"
+    testgrid-num-failures-to-alert: "2"
+    testgrid-alert-stale-results-hours: "24"
   decoration_config:
     timeout: 40m
   extra_refs:
