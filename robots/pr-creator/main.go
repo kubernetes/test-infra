@@ -98,7 +98,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}
 
-	n, err := updater.EnsurePR(o.org, o.repo, o.title, o.body, o.source, o.branch, o.matchTitle, "", gc)
+	n, err := updater.EnsurePR(o.org, o.repo, o.title, o.body, o.source, o.branch, o.matchTitle, gc)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to ensure PR exists.")
 	}
