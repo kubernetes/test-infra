@@ -146,6 +146,7 @@ var (
 		pooledPRs  *prometheus.GaugeVec
 		updateTime *prometheus.GaugeVec
 		merges     *prometheus.HistogramVec
+		poolErrors *prometheus.CounterVec
 
 		// Singleton
 		syncDuration         prometheus.Gauge
@@ -178,11 +179,19 @@ var (
 			"branch",
 		}),
 
+		poolErrors: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "tidepoolerrors",
+			Help: "Count of Tide pool sync errors.",
+		}, []string{
+			"org",
+			"repo",
+			"branch",
+		}),
+
 		syncDuration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "syncdur",
 			Help: "The duration of the last loop of the sync controller.",
 		}),
-
 		statusUpdateDuration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "statusupdatedur",
 			Help: "The duration of the last loop of the status update controller.",
@@ -196,6 +205,7 @@ func init() {
 	prometheus.MustRegister(tideMetrics.merges)
 	prometheus.MustRegister(tideMetrics.syncDuration)
 	prometheus.MustRegister(tideMetrics.statusUpdateDuration)
+	prometheus.MustRegister(tideMetrics.poolErrors)
 }
 
 // NewController makes a Controller out of the given clients.
@@ -354,6 +364,7 @@ func (c *Controller) Sync() error {
 		func(sp *subpool) {
 			pool, err := c.syncSubpool(*sp, blocks.GetApplicable(sp.org, sp.repo, sp.branch))
 			if err != nil {
+				tideMetrics.poolErrors.WithLabelValues(sp.org, sp.repo, sp.branch).Inc()
 				sp.log.WithError(err).Errorf("Error syncing subpool.")
 			}
 			poolChan <- pool
