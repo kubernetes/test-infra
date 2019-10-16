@@ -28,6 +28,7 @@ import (
 	simplealiases "k8s.io/test-infra/pkg/genyaml/testdata/alias_simple_types"
 	aliases "k8s.io/test-infra/pkg/genyaml/testdata/alias_types"
 	embedded "k8s.io/test-infra/pkg/genyaml/testdata/embedded_structs"
+	inlines "k8s.io/test-infra/pkg/genyaml/testdata/inline_structs"
 	interfaces "k8s.io/test-infra/pkg/genyaml/testdata/interface_types"
 	multiline "k8s.io/test-infra/pkg/genyaml/testdata/multiline_comments"
 	nested "k8s.io/test-infra/pkg/genyaml/testdata/nested_structs"
@@ -359,6 +360,15 @@ func TestGenYAML(t *testing.T) {
 					{Name: "Jenny", Age: 5},
 				},
 				Name: "Mildred",
+			},
+			expected: true,
+		},
+		{
+			name: "inline structs",
+			structObj: &inlines.Resource{
+				Metadata: inlines.Metadata{
+					Name: "test",
+				},
 			},
 			expected: true,
 		},
