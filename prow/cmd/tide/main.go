@@ -30,7 +30,6 @@ import (
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/pkg/io"
-	prowjobsv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -171,25 +170,20 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	// Make sure the manager creates a cache for ProwJobs by requesting an informer
-	if _, err := mgr.GetCache().GetInformer(&prowjobsv1.ProwJob{}); err != nil {
-		logrus.WithError(err).Fatal("Error getting ProwJob informer.")
+	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, gitClient, o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
-
 	interrupts.Run(func(ctx context.Context) {
 		if err := mgr.Start(ctx.Done()); err != nil {
 			logrus.WithError(err).Fatal("Mgr failed.")
 		}
+		logrus.Info("Mgr finished gracefully.")
 	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer mgrSyncCtxCancel()
 	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
-	}
-
-	c, err := tide.NewController(githubSync, githubStatus, mgr.GetClient(), cfg, gitClient, o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
 	interrupts.OnInterrupt(func() {
 		c.Shutdown()
