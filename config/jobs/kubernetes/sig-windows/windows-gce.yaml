@@ -191,7 +191,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-      preset-e2e-gce-windows: "true"
+      preset-pull-kubernetes-e2e-windows-gce: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
     always_run: false
@@ -212,6 +212,7 @@ presubmits:
         - --ginkgo-parallel=8
         - --provider=gce
         - --gcp-nodes=2
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-windows-gce
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
         - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
