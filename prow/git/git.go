@@ -57,6 +57,8 @@ type Client struct {
 	// base is the base path for git clone calls. For users it will be set to
 	// GitHub, but for tests set it to a directory with git repos.
 	base string
+	// host is the git host.
+	host string
 
 	// The mutex protects repoLocks which protect individual repos. This is
 	// necessary because Clone calls for the same repo are racy. Rather than
@@ -74,6 +76,11 @@ func (c *Client) Clean() error {
 // NewClient returns a client that talks to GitHub. It will fail if git is not
 // in the PATH.
 func NewClient() (*Client, error) {
+	return NewClientWithHost(github)
+}
+
+// NewClientWithHost creates a client with specified host.
+func NewClientWithHost(host string) (*Client, error) {
 	g, err := exec.LookPath("git")
 	if err != nil {
 		return nil, err
@@ -86,7 +93,8 @@ func NewClient() (*Client, error) {
 		logger:    logrus.WithField("client", "git"),
 		dir:       t,
 		git:       g,
-		base:      fmt.Sprintf("https://%s", github),
+		base:      fmt.Sprintf("https://%s", host),
+		host:      host,
 		repoLocks: make(map[string]*sync.Mutex),
 	}, nil
 }
@@ -142,7 +150,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	base := c.base
 	user, pass := c.getCredentials()
 	if user != "" && pass != "" {
-		base = fmt.Sprintf("https://%s:%s@%s", user, pass, github)
+		base = fmt.Sprintf("https://%s:%s@%s", user, pass, c.host)
 	}
 	cache := filepath.Join(c.dir, repo) + ".git"
 	if _, err := os.Stat(cache); os.IsNotExist(err) {

@@ -30,8 +30,7 @@ import (
 	"golang.org/x/net/xsrftoken"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/pkg/ghclient"
-	"k8s.io/test-infra/prow/config"
+	configgithub "k8s.io/test-infra/prow/config/github"
 )
 
 const (
@@ -92,27 +91,15 @@ func (cli client) WithFinalRedirectURL(path string) (OAuthClient, error) {
 	), nil
 }
 
-type githubClientGetter struct{}
-
-func (gci *githubClientGetter) GetGitHubClient(accessToken string, dryRun bool) GitHubClientWrapper {
-	return ghclient.NewClient(accessToken, dryRun)
-}
-
-// NewGitHubClientGetter returns a new instance of GitHubClientGetter. It uses the
-// githubClientGetter implementation.
-func NewGitHubClientGetter() GitHubClientGetter {
-	return &githubClientGetter{}
-}
-
 // Agent represents an agent that takes care GitHub authentication process such as handles
 // login request from users or handles redirection from GitHub OAuth server.
 type Agent struct {
-	gc     *config.GitHubOAuthConfig
+	gc     *configgithub.OAuthConfig
 	logger *logrus.Entry
 }
 
 // NewAgent returns a new GitHub OAuth Agent.
-func NewAgent(config *config.GitHubOAuthConfig, logger *logrus.Entry) *Agent {
+func NewAgent(config *configgithub.OAuthConfig, logger *logrus.Entry) *Agent {
 	return &Agent{
 		gc:     config,
 		logger: logger,

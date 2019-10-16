@@ -65,6 +65,7 @@ go_test(
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/fake:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/config/github:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
@@ -109,6 +110,7 @@ go_library(
         "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/cmd/deck/version:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/config/github:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/deck/jobs:go_default_library",
         "//prow/errorutil:go_default_library",
@@ -152,7 +154,6 @@ go_library(
         "@org_golang_google_api//iterator:go_default_library",
         "@org_golang_google_api//option:go_default_library",
         "@org_golang_x_oauth2//:go_default_library",
-        "@org_golang_x_oauth2//github:go_default_library",
     ],
 )
 
