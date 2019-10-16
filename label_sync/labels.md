@@ -171,6 +171,7 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="area/api" href="#area/api">`area/api`</a> | Issues or PRs related to the APIs| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/bootstrap" href="#area/bootstrap">`area/bootstrap`</a> | Issues or PRs related to bootstrap providers| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/clusterctl" href="#area/clusterctl">`area/clusterctl`</a> | Issues or PRs related to clusterctl| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/control-plane" href="#area/control-plane">`area/control-plane`</a> | Issues or PRs related to control-plane lifecycle management| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/health" href="#area/health">`area/health`</a> | Issues or PRs related to health| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
