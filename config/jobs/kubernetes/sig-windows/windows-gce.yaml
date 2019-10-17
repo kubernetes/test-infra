@@ -208,7 +208,7 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --build=gce-windows-bazel
+        - --build=release
         - --check-leaked-resources
         - --cluster=
         - --extract=local
