@@ -26,7 +26,7 @@ fi
 
 # terminate any remaining containers
 cleanup_dind() {
-    docker ps -aq | xargs docker rm -f
+    docker ps -aq | xargs -r docker rm -f
 }
 
 # optionally enable ipv6 docker
@@ -70,7 +70,6 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
             break
         fi
     done
-    cleanup_dind
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
 fi
