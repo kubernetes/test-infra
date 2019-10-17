@@ -2,15 +2,7 @@ load("@io_bazel_rules_jsonnet//jsonnet:jsonnet.bzl", "jsonnet_library", "jsonnet
 
 jsonnet_library(
     name = "prom_lib",
-    srcs = [
-        "ci_absent_alerts.libsonnet",
-        "configmap_alerts.libsonnet",
-        "hook_alert.libsonnet",
-        "prometheus.libsonnet",
-        "prow_monitoring_absent_alerts.libsonnet",
-        "sinker_alerts.libsonnet",
-        "tide_alerts.libsonnet",
-    ],
+    srcs = glob(["*.libsonnet"]),
 )
 
 jsonnet_to_json(
