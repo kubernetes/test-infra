@@ -184,6 +184,10 @@ presubmits:
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     - org: yujuhong
       repo: gce-k8s-windows-testing
       base_ref: master
