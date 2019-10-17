@@ -22,8 +22,8 @@ import sys
 import glob
 import re
 
-import sh
 import ruamel.yaml as yaml
+import sh
 
 
 TEST_CONFIG_YAML = "experiment/test_config.yaml"
