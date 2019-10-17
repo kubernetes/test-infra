@@ -28,8 +28,8 @@ from xml.etree import cElementTree as ET
 
 import multiprocessing
 import multiprocessing.pool
-import requests
 import ruamel.yaml as yaml
+import requests
 
 import model
 
