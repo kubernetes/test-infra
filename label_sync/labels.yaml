@@ -1225,6 +1225,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Vietnamese language
+        name: language/vi
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
       - color: c7def8
