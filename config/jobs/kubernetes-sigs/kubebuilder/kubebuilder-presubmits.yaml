@@ -18,3 +18,25 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
+  - name: pull-kubebuilder-e2e
+    decorate: true
+    always_run: true
+    optional: true
+    path_alias: sigs.k8s.io/kubebuilder
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
+        command:
+        - ./test_e2e.sh
+        resources:
+          requests:
+            cpu: 4000m
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kubebuilder
+      testgrid-tab-name: kubebuilder-e2e
+    labels:
+      preset-dind-enabled: "true"
