@@ -1227,6 +1227,12 @@ repos:
         addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
+      - color: c7def8
+        description: Issues or PRs related to proposals.
+        name: kind/proposal
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to clusterctl
         name: area/clusterctl
