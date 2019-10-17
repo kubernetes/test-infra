@@ -235,9 +235,9 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/krte:v20191017-d96ae13-master
         command:
-        - runner.sh
+        - wrapper.sh
         - bash
         - -c
         - gsutil cp -P gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
