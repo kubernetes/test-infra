@@ -122,7 +122,7 @@ Consider asking for help from someone familiar with Bazel if you suspect this
 issue.
 
 <!--URLS-->
-[OWNERS] ./OWNERS 
+[OWNERS]: ./OWNERS 
 [README]: ./README.md 
 [runbooks]: ./../docs/runbooks.md
 <!--Additional URLS-->
@@ -131,6 +131,6 @@ issue.
 [deployment.yaml]: ./deployment.yaml
 [service.yaml]: ./deployment.yaml
 [prow-k8s-io]: TODO
-bazel#4558: https://github.com/bazelbuild/bazel/issues/4558
+[bazel#4558]: https://github.com/bazelbuild/bazel/issues/4558
 [velodrome]: http://velodrome.k8s.io/dashboard/db/bazel-cache?refresh=1m&orgId=1
 [StackDriver]: https://cloud.google.com/stackdriver/
