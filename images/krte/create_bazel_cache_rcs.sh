@@ -28,7 +28,7 @@ command_to_package () {
     # symlink for a provided file to the backing entry.
     # https://wiki.debian.org/DebianAlternatives
     local binary_path
-    binary_path=$(readlink -f "$(command -v "$1")")
+    binary_path=$(readlink -f "$(which "$1")")
     # `dpkg-query --search $file-pattern` outputs lines with the format: "$package: $file-path"
     # where $file-path belongs to $package
     # https://manpages.debian.org/jessie/dpkg/dpkg-query.1.en.html
@@ -37,6 +37,10 @@ command_to_package () {
 
 # get the installed package version relating to a binary
 command_to_version () {
+    # skip commands that aren't installed
+    if ! which "$1"; then
+        return
+    fi
     local package
     package=$(command_to_package "$1")
     package_to_version "${package}"
