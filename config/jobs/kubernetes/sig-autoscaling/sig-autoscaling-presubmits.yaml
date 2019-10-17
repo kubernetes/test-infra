@@ -23,6 +23,7 @@ presubmits:
         - --timeout=350
         - --scenario=kubernetes_e2e
         - --
+        - --build=bazel
         - --cluster=
         # Override GCE default for cluster size autoscaling purposes.
         - --env=ENABLE_CUSTOM_METRICS=true
