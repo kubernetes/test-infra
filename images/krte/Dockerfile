@@ -69,11 +69,6 @@ RUN echo "Installing Packages ..." \
         software-properties-common \
         unzip \
     && rm -rf /var/lib/apt/lists/* \
-    && echo "Ensuring Legacy Iptables ..." \
-    && update-alternatives --set iptables /usr/sbin/iptables-legacy \
-    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
-    && update-alternatives --set arptables /usr/sbin/arptables-legacy \
-    && update-alternatives --set ebtables /usr/sbin/ebtables-legacy \
     && echo "Installing Bazel ..." \
     && install-bazel.sh \
     && echo "Installing gcloud SDK, kubectl ..." \
@@ -94,7 +89,10 @@ RUN echo "Installing Packages ..." \
     && apt-get update \
     && apt-get install -y --no-install-recommends docker-ce \
     && rm -rf /var/lib/apt/lists/* \
-    && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
+    && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
+    && echo "Ensuring Legacy Iptables ..." \
+    && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 
 # entrypoint is our wrapper script, in Prow you will need to explicitly re-specify this
 ENTRYPOINT ["wrapper.sh"]
