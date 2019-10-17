@@ -12,14 +12,16 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
     spec:
       containers:
       - args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=350
         - --scenario=kubernetes_e2e
         - --
