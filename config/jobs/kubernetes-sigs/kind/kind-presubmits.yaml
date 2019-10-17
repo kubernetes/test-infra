@@ -66,9 +66,9 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/krte:v20191017-d96ae13-master
         command:
-        - runner.sh
+        - wrapper.sh
         - bash
         - -c
         - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
