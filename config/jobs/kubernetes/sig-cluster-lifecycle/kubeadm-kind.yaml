@@ -11,7 +11,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.14-informing
     testgrid-tab-name: kubeadm-kind-1-14
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kind); Uses kubeadm/kind to create a cluster and run the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -97,7 +97,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.15-informing
     testgrid-tab-name: kubeadm-kind-1-15
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kind); Uses kubeadm/kind to create a cluster and run the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -183,7 +183,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.16-informing
     testgrid-tab-name: kubeadm-kind-1-16
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kind); Uses kubeadm/kind to create a cluster and run the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -269,7 +269,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
     testgrid-tab-name: kubeadm-kind-master
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kind); Uses kubeadm/kind to create a cluster and run the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
