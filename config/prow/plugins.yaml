@@ -84,6 +84,7 @@ approve:
   - kubernetes/repo-infra
   - kubernetes-sigs/kind
   - kubernetes/test-infra
+  - kubernetes-sigs/slack-infra
   require_self_approval: false
   ignore_review_state: false
 - repos:
