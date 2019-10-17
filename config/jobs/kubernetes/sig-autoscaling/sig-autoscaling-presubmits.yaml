@@ -1,8 +1,6 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-gci-gce-autoscaling
-    skip_branches:
-    - release-\d+\.\d+
     annotations:
       testgrid-dashboards: sig-autoscaling-cluster-autoscaler
       testgrid-tab-name: gci-gce-autoscaling-pull
@@ -23,7 +21,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - --timeout=350
-        - --bare
         - --scenario=kubernetes_e2e
         - --
         - --cluster=
