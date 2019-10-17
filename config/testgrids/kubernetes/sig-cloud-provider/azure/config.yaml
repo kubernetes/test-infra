@@ -2,6 +2,8 @@ dashboard_groups:
 - name: sig-azure
   dashboard_names:
     - sig-azure-master
+    - sig-azure-on-call
 
 dashboards:
 - name: sig-azure-master
+- name: sig-azure-on-call

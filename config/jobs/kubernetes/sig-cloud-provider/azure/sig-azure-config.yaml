@@ -74,7 +74,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: sig-azure-master, sig-azure-on-call
       testgrid-tab-name: pr-k8s-e2e
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Run e2e tests
