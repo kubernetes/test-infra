@@ -8,6 +8,8 @@ jsonnet_library(
         "hook_alert.libsonnet",
         "prometheus.libsonnet",
         "prow_monitoring_absent_alerts.libsonnet",
+        "sinker_alerts.libsonnet",
+        "tide_alerts.libsonnet",
     ],
 )
 
