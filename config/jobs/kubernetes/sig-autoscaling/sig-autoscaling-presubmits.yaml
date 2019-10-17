@@ -23,7 +23,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - --timeout=350
-        - --bare
         - --scenario=kubernetes_e2e
         - --
         - --cluster=
