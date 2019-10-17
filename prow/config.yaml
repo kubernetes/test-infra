@@ -28,6 +28,7 @@ tide:
     IBM/multicloud-operators-channel: squash
     IBM/multicloud-operators-subscription: squash
     IBM/multicloud-multi-tenancy: squash
+    IBM/multicloud-application-monitoring-dashboard: squash
 
   target_url: http://35.227.205.240/tide
   queries:
@@ -45,6 +46,7 @@ tide:
     - IBM/multicloud-operators-channel
     - IBM/multicloud-operators-subscription
     - IBM/multicloud-multi-tenancy
+    - IBM/multicloud-application-monitoring-dashboard
     labels:
     - lgtm
     - approved
