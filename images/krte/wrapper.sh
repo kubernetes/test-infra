@@ -13,14 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# wrapper.sh handles setting up things before / after the test command $@
+#
+# usage: wrapper.sh my-test-command [my-test-args]
+#
+# Things wrapper.sh handles:
+# - starting / stopping docker-in-docker
+# -- configuring the docker daemon for IPv6
+# - confuring bazel caching
+# - activating GCP service account credentials
+# - ensuring GOPATH/bin is in PATH
+#
+# After handling these things / before cleanup, my-test-command will be invoked,
+# and the exit code of my-test-command will be preserved by wrapper.sh
+
 set -o errexit
 set -o pipefail
 set -o nounset
 
-# generic wrapper script, handles DIND, bazelrc for caching, etc.
-echo "wrapper.sh] Wrapping Test Command: \`$*\`"
+echo "wrapper.sh] [INFO] Wrapping Test Command: \`$*\`"
+echo "wrapper.sh] [INFO] Running in: ${IMAGE}"
+echo "wrapper.sh] [INFO] See: https://github.com/kubernetes/test-infra/blob/master/images/krte/wrapper.sh"
 printf '%0.s=' {1..80}; echo
-echo "wrapper.sh] Performing setup ..."
+echo "wrapper.sh] [SETUP] Performing pre-test setup ..."
 
 # Check if the job has opted-in to bazel remote caching and if so generate 
 # .bazelrc entries pointing to the remote cache
@@ -30,12 +45,6 @@ if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
   /usr/local/bin/create_bazel_cache_rcs.sh
   echo "wrapper.sh] [SETUP] Done setting up .bazelrcs"
 fi
-
-
-# terminates any remaining containers
-cleanup_dind() {
-  docker ps -aq | xargs -r docker rm -f || true
-}
 
 # optionally enable ipv6 docker
 export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
@@ -57,7 +66,7 @@ EOF
   echo "wrapper.sh] [SETUP] Done enabling IPv6 in Docker config."
 fi
 
-# Check if the job has opted-in to docker-in-docker availability.
+# Check if the job has opted-in to docker-in-docker
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
   echo "wrapper.sh] [SETUP] Docker in Docker enabled, initializing ..."
@@ -65,11 +74,10 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
   service docker start
   # the service can be started but the docker socket not ready, wait for ready
   WAIT_N=0
-  MAX_WAIT=5
   while true; do
     # docker ps -q should only work if the daemon is ready
     docker ps -q > /dev/null 2>&1 && break
-    if [[ ${WAIT_N} -lt ${MAX_WAIT} ]]; then
+    if [[ ${WAIT_N} -lt 5 ]]; then
       WAIT_N=$((WAIT_N+1))
       echo "wrapper.sh] [SETUP] Waiting for Docker to be ready, sleeping for ${WAIT_N} seconds ..."
       sleep ${WAIT_N}
@@ -80,9 +88,6 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
   done
   echo "wrapper.sh] [SETUP] Done setting up Docker in Docker."
 fi
-
-# disable error exit so we can run post-command cleanup
-set +o errexit
 
 # add $GOPATH/bin to $PATH
 export GOPATH="${GOPATH:-${HOME}/go}"
@@ -105,18 +110,20 @@ fi
 
 # actually run the user supplied command
 printf '%0.s=' {1..80}; echo
-echo "wrapper.sh] Running test command: \`$*\` ..."
+echo "wrapper.sh] [TEST] Running Test Command: \`$*\` ..."
 set +o errexit
 "$@"
 EXIT_VALUE=$?
 set -o errexit
-echo "wrapper.sh] Test command exit code: ${EXIT_VALUE}"
+echo "wrapper.sh] [TEST] Test Command exit code: ${EXIT_VALUE}"
 
 # cleanup
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
   printf '%0.s=' {1..80}; echo
-  echo "wrapper.sh] [CLEANUP] Cleaning up after docker in docker."
-  cleanup_dind
+  echo "wrapper.sh] [CLEANUP] Cleaning up after docker in docker ..."
+  # NOTE: do not fail on these, prefer preserving test command exit status
+  docker ps -aq | xargs -r docker rm -f || true
+  service docker stop || true
   echo "wrapper.sh] [CLEANUP] Done cleaning up after docker in docker."
 fi
 
