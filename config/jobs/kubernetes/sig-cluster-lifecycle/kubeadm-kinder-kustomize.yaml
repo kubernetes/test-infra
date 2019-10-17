@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-kustomize-master
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with kustomizations on static pod manifests"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -49,7 +49,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-kustomize-1-16
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with kustomizations on static pod manifests"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
