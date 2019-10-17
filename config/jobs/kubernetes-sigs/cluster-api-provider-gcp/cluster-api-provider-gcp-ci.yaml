@@ -99,10 +99,8 @@ periodics:
             value: "stable"
         args:
           - "--repo=k8s.io/kubernetes=master"
-          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=master"
-          - "--repo=sigs.k8s.io/cluster-api=master"
+          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=release-0.2"
           - "--repo=sigs.k8s.io/image-builder=master"
-          - "--repo=sigs.k8s.io/kind=master"
           - "--root=/go/src"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
@@ -145,10 +143,8 @@ periodics:
             value: "stable"
         args:
           - "--repo=k8s.io/kubernetes=master"
-          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=master"
-          - "--repo=sigs.k8s.io/cluster-api=master"
+          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=release-0.2"
           - "--repo=sigs.k8s.io/image-builder=master"
-          - "--repo=sigs.k8s.io/kind=master"
           - "--root=/go/src"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
