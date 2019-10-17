@@ -22,6 +22,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-azurefile-csi-driver-verify
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run code verification tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-unit
@@ -46,6 +47,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-azurefile-csi-driver-unit
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run unit tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-sanity
@@ -73,6 +75,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-azurefile-csi-driver-sanity
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run sanity tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-integration
@@ -100,6 +103,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-azurefile-csi-driver-integration
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run integration tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e
@@ -148,5 +152,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-azure-master
       testgrid-tab-name: pr-azurefile-csi-driver-e2e
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run E2E tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
