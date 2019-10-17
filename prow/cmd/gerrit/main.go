@@ -18,12 +18,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -90,84 +90,113 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 type syncTime struct {
-	val    time.Time
+	val    *client.LastSyncState
 	lock   sync.RWMutex
 	path   string
 	opener io.Opener
 	ctx    context.Context
 }
 
-func (st *syncTime) init() error {
-	fmt.Println(st.val)
+func (st *syncTime) init(hostProjects client.ProjectsFlag) error {
+	logrus.WithField("projects", hostProjects).Debug(st.val)
 	st.lock.RLock()
-	zero := st.val.IsZero()
+	zero := st.val == nil
 	st.lock.RUnlock()
 	if !zero {
 		return nil
 	}
 	st.lock.Lock()
 	defer st.lock.Unlock()
-	if !st.val.IsZero() {
+	if st.val != nil {
 		return nil // Someone else set it while we waited for the write lock
 	}
-	unix, err := st.currentInt()
+	state, err := st.currentState()
 	if err != nil {
 		return err
 	}
-	if unix == 0 {
-		st.val = time.Now()
+	if state != nil {
+		st.val = state
 		logrus.Warnf("Reset lastSyncFallback to %v", st.val)
 	} else {
-		st.val = time.Unix(unix, 0)
+		currentTime := time.Now()
+		targetState := client.LastSyncState{}
+		for host, projects := range hostProjects {
+			targetState[host] = map[string]time.Time{}
+			for _, project := range projects {
+				targetState[host][project] = currentTime
+			}
+		}
+		st.val = &targetState
 	}
 	return nil
 }
 
-func (st *syncTime) currentInt() (int64, error) {
+func (st *syncTime) currentState() (*client.LastSyncState, error) {
 	r, err := st.opener.Reader(st.ctx, st.path)
 	if io.IsNotExist(err) {
 		logrus.Warnf("lastSyncFallback not found at %q", st.path)
-		return 0, nil
+		return nil, nil
 	} else if err != nil {
-		return 0, fmt.Errorf("open: %v", err)
+		return nil, fmt.Errorf("open: %v", err)
 	}
 	defer io.LogClose(r)
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
-		return 0, fmt.Errorf("read: %v", err)
+		return nil, fmt.Errorf("read: %v", err)
 	}
-	unix, err := strconv.ParseInt(string(buf), 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("parse int: %v", err)
+	var state client.LastSyncState
+	if err := json.Unmarshal(buf, &state); err != nil {
+		return nil, fmt.Errorf("unmarshall state: %v", err)
 	}
-	return unix, nil
+	return &state, nil
 }
 
-func (st *syncTime) Current() time.Time {
+func (st *syncTime) Current() *client.LastSyncState {
 	st.lock.RLock()
 	defer st.lock.RUnlock()
 	return st.val
 }
 
-func (st *syncTime) Update(t time.Time) error {
+func (st *syncTime) Update(newState *client.LastSyncState) error {
 	st.lock.Lock()
 	defer st.lock.Unlock()
-	if !t.After(st.val) {
+
+	targetState := st.val.DeepCopy()
+
+	var changed bool
+	for host, newLastSyncs := range *newState {
+		if _, ok := targetState[host]; !ok {
+			targetState[host] = map[string]time.Time{}
+		}
+		for project, newLastSync := range newLastSyncs {
+			currentLastSync, ok := targetState[host][project]
+			if !ok || currentLastSync.Before(newLastSync) {
+				targetState[host][project] = newLastSync
+				changed = true
+			}
+		}
+	}
+
+	if !changed {
 		return nil
 	}
+
 	w, err := st.opener.Writer(st.ctx, st.path)
 	if err != nil {
 		return fmt.Errorf("open for write %q: %v", st.path, err)
 	}
-	lastSyncUnix := strconv.FormatInt(t.Unix(), 10)
-	if _, err := fmt.Fprint(w, lastSyncUnix); err != nil {
+	stateBytes, err := json.Marshal(targetState)
+	if err != nil {
+		return fmt.Errorf("marshall state: %v", err)
+	}
+	if _, err := fmt.Fprint(w, string(stateBytes)); err != nil {
 		io.LogClose(w)
 		return fmt.Errorf("write %q: %v", st.path, err)
 	}
 	if err := w.Close(); err != nil {
 		return fmt.Errorf("close %q: %v", st.path, err)
 	}
-	st.val = t
+	st.val = &targetState
 	return nil
 }
 
@@ -204,7 +233,7 @@ func main() {
 		ctx:    ctx,
 		opener: op,
 	}
-	if err := st.init(); err != nil {
+	if err := st.init(o.projects); err != nil {
 		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
 	}
 	c, err := adapter.NewController(&st, o.cookiefilePath, o.projects, prowJobClient, cfg)

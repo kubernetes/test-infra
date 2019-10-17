@@ -55,7 +55,7 @@ func (f *fca) Config() *config.Config {
 
 type fgc struct{}
 
-func (f *fgc) QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]client.ChangeInfo {
+func (f *fgc) QueryChanges(lastUpdate *client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
 	return nil
 }
 
@@ -123,17 +123,17 @@ func TestMakeCloneURI(t *testing.T) {
 }
 
 type fakeSync struct {
-	val  time.Time
+	val  *client.LastSyncState
 	lock sync.Mutex
 }
 
-func (s *fakeSync) Current() time.Time {
+func (s *fakeSync) Current() *client.LastSyncState {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	return s.val
 }
 
-func (s *fakeSync) Update(t time.Time) error {
+func (s *fakeSync) Update(t *client.LastSyncState) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.val = t
@@ -704,16 +704,22 @@ func TestProcessChange(t *testing.T) {
 			},
 		}
 
+		testInstance := "https://gerrit"
 		fakeProwJobClient := prowfake.NewSimpleClientset()
+		fakeLastSync := client.LastSyncState{testInstance: map[string]time.Time{}}
+
+		for _, tc := range testcases {
+			fakeLastSync[testInstance][tc.change.Project] = timeNow.Add(-time.Minute)
+		}
 
 		c := &Controller{
 			config:        fca.Config,
 			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			gc:            &fgc{},
-			tracker:       &fakeSync{val: timeNow.Add(-time.Minute)},
+			tracker:       &fakeSync{val: &fakeLastSync},
 		}
 
-		err := c.ProcessChange("https://gerrit", tc.change)
+		err := c.ProcessChange(testInstance, tc.change)
 		if err != nil && !tc.shouldError {
 			t.Errorf("tc %s, expect no error, but got %v", tc.name, err)
 			continue

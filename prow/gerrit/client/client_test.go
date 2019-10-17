@@ -77,18 +77,22 @@ func TestQueryChange(t *testing.T) {
 
 	var testcases = []struct {
 		name       string
-		lastUpdate time.Time
+		lastUpdate map[string]time.Time
 		changes    map[string][]gerrit.ChangeInfo
 		revisions  map[string][]string
 	}{
 		{
-			name:       "no changes",
-			lastUpdate: now,
-			revisions:  map[string][]string{},
+			name: "no changes",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
+			revisions: map[string][]string{},
 		},
 		{
-			name:       "one outdated change",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one outdated change",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -108,8 +112,10 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{},
 		},
 		{
-			name:       "one outdated change, but there's a new message",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one outdated change, but there's a new message",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -137,8 +143,10 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{"foo": {"1-1"}},
 		},
 		{
-			name:       "one up-to-date change",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one up-to-date change",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -160,8 +168,10 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
-			name:       "one up-to-date change, same timestamp",
-			lastUpdate: now.Truncate(time.Second),
+			name: "one up-to-date change, same timestamp",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -183,8 +193,10 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
-			name:       "one up-to-date change but stale commit",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one up-to-date change but stale commit",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -204,8 +216,10 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{},
 		},
 		{
-			name:       "one up-to-date change, wrong instance",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one up-to-date change, wrong instance",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"evil": {
 					{
@@ -225,8 +239,10 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{},
 		},
 		{
-			name:       "one up-to-date change, wrong project",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one up-to-date change, wrong project",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -246,8 +262,10 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{},
 		},
 		{
-			name:       "two up-to-date changes, two projects",
-			lastUpdate: now.Add(-time.Minute),
+			name: "two up-to-date changes, two projects",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -281,8 +299,10 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
-			name:       "one good one bad",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one good one bad",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -316,8 +336,11 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
-			name:       "multiple up-to-date changes",
-			lastUpdate: now.Add(-time.Minute),
+			name: "multiple up-to-date changes",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+				"boo": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -381,8 +404,10 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
-			name:       "one up-to-date merged change",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one up-to-date merged change",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -400,8 +425,10 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
-			name:       "one up-to-date abandoned change",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one up-to-date abandoned change",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -417,8 +444,10 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{},
 		},
 		{
-			name:       "merged change recently updated but submitted before last update",
-			lastUpdate: now.Add(-time.Minute),
+			name: "merged change recently updated but submitted before last update",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -434,8 +463,10 @@ func TestQueryChange(t *testing.T) {
 			revisions: map[string][]string{},
 		},
 		{
-			name:       "one abandoned, one merged",
-			lastUpdate: now.Add(-time.Minute),
+			name: "one abandoned, one merged",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -460,8 +491,10 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
-			name:       "merged change with new message, should ignore",
-			lastUpdate: now.Add(-time.Minute),
+			name: "merged change with new message, should ignore",
+			lastUpdate: map[string]time.Time{
+				"bar": now.Add(-time.Minute),
+			},
 			changes: map[string][]gerrit.ChangeInfo{
 				"foo": {
 					{
@@ -507,7 +540,8 @@ func TestQueryChange(t *testing.T) {
 			},
 		}
 
-		changes := client.QueryChanges(tc.lastUpdate, 5)
+		testLastSync := &LastSyncState{"foo": tc.lastUpdate, "baz": tc.lastUpdate}
+		changes := client.QueryChanges(testLastSync, 5)
 
 		revisions := map[string][]string{}
 		for instance, changes := range changes {

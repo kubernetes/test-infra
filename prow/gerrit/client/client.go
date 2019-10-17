@@ -122,6 +122,20 @@ type RevisionInfo = gerrit.RevisionInfo
 // FileInfo is a gerrit.FileInfo
 type FileInfo = gerrit.FileInfo
 
+// Map from instance name to repos to lastsync time for that repo
+type LastSyncState map[string]map[string]time.Time
+
+func (l *LastSyncState) DeepCopy() LastSyncState {
+	result := LastSyncState{}
+	for host, lastSyncs := range *l {
+		result[host] = map[string]time.Time{}
+		for projects, lastSync := range lastSyncs {
+			result[host][projects] = lastSync
+		}
+	}
+	return result
+}
+
 // NewClient returns a new gerrit client
 func NewClient(instances map[string][]string) (*Client, error) {
 	c := &Client{
@@ -193,10 +207,11 @@ func (c *Client) Start(cookiefilePath string) {
 
 // QueryChanges queries for all changes from all projects after lastUpdate time
 // returns an instance:changes map
-func (c *Client) QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]ChangeInfo {
+func (c *Client) QueryChanges(lastState *LastSyncState, rateLimit int) map[string][]ChangeInfo {
 	result := map[string][]ChangeInfo{}
 	for _, h := range c.handlers {
-		changes := h.queryAllChanges(lastUpdate, rateLimit)
+		lastStateForInstance := (*lastState)[h.instance]
+		changes := h.queryAllChanges(&lastStateForInstance, rateLimit)
 		if len(changes) > 0 {
 			result[h.instance] = []ChangeInfo{}
 			for _, change := range changes {
@@ -246,9 +261,15 @@ func (c *Client) Account(instance string) *gerrit.AccountInfo {
 
 // private handler implementation details
 
-func (h *gerritInstanceHandler) queryAllChanges(lastUpdate time.Time, rateLimit int) []gerrit.ChangeInfo {
+func (h *gerritInstanceHandler) queryAllChanges(lastState *map[string]time.Time, rateLimit int) []gerrit.ChangeInfo {
 	result := []gerrit.ChangeInfo{}
+	timeNow := time.Now()
 	for _, project := range h.projects {
+		lastUpdate, ok := (*lastState)[project]
+		if !ok {
+			logrus.WithField("project", project).Warnf("could not find lastTime for project %q, probably something went wrong with initTracker?", project)
+			lastUpdate = timeNow
+		}
 		changes, err := h.queryChangesForProject(project, lastUpdate, rateLimit)
 		if err != nil {
 			// don't halt on error from one project, log & continue
