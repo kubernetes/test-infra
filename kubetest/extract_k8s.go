@@ -37,18 +37,19 @@ import (
 type extractMode int
 
 const (
-	none    extractMode = iota
-	local               // local
-	gci                 // gci/FAMILY
-	gciCi               // gci/FAMILY/CI_VERSION
-	gke                 // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
-	ci                  // ci/latest, ci/latest-1.5
-	rc                  // release/latest, release/latest-1.5
-	stable              // release/stable, release/stable-1.5
-	version             // v1.5.0, v1.5.0-beta.2
-	gcs                 // gs://bucket/prefix/v1.6.0-alpha.0
-	load                // Load a --save cluster
-	bazel               // A pre/postsubmit bazel build version, prefixed with bazel/
+	none       extractMode = iota
+	localBazel             // local bazel
+	local                  // local
+	gci                    // gci/FAMILY
+	gciCi                  // gci/FAMILY/CI_VERSION
+	gke                    // gke(deprecated), gke-default, gke-latest, gke-channel-CHANNEL_NAME
+	ci                     // ci/latest, ci/latest-1.5
+	rc                     // release/latest, release/latest-1.5
+	stable                 // release/stable, release/stable-1.5
+	version                // v1.5.0, v1.5.0-beta.2
+	gcs                    // gs://bucket/prefix/v1.6.0-alpha.0
+	load                   // Load a --save cluster
+	bazel                  // A pre/postsubmit bazel build version, prefixed with bazel/
 )
 
 type extractStrategy struct {
@@ -71,7 +72,8 @@ func (l *extractStrategies) String() string {
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
-		`^(local)`: local,
+		`^(bazel)$`: localBazel,
+		`^(local)`:  local,
 		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+)?)?$`: gke,
 		`^gci/([\w-]+)$`:              gci,
 		`^gci/([\w-]+)/(.+)$`:         gciCi,
@@ -398,6 +400,22 @@ func setReleaseFromGci(image string, getSrc bool) error {
 
 func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) error {
 	switch e.mode {
+	case localBazel:
+		vFile := util.K8s("kubernetes", "bazel-bin", "version")
+		vByte, err := ioutil.ReadFile(vFile)
+		if err != nil {
+			return err
+		}
+		version := strings.TrimSpace(string(vByte))
+		log.Printf("extracting version %v\n", version)
+		root := util.K8s("kubernetes", "bazel-bin", "build")
+		src := filepath.Join(root, "release-tars")
+		dst := filepath.Join(root, version)
+		log.Printf("copying files from %v to %v\n", src, dst)
+		if err := os.Rename(src, dst); err != nil {
+			return err
+		}
+		return getKube(fmt.Sprintf("file://%s", root), version, extractSrc)
 	case local:
 		url := util.K8s("kubernetes", "_output", "gcs-stage")
 		files, err := ioutil.ReadDir(url)
