@@ -17,11 +17,14 @@ limitations under the License.
 package main
 
 import (
-	"github.com/GoogleCloudPlatform/testgrid/pb/config"
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowConfig "k8s.io/test-infra/prow/config"
 	"reflect"
 	"testing"
+
+	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
+	"github.com/GoogleCloudPlatform/testgrid/pb/config"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowConfig "k8s.io/test-infra/prow/config"
 )
 
 const ProwDefaultGCSPath = "pathPrefix/"
@@ -31,20 +34,21 @@ const ExampleRepository = "test/repo"
 func Test_applySingleProwjobAnnotations(t *testing.T) {
 	tests := []struct {
 		name           string
-		initialConfig  *config.Configuration
+		initialConfig  config.Configuration
 		prowJobType    prowapi.ProwJobType
 		annotations    map[string]string
-		expectedConfig *config.Configuration
+		expectedConfig config.Configuration
+		expectError    bool
 	}{
 		{
 			name:           "Presubmit with no Annotations: no change",
 			prowJobType:    prowapi.PresubmitJob,
-			expectedConfig: &config.Configuration{},
+			expectedConfig: config.Configuration{},
 		},
 		{
 			name:        "Non-presubmit with no Annotations: test group only",
 			prowJobType: prowapi.PostsubmitJob,
-			expectedConfig: &config.Configuration{
+			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:      ProwJobName,
@@ -59,7 +63,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 			annotations: map[string]string{
 				"testgrid-create-test-group": "true",
 			},
-			expectedConfig: &config.Configuration{
+			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:             ProwJobName,
@@ -76,7 +80,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-create-test-group":  "true",
 				"testgrid-num-columns-recent": "10",
 			},
-			expectedConfig: &config.Configuration{
+			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:             ProwJobName,
@@ -92,11 +96,11 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 			annotations: map[string]string{
 				"testgrid-create-test-group": "false",
 			},
-			expectedConfig: &config.Configuration{},
+			expectedConfig: config.Configuration{},
 		},
 		{
 			name: "Force-add job to existing test group: fails",
-			initialConfig: &config.Configuration{
+			initialConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{Name: ProwJobName},
 				},
@@ -105,10 +109,11 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 			annotations: map[string]string{
 				"testgrid-create-test-group": "true",
 			},
+			expectError: true,
 		},
 		{
 			name: "Add job to existing dashboard",
-			initialConfig: &config.Configuration{
+			initialConfig: config.Configuration{
 				Dashboards: []*config.Dashboard{
 					{Name: "Wash"},
 				},
@@ -117,7 +122,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 			annotations: map[string]string{
 				"testgrid-dashboards": "Wash",
 			},
-			expectedConfig: &config.Configuration{
+			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:      ProwJobName,
@@ -150,10 +155,11 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 			annotations: map[string]string{
 				"testgrid-dashboards": "Black",
 			},
+			expectError: true,
 		},
 		{
 			name: "Add email to multiple dashboards: Two tabs, one email",
-			initialConfig: &config.Configuration{
+			initialConfig: config.Configuration{
 				Dashboards: []*config.Dashboard{
 					{Name: "Dart"},
 					{Name: "Peg"},
@@ -164,7 +170,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-dashboards":  "Dart, Peg",
 				"testgrid-alert-email": "test@example.com",
 			},
-			expectedConfig: &config.Configuration{
+			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:      ProwJobName,
@@ -212,7 +218,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 		},
 		{
 			name: "Add job that already exists: keeps test group, makes duplicate tab",
-			initialConfig: &config.Configuration{
+			initialConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:      ProwJobName,
@@ -236,7 +242,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 			annotations: map[string]string{
 				"testgrid-dashboards": "Surf",
 			},
-			expectedConfig: &config.Configuration{
+			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:      ProwJobName,
@@ -270,7 +276,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 		},
 		{
 			name: "Full Annotations",
-			initialConfig: &config.Configuration{
+			initialConfig: config.Configuration{
 				Dashboards: []*config.Dashboard{
 					{Name: "Ouija"},
 				},
@@ -285,7 +291,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-num-failures-to-alert":     "4",
 				"testgrid-alert-stale-results-hours": "24",
 			},
-			expectedConfig: &config.Configuration{
+			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
 					{
 						Name:                   ProwJobName,
@@ -322,23 +328,14 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-
-			if test.initialConfig == nil {
-				test.initialConfig = &config.Configuration{}
-			}
-
-			result := &Config{
-				config: test.initialConfig,
-			}
-
 			job := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: test.annotations,
 			}
 
-			err := applySingleProwjobAnnotations(result, fakeProwConfig(), job, test.prowJobType, ExampleRepository)
+			err := applySingleProwjobAnnotations(&test.initialConfig, fakeProwConfig(), job, test.prowJobType, ExampleRepository, nil)
 
-			if test.expectedConfig == nil {
+			if test.expectError {
 				if err == nil {
 					t.Error("Expected an error, but got none")
 				}
@@ -347,8 +344,8 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 
-				if !reflect.DeepEqual(result.config, test.expectedConfig) {
-					t.Errorf("Configurations did not match; got %s, expected %s", result.config.String(), result.config.String())
+				if !reflect.DeepEqual(test.initialConfig, test.expectedConfig) {
+					t.Errorf("Configurations did not match; got %s, expected %s", test.initialConfig.String(), test.expectedConfig.String())
 				}
 			}
 		})
@@ -357,7 +354,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 
 func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 
-	defaultConfig := &config.DefaultConfiguration{
+	defaultConfig := &yamlcfg.DefaultConfiguration{
 		DefaultTestGroup: &config.TestGroup{
 			GcsPrefix:        "originalConfigPrefix", //Default is Overwritten
 			DaysOfResults:    5,                      //Default is Kept
@@ -549,17 +546,12 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 				test.initialConfig = &config.Configuration{}
 			}
 
-			result := &Config{
-				config:        test.initialConfig,
-				defaultConfig: defaultConfig,
-			}
-
 			job := prowConfig.JobBase{
 				Name:        ProwJobName,
 				Annotations: test.annotations,
 			}
 
-			err := applySingleProwjobAnnotations(result, fakeProwConfig(), job, test.prowJobType, ExampleRepository)
+			err := applySingleProwjobAnnotations(test.initialConfig, fakeProwConfig(), job, test.prowJobType, ExampleRepository, defaultConfig)
 
 			if test.expectedConfig == nil {
 				if err == nil {
@@ -570,12 +562,8 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 
-				if !reflect.DeepEqual(result.defaultConfig, defaultConfig) {
-					t.Errorf("Default Configuration should not change; got %s, expected %s,", result.defaultConfig.String(), defaultConfig.String())
-				}
-
-				if !reflect.DeepEqual(result.config, test.expectedConfig) {
-					t.Errorf("Configurations did not match; got %s, expected %s", result.config.String(), test.expectedConfig.String())
+				if !reflect.DeepEqual(test.initialConfig, test.expectedConfig) {
+					t.Errorf("Configurations did not match; got %s, expected %s", test.initialConfig.String(), test.expectedConfig.String())
 				}
 			}
 		})

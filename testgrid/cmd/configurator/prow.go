@@ -18,11 +18,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/GoogleCloudPlatform/testgrid/config"
-	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/config/yamlcfg"
+	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
@@ -42,7 +44,7 @@ const minPresubmitNumColumnsRecent = 20
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
 
-func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string) error {
+func applySingleProwjobAnnotations(c *configpb.Configuration, pc *prowConfig.Config, j prowConfig.JobBase, jobType prowapi.ProwJobType, repo string, dc *yamlcfg.DefaultConfiguration) error {
 	tabName := j.Name
 	testGroupName := j.Name
 	description := j.Name
@@ -54,7 +56,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	var testGroup *configpb.TestGroup
 
 	if mightMakeGroup {
-		if testGroup = config.FindTestGroup(testGroupName, c.config); testGroup != nil {
+		if testGroup = config.FindTestGroup(testGroupName, c); testGroup != nil {
 			if mustMakeGroup {
 				return fmt.Errorf("test group %q already exists", testGroupName)
 			}
@@ -72,13 +74,13 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 				Name:      testGroupName,
 				GcsPrefix: path.Join(prefix, prowGCS.RootForSpec(&downwardapi.JobSpec{Job: j.Name, Type: jobType})),
 			}
-			if c.defaultConfig != nil {
-				ReconcileTestGroup(testGroup, c.defaultConfig.DefaultTestGroup)
+			if dc != nil {
+				yamlcfg.ReconcileTestGroup(testGroup, dc.DefaultTestGroup)
 			}
-			c.config.TestGroups = append(c.config.TestGroups, testGroup)
+			c.TestGroups = append(c.TestGroups, testGroup)
 		}
 	} else {
-		testGroup = config.FindTestGroup(testGroupName, c.config)
+		testGroup = config.FindTestGroup(testGroupName, c)
 	}
 
 	if testGroup == nil {
@@ -130,7 +132,7 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 		firstDashboard := true
 		for _, dashboardName := range strings.Split(dashboards, ",") {
 			dashboardName = strings.TrimSpace(dashboardName)
-			d := config.FindDashboard(dashboardName, c.config)
+			d := config.FindDashboard(dashboardName, c)
 			if d == nil {
 				return fmt.Errorf("couldn't find dashboard %q for job %q", dashboardName, j.Name)
 			}
@@ -161,8 +163,8 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 					dt.AlertOptions = &configpb.DashboardTabAlertOptions{AlertMailToAddresses: emails}
 				}
 			}
-			if c.defaultConfig != nil {
-				ReconcileDashboardTab(dt, c.defaultConfig.DefaultDashboardTab)
+			if dc != nil {
+				yamlcfg.ReconcileDashboardTab(dt, dc.DefaultDashboardTab)
 			}
 			d.DashboardTab = append(d.DashboardTab, dt)
 		}
@@ -171,21 +173,21 @@ func applySingleProwjobAnnotations(c *Config, pc *prowConfig.Config, j prowConfi
 	return nil
 }
 
-func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent) error {
+func applyProwjobAnnotations(c *configpb.Configuration, reconcile *yamlcfg.DefaultConfiguration, prowConfigAgent *prowConfig.Agent) error {
 	pc := prowConfigAgent.Config()
 	if pc == nil {
 		return nil
 	}
 	jobs := prowConfigAgent.Config().JobConfig
 	for _, j := range jobs.AllPeriodics() {
-		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, ""); err != nil {
+		if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PeriodicJob, "", reconcile); err != nil {
 			return err
 		}
 	}
 
 	for repo, js := range jobs.Postsubmits {
 		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo); err != nil {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PostsubmitJob, repo, reconcile); err != nil {
 				return err
 			}
 		}
@@ -193,7 +195,7 @@ func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent) error
 
 	for repo, js := range jobs.PresubmitsStatic {
 		for _, j := range js {
-			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo); err != nil {
+			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo, reconcile); err != nil {
 				return err
 			}
 		}
