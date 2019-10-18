@@ -24,20 +24,16 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	corev1api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	corev1fake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/kube"
 )
 
 const (
@@ -81,142 +77,6 @@ func startTime(s time.Time) *metav1.Time {
 
 func TestClean(t *testing.T) {
 
-	pods := []runtime.Object{
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-failed",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodFailed,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-succeeded",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodSucceeded,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-just-complete",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodSucceeded,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-pending",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodPending,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-pending-abort",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodPending,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "new-failed",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodFailed,
-				StartTime: startTime(time.Now().Add(-10 * time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "new-running-no-pj",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodRunning,
-				StartTime: startTime(time.Now().Add(-10 * time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-running",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodRunning,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "unrelated-failed",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "not really",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodFailed,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "unrelated-complete",
-				Namespace: "ns",
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodSucceeded,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-	}
-	deletedPods := sets.NewString(
-		"new-running-no-pj",
-		"old-failed",
-		"old-succeeded",
-		"old-pending-abort",
-		"old-running",
-	)
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
 		return &completed
@@ -369,43 +229,21 @@ func TestClean(t *testing.T) {
 		"oldest-periodic",
 		"old-failed-trusted",
 	)
-	podsTrusted := []runtime.Object{
-		&corev1api.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-failed-trusted",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: corev1api.PodStatus{
-				Phase:     corev1api.PodFailed,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-	}
-	deletedPodsTrusted := sets.NewString("old-failed-trusted")
+
 
 	if err := prowv1.AddToScheme(scheme.Scheme); err != nil {
 		t.Fatalf("failed to add prowv1 to scheme: %v", err)
 	}
 
 	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
-	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
-	var fpc []corev1.PodInterface
-	for _, fakeClient := range fkc {
-		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
-	}
+
 	// Run
 	c := controller{
 		logger:        logrus.WithField("component", "sinker"),
 		prowJobClient: fpjc,
-		podClients:    fpc,
 		config:        newFakeConfigAgent().Config,
 	}
 	c.clean()
-	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
-	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
 
 	remainingProwJobs := &prowv1.ProwJobList{}
 	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {

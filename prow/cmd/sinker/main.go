@@ -331,6 +331,35 @@ func (c *controller) clean() {
 		isActivePeriodic[p.Name] = true
 	}
 
+	// Get the jobs that we need to retain so horologium can continue working
+	// as intended.
+	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, prowapi.PeriodicJob)
+	for _, prowJob := range prowJobs.Items {
+		if prowJob.Spec.Type != prowapi.PeriodicJob {
+			continue
+		}
+
+		latestPJ := latestPeriodics[prowJob.Spec.Job]
+		if isActivePeriodic[prowJob.Spec.Job] && prowJob.ObjectMeta.Name == latestPJ.ObjectMeta.Name {
+			// Ignore deleting this one.
+			continue
+		}
+		if !prowJob.Complete() {
+			continue
+		}
+		isFinished.Insert(prowJob.ObjectMeta.Name)
+		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
+			continue
+		}
+		if err := c.prowJobClient.Delete(c.ctx, &prowJob); err == nil {
+			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
+			metrics.prowJobsCleaned[reasonProwJobAgedPeriodic]++
+		} else {
+			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
+			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
+		}
+	}
+
 	metrics.finishedAt = time.Now()
 	sinkerMetrics.podsCreated.Set(float64(metrics.podsCreated))
 	sinkerMetrics.timeUsed.Set(float64(metrics.getTimeUsed().Seconds()))

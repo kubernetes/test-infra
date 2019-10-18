@@ -28,7 +28,6 @@ import (
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ktypes "k8s.io/apimachinery/pkg/types"
@@ -104,15 +103,8 @@ type Controller struct {
 	// if skip report job results to github
 	skipReport bool
 
-	//prowJob Client
-	//prowJobClient prowv1.ProwJobInterface
-
 	// pod client
 	podClients []corev1.PodInterface
-
-	// MaxProwJobAge is how old a ProwJob can be before it is garbage-collected.
-	// Defaults to one week.
-	MaxProwJobAge *metav1.Duration `json:"max_prowjob_age,omitempty"`
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -246,7 +238,7 @@ func (c *Controller) Sync() error {
 			k8sJobs = append(k8sJobs, pj)
 		}
 	}
-	// Sort jobs so jobs started earlier get better chance picked up earlier
+	// Sort jobs so jobs started earlier get better chance  picked up earlier
 	sort.Slice(k8sJobs, func(i, j int) bool {
 		return k8sJobs[i].CreationTimestamp.Before(&k8sJobs[j].CreationTimestamp)
 	})
@@ -276,6 +268,8 @@ func (c *Controller) Sync() error {
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
 	syncProwJobs(c.log, c.syncTriggeredJob, maxSyncRoutines, triggeredCh, reportCh, errCh, pm)
 
+	var pjob prowapi.ProwJob
+	c.cleanUpPods(pjob)
 	close(errCh)
 	close(reportCh)
 
@@ -545,7 +539,6 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	c.managePodJobs(pj)
 	return c.patchProwjob(prevPJ, pj)
 }
 
@@ -610,82 +603,13 @@ func (c *Controller) patchProwjob(srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob)
 
 }
 
-type plankReconciliationMetrics struct {
-	podsCreated            int
-	startAt                time.Time
-	finishedAt             time.Time
-	podsRemoved            map[string]int
-	podRemovalErrors       map[string]int
-	prowJobsCreated        int
-	prowJobsCleaned        map[string]int
-	prowJobsCleaningErrors map[string]int
-}
-
 // Get the jobs that we need to retain so horologium can continue working
 // as intended.
 // And clean up old pods.
-func (c *Controller) managePodJobs(pj prowapi.ProwJob) {
-
-	//Set the inital value of MaxProwJobAge
-	c.MaxProwJobAge = &metav1.Duration{Duration: 7 * 24 * time.Hour}
-
-	maxProwJobAge := c.MaxProwJobAge.Duration
-
-	metrics := plankReconciliationMetrics{
-		startAt:                time.Now(),
-		podsRemoved:            map[string]int{},
-		podRemovalErrors:       map[string]int{},
-		prowJobsCleaned:        map[string]int{},
-		prowJobsCleaningErrors: map[string]int{}}
+func (c *Controller) cleanUpPods(pj prowapi.ProwJob) {
 
 	isFinished := sets.NewString()
 	isExist := sets.NewString()
-
-	prowJobs, err := c.prowJobClient.List(metav1.ListOptions{})
-	if err != nil {
-		c.log.WithError(err).Error("Error listing prow jobs.")
-		return
-	}
-	metrics.prowJobsCreated = len(prowJobs.Items)
-
-	isActivePeriodic := make(map[string]bool)
-	for _, p := range c.config().Periodics {
-		isActivePeriodic[p.Name] = true
-	}
-
-	// Get the jobs that we need to retain so horologium can continue working
-	// as intended.
-	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs.Items, prowapi.PeriodicJob)
-	for _, prowJob := range prowJobs.Items {
-		if prowJob.Spec.Type != prowapi.PeriodicJob {
-			continue
-		}
-
-		latestPJ := latestPeriodics[prowJob.Spec.Job]
-		if isActivePeriodic[prowJob.Spec.Job] && prowJob.ObjectMeta.Name == latestPJ.ObjectMeta.Name {
-			// Ignore deleting this one.
-			continue
-		}
-		if !prowJob.Complete() {
-			continue
-		}
-		isFinished.Insert(prowJob.ObjectMeta.Name)
-		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
-			continue
-		}
-		client, ok := c.buildClients[pj.ClusterAlias()]
-		if !ok {
-			c.log.WithError(err).Error("unknown cluster alias")
-		}
-		if err := client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-			c.log.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-			metrics.prowJobsCleaned[reasonProwJobAgedPeriodic]++
-		} else {
-			c.log.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
-			metrics.prowJobsCleaningErrors[string(k8serrors.ReasonForError(err))]++
-		}
-
-	}
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
@@ -695,11 +619,9 @@ func (c *Controller) managePodJobs(pj prowapi.ProwJob) {
 			c.log.WithError(err).Error("Error listing pods.")
 			return
 		}
-		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
-			reason := reasonPodAged
 			if !isFinished.Has(pod.ObjectMeta.Name) {
 				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
@@ -707,7 +629,6 @@ func (c *Controller) managePodJobs(pj prowapi.ProwJob) {
 			}
 			if !isExist.Has(pod.ObjectMeta.Name) {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
-				reason = reasonPodOrphaned
 				clean = true
 			}
 
@@ -718,10 +639,8 @@ func (c *Controller) managePodJobs(pj prowapi.ProwJob) {
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 				c.log.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
-				metrics.podsRemoved[reason]++
 			} else {
 				c.log.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
-				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 			}
 		}
 	}

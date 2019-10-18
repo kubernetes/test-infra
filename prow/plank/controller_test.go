@@ -41,6 +41,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/reporter"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -1664,4 +1665,203 @@ func TestMaxConcurency(t *testing.T) {
 		})
 	}
 
+}
+
+const (
+	maxProwJobAge = 2 * 24 * time.Hour
+	maxPodAge     = 12 * time.Hour
+)
+
+func TestCleanUpPods(t *testing.T) {
+
+	pods := []runtime.Object{
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "old-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "old-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "old-just-complete",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "old-pending",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "old-pending-abort",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "new-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodFailed,
+				StartTime: startTime(time.Now().Add(-10 * time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "new-running-no-pj",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodRunning,
+				StartTime: startTime(time.Now().Add(-10 * time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "old-running",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodRunning,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "unrelated-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "not really",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "unrelated-complete",
+				Namespace: "ns",
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+	}
+	deletedPods := sets.NewString(
+		"new-running-no-pj",
+		"old-failed",
+		"old-succeeded",
+		"old-pending-abort",
+		"old-running",
+	)
+
+	podsTrusted := []runtime.Object{
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "old-failed-trusted",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: v1.PodStatus{
+				Phase:     v1.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+	}
+	deletedPodsTrusted := sets.NewString("old-failed-trusted")
+
+	fkc := []*fake.Clientset{fake.NewSimpleClientset(pods...), fake.NewSimpleClientset(podsTrusted...)}
+	var fpc []corev1.PodInterface
+	for _, fakeClient := range fkc {
+		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
+	}
+	c := Controller{
+		podClients:    fpc,
+	}
+	var pj prowapi.ProwJob
+	c.cleanUpPods(pj)
+	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
+	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
+}
+
+func getDeletedObjectNames(actions []clienttesting.Action) sets.String {
+	names := sets.NewString()
+	for _, action := range actions {
+		switch action := action.(type) {
+		case clienttesting.DeleteActionImpl:
+			names.Insert(action.Name)
+		}
+	}
+	return names
+}
+
+func assertSetsEqual(expected, actual sets.String, t *testing.T, prefix string) {
+	if expected.Equal(actual) {
+		return
+	}
+
+	if missing := expected.Difference(actual); missing.Len() > 0 {
+		t.Errorf("%s: missing expected: %v", prefix, missing.List())
+	}
+	if extra := actual.Difference(expected); extra.Len() > 0 {
+		t.Errorf("%s: found unexpected: %v", prefix, extra.List())
+	}
 }
