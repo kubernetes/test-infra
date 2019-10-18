@@ -48,6 +48,32 @@
               message: 'The Tide status update controllers loop period has averaged more than 2 minutes for the last 15 mins.',
             },
           },
+          {
+            alert: 'TidePoolErrorRateIndividual',
+            expr: |||
+              (max(sum(increase(tidepoolerrors[10m])) by (org, repo, branch)) or vector(0)) >= 3
+            |||,
+            'for': '5m',
+            labels: {
+              severity: 'warning',
+            },
+            annotations: {
+              message: 'At least one Tide pool encountered 3+ sync errors in a 10 minute window. If the TidePoolErrorRateMultiple alert has not fired this is likely an isolated configuration issue. See the <deck-url>/tide-history page.',
+            },
+          },
+          {
+            alert: 'TidePoolErrorRateMultiple',
+            expr: |||
+              (count(sum(increase(tidepoolerrors[10m])) by (org, repo) >= 3) or vector(0)) >= 3
+            |||,
+            'for': '5m',
+            labels: {
+              severity: 'critical',
+            },
+            annotations: {
+              message: 'Tide encountered 3+ sync errors in a 10 minute window in at least 3 different repos that it handles. See the <deck-url>/tide-history page.',
+            },
+          },
         ],
       },
     ],
