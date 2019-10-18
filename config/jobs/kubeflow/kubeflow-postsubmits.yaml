@@ -35,6 +35,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for Kubeflow.
+      testgrid-alert-email: kubeflow-engineering@google.com
+      testgrid-num-failures-to-alert: "3"
   kubeflow/kfctl:
   - name: kubeflow-kfctl-postsubmit
     labels:
