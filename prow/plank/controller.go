@@ -29,10 +29,9 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	ktypes "k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/clock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ktypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -105,9 +104,9 @@ type Controller struct {
 	// if skip report job results to github
 	skipReport bool
 
-  // pod client
+	// pod client
 	podClients []corev1.PodInterface
-  
+
 	clock clock.Clock
 }
 

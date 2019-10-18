@@ -27,7 +27,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/kubernetes/scheme"
 	clienttesting "k8s.io/client-go/testing"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -229,7 +228,6 @@ func TestClean(t *testing.T) {
 		"oldest-periodic",
 		"old-failed-trusted",
 	)
-
 
 	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 

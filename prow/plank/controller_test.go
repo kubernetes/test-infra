@@ -1853,7 +1853,8 @@ func TestCleanUpPods(t *testing.T) {
 		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
 	}
 	c := Controller{
-		podClients:    fpc,
+		podClients: fpc,
+		config:     newFakeConfigAgent(t, 0).Config,
 	}
 	var pj prowapi.ProwJob
 	c.cleanUpPods(pj)
