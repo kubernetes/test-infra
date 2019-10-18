@@ -198,6 +198,7 @@ presubmits:
       preset-pull-kubernetes-e2e-windows-gce: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
     always_run: false
     optional: true
     branches:
@@ -223,6 +224,9 @@ presubmits:
         - --test-cmd-args=--node-os-distro=windows
         - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         resources:
           requests:
             memory: "6Gi"
