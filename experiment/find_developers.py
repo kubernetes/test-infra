@@ -43,7 +43,7 @@ def load_content(data):
 
 
 @functools.total_ordering
-class User(object):  # pylint: disable=too-few-public-methods
+class User:  # pylint: disable=too-few-public-methods
     """Store .user and number of .total and .recent commits."""
     def __init__(self, blob):
         self.user = blob['author']['login']
