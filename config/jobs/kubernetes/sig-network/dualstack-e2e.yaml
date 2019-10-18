@@ -70,7 +70,7 @@ periodics:
       securityContext:
          privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, sig-azure-on-call
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-on-call
     testgrid-tab-name: dualstack-azure-e2e
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
