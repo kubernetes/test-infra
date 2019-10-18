@@ -29,6 +29,8 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	ktypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/clock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ktypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -103,8 +105,10 @@ type Controller struct {
 	// if skip report job results to github
 	skipReport bool
 
-	// pod client
+  // pod client
 	podClients []corev1.PodInterface
+  
+	clock clock.Clock
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -122,6 +126,7 @@ func NewController(prowJobClient prowv1.ProwJobInterface, buildClients map[strin
 		totURL:        totURL,
 		selector:      selector,
 		skipReport:    skipReport,
+		clock:         clock.RealClock{},
 	}, nil
 }
 
@@ -384,6 +389,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
 		}
 	} else {
+
 		switch pod.Status.Phase {
 		case coreapi.PodUnknown:
 			c.incrementNumPendingJobs(pj.Spec.Job)
@@ -528,6 +534,8 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 	if pj.Status.State == prowapi.TriggeredState {
 		// BuildID needs to be set before we execute the job url template.
 		pj.Status.BuildID = id
+		now := metav1.NewTime(c.clock.Now())
+		pj.Status.PendingTime = &now
 		pj.Status.State = prowapi.PendingState
 		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."

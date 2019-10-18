@@ -6,7 +6,7 @@ metadata:
     app: boskos-janitor
   namespace: test-pods
 spec:
-  replicas: 3  # 3 distributed janitor instances for gke
+  replicas: 8  # 8 distributed janitor instances for gke
   selector:
     matchLabels:
       app: boskos-janitor
@@ -18,7 +18,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-prow/boskos/janitor:v20190830-bbd3cccdd
+        image: gcr.io/k8s-prow/boskos/janitor:v20191017-ac4b4b51f
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gke-project
@@ -43,7 +43,7 @@ metadata:
     app: boskos-janitor-nongke
   namespace: test-pods
 spec:
-  replicas: 4  # 4 distributed janitor instances
+  replicas: 8
   selector:
     matchLabels:
       app: boskos-janitor-nongke
@@ -55,7 +55,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-prow/boskos/janitor:v20190830-bbd3cccdd
+        image: gcr.io/k8s-prow/boskos/janitor:v20191017-ac4b4b51f
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-project

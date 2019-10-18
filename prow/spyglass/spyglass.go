@@ -317,10 +317,11 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 			// In practice, this shouldn't matter: we only want to read DefaultOrg and DefaultRepo, and overriding those
 			// per job would probably be a bad idea (indeed, not even the tests try to do this).
 			// This decision should probably be revisited if we ever want other information from it.
-			if s.config().Plank.DefaultDecorationConfig == nil || s.config().Plank.DefaultDecorationConfig.GCSConfiguration == nil {
+			// TODO (droslean): we should get the default decoration config depending on the org/repo.
+			if s.config().Plank.DefaultDecorationConfigs["*"] == nil || s.config().Plank.DefaultDecorationConfigs["*"].GCSConfiguration == nil {
 				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
 			}
-			c := s.config().Plank.DefaultDecorationConfig.GCSConfiguration
+			c := s.config().Plank.DefaultDecorationConfigs["*"].GCSConfiguration
 			// Assumption: we can derive the type of URL from how many components it has, without worrying much about
 			// what the actual path configuration is.
 			switch len(split) {

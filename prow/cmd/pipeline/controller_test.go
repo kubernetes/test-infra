@@ -258,6 +258,7 @@ func TestReconcile(t *testing.T) {
 			expectedJob: func(pj prowjobv1.ProwJob, _ pipelinev1alpha1.PipelineRun) prowjobv1.ProwJob {
 				pj.Status = prowjobv1.ProwJobStatus{
 					StartTime:   now,
+					PendingTime: &now,
 					State:       prowjobv1.PendingState,
 					Description: descScheduling,
 					BuildID:     pipelineID,

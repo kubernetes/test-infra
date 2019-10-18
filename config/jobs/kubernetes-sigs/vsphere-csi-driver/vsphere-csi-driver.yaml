@@ -8,7 +8,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - make
         args:
@@ -26,7 +26,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - make
         args:
@@ -44,7 +44,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - make
         args:
@@ -100,7 +100,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - make
         args:
@@ -121,7 +121,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - "make"
         args:
@@ -140,7 +140,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - "make"
         args:
@@ -166,7 +166,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - "make"
         args:
@@ -191,13 +191,16 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - "make"
         args:
         - "push-images"
         securityContext:
           privileged: true
+    rerun_auth_config:
+      github_users:
+      - codenrhoden
     annotations:
       testgrid-dashboards: vmware-postsubmits-vsphere-csi-driver
       testgrid-num-columns-recent: '20'

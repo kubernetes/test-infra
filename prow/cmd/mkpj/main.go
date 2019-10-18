@@ -55,7 +55,7 @@ type options struct {
 }
 
 func (o *options) genJobSpec(conf *config.Config, name string) (config.JobBase, prowapi.ProwJobSpec) {
-	for fullRepoName, ps := range conf.Presubmits {
+	for fullRepoName, ps := range conf.PresubmitsStatic() {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)

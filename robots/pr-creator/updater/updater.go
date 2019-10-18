@@ -35,7 +35,7 @@ type ensureClient interface {
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 }
 
-func UpdatePR(org, repo, title, body, matchTitle, extraQuery string, gc updateClient) (*int, error) {
+func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int, error) {
 	if matchTitle == "" {
 		return nil, nil
 	}
@@ -46,8 +46,7 @@ func UpdatePR(org, repo, title, body, matchTitle, extraQuery string, gc updateCl
 		return nil, fmt.Errorf("bot name: %v", err)
 	}
 
-	query := fmt.Sprintf("is:open is:pr archived:false author:%s in:title %s %s", me, matchTitle, extraQuery)
-	issues, err := gc.FindIssues(query, "updated", false)
+	issues, err := gc.FindIssues("is:open is:pr archived:false in:title author:"+me+" "+matchTitle, "updated", false)
 	if err != nil {
 		return nil, fmt.Errorf("find issues: %v", err)
 	} else if len(issues) == 0 {
@@ -66,8 +65,8 @@ func UpdatePR(org, repo, title, body, matchTitle, extraQuery string, gc updateCl
 	return &n, nil
 }
 
-func EnsurePR(org, repo, title, body, source, branch, matchTitle, extraQuery string, gc ensureClient) (*int, error) {
-	n, err := UpdatePR(org, repo, title, body, matchTitle, extraQuery, gc)
+func EnsurePR(org, repo, title, body, source, branch, matchTitle string, gc ensureClient) (*int, error) {
+	n, err := UpdatePR(org, repo, title, body, matchTitle, gc)
 	if err != nil {
 		return nil, fmt.Errorf("update error: %v", err)
 	}

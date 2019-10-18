@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowConfig "k8s.io/test-infra/prow/config"
 	"reflect"
@@ -587,9 +587,11 @@ func fakeProwConfig() *prowConfig.Config {
 	return &prowConfig.Config{
 		ProwConfig: prowConfig.ProwConfig{
 			Plank: prowConfig.Plank{
-				DefaultDecorationConfig: &prowapi.DecorationConfig{
-					GCSConfiguration: &prowapi.GCSConfiguration{
-						PathPrefix: ProwDefaultGCSPath,
+				DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+					"*": {
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							PathPrefix: ProwDefaultGCSPath,
+						},
 					},
 				},
 			},

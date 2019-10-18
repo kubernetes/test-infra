@@ -1,62 +1,4 @@
 periodics:
-- name: ci-gcp-compute-persistent-disk-csi-driver-release-0-3-k8s-master-integration
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
-      args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.3.0"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
-      - "--timeout=90" # Minutes
-      - "--scenario=execute"
-      - "--" # end bootstrap args, scenario args below
-      - "test/run-k8s-integration.sh"
-      env:
-      - name: GCE_PD_OVERLAY_NAME
-        value: "stable"
-      - name: GCE_PD_DO_DRIVER_BUILD
-        value: "false"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: Kubernetes Master Driver Release 0.3
-    description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.3
-- name: ci-gcp-compute-persistent-disk-csi-driver-release-0-4-k8s-master-integration
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
-      args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.4.0"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
-      - "--timeout=90" # Minutes
-      - "--scenario=execute"
-      - "--" # end bootstrap args, scenario args below
-      - "test/run-k8s-integration.sh"
-      env:
-      - name: GCE_PD_OVERLAY_NAME
-        value: "stable"
-      - name: GCE_PD_DO_DRIVER_BUILD
-        value: "false"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: Kubernetes Master Driver Release 0.4
-    description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.4
 - name: ci-gcp-compute-persistent-disk-csi-driver-release-0-5-k8s-master-integration
   interval: 4h
   labels:
@@ -64,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.5.0"
       - "--root=/go/src"
@@ -93,7 +35,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.4.0"
       - "--root=/go/src"
@@ -124,7 +66,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -153,7 +95,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -189,7 +131,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"

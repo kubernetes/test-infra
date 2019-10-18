@@ -130,6 +130,20 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 				return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
 			}
 		}
+		if pr.Label.Name == labels.OkToTest {
+			// When the bot adds the label from an /ok-to-test command,
+			// we will trigger tests based on the comment event and do not
+			// need to trigger them here from the label, as well
+			botName, err := c.GitHubClient.BotName()
+			if err != nil {
+				return err
+			}
+			if author == botName {
+				c.Logger.Debug("Label added by the bot, skipping.")
+				return nil
+			}
+			return buildAll(c, &pr.PullRequest, pr.GUID, *trigger.ElideSkippedContexts, baseSHA, presubmits)
+		}
 	}
 	return nil
 }

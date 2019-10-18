@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190927-21e0205
+      - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -37,7 +37,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190927-21e0205
+    - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -71,7 +71,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190927-21e0205
+    - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -102,10 +102,7 @@ periodics:
     - image: gcr.io/k8s-staging-release-test/deb-builder:latest
       imagePullPolicy: Always
       command:
-      - ./deb-builder
-      args:
-      - -distros
-      - bionic
+      - ./debs
       resources:
         requests:
           cpu: 4

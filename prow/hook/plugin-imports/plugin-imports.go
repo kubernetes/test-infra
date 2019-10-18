@@ -33,6 +33,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/docs-no-retest"
 	_ "k8s.io/test-infra/prow/plugins/dog"
 	_ "k8s.io/test-infra/prow/plugins/golint"
+	_ "k8s.io/test-infra/prow/plugins/goose"
 	_ "k8s.io/test-infra/prow/plugins/heart"
 	_ "k8s.io/test-infra/prow/plugins/help"
 	_ "k8s.io/test-infra/prow/plugins/hold"

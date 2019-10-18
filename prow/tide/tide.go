@@ -33,12 +33,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/test-infra/pkg/io"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
@@ -50,11 +49,6 @@ import (
 
 // For mocking out sleep during unit tests.
 var sleep = time.Sleep
-
-type prowJobClient interface {
-	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
-	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
-}
 
 type githubClient interface {
 	CreateStatus(string, string, string, github.Status) error
@@ -74,10 +68,11 @@ type contextChecker interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
+	ctx           context.Context
 	logger        *logrus.Entry
 	config        config.Getter
 	ghc           githubClient
-	prowJobClient prowJobClient
+	prowJobClient ctrlruntimeclient.Client
 	gc            *git.Client
 
 	sc *statusController
@@ -146,6 +141,7 @@ var (
 		pooledPRs  *prometheus.GaugeVec
 		updateTime *prometheus.GaugeVec
 		merges     *prometheus.HistogramVec
+		poolErrors *prometheus.CounterVec
 
 		// Singleton
 		syncDuration         prometheus.Gauge
@@ -178,11 +174,19 @@ var (
 			"branch",
 		}),
 
+		poolErrors: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "tidepoolerrors",
+			Help: "Count of Tide pool sync errors.",
+		}, []string{
+			"org",
+			"repo",
+			"branch",
+		}),
+
 		syncDuration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "syncdur",
 			Help: "The duration of the last loop of the sync controller.",
 		}),
-
 		statusUpdateDuration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "statusupdatedur",
 			Help: "The duration of the last loop of the status update controller.",
@@ -196,10 +200,11 @@ func init() {
 	prometheus.MustRegister(tideMetrics.merges)
 	prometheus.MustRegister(tideMetrics.syncDuration)
 	prometheus.MustRegister(tideMetrics.statusUpdateDuration)
+	prometheus.MustRegister(tideMetrics.poolErrors)
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus github.Client, prowJobClient prowv1.ProwJobInterface, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, prowJobClient ctrlruntimeclient.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -219,6 +224,7 @@ func NewController(ghcSync, ghcStatus github.Client, prowJobClient prowv1.ProwJo
 	}
 	go sc.run()
 	return &Controller{
+		ctx:           context.Background(),
 		logger:        logger.WithField("controller", "sync"),
 		ghc:           ghcSync,
 		prowJobClient: prowJobClient,
@@ -307,8 +313,8 @@ func (c *Controller) Sync() error {
 	var err error
 	if len(prs) > 0 {
 		start := time.Now()
-		pjList, err := c.prowJobClient.List(metav1.ListOptions{})
-		if err != nil {
+		pjList := &prowapi.ProwJobList{}
+		if err := c.prowJobClient.List(c.ctx, pjList, ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace)); err != nil {
 			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
 			return err
 		}
@@ -354,6 +360,7 @@ func (c *Controller) Sync() error {
 		func(sp *subpool) {
 			pool, err := c.syncSubpool(*sp, blocks.GetApplicable(sp.org, sp.repo, sp.branch))
 			if err != nil {
+				tideMetrics.poolErrors.WithLabelValues(sp.org, sp.repo, sp.branch).Inc()
 				sp.log.WithError(err).Errorf("Error syncing subpool.")
 			}
 			poolChan <- pool
@@ -1041,12 +1048,14 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 			spec = pjutil.BatchSpec(ps, refs)
 		}
 		pj := pjutil.NewProwJob(spec, ps.Labels, ps.Annotations)
+		pj.Namespace = c.config().ProwJobNamespace
+		log := c.logger.WithFields(pjutil.ProwJobFields(&pj))
 		start := time.Now()
-		if _, err := c.prowJobClient.Create(&pj); err != nil {
-			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
+		if err := c.prowJobClient.Create(c.ctx, &pj); err != nil {
+			log.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
 		}
-		c.logger.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
+		log.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 	}
 	return nil
 }
@@ -1195,23 +1204,32 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 		if err != nil {
 			return nil, fmt.Errorf("failed to get presubmits for PR %d: %v", int(pr.Number), err)
 		}
+		log := c.logger.WithFields(logrus.Fields{"repo": sp.repo, "org": sp.org, "base-sha": sp.sha, "base-branch": sp.branch, "pr": int(pr.Number)})
+		log.Debugf("Found %d possible presubmits", len(presubmitsForPull))
 
 		for _, ps := range presubmitsForPull {
 			if !ps.ContextRequired() {
 				continue
 			}
 
-			if shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false); err != nil {
+			shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false)
+			if err != nil {
 				return nil, err
-			} else if shouldRun {
-				record(int(pr.Number), ps)
 			}
+			if !shouldRun {
+				log.Debug("Presubmit excluded by ps.ShouldRun", "presubmit", ps.Context)
+				continue
+			}
+
+			record(int(pr.Number), ps)
 		}
 	}
 	return presubmits, nil
 }
 
 func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
+	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
+
 	var headRefGetters []config.RefGetter
 	for _, pr := range prs {
 		headRefGetters = append(headRefGetters, refGetterFactory(string(pr.HeadRefOID)))
@@ -1221,6 +1239,7 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 	if err != nil {
 		return nil, fmt.Errorf("failed to get presubmits for batch: %v", err)
 	}
+	log.Debugf("Found %d possible presubmits for batch", len(presubmits))
 
 	var result []config.Presubmit
 	for _, ps := range presubmits {
@@ -1228,17 +1247,19 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 			continue
 		}
 
-		shouldRun, err := ps.ShouldRun(baseSHA, c.changedFiles.batchChanges(prs), false, false)
+		shouldRun, err := ps.ShouldRun(baseBranch, c.changedFiles.batchChanges(prs), false, false)
 		if err != nil {
 			return nil, err
 		}
 		if !shouldRun {
+			log.Debug("Presubmit excluded by ps.ShouldRun", "presubmit", ps.Context)
 			continue
 		}
 
 		result = append(result, ps)
 	}
 
+	log.Debugf("After filtering, %d presubmits remained for batch", len(result))
 	return result, nil
 }
 

@@ -12,10 +12,14 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: 1-14-on-kubernetes-1-14
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for non-alpha tests, using deployment 1.14 on Kubernetes 1.14
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         args:
@@ -25,7 +29,7 @@ presubmits:
         # Update only when the newer version is known to not cause issues,
         # otherwise presubmit jobs may start to fail for reasons that are
         # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi#Summary).
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.14.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
@@ -51,10 +55,14 @@ presubmits:
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: 1-14-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for non-alpha tests, using deployment 1.14 on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         args:
@@ -84,10 +92,14 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: 1-15-on-kubernetes-1-15
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for non-alpha tests, using deployment 1.15 on Kubernetes 1.15
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         args:
@@ -97,7 +109,7 @@ presubmits:
         # Update only when the newer version is known to not cause issues,
         # otherwise presubmit jobs may start to fail for reasons that are
         # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi#Summary).
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.15.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
@@ -123,10 +135,14 @@ presubmits:
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: 1-15-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for non-alpha tests, using deployment 1.15 on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         args:
@@ -156,10 +172,14 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: alpha-1-15-on-kubernetes-1-15
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for alpha tests, using deployment 1.15 on Kubernetes 1.15
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         args:
@@ -169,7 +189,7 @@ presubmits:
         # Update only when the newer version is known to not cause issues,
         # otherwise presubmit jobs may start to fail for reasons that are
         # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi#Summary).
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.15.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
@@ -195,10 +215,14 @@ presubmits:
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: alpha-1-15-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for alpha tests, using deployment 1.15 on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         args:
@@ -228,10 +252,14 @@ presubmits:
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-csi-driver-host-path
+      testgrid-tab-name: unit
+      description: Kubernetes-CSI pull job in repo csi-driver-host-path for unit tests
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         args:
@@ -264,14 +292,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: 1.14-on-1.14
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14 and 1.14 sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment 1.14 on Kubernetes 1.14
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -304,14 +332,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: 1.14-on-1.15
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.15 and 1.14 sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment 1.14 on Kubernetes 1.15
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -344,14 +372,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: 1.14-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.14 sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment 1.14 on Kubernetes master
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -384,14 +412,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: 1.15-on-1.14
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14 and 1.15 sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment 1.15 on Kubernetes 1.14
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -424,14 +452,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: 1.15-on-1.15
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.15 and 1.15 sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment 1.15 on Kubernetes 1.15
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -464,14 +492,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: 1.15-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes master and 1.15 sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment 1.15 on Kubernetes master
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -504,14 +532,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: alpha-1.15-on-1.15
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI alpha tests with Kubernetes 1.15 and 1.15 sidecars
+    description: periodic Kubernetes-CSI job for alpha tests, using deployment 1.15 on Kubernetes 1.15
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -544,14 +572,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: canary-on-1.14
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.14 and canary sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment canary on Kubernetes 1.14
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -590,14 +618,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: canary-on-1.15
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes 1.15 and canary sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment canary on Kubernetes 1.15
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -636,14 +664,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: canary-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI non-alpha tests with Kubernetes master and canary sidecars
+    description: periodic Kubernetes-CSI job for non-alpha tests, using deployment canary on Kubernetes master
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:
@@ -682,14 +710,14 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
-    testgrid-dashboards: sig-storage-csi
+    testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: alpha-canary-on-master
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI alpha tests with Kubernetes master and canary sidecars
+    description: periodic Kubernetes-CSI job for alpha tests, using deployment canary on Kubernetes master
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       args:

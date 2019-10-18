@@ -373,7 +373,7 @@ func TestHandleRedirectWithValidState(t *testing.T) {
 		t.Errorf("Mismatch github login. Got %v, expected %v", loginCookie.Value, mockLogin)
 	}
 	path := mockResponse.Header().Get("Location")
-	if path != "/"+dest+"?rerun="+rerunStatus {
+	if path != "http://example.com/"+dest+"?rerun="+rerunStatus {
 		t.Errorf("Incorrect final redirect URL. Actual path: %s, Expected path: /%s", path, dest+"?rerun="+rerunStatus)
 	}
 }

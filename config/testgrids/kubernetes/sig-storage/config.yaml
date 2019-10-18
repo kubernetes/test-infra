@@ -3,7 +3,15 @@ dashboard_groups:
   dashboard_names:
     - sig-storage-kubernetes
     - sig-storage-local-static-provisioner
-    - sig-storage-csi
+    - sig-storage-csi-ci
+    - sig-storage-csi-csi-driver-host-path
+    - sig-storage-csi-external-attacher
+    - sig-storage-csi-external-provisioner
+    - sig-storage-csi-external-resizer
+    - sig-storage-csi-external-snapshotter
+    - sig-storage-csi-livenessprobe
+    - sig-storage-csi-node-driver-registrar
+    - sig-storage-csi-other
 
 dashboards:
 - name: sig-storage-kubernetes
@@ -122,4 +130,12 @@ dashboards:
       base_options: include-filter-by-regex=sig-storage
       description: E2E tests against default kubernetes on GKE
 
-- name: sig-storage-csi
+- name: sig-storage-csi-ci
+- name: sig-storage-csi-csi-driver-host-path
+- name: sig-storage-csi-external-attacher
+- name: sig-storage-csi-external-provisioner
+- name: sig-storage-csi-external-resizer
+- name: sig-storage-csi-external-snapshotter
+- name: sig-storage-csi-livenessprobe
+- name: sig-storage-csi-node-driver-registrar
+- name: sig-storage-csi-other

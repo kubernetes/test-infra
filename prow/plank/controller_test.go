@@ -32,6 +32,7 @@ import (
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/fake"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -314,6 +315,7 @@ func TestTerminateDupes(t *testing.T) {
 			buildClients:  map[string]corev1.PodInterface{prowapi.DefaultClusterAlias: fakePodClient.CoreV1().Pods("pods")},
 			log:           log,
 			config:        fca.Config,
+			clock:         clock.RealClock{},
 		}
 
 		if err := c.terminateDupes(tc.pjs, tc.pm); err != nil {
@@ -357,6 +359,9 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
+	fakeClock := clock.NewFakeClock(time.Now().Truncate(1 * time.Second))
+	pendingTime := metav1.NewTime(fakeClock.Now())
+
 	var testcases = []struct {
 		name string
 
@@ -376,6 +381,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		expectedURL           string
 		expectedBuildID       string
 		expectError           bool
+		expectedPendingTime   *metav1.Time
 	}{
 		{
 			name: "start new pod",
@@ -393,11 +399,12 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: prowapi.TriggeredState,
 				},
 			},
-			pods:               map[string][]v1.Pod{"default": {}},
-			expectedState:      prowapi.PendingState,
-			expectedPodHasName: true,
-			expectedNumPods:    map[string]int{"default": 1},
-			expectedReport:     true,
+			pods:                map[string][]v1.Pod{"default": {}},
+			expectedState:       prowapi.PendingState,
+			expectedPendingTime: &pendingTime,
+			expectedPodHasName:  true,
+			expectedNumPods:     map[string]int{"default": 1},
+			expectedReport:      true,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
 				reporter.GitHubReporterName: prowapi.PendingState,
 			},
@@ -508,10 +515,11 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				},
 				"trusted": {},
 			},
-			expectedState:      prowapi.PendingState,
-			expectedNumPods:    map[string]int{"default": 1, "trusted": 1},
-			expectedPodHasName: true,
-			expectedReport:     true,
+			expectedState:       prowapi.PendingState,
+			expectedNumPods:     map[string]int{"default": 1, "trusted": 1},
+			expectedPodHasName:  true,
+			expectedReport:      true,
+			expectedPendingTime: &pendingTime,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
 				reporter.GitHubReporterName: prowapi.PendingState,
 			},
@@ -562,7 +570,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			expectPrevReportState: map[string]prowapi.ProwJobState{
 				reporter.GitHubReporterName: prowapi.PendingState,
 			},
-			expectedURL: "beer/pending",
+			expectedURL:         "beer/pending",
+			expectedPendingTime: &pendingTime,
 		},
 		{
 			name: "unprocessable prow job",
@@ -678,9 +687,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedState:   prowapi.PendingState,
-			expectedNumPods: map[string]int{"default": 1},
-			expectedReport:  true,
+			expectedState:       prowapi.PendingState,
+			expectedNumPods:     map[string]int{"default": 1},
+			expectedReport:      true,
+			expectedPendingTime: &pendingTime,
 			expectPrevReportState: map[string]prowapi.ProwJobState{
 				reporter.GitHubReporterName: prowapi.PendingState,
 			},
@@ -720,6 +730,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			config:        newFakeConfigAgent(t, tc.maxConcurrency).Config,
 			totURL:        totServ.URL,
 			pendingJobs:   make(map[string]int),
+			clock:         fakeClock,
 		}
 		if tc.pendingJobs != nil {
 			c.pendingJobs = tc.pendingJobs
@@ -754,6 +765,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		actual := actualProwJobs.Items[0]
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
+		}
+		if !reflect.DeepEqual(actual.Status.PendingTime, tc.expectedPendingTime) {
+			t.Errorf("for case %q got pending time %v, expected %v", tc.name, actual.Status.PendingTime, tc.expectedPendingTime)
 		}
 		if (actual.Status.PodName == "") && tc.expectedPodHasName {
 			t.Errorf("for case %q got no pod name, expected one", tc.name)
@@ -1179,6 +1193,7 @@ func TestSyncPendingJob(t *testing.T) {
 			config:        newFakeConfigAgent(t, 0).Config,
 			totURL:        totServ.URL,
 			pendingJobs:   make(map[string]int),
+			clock:         clock.RealClock{},
 		}
 
 		reports := make(chan prowapi.ProwJob, 100)
@@ -1271,6 +1286,7 @@ func TestOrderedJobs(t *testing.T) {
 			totURL:        totServ.URL,
 			pendingJobs:   make(map[string]int),
 			lock:          sync.RWMutex{},
+			clock:         clock.RealClock{},
 		}
 		if err := c.Sync(); err != nil {
 			t.Fatalf("Error on first sync: %v", err)
@@ -1313,6 +1329,7 @@ func TestPeriodic(t *testing.T) {
 		totURL:        totServ.URL,
 		pendingJobs:   make(map[string]int),
 		lock:          sync.RWMutex{},
+		clock:         clock.RealClock{},
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
@@ -1517,6 +1534,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			log:           logrus.NewEntry(logrus.StandardLogger()),
 			config:        newFakeConfigAgent(t, 0).Config,
 			pendingJobs:   test.pendingJobs,
+			clock:         clock.RealClock{},
 		}
 
 		reports := make(chan prowapi.ProwJob, len(test.pjs))
@@ -1654,6 +1672,7 @@ func TestMaxConcurency(t *testing.T) {
 				log:          logrus.NewEntry(logrus.StandardLogger()),
 				config:       newFakeConfigAgent(t, 0).Config,
 				pendingJobs:  tc.pendingJobs,
+				clock:        clock.RealClock{},
 			}
 			logrus.SetLevel(logrus.DebugLevel)
 

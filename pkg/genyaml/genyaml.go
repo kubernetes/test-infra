@@ -61,18 +61,20 @@ package genyaml
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"go/ast"
 	"go/doc"
 	"go/parser"
 	"go/token"
-	yaml3 "gopkg.in/yaml.v3"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/clarketm/json"
+	yaml3 "gopkg.in/yaml.v3"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -189,18 +191,19 @@ func fmtRawDoc(rawDoc string) string {
 	return postDoc
 }
 
+// fieldTag extracts the given tag or returns an empty string if the tag is not defined.
+func fieldTag(field *ast.Field, tag string) string {
+	if field.Tag == nil {
+		return ""
+	}
+
+	return reflect.StructTag(field.Tag.Value[1 : len(field.Tag.Value)-1]).Get(tag)
+}
+
 // fieldName extracts the name of the field as it should appear in YAML format and returns the resultant string.
 // "-" indicates that this field is not part of the YAML representation and is thus excluded.
 func fieldName(field *ast.Field, tag string) string {
-	tagVal := ""
-	if field.Tag != nil {
-		tagVal = reflect.StructTag(field.Tag.Value[1 : len(field.Tag.Value)-1]).Get(tag) // Delete first and last quotation.
-		if strings.Contains(tagVal, "inline") {
-			return "-"
-		}
-	}
-
-	tagVal = strings.Split(tagVal, ",")[0] // This can return "-".
+	tagVal := strings.Split(fieldTag(field, tag), ",")[0] // This can return "-".
 	if tagVal == "" {
 		// Set field name to the defined name in struct if defined.
 		if field.Names != nil {
@@ -211,6 +214,13 @@ func fieldName(field *ast.Field, tag string) string {
 		return name
 	}
 	return tagVal
+}
+
+// fieldIsInlined returns true if the field is tagged with ",inline"
+func fieldIsInlined(field *ast.Field, tag string) bool {
+	values := sets.NewString(strings.Split(fieldTag(field, tag), ",")...)
+
+	return values.Has("inline")
 }
 
 // fieldType extracts the type of the field and returns the resultant string type and a bool indicating if it is an object type.
@@ -255,6 +265,8 @@ func (cm *CommentMap) genDocMap(path string) error {
 		return errors.New("unable to generate AST documentation map")
 	}
 
+	inlineFields := map[string][]string{}
+
 	for _, t := range pkg.Types {
 		if typeSpec, ok := t.Decl.Specs[0].(*ast.TypeSpec); ok {
 
@@ -267,10 +279,13 @@ func (cm *CommentMap) genDocMap(path string) error {
 			case *ast.StructType:
 				lst = typ.Fields.List
 			case *ast.Ident:
-				if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.InterfaceType); ok {
-					lst = alias.Methods.List
-				} else if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.StructType); ok {
-					lst = alias.Fields.List
+				// ensure that aliases for non-struct/interface types continue to work
+				if typ.Obj != nil {
+					if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.InterfaceType); ok {
+						lst = alias.Methods.List
+					} else if alias, ok := typ.Obj.Decl.(*ast.TypeSpec).Type.(*ast.StructType); ok {
+						lst = alias.Fields.List
+					}
 				}
 			}
 
@@ -283,7 +298,26 @@ func (cm *CommentMap) genDocMap(path string) error {
 					typeName, isObj := fieldType(field, true)
 					docString := fmtRawDoc(field.Doc.Text())
 					cm.comments[typeSpecName][tagName] = Comment{typeName, isObj, docString}
+
+					if fieldIsInlined(field, jsonTag) {
+						existing, ok := inlineFields[typeSpecName]
+						if !ok {
+							existing = []string{}
+						}
+						inlineFields[typeSpecName] = append(existing, tagName)
+					}
 				}
+			}
+		}
+	}
+
+	// copy comments for inline fields from their original parent structures; this is needed
+	// because when walking the generated YAML, the step to switch to the "correct" parent
+	// struct is missing
+	for typeSpecName, inlined := range inlineFields {
+		for _, inlinedType := range inlined {
+			for tagName, comment := range cm.comments[inlinedType] {
+				cm.comments[typeSpecName][tagName] = comment
 			}
 		}
 	}

@@ -159,6 +159,16 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to update references.")
 	}
 
+	changed, err := bumper.HasChanges()
+	if err != nil {
+		logrus.WithError(err).Fatal("error occurred when checking changes")
+	}
+
+	if !changed {
+		logrus.Info("no images updated, exiting ...")
+		return
+	}
+
 	remoteBranch := "autobump"
 
 	if err := bumper.MakeGitCommit(fmt.Sprintf("git@github.com:%s/test-infra.git", o.githubLogin), remoteBranch, o.gitName, o.gitEmail, images, stdout, stderr); err != nil {

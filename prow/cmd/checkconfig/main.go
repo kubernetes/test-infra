@@ -476,7 +476,7 @@ func getJSONTagName(field reflect.StructField) string {
 
 func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic() {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
 		}
@@ -925,7 +925,7 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	configuredRepos := sets.NewString()
-	for orgRepo := range cfg.JobConfig.Presubmits {
+	for orgRepo := range cfg.JobConfig.PresubmitsStatic() {
 		configuredRepos.Insert(orgRepo)
 	}
 	for orgRepo := range cfg.JobConfig.Postsubmits {

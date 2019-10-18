@@ -112,7 +112,7 @@ func PresubmitSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
 		}
 	}
-	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	pjs.Refs = CompletePrimaryRefs(refs, p.JobBase)
 
 	return pjs
 }
@@ -123,7 +123,7 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 	pjs.Type = prowapi.PostsubmitJob
 	pjs.Context = p.Context
 	pjs.Report = !p.SkipReport
-	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	pjs.Refs = CompletePrimaryRefs(refs, p.JobBase)
 	if p.JenkinsSpec != nil {
 		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
 			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
@@ -146,7 +146,7 @@ func BatchSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
 	pjs.Type = prowapi.BatchJob
 	pjs.Context = p.Context
-	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	pjs.Refs = CompletePrimaryRefs(refs, p.JobBase)
 
 	return pjs
 }
@@ -181,7 +181,7 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 	}
 }
 
-func completePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
+func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 	if jb.PathAlias != "" {
 		refs.PathAlias = jb.PathAlias
 	}

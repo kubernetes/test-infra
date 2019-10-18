@@ -6,12 +6,13 @@ postsubmits:
     path_alias: sigs.k8s.io/kind
     labels:
       preset-dind-enabled: "true"
+      preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
-        - ./hack/ci/build-all.sh
+        - ./hack/ci/push-latest-cli.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -28,7 +29,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - runner.sh
         - make

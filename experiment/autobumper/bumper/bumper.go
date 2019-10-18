@@ -76,7 +76,7 @@ func UpdatePR(gc github.Client, org, repo string, images map[string]string, extr
 // with "title" and "body" of PR matching "matchTitle" from "source" to "branch"
 func UpdatePullRequest(gc github.Client, org, repo, title, body, matchTitle, source, branch string) error {
 	logrus.Info("Creating or updating PR...")
-	n, err := updater.EnsurePR(org, repo, title, body, source, branch, matchTitle, "-label:lgtm -label:approved", gc)
+	n, err := updater.EnsurePR(org, repo, title, body, source, branch, matchTitle, gc)
 	if err != nil {
 		return fmt.Errorf("failed to ensure PR exists: %v", err)
 	}
@@ -116,6 +116,19 @@ func getNewProwVersion(images map[string]string) string {
 		}
 	}
 	return ""
+}
+
+// HasChanges checks if the current git repo contains any changes
+func HasChanges() (bool, error) {
+	cmd := "git"
+	args := []string{"status", "--porcelain"}
+	logrus.WithField("cmd", cmd).WithField("args", args).Info("running command ...")
+	combinedOutput, err := exec.Command(cmd, args...).CombinedOutput()
+	if err != nil {
+		logrus.WithField("cmd", cmd).Debugf("output is '%s'", string(combinedOutput))
+		return false, err
+	}
+	return len(strings.TrimSuffix(string(combinedOutput), "\n")) > 0, nil
 }
 
 func makeCommitSummary(images map[string]string) string {
@@ -163,7 +176,7 @@ func tagFromName(name string) string {
 }
 
 func componentFromName(name string) string {
-	s := strings.Split(strings.Split(name, ":")[0], "/")
+	s := strings.SplitN(strings.Split(name, ":")[0], "/", 3)
 	return s[len(s)-1]
 }
 

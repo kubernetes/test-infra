@@ -58,7 +58,7 @@ func K8sSigs(projectName string) string {
 	found := false
 	var githubDir string
 	for _, gopath := range gopathList {
-		githubDir = filepath.Join(gopath, "src", "github.com", "kubernetes-sigs")
+		githubDir = filepath.Join(gopath, "src", "sigs.k8s.io")
 		if _, err := os.Stat(githubDir); !os.IsNotExist(err) {
 			found = true
 			break
@@ -66,7 +66,7 @@ func K8sSigs(projectName string) string {
 	}
 	if !found {
 		// Default to the first item in GOPATH list.
-		githubDir = filepath.Join(gopathList[0], "src", "github.com", "kubernetes-sigs")
+		githubDir = filepath.Join(gopathList[0], "src", "sigs.k8s.io")
 		log.Printf(
 			"Warning: Couldn't find directory src/github.com/kubernetes-sigs under any of GOPATH %s, defaulting to %s",
 			build.Default.GOPATH, githubDir)

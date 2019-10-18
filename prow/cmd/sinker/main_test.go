@@ -231,10 +231,6 @@ func TestClean(t *testing.T) {
 	)
 
 
-	if err := prowv1.AddToScheme(scheme.Scheme); err != nil {
-		t.Fatalf("failed to add prowv1 to scheme: %v", err)
-	}
-
 	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 
 	// Run

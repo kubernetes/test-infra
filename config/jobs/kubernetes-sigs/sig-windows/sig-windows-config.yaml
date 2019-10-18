@@ -49,7 +49,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -84,6 +84,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-windows
       testgrid-tab-name: aks-engine-azure-windows-presubmit
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
       testgrid-num-columns-recent: '30'
 periodics:
@@ -96,7 +97,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -128,6 +129,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows
     testgrid-tab-name: aks-engine-azure-windows-master
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 12h
   name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
@@ -138,7 +140,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -171,6 +173,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-1.14-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-14-windows
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
 - interval: 12h
   name: ci-kubernetes-e2e-aks-engine-azure-1-15-windows
@@ -181,7 +184,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -214,6 +217,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-1.15-all, sig-windows
     testgrid-tab-name: aks-engine-azure-1-15-windows
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
 - interval: 6h
   name: ci-kubernetes-e2e-aks-engine-azure-1-16-windows
@@ -224,7 +228,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -257,6 +261,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows, sig-release-1.16-informing, sig-release-master-informing
     testgrid-tab-name: aks-engine-azure-1-16-windows
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 3h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
@@ -267,7 +272,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -300,4 +305,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows
     testgrid-tab-name: aks-engine-azure-windows-master-staging
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"

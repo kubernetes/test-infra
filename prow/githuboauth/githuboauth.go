@@ -197,14 +197,13 @@ func (ga *Agent) HandleLogout(client OAuthClient) http.HandlerFunc {
 // the final destination in the config, which should be the front-end.
 func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter, secure bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		finalRedirectURL, err := r.URL.Parse(r.URL.Query().Get("dest"))
-		//This check prevents someone from specifying a different host to redirect to.
-		if finalRedirectURL.Host != "" {
-			ga.serverError(w, "Invalid hostname", fmt.Errorf("%s, expected %s", finalRedirectURL.Host, r.URL.Host))
+		// This is string manipulation for clarity, and to avoid surprising parse mismatches.
+		scheme := "http"
+		if secure {
+			scheme = "https"
 		}
-		if err != nil {
-			ga.serverError(w, "Failed to parse final destination from OAuth redirect payload", err)
-		}
+		finalRedirectURL := scheme + "://" + r.Host + "/" + r.URL.Query().Get("dest")
+
 		state := r.FormValue("state")
 		stateTokenRaw, err := hex.DecodeString(state)
 		if err != nil {
@@ -280,7 +279,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter, s
 			Expires: time.Now().Add(time.Hour * 24 * 30),
 			Secure:  secure,
 		})
-		http.Redirect(w, r, finalRedirectURL.String(), http.StatusFound)
+		http.Redirect(w, r, finalRedirectURL, http.StatusFound)
 	}
 }
 

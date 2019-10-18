@@ -35,6 +35,8 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for Kubeflow.
+      testgrid-alert-email: kubeflow-engineering@google.com
+      testgrid-num-failures-to-alert: "3"
   kubeflow/kfctl:
   - name: kubeflow-kfctl-postsubmit
     labels:
@@ -248,7 +250,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -261,3 +263,15 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/pipeline.
+  kubeflow/xgboost-operator:
+  - name: kubeflow-xgboost-operator-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/xgboost-operator.

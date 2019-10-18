@@ -29,7 +29,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	config_pb "github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/config"
+	config_pb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prow_config "k8s.io/test-infra/prow/config"
 )
 
@@ -48,6 +49,7 @@ var (
 		"redhat",
 		"vmware",
 		"gardener",
+		"jetstack",
 	}
 	orgs = []string{
 		"conformance",
@@ -80,7 +82,7 @@ func TestMain(m *testing.M) {
 	}
 
 	var err error
-	cfg, err = config_pb.Read(*protoPath, context.Background(), nil)
+	cfg, err = config.Read(*protoPath, context.Background(), nil)
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
@@ -338,10 +340,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"containerd/cri",
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
 	"kubeflow/pipelines",
-	"kubernetes-csi/csi-driver-host-path",
-	"kubernetes-csi/external-attacher",
-	"kubernetes-csi/external-provisioner",
-	"kubernetes-csi/node-driver-registrar",
 	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",

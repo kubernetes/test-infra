@@ -45,7 +45,7 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 """
 
 
@@ -107,7 +107,7 @@ def apply_job_overrides(envs_or_args, job_envs_or_args):
         envs_or_args.append(job_env_or_arg)
 
 
-class E2ENodeTest(object):
+class E2ENodeTest:
 
     def __init__(self, job_name, job, config):
         self.job_name = job_name
@@ -214,10 +214,10 @@ class E2ENodeTest(object):
         return job_config, prow_config, None
 
 
-class E2ETest(object):
+class E2ETest:
 
     def __init__(self, output_dir, job_name, job, config):
-        self.env_filename = os.path.join(output_dir, '%s.env' % job_name),
+        self.env_filename = os.path.join(output_dir, '%s.env' % job_name)
         self.job_name = job_name
         self.job = job
         self.common = config['common']
@@ -271,6 +271,8 @@ class E2ETest(object):
         dashboards = []
         if self.job.get('releaseBlocking'):
             dashboards.append('sig-release-%s-blocking' % version)
+        elif self.job.get('releaseInforming'):
+            dashboards.append('sig-release-%s-informing' % version)
         else:
             dashboards.append('sig-release-%s-all' % version)
         return dashboards
@@ -309,6 +311,9 @@ class E2ETest(object):
                                       fields[5])
             dashboards.append(dashboard)
         annotations['testgrid-dashboards'] = ', '.join(dashboards)
+        if 'testgridNumFailuresToAlert' in self.job:
+            annotations['testgrid-num-failures-to-alert'] = ('%s' %
+                                                             self.job['testgridNumFailuresToAlert'])
 
         return job_config, prow_config, tg_config
 

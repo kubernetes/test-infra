@@ -532,7 +532,11 @@ func (g *GCSConfiguration) Validate() error {
 
 // ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.
 type ProwJobStatus struct {
-	StartTime      metav1.Time  `json:"startTime,omitempty"`
+	// StartTime is equal to the creation time of the ProwJob
+	StartTime metav1.Time `json:"startTime,omitempty"`
+	// PendingTime is the timestamp for when the job moved from triggered to pending
+	PendingTime *metav1.Time `json:"pendingTime,omitempty"`
+	// CompletionTime is the timestamp for when the job goes to a final state
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
 	State          ProwJobState `json:"state,omitempty"`
 	Description    string       `json:"description,omitempty"`

@@ -8,8 +8,4 @@ reviewers:
 
 # All oncallers
 approvers:
-- chases2
-- cjwagner
-- fejta
-- Katharine
-- michelle192837
+- test-infra-oncall # oncall

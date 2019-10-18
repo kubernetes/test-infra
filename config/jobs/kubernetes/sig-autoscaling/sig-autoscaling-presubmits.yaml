@@ -1,0 +1,48 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-gci-gce-autoscaling
+    annotations:
+      testgrid-dashboards: sig-autoscaling-cluster-autoscaler
+      testgrid-tab-name: gci-gce-autoscaling-pull
+      fork-per-release: "true"
+    always_run: false
+    optional: true
+    run_if_changed: '^(cluster/gce/manifests/cluster-autoscaler.manifest$|cluster/addons/rbac/cluster-autoscaler)'
+    labels:
+      preset-pull-kubernetes-e2e: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=350
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        # Override GCE default for cluster size autoscaling purposes.
+        - --env=ENABLE_CUSTOM_METRICS=true
+        - --env=KUBE_ENABLE_CLUSTER_AUTOSCALER=true
+        - --env=KUBE_AUTOSCALER_MIN_NODES=3
+        - --env=KUBE_AUTOSCALER_MAX_NODES=6
+        - --env=KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
+        - --env=KUBE_ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,Priority
+        - --env=ENABLE_POD_PRIORITY=true
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=3
+        - --gcp-project=k8s-jkns-gci-autoscaling
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-autoscaling
+        - --runtime-config=scheduling.k8s.io/v1alpha1=true
+        - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --timeout=300m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master

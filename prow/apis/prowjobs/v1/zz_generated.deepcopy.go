@@ -273,6 +273,10 @@ func (in *ProwJobSpec) DeepCopy() *ProwJobSpec {
 func (in *ProwJobStatus) DeepCopyInto(out *ProwJobStatus) {
 	*out = *in
 	in.StartTime.DeepCopyInto(&out.StartTime)
+	if in.PendingTime != nil {
+		in, out := &in.PendingTime, &out.PendingTime
+		*out = (*in).DeepCopy()
+	}
 	if in.CompletionTime != nil {
 		in, out := &in.CompletionTime, &out.CompletionTime
 		*out = (*in).DeepCopy()

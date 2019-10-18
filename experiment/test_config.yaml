@@ -316,9 +316,6 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
@@ -429,9 +426,6 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu2-k8sbeta-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures:
-    interval: 2h
-    sigOwners: [sig-cloud-provider-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default:
@@ -557,15 +551,18 @@ jobs:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
     interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
@@ -608,15 +605,18 @@ jobs:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-slow:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable1-ingress:
     interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
@@ -655,15 +655,18 @@ jobs:
   ci-kubernetes-e2e-gce-cos-k8sstable2-default:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable2-ingress:
     interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
@@ -702,14 +705,18 @@ jobs:
   ci-kubernetes-e2e-gce-cos-k8sstable3-default:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
     interval: 24h
     sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable3-ingress:
     interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: [sig-cloud-provider-gcp]
@@ -913,23 +920,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.16
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.16
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.16
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.15
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.15
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.15
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.14
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.14
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.14
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.13
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.13
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.13
 
 nodeTestSuites:
   default:

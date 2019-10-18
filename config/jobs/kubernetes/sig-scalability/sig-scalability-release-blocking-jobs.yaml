@@ -21,7 +21,6 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-32
-      - --env=KUBE_GCE_PRIVATE_CLUSTER=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -35,7 +34,7 @@ periodics:
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=210m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       resources:
         requests:
           cpu: 6
@@ -97,7 +96,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1050m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       resources:
         requests:
           cpu: 6
@@ -124,7 +123,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - --timeout=140
       - --repo=k8s.io/kubernetes=master
@@ -155,7 +154,6 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
@@ -163,6 +161,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m

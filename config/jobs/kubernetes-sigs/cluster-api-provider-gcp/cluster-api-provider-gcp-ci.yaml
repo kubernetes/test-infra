@@ -33,8 +33,10 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: unit tests
-- name: ci-cluster-api-provider-gcp-make-conformance
+- name: ci-cluster-api-provider-gcp-make-conformance-master
   interval: 3h
+  branches:
+  - master
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -43,7 +45,12 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        env:
+          - name: "CAPI_BRANCH"
+            value: "master"
+          - name: "CABPK_BRANCH"
+            value: "master"
         args:
           - "--repo=k8s.io/kubernetes=master"
           - "--repo=sigs.k8s.io/cluster-api-provider-gcp=master"
@@ -71,4 +78,92 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: e2e tests
+    testgrid-tab-name: capg-conformance-master
+- name: ci-cluster-api-provider-gcp-make-conformance-stable
+  interval: 3h
+  branches:
+  - release-0.2
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        env:
+          - name: "CAPI_BRANCH"
+            value: "stable"
+          - name: "CABPK_BRANCH"
+            value: "stable"
+        args:
+          - "--repo=k8s.io/kubernetes=master"
+          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=release-0.2"
+          - "--repo=sigs.k8s.io/image-builder=master"
+          - "--root=/go/src"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
+          - "--scenario=execute"
+          - "--"
+          - "bash"
+          - "--"
+          - "-c"
+          - "cd ./../../sigs.k8s.io/cluster-api-provider-gcp && scripts/ci-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-conformance-stable
+- name: ci-cluster-api-provider-gcp-make-conformance-stable-k8s-ci-artifacts
+  interval: 3h
+  branches:
+  - release-0.2
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        env:
+          - name: "CAPI_BRANCH"
+            value: "stable"
+          - name: "CABPK_BRANCH"
+            value: "stable"
+        args:
+          - "--repo=k8s.io/kubernetes=master"
+          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=release-0.2"
+          - "--repo=sigs.k8s.io/image-builder=master"
+          - "--root=/go/src"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
+          - "--scenario=execute"
+          - "--"
+          - "bash"
+          - "--"
+          - "-c"
+          - "cd ./../../sigs.k8s.io/cluster-api-provider-gcp && scripts/ci-e2e.sh --use-ci-artifacts"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
+    testgrid-tab-name: capg-conformance-stable-k8s-master

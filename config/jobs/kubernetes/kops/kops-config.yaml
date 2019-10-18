@@ -11,7 +11,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -39,7 +39,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -68,7 +68,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -119,6 +119,27 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-bazel
+
+  - name: pull-kops-verify-generated
+    branches:
+    - master
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - ./hack/verify-generate.sh
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-generated
+
   - name: pull-kops-verify-gomod
     branches:
     - master
@@ -169,7 +190,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -234,7 +255,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -264,7 +285,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"

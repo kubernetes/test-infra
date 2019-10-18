@@ -211,8 +211,9 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			}
 		}
 	case client.New:
-		presubmits := c.config().Presubmits[cloneURI.String()]
-		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		// TODO: Do we want to add support for dynamic presubmits?
+		presubmits := c.config().PresubmitsStatic()[cloneURI.String()]
+		presubmits = append(presubmits, c.config().PresubmitsStatic()[cloneURI.Host+"/"+cloneURI.Path]...)
 
 		var filters []pjutil.Filter
 		var latestReport *reporter.JobReport
@@ -237,9 +238,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 				latestReportTime = message.Date.Time
 			}
 		}
-		if latestReport == nil {
-			logger.Warnf("Found nil latest report")
-		} else {
+		if latestReport != nil {
 			logger.Infof("Found latest report: %s", latestReport)
 		}
 		lastUpdate := c.tracker.Current()

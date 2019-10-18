@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-external-etcd-master
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with external etcd and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -51,7 +51,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-external-etcd-1-16
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with external etcd and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -69,7 +69,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.16
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -91,7 +91,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-external-etcd-1-15
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with external etcd and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -109,7 +109,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.15
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -131,7 +131,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-external-etcd-1-14
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with external etcd and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -149,7 +149,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.14
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

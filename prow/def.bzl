@@ -64,14 +64,23 @@ def prow_push(
 MULTI_KIND = None
 CORE_CLUSTER = "{STABLE_PROW_CLUSTER}"  # For components like hook
 BUILD_CLUSTER = "{STABLE_BUILD_CLUSTER}"  # For untrusted test code
+EDGE_PROW_REPO = "{EDGE_PROW_REPO}"  # Container registry for edge images.
 
-# image returns the image prefix for the command.
+# prefix returns the image prefix for the command.
 #
 # Concretely, image("foo") returns "{STABLE_PROW_REPO}/foo"
 # which usually becomes gcr.io/k8s-prow/foo
 # (See hack/print-workspace-status.sh)
 def prefix(cmd):
     return "{STABLE_PROW_REPO}/%s" % cmd
+
+# edge_prefix returns the edge image prefix for the command.
+#
+# Concretely, image("foo") returns "{EDGE_PROW_REPO}/foo"
+# which usually becomes gcr.io/k8s-prow-edge/foo
+# (See hack/print-workspace-status.sh)
+def edge_prefix(cmd):
+    return "%s/%s" % (EDGE_PROW_REPO, cmd)
 
 # target returns the image target for the command.
 #
@@ -81,7 +90,7 @@ def target(cmd):
 
 # tags returns a {image: target} map for each cmd or {name: target} kwarg.
 #
-# In particular it will prefix the cmd image name with {STABLE_PROW_REPO}
+# In particular it will prefix the cmd image name with {STABLE_PROW_REPO} and {EDGE_PROW_REPO}
 # Each image gets three tags: {DOCKER_TAG}, latest, latest-{BUILD_USER}
 #
 # Concretely, tags("hook", "plank", **{"ghproxy": "//ghproxy:image"}) will output the following:
@@ -95,11 +104,23 @@ def target(cmd):
 #     "gcr.io/k8s-prow/ghproxy:20180203-deadbeef": "//ghproxy:image",
 #     "gcr.io/k8s-prow/ghproxy:latest": "//ghproxy:image",
 #     "gcr.io/k8s-prow/ghproxy:latest-fejta": "//ghproxy:image",
+#     "gcr.io/k8s-prow-edge/hook:20180203-deadbeef": "//prow/cmd/hook:image",
+#     "gcr.io/k8s-prow-edge/hook:latest": "//prow/cmd/hook:image",
+#     "gcr.io/k8s-prow-edge/hook:latest-fejta": "//prow/cmd/hook:image",
+#     "gcr.io/k8s-prow-edge/plank:20180203-deadbeef": "//prow/cmd/plank:image",
+#     "gcr.io/k8s-prow-edge/plank:latest": "//prow/cmd/plank:image",
+#     "gcr.io/k8s-prow-edge/plank:latest-fejta": "//prow/cmd/plank:image",
+#     "gcr.io/k8s-prow-edge/ghproxy:20180203-deadbeef": "//ghproxy:image",
+#     "gcr.io/k8s-prow-edge/ghproxy:latest": "//ghproxy:image",
+#     "gcr.io/k8s-prow-edge/ghproxy:latest-fejta": "//ghproxy:image",
 #   }
 def tags(cmds, targets):
     # Create :YYYYmmdd-commitish :latest :latest-USER tags
     cmd_targets = {prefix(cmd): target(cmd) for cmd in cmds}
     cmd_targets.update({prefix(p): t for (p, t) in targets.items()})
+    if EDGE_PROW_REPO:
+        cmd_targets.update({edge_prefix(cmd): target(cmd) for cmd in cmds})
+        cmd_targets.update({edge_prefix(p): t for (p, t) in targets.items()})
     return _image_tags(cmd_targets)
 
 def object(name, cluster = CORE_CLUSTER, **kwargs):

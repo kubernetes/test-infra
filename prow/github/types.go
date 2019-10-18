@@ -159,7 +159,15 @@ type User struct {
 	ID          int             `json:"id"`
 	HTMLURL     string          `json:"html_url"`
 	Permissions RepoPermissions `json:"permissions"`
+	Type        string          `json:"type"`
 }
+
+const (
+	// UserTypeUser identifies an actual user account in the User.Type field
+	UserTypeUser = "User"
+	// UserTypeBot identifies a github app bot user in the User.Type field
+	UserTypeBot = "Bot"
+)
 
 // NormLogin normalizes GitHub login strings
 func NormLogin(login string) string {

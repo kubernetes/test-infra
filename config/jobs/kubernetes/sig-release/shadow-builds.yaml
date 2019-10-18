@@ -1,0 +1,66 @@
+periodics:
+- interval: 1h
+  name: ci-kubernetes-shadow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
+      args:
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=180
+      - --scenario=kubernetes_build
+      - --
+      - --release=k8s-staging-release-test
+      - --allow-dup
+      - --extra-publish-file=k8s-master
+      - --hyperkube
+      - --registry=gcr.io/k8s-staging-release-test
+        # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-shadow-master-blocking
+    testgrid-tab-name: build-master
+    testgrid-alert-email: release-managers@kubernetes.io
+
+- interval: 5m
+  name: ci-kubernetes-shadow-build-fast
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
+      args:
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=30
+      - --scenario=kubernetes_build
+      - --
+      - --release=k8s-staging-release-test
+      - --allow-dup
+      - --fast
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+  annotations:
+    testgrid-dashboards: sig-release-shadow-master-blocking
+    testgrid-tab-name: build-master-fast
+    testgrid-alert-email: release-managers@kubernetes.io
+    description: 'Ends up running: make quick-release'

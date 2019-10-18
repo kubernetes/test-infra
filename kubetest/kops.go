@@ -394,9 +394,11 @@ func (k kops) Up() error {
 	}
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
-		// Enable nodeport access from the same IP (we expect it to be the test IPs)
-		k.overrides = append(k.overrides, "cluster.spec.nodePortAccess="+k.adminAccess)
 	}
+
+	// Since https://github.com/kubernetes/kubernetes/pull/80655 conformance now require node ports to be open to all nodes
+	k.overrides = append(k.overrides, "cluster.spec.nodePortAccess=0.0.0.0/0")
+
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
 	}
@@ -572,6 +574,8 @@ func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 
 	t.Kubeconfig = k.kubecfg
 	t.Provider = k.provider
+
+	t.ClusterID = k.cluster
 
 	if k.provider == "gce" {
 		t.GCEProject = k.gcpProject

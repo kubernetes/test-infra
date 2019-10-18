@@ -7,6 +7,24 @@ presubmits:
     run_if_changed: '^kinder\/.*$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - "./kinder/hack/verify-all.sh"
+  - name: pull-kubeadm-operator-verify
+    path_alias: "k8s.io/kubeadm"
+    decorate: true
+    run_if_changed: '^operator\/.*$'
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        command:
+        - runner.sh
+        - "./operator/hack/verify-all.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m

@@ -468,6 +468,10 @@ func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowj
 	haveMsg := pj.Status.Description
 	if newPipelineRun || haveState != state || haveMsg != msg {
 		npj := pj.DeepCopy()
+		if haveState != state && state == prowjobv1.PendingState {
+			now := c.now()
+			npj.Status.PendingTime = &now
+		}
 		if npj.Status.StartTime.IsZero() {
 			npj.Status.StartTime = c.now()
 		}

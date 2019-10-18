@@ -67,7 +67,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -97,7 +97,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
         - bash
         args:
@@ -109,7 +109,7 @@ postsubmits:
               --config=ci \
               "--build=//... -//vendor/..." \
               --release=//build/release-tars \
-              --gcs=gs://kubernetes-release-dev/ci \
+              --gcs=gs://kubernetes-release-dev/ci-rbe \
               --version-suffix=-bazel-rbe \
               --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
 
@@ -204,7 +204,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       command:
       - bash
       args:
@@ -216,9 +216,9 @@ periodics:
             --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci \
+            --gcs=gs://kubernetes-release-dev/ci-periodic \
             --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-periodic.txt
 
 - name: periodic-kubernetes-bazel-build-canary
   annotations:
@@ -253,9 +253,9 @@ periodics:
             --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci \
+            --gcs=gs://kubernetes-release-dev/ci-canary \
             --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-canary.txt
 
 # periodic bazel test jobs
 - name: periodic-kubernetes-bazel-test-master

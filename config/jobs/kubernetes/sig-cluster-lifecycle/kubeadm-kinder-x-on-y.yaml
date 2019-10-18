@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
     testgrid-tab-name: kubeadm-kinder-master-on-1-16
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.16
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -50,7 +50,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.16-informing
     testgrid-tab-name: kubeadm-kinder-1-16-on-1-15
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -68,7 +68,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.15
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -90,7 +90,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.15-informing
     testgrid-tab-name: kubeadm-kinder-1-15-on-1-14
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -108,7 +108,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.14
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -130,7 +130,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.14-informing
     testgrid-tab-name: kubeadm-kinder-1-14-on-1-13
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster with version skew and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "2"
@@ -148,7 +148,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-1.13
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.13
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

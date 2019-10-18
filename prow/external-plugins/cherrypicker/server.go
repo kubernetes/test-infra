@@ -48,6 +48,7 @@ type githubClient interface {
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
+	GetPullRequests(org, repo string) ([]github.PullRequest, error)
 	GetRepo(owner, name string) (github.Repo, error)
 	IsMember(org, user string) (bool, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
@@ -390,8 +391,26 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		return err
 	}
 
-	// Checkout a new branch for the cherry-pick.
+	// New branch for the cherry-pick.
 	newBranch := fmt.Sprintf(cherryPickBranchFmt, num, targetBranch)
+
+	// Check if that branch already exists, which means there is already a PR for that cherry-pick.
+	if r.BranchExists(newBranch) {
+		// Find the PR and link to it.
+		prs, err := s.ghc.GetPullRequests(org, repo)
+		if err != nil {
+			return err
+		}
+		for _, pr := range prs {
+			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botName, newBranch) {
+				resp := fmt.Sprintf("Looks like #%d has already been cherry picked in %s", num, pr.HTMLURL)
+				s.log.WithFields(l.Data).Info(resp)
+				return s.createComment(org, repo, num, comment, resp)
+			}
+		}
+	}
+
+	// Create the branch for the cherry-pick.
 	if err := r.CheckoutNewBranch(newBranch); err != nil {
 		return err
 	}

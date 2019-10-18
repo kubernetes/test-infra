@@ -254,9 +254,7 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies {
 				logrus.Warnf("%s/%s=%s has required jobs but has protect: false", org, repo, branch)
-				return &Policy{
-					Protect: policy.Protect,
-				}, nil
+				return nil, nil
 			} else {
 				return nil, fmt.Errorf("required prow jobs require branch protection")
 			}

@@ -35,7 +35,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=master
@@ -63,13 +63,14 @@ periodics:
       - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.0/aks-engine-v0.39.0-linux-amd64.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.42.0/aks-engine-v0.42.0-linux-amd64.tar.gz
       - --timeout=450m
       # can enable [sig-network] tests too once we validate the job is successfully working
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\] --ginkgo.skip=\[Feature:IPv6DualStackAlphaFeature:Phase2\]
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
          privileged: true
   annotations:
     testgrid-dashboards: sig-network-dualstack-azure-e2e
     testgrid-tab-name: dualstack-azure-e2e
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"

@@ -82,7 +82,7 @@ periodics:
   interval: 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20190826-3f7039d
+    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
       args:
       - --scenario=execute
       - --
@@ -119,7 +119,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20190826-3f7039d
+    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
       args:
       - --scenario=execute
       - --

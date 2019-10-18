@@ -4,20 +4,21 @@ plank:
   job_url_prefix_config:
     '*': https://prow.k8s.io/view/gcs/
   pod_pending_timeout: 60m
-  default_decoration_config:
-    timeout: 2h
-    grace_period: 15s
-    utility_images:
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20191001-edcabf6dd"
-      initupload: "gcr.io/k8s-prow/initupload:v20191001-edcabf6dd"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20191001-edcabf6dd"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20191001-edcabf6dd"
-    gcs_configuration:
-      bucket: "kubernetes-jenkins"
-      path_strategy: "legacy"
-      default_org: "kubernetes"
-      default_repo: "kubernetes"
-    gcs_credentials_secret: "service-account"
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20191018-2ae771e3e"
+        initupload: "gcr.io/k8s-prow/initupload:v20191018-2ae771e3e"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20191018-2ae771e3e"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20191018-2ae771e3e"
+      gcs_configuration:
+        bucket: "kubernetes-jenkins"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "service-account"
 
 sinker:
   resync_period: 1m
@@ -30,15 +31,25 @@ deck:
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
     testgrid_root: https://testgrid.k8s.io/
-    viewers:
-      "started.json|finished.json":
-      - "metadata"
-      "build-log.txt":
-      - "buildlog"
-      "artifacts/junit.*\\.xml":
-      - "junit"
-      "artifacts/filtered.cov":
-      - "coverage"
+    lenses:
+    - lens:
+        name: metadata
+      required_files:
+      - started.json|finished.json
+    - lens:
+        name: buildlog
+      required_files:
+        - build-log.txt
+    - lens:
+        name: junit
+      required_files:
+        - artifacts/junit.*\.xml
+    - lens:
+        name: coverage
+      required_files:
+        - artifacts/filtered.cov
+      optional_files:
+        - artifacts/filtered.html
     announcement: "The old job viewer has been deprecated. If you need it, please contact #sig-testing on Slack."
   tide_update_period: 1s
   hidden_repos:
@@ -434,7 +445,6 @@ tide:
     kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
-    kubernetes-sigs/cluster-api-provider-azure: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
@@ -453,11 +463,11 @@ tide:
   merge_label: tide/merge-method-merge
   context_options:
     orgs:
-     kubernetes:
-      repos:
-        dashboard:
-          skip-unknown-contexts: true
-          from-branch-protection: true
+      kubernetes:
+        repos:
+          dashboard:
+            skip-unknown-contexts: true
+            from-branch-protection: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
 
@@ -589,24 +599,17 @@ presets:
   - name: DOCKER_IN_DOCKER_ENABLED
     value: "true"
   volumes:
+  # kubekins-e2e legacy path
   - name: docker-graph
+    emptyDir: {}
+  # krte (normal) path
+  - name: docker-root
     emptyDir: {}
   volumeMounts:
   - name: docker-graph
     mountPath: /docker-graph
-# experimental preset for dind, prefer the one above
-- labels:
-    preset-dind-memory-backed: "true"
-  env:
-  - name: DOCKER_IN_DOCKER_ENABLED
-    value: "true"
-  volumes:
-  - name: docker-graph
-    emptyDir:
-      medium: "Memory"
-  volumeMounts:
-  - name: docker-graph
-    mountPath: /docker-graph
+  - name: docker-root
+    mountPath: /var/lib/docker
 # volume mounts for kind
 - labels:
     preset-kind-volume-mounts: "true"

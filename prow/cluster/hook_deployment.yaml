@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20191001-edcabf6dd
+        image: gcr.io/k8s-prow/hook:v20191018-2ae771e3e
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -70,6 +70,9 @@ spec:
           readOnly: true
         - name: cat-api
           mountPath: /etc/cat-api
+          readOnly: true
+        - name: unsplash-api
+          mountPath: /etc/unsplash-api
           readOnly: true
         livenessProbe:
           httpGet:
@@ -106,3 +109,6 @@ spec:
       - name: cat-api
         configMap:
           name: cat-api-key
+      - name: unsplash-api
+        secret:
+          secretName: unsplash-api-key

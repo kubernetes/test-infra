@@ -24,10 +24,10 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-1.12-1.13-cluster-upgrade
 - cron: "0 5-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
@@ -54,10 +54,10 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-1.12-1.13-master-upgrade
 - cron: "0 1-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
@@ -84,10 +84,10 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-1.13-1.14-cluster-upgrade
 - cron: "0 7-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
@@ -114,10 +114,10 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-1.13-1.14-master-upgrade
 - cron: "0 3-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
@@ -144,10 +144,10 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-1.13-master-cluster-upgrade
 - cron: "0 9-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
@@ -174,10 +174,10 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-1.13-master-master-upgrade
 - cron: "0 10-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
@@ -205,10 +205,10 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
 
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-1.14-1.13-cluster-downgrade
 - cron: "0 11-23/12 * * *"
   name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
@@ -236,7 +236,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191001-33df843-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-upgrade-skew
+    testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-gpu-master-1.13-cluster-downgrade

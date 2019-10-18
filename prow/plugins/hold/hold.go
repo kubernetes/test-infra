@@ -38,8 +38,8 @@ const (
 )
 
 var (
-	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)
-	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
+	labelRe       = regexp.MustCompile(`(?mi)^/hold(\s.*)?$`)
+	labelCancelRe = regexp.MustCompile(`(?mi)^/hold\s+cancel\s*$`)
 )
 
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
@@ -84,10 +84,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 		return nil
 	}
 	needsLabel := false
-	if labelRe.MatchString(e.Body) {
-		needsLabel = true
-	} else if labelCancelRe.MatchString(e.Body) {
+	if labelCancelRe.MatchString(e.Body) {
 		needsLabel = false
+	} else if labelRe.MatchString(e.Body) {
+		needsLabel = true
 	} else {
 		return nil
 	}
