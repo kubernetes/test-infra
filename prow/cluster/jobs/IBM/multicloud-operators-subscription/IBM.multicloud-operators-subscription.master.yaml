@@ -33,6 +33,10 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
     trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
   - name: test_multicloud-operators-subscription
     branches:
