@@ -12,7 +12,7 @@
                - (sum(merges_sum{org="kubernetes",repo="kubernetes",branch="master"} offset 5m ) or vector(0)),
               0) < 0.5
               and
-              max(min_over_time(pooledprs{org="kubernetes",repo="kubernetes",branch="master"}[4h])) > 0.5
+              (avg(pooledprs{branch="master",org="kubernetes",repo="kubernetes"} and ((time() - updatetime) < 240))  or vector(0)) > 0.5
             |||,
             'for': '4h',
             labels: {
