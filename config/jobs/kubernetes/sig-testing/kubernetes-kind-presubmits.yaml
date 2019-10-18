@@ -341,7 +341,7 @@ presubmits:
       nodeSelector:
         dedicated: "ubuntu"
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20191017-d96ae13-master
+      - image: gcr.io/k8s-testimages/krte:latest-master
         command:
         - wrapper.sh
         - bash
