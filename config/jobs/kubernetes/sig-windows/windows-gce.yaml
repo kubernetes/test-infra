@@ -195,7 +195,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-      preset-pull-kubernetes-e2e-windows-gce: "true"
+      preset-e2e-gce-windows: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
@@ -222,7 +222,7 @@ presubmits:
         - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
         - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
         - --test-cmd-args=--node-os-distro=windows
-        - --timeout=120m
+        - --timeout=150m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         # docker-in-docker needs privileged mode
         securityContext:
