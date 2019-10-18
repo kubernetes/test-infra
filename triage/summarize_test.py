@@ -119,8 +119,7 @@ class ClusterTest(unittest.TestCase):
                     'cols': {'started': [now]}
                 },
                 'clustered': [
-                    {'tests': [{'name': test, 'jobs': [
-                        {'name': 'somejob', 'builds': ['123', '125']}]}]}
+                    {'tests': [{'name': test, 'jobs': [{'name': 'somejob', 'builds': ['123', '125']}]}]}
                 ],
             }
             summarize.annotate_owners(

@@ -88,10 +88,7 @@ def buckets_yaml():
 # pypy compatibility hack
 def python_buckets_yaml(python='python3'):
     return json.loads(subprocess.check_output(
-        [python,
-         '-c',
-         'import json, ruamel.yaml as yaml; print(json.dumps(yaml.safe_load(open("buckets.yaml"))))'
-         ],
+        [python, '-c', 'import json, ruamel.yaml as yaml; print(json.dumps(yaml.safe_load(open("buckets.yaml"))))'],
         cwd=os.path.dirname(os.path.abspath(__file__))).decode("utf-8"))
 
 for attempt in [python_buckets_yaml, buckets_yaml, lambda: python_buckets_yaml(python='python')]:
