@@ -437,36 +437,7 @@ type UtilityConfig struct {
 	DecorationConfig *prowapi.DecorationConfig `json:"decoration_config,omitempty"`
 }
 
-// RetestPresubmits returns all presubmits that should be run given a /retest command.
-// This is the set of all presubmits intersected with ((alwaysRun + runContexts) - skipContexts)
-func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runContexts sets.String) []Presubmit {
-	var result []Presubmit
-	if jobs, ok := c.Presubmits[fullRepoName]; ok {
-		for _, job := range jobs {
-			if skipContexts.Has(job.Context) {
-				continue
-			}
-			if job.AlwaysRun || job.RunIfChanged != "" || runContexts.Has(job.Context) {
-				result = append(result, job)
-			}
-		}
-	}
-	return result
-}
-
-// GetPresubmit returns the presubmit job for the provided repo and job name.
-func (c *JobConfig) GetPresubmit(repo, jobName string) *Presubmit {
-	presubmits := c.AllPresubmits([]string{repo})
-	for i := range presubmits {
-		ps := presubmits[i]
-		if ps.Name == jobName {
-			return &ps
-		}
-	}
-	return nil
-}
-
-// SetPresubmits updates c.Presubmits to jobs, after compiling and validating their regexes.
+// SetPresubmits updates c.PresubmitStatic to jobs, after compiling and validating their regexes.
 func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {
@@ -476,7 +447,7 @@ func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 			return err
 		}
 	}
-	c.Presubmits = nj
+	c.PresubmitsStatic = nj
 	return nil
 }
 
@@ -494,12 +465,15 @@ func (c *JobConfig) SetPostsubmits(jobs map[string][]Postsubmit) error {
 	return nil
 }
 
-// AllPresubmits returns all prow presubmit jobs in repos.
+// AllStaticPresubmits returns all static prow presubmit jobs in repos.
 // if repos is empty, return all presubmits.
-func (c *JobConfig) AllPresubmits(repos []string) []Presubmit {
+// Be aware that this does not return Presubmits that are versioned inside
+// the repo via the `inrepoconfig` feature and hence this list may be
+// incomplete.
+func (c *JobConfig) AllStaticPresubmits(repos []string) []Presubmit {
 	var res []Presubmit
 
-	for repo, v := range c.Presubmits {
+	for repo, v := range c.PresubmitsStatic {
 		if len(repos) == 0 {
 			res = append(res, v...)
 		} else {

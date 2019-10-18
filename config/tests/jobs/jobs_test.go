@@ -267,7 +267,7 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 }
 
 func TestContextMatches(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		for _, p := range presubmits {
 			checkContext(t, repo, p)
 		}
@@ -284,7 +284,7 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 }
 
 func TestRetestMatchJobsName(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		checkRetest(t, repo, presubmits)
 	}
 }
@@ -316,7 +316,7 @@ func TestTrustedJobs(t *testing.T) {
 	trustedDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	// Presubmits may not use trusted clusters.
-	for _, pre := range c.AllPresubmits(nil) {
+	for _, pre := range c.AllStaticPresubmits(nil) {
 		if pre.Cluster == trusted {
 			t.Errorf("%s: presubmits cannot use trusted clusters", pre.Name)
 		}
@@ -397,7 +397,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	}
 
 	// All presubmit jobs should not use any restricted secrets.
-	for _, job := range c.AllPresubmits(nil) {
+	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Cluster != prowapi.DefaultClusterAlias {
 			// check against default public cluster only
 			continue
@@ -455,7 +455,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 // Unit test jobs outside kubernetes-security do not use the security cluster
 // and that jobs inside kubernetes-security DO
 func TestConfigSecurityClusterRestricted(t *testing.T) {
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic {
 		if strings.HasPrefix(repo, "kubernetes-security/") {
 			for _, job := range jobs {
 				if job.Agent != "jenkins" && job.Cluster != "security" {
@@ -506,7 +506,7 @@ func checkDockerSocketVolumes(volumes []coreapi.Volume) error {
 
 // Make sure jobs are not using the docker socket as a host path
 func TestJobDoesNotHaveDockerSocket(t *testing.T) {
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil {
 			if err := checkDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
 				t.Errorf("Error in presubmit: %v", err)
@@ -556,7 +556,7 @@ func checkLatestUsesImagePullPolicy(spec *coreapi.PodSpec) error {
 
 // Make sure jobs that use `latest-*` tags specify `imagePullPolicy: Always`
 func TestLatestUsesImagePullPolicy(t *testing.T) {
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
@@ -654,7 +654,7 @@ func TestValidPresets(t *testing.T) {
 		return
 	}
 
-	for _, presubmit := range c.AllPresubmits(nil) {
+	for _, presubmit := range c.AllStaticPresubmits(nil) {
 		if presubmit.Spec != nil && !presubmit.Decorate {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
@@ -881,7 +881,7 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
-	for _, job := range c.AllPresubmits(nil) {
+	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Spec != nil && !job.Decorate {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)

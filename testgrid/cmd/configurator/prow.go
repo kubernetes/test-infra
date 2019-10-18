@@ -191,7 +191,7 @@ func applyProwjobAnnotations(c *Config, prowConfigAgent *prowConfig.Agent) error
 		}
 	}
 
-	for repo, js := range jobs.PresubmitsStatic() {
+	for repo, js := range jobs.PresubmitsStatic {
 		for _, j := range js {
 			if err := applySingleProwjobAnnotations(c, pc, j.JobBase, prowapi.PresubmitJob, repo); err != nil {
 				return err

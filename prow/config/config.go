@@ -71,8 +71,12 @@ type Config struct {
 type JobConfig struct {
 	// Presets apply to all job types.
 	Presets []Preset `json:"presets,omitempty"`
+	// .PresubmitsStatic contains the presubmits in Prows main config.
+	// **Warning:** This does not return dynamic Presubmits configured
+	// inside the code repo, hence giving an incomplete view. Use
+	// `GetPresubmits` instead if possible.
+	PresubmitsStatic map[string][]Presubmit `json:"presubmits,omitempty"`
 	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
-	Presubmits  map[string][]Presubmit  `json:"presubmits,omitempty"`
 	Postsubmits map[string][]Postsubmit `json:"postsubmits,omitempty"`
 
 	// Periodics are not associated with any repo.
@@ -180,14 +184,6 @@ func (c *Config) InRepoConfigEnabled(identifier string) bool {
 // to have that info.
 type RefGetter = func() (string, error)
 
-// PresubmitsStatic returns the presubmits in Prows main config.
-// **Warning:** This does not return dynamic Presubmits configured
-// inside the code repo, hence giving an incomplete view. Use
-// `GetPresubmits` instead if possible.
-func (jc *JobConfig) PresubmitsStatic() map[string][]Presubmit {
-	return jc.Presubmits
-}
-
 type refGetterForGitHubPullRequestClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
@@ -281,7 +277,7 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		return nil, errors.New("no identifier for repo given")
 	}
 	if !c.InRepoConfigEnabled(identifier) {
-		return c.Presubmits[identifier], nil
+		return c.PresubmitsStatic[identifier], nil
 	}
 
 	baseSHA, err := baseSHAGetter()
@@ -300,18 +296,9 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 	// Currently, only a fake implementation exists for tests.
 	_ = baseSHA
 	if c.FakeInRepoConfig != nil {
-		return append(c.Presubmits[identifier], c.FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
+		return append(c.PresubmitsStatic[identifier], c.FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
 	}
 	return nil, errors.New("inrepoconfig is not yet implemented :/")
-}
-
-// SetTestPresubmits allows to set the presubmits for identifier. It must be
-// used by testcode only
-func (jc *JobConfig) SetTestPresubmits(identifier string, presubmits []Presubmit) {
-	if jc.Presubmits == nil {
-		jc.Presubmits = map[string][]Presubmit{}
-	}
-	jc.Presubmits[identifier] = presubmits
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
@@ -793,13 +780,13 @@ func yamlToConfig(path string, nc interface{}) error {
 	case *Config:
 		jc = &v.JobConfig
 	}
-	for rep := range jc.Presubmits {
+	for rep := range jc.PresubmitsStatic {
 		var fix func(*Presubmit)
 		fix = func(job *Presubmit) {
 			job.SourcePath = path
 		}
-		for i := range jc.Presubmits[rep] {
-			fix(&jc.Presubmits[rep][i])
+		for i := range jc.PresubmitsStatic[rep] {
+			fix(&jc.PresubmitsStatic[rep][i])
 		}
 	}
 	for rep := range jc.Postsubmits {
@@ -844,16 +831,16 @@ func ReadFileMaybeGZIP(path string) ([]byte, error) {
 
 func (c *Config) mergeJobConfig(jc JobConfig) error {
 	m, err := mergeJobConfigs(JobConfig{
-		Presets:     c.Presets,
-		Presubmits:  c.Presubmits,
-		Periodics:   c.Periodics,
-		Postsubmits: c.Postsubmits,
+		Presets:          c.Presets,
+		PresubmitsStatic: c.PresubmitsStatic,
+		Periodics:        c.Periodics,
+		Postsubmits:      c.Postsubmits,
 	}, jc)
 	if err != nil {
 		return err
 	}
 	c.Presets = m.Presets
-	c.Presubmits = m.Presubmits
+	c.PresubmitsStatic = m.PresubmitsStatic
 	c.Periodics = m.Periodics
 	c.Postsubmits = m.Postsubmits
 	return nil
@@ -887,12 +874,12 @@ func mergeJobConfigs(a, b JobConfig) (JobConfig, error) {
 	c.Periodics = append(a.Periodics, b.Periodics...)
 
 	// *** Presubmits ***
-	c.Presubmits = make(map[string][]Presubmit)
-	for repo, jobs := range a.Presubmits {
-		c.Presubmits[repo] = jobs
+	c.PresubmitsStatic = make(map[string][]Presubmit)
+	for repo, jobs := range a.PresubmitsStatic {
+		c.PresubmitsStatic[repo] = jobs
 	}
-	for repo, jobs := range b.Presubmits {
-		c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
+	for repo, jobs := range b.PresubmitsStatic {
+		c.PresubmitsStatic[repo] = append(c.PresubmitsStatic[repo], jobs...)
 	}
 
 	// *** Postsubmits ***
@@ -1006,7 +993,7 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic {
 		if err := defaultPresubmits(jobs, c, repo); err != nil {
 			return err
 		}
@@ -1141,7 +1128,7 @@ func validatePeriodics(periodics []Periodic, podNamespace string) error {
 func (c *Config) validateJobConfig() error {
 
 	// Validate presubmits.
-	for _, jobs := range c.Presubmits {
+	for _, jobs := range c.PresubmitsStatic {
 		if err := validatePresubmits(jobs, c.PodNamespace); err != nil {
 			return err
 		}
@@ -1437,7 +1424,7 @@ func parseProwConfig(c *Config) error {
 }
 
 func (c *JobConfig) decorationRequested() bool {
-	for _, vs := range c.Presubmits {
+	for _, vs := range c.PresubmitsStatic {
 		for i := range vs {
 			if vs[i].Decorate {
 				return true

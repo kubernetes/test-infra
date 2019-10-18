@@ -377,7 +377,7 @@ func TestGetGCSDirsForPR(t *testing.T) {
 					},
 				},
 				JobConfig: config.JobConfig{
-					Presubmits: map[string][]config.Presubmit{
+					PresubmitsStatic: map[string][]config.Presubmit{
 						"kubernetes/prow": {
 							{
 								JobBase: config.JobBase{

@@ -476,7 +476,7 @@ func getJSONTagName(field reflect.StructField) string {
 
 func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
-	for repo, jobs := range c.PresubmitsStatic() {
+	for repo, jobs := range c.PresubmitsStatic {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
 		}
@@ -795,7 +795,7 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
-	for _, presubmit := range cfg.AllPresubmits([]string{}) {
+	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
 		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
@@ -925,7 +925,7 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	configuredRepos := sets.NewString()
-	for orgRepo := range cfg.JobConfig.PresubmitsStatic() {
+	for orgRepo := range cfg.JobConfig.PresubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
 	for orgRepo := range cfg.JobConfig.Postsubmits {

@@ -234,7 +234,7 @@ func (f fallbackHandler) getURL(jobName string) string {
 	var spec *downwardapi.JobSpec
 	cfg := f.configAgent.Config()
 
-	for _, pre := range cfg.AllPresubmits(nil) {
+	for _, pre := range cfg.AllStaticPresubmits(nil) {
 		if jobName == pre.Name {
 			spec = pjutil.PresubmitToJobSpec(pre)
 			break

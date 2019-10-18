@@ -984,7 +984,7 @@ func TestHandleConfig(t *testing.T) {
 	trueVal := true
 	c := config.Config{
 		JobConfig: config.JobConfig{
-			Presubmits: map[string][]config.Presubmit{
+			PresubmitsStatic: map[string][]config.Presubmit{
 				"org/repo": {
 					{
 						Reporter: config.Reporter{

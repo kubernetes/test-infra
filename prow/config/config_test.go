@@ -426,7 +426,7 @@ periodics:
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
-			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+			t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
 		}
 
 		if tc.expected != nil {
@@ -1781,7 +1781,7 @@ postsubmits:
 			}
 
 			if len(tc.expectEnv) > 0 {
-				for _, j := range cfg.AllPresubmits(nil) {
+				for _, j := range cfg.AllStaticPresubmits(nil) {
 					if envs, ok := tc.expectEnv[j.Name]; ok {
 						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
 							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)

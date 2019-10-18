@@ -680,7 +680,7 @@ func TestProcessChange(t *testing.T) {
 		fca := &fca{
 			c: &config.Config{
 				JobConfig: config.JobConfig{
-					Presubmits: map[string][]config.Presubmit{
+					PresubmitsStatic: map[string][]config.Presubmit{
 						"gerrit/test-infra": testInfraPresubmits,
 						"https://gerrit/other-repo": {
 							{

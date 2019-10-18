@@ -619,7 +619,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -653,7 +653,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -689,7 +689,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -718,7 +718,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -751,7 +751,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -790,7 +790,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -811,7 +811,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := tc.config.GetBranchProtection("org", "repo", "branch", tc.config.Presubmits["org/repo"])
+			actual, err := tc.config.GetBranchProtection("org", "repo", "branch", tc.config.PresubmitsStatic["org/repo"])
 			switch {
 			case err != nil:
 				if !tc.err {

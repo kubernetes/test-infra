@@ -212,8 +212,8 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		}
 	case client.New:
 		// TODO: Do we want to add support for dynamic presubmits?
-		presubmits := c.config().PresubmitsStatic()[cloneURI.String()]
-		presubmits = append(presubmits, c.config().PresubmitsStatic()[cloneURI.Host+"/"+cloneURI.Path]...)
+		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
+		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
 		var filters []pjutil.Filter
 		var latestReport *reporter.JobReport
