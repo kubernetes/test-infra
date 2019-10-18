@@ -873,7 +873,31 @@ func newRepoCreateRequest(name string, definition org.Repo) github.RepoCreateReq
 	return repoCreate
 }
 
+func validateRepos(repos map[string]org.Repo) error {
+	seen := map[string]string{}
+	var dups []string
+
+	for name := range repos {
+		normName := strings.ToLower(name)
+		if seenName, have := seen[normName]; have {
+			dups = append(dups, fmt.Sprintf("%s/%s", seenName, name))
+			continue
+		}
+		seen[normName] = name
+	}
+
+	if len(dups) > 0 {
+		return fmt.Errorf("found duplicate repo names (GitHub repo names are case-insensitive): %s", strings.Join(dups, ", "))
+	}
+
+	return nil
+}
+
 func configureRepos(client repoClient, orgName string, orgConfig org.Config) error {
+	if err := validateRepos(orgConfig.Repos); err != nil {
+		return err
+	}
+
 	repoList, err := client.GetRepos(orgName, false)
 	if err != nil {
 		return fmt.Errorf("failed to get repos: %v", err)
@@ -881,12 +905,12 @@ func configureRepos(client repoClient, orgName string, orgConfig org.Config) err
 	logrus.Debugf("Found %d repositories", len(repoList))
 	byName := make(map[string]github.Repo, len(repoList))
 	for _, repo := range repoList {
-		byName[repo.Name] = repo
+		byName[strings.ToLower(repo.Name)] = repo
 	}
 
 	var createErrors []error
 	for wantName, wantRepo := range orgConfig.Repos {
-		if _, have := byName[wantName]; !have {
+		if _, have := byName[strings.ToLower(wantName)]; !have {
 			logrus.WithField("repo", wantName).Info("repo does not exist, creating")
 			if _, err := client.CreateRepo(orgName, false, newRepoCreateRequest(wantName, wantRepo)); err != nil {
 				createErrors = append(createErrors, err)

@@ -364,7 +364,7 @@ func (r RepoCreateRequest) ToRepo() *Repo {
 		}
 	}
 
-	repo := Repo{}
+	var repo Repo
 	setString(&repo.Name, r.Name)
 	setString(&repo.Description, r.Description)
 	setString(&repo.Homepage, r.Homepage)

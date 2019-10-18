@@ -2637,6 +2637,19 @@ func TestConfigureRepos(t *testing.T) {
 			expectError:   true,
 			expectedRepos: []github.Repo{oldRepo},
 		},
+		{
+			description: "duplicate repo names different only by case are detected",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"repo": newConfigRepo,
+					"REPO": failConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectError:   true,
+			expectedRepos: []github.Repo{oldRepo},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
@@ -2660,6 +2673,48 @@ func TestConfigureRepos(t *testing.T) {
 			}
 			if !reflect.DeepEqual(reposAfter, tc.expectedRepos) {
 				t.Errorf("%s: unexpected repos after configureRepos():\n%s", tc.description, diff.ObjectReflectDiff(reposAfter, tc.repos))
+			}
+		})
+	}
+}
+
+func TestValidateRepos(t *testing.T) {
+	description := "cool repo"
+	testCases := []struct {
+		description string
+		config      map[string]org.Repo
+		expectError bool
+	}{
+		{
+			description: "handles nil map",
+		},
+		{
+			description: "handles empty map",
+			config:      map[string]org.Repo{},
+		},
+		{
+			description: "handles valid config",
+			config: map[string]org.Repo{
+				"repo": {Description: &description},
+			},
+		},
+		{
+			description: "finds repo names duplicate when normalized",
+			config: map[string]org.Repo{
+				"repo": {Description: &description},
+				"Repo": {Description: &description},
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			err := validateRepos(tc.config)
+			if err == nil && tc.expectError {
+				t.Errorf("%s: expected error, got none", tc.description)
+			} else if err != nil && !tc.expectError {
+				t.Errorf("%s: unexpected error: %v", tc.description, err)
 			}
 		})
 	}
