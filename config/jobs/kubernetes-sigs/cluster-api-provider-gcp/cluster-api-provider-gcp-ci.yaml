@@ -78,7 +78,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: e2e-tests-master
+    testgrid-tab-name: capg-conformance-master
 - name: ci-cluster-api-provider-gcp-make-conformance-stable
   interval: 3h
   branches:
@@ -122,7 +122,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: e2e-tests-stable
+    testgrid-tab-name: capg-conformance-stable
 - name: ci-cluster-api-provider-gcp-make-conformance-stable-k8s-ci-artifacts
   interval: 3h
   branches:
@@ -165,5 +165,5 @@ periodics:
             # during the tests more like 3-20m is used
             cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: e2e-tests-stable-k8s-ci-artifacts
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
+    testgrid-tab-name: capg-conformance-stable-k8s-master
