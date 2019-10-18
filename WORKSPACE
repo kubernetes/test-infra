@@ -66,12 +66,7 @@ load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 
 ts_setup_workspace()
 
-# TODO(clarketm): when `io_bazel_rules_python` supports `python3` interpreter, replace "//:pip.bzl" w/ "@io_bazel_rules_python//python:pip.bzl"
-# https://github.com/bazelbuild/rules_python/issues/85
-# https://github.com/bazelbuild/rules_python/issues/158
-# https://github.com/bazelbuild/rules_python/issues/179
-# https://github.com/bazelbuild/rules_python/issues/220
-load("//:pip.bzl", "pip_import")
+load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
 
 pip_import(
     name = "py_deps",

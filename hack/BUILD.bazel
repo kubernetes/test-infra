@@ -226,22 +226,27 @@ test_suite(
 py_binary(
     name = "pylint_bin",
     srcs = ["pylint_bin.py"],
-    python_version = "PY3",
+    python_version = "PY2",
     tags = ["lint"],
     # NOTE: this should only contain direct third party imports and pylint
     deps = [
         requirement("astroid"),
+        requirement("backports.functools_lru_cache"),
+        requirement("configparser"),
+        requirement("enum34"),
         requirement("influxdb"),
         requirement("isort"),
         requirement("lazy-object-proxy"),
-        requirement("mccabe"),
         requirement("pylint"),
+        requirement("pytz"),
+        requirement("PyYAML"),
         requirement("requests"),
-        requirement("ruamel.yaml"),
-        requirement("typed-ast"),
+        requirement("setuptools"),
         requirement("sh"),
+        requirement("singledispatch"),
         requirement("six"),
         requirement("wrapt"),
+        requirement("ruamel.yaml"),
     ],
 )
 

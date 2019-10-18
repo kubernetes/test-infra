@@ -29,7 +29,7 @@ _DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 _CURRENT_YEAR = datetime.datetime.utcnow().year
 
 
-class TestOutput:
+class TestOutput(object):
     def __init__(self):
         self._lines = []
         self._start = None
