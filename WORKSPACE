@@ -34,6 +34,9 @@ load("@io_bazel_rules_docker//go:image.bzl", _go_repositories = "repositories")
 _go_repositories()
 
 load("@io_bazel_rules_k8s//k8s:k8s.bzl", _k8s_repos = "k8s_repositories")
+load("@io_bazel_rules_k8s//toolchains/kubectl:kubectl_configure.bzl", "kubectl_configure")
+
+kubectl_configure(name = "k8s_config")
 
 _k8s_repos()
 
