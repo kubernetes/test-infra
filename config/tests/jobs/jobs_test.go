@@ -733,15 +733,15 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	// shared build args
-	use_shared_build_in_args := hasArg("--use-shared-build", args)
-	extract_in_args := hasArg("--extract", args)
-	build_in_args := hasArg("--build", args)
+	useSharedBuildInArgs := hasArg("--use-shared-build", args)
+	extractInArgs := hasArg("--extract", args)
+	buildInArgs := hasArg("--build", args)
 
-	if use_shared_build_in_args && extract_in_args {
+	if useSharedBuildInArgs && extractInArgs {
 		return fmt.Errorf("job %s: --use-shared-build and --extract cannot be combined", jobName)
 	}
 
-	if use_shared_build_in_args && build_in_args {
+	if useSharedBuildInArgs && buildInArgs {
 		return fmt.Errorf("job %s: --use-shared-build and --build cannot be combined", jobName)
 	}
 
@@ -833,34 +833,34 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 
 	// test_args should not have double slashes on ginkgo flags
 	for _, arg := range args {
-		ginkgo_args := ""
+		ginkgoArgs := ""
 		if strings.HasPrefix(arg, "--test_args=") {
 			split := strings.SplitN(arg, "=", 2)
-			ginkgo_args = split[1]
+			ginkgoArgs = split[1]
 		} else if strings.HasPrefix(arg, "--upgrade_args=") {
 			split := strings.SplitN(arg, "=", 2)
-			ginkgo_args = split[1]
+			ginkgoArgs = split[1]
 		}
 
-		if strings.Contains(ginkgo_args, "\\\\") {
+		if strings.Contains(ginkgoArgs, "\\\\") {
 			return fmt.Errorf("jobs %s - double slashes in ginkgo args should be single slash now : arg %s", jobName, arg)
 		}
 	}
 
 	// timeout should be valid
-	bootstrap_timeout := 0 * time.Minute
-	kubetest_timeout := 0 * time.Minute
+	bootstrapTimeout := 0 * time.Minute
+	kubetestTimeout := 0 * time.Minute
 	var err error
 	kubetest := false
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "--timeout=") {
 			timeout := strings.SplitN(arg, "=", 2)[1]
 			if kubetest {
-				if kubetest_timeout, err = time.ParseDuration(timeout); err != nil {
+				if kubetestTimeout, err = time.ParseDuration(timeout); err != nil {
 					return fmt.Errorf("jobs %s - invalid kubetest timeout : arg %s", jobName, arg)
 				}
 			} else {
-				if bootstrap_timeout, err = time.ParseDuration(timeout + "m"); err != nil {
+				if bootstrapTimeout, err = time.ParseDuration(timeout + "m"); err != nil {
 					return fmt.Errorf("jobs %s - invalid bootstrap timeout : arg %s", jobName, arg)
 				}
 			}
@@ -871,9 +871,9 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		}
 	}
 
-	if bootstrap_timeout.Minutes()-kubetest_timeout.Minutes() < 20.0 {
+	if bootstrapTimeout.Minutes()-kubetestTimeout.Minutes() < 20.0 {
 		return fmt.Errorf(
-			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetest_timeout, bootstrap_timeout)
+			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetestTimeout, bootstrapTimeout)
 	}
 
 	return nil
