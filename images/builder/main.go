@@ -114,33 +114,45 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 	for k, v := range subs {
 		s = append(s, fmt.Sprintf("_%s=%s", k, v))
 	}
+
 	s = append(s, "_GIT_TAG="+version)
 	args := []string{
 		"builds", "submit",
 		"--config", o.cloudbuildFile,
 		"--substitutions", strings.Join(s, ","),
 	}
+
 	if o.project != "" {
 		args = append(args, "--project", o.project)
 	}
+
 	if o.scratchBucket != "" {
 		args = append(args, "--gcs-log-dir", o.scratchBucket+gcsLogsDir)
 		args = append(args, "--gcs-source-staging-dir", o.scratchBucket+gcsSourceDir)
 	}
+
 	if uploaded != "" {
 		args = append(args, uploaded)
 	} else {
-		args = append(args, ".")
+		if o.noSource {
+			args = append(args, "--no-source")
+		} else {
+			args = append(args, ".")
+		}
 	}
+
 	cmd := exec.Command("gcloud", args...)
 
 	if o.logDir != "" {
 		p := path.Join(o.logDir, jobName+".log")
 		f, err := os.Create(p)
+
 		if err != nil {
 			return fmt.Errorf("couldn't create %s: %v", p, err)
 		}
+
 		defer f.Close()
+
 		cmd.Stdout = f
 		cmd.Stderr = f
 	} else {
@@ -187,10 +199,12 @@ func getVariants(o options) (variants, error) {
 func runBuildJobs(o options) []error {
 	var uploaded string
 	if o.scratchBucket != "" {
-		var err error
-		uploaded, err = o.uploadBuildDir(o.scratchBucket + gcsSourceDir)
-		if err != nil {
-			return []error{fmt.Errorf("failed to upload source: %v", err)}
+		if !o.noSource {
+			var err error
+			uploaded, err = o.uploadBuildDir(o.scratchBucket + gcsSourceDir)
+			if err != nil {
+				return []error{fmt.Errorf("failed to upload source: %v", err)}
+			}
 		}
 	} else {
 		log.Println("Skipping advance upload and relying on gcloud...")
@@ -248,6 +262,7 @@ type options struct {
 	scratchBucket  string
 	project        string
 	allowDirty     bool
+	noSource       bool
 	variant        string
 	envPassthrough string
 }
@@ -270,6 +285,7 @@ func parseFlags() options {
 	flag.StringVar(&o.scratchBucket, "scratch-bucket", "", "The complete GCS path for Cloud Build to store scratch files (sources, logs).")
 	flag.StringVar(&o.project, "project", "", "If specified, use a non-default GCP project.")
 	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds.")
+	flag.BoolVar(&o.noSource, "no-source", false, "If true, no source will be uploaded with this build.")
 	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")
 	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as substitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
 
