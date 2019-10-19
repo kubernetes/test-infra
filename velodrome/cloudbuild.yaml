@@ -21,6 +21,6 @@ steps:
 substitutions:
   _COMPONENT: fetcher
   _GIT_TAG: '12345'
-  _GO_VERSION: 1.12.10
+  _GO_VERSION: 1.12.12
 images:
   - gcr.io/$PROJECT_ID/github-$_COMPONENT:$_GIT_TAG

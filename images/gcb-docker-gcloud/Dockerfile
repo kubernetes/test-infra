@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Includes bash, docker, and gcloud
-FROM golang:1.12.10-alpine
+FROM golang:1.12.12-alpine
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
