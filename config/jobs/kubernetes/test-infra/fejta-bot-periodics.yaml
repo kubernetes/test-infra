@@ -284,7 +284,6 @@ periodics:
       - --org=kubernetes
       - --project=kubernetes
       - --token-file=/etc/token/bot-github-token
-      - --test-owners-csv=/test_owners.csv
       - --triage-window=1
       - --triage-count=10
       - --flakyjob-count=3

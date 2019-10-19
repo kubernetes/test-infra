@@ -62,14 +62,12 @@ gsutil cp -r gs://k8s-gubernator/triage_tests/* triage_tests/
 gzip -df triage_tests/*.gz
 
 # gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
-curl -sO --retry 6 https://raw.githubusercontent.com/kubernetes/kubernetes/master/test/test_owners.json
 
 mkdir -p slices
 
 pypy3 summarize.py \
   triage_builds.json \
   triage_tests/*.json \
-  --owners test_owners.json \
   --output failure_data.json \
   --output_slices slices/failure_data_PREFIX.json
 

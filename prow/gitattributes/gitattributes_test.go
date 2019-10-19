@@ -31,7 +31,6 @@ func TestLoad(t *testing.T) {
 		{
 			name: "kubernetes",
 			src: `hack/verify-flags/known-flags.txt merge=union
-test/test_owners.csv merge=union
 
 **/zz_generated.*.go linguist-generated=true
 **/types.generated.go linguist-generated=true
@@ -94,7 +93,6 @@ api/openapi-spec/*.json linguist-generated=true`,
 
 func TestIsLinguistGenerated(t *testing.T) {
 	var src = `hack/verify-flags/known-flags.txt merge=union
-test/test_owners.csv merge=union
 
 **/zz_generated.*.go linguist-generated=true
 **/types.generated.go linguist-generated=true
