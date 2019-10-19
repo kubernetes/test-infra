@@ -1,27 +1,22 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-filters:
-  ".*":
-    approvers:
-      - cblecker
-      - cjwagner
-      - fejta
-      - stevekuznetsov
-    emeritus_approvers:
-      - spxtr # 2018-09-17
-    reviewers:
-      - alvaroaleman
-      - cblecker
-      - cjwagner
-      - clarketm
-      - fejta
-      - Katharine
-      - krzyzacy
-      - matthyx
-      - michelle192837
-      - stevekuznetsov
-    labels:
-      - area/prow
-  "(plugins|config)\\.yaml$":
-    required_reviewers:
-      - cblecker
+approvers:
+  - cblecker
+  - cjwagner
+  - fejta
+  - stevekuznetsov
+emeritus_approvers:
+  - spxtr # 2018-09-17
+reviewers:
+  - alvaroaleman
+  - cblecker
+  - cjwagner
+  - clarketm
+  - fejta
+  - Katharine
+  - krzyzacy
+  - matthyx
+  - michelle192837
+  - stevekuznetsov
+labels:
+  - area/prow
