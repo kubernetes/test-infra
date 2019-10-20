@@ -173,7 +173,7 @@ func TestUpdateEvents(t *testing.T) {
 			repository: "FULL/REPO",
 			issueID:    2,
 		},
-		// Fetch new repository
+		// FetchRef new repository
 		{
 			before: []sql.IssueEvent{
 				*makeIssueEvent(2, 2, "", "Event", "", "", "full/one",

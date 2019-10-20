@@ -190,7 +190,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "Repo has exactly all wanted labels",
+			name: "RepoFromDir has exactly all wanted labels",
 			config: Configuration{Default: RepoConfig{Labels: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}}},
@@ -201,7 +201,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "Repo has label with wrong color",
+			name: "RepoFromDir has label with wrong color",
 			config: Configuration{Default: RepoConfig{Labels: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}}},
@@ -217,7 +217,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "Repo has label with wrong description",
+			name: "RepoFromDir has label with wrong description",
 			config: Configuration{Default: RepoConfig{Labels: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}}},
@@ -233,7 +233,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "Repo has label with wrong name (different case)",
+			name: "RepoFromDir has label with wrong name (different case)",
 			config: Configuration{Default: RepoConfig{Labels: []Label{
 				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 			}}},
@@ -270,7 +270,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "Repo is missing a label",
+			name: "RepoFromDir is missing a label",
 			config: Configuration{Default: RepoConfig{Labels: []Label{
 				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 			}}},
@@ -284,7 +284,7 @@ func TestSyncLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "Repo is missing multiple labels, and expected labels order is changed",
+			name: "RepoFromDir is missing multiple labels, and expected labels order is changed",
 			config: Configuration{Default: RepoConfig{Labels: []Label{
 				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 				{Name: "Lab2", Description: "Test Label 2", Color: "000000"},

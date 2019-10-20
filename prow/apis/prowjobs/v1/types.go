@@ -608,9 +608,9 @@ type Pull struct {
 type Refs struct {
 	// Org is something like kubernetes or k8s.io
 	Org string `json:"org"`
-	// Repo is something like test-infra
+	// RepoFromDir is something like test-infra
 	Repo string `json:"repo"`
-	// RepoLink links to the source for Repo.
+	// RepoLink links to the source for RepoFromDir.
 	RepoLink string `json:"repo_link,omitempty"`
 
 	BaseRef string `json:"base_ref,omitempty"`

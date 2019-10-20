@@ -70,7 +70,7 @@ func optionsFromFlags() options {
 	o.github.AddFlags(fs)
 	fs.StringVar(&o.repo, "repo", "", "GitHub repo")
 	fs.StringVar(&o.org, "org", "", "GitHub org")
-	fs.StringVar(&o.branch, "branch", "", "Repo branch to merge into")
+	fs.StringVar(&o.branch, "branch", "", "RepoFromDir branch to merge into")
 	fs.StringVar(&o.source, "source", "", "The user:branch to merge from")
 
 	fs.BoolVar(&o.confirm, "confirm", false, "Set to mutate github instead of a dry run")

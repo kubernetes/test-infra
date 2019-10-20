@@ -31,18 +31,18 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name:    "Fetch build-log.txt from valid src",
+			name:    "FetchRef build-log.txt from valid src",
 			job:     "BFG",
 			buildID: "435",
 		},
 		{
-			name:      "Fetch log from empty src",
+			name:      "FetchRef log from empty src",
 			job:       "",
 			buildID:   "",
 			expectErr: true,
 		},
 		{
-			name:      "Fetch log from incomplete src",
+			name:      "FetchRef log from incomplete src",
 			job:       "BFG",
 			buildID:   "",
 			expectErr: true,

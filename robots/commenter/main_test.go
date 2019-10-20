@@ -273,7 +273,7 @@ func TestRun(t *testing.T) {
 			name:     "template comment",
 			query:    "67",
 			client:   fakeClient{issues: manyIssues},
-			comment:  "https://gubernator.k8s.io/pr/{{.Org}}/{{.Repo}}/{{.Number}}",
+			comment:  "https://gubernator.k8s.io/pr/{{.Org}}/{{.RepoFromDir}}/{{.Number}}",
 			template: true,
 			expected: []int{67},
 		},
@@ -347,7 +347,7 @@ func TestMakeCommenter(t *testing.T) {
 		},
 		{
 			name:     "template works",
-			comment:  "N={{.Number}} R={{.Repo}} O={{.Org}} U={{.Issue.HTMLURL}} T={{.Issue.Title}}",
+			comment:  "N={{.Number}} R={{.RepoFromDir}} O={{.Org}} U={{.Issue.HTMLURL}} T={{.Issue.Title}}",
 			template: true,
 			expected: "N=10 R=repo O=org U=url T=title",
 		},

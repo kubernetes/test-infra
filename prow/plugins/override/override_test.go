@@ -731,9 +731,9 @@ func TestHelpProvider(t *testing.T) {
 		expectedWho string
 	}{
 		{
-			name:        "WhoCanUse restricted to Repo administrators if no other options specified",
+			name:        "WhoCanUse restricted to RepoFromDir administrators if no other options specified",
 			config:      plugins.Configuration{},
-			expectedWho: "Repo administrators.",
+			expectedWho: "RepoFromDir administrators.",
 		},
 		{
 			name: "WhoCanUse includes top level code OWNERS if allow_top_level_owners is set",
@@ -742,7 +742,7 @@ func TestHelpProvider(t *testing.T) {
 					AllowTopLevelOwners: true,
 				},
 			},
-			expectedWho: "Repo administrators, approvers in top level OWNERS file.",
+			expectedWho: "RepoFromDir administrators, approvers in top level OWNERS file.",
 		},
 		{
 			name: "WhoCanUse includes specified github teams",
@@ -753,7 +753,7 @@ func TestHelpProvider(t *testing.T) {
 					},
 				},
 			},
-			expectedWho: "Repo administrators, and the following github teams:" +
+			expectedWho: "RepoFromDir administrators, and the following github teams:" +
 				"org1/repo1: team-foo team-bar.",
 		},
 	}
@@ -781,7 +781,7 @@ func TestWhoCanUse(t *testing.T) {
 			"org2/repo2": {"team-bar"},
 		},
 	}
-	expectedWho := "Repo administrators, and the following github teams:" +
+	expectedWho := "RepoFromDir administrators, and the following github teams:" +
 		"org1/repo1: team-foo team-bar."
 
 	who := whoCanUse(override, "org1", "repo1")

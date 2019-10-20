@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	testWelcomeTemplate = "Welcome human! 🤖 {{.AuthorName}} {{.AuthorLogin}} {{.Repo}} {{.Org}}}"
+	testWelcomeTemplate = "Welcome human! 🤖 {{.AuthorName}} {{.AuthorLogin}} {{.RepoFromDir}} {{.Org}}}"
 )
 
 type fakeClient struct {

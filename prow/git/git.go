@@ -92,7 +92,7 @@ func NewClient() (*Client, error) {
 }
 
 // SetRemote sets the remote for the client. This is not thread-safe, and is
-// useful for testing. The client will clone from remote/org/repo, and Repo
+// useful for testing. The client will clone from remote/org/repo, and RepoFromDir
 // objects spun out of the client will also hit that path.
 func (c *Client) SetRemote(remote string) {
 	c.base = remote
@@ -182,7 +182,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	}, nil
 }
 
-// Repo is a clone of a git repository. Create with Client.Clone, and don't
+// RepoFromDir is a clone of a git repository. Create with Client.Clone, and don't
 // forget to clean it up after.
 type Repo struct {
 	// Dir is the location of the git repo.

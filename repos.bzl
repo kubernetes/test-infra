@@ -1267,8 +1267,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/shurcooL/githubv4",
-        sum = "h1:cppRIvEpuZcSdhbhyJZ/3ThCPYlx6xuZg8Qid/0+bz0=",
-        version = "v0.0.0-20180925043049-51d7b505e2e9",
+        sum = "h1:xKXiRdBUtMVp64NaxACcyX4kvfmHJ9KrLU+JvyB1mdM=",
+        version = "v0.0.0-20190718010115-4ba037080260",
     )
     go_repository(
         name = "com_github_shurcool_go",

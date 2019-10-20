@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"k8s.io/test-infra/prow/flagutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,7 +30,6 @@ import (
 
 	"k8s.io/test-infra/experiment/autobumper/bumper"
 	"k8s.io/test-infra/prow/config/secret"
-	"k8s.io/test-infra/prow/github"
 )
 
 const (
@@ -60,6 +60,9 @@ func cdToRootDir() error {
 }
 
 type options struct {
+	flagutil.GitHubOptions
+
+	// deprecated flag options
 	githubLogin string
 	githubToken string
 	gitName     string
@@ -68,8 +71,8 @@ type options struct {
 
 func parseOptions() options {
 	var o options
-	flag.StringVar(&o.githubLogin, "github-login", "", "The GitHub username to use.")
-	flag.StringVar(&o.githubToken, "github-token", "", "The path to the GitHub token file.")
+	flag.StringVar(&o.githubLogin, "github-login", "", "DEPRECATED: The GitHub username to use.")
+	flag.StringVar(&o.githubToken, "github-token", "", "DEPRECATED: The path to the GitHub token file.")
 	flag.StringVar(&o.gitName, "git-name", "", "The name to use on the git commit. Requires --git-email. If not specified, uses values from the user associated with the access token.")
 	flag.StringVar(&o.gitEmail, "git-email", "", "The email to use on the git commit. Requires --git-name. If not specified, uses values from the user associated with the access token.")
 	flag.Parse()
@@ -77,8 +80,15 @@ func parseOptions() options {
 }
 
 func validateOptions(o options) error {
-	if o.githubToken == "" {
-		return fmt.Errorf("--github-token is mandatory")
+	if o.githubToken == "" && o.TokenPath == "" {
+		return fmt.Errorf("--github-token-path is mandatory")
+	}
+	if o.githubToken != "" && o.TokenPath == "" {
+		logrus.Warn("--github-token is deprecated, please use --github-token-path before November 2019")
+		o.TokenPath = o.githubToken
+	}
+	if err := o.Validate(false); err != nil {
+		return err
 	}
 	if (o.gitEmail == "") != (o.gitName == "") {
 		return fmt.Errorf("--git-name and --git-email must be specified together")
@@ -126,30 +136,14 @@ func main() {
 	}
 
 	sa := &secret.Agent{}
-	if err := sa.Start([]string{o.githubToken}); err != nil {
+	if err := sa.Start([]string{o.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Failed to start secrets agent")
 	}
 
-	gc := github.NewClient(sa.GetTokenGenerator(o.githubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
-
-	if o.githubLogin == "" || o.gitName == "" || o.gitEmail == "" {
-		user, err := gc.BotUser()
-		if err != nil {
-			logrus.WithError(err).Fatal("Failed to get the user data for the provided GH token.")
-		}
-		if o.githubLogin == "" {
-			o.githubLogin = user.Login
-		}
-		if o.gitName == "" {
-			o.gitName = user.Name
-		}
-		if o.gitEmail == "" {
-			o.gitEmail = user.Email
-		}
+	_, gitClient, err := o.GitClients(sa, false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to create git client")
 	}
-
-	stdout := bumper.HideSecretsWriter{Delegate: os.Stdout, Censor: sa}
-	stderr := bumper.HideSecretsWriter{Delegate: os.Stderr, Censor: sa}
 
 	if err := cdToRootDir(); err != nil {
 		logrus.WithError(err).Fatal("Failed to change to root dir")
@@ -161,11 +155,19 @@ func main() {
 
 	remoteBranch := "autobump"
 
-	if err := bumper.MakeGitCommit(fmt.Sprintf("git@github.com:%s/test-infra.git", o.githubLogin), remoteBranch, o.gitName, o.gitEmail, images, stdout, stderr); err != nil {
+	repo, err := gitClient.Repo("kubernetes", "test-infra", "")
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to initialize repo client.")
+	}
+	if err := bumper.MakeGitCommit(repo, remoteBranch, images); err != nil {
 		logrus.WithError(err).Fatal("Failed to push changes.")
 	}
 
-	if err := bumper.UpdatePR(gc, githubOrg, githubRepo, images, getAssignment(), "Update prow to", o.githubLogin+":"+remoteBranch, "master"); err != nil {
+	githubClient, err := o.GitHubClient(sa, false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to create GitHub client.")
+	}
+	if err := bumper.UpdatePR(githubClient, githubOrg, githubRepo, images, getAssignment(), "Update prow to", o.githubLogin+":"+remoteBranch, "master"); err != nil {
 		logrus.WithError(err).Fatal("PR creation failed.")
 	}
 }

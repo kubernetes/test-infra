@@ -25,7 +25,7 @@ import (
 	sqltest "k8s.io/test-infra/velodrome/sql/testing"
 )
 
-// Fetch doesn't download too many items, and return the proper date. And only from proper repo
+// FetchRef doesn't download too many items, and return the proper date. And only from proper repo
 
 func TestFetchIssues(t *testing.T) {
 	config := sqltest.SQLiteConfig{File: ":memory:"}

@@ -19,6 +19,7 @@ package bumper
 import (
 	"fmt"
 	"io"
+	"k8s.io/test-infra/prow/git"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -127,28 +128,20 @@ func makeCommitSummary(images map[string]string) string {
 // "name" and "email" are used for git-commit command
 // "images" contains the tag replacements that have been made which is returned from "UpdateReferences([]string{"."}, extraFiles)"
 // "images" is used to generate commit message
-func MakeGitCommit(remote, remoteBranch, name, email string, images map[string]string, stdout, stderr io.Writer) error {
-	return GitCommitAndPush(remote, remoteBranch, name, email, makeCommitSummary(images), stdout, stderr)
+func MakeGitCommit(repo git.RepoClient, remoteBranch string, images map[string]string) error {
+	return GitCommitAndPush(repo, remoteBranch, makeCommitSummary(images))
 }
 
 // GitCommitAndPush runs a sequence of git commands to
 // commit and push the changes the "remote" on "remoteBranch"
 // "name", "email", and "message" are used for git-commit command
-func GitCommitAndPush(remote, remoteBranch, name, email, message string, stdout, stderr io.Writer) error {
+func GitCommitAndPush(repo git.RepoClient, remoteBranch, message string) error {
 	logrus.Info("Making git commit...")
-
-	if err := Call(stdout, stderr, "git", "add", "-A"); err != nil {
-		return fmt.Errorf("failed to git add: %v", err)
-	}
-	commitArgs := []string{"commit", "-m", message}
-	if name != "" && email != "" {
-		commitArgs = append(commitArgs, "--author", fmt.Sprintf("%s <%s>", name, email))
-	}
-	if err := Call(stdout, stderr, "git", commitArgs...); err != nil {
+	if err := repo.Commit(message, ""); err != nil {
 		return fmt.Errorf("failed to git commit: %v", err)
 	}
 	logrus.Info("Pushing to remote...")
-	if err := Call(stdout, stderr, "git", "push", "-f", remote, fmt.Sprintf("HEAD:%s", remoteBranch)); err != nil {
+	if err := repo.ForcePush(remoteBranch); err != nil {
 		return fmt.Errorf("failed to git push: %v", err)
 	}
 	return nil

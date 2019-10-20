@@ -45,7 +45,7 @@ const (
 	templateHelp = `--comment is a golang text/template if set.
 	Valid placeholders:
 		.Org - github org
-		.Repo - github repo
+		.RepoFromDir - github repo
 		.Number - issue number
 	Advanced (see kubernetes/test-infra/prow/github/types.go):
 		.Issue.User.Login - github account

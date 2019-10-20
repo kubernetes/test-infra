@@ -82,7 +82,7 @@ type Label struct {
 }
 
 // Configuration is a list of Repos defining Required Labels to sync into them
-// There is also a Default list of labels applied to every Repo
+// There is also a Default list of labels applied to every RepoFromDir
 type Configuration struct {
 	Repos   map[string]RepoConfig `json:"repos,omitempty"`
 	Default RepoConfig            `json:"default"`
@@ -269,7 +269,7 @@ func (c Configuration) validate(orgs string) error {
 			data := strings.Split(repo, "/")
 			if len(data) == 2 {
 				if !stringInSortedSlice(data[0], sortedOrgs) {
-					logrus.WithField("orgs", orgs).WithField("org", data[0]).WithField("repo", repo).Warn("Repo isn't inside orgs")
+					logrus.WithField("orgs", orgs).WithField("org", data[0]).WithField("repo", repo).Warn("RepoFromDir isn't inside orgs")
 				}
 			}
 		}

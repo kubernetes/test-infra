@@ -256,7 +256,7 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 		},
 		{
-			name:                  "Remove Area Label when no such Label on Repo",
+			name:                  "Remove Area Label when no such Label on RepoFromDir",
 			body:                  "/remove-area infra",
 			repoLabels:            []string{},
 			issueLabels:           []string{},

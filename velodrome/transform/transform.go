@@ -120,7 +120,7 @@ func (config *transformConfig) run(plugin plugins.Plugin) error {
 
 	ticker := time.Tick(time.Hour / time.Duration(config.frequency))
 	for {
-		// Fetch new events from MySQL, push it to plugins
+		// FetchRef new events from MySQL, push it to plugins
 		if err := fetcher.Fetch(mysqldb); err != nil {
 			return err
 		}

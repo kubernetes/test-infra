@@ -26,7 +26,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// Fetcher is a utility class used to Fetch all types of events
+// Fetcher is a utility class used to FetchRef all types of events
 type Fetcher struct {
 	IssuesChannel         chan sql.Issue
 	EventsCommentsChannel chan interface{}
@@ -136,7 +136,7 @@ func (f *Fetcher) fetchRecentEventsAndComments(db *gorm.DB) error {
 	return nil
 }
 
-// Fetch retrieves all types of events, and push them to output channels
+// FetchRef retrieves all types of events, and push them to output channels
 func (f *Fetcher) Fetch(db *gorm.DB) error {
 	if err := f.fetchRecentIssues(db); err != nil {
 		return err

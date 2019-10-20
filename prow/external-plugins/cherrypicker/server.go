@@ -374,7 +374,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 	}
 	s.log.WithFields(l.Data).WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
 
-	// Fetch the patch from GitHub
+	// FetchRef the patch from GitHub
 	localPath, err := s.getPatch(org, repo, targetBranch, num)
 	if err != nil {
 		return err

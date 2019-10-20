@@ -139,7 +139,7 @@ func getMatchingColumnIDs(gc githubClient, orgRepos map[string]plugins.ManagedOr
 	// Don't use GetIssueLabels unless it's required and keep track of whether the labels have been fetched to avoid unnecessary API usage.
 	var labels []github.Label
 	var err error
-	// Fetch the labels, GetIssueLabels works for PRs as they are considered issues in the API
+	// FetchRef the labels, GetIssueLabels works for PRs as they are considered issues in the API
 	labels, err = gc.GetIssueLabels(pe.Repo.Owner.Login, pe.Repo.Name, pe.Number)
 	if err != nil {
 		log.Infof("Error geting labels on the issue %d, ignoring processing the event", pe.Number)

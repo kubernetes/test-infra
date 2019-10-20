@@ -450,7 +450,7 @@ type ProjectOrgConfig struct {
 	// A map of project name to default column; an issue/PR will be added
 	// to the default column if column name is not provided in the command
 	ProjectColumnMap map[string]string `json:"org_default_column_map,omitempty"`
-	// Repo level configs for github projects; key is repo name
+	// RepoFromDir level configs for github projects; key is repo name
 	Repos map[string]ProjectRepoConfig `json:"project_repo_configs,omitempty"`
 }
 
@@ -546,7 +546,7 @@ type CherryPickUnapproved struct {
 type RequireMatchingLabel struct {
 	// Org is the GitHub organization that this config applies to.
 	Org string `json:"org,omitempty"`
-	// Repo is the GitHub repository within Org that this config applies to.
+	// RepoFromDir is the GitHub repository within Org that this config applies to.
 	// This fields may be omitted to apply this config across all repos in Org.
 	Repo string `json:"repo,omitempty"`
 	// Branch is the branch ref of PRs that this config applies to.
@@ -583,7 +583,7 @@ type RequireMatchingLabel struct {
 
 // validate checks the following properties:
 // - Org, Regexp, MissingLabel, and GracePeriod must be non-empty.
-// - Repo does not contain a '/' (should use Org+Repo).
+// - RepoFromDir does not contain a '/' (should use Org+RepoFromDir).
 // - At least one of PRs or Issues must be true.
 // - Branch only specified if 'prs: true'
 // - MissingLabel must not match Regexp.

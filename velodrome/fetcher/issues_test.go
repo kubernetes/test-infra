@@ -194,7 +194,7 @@ func TestUpdateIssues(t *testing.T) {
 			},
 			repository: "FULL/REPO",
 		},
-		// Fetch new repository
+		// FetchRef new repository
 		{
 			before: []sql.Issue{
 				*makeIssue(1, "Title", "", "State", "User", "", "full/one",

@@ -38,7 +38,7 @@ const (
 	ApprovalNotificationName = "ApprovalNotifier"
 )
 
-// Repo allows querying and interacting with OWNERS information in a repo.
+// RepoFromDir allows querying and interacting with OWNERS information in a repo.
 type Repo interface {
 	Approvers(path string) sets.String
 	LeafApprovers(path string) sets.String

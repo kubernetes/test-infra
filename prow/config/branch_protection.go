@@ -204,7 +204,7 @@ func (o Org) GetRepo(name string) *Repo {
 	return &r
 }
 
-// Repo holds protection policy overrides for all branches in a repo, as well as specific branch overrides.
+// RepoFromDir holds protection policy overrides for all branches in a repo, as well as specific branch overrides.
 type Repo struct {
 	Policy
 	Branches map[string]Branch `json:"branches,omitempty"`

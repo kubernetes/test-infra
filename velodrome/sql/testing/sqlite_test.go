@@ -33,7 +33,7 @@ func TestSQLiteCreateDatabase(t *testing.T) {
 
 	issue := sql.Issue{
 		ID:             "1",
-		Repository:     "Repo",
+		Repository:     "RepoFromDir",
 		Labels:         nil,
 		Title:          "Title",
 		Body:           "Body",

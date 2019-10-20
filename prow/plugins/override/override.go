@@ -141,7 +141,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func whoCanUse(overrideConfig plugins.Override, org, repo string) string {
-	admins := "Repo administrators"
+	admins := "RepoFromDir administrators"
 	owners := ""
 	teams := ""
 

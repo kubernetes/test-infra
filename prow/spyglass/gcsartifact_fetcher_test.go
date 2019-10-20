@@ -142,13 +142,13 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 		expectErr    bool
 	}{
 		{
-			name:         "Fetch build-log.txt from valid source",
+			name:         "FetchRef build-log.txt from valid source",
 			artifactName: "build-log.txt",
 			source:       "test-bucket/logs/example-ci-run/403",
 			expectedSize: 25,
 		},
 		{
-			name:         "Fetch build-log.txt from invalid source",
+			name:         "FetchRef build-log.txt from invalid source",
 			artifactName: "build-log.txt",
 			source:       "test-bucket/logs/example-ci-run/404",
 			expectErr:    true,

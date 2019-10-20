@@ -50,7 +50,7 @@ type FakeClient struct {
 	IssueEvents         map[int][]github.ListedIssueEvent
 	Commits             map[string]github.SingleCommit
 
-	//All Labels That Exist In The Repo
+	//All Labels That Exist In The RepoFromDir
 	RepoLabelsExisting []string
 	// org/repo#number:label
 	IssueLabelsAdded    []string

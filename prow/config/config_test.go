@@ -2402,7 +2402,7 @@ func TestValidateComponentConfig(t *testing.T) {
 			errExpected: true,
 		},
 		{
-			name: "Repo override, valid URLs, no err",
+			name: "RepoFromDir override, valid URLs, no err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
 				JobURLPrefixConfig: map[string]string{
 					"*":              "https://my-prow",
@@ -2412,7 +2412,7 @@ func TestValidateComponentConfig(t *testing.T) {
 			errExpected: false,
 		},
 		{
-			name: "Repo override, invalid repo URL, err",
+			name: "RepoFromDir override, invalid repo URL, err",
 			config: &Config{ProwConfig: ProwConfig{Plank: Plank{
 				JobURLPrefixConfig: map[string]string{
 					"*":              "https://my-prow",

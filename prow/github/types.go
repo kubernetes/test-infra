@@ -297,7 +297,7 @@ type PullRequestChange struct {
 	PreviousFilename string `json:"previous_filename"`
 }
 
-// Repo contains general repository information.
+// RepoFromDir contains general repository information.
 // See also https://developer.github.com/v3/repos/#get
 type Repo struct {
 	Owner         User   `json:"owner"`

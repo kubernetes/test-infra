@@ -462,6 +462,8 @@ github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb h1:1r/p6yT1FfHR1+qB
 github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
 github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9 h1:cppRIvEpuZcSdhbhyJZ/3ThCPYlx6xuZg8Qid/0+bz0=
 github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9/go.mod h1:hAF0iLZy4td2EX+/8Tw+4nodhlMrwN3HupfaXj3zkGo=
+github.com/shurcooL/githubv4 v0.0.0-20190718010115-4ba037080260 h1:xKXiRdBUtMVp64NaxACcyX4kvfmHJ9KrLU+JvyB1mdM=
+github.com/shurcooL/githubv4 v0.0.0-20190718010115-4ba037080260/go.mod h1:hAF0iLZy4td2EX+/8Tw+4nodhlMrwN3HupfaXj3zkGo=
 github.com/shurcooL/go v0.0.0-20180423040247-9e1955d9fb6e h1:MZM7FHLqUHYI0Y/mQAt3d2aYa0SiNms/hFqC9qJYolM=
 github.com/shurcooL/go v0.0.0-20180423040247-9e1955d9fb6e/go.mod h1:TDJrrUr11Vxrven61rcy3hJMUqaf/CLWYhHNPmT14Lk=
 github.com/shurcooL/graphql v0.0.0-20180924043259-e4a3a37e6d42 h1:YIoQLhvoRcfiL0pyxqkESFZXa7jQrcfLTUSSUeyYMO8=

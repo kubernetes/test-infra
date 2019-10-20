@@ -393,7 +393,7 @@ type githubClient interface {
 func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string, num int) ChangedFilesProvider {
 	var changedFiles []string
 	return func() ([]string, error) {
-		// Fetch the changed files from github at most once.
+		// FetchRef the changed files from github at most once.
 		if changedFiles == nil {
 			changes, err := client.GetPullRequestChanges(org, repo, num)
 			if err != nil {
