@@ -319,7 +319,8 @@ presubmits:
 
   - name: pull-kubernetes-e2e-kind-ipv6
     optional: true
-    always_run: false # manual for testing new configurations
+    always_run: true
+    skip_report: true
     decorate: true
     skip_branches:
     - release-\d+\.\d+ # per-release settings
