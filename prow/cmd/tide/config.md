@@ -32,7 +32,7 @@ The following configuration fields are available:
 
 Tide supports temporary holds on merging into branches via the `blocker_label` configuration option.
 In order to use this option, set the `blocker_label` configuration option for the Tide deployment.
-Then, when blocking merges is required, if an issue is found with the label it will block merges to
+Then, when blocking merges is required, if an open issue is found with the label it will block merges to
 all branches for the repo. In order to scope the branches which are blocked, add a `branch:name` token
 to the issue title. These tokens can be repeated to select multiple branches and the tokens also support
 quoting, so `branch:"name"` will block the `name` branch just as `branch:name` would.
