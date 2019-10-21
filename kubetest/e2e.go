@@ -336,6 +336,17 @@ func getKubectlVersion(dp deployer) error {
 }
 
 func dumpRemoteLogs(deploy deployer, o options, path, reason string) []error {
+	if o.kubemark {
+		// For dumping kubemark logs with logexporter, we should use
+		// root cluster kubeconfig.
+		kubeconfigKubemark := os.Getenv("KUBECONFIG")
+		kubeconfigRoot := os.Getenv("KUBEMARK_ROOT_KUBECONFIG")
+		if err := os.Setenv("KUBECONFIG", kubeconfigRoot); err != nil {
+			return []error{err}
+		}
+		defer os.Setenv("KUBECONFIG", kubeconfigKubemark)
+	}
+
 	if reason != "" {
 		reason += " "
 	}
@@ -637,6 +648,11 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 
 	cwd, err := os.Getwd()
 	if err != nil {
+		return err
+	}
+
+	// Remember root cluster kubeconfig, this nescessary for dumping logs with logexporter.
+	if err := os.Setenv("KUBEMARK_ROOT_KUBECONFIG", os.Getenv("KUBECONFIG")); err != nil {
 		return err
 	}
 
