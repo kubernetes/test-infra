@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -65,7 +66,7 @@ func (o *options) validateConfigDir() error {
 		log.Fatalf("Config directory (%s) is not actually a directory", configDir)
 	}
 
-	_, err = os.Stat(path.Join(configDir, o.cloudbuildFile))
+	_, err = os.Stat(o.cloudbuildFile)
 	if os.IsNotExist(err) {
 		log.Fatalf("%s does not exist", o.cloudbuildFile)
 	}
@@ -170,7 +171,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 type variants map[string]map[string]string
 
 func getVariants(o options) (variants, error) {
-	content, err := ioutil.ReadFile("variants.yaml")
+	content, err := ioutil.ReadFile(path.Join(o.configDir, "variants.yaml"))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("failed to load variants.yaml: %v", err)
@@ -310,18 +311,28 @@ func main() {
 		}
 	}
 
+	if o.buildDir == "" {
+		o.buildDir = o.configDir
+	}
+
+	log.Printf("Build directory: %s\n", o.buildDir)
+
+	// Canonicalize the config directory to be an absolute path.
+	// As we're about to cd into the build directory, we need a consistent way to reference the config files
+	// when the config directory is not the same as the build directory.
+	absConfigDir, absErr := filepath.Abs(o.configDir)
+	if absErr != nil {
+		log.Fatalf("Could not resolve absolute path for config directory: %v", absErr)
+	}
+
+	o.configDir = absConfigDir
+	o.cloudbuildFile = path.Join(o.configDir, o.cloudbuildFile)
+
 	configDirErr := o.validateConfigDir()
 	if configDirErr != nil {
 		log.Fatalf("Could not validate config directory: %v", configDirErr)
 	}
 
-	if o.buildDir != "" {
-		o.cloudbuildFile = path.Join(o.configDir, o.cloudbuildFile)
-	} else {
-		o.buildDir = o.configDir
-	}
-
-	log.Printf("Build directory: %s\n", o.buildDir)
 	log.Printf("Config directory: %s\n", o.configDir)
 
 	log.Printf("cd-ing to build directory: %s\n", o.buildDir)
