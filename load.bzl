@@ -31,9 +31,10 @@ def repositories():
 
     git_repository(
         name = "io_bazel_rules_k8s",
-        commit = "9de8297b3bb96b010ddc69d025db058c72f7a609",
+        commit = "c7db606023bef31ca5c2ad49942f33c6137cb7f8",
         remote = "https://github.com/bazelbuild/rules_k8s.git",
-        shallow_since = "1570817943 -0400",
+        shallow_since = "1571437004 -0400",
+        # branch = master
     )
 
     # https://github.com/bazelbuild/rules_nodejs
