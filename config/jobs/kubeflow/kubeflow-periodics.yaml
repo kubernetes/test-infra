@@ -1,6 +1,7 @@
 periodics:
 - name: kubeflow-periodic-0-7
   # Might want to increase this after the 0.7 release is done.
+  # Other periodics run at 8h.
   interval: 4h
   labels:
     preset-service-account: "true"
