@@ -47,6 +47,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/alpine-bash/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -75,6 +76,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/boskosctl-base/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -161,6 +163,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - velodrome/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -219,6 +222,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - kettle/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -250,6 +254,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - planter/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -281,6 +286,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - triage/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -312,6 +318,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bazelbuild/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -343,6 +350,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bazel-krte/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -374,6 +382,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bigquery/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -405,6 +414,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bootstrap/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -436,6 +446,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/cluster-api/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -467,6 +478,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/gcb-docker-gcloud/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -498,6 +510,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/gcloud/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -529,6 +542,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/kubekins-e2e/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -591,6 +605,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/kubekins-test/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -622,6 +637,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/kubemci/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -653,6 +669,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/pull-test-infra-gubernator/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -684,6 +701,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/builder/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
