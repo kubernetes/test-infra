@@ -1,5 +1,4 @@
-Image Builder
-=============
+# Image Builder
 
 This image builder is sugar on top of `gcloud builds submit`. It offers the following features:
 
@@ -36,14 +35,14 @@ beyond `_GIT_TAG`.
 
 ## Usage
 
-```
+```shell
 bazel run //images/builder -- [options] path/to/image-directory/
 ```
 
-* `--allow-dirty`: If true, allow pushing dirty builds.
-* `--log-dir`: If provided, build logs will be sent to files in this directory instead of to stdout/stderr.
-* `--project`: If specified, use a non-default GCP project.
-* `--scratch-bucket`: If provided, the complete GCS path for Cloud Build to store scratch files (sources, logs). Necessary for upload reuse. If omitted, `gcloud` will create or reuse a bucket of its choosing.
-* `--variant`: If specified, build only the given variant. An error if no variants are defined.
-* `--env-passthrough`: A comma-separated list of environment variables to pass through as substitutions.
+- `--allow-dirty`: If true, allow pushing dirty builds.
+- `--log-dir`: If provided, build logs will be sent to files in this directory instead of to stdout/stderr.
+- `--project`: If specified, use a non-default GCP project.
+- `--scratch-bucket`: If provided, the complete GCS path for Cloud Build to store scratch files (sources, logs). Necessary for upload reuse. If omitted, `gcloud` will create or reuse a bucket of its choosing.
+- `--variant`: If specified, build only the given variant. An error if no variants are defined.
+- `--env-passthrough`: A comma-separated list of environment variables to pass through as substitutions.
   The substitution names will automatically be prefixed with underscores, as required by GCB.
