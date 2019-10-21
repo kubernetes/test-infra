@@ -2527,6 +2527,10 @@ func (f fakeRepoClient) UpdateRepo(owner, name string, want github.RepoUpdateReq
 	if name == "fail" {
 		return nil, fmt.Errorf("injected UpdateRepo failure")
 	}
+	if want.Archived != nil && !*want.Archived {
+		f.t.Errorf("UpdateRepo() called to unarchive a repo (not supported by API)")
+		return nil, fmt.Errorf("UpdateRepo() called to unarchive a repo (not supported by API)")
+	}
 
 	have, exists := f.repos[name]
 	if !exists {
@@ -2578,6 +2582,7 @@ func makeFakeRepoClient(t *testing.T, repos ...github.Repo) fakeRepoClient {
 func TestConfigureRepos(t *testing.T) {
 	orgName := "test-org"
 	isOrg := false
+	no := false
 
 	oldName := "old"
 	oldRepo := github.Repo{
@@ -2604,6 +2609,13 @@ func TestConfigureRepos(t *testing.T) {
 		Name: "fail",
 	}
 
+	unarchiveRepo := org.Repo{
+		Archived: &no,
+	}
+	archivedRepo := github.Repo{
+		Name:     oldName,
+		Archived: true,
+	}
 	testCases := []struct {
 		description     string
 		orgConfig       org.Config
@@ -2706,6 +2718,19 @@ func TestConfigureRepos(t *testing.T) {
 			repos:         []github.Repo{failRepo},
 			expectError:   true,
 			expectedRepos: []github.Repo{failRepo},
+		},
+		{
+			// https://developer.github.com/v3/repos/#edit
+			// "Note: You cannot unarchive repositories through the API."
+			description: "request to unarchive a repo fails",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: unarchiveRepo,
+				},
+			},
+			repos:         []github.Repo{archivedRepo},
+			expectError:   true,
+			expectedRepos: []github.Repo{archivedRepo},
 		},
 	}
 	for _, tc := range testCases {

@@ -968,6 +968,11 @@ func configureRepos(client repoClient, orgName string, orgConfig org.Config) err
 			logrus.WithField("repo", wantName).Info("repo exists, considering an update")
 			delta := newRepoUpdateRequest(current, wantName, wantRepo)
 			if delta != nil {
+				if delta.Archived != nil && !*delta.Archived {
+					logrus.WithField("repo", wantName).Error("asked to unarchive an archived repo, unsupported by GH API")
+					allErrors = append(allErrors, fmt.Errorf("asked to unarchive an archived repo, unsupported by GH API"))
+					continue
+				}
 				logrus.WithField("repo", wantName).Info("repo exists and differs from desired state, updating")
 				if _, err := client.UpdateRepo(orgName, current.Name, *delta); err != nil {
 					allErrors = append(allErrors, err)
