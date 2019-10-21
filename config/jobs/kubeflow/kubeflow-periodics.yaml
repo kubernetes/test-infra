@@ -1,4 +1,26 @@
 periodics:
+- name: kubeflow-periodic-0-7
+  # Might want to increase this after the 0.7 release is done.
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/kubeflow-ci/test-worker:latest
+      imagePullPolicy: Always
+      env:
+      - name: REPO_OWNER
+        value: kubeflow
+      - name: REPO_NAME
+        value: kubeflow
+      # TODO(https://github.com/kubeflow/testing/issues/498)
+      # This job needs to be moved over to kubeflow/kfctl v0.7-branch
+      # once it exists.
+      - name: BRANCH_NAME
+        value: master`
+  annotations:
+    testgrid-dashboards: sig-big-data
+    description: Periodic testing of Kubeflow on the 0-7 release
 - name: kubeflow-periodic-0-6-branch
   interval: 8h
   labels:
