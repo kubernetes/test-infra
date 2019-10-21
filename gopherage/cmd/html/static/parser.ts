@@ -29,21 +29,31 @@ export interface Block {
 }
 
 export class FileCoverage {
-  public blocks: Block[] = [];
+  private blocks: Map<string, Block> = new Map<string, Block>();
 
   constructor(readonly filename: string, readonly fileNumber: number) {}
 
   public addBlock(block: Block) {
-    this.blocks.push(block);
+    const k = this.keyForBlock(block);
+    const oldBlock = this.blocks.get(k);
+    if (oldBlock) {
+      oldBlock.hits += block.hits;
+    } else {
+      this.blocks.set(k, block);
+    }
   }
 
   get totalStatements(): number {
-    return this.blocks.reduce((acc, b) => acc + b.statements, 0);
+    return reduce(this.blocks.values(), (acc, b) => acc + b.statements, 0);
   }
 
   get coveredStatements(): number {
-    return this.blocks.reduce(
+    return reduce(this.blocks.values(),
         (acc, b) => acc + (b.hits > 0 ? b.statements : 0), 0);
+  }
+
+  private keyForBlock(block: Block): string {
+    return `${block.start.line}.${block.start.col},${block.end.line}.${block.end.col}`;
   }
 }
 
