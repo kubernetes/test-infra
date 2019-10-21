@@ -21,7 +21,7 @@ alias(
 filegroup(
     name = "prowjobs",
     srcs = glob([
-        "jobs/**/*.yaml",
+        "jobs/**",
     ]),
 )
 
@@ -29,6 +29,7 @@ filegroup(
     name = "testgrids",
     srcs = glob([
         "testgrids/**/*.yaml",
+        "testgrids/**/*.yml",
     ]),
 )
 
