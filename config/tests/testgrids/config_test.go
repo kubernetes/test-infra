@@ -50,6 +50,7 @@ var (
 		"vmware",
 		"gardener",
 		"jetstack",
+		"kyma",
 	}
 	orgs = []string{
 		"conformance",
