@@ -1,6 +1,7 @@
-# GCB Builder
+Image Builder
+=============
 
-This builder is sugar on top of `gcloud builds submit`. It offers the following features:
+This image builder is sugar on top of `gcloud builds submit`. It offers the following features:
 
 - Automatically injecting the standard commit-based tag (e.g. `20190403-dddd315ad-dirty`) as `_GIT_TAG`
 - Optionally blocking pushes of dirty builds
@@ -13,38 +14,36 @@ and `cloudbuild.yaml`. For example, a subset of the `kubekins-e2e` variants look
 
 ```yaml
 variants:
-  '1.16':
-    CONFIG: '1.16'
-    GO_VERSION: 1.12.12
-    K8S_RELEASE: stable-1.16
-    BAZEL_VERSION: 0.23.2
-  '1.15':
-    CONFIG: '1.15'
-    GO_VERSION: 1.12.12
-    K8S_RELEASE: stable-1.15
-    BAZEL_VERSION: 0.23.2
+  '1.14':
+    CONFIG: '1.14'
+    GO_VERSION: 1.12.1
+    K8S_RELEASE: latest
+    BAZEL_VERSION: 0.21.0
+  '1.13':
+    CONFIG: '1.13'
+    GO_VERSION: 1.11.5
+    K8S_RELEASE: stable-1.13
+    BAZEL_VERSION: 0.18.1
 ```
 
-By default, the image builder will build both the `1.15` and `1.16` groups simultaneously.
-If `--log-dir` is specified, it will write the build logs for each to `1.15.log` and `1.16.log`.
+By default, the image builder will build both the `1.13` and `1.14` groups simultaneously.
+If `--log-dir` is specified, it will write the build logs for each to `1.13.log` and `1.14.log`.
 
-Alternatively, you can use `--variant` to build only one variant, e.g. `--variant 1.15`.
+Alternatively, you can use `--variant` to build only one variant, e.g. `--variant 1.13`.
 
 If no `variants.yaml` is specified, `cloudbuild.yaml` will be run once with no extra substitutions
 beyond `_GIT_TAG`.
 
 ## Usage
 
-```shell
-bazel run //images/builder -- [options] path/to/build-directory/
+```
+bazel run //images/builder -- [options] path/to/image-directory/
 ```
 
-- `--allow-dirty`: If true, allow pushing dirty builds.
-- `--log-dir`: If provided, build logs will be sent to files in this directory instead of to stdout/stderr.
-- `--project`: If specified, use a non-default GCP project.
-- `--scratch-bucket`: If provided, the complete GCS path for Cloud Build to store scratch files (sources, logs). Necessary for upload reuse. If omitted, `gcloud` will create or reuse a bucket of its choosing.
-- `--variant`: If specified, build only the given variant. An error if no variants are defined.
-- `--env-passthrough`: Comma-separated list of specified environment variables to be passed to GCB as substitutions with an underscore (`_`) prefix. If the variable doesn't exist, the substitution will exist but be empty.
-- `--build-dir`: If provided, this directory will be uploaded as the source for the Google Cloud Build run.
-- `--gcb-config`: If provided, this will be used as the name of the Google Cloud Build config file.
-- `--no-source`: If true, no source will be uploaded with this build.
+* `--allow-dirty`: If true, allow pushing dirty builds.
+* `--log-dir`: If provided, build logs will be sent to files in this directory instead of to stdout/stderr.
+* `--project`: If specified, use a non-default GCP project.
+* `--scratch-bucket`: If provided, the complete GCS path for Cloud Build to store scratch files (sources, logs). Necessary for upload reuse. If omitted, `gcloud` will create or reuse a bucket of its choosing.
+* `--variant`: If specified, build only the given variant. An error if no variants are defined.
+* `--env-passthrough`: A comma-separated list of environment variables to pass through as substitutions.
+  The substitution names will automatically be prefixed with underscores, as required by GCB.
