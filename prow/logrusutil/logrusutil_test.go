@@ -14,44 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package secret
+package logrusutil
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 func TestCensoringFormatter(t *testing.T) {
-	var err error
-	secret1, err := ioutil.TempFile("", "")
-	if err != nil {
-		t.Fatalf("failed to set up a temporary file: %v", err)
-	}
-	if _, err := secret1.WriteString("SECRET"); err != nil {
-		t.Fatalf("failed to write a fake secret to a file: %v", err)
-	}
-	defer secret1.Close()
-	defer os.Remove(secret1.Name())
-	secret2, err := ioutil.TempFile("", "")
-	if err != nil {
-		t.Fatalf("failed to set up a temporary file: %v", err)
-	}
-	if _, err := secret2.WriteString("MYSTERY"); err != nil {
-		t.Fatalf("failed to write a fake secret to a file: %v", err)
-	}
-	defer secret2.Close()
-	defer os.Remove(secret2.Name())
-
-	agent := Agent{}
-	if err = agent.Start([]string{secret1.Name(), secret2.Name()}); err != nil {
-		t.Fatalf("failed to start a secret agent: %v", err)
-	}
 
 	testCases := []struct {
 		description string
@@ -84,7 +58,9 @@ func TestCensoringFormatter(t *testing.T) {
 		DisableColors:    true,
 		DisableTimestamp: true,
 	}
-	formatter := logrusutil.NewCensoringFormatter(baseFormatter, agent.getSecrets)
+	formatter := NewCensoringFormatter(baseFormatter, func() sets.String {
+		return sets.NewString("MYSTERY", "SECRET")
+	})
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
