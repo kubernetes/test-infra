@@ -66,6 +66,9 @@ type Repo struct {
 	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
 	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
 
+	DefaultBranch *string `json:"default_branch,omitempty"`
+	Archived      *bool   `json:"archived,omitempty"`
+
 	OnCreate *RepoCreateOptions `json:"on_create,omitempty"`
 }
 
