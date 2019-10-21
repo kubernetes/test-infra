@@ -24,7 +24,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -55,26 +54,21 @@ func getVersion() (string, error) {
 	return fmt.Sprintf("v%s-%s", t, strings.TrimSpace(string(output))), nil
 }
 
-func (o *options) validateConfigDir() error {
-	configDir := o.configDir
-	dirInfo, err := os.Stat(o.configDir)
-	if os.IsNotExist(err) {
-		log.Fatalf("Config directory (%s) does not exist", configDir)
+func cdToRootDir() error {
+	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
+		if err := os.Chdir(bazelWorkspace); err != nil {
+			return fmt.Errorf("failed to chdir to bazel workspace (%s): %v", bazelWorkspace, err)
+		}
 	}
-
-	if !dirInfo.IsDir() {
-		log.Fatalf("Config directory (%s) is not actually a directory", configDir)
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	output, err := cmd.Output()
+	if err != nil {
+		return err
 	}
-
-	_, err = os.Stat(o.cloudbuildFile)
-	if os.IsNotExist(err) {
-		log.Fatalf("%s does not exist", o.cloudbuildFile)
-	}
-
-	return nil
+	return os.Chdir(strings.TrimSpace(string(output)))
 }
 
-func (o *options) uploadBuildDir(targetBucket string) (string, error) {
+func uploadWorkingDir(targetBucket string) (string, error) {
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %v", err)
@@ -115,45 +109,33 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 	for k, v := range subs {
 		s = append(s, fmt.Sprintf("_%s=%s", k, v))
 	}
-
 	s = append(s, "_GIT_TAG="+version)
 	args := []string{
 		"builds", "submit",
-		"--config", o.cloudbuildFile,
+		"--config", path.Join(o.imageDirectory, "cloudbuild.yaml"),
 		"--substitutions", strings.Join(s, ","),
 	}
-
 	if o.project != "" {
 		args = append(args, "--project", o.project)
 	}
-
 	if o.scratchBucket != "" {
 		args = append(args, "--gcs-log-dir", o.scratchBucket+gcsLogsDir)
 		args = append(args, "--gcs-source-staging-dir", o.scratchBucket+gcsSourceDir)
 	}
-
 	if uploaded != "" {
 		args = append(args, uploaded)
 	} else {
-		if o.noSource {
-			args = append(args, "--no-source")
-		} else {
-			args = append(args, ".")
-		}
+		args = append(args, ".")
 	}
-
 	cmd := exec.Command("gcloud", args...)
 
 	if o.logDir != "" {
 		p := path.Join(o.logDir, jobName+".log")
 		f, err := os.Create(p)
-
 		if err != nil {
 			return fmt.Errorf("couldn't create %s: %v", p, err)
 		}
-
 		defer f.Close()
-
 		cmd.Stdout = f
 		cmd.Stderr = f
 	} else {
@@ -171,7 +153,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 type variants map[string]map[string]string
 
 func getVariants(o options) (variants, error) {
-	content, err := ioutil.ReadFile(path.Join(o.configDir, "variants.yaml"))
+	content, err := ioutil.ReadFile(path.Join(o.imageDirectory, "variants.yaml"))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("failed to load variants.yaml: %v", err)
@@ -200,12 +182,10 @@ func getVariants(o options) (variants, error) {
 func runBuildJobs(o options) []error {
 	var uploaded string
 	if o.scratchBucket != "" {
-		if !o.noSource {
-			var err error
-			uploaded, err = o.uploadBuildDir(o.scratchBucket + gcsSourceDir)
-			if err != nil {
-				return []error{fmt.Errorf("failed to upload source: %v", err)}
-			}
+		var err error
+		uploaded, err = uploadWorkingDir(o.scratchBucket + gcsSourceDir)
+		if err != nil {
+			return []error{fmt.Errorf("failed to upload source: %v", err)}
 		}
 	} else {
 		log.Println("Skipping advance upload and relying on gcloud...")
@@ -256,14 +236,11 @@ func runBuildJobs(o options) []error {
 }
 
 type options struct {
-	buildDir       string
-	configDir      string
-	cloudbuildFile string
 	logDir         string
 	scratchBucket  string
+	imageDirectory string
 	project        string
 	allowDirty     bool
-	noSource       bool
 	variant        string
 	envPassthrough string
 }
@@ -280,69 +257,30 @@ func mergeMaps(maps ...map[string]string) map[string]string {
 
 func parseFlags() options {
 	o := options{}
-	flag.StringVar(&o.buildDir, "build-dir", "", "If provided, this directory will be uploaded as the source for the Google Cloud Build run.")
-	flag.StringVar(&o.cloudbuildFile, "gcb-config", "cloudbuild.yaml", "If provided, this will be used as the name of the Google Cloud Build config file.")
 	flag.StringVar(&o.logDir, "log-dir", "", "If provided, build logs will be sent to files in this directory instead of to stdout/stderr.")
 	flag.StringVar(&o.scratchBucket, "scratch-bucket", "", "The complete GCS path for Cloud Build to store scratch files (sources, logs).")
 	flag.StringVar(&o.project, "project", "", "If specified, use a non-default GCP project.")
 	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds.")
-	flag.BoolVar(&o.noSource, "no-source", false, "If true, no source will be uploaded with this build.")
 	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")
-	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as substitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
-
+	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as subtitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
 	flag.Parse()
-
 	if flag.NArg() < 1 {
-		_, _ = fmt.Fprintln(os.Stderr, "expected a config directory to be provided")
+		_, _ = fmt.Fprintln(os.Stderr, "expected an image directory to be provided")
 		os.Exit(1)
 	}
-
-	o.configDir = strings.TrimSuffix(flag.Arg(0), "/")
-
+	o.imageDirectory = flag.Arg(0)
 	return o
 }
 
 func main() {
 	o := parseFlags()
-
-	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
-		if err := os.Chdir(bazelWorkspace); err != nil {
-			log.Fatalf("Failed to chdir to bazel workspace (%s): %v", bazelWorkspace, err)
-		}
-	}
-
-	if o.buildDir == "" {
-		o.buildDir = o.configDir
-	}
-
-	log.Printf("Build directory: %s\n", o.buildDir)
-
-	// Canonicalize the config directory to be an absolute path.
-	// As we're about to cd into the build directory, we need a consistent way to reference the config files
-	// when the config directory is not the same as the build directory.
-	absConfigDir, absErr := filepath.Abs(o.configDir)
-	if absErr != nil {
-		log.Fatalf("Could not resolve absolute path for config directory: %v", absErr)
-	}
-
-	o.configDir = absConfigDir
-	o.cloudbuildFile = path.Join(o.configDir, o.cloudbuildFile)
-
-	configDirErr := o.validateConfigDir()
-	if configDirErr != nil {
-		log.Fatalf("Could not validate config directory: %v", configDirErr)
-	}
-
-	log.Printf("Config directory: %s\n", o.configDir)
-
-	log.Printf("cd-ing to build directory: %s\n", o.buildDir)
-	if err := os.Chdir(o.buildDir); err != nil {
-		log.Fatalf("Failed to chdir to build directory (%s): %v", o.buildDir, err)
+	if err := cdToRootDir(); err != nil {
+		log.Fatalf("Failed to cd to root: %v\n", err)
 	}
 
 	errors := runBuildJobs(o)
 	if len(errors) != 0 {
-		log.Fatalf("Failed to run some build jobs: %v", errors)
+		log.Fatalf("Failed to push some images: %v", errors)
 	}
 	log.Println("Finished.")
 }
