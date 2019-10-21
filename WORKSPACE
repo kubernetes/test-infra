@@ -12,7 +12,6 @@ _repo_infra_repos()
 load("@io_k8s_repo_infra//:repos.bzl", "configure")
 
 configure(
-    go_modules = None,
     go_version = "1.13",
     nogo = "@//:nogo_vet",
 )
