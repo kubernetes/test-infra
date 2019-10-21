@@ -28,7 +28,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-master
 
 # manual-release-bump-required (add a job for the new version and delete the job for the oldest version)
 - interval: 6h
@@ -77,7 +77,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.13
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-1.13
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.13 (release)
@@ -104,7 +104,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-1.14
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.14 (release)
@@ -131,7 +131,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-1.15
   annotations:
     testgrid-dashboards: conformance-all, conformance-gce
     testgrid-tab-name: GCE, v1.15 (release)
