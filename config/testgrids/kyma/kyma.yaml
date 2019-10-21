@@ -167,6 +167,15 @@ dashboards:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
+  - name: Kyma kind integration
+    description: Tracks that Kyma is able to run on kind
+    test_group_name: kyma-kind-integration
+    # alert_options:
+    #   alert_mail_to_addresses: email-here@sap.com
+    code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
 
   #weekly
   - name: Kyma GKE weekly
@@ -199,7 +208,7 @@ dashboards:
     open_bug_template:
       url: https://github.com/kyma-incubator/hydroform/issues/
 
-  # Kyma presubmit dashboard
+  # Kyma release dashboard
 - name: kyma-release
   dashboard_tab:
   - name: Kyma release 1.6
@@ -363,6 +372,16 @@ dashboards:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
+  - name: Kyma kind integration
+    description: Tracks that Kyma is able to run on kind
+    test_group_name: kyma-kind-integration
+    # alert_options:
+    #   alert_mail_to_addresses: email-here@sap.com
+    code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+
 
   # Kyma weekly dashboard
 - name: kyma-weekly
@@ -458,6 +477,10 @@ test_groups:
 - name: kyma-aks-nightly
   gcs_prefix: kyma-prow-logs/logs/kyma-aks-nightly
   num_failures_to_alert: 1
+- name: kyma-kind-integration
+  gcs_prefix: kyma-prow-logs/logs/kyma-kind-integration
+  num_failures_to_alert: 1
+
 
 #weekly
 - name: kyma-gke-weekly
