@@ -783,7 +783,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191021-v2.3.1-34-ge32056e
         command:
         - cip
         args:
@@ -808,7 +808,7 @@ postsubmits:
   - name: post-k8sio-cip
     cluster: test-infra-trusted
     decorate: true
-    run_if_changed: "k8s.gcr.io/.*/manifest.yaml"
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     # Never run more than 1 job at a time. This is because we don't want to run
     # into a case where an older manifest PR merge gets run last (after a newer
     # one).
@@ -817,11 +817,11 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191021-v2.3.1-34-ge32056e
         command:
         - cip
         args:
-        - -manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
         - -dry-run=false
         volumeMounts:
@@ -1212,11 +1212,11 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191021-v2.3.1-34-ge32056e
       command:
       - cip
       args:
-      - -manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
       - -dry-run=false
       volumeMounts:
