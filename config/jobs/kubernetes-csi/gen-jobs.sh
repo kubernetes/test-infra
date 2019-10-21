@@ -25,7 +25,7 @@ latest_stable_k8s_version="1.15.0"
 latest_stable_k8s_minor_version="1.15"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190927-21e0205-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -36,7 +36,6 @@ csi-driver-host-path
 external-attacher
 external-provisioner
 external-resizer
-external-snapshotter
 livenessprobe
 node-driver-registrar
 "
@@ -58,6 +57,7 @@ csi-release-tools
 csi-lib-utils
 csi-driver-flex
 csi-proxy
+external-snapshotter
 "
 
 # No Prow support in them yet.
