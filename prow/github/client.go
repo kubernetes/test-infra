@@ -153,6 +153,7 @@ type RepositoryClient interface {
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) error
 	ListRepoTeams(org, repo string) ([]Team, error)
+	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*Repo, error)
 }
 
 // TeamClient interface for team related API actions
@@ -1667,6 +1668,34 @@ func (c *client) GetRepo(owner, name string) (Repo, error) {
 		exitCodes: []int{200},
 	}, &repo)
 	return repo, err
+}
+
+// CreateRepo creates a new repository
+// See https://developer.github.com/v3/repos/#create
+func (c *client) CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*Repo, error) {
+	c.log("CreateRepo", owner, isUser, repo)
+
+	if repo.Name == nil || *repo.Name == "" {
+		return nil, errors.New("repo.Name must be non-empty")
+	}
+	if c.fake {
+		return nil, nil
+	} else if c.dry {
+		return repo.ToRepo(), nil
+	}
+
+	path := "/user/repos"
+	if !isUser {
+		path = fmt.Sprintf("/orgs/%s/repos", owner)
+	}
+	var retRepo Repo
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        path,
+		requestBody: &repo,
+		exitCodes:   []int{201},
+	}, &retRepo)
+	return &retRepo, err
 }
 
 // GetRepos returns all repos in an org.

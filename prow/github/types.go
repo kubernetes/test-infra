@@ -300,19 +300,83 @@ type PullRequestChange struct {
 // Repo contains general repository information.
 // See also https://developer.github.com/v3/repos/#get
 type Repo struct {
-	Owner         User   `json:"owner"`
-	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
-	HTMLURL       string `json:"html_url"`
-	Fork          bool   `json:"fork"`
-	DefaultBranch string `json:"default_branch"`
-	Archived      bool   `json:"archived"`
-
+	Owner            User   `json:"owner"`
+	Name             string `json:"name"`
+	FullName         string `json:"full_name"`
+	HTMLURL          string `json:"html_url"`
+	Fork             bool   `json:"fork"`
+	DefaultBranch    string `json:"default_branch"`
+	Archived         bool   `json:"archived"`
+	Private          bool   `json:"private"`
+	Description      string `json:"description"`
+	Homepage         string `json:"homepage"`
+	HasIssues        bool   `json:"has_issues"`
+	HasProjects      bool   `json:"has_projects"`
+	HasWiki          bool   `json:"has_wiki"`
+	AllowSquashMerge bool   `json:"allow_squash_merge"`
+	AllowMergeCommit bool   `json:"allow_merge_commit"`
+	AllowRebaseMerge bool   `json:"allow_rebase_merge"`
 	// Permissions reflect the permission level for the requester, so
 	// on a repository GET call this will be for the user whose token
 	// is being used, if listing a team's repos this will be for the
 	// team's privilege level in the repo
 	Permissions RepoPermissions `json:"permissions"`
+}
+
+// RepoRequest contains metadata used in requests to create or update a Repo.
+// Compared to `Repo`, its members are pointers to allow the "not set/use default
+// semantics.
+// See also:
+// - https://developer.github.com/v3/repos/#create
+// - https://developer.github.com/v3/repos/#edit
+type RepoRequest struct {
+	Name             *string `json:"name,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	Homepage         *string `json:"homepage,omitempty"`
+	Private          *bool   `json:"private,omitempty"`
+	HasIssues        *bool   `json:"has_issues,omitempty"`
+	HasProjects      *bool   `json:"has_projects,omitempty"`
+	HasWiki          *bool   `json:"has_wiki,omitempty"`
+	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+}
+
+// RepoCreateRequest contains metadata used in requests to create a repo.
+// See also: https://developer.github.com/v3/repos/#create
+type RepoCreateRequest struct {
+	RepoRequest `json:",omitempty"`
+
+	AutoInit          *bool   `json:"auto_init,omitempty"`
+	GitignoreTemplate *string `json:"gitignore_template,omitempty"`
+	LicenseTemplate   *string `json:"license_template,omitempty"`
+}
+
+func (r RepoCreateRequest) ToRepo() *Repo {
+	setString := func(dest, src *string) {
+		if src != nil {
+			*dest = *src
+		}
+	}
+	setBool := func(dest, src *bool) {
+		if src != nil {
+			*dest = *src
+		}
+	}
+
+	var repo Repo
+	setString(&repo.Name, r.Name)
+	setString(&repo.Description, r.Description)
+	setString(&repo.Homepage, r.Homepage)
+	setBool(&repo.Private, r.Private)
+	setBool(&repo.HasIssues, r.HasIssues)
+	setBool(&repo.HasProjects, r.HasProjects)
+	setBool(&repo.HasWiki, r.HasWiki)
+	setBool(&repo.AllowSquashMerge, r.AllowSquashMerge)
+	setBool(&repo.AllowMergeCommit, r.AllowMergeCommit)
+	setBool(&repo.AllowRebaseMerge, r.AllowRebaseMerge)
+
+	return &repo
 }
 
 // RepoPermissions describes which permission level an entity has in a

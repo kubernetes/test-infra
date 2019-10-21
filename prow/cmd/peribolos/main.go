@@ -57,6 +57,7 @@ type options struct {
 	fixTeamMembers    bool
 	fixTeams          bool
 	fixTeamRepos      bool
+	fixRepos          bool
 	ignoreSecretTeams bool
 	github            flagutil.GitHubOptions
 	tokenBurst        int
@@ -90,6 +91,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
 	flags.BoolVar(&o.fixTeamMembers, "fix-team-members", false, "Add/remove team members if set")
 	flags.BoolVar(&o.fixTeamRepos, "fix-team-repos", false, "Add/remove team permissions on repos if set")
+	flags.BoolVar(&o.fixRepos, "fix-repos", false, "Create repositories if set")
 	flags.StringVar(&o.logLevel, "log-level", logrus.InfoLevel.String(), fmt.Sprintf("Logging level, one of %v", logrus.AllLevels))
 	o.github.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
@@ -204,6 +206,7 @@ type dumpClient interface {
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	ListTeamRepos(id int) ([]github.Repo, error)
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
 }
 
 func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
@@ -328,6 +331,27 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	out.Teams = make(map[string]org.Team, len(tops))
 	for _, id := range tops {
 		out.Teams[names[id]] = makeChild(id)
+	}
+
+	repos, err := client.GetRepos(orgName, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list org repos: %v", err)
+	}
+	logrus.Debugf("Found %d repos", len(repos))
+	out.Repos = make(map[string]org.Repo, len(repos))
+	for idx, repo := range repos {
+		logrus.WithField("repo", repo.FullName).Debug("Recording repo.")
+		out.Repos[repos[idx].Name] = org.Repo{
+			Description:      &repos[idx].Description,
+			HomePage:         &repos[idx].Homepage,
+			Private:          &repos[idx].Private,
+			HasIssues:        &repos[idx].HasIssues,
+			HasProjects:      &repos[idx].HasProjects,
+			HasWiki:          &repos[idx].HasWiki,
+			AllowMergeCommit: &repos[idx].AllowMergeCommit,
+			AllowSquashMerge: &repos[idx].AllowSquashMerge,
+			AllowRebaseMerge: &repos[idx].AllowRebaseMerge,
+		}
 	}
 
 	return &out, nil
@@ -784,6 +808,13 @@ func configureOrg(opt options, client github.Client, orgName string, orgConfig o
 		return fmt.Errorf("failed to configure %s members: %v", orgName, err)
 	}
 
+	// Create repositories in the org
+	if !opt.fixRepos {
+		logrus.Info("Skipping org repositories configuration")
+	} else if err := configureRepos(client, orgName, orgConfig); err != nil {
+		return fmt.Errorf("failed to configure %s repos: %v", orgName, err)
+	}
+
 	if !opt.fixTeams {
 		logrus.Infof("Skipping team and team member configuration")
 		return nil
@@ -810,6 +841,84 @@ func configureOrg(opt options, client github.Client, orgName string, orgConfig o
 		}
 	}
 	return nil
+}
+
+type repoClient interface {
+	GetRepos(orgName string, isUser bool) ([]github.Repo, error)
+	CreateRepo(owner string, isUser bool, repo github.RepoCreateRequest) (*github.Repo, error)
+}
+
+func newRepoCreateRequest(name string, definition org.Repo) github.RepoCreateRequest {
+	repoCreate := github.RepoCreateRequest{
+		RepoRequest: github.RepoRequest{
+			Name:             &name,
+			Description:      definition.Description,
+			Homepage:         definition.HomePage,
+			Private:          definition.Private,
+			HasIssues:        definition.HasIssues,
+			HasProjects:      definition.HasProjects,
+			HasWiki:          definition.HasWiki,
+			AllowSquashMerge: definition.AllowSquashMerge,
+			AllowMergeCommit: definition.AllowMergeCommit,
+			AllowRebaseMerge: definition.AllowRebaseMerge,
+		},
+	}
+
+	if definition.OnCreate != nil {
+		repoCreate.AutoInit = definition.OnCreate.AutoInit
+		repoCreate.GitignoreTemplate = definition.OnCreate.GitignoreTemplate
+		repoCreate.LicenseTemplate = definition.OnCreate.LicenseTemplate
+	}
+
+	return repoCreate
+}
+
+func validateRepos(repos map[string]org.Repo) error {
+	seen := map[string]string{}
+	var dups []string
+
+	for name := range repos {
+		normName := strings.ToLower(name)
+		if seenName, have := seen[normName]; have {
+			dups = append(dups, fmt.Sprintf("%s/%s", seenName, name))
+			continue
+		}
+		seen[normName] = name
+	}
+
+	if len(dups) > 0 {
+		return fmt.Errorf("found duplicate repo names (GitHub repo names are case-insensitive): %s", strings.Join(dups, ", "))
+	}
+
+	return nil
+}
+
+func configureRepos(client repoClient, orgName string, orgConfig org.Config) error {
+	if err := validateRepos(orgConfig.Repos); err != nil {
+		return err
+	}
+
+	repoList, err := client.GetRepos(orgName, false)
+	if err != nil {
+		return fmt.Errorf("failed to get repos: %v", err)
+	}
+	logrus.Debugf("Found %d repositories", len(repoList))
+	byName := make(map[string]github.Repo, len(repoList))
+	for _, repo := range repoList {
+		byName[strings.ToLower(repo.Name)] = repo
+	}
+
+	var createErrors []error
+	for wantName, wantRepo := range orgConfig.Repos {
+		if _, have := byName[strings.ToLower(wantName)]; !have {
+			logrus.WithField("repo", wantName).Info("repo does not exist, creating")
+			if _, err := client.CreateRepo(orgName, false, newRepoCreateRequest(wantName, wantRepo)); err != nil {
+				createErrors = append(createErrors, err)
+			}
+		}
+	}
+
+	return errorutil.NewAggregate(createErrors...)
 }
 
 func configureTeamAndMembers(opt options, client github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {

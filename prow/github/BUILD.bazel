@@ -19,6 +19,7 @@ go_test(
     deps = [
         "//ghproxy/ghcache:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
+        "@io_k8s_utils//diff:go_default_library",
     ],
 )
 

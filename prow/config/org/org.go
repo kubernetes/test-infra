@@ -44,12 +44,38 @@ type Metadata struct {
 	MembersCanCreateRepositories *bool                       `json:"members_can_create_repositories,omitempty"`
 }
 
+// RepoCreateOptions declares options for creating new repos
+// See https://developer.github.com/v3/repos/#create
+type RepoCreateOptions struct {
+	AutoInit          *bool   `json:"auto_init,omitempty"`
+	GitignoreTemplate *string `json:"gitignore_template,omitempty"`
+	LicenseTemplate   *string `json:"license_template,omitempty"`
+}
+
+// Repo declares metadata about the GitHub repository
+//
+// See https://developer.github.com/v3/repos/#edit
+type Repo struct {
+	Description      *string `json:"description,omitempty"`
+	HomePage         *string `json:"homepage,omitempty"`
+	Private          *bool   `json:"private,omitempty"`
+	HasIssues        *bool   `json:"has_issues,omitempty"`
+	HasProjects      *bool   `json:"has_projects,omitempty"`
+	HasWiki          *bool   `json:"has_wiki,omitempty"`
+	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+
+	OnCreate *RepoCreateOptions `json:"on_create,omitempty"`
+}
+
 // Config declares org metadata as well as its people and teams.
 type Config struct {
 	Metadata
 	Teams   map[string]Team `json:"teams,omitempty"`
 	Members []string        `json:"members,omitempty"`
 	Admins  []string        `json:"admins,omitempty"`
+	Repos   map[string]Repo `json:"repos,omitempty"`
 }
 
 // TeamMetadata declares metadata about the github team.

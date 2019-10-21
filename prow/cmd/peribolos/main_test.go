@@ -1728,6 +1728,9 @@ func TestDumpOrgConfig(t *testing.T) {
 	pub := org.Privacy("")
 	secret := org.Secret
 	closed := org.Closed
+	repoName := "project"
+	repoDescription := "awesome testing project"
+	repoHomepage := "https://www.somewhe.re/something/"
 	cases := []struct {
 		name              string
 		orgOverride       string
@@ -1739,6 +1742,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		teamMembers       map[int][]string
 		maintainers       map[int][]string
 		repoPermissions   map[int][]github.Repo
+		repos             []github.Repo
 		expected          org.Config
 		err               bool
 	}{
@@ -1769,6 +1773,15 @@ func TestDumpOrgConfig(t *testing.T) {
 				{
 					Name: "fred",
 					ID:   -1,
+				},
+			},
+		},
+		{
+			name: "fails if GetTeams fails",
+			err:  true,
+			repos: []github.Repo{
+				{
+					Name: "fail",
 				},
 			},
 		},
@@ -1815,6 +1828,9 @@ func TestDumpOrgConfig(t *testing.T) {
 				5: {},
 				6: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}},
 				7: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}, {Name: "admin-repo", Permissions: github.RepoPermissions{Admin: true}}},
+			},
+			repos: []github.Repo{
+				{Name: repoName, Description: repoDescription, Homepage: repoHomepage, Private: false, HasIssues: true, HasProjects: true, HasWiki: true},
 			},
 			expected: org.Config{
 				Metadata: org.Metadata{
@@ -1869,6 +1885,19 @@ func TestDumpOrgConfig(t *testing.T) {
 				},
 				Members: []string{"george", "jungle", "banana"},
 				Admins:  []string{"james", "giant", "peach"},
+				Repos: map[string]org.Repo{
+					"project": {
+						Description:      &repoDescription,
+						HomePage:         &repoHomepage,
+						Private:          &no,
+						HasIssues:        &yes,
+						HasProjects:      &yes,
+						HasWiki:          &yes,
+						AllowMergeCommit: &no,
+						AllowRebaseMerge: &no,
+						AllowSquashMerge: &no,
+					},
+				},
 			},
 		},
 		{
@@ -1970,6 +1999,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				},
 				Members: []string{"george", "jungle", "banana"},
 				Admins:  []string{"james", "giant", "peach"},
+				Repos:   map[string]org.Repo{},
 			},
 		},
 	}
@@ -1989,6 +2019,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				teamMembers:     tc.teamMembers,
 				maintainers:     tc.maintainers,
 				repoPermissions: tc.repoPermissions,
+				repos:           tc.repos,
 			}
 			actual, err := dumpOrgConfig(fc, orgName, tc.ignoreSecretTeams)
 			switch {
@@ -2021,6 +2052,7 @@ type fakeDumpClient struct {
 	teamMembers     map[int][]string
 	maintainers     map[int][]string
 	repoPermissions map[int][]github.Repo
+	repos           []github.Repo
 }
 
 func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
@@ -2094,6 +2126,16 @@ func (c fakeDumpClient) ListTeamRepos(id int) ([]github.Repo, error) {
 	}
 
 	return c.repoPermissions[id], nil
+}
+
+func (c fakeDumpClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	for _, repo := range c.repos {
+		if repo.Name == "fail" {
+			return nil, fmt.Errorf("injected GetRepos error")
+		}
+	}
+
+	return c.repos, nil
 }
 
 func fixup(ret *org.Config) {
@@ -2439,5 +2481,241 @@ func TestConfigureTeamRepos(t *testing.T) {
 		if actual, expected := client.repos, testCase.expected; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: got incorrect team repos: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
+	}
+}
+
+type fakeRepoClient struct {
+	t     *testing.T
+	repos map[string]github.Repo
+}
+
+func (f fakeRepoClient) GetRepos(orgName string, isUser bool) ([]github.Repo, error) {
+	if orgName == "fail" {
+		return nil, fmt.Errorf("injected GetRepos failure")
+	}
+
+	repos := make([]github.Repo, 0, len(f.repos))
+	for _, repo := range f.repos {
+		repos = append(repos, repo)
+	}
+
+	// sort for deterministic output
+	sort.Slice(repos, func(i, j int) bool {
+		return repos[i].Name < repos[j].Name
+	})
+
+	return repos, nil
+}
+
+func (f fakeRepoClient) CreateRepo(owner string, isUser bool, repoReq github.RepoCreateRequest) (*github.Repo, error) {
+	if *repoReq.Name == "fail" {
+		return nil, fmt.Errorf("injected CreateRepo failure")
+	}
+
+	if _, hasRepo := f.repos[*repoReq.Name]; hasRepo {
+		f.t.Errorf("CreateRepo() called on repo that already exists")
+		return nil, fmt.Errorf("CreateRepo() called on repo that already exists")
+	}
+
+	repo := repoReq.ToRepo()
+	f.repos[*repoReq.Name] = *repo
+
+	return repo, nil
+}
+
+func makeFakeRepoClient(t *testing.T, repos ...github.Repo) fakeRepoClient {
+	fc := fakeRepoClient{
+		repos: make(map[string]github.Repo, len(repos)),
+		t:     t,
+	}
+	for _, repo := range repos {
+		fc.repos[repo.Name] = repo
+	}
+
+	return fc
+}
+
+func TestConfigureRepos(t *testing.T) {
+	orgName := "test-org"
+	isOrg := false
+
+	oldName := "old"
+	oldRepo := github.Repo{
+		Name:        oldName,
+		FullName:    fmt.Sprintf("%s/%s", orgName, oldName),
+		Description: "An old existing repository",
+	}
+
+	newName := "new"
+	newDescription := "A new repository."
+	newConfigRepo := org.Repo{
+		Description: &newDescription,
+	}
+	newRepo := github.Repo{
+		Name:        newName,
+		Description: newDescription,
+	}
+
+	fail := "fail"
+	failConfigRepo := org.Repo{
+		Description: &newDescription,
+	}
+
+	testCases := []struct {
+		description     string
+		orgConfig       org.Config
+		orgNameOverride string
+		repos           []github.Repo
+
+		expectError   bool
+		expectedRepos []github.Repo
+	}{
+		{
+			description:   "survives empty config",
+			expectedRepos: []github.Repo{},
+		},
+		{
+			description: "survives nil repos config",
+			orgConfig: org.Config{
+				Repos: nil,
+			},
+			expectedRepos: []github.Repo{},
+		},
+		{
+			description: "survives empty repos config",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{},
+			},
+			expectedRepos: []github.Repo{},
+		},
+		{
+			description: "nonexistent repo is created",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: newConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectedRepos: []github.Repo{newRepo, oldRepo},
+		},
+		{
+			// test current functionality: this test will need to change once
+			// we implement repository updates
+			description: "existing repo is unchanged",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: newConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectedRepos: []github.Repo{oldRepo},
+		},
+		{
+			description:     "GetRepos failure is propagated",
+			orgNameOverride: "fail",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: newConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectError:   true,
+			expectedRepos: []github.Repo{oldRepo},
+		},
+		{
+			description: "CreateRepo failure is propagated",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					fail: failConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectError:   true,
+			expectedRepos: []github.Repo{oldRepo},
+		},
+		{
+			description: "duplicate repo names different only by case are detected",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"repo": newConfigRepo,
+					"REPO": failConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+
+			expectError:   true,
+			expectedRepos: []github.Repo{oldRepo},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			fc := makeFakeRepoClient(t, tc.repos...)
+			var err error
+			if len(tc.orgNameOverride) > 0 {
+				err = configureRepos(fc, tc.orgNameOverride, tc.orgConfig)
+			} else {
+				err = configureRepos(fc, orgName, tc.orgConfig)
+			}
+			if err != nil && !tc.expectError {
+				t.Errorf("%s: unexpected error: %v", tc.description, err)
+			}
+			if err == nil && tc.expectError {
+				t.Errorf("%s: expected error, got none", tc.description)
+			}
+
+			reposAfter, err := fc.GetRepos(orgName, isOrg)
+			if err != nil {
+				t.Fatalf("%s: unexpected GetRepos error: %v", tc.description, err)
+			}
+			if !reflect.DeepEqual(reposAfter, tc.expectedRepos) {
+				t.Errorf("%s: unexpected repos after configureRepos():\n%s", tc.description, diff.ObjectReflectDiff(reposAfter, tc.repos))
+			}
+		})
+	}
+}
+
+func TestValidateRepos(t *testing.T) {
+	description := "cool repo"
+	testCases := []struct {
+		description string
+		config      map[string]org.Repo
+		expectError bool
+	}{
+		{
+			description: "handles nil map",
+		},
+		{
+			description: "handles empty map",
+			config:      map[string]org.Repo{},
+		},
+		{
+			description: "handles valid config",
+			config: map[string]org.Repo{
+				"repo": {Description: &description},
+			},
+		},
+		{
+			description: "finds repo names duplicate when normalized",
+			config: map[string]org.Repo{
+				"repo": {Description: &description},
+				"Repo": {Description: &description},
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			err := validateRepos(tc.config)
+			if err == nil && tc.expectError {
+				t.Errorf("%s: expected error, got none", tc.description)
+			} else if err != nil && !tc.expectError {
+				t.Errorf("%s: unexpected error: %v", tc.description, err)
+			}
+		})
 	}
 }
