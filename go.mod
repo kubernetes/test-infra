@@ -19,13 +19,12 @@ require (
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
 	github.com/Azure/go-autorest v11.1.2+incompatible
-	github.com/GoogleCloudPlatform/testgrid v0.0.0-20191016232453-9f0319fc1197
+	github.com/GoogleCloudPlatform/testgrid v0.0.0-20191021162744-e7f8ba7c55cb
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
 	github.com/aws/aws-sdk-go v1.16.36
-	github.com/bazelbuild/bazel-gazelle v0.18.1
-	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
+	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bwmarrin/snowflake v0.0.0
 	github.com/clarketm/json v1.13.0
@@ -42,7 +41,6 @@ require (
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/go-test/deep v1.0.4
 	github.com/gobuffalo/envy v1.6.15 // indirect
-	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
 	github.com/gomodule/redigo v1.7.0
@@ -64,7 +62,6 @@ require (
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
 	github.com/jinzhu/now v1.0.1 // indirect
-	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
@@ -97,7 +94,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
-	golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0
+	golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
 	google.golang.org/api v0.9.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
@@ -107,9 +104,8 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.0.0-20190831074504-732c9ca86353
 	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
-	k8s.io/klog v0.4.0
+	k8s.io/klog v1.0.0
 	k8s.io/kubernetes v1.14.7 // indirect
-	k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.3.0
