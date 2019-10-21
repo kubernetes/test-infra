@@ -1,5 +1,5 @@
 dashboard_groups:
-- name: sig-azure
+- name: provider-azure
   dashboard_names:
     - provider-azure-master
     - provider-azure-on-call
