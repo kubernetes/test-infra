@@ -19,7 +19,7 @@
               severity: 'warning',
             },
             annotations: {
-              message: 'Tide has not merged any PRs in kubernetes/kubernetes:master in the past 4 hours despite PRs in the pool.',
+              message: 'Tide has not merged any PRs in kubernetes/kubernetes:master in the past 4 hours despite PRs in the pool. See the <https://prow.k8s.io/tide-history?repo=kubernetes%2Fkubernetes&branch=master|tide-history> page for k/k:m.',
             },
           },
           {
@@ -32,7 +32,7 @@
               severity: 'warning',
             },
             annotations: {
-              message: 'The Tide sync controllers loop period has averaged more than 2 minutes for the last 15 mins.',
+              message: 'The Tide sync controllers loop period has averaged more than 2 minutes for the last 15 mins. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
             },
           },
           {
@@ -45,7 +45,7 @@
               severity: 'warning',
             },
             annotations: {
-              message: 'The Tide status update controllers loop period has averaged more than 2 minutes for the last 15 mins.',
+              message: 'The Tide status update controllers loop period has averaged more than 2 minutes for the last 15 mins. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
             },
           },
           {
@@ -58,7 +58,7 @@
               severity: 'warning',
             },
             annotations: {
-              message: 'At least one Tide pool encountered 3+ sync errors in a 10 minute window. If the TidePoolErrorRateMultiple alert has not fired this is likely an isolated configuration issue. See the <deck-url>/tide-history page.',
+              message: 'At least one Tide pool encountered 3+ sync errors in a 10 minute window. If the TidePoolErrorRateMultiple alert has not fired this is likely an isolated configuration issue. See the <https://prow.k8s.io/tide-history|/tide-history> page and the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&fullscreen&panelId=6&from=now-24h&to=now|sync error graph>.',
             },
           },
           {
@@ -71,7 +71,7 @@
               severity: 'critical',
             },
             annotations: {
-              message: 'Tide encountered 3+ sync errors in a 10 minute window in at least 3 different repos that it handles. See the <deck-url>/tide-history page.',
+              message: 'Tide encountered 3+ sync errors in a 10 minute window in at least 3 different repos that it handles. See the <https://prow.k8s.io/tide-history|tide-history> page and the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&fullscreen&panelId=6&from=now-24h&to=now|sync error graph>.',
             },
           },
         ],
