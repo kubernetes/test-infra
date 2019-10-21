@@ -24,7 +24,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.14
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-1.14
         command:
         - runner.sh
         - kubetest
@@ -97,7 +97,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.15
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-1.15
         command:
         - runner.sh
         - kubetest
@@ -170,7 +170,7 @@ presubmits:
       path_alias: sigs.k8s.io/kind
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-1.16
         command:
         - runner.sh
         - kubetest
@@ -235,7 +235,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20191017-d96ae13-master
+      - image: gcr.io/k8s-testimages/krte:v20191020-6567e5c-master
         command:
         - wrapper.sh
         - bash
@@ -341,7 +341,7 @@ presubmits:
       nodeSelector:
         dedicated: "ubuntu"
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20191018-d0e6c58-master
+      - image: gcr.io/k8s-testimages/krte:v20191020-6567e5c-master
         command:
         - wrapper.sh
         - bash
