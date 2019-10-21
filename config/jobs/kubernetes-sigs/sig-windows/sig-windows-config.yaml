@@ -303,7 +303,6 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, provider-azure-on-call
+    testgrid-dashboards: sig-windows
     testgrid-tab-name: aks-engine-azure-windows-master-staging
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
