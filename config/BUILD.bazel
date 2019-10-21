@@ -21,7 +21,7 @@ alias(
 filegroup(
     name = "prowjobs",
     srcs = glob([
-        "jobs/**",
+        "jobs/**/*.yaml",
     ]),
 )
 
@@ -29,7 +29,6 @@ filegroup(
     name = "testgrids",
     srcs = glob([
         "testgrids/**/*.yaml",
-        "testgrids/**/*.yml",
     ]),
 )
 
@@ -51,6 +50,7 @@ filegroup(
         ":package-srcs",
         "//config/prow:all-srcs",
         "//config/tests/jobs:all-srcs",
+        "//config/tests/lint:all-srcs",
         "//config/tests/testgrids:all-srcs",
     ],
     tags = ["automanaged"],
