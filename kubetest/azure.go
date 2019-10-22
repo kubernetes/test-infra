@@ -908,7 +908,23 @@ func (c Cluster) Down() error {
 }
 
 func (c Cluster) DumpClusterLogs(localPath, gcsPath string) error {
-	return nil
+	if *aksCcm == false {
+		log.Println("Skippng DumpClusterLogs due to CCM not being enabled.")
+		return nil
+	}
+
+	logDumpDir := util.K8s("cloud-provider-azure", "hack", "log-dump")
+	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump.sh")); os.IsNotExist(err) {
+		return fmt.Errorf("log-dump.sh not found in cloud-provider-azure repo")
+	}
+	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump-daemonset.yaml")); os.IsNotExist(err) {
+		return fmt.Errorf("log-dump-daemonset.yaml not found in cloud-provider-azure repo")
+	}
+
+	cmd := exec.Command("bash", "-c", "./log-dump.sh")
+	cmd.Dir = logDumpDir
+	err := control.FinishRunning(cmd)
+	return err
 }
 
 func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
