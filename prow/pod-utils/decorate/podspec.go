@@ -414,7 +414,7 @@ func entrypointLocation(tools coreapi.VolumeMount) string {
 }
 
 // InjectEntrypoint will make the entrypoint binary in the tools volume the container's entrypoint, which will output to the log volume.
-func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
+func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, dateTimeFormat string, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
 	wrapperOptions := &wrapper.Options{
 		Args:         append(c.Command, c.Args...),
 		ProcessLog:   processLog(log, prefix),
@@ -427,6 +427,7 @@ func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, 
 		GracePeriod:    gracePeriod,
 		Options:        wrapperOptions,
 		Timeout:        timeout,
+		DateTimeFormat: dateTimeFormat,
 		AlwaysZero:     exitZero,
 		PreviousMarker: previousMarker,
 	})
@@ -602,7 +603,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		previous = ""
 		exitZero = false
 	)
-	wrapperOptions, err := InjectEntrypoint(&spec.Containers[0], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
+	wrapperOptions, err := InjectEntrypoint(&spec.Containers[0], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), pj.Spec.DecorationConfig.DateTimeFormat.Get(), prefix, previous, exitZero, logMount, toolsMount)
 	if err != nil {
 		return fmt.Errorf("wrap container: %v", err)
 	}

@@ -23,11 +23,13 @@ import (
 	"time"
 
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
+	"k8s.io/utils/clock"
 )
 
 // NewOptions returns an empty Options with no nil fields
 func NewOptions() *Options {
 	return &Options{
+		clock:   clock.RealClock{},
 		Options: &wrapper.Options{},
 	}
 }
@@ -43,6 +45,9 @@ type Options struct {
 	// sending SIGINT before the entrypoint sends
 	// SIGKILL.
 	GracePeriod time.Duration `json:"grace_period"`
+	// DateTimeFormat is the datetime format to prefix log lines with.
+	// If omitted or empty, no datetime prefix will be added.
+	DateTimeFormat string `json:"datetime_format,omitempty"`
 	// ArtifactDir is a directory where test processes can dump artifacts
 	// for upload to persistent storage (courtesy of sidecar).
 	// If specified, it is created by entrypoint before starting the test process.
@@ -59,6 +64,8 @@ type Options struct {
 	// AlwaysZero will cause entrypoint to exit zero, regardless of the marker it writes.
 	// Primarily useful in case a subsequent entrypoint will read this entrypoint's marker
 	AlwaysZero bool `json:"always_zero,omitempty"`
+
+	clock clock.Clock
 
 	*wrapper.Options
 }

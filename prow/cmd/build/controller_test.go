@@ -1563,8 +1563,10 @@ func TestMakeBuild(t *testing.T) {
 
 func TestDecorateSteps(t *testing.T) {
 	var dc prowjobv1.DecorationConfig
+	dt := prowjobv1.DateTimeLayout("Mon Jan _2 15:04:05 2006")
 	dc.Timeout = &prowjobv1.Duration{Duration: 10 * time.Minute}
 	dc.GracePeriod = &prowjobv1.Duration{Duration: 5 * time.Minute}
+	dc.DateTimeFormat = &dt
 	_, tm := tools()
 	tm.Name += "not-static"
 	tm.MountPath += "fancy"
@@ -1591,15 +1593,15 @@ func TestDecorateSteps(t *testing.T) {
 		},
 	}
 	expected[1].Name = "step-1"
-	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[0].Name, "", true, logMount, tm)
+	o1, err := decorate.InjectEntrypoint(&expected[0], dc.Timeout.Get(), dc.GracePeriod.Get(), dc.DateTimeFormat.Get(), expected[0].Name, "", true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 0: %v", err)
 	}
-	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[1].Name, o1.MarkerFile, true, logMount, tm)
+	o2, err := decorate.InjectEntrypoint(&expected[1], dc.Timeout.Get(), dc.GracePeriod.Get(), dc.DateTimeFormat.Get(), expected[1].Name, o1.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 1: %v", err)
 	}
-	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout.Get(), dc.GracePeriod.Get(), expected[2].Name, o2.MarkerFile, true, logMount, tm)
+	o3, err := decorate.InjectEntrypoint(&expected[2], dc.Timeout.Get(), dc.GracePeriod.Get(), dc.DateTimeFormat.Get(), expected[2].Name, o2.MarkerFile, true, logMount, tm)
 	if err != nil {
 		t.Fatalf("inject expected 2: %v", err)
 	}

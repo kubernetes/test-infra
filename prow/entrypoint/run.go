@@ -17,11 +17,13 @@ limitations under the License.
 package entrypoint
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -138,8 +140,21 @@ func (o Options) ExecuteProcess() (int, error) {
 		arguments = o.Args[1:]
 	}
 	command := exec.Command(executable, arguments...)
-	command.Stderr = output
-	command.Stdout = output
+
+	stdout, err := command.StdoutPipe()
+	if err != nil {
+		return InternalErrorCode, fmt.Errorf("could not create stdout pipe: %v", err)
+	}
+
+	stderr, err := command.StderrPipe()
+	if err != nil {
+		return InternalErrorCode, fmt.Errorf("could not create stderr pipe: %v", err)
+	}
+
+	multi := io.MultiReader(stdout, stderr)
+	scanner := bufio.NewScanner(multi)
+	dtLogger := log.New(output, "", 0)
+
 	if err := command.Start(); err != nil {
 		return InternalErrorCode, fmt.Errorf("could not start the process: %v", err)
 	}
@@ -150,6 +165,13 @@ func (o Options) ExecuteProcess() (int, error) {
 	cancelled, aborted := false, false
 	done := make(chan error)
 	go func() {
+		for scanner.Scan() {
+			if o.DateTimeFormat != "" {
+				dtLogger.Print(o.clock.Now().Format(o.DateTimeFormat) + " " + scanner.Text())
+			} else {
+				dtLogger.Print(scanner.Text())
+			}
+		}
 		done <- command.Wait()
 	}()
 	select {

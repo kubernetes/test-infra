@@ -378,6 +378,7 @@ func TestCloneRefs(t *testing.T) {
 func TestProwJobToPod(t *testing.T) {
 	truth := true
 	falseth := false
+	datetime := prowapi.DateTimeLayout("2006-01-02T15:04:05Z07:00")
 	var sshKeyMode int32 = 0400
 	tests := []struct {
 		podName  string
@@ -1637,6 +1638,7 @@ func TestProwJobToPod(t *testing.T) {
 					GCSCredentialsSecret: "secret-name",
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SkipCloning:          &truth,
+					DateTimeFormat:       &datetime,
 				},
 				Agent: prowapi.KubernetesAgent,
 				Refs: &prowapi.Refs{
@@ -1747,7 +1749,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "PULL_REFS", Value: "base-ref:base-sha,1:pull-sha"},
 								{Name: "REPO_NAME", Value: "repo-name"},
 								{Name: "REPO_OWNER", Value: "org-name"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"timeout":7200000000000,"grace_period":10000000000,"datetime_format":"2006-01-02T15:04:05Z07:00","artifact_dir":"/logs/artifacts","args":["/bin/thing","some","args"],"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}`},
 							},
 							VolumeMounts: []coreapi.VolumeMount{
 								{

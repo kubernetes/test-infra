@@ -26,12 +26,15 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
+	clock "k8s.io/utils/clock/testing"
 )
 
 func TestOptions_Run(t *testing.T) {
 	var testCases = []struct {
 		name           string
 		args           []string
+		now            string
+		datetimeFormat string
 		alwaysZero     bool
 		invalidMarker  bool
 		previousMarker string
@@ -122,6 +125,15 @@ func TestOptions_Run(t *testing.T) {
 			expectedMarker: strconv.Itoa(PreviousErrorCode),
 		},
 		{
+			name:           "log with datetime prefix",
+			datetimeFormat: time.RFC3339,
+			args:           []string{"echo", "test"},
+			now:            "2019-10-21T20:45:37-07:00",
+			expectedLog:    "2019-10-21T20:45:37-07:00 test\n",
+			expectedMarker: "0",
+			expectedCode:   0,
+		},
+		{
 			name:           "run passing command as normal if previous marker passed",
 			previousMarker: "0",
 			args:           []string{"sh", "-c", "exit 0"},
@@ -153,10 +165,14 @@ func TestOptions_Run(t *testing.T) {
 				}
 			}()
 
+			dt, _ := time.Parse(testCase.datetimeFormat, testCase.now)
+
 			options := Options{
-				AlwaysZero:  testCase.alwaysZero,
-				Timeout:     testCase.timeout,
-				GracePeriod: testCase.gracePeriod,
+				AlwaysZero:     testCase.alwaysZero,
+				Timeout:        testCase.timeout,
+				GracePeriod:    testCase.gracePeriod,
+				DateTimeFormat: testCase.datetimeFormat,
+				clock:          clock.NewFakeClock(dt),
 				Options: &wrapper.Options{
 					Args:       testCase.args,
 					ProcessLog: path.Join(tmpDir, "process-log.txt"),
