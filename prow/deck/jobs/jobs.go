@@ -191,12 +191,6 @@ func (ja *JobAgent) tryUpdate() {
 	}
 }
 
-type byStartTime []Job
-
-func (a byStartTime) Len() int           { return len(a) }
-func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
-
 type byPJStartTime []prowapi.ProwJob
 
 func (a byPJStartTime) Len() int      { return len(a) }
@@ -213,6 +207,9 @@ func (ja *JobAgent) update() error {
 	var njs []Job
 	njsMap := make(map[string]Job)
 	njsIDMap := make(map[string]map[string]prowapi.ProwJob)
+
+	sort.Sort(byPJStartTime(pjs))
+
 	for _, j := range pjs {
 		ft := time.Time{}
 		if j.Status.CompletionTime != nil {
@@ -255,9 +252,6 @@ func (ja *JobAgent) update() error {
 		}
 		njsIDMap[j.Spec.Job][buildID] = j
 	}
-
-	sort.Sort(byStartTime(njs))
-	sort.Sort(byPJStartTime(pjs))
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
