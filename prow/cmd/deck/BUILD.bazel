@@ -128,6 +128,7 @@ go_library(
         "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
         "//prow/prstatus:go_default_library",
+        "//prow/simplifypath:go_default_library",
         "//prow/spyglass:go_default_library",
         "//prow/spyglass/lenses:go_default_library",
         "//prow/spyglass/lenses/buildlog:go_default_library",
