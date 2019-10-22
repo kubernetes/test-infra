@@ -899,20 +899,16 @@ func validateRepos(repos map[string]org.Repo) error {
 }
 
 // newRepoUpdateRequest creates a minimal github.RepoUpdateRequest instance
-// needed to update the current repo into the target state. If the current
-// repo is already in the target state, returns nil.
-func newRepoUpdateRequest(current github.Repo, name string, repo org.Repo) *github.RepoUpdateRequest {
-	var change bool
+// needed to update the current repo into the target state.
+func newRepoUpdateRequest(current github.Repo, name string, repo org.Repo) github.RepoUpdateRequest {
 	setString := func(current string, want *string) *string {
 		if want != nil && *want != current {
-			change = true
 			return want
 		}
 		return nil
 	}
 	setBool := func(current bool, want *bool) *bool {
 		if want != nil && *want != current {
-			change = true
 			return want
 		}
 		return nil
@@ -934,24 +930,22 @@ func newRepoUpdateRequest(current github.Repo, name string, repo org.Repo) *gith
 		Archived:      setBool(current.Archived, repo.Archived),
 	}
 
-	if change {
-		return &repoUpdate
-	}
+	return repoUpdate
 
-	return nil
 }
 
-func validateRepoDelta(opt options, delta *github.RepoUpdateRequest) []error {
+func sanitizeRepoDelta(opt options, delta *github.RepoUpdateRequest) []error {
 	var errs []error
-	if delta.Archived != nil {
-		if !*delta.Archived {
-			errs = append(errs, fmt.Errorf("asked to unarchive an archived repo, unsupported by GH API"))
-		}
-		if *delta.Archived && !opt.allowRepoArchival {
-			errs = append(errs, fmt.Errorf("asked to archive a repo but this is not allowed by default (see --allow-repo-archival)"))
-		}
+	if delta.Archived != nil && !*delta.Archived {
+		delta.Archived = nil
+		errs = append(errs, fmt.Errorf("asked to unarchive an archived repo, unsupported by GH API"))
+	}
+	if delta.Archived != nil && *delta.Archived && !opt.allowRepoArchival {
+		delta.Archived = nil
+		errs = append(errs, fmt.Errorf("asked to archive a repo but this is not allowed by default (see --allow-repo-archival)"))
 	}
 	if delta.Private != nil && !(*delta.Private || opt.allowRepoPublish) {
+		delta.Private = nil
 		errs = append(errs, fmt.Errorf("asked to publish a private repo but this is not allowed by default (see --allow-repo-publish)"))
 	}
 
@@ -989,17 +983,15 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 			repoLogger := logrus.WithField("repo", wantName)
 			repoLogger.Info("repo exists, considering an update")
 			delta := newRepoUpdateRequest(current, wantName, wantRepo)
-			if delta != nil {
-				if deltaErrors := validateRepoDelta(opt, delta); len(deltaErrors) > 0 {
-					for _, err := range deltaErrors {
-						repoLogger.WithError(err).Error("requested repo change is not allowed")
-					}
-					allErrors = append(allErrors, deltaErrors...)
-					continue
+			if deltaErrors := sanitizeRepoDelta(opt, &delta); len(deltaErrors) > 0 {
+				for _, err := range deltaErrors {
+					repoLogger.WithError(err).Error("requested repo change is not allowed, removing from delta")
 				}
-
+				allErrors = append(allErrors, deltaErrors...)
+			}
+			if delta.Defined() {
 				repoLogger.Info("repo exists and differs from desired state, updating")
-				if _, err := client.UpdateRepo(orgName, current.Name, *delta); err != nil {
+				if _, err := client.UpdateRepo(orgName, current.Name, delta); err != nil {
 					allErrors = append(allErrors, err)
 				}
 			}

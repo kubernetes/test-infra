@@ -379,6 +379,13 @@ func (r RepoRequest) ToRepo() *Repo {
 	return &repo
 }
 
+// Defined returns true if at least one of the pointer fields are not nil
+func (r RepoRequest) Defined() bool {
+	return r.Name != nil || r.Description != nil || r.Homepage != nil || r.Private != nil ||
+		r.HasIssues != nil || r.HasProjects != nil || r.HasWiki != nil || r.AllowSquashMerge != nil ||
+		r.AllowMergeCommit != nil || r.AllowRebaseMerge != nil
+}
+
 // RepoUpdateRequest contains metadata used for updating a repository
 // See also: https://developer.github.com/v3/repos/#edit
 type RepoUpdateRequest struct {
@@ -398,6 +405,10 @@ func (r RepoUpdateRequest) ToRepo() *Repo {
 	}
 
 	return repo
+}
+
+func (r RepoUpdateRequest) Defined() bool {
+	return r.RepoRequest.Defined() || r.DefaultBranch != nil || r.Archived != nil
 }
 
 // RepoPermissions describes which permission level an entity has in a

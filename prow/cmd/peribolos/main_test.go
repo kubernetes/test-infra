@@ -2584,6 +2584,7 @@ func TestConfigureRepos(t *testing.T) {
 	isOrg := false
 	no := false
 	yes := true
+	updated := "UPDATED"
 
 	oldName := "old"
 	oldRepo := github.Repo{
@@ -2606,22 +2607,6 @@ func TestConfigureRepos(t *testing.T) {
 	failRepo := github.Repo{
 		Name: fail,
 	}
-
-	unarchiveRepo := org.Repo{
-		Archived: &no,
-	}
-	archiveRepo := org.Repo{
-		Archived: &yes,
-	}
-	publishRepo := org.Repo{
-		Private: &no,
-	}
-	archivedRepo := oldRepo
-	archivedRepo.Archived = true
-	privateRepo := oldRepo
-	privateRepo.Private = true
-	publicRepo := oldRepo
-	publicRepo.Private = false
 
 	testCases := []struct {
 		description     string
@@ -2730,26 +2715,26 @@ func TestConfigureRepos(t *testing.T) {
 		{
 			// https://developer.github.com/v3/repos/#edit
 			// "Note: You cannot unarchive repositories through the API."
-			description: "request to unarchive a repo fails",
+			description: "request to unarchive a repo fails, but updates other fields",
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
-					oldName: unarchiveRepo,
+					oldName: {Archived: &no, Description: &updated},
 				},
 			},
-			repos:         []github.Repo{archivedRepo},
+			repos:         []github.Repo{{Name: oldName, Archived: true, Description: "OLD"}},
 			expectError:   true,
-			expectedRepos: []github.Repo{archivedRepo},
+			expectedRepos: []github.Repo{{Name: oldName, Archived: true, Description: updated}},
 		},
 		{
-			description: "request to archive repo fails when not allowed",
+			description: "request to archive repo fails when not allowed, but updates other fields",
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
-					oldName: archiveRepo,
+					oldName: {Archived: &yes, Description: &updated},
 				},
 			},
-			repos:         []github.Repo{oldRepo},
+			repos:         []github.Repo{{Name: oldName, Archived: false, Description: "OLD"}},
 			expectError:   true,
-			expectedRepos: []github.Repo{oldRepo},
+			expectedRepos: []github.Repo{{Name: oldName, Archived: false, Description: updated}},
 		},
 		{
 			description: "request to archive repo succeeds when allowed",
@@ -2758,22 +2743,22 @@ func TestConfigureRepos(t *testing.T) {
 			},
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
-					oldName: archiveRepo,
+					oldName: {Archived: &yes},
 				},
 			},
-			repos:         []github.Repo{oldRepo},
-			expectedRepos: []github.Repo{archivedRepo},
+			repos:         []github.Repo{{Name: oldName, Archived: false}},
+			expectedRepos: []github.Repo{{Name: oldName, Archived: true}},
 		},
 		{
-			description: "request to publish a private repo fails when not allowed",
+			description: "request to publish a private repo fails when not allowed, but updates other fields",
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
-					oldName: publishRepo,
+					oldName: {Private: &no, Description: &updated},
 				},
 			},
-			repos:         []github.Repo{privateRepo},
+			repos:         []github.Repo{{Name: oldName, Private: true, Description: "OLD"}},
 			expectError:   true,
-			expectedRepos: []github.Repo{privateRepo},
+			expectedRepos: []github.Repo{{Name: oldName, Private: true, Description: updated}},
 		},
 		{
 			description: "request to publish a private repo succeeds when allowed",
@@ -2782,11 +2767,11 @@ func TestConfigureRepos(t *testing.T) {
 			},
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
-					oldName: publishRepo,
+					oldName: {Private: &no},
 				},
 			},
-			repos:         []github.Repo{privateRepo},
-			expectedRepos: []github.Repo{publicRepo},
+			repos:         []github.Repo{{Name: oldName, Private: true}},
+			expectedRepos: []github.Repo{{Name: oldName, Private: false}},
 		},
 	}
 	for _, tc := range testCases {
@@ -2872,7 +2857,7 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 		name        string
 		newState    org.Repo
 
-		expected *github.RepoUpdateRequest
+		expected github.RepoUpdateRequest
 	}{
 		{
 			description: "update is just a delta from current state",
@@ -2887,12 +2872,12 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 				Description:   &description,
 				DefaultBranch: &branch,
 			},
-			expected: &github.RepoUpdateRequest{
+			expected: github.RepoUpdateRequest{
 				DefaultBranch: &branch,
 			},
 		},
 		{
-			description: "nil is returned when no update is needed",
+			description: "empty delta is returned when no update is needed",
 			current: github.Repo{
 				Name:        repoName,
 				Description: description,
@@ -2911,7 +2896,7 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 			newState: org.Repo{
 				Description: &description,
 			},
-			expected: &github.RepoUpdateRequest{
+			expected: github.RepoUpdateRequest{
 				RepoRequest: github.RepoRequest{
 					Name:        &newRepoName,
 					Description: &description,
