@@ -16,8 +16,51 @@ limitations under the License.
 
 package git
 
+import (
+	"fmt"
+
+	"github.com/sirupsen/logrus"
+)
+
 // Publisher knows how to publish local work to a remote
 type Publisher interface {
 	Commit(title, body string) error
 	ForcePush(branch string) error
+}
+
+type publisher struct {
+	executor Executor
+	remote   RemoteResolver
+	info     func() (name, email string, err error)
+	logger   *logrus.Entry
+}
+
+// Commit adds all of the current content to the index and creates a commit
+func (p *publisher) Commit(title, body string) error {
+	p.logger.Infof("Committing changes with title %q", title)
+	name, email, err := p.info()
+	if err != nil {
+		return err
+	}
+	commands := [][]string{
+		{"add", "--all"},
+		{"commit", "--message", title, "--message", body, "--author", fmt.Sprintf("%s <%s>", name, email)},
+	}
+	for _, command := range commands {
+		if _, err := p.executor.Run(command...); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ForcePush pushes the local state to the remote
+func (p *publisher) ForcePush(branch string) error {
+	p.logger.Infof("Pushing branch %q", branch)
+	remote, err := p.remote()
+	if err != nil {
+		return err
+	}
+	_, err = p.executor.Run("push", "--force", remote, branch)
+	return err
 }
