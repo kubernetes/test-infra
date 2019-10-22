@@ -40,7 +40,7 @@ type prowJobClient interface {
 }
 
 type gerritClient interface {
-	QueryChanges(lastState *client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
+	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	Account(instance string) *gerrit.AccountInfo
@@ -59,8 +59,8 @@ type Controller struct {
 }
 
 type LastSyncTracker interface {
-	Current() *client.LastSyncState
-	Update(*client.LastSyncState) error
+	Current() client.LastSyncState
+	Update(client.LastSyncState) error
 }
 
 // NewController returns a new gerrit controller client
@@ -104,7 +104,7 @@ func (c *Controller) Sync() error {
 		logrus.Infof("Processed %d changes for instance %s", len(changes), instance)
 	}
 
-	return c.tracker.Update(&latest)
+	return c.tracker.Update(latest)
 }
 
 func makeCloneURI(instance, project string) (*url.URL, error) {
@@ -244,7 +244,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			logger.Infof("Found latest report: %s", latestReport)
 		}
 
-		lastUpdate, ok := (*c.tracker.Current())[instance][change.Project]
+		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
 		if !ok {
 			logrus.Warnf("could not find lastTime for project %q, probably something went wrong with initTracker?", change.Project)
 			lastUpdate = time.Now()

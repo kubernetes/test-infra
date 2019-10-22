@@ -55,7 +55,7 @@ func (f *fca) Config() *config.Config {
 
 type fgc struct{}
 
-func (f *fgc) QueryChanges(lastUpdate *client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
+func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
 	return nil
 }
 
@@ -123,17 +123,17 @@ func TestMakeCloneURI(t *testing.T) {
 }
 
 type fakeSync struct {
-	val  *client.LastSyncState
+	val  client.LastSyncState
 	lock sync.Mutex
 }
 
-func (s *fakeSync) Current() *client.LastSyncState {
+func (s *fakeSync) Current() client.LastSyncState {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	return s.val
 }
 
-func (s *fakeSync) Update(t *client.LastSyncState) error {
+func (s *fakeSync) Update(t client.LastSyncState) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.val = t
@@ -716,7 +716,7 @@ func TestProcessChange(t *testing.T) {
 			config:        fca.Config,
 			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			gc:            &fgc{},
-			tracker:       &fakeSync{val: &fakeLastSync},
+			tracker:       &fakeSync{val: fakeLastSync},
 		}
 
 		err := c.ProcessChange(testInstance, tc.change)

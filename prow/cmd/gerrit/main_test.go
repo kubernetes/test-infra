@@ -149,7 +149,7 @@ func TestSyncTime(t *testing.T) {
 	if err := st.init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
-	cur := (*st.Current())["foo"]["bar"]
+	cur := st.Current()["foo"]["bar"]
 	if now.After(cur) {
 		t.Fatalf("%v should be >= time before init was called: %v", cur, now)
 	}
@@ -157,17 +157,17 @@ func TestSyncTime(t *testing.T) {
 	earlier := now.Add(-time.Hour)
 	later := now.Add(time.Hour)
 
-	if err := st.Update(&client.LastSyncState{"foo": {"bar": earlier}}); err != nil {
+	if err := st.Update(client.LastSyncState{"foo": {"bar": earlier}}); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
-	if actual := (*st.Current())["foo"]["bar"]; !actual.Equal(cur) {
+	if actual := st.Current()["foo"]["bar"]; !actual.Equal(cur) {
 		t.Errorf("Update(%v) should not have reduced value from %v, got %v", earlier, cur, actual)
 	}
 
-	if err := st.Update(&client.LastSyncState{"foo": {"bar": later}}); err != nil {
+	if err := st.Update(client.LastSyncState{"foo": {"bar": later}}); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
-	if actual := (*st.Current())["foo"]["bar"]; !actual.After(cur) {
+	if actual := st.Current()["foo"]["bar"]; !actual.After(cur) {
 		t.Errorf("Update(%v) did not move current value to after %v, got %v", later, cur, actual)
 	}
 
@@ -180,7 +180,7 @@ func TestSyncTime(t *testing.T) {
 	if err := st.init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
-	if actual := (*st.Current())["foo"]["bar"]; !actual.Equal(expected) {
+	if actual := st.Current()["foo"]["bar"]; !actual.Equal(expected) {
 		t.Errorf("init() failed to reload %v, got %v", expected, actual)
 	}
 
@@ -192,7 +192,7 @@ func TestSyncTime(t *testing.T) {
 	if err := st.init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
-	if actual := (*st.Current())["foo"]["bar"]; now.After(actual) || actual.After(later) {
+	if actual := st.Current()["foo"]["bar"]; now.After(actual) || actual.After(later) {
 		t.Fatalf("should initialize to start %v <= actual <= later %v, but got %v", now, later, actual)
 	}
 }

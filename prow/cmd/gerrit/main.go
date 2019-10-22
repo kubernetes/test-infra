@@ -90,7 +90,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 type syncTime struct {
-	val    *client.LastSyncState
+	val    client.LastSyncState
 	lock   sync.RWMutex
 	path   string
 	opener io.Opener
@@ -126,12 +126,12 @@ func (st *syncTime) init(hostProjects client.ProjectsFlag) error {
 				targetState[host][project] = currentTime
 			}
 		}
-		st.val = &targetState
+		st.val = targetState
 	}
 	return nil
 }
 
-func (st *syncTime) currentState() (*client.LastSyncState, error) {
+func (st *syncTime) currentState() (client.LastSyncState, error) {
 	r, err := st.opener.Reader(st.ctx, st.path)
 	if io.IsNotExist(err) {
 		logrus.Warnf("lastSyncFallback not found at %q", st.path)
@@ -148,23 +148,23 @@ func (st *syncTime) currentState() (*client.LastSyncState, error) {
 	if err := json.Unmarshal(buf, &state); err != nil {
 		return nil, fmt.Errorf("unmarshall state: %v", err)
 	}
-	return &state, nil
+	return state, nil
 }
 
-func (st *syncTime) Current() *client.LastSyncState {
+func (st *syncTime) Current() client.LastSyncState {
 	st.lock.RLock()
 	defer st.lock.RUnlock()
 	return st.val
 }
 
-func (st *syncTime) Update(newState *client.LastSyncState) error {
+func (st *syncTime) Update(newState client.LastSyncState) error {
 	st.lock.Lock()
 	defer st.lock.Unlock()
 
 	targetState := st.val.DeepCopy()
 
 	var changed bool
-	for host, newLastSyncs := range *newState {
+	for host, newLastSyncs := range newState {
 		if _, ok := targetState[host]; !ok {
 			targetState[host] = map[string]time.Time{}
 		}
@@ -196,7 +196,7 @@ func (st *syncTime) Update(newState *client.LastSyncState) error {
 	if err := w.Close(); err != nil {
 		return fmt.Errorf("close %q: %v", st.path, err)
 	}
-	st.val = &targetState
+	st.val = targetState
 	return nil
 }
 

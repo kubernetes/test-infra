@@ -540,7 +540,7 @@ func TestQueryChange(t *testing.T) {
 			},
 		}
 
-		testLastSync := &LastSyncState{"foo": tc.lastUpdate, "baz": tc.lastUpdate}
+		testLastSync := LastSyncState{"foo": tc.lastUpdate, "baz": tc.lastUpdate}
 		changes := client.QueryChanges(testLastSync, 5)
 
 		revisions := map[string][]string{}
