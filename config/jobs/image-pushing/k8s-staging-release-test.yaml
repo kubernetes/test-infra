@@ -1,6 +1,7 @@
 periodics:
 - interval: 1h
   name: ci-kubernetes-prototype-build
+  cluster: test-infra-trusted
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -38,6 +39,7 @@ periodics:
 
 - interval: 1h
   name: ci-kubernetes-prototype-build-fast
+  cluster: test-infra-trusted
   decorate: true
   extra_refs:
   - org: kubernetes
