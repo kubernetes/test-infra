@@ -1,0 +1,139 @@
+presubmits:
+  IBM/multicloud-operators-subscription-release:
+  - name: build_multicloud-operators-subscription-release
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    rerun_command: /test build multicloud-operators-subscription-release
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_multicloud-operators-subscription-release
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    rerun_command: /test check multicloud-operators-subscription-release
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_multicloud-operators-subscription-release
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    rerun_command: /test test multicloud-operators-subscription-release
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/multicloud-operators-subscription-release:
+  - name: check_multicloud-operators-subscription-release_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_multicloud-operators-subscription-release_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  - name: coverage_multicloud-operators-subscription-release_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    spec:
+      containers:
+      - command:
+        - make
+        - coverage
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ibm-multicloud-operators-subscription-release-codecov-token
+              key: codecov-token
+        securityContext:
+          privileged: true
+  - name: build_multicloud-operators-subscription-release_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_multicloud-operators-subscription-release_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.com/IBM/multicloud-operators-subscription-release
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
+        name: ""
+        securityContext:
+          privileged: true
