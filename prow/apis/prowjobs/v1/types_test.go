@@ -25,6 +25,8 @@ import (
 func TestDecorationDefaulting(t *testing.T) {
 	truth := true
 	lies := false
+	datetimeDefault := DateTimeLayout("2006-01-02T15:04:05Z07:00")
+	datetimeOverride := DateTimeLayout("3:04PM")
 
 	var testCases = []struct {
 		name     string
@@ -56,6 +58,16 @@ func TestDecorationDefaulting(t *testing.T) {
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GracePeriod = orig.GracePeriod
+				return def
+			},
+		},
+		{
+			name: "datetime provided",
+			provided: &DecorationConfig{
+				DateTimeFormat: &datetimeOverride,
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.DateTimeFormat = orig.DateTimeFormat
 				return def
 			},
 		},
@@ -181,6 +193,7 @@ func TestDecorationDefaulting(t *testing.T) {
 				GCSCredentialsSecret: "secretName",
 				SSHKeySecrets:        []string{"first", "second"},
 				SSHHostFingerprints:  []string{"primero", "segundo"},
+				DateTimeFormat:       &datetimeDefault,
 				SkipCloning:          &truth,
 			}
 			t.Parallel()

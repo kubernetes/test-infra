@@ -84,6 +84,16 @@ const (
 	DefaultClusterAlias = "default"
 )
 
+// DateTimeLayout specifies a datetime format string.
+type DateTimeLayout string
+
+func (d *DateTimeLayout) Get() string {
+	if d == nil {
+		return ""
+	}
+	return string(*d)
+}
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -287,7 +297,9 @@ type DecorationConfig struct {
 	// after sending SIGINT to send SIGKILL when aborting
 	// a job. Only applicable if decorating the PodSpec.
 	GracePeriod *Duration `json:"grace_period,omitempty"`
-
+	// DateTimeFormat is the datetime format to prefix log lines with.
+	// If omitted or empty, no datetime prefix will be added.
+	DateTimeFormat *DateTimeLayout `json:"datetime_format,omitempty"`
 	// UtilityImages holds pull specs for utility container
 	// images used to decorate a PodSpec.
 	UtilityImages *UtilityImages `json:"utility_images,omitempty"`
@@ -335,6 +347,9 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	if merged.GracePeriod == nil {
 		merged.GracePeriod = def.GracePeriod
+	}
+	if merged.DateTimeFormat == nil {
+		merged.DateTimeFormat = def.DateTimeFormat
 	}
 	if merged.GCSCredentialsSecret == "" {
 		merged.GCSCredentialsSecret = def.GCSCredentialsSecret

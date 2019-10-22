@@ -40,6 +40,11 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(Duration)
 		**out = **in
 	}
+	if in.DateTimeFormat != nil {
+		in, out := &in.DateTimeFormat, &out.DateTimeFormat
+		*out = new(DateTimeLayout)
+		**out = **in
+	}
 	if in.UtilityImages != nil {
 		in, out := &in.UtilityImages, &out.UtilityImages
 		*out = new(UtilityImages)
