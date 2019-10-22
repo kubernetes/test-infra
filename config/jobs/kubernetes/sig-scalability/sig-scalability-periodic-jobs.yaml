@@ -134,6 +134,7 @@ periodics:
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
+      - --use-logexporter
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -192,6 +193,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=70m
+      - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -252,6 +254,7 @@ periodics:
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
+      - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -313,6 +316,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
+      - --use-logexporter
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
