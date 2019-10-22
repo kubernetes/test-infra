@@ -62,6 +62,8 @@ presets:
   # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
   - name: KUBE_GCE_PRIVATE_CLUSTER
     value: "true"
+  - name: PROMETHEUS_SCRAPE_ETCD
+    value: "true"
 ### kubemark-gce-scale
 - labels:
     preset-e2e-kubemark-gce-scale: "true"
@@ -134,6 +136,8 @@ presets:
     value: "node.kubernetes.io/node-exporter-ready=true"
   # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
   - name: KUBE_GCE_PRIVATE_CLUSTER
+    value: "true"
+  - name: PROMETHEUS_SCRAPE_ETCD
     value: "true"
 
 ###### Scalability Envs

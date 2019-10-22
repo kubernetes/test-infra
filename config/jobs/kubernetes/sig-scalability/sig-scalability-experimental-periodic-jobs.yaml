@@ -198,7 +198,6 @@ periodics:
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
       - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--prometheus-scrape-etcd
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
