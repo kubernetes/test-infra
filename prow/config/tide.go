@@ -193,6 +193,15 @@ func (t *Tide) GetPRStatusBaseURL(repo OrgRepo) string {
 	return t.PRStatusBaseURLs["*"]
 }
 
+// SkipUnknownContexts returns the SkipUnknownContexts policy for a repo.
+func (t *Tide) SkipUnknownContexts(org, repo string) bool {
+	skip := parseTideContextPolicyOptions(org, repo, "", t.ContextOptions).SkipUnknownContexts
+	if skip != nil {
+		return *skip
+	}
+	return false
+}
+
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
 type TideQuery struct {

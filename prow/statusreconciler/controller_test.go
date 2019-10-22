@@ -247,10 +247,12 @@ func TestAddedBlockingPresubmits(t *testing.T) {
 }
 
 func TestRemovedBlockingPresubmits(t *testing.T) {
+	yes := true
 	var testCases = []struct {
-		name     string
-		old, new string
-		expected map[string][]config.Presubmit
+		name       string
+		old, new   string
+		tideConfig config.Tide
+		expected   map[string][]config.Presubmit
 	}{
 		{
 			name: "no change in blocking presubmits means no removed blocking jobs",
@@ -265,12 +267,42 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "removed optional presubmit means no removed blocking jobs",
+			name: "removed optional presubmit means removed blocking jobs when tide's skip-unknown-contexts is false",
 			old: `"org/repo":
 - name: old-job
   context: old-context
   optional: true`,
 			new: `"org/repo": []`,
+			expected: map[string][]config.Presubmit{
+				"org/repo": {{
+					JobBase:  config.JobBase{Name: "old-job"},
+					Reporter: config.Reporter{Context: "old-context"},
+					Optional: true,
+				}},
+			},
+		},
+		{
+			name: "removed optional presubmit means no removed blocking jobs when tide's skip-unknown-contexts is true",
+			old: `"org/repo":
+- name: old-job
+  context: old-context
+  optional: true`,
+			new: `"org/repo": []`,
+			tideConfig: config.Tide{
+				ContextOptions: config.TideContextPolicyOptions{
+					Orgs: map[string]config.TideOrgContextPolicy{
+						"org": {
+							Repos: map[string]config.TideRepoContextPolicy{
+								"repo": {
+									TideContextPolicy: config.TideContextPolicy{
+										SkipUnknownContexts: &yes,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			expected: map[string][]config.Presubmit{
 				"org/repo": {},
 			},
@@ -389,7 +421,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, expected := removedBlockingPresubmits(oldConfig, newConfig), testCase.expected; !reflect.DeepEqual(actual, expected) {
+			if actual, expected := removedBlockingPresubmits(oldConfig, newConfig, testCase.tideConfig), testCase.expected; !reflect.DeepEqual(actual, expected) {
 				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
 			}
 		})

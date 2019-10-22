@@ -188,7 +188,7 @@ func (c *Controller) reconcile(delta config.Delta) error {
 		}
 	}
 
-	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
+	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic, delta.After.Tide)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return utilerrors.NewAggregate(errors)
@@ -387,26 +387,28 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string]
 // config update. Presubmits that are no longer blocking due to no longer
 // reporting or being optional require no action as Tide will honor those
 // statuses correctly.
-func removedBlockingPresubmits(old, new map[string][]config.Presubmit) map[string][]config.Presubmit {
+func removedBlockingPresubmits(old, new map[string][]config.Presubmit, newTideConfig config.Tide) map[string][]config.Presubmit {
 	removed := map[string][]config.Presubmit{}
 
-	for repo, oldPresubmits := range old {
-		removed[repo] = []config.Presubmit{}
+	for orgrepo, oldPresubmits := range old {
+		removed[orgrepo] = []config.Presubmit{}
+		parts := strings.SplitN(orgrepo, "/", 2)
+		org, repo := parts[0], parts[1]
 		for _, oldPresubmit := range oldPresubmits {
-			if !oldPresubmit.ContextRequired() {
+			if oldPresubmit.SkipReport || newTideConfig.SkipUnknownContexts(org, repo) {
 				continue
 			}
 			var found bool
-			for _, newPresubmit := range new[repo] {
+			for _, newPresubmit := range new[orgrepo] {
 				if oldPresubmit.Name == newPresubmit.Name {
 					found = true
 					break
 				}
 			}
 			if !found {
-				removed[repo] = append(removed[repo], oldPresubmit)
+				removed[orgrepo] = append(removed[orgrepo], oldPresubmit)
 				logrus.WithFields(logrus.Fields{
-					"repo": repo,
+					"repo": orgrepo,
 					"name": oldPresubmit.Name,
 				}).Debug("Identified a removed blocking presubmit.")
 			}

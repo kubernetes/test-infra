@@ -229,6 +229,56 @@ func TestMergeTemplate(t *testing.T) {
 	}
 }
 
+func TestSkipUnknownContexts(t *testing.T) {
+	yes := true
+	testCases := []struct {
+		name           string
+		contextOptions TideContextPolicyOptions
+		expected       bool
+	}{
+		{
+			name: "global SkipUnknownContexts set",
+			contextOptions: TideContextPolicyOptions{
+				TideContextPolicy: TideContextPolicy{SkipUnknownContexts: &yes},
+			},
+			expected: true,
+		},
+		{
+			name: "org SkipUnknownContexts overrides global policy",
+			contextOptions: TideContextPolicyOptions{
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						TideContextPolicy: TideContextPolicy{SkipUnknownContexts: &yes},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "repo SkipUnknownContexts overrides org policy",
+			contextOptions: TideContextPolicyOptions{
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						Repos: map[string]TideRepoContextPolicy{
+							"repo": {
+								TideContextPolicy: TideContextPolicy{SkipUnknownContexts: &yes},
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		config := Tide{ContextOptions: tc.contextOptions}
+		if got := config.SkipUnknownContexts("org", "repo"); got != tc.expected {
+			t.Errorf("%s - expected: %v got: %v for skip_unknown_contexts", tc.name, tc.expected, got)
+		}
+	}
+}
+
 func TestParseTideContextPolicyOptions(t *testing.T) {
 	yes := true
 	no := false
