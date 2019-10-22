@@ -41,17 +41,17 @@ type Endpoint struct {
 
 // Params represents body and query parameters
 type Params struct {
-	Body  *Trie `json:"body"`
-	Query *Trie `json:"query"`
+	Body  Trie `json:"body"`
+	Query Trie `json:"query"`
 }
 
 // Trie represents a coverage data
 type Trie struct {
-	Root               *Node `json:"root"`
-	UniqueHits         int   `json:"uniqueHits"`
-	ExpectedUniqueHits int   `json:"expectedUniqueHits"`
-	Size               int   `json:"size"`
-	Height             int   `json:"height"`
+	Root               Node `json:"root"`
+	UniqueHits         int  `json:"uniqueHits"`
+	ExpectedUniqueHits int  `json:"expectedUniqueHits"`
+	Size               int  `json:"size"`
+	Height             int  `json:"height"`
 }
 
 // Node represents a single data unit for coverage report
