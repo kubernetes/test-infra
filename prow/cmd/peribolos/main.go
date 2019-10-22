@@ -59,6 +59,8 @@ type options struct {
 	fixTeamRepos      bool
 	fixRepos          bool
 	ignoreSecretTeams bool
+	allowRepoArchival bool
+	allowRepoPublish  bool
 	github            flagutil.GitHubOptions
 	tokenBurst        int
 	tokensPerHour     int
@@ -91,7 +93,9 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
 	flags.BoolVar(&o.fixTeamMembers, "fix-team-members", false, "Add/remove team members if set")
 	flags.BoolVar(&o.fixTeamRepos, "fix-team-repos", false, "Add/remove team permissions on repos if set")
-	flags.BoolVar(&o.fixRepos, "fix-repos", false, "Create repositories if set")
+	flags.BoolVar(&o.fixRepos, "fix-repos", false, "Create/update repositories if set")
+	flags.BoolVar(&o.allowRepoArchival, "allow-repo-archival", false, "If set, archiving repos is allowed while updating repos")
+	flags.BoolVar(&o.allowRepoPublish, "allow-repo-publish", false, "If set, making private repos public is allowed while updating repos")
 	flags.StringVar(&o.logLevel, "log-level", logrus.InfoLevel.String(), fmt.Sprintf("Logging level, one of %v", logrus.AllLevels))
 	o.github.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
@@ -811,7 +815,7 @@ func configureOrg(opt options, client github.Client, orgName string, orgConfig o
 	// Create repositories in the org
 	if !opt.fixRepos {
 		logrus.Info("Skipping org repositories configuration")
-	} else if err := configureRepos(client, orgName, orgConfig); err != nil {
+	} else if err := configureRepos(opt, client, orgName, orgConfig); err != nil {
 		return fmt.Errorf("failed to configure %s repos: %v", orgName, err)
 	}
 
@@ -937,7 +941,24 @@ func newRepoUpdateRequest(current github.Repo, name string, repo org.Repo) *gith
 	return nil
 }
 
-func configureRepos(client repoClient, orgName string, orgConfig org.Config) error {
+func validateRepoDelta(opt options, delta *github.RepoUpdateRequest) []error {
+	var errs []error
+	if delta.Archived != nil {
+		if !*delta.Archived {
+			errs = append(errs, fmt.Errorf("asked to unarchive an archived repo, unsupported by GH API"))
+		}
+		if *delta.Archived && !opt.allowRepoArchival {
+			errs = append(errs, fmt.Errorf("asked to archive a repo but this is not allowed by default (see --allow-repo-archival)"))
+		}
+	}
+	if delta.Private != nil && !(*delta.Private || opt.allowRepoPublish) {
+		errs = append(errs, fmt.Errorf("asked to publish a private repo but this is not allowed by default (see --allow-repo-publish)"))
+	}
+
+	return errs
+}
+
+func configureRepos(opt options, client repoClient, orgName string, orgConfig org.Config) error {
 	if err := validateRepos(orgConfig.Repos); err != nil {
 		return err
 	}
@@ -965,15 +986,19 @@ func configureRepos(client repoClient, orgName string, orgConfig org.Config) err
 		}
 
 		if current, have := byName[wantName]; have {
-			logrus.WithField("repo", wantName).Info("repo exists, considering an update")
+			repoLogger := logrus.WithField("repo", wantName)
+			repoLogger.Info("repo exists, considering an update")
 			delta := newRepoUpdateRequest(current, wantName, wantRepo)
 			if delta != nil {
-				if delta.Archived != nil && !*delta.Archived {
-					logrus.WithField("repo", wantName).Error("asked to unarchive an archived repo, unsupported by GH API")
-					allErrors = append(allErrors, fmt.Errorf("asked to unarchive an archived repo, unsupported by GH API"))
+				if deltaErrors := validateRepoDelta(opt, delta); len(deltaErrors) > 0 {
+					for _, err := range deltaErrors {
+						repoLogger.WithError(err).Error("requested repo change is not allowed")
+					}
+					allErrors = append(allErrors, deltaErrors...)
 					continue
 				}
-				logrus.WithField("repo", wantName).Info("repo exists and differs from desired state, updating")
+
+				repoLogger.Info("repo exists and differs from desired state, updating")
 				if _, err := client.UpdateRepo(orgName, current.Name, *delta); err != nil {
 					allErrors = append(allErrors, err)
 				}

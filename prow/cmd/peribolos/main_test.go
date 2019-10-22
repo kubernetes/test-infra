@@ -2583,6 +2583,7 @@ func TestConfigureRepos(t *testing.T) {
 	orgName := "test-org"
 	isOrg := false
 	no := false
+	yes := true
 
 	oldName := "old"
 	oldRepo := github.Repo{
@@ -2602,22 +2603,29 @@ func TestConfigureRepos(t *testing.T) {
 	}
 
 	fail := "fail"
-	failConfigRepo := org.Repo{
-		Description: &newDescription,
-	}
 	failRepo := github.Repo{
-		Name: "fail",
+		Name: fail,
 	}
 
 	unarchiveRepo := org.Repo{
 		Archived: &no,
 	}
-	archivedRepo := github.Repo{
-		Name:     oldName,
-		Archived: true,
+	archiveRepo := org.Repo{
+		Archived: &yes,
 	}
+	publishRepo := org.Repo{
+		Private: &no,
+	}
+	archivedRepo := oldRepo
+	archivedRepo.Archived = true
+	privateRepo := oldRepo
+	privateRepo.Private = true
+	publicRepo := oldRepo
+	publicRepo.Private = false
+
 	testCases := []struct {
 		description     string
+		opts            options
 		orgConfig       org.Config
 		orgNameOverride string
 		repos           []github.Repo
@@ -2671,7 +2679,7 @@ func TestConfigureRepos(t *testing.T) {
 			description: "CreateRepo failure is propagated",
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
-					fail: failConfigRepo,
+					fail: newConfigRepo,
 				},
 			},
 			repos: []github.Repo{oldRepo},
@@ -2684,7 +2692,7 @@ func TestConfigureRepos(t *testing.T) {
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
 					"repo": newConfigRepo,
-					"REPO": failConfigRepo,
+					"REPO": newConfigRepo,
 				},
 			},
 			repos: []github.Repo{oldRepo},
@@ -2732,15 +2740,63 @@ func TestConfigureRepos(t *testing.T) {
 			expectError:   true,
 			expectedRepos: []github.Repo{archivedRepo},
 		},
+		{
+			description: "request to archive repo fails when not allowed",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: archiveRepo,
+				},
+			},
+			repos:         []github.Repo{oldRepo},
+			expectError:   true,
+			expectedRepos: []github.Repo{oldRepo},
+		},
+		{
+			description: "request to archive repo succeeds when allowed",
+			opts: options{
+				allowRepoArchival: true,
+			},
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: archiveRepo,
+				},
+			},
+			repos:         []github.Repo{oldRepo},
+			expectedRepos: []github.Repo{archivedRepo},
+		},
+		{
+			description: "request to publish a private repo fails when not allowed",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: publishRepo,
+				},
+			},
+			repos:         []github.Repo{privateRepo},
+			expectError:   true,
+			expectedRepos: []github.Repo{privateRepo},
+		},
+		{
+			description: "request to publish a private repo succeeds when allowed",
+			opts: options{
+				allowRepoPublish: true,
+			},
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: publishRepo,
+				},
+			},
+			repos:         []github.Repo{privateRepo},
+			expectedRepos: []github.Repo{publicRepo},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			fc := makeFakeRepoClient(t, tc.repos...)
 			var err error
 			if len(tc.orgNameOverride) > 0 {
-				err = configureRepos(fc, tc.orgNameOverride, tc.orgConfig)
+				err = configureRepos(tc.opts, fc, tc.orgNameOverride, tc.orgConfig)
 			} else {
-				err = configureRepos(fc, orgName, tc.orgConfig)
+				err = configureRepos(tc.opts, fc, orgName, tc.orgConfig)
 			}
 			if err != nil && !tc.expectError {
 				t.Errorf("%s: unexpected error: %v", tc.description, err)
