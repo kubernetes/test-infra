@@ -1,3 +1,77 @@
+periodics:
+- interval: 1h
+  name: ci-kubernetes-prototype-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: "k8s.io/release"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
+      command:
+        - /run.sh
+      args:
+        - --project=k8s-staging-release-test
+        - --scratch-bucket=gs://k8s-staging-release-test-gcb
+        - --gcb-config=build.yaml
+        - --variant=build-ci
+        - --no-source
+        - gcb/
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+      volumeMounts:
+        - name: creds
+          mountPath: /creds
+    volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-release-prototype-master-blocking
+    testgrid-tab-name: build-master
+    testgrid-alert-email: release-managers@kubernetes.io
+
+- interval: 1h
+  name: ci-kubernetes-prototype-build-fast
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: "k8s.io/release"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
+      command:
+        - /run.sh
+      args:
+        - --project=k8s-staging-release-test
+        - --scratch-bucket=gs://k8s-staging-release-test-gcb
+        - --gcb-config=build.yaml
+        - --variant=build-ci-fast
+        - --no-source
+        - gcb/
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+      volumeMounts:
+        - name: creds
+          mountPath: /creds
+    volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  annotations:
+    testgrid-dashboards: sig-release-prototype-master-blocking
+    testgrid-tab-name: build-master-fast
+    testgrid-alert-email: release-managers@kubernetes.io
+    description: 'Ends up running: make quick-release'
+
 postsubmits:
   kubernetes/release:
     - name: post-release-push-image-k8s-cloud-builder
