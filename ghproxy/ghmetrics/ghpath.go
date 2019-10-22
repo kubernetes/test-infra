@@ -17,6 +17,8 @@ limitations under the License.
 package ghmetrics
 
 import (
+	"fmt"
+
 	"k8s.io/test-infra/prow/simplifypath"
 )
 
@@ -137,4 +139,13 @@ func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
 
 func v(fragment string, children ...simplifypath.Node) simplifypath.Node {
 	return simplifypath.V(fragment, children...)
+}
+
+func replaceMultiVariable(s string) string {
+	if len(s) > 0 {
+		if s[0] == '+' {
+			return fmt.Sprintf(":%s", s[1:])
+		}
+	}
+	return s
 }

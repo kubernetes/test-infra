@@ -18,7 +18,7 @@ package ghmetrics
 
 import "testing"
 
-func Test_GetSimplifiedPath(t *testing.T) {
+func Test_Simplify(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -64,13 +64,13 @@ func Test_GetSimplifiedPath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := simplifier.Simplify(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
+				t.Errorf("simplifier.Simplify(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_GetSimplifiedPathRepos(t *testing.T) {
+func Test_SimplifyRepos(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -197,13 +197,13 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := simplifier.Simplify(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
+				t.Errorf("simplifier.Simplify(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_GetSimplifiedPathUser(t *testing.T) {
+func Test_SimplifyUser(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -234,13 +234,13 @@ func Test_GetSimplifiedPathUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := simplifier.Simplify(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
+				t.Errorf("simplifier.Simplify(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_GetSimplifiedPathUsers(t *testing.T) {
+func Test_SimplifyUsers(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -264,13 +264,13 @@ func Test_GetSimplifiedPathUsers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := simplifier.Simplify(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
+				t.Errorf("simplifier.Simplify() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_GetSimplifiedPathOrgs(t *testing.T) {
+func Test_SimplifyOrgs(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -301,13 +301,13 @@ func Test_GetSimplifiedPathOrgs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := simplifier.Simplify(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
+				t.Errorf("simplifier.Simplify(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_GetSimplifiedPathNotifications(t *testing.T) {
+func Test_SimplifyNotifications(t *testing.T) {
 	type args struct {
 		path string
 	}
@@ -324,7 +324,33 @@ func Test_GetSimplifiedPathNotifications(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := simplifier.Simplify(tt.args.path); got != tt.want {
-				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
+				t.Errorf("simplifier.Simplify(%s) = %v, want %v", tt.args.path, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_SimplifyRepoMultiValue(t *testing.T) {
+
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "repo branch with slash", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/testBranchNameContinued/protection"}, want: "/repos/:owner/:repo/branches/:branch/protection"},
+		{name: "repo branch with slash no literal following", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/testBranchNameContinued"}, want: "/repos/:owner/:repo/branches/:branch"},
+		{name: "repo branch with slashes", args: args{path: "/repos/testOwner/testRepo/branches/testBranch/testBranchNameContinued/testBranchNameContinuedTwo/protection"}, want: "/repos/:owner/:repo/branches/:branch/protection"},
+
+		{name: "repo issue with slash", args: args{path: "/repos/testOwner/testRepo/issues/12345/labels/do-not-merge/work-in-progress"}, want: "/repos/:owner/:repo/issues/:issueId/labels/:labelId"},
+		{name: "repo issue with slash", args: args{path: "/repos/testOwner/testRepo/issues/12345/labels/kind/bug/fix-me"}, want: "/repos/:owner/:repo/issues/:issueId/labels/:labelId"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
+				t.Errorf("simplifier.Simplify(%s) = %v, want %v", tt.args.path, got, tt.want)
 			}
 		})
 	}
