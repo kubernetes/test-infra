@@ -16,10 +16,58 @@ limitations under the License.
 
 package git
 
+import (
+	"fmt"
+
+	"github.com/sirupsen/logrus"
+)
+
 // Publisher knows how to publish local work to a remote
 type Publisher interface {
 	// Commit stages all changes and commits them with the message
 	Commit(title, body string) error
 	// ForcePush runs `git push -f` to the publish remote
 	ForcePush(branch string) error
+}
+
+// GitUserGetter fetches a name and email for us in git commits on-demand
+type GitUserGetter func() (name, email string, err error)
+
+type publisher struct {
+	executor Executor
+	remote   RemoteResolver
+	info     GitUserGetter
+	logger   *logrus.Entry
+}
+
+// Commit adds all of the current content to the index and creates a commit
+func (p *publisher) Commit(title, body string) error {
+	p.logger.Infof("Committing changes with title %q", title)
+	name, email, err := p.info()
+	if err != nil {
+		return err
+	}
+	commands := [][]string{
+		{"add", "--all"},
+		{"commit", "--message", title, "--message", body, "--author", fmt.Sprintf("%s <%s>", name, email)},
+	}
+	for _, command := range commands {
+		if out, err := p.executor.Run(command...); err != nil {
+			return fmt.Errorf("error committing %q: %v %v", title, err, string(out))
+		}
+	}
+	return nil
+}
+
+// ForcePush pushes the local state to the remote
+func (p *publisher) ForcePush(branch string) error {
+	p.logger.Infof("Pushing branch %q", branch)
+	remote, err := p.remote()
+	if err != nil {
+		return err
+	}
+	if out, err := p.executor.Run("push", "--force", remote, branch); err != nil {
+		return fmt.Errorf("error pushing %q: %v %v", branch, err, string(out))
+	}
+	return nil
 }
