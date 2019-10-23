@@ -1,6 +1,7 @@
 triggers:
 - repos:
   - multicloudlab
+  - rh-ibm-synergy
   - IBM
   trusted_org: IBM
   elide_skipped_contexts: true
@@ -16,6 +17,20 @@ config_updater:
 
 plugins:
   multicloudlab:
+  - approve
+  - assign
+  - blunderbuss
+  - golint
+  - help
+  - hold
+  - lgtm
+  - lifecycle
+  - size
+  - trigger
+  - verify-owners
+  - wip
+
+  rh-ibm-synergy:
   - approve
   - assign
   - blunderbuss
@@ -48,6 +63,14 @@ plugins:
 
 external_plugins:
   multicloudlab:
+  - name: needs-rebase
+    events:
+    - pull_request
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+  rh-ibm-synergy:
   - name: needs-rebase
     events:
     - pull_request
