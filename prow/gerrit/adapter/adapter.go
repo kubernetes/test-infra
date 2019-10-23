@@ -40,7 +40,7 @@ type prowJobClient interface {
 }
 
 type gerritClient interface {
-	QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]client.ChangeInfo
+	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	Account(instance string) *gerrit.AccountInfo
@@ -59,8 +59,8 @@ type Controller struct {
 }
 
 type LastSyncTracker interface {
-	Current() time.Time
-	Update(time.Time) error
+	Current() client.LastSyncState
+	Update(client.LastSyncState) error
 }
 
 // NewController returns a new gerrit controller client
@@ -87,15 +87,17 @@ func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, proje
 // and creates prowjobs according to specs
 func (c *Controller) Sync() error {
 	syncTime := c.tracker.Current()
-	latest := syncTime
+	latest := syncTime.DeepCopy()
 
 	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
 		for _, change := range changes {
 			if err := c.ProcessChange(instance, change); err != nil {
 				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
 			}
-			if latest.Before(change.Updated.Time) {
-				latest = change.Updated.Time
+			lastTime, ok := latest[instance][change.Project]
+			if !ok || lastTime.Before(change.Updated.Time) {
+				lastTime = change.Updated.Time
+				latest[instance][change.Project] = lastTime
 			}
 		}
 
@@ -241,7 +243,13 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		if latestReport != nil {
 			logger.Infof("Found latest report: %s", latestReport)
 		}
-		lastUpdate := c.tracker.Current()
+
+		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
+		if !ok {
+			logrus.Warnf("could not find lastTime for project %q, probably something went wrong with initTracker?", change.Project)
+			lastUpdate = time.Now()
+		}
+
 		filter, err := messageFilter(lastUpdate, change, presubmits, latestReport, logger)
 		if err != nil {
 			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
