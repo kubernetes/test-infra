@@ -19,11 +19,18 @@ package jobs
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
 )
+
+func createTime(layout string, timeString string) metav1.Time {
+	t, _ := time.Parse(layout, timeString)
+	return metav1.NewTime(t)
+}
 
 type fkc []prowapi.ProwJob
 
@@ -92,15 +99,46 @@ func TestProwJobs(t *testing.T) {
 		prowapi.ProwJob{
 			Spec: prowapi.ProwJobSpec{
 				Agent: prowapi.KubernetesAgent,
-				Job:   "job",
+				Job:   "jobFirst",
 				Refs: &prowapi.Refs{
 					Org:  "kubernetes",
 					Repo: "test-infra",
 				},
 			},
 			Status: prowapi.ProwJobStatus{
-				PodName: "wowowow",
-				BuildID: "123",
+				PodName:   "newpod",
+				BuildID:   "1236",
+				StartTime: createTime(time.RFC3339, "2008-01-02T15:04:05.999Z"),
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "jobThird",
+				Refs: &prowapi.Refs{
+					Org:  "kubernetes",
+					Repo: "test-infra",
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName:   "wowowow",
+				BuildID:   "1234",
+				StartTime: createTime(time.RFC3339, "2006-01-02T15:04:05.999Z"),
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "jobSecond",
+				Refs: &prowapi.Refs{
+					Org:  "kubernetes",
+					Repo: "test-infra",
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName:   "wowowow",
+				BuildID:   "1235",
+				StartTime: createTime(time.RFC3339, "2007-01-02T15:04:05.999Z"),
 			},
 		},
 	}
@@ -111,11 +149,95 @@ func TestProwJobs(t *testing.T) {
 	if err := ja.update(); err != nil {
 		t.Fatalf("Updating: %v", err)
 	}
+
 	pjs := ja.ProwJobs()
-	if expect, got := 1, len(pjs); expect != got {
+	if expect, got := 3, len(pjs); expect != got {
 		t.Fatalf("Expected %d prowjobs, but got %d.", expect, got)
 	}
 	if expect, got := "kubernetes", pjs[0].Spec.Refs.Org; expect != got {
 		t.Errorf("Expected prowjob to have org %q, but got %q.", expect, got)
+	}
+	if expect, got := "jobFirst", pjs[0].Spec.Job; expect != got {
+		t.Errorf("Expected first prowjob to have job name %q, but got %q.", expect, got)
+	}
+	if expect, got := "jobSecond", pjs[1].Spec.Job; expect != got {
+		t.Errorf("Expected second prowjob to have job name %q, but got %q.", expect, got)
+	}
+	if expect, got := "jobThird", pjs[2].Spec.Job; expect != got {
+		t.Errorf("Expected third prowjob to have job name %q, but got %q.", expect, got)
+	}
+}
+
+func TestJobs(t *testing.T) {
+	kc := fkc{
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "jobFirst",
+				Refs: &prowapi.Refs{
+					Org:  "kubernetes",
+					Repo: "test-infra",
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName:   "newpod",
+				BuildID:   "1236",
+				StartTime: createTime(time.RFC3339, "2008-01-02T15:04:05.999Z"),
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "jobThird",
+				Refs: &prowapi.Refs{
+					Org:  "kubernetes",
+					Repo: "test-infra",
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName:   "wowowow",
+				BuildID:   "1234",
+				StartTime: createTime(time.RFC3339, "2006-01-02T15:04:05.999Z"),
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Agent: prowapi.KubernetesAgent,
+				Job:   "jobSecond",
+				Refs: &prowapi.Refs{
+					Org:  "kubernetes",
+					Repo: "test-infra",
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName:   "wowowow",
+				BuildID:   "1235",
+				StartTime: createTime(time.RFC3339, "2007-01-02T15:04:05.999Z"),
+			},
+		},
+	}
+	ja := &JobAgent{
+		kc:   kc,
+		pkcs: map[string]PodLogClient{kube.DefaultClusterAlias: fpkc("")},
+	}
+	if err := ja.update(); err != nil {
+		t.Fatalf("Updating: %v", err)
+	}
+
+	jobs := ja.Jobs()
+	if expect, got := 3, len(jobs); expect != got {
+		t.Fatalf("Expected %d jobs, but got %d.", expect, got)
+	}
+	if expect, got := "kubernetes", jobs[0].Refs.Org; expect != got {
+		t.Errorf("Expected jobs to have org %q, but got %q.", expect, got)
+	}
+	if expect, got := "jobFirst", jobs[0].Job; expect != got {
+		t.Errorf("Expected first job to have job name %q, but got %q.", expect, got)
+	}
+	if expect, got := "jobSecond", jobs[1].Job; expect != got {
+		t.Errorf("Expected second job to have job name %q, but got %q.", expect, got)
+	}
+	if expect, got := "jobThird", jobs[2].Job; expect != got {
+		t.Errorf("Expected third job to have job name %q, but got %q.", expect, got)
 	}
 }
