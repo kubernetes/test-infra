@@ -24,7 +24,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -68,7 +67,7 @@ func serveMetrics(reg *prometheus.Registry) {
 // metrics to the provided endpoint.
 func pushMetrics(component, endpoint string, interval time.Duration) {
 	interrupts.TickLiteral(func() {
-		if err := push.FromGatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
+		if err := fromGatherer(component, hostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
 			logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
 		}
 	}, interval)

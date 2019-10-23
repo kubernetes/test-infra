@@ -1125,8 +1125,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/client_golang",
-        sum = "h1:Y8E/JaaPbmFSW2V81Ab/d8yZFYQQGbni1b1jPcG9Y6A=",
-        version = "v0.9.4",
+        sum = "h1:vrDKnkGzuGvhNAL56c7DBz29ZL+KxnoR0x7enabFceM=",
+        version = "v1.0.0",
     )
     go_repository(
         name = "com_github_prometheus_client_model",
@@ -1758,8 +1758,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "sigs.k8s.io/controller-runtime",
-        sum = "h1:XwUV7gwU/2Uerl9Vb5TpoA3wMQgOxI/LdLq8UhkSSRA=",
-        version = "v0.2.1",
+        sum = "h1:ZtdgqJXVHsIytjdmDuk0QjagnzyLq9FjojXRqIp+dU4=",
+        version = "v0.3.0",
     )
     go_repository(
         name = "io_k8s_sigs_testing_frameworks",
@@ -2170,4 +2170,12 @@ def go_repositories():
         importpath = "github.com/gotestyourself/gotestyourself",
         sum = "h1:AQwinXlbQR2HvPjQZOmDhRqsv5mZf+Jb1RnSLxcqZcI=",
         version = "v2.2.0+incompatible",
+    )
+    go_repository(
+        name = "org_golang_x_xerrors",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "golang.org/x/xerrors",
+        sum = "h1:9zdDQZ7Thm29KFXgAX/+yaf3eVbP7djjWp/dXAppNCc=",
+        version = "v0.0.0-20190717185122-a985d3407aa7",
     )
