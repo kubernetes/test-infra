@@ -111,12 +111,10 @@ func getAssignment() string {
 	if err == nil {
 		if oncaller != "" {
 			return "/cc @" + oncaller
-		} else {
-			return "Nobody is currently oncall, so falling back to Blunderbuss."
 		}
-	} else {
-		return fmt.Sprintf("An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss.", err)
+		return "Nobody is currently oncall, so falling back to Blunderbuss."
 	}
+	return fmt.Sprintf("An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss.", err)
 }
 
 func main() {

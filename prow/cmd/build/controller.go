@@ -629,9 +629,8 @@ func injectSource(b *buildv1alpha1.Build, pj prowjobv1.ProwJob) (bool, error) {
 	}
 	if srcContainer == nil {
 		return false, nil
-	} else {
-		srcContainer.Name = "" // knative-build requirement
 	}
+	srcContainer.Name = "" // knative-build requirement
 
 	b.Spec.Source = &buildv1alpha1.SourceSpec{
 		Custom: srcContainer,

@@ -315,10 +315,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 			}
 			msg = fmt.Sprintf(successClearingProjectMsg, proposedProject)
 			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
-		} else {
-			msg = fmt.Sprintf(failedClearingProjectMsg, proposedProject, e.Number)
-			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 		}
+		msg = fmt.Sprintf(failedClearingProjectMsg, proposedProject, e.Number)
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	// Move this issue/PR to the new column if there's already a project card for this issue/PR in this project
