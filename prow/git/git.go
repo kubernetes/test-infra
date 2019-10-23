@@ -316,18 +316,19 @@ func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.Pul
 }
 
 // MergeAndCheckout merges the provided headSHAs in order onto baseSHA using the provided strategy.
+// If no headSHAs are provided, it will only checkout the baseSHA and return.
 // Only the `merge` and `squash` strategies are supported.
-func (r *Repo) MergeAndCheckout(baseSHA string, headSHAs []string, mergeStrategy prowgithub.PullRequestMergeType) error {
+func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy prowgithub.PullRequestMergeType, headSHAs ...string) error {
 	if baseSHA == "" {
 		return errors.New("baseSHA must be set")
 	}
-	if len(headSHAs) == 0 {
-		return errors.New("at least one headSHA must be provided")
-	}
-	r.logger.Infof("Merging headSHAs %v onto base %s using strategy %s", headSHAs, baseSHA, mergeStrategy)
 	if err := r.Checkout(baseSHA); err != nil {
 		return err
 	}
+	if len(headSHAs) == 0 {
+		return nil
+	}
+	r.logger.Infof("Merging headSHAs %v onto base %s using strategy %s", headSHAs, baseSHA, mergeStrategy)
 	for _, headSHA := range headSHAs {
 		ok, err := r.MergeWithStrategy(headSHA, mergeStrategy)
 		if err != nil {

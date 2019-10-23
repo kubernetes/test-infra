@@ -286,7 +286,6 @@ func TestMergeAndCheckout(t *testing.T) {
 		{
 			name:       "No pullRequestHead, error",
 			setBaseSHA: true,
-			err:        "at least one headSHA must be provided",
 		},
 		{
 			name:          "Merge succeeds with one head and merge strategy",
@@ -382,7 +381,7 @@ func TestMergeAndCheckout(t *testing.T) {
 				t.Fatalf("failed to disable gpg signing for test repo: %v", err)
 			}
 
-			err = clonedRepo.MergeAndCheckout(baseSHA, commitsToMerge, tc.mergeStrategy)
+			err = clonedRepo.MergeAndCheckout(baseSHA, tc.mergeStrategy, commitsToMerge...)
 			if err == nil && tc.err == "" {
 				return
 			}
