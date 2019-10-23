@@ -25,12 +25,12 @@ dashboards:
     - name: OpenStack, master (dev)
       description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-    - name: OpenStack, v1.14 (dev)
-      description: Runs conformance tests using kubetest against kubernetes from the release-1.14 branch with cloud-provider-openstack
-      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.14
     - name: OpenStack, v1.15 (dev)
       description: Runs conformance tests using kubetest against kubernetes from the release-1.15 branch with cloud-provider-openstack
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.15
+    - name: OpenStack, v1.16 (dev)
+      description: Runs conformance tests using kubetest against kubernetes from the release-1.16 branch with cloud-provider-openstack
+      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
 
 
     - name: Gardener, v1.16 AWS
@@ -169,14 +169,14 @@ dashboards:
       test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
       alert_options:
         alert_mail_to_addresses: davanum+testgrid@gmail.com
-    - name: presubmit-v1.14
-      description: Runs conformance tests using kubetest against kubernetes v1.14 with cloud-provider-openstack
-      test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.14
-      alert_options:
-        alert_mail_to_addresses: davanum+testgrid@gmail.com
     - name: presubmit-v1.15
       description: Runs conformance tests using kubetest against kubernetes v1.15 with cloud-provider-openstack
       test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.15
+      alert_options:
+        alert_mail_to_addresses: davanum+testgrid@gmail.com
+    - name: presubmit-v1.16
+      description: Runs conformance tests using kubetest against kubernetes v1.16 with cloud-provider-openstack
+      test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
       alert_options:
         alert_mail_to_addresses: davanum+testgrid@gmail.com
     - name: periodic-master
@@ -184,14 +184,14 @@ dashboards:
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
       alert_options:
         alert_mail_to_addresses: davanum+testgrid@gmail.com
-    - name: periodic-v1.14
-      description: Runs conformance tests using kubetest against kubernetes v1.14 with cloud-provider-openstack
-      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.14
-      alert_options:
-        alert_mail_to_addresses: davanum+testgrid@gmail.com
     - name: periodic-v1.15
       description: Runs conformance tests using kubetest against kubernetes v1.15 with cloud-provider-openstack
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.15
+      alert_options:
+        alert_mail_to_addresses: davanum+testgrid@gmail.com
+    - name: periodic-v1.16
+      description: Runs conformance tests using kubetest against kubernetes v1.16 with cloud-provider-openstack
+      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.16
       alert_options:
         alert_mail_to_addresses: davanum+testgrid@gmail.com
 
