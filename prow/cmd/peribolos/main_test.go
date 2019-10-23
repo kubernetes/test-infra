@@ -2773,6 +2773,40 @@ func TestConfigureRepos(t *testing.T) {
 			repos:         []github.Repo{{Name: oldName, Private: true}},
 			expectedRepos: []github.Repo{{Name: oldName, Private: false}},
 		},
+		{
+			description: "renaming a repo is successful",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName}},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Description: "renamed repo"}},
+			expectedRepos: []github.Repo{{Name: newName, Description: "renamed repo"}},
+		},
+		{
+			description: "dup between a repo name and a previous name is detected",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName}},
+					oldName: {Description: &newDescription},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+			expectError:   true,
+			expectedRepos: []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+		},
+		{
+			description: "dup between two previous names is detected",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"wants-projects": {Previously: []string{oldName}, HasProjects: &yes, HasWiki: &no},
+					"wants-wiki":     {Previously: []string{oldName}, HasProjects: &no, HasWiki: &yes},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+			expectError:   true,
+			expectedRepos: []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
@@ -2826,6 +2860,22 @@ func TestValidateRepos(t *testing.T) {
 			config: map[string]org.Repo{
 				"repo": {Description: &description},
 				"Repo": {Description: &description},
+			},
+			expectError: true,
+		},
+		{
+			description: "finds name confict between previous and current names",
+			config: map[string]org.Repo{
+				"repo":     {Previously: []string{"conflict"}},
+				"conflict": {Description: &description},
+			},
+			expectError: true,
+		},
+		{
+			description: "finds name confict between two previous names",
+			config: map[string]org.Repo{
+				"repo":         {Previously: []string{"conflict"}},
+				"another-repo": {Previously: []string{"conflict"}},
 			},
 			expectError: true,
 		},

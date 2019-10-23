@@ -69,6 +69,8 @@ type Repo struct {
 	DefaultBranch *string `json:"default_branch,omitempty"`
 	Archived      *bool   `json:"archived,omitempty"`
 
+	Previously []string `json:"previously,omitempty"`
+
 	OnCreate *RepoCreateOptions `json:"on_create,omitempty"`
 }
 
