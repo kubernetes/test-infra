@@ -6,7 +6,7 @@ presubmits:
       testgrid-tab-name: presubmit-tests
     decorate: true
     path_alias: sigs.k8s.io/multi-tenancy
-    run_if_changed: "./incubator/hnc/.*"
+    run_if_changed: "incubator/hnc/.*"
     spec:
       containers:
       - image: golang:1.13
