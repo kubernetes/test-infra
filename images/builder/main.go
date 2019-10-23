@@ -119,6 +119,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 	s = append(s, "_GIT_TAG="+version)
 	args := []string{
 		"builds", "submit",
+		"--verbosity", "info",
 		"--config", o.cloudbuildFile,
 		"--substitutions", strings.Join(s, ","),
 	}
