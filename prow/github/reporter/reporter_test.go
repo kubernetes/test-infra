@@ -19,19 +19,22 @@ package reporter
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 func TestShouldReport(t *testing.T) {
 	var testcases = []struct {
 		name        string
-		pj          *v1.ProwJob
+		pj          v1.ProwJob
 		report      bool
 		reportAgent v1.ProwJobAgent
 	}{
 		{
 			name: "should not report skip report job",
-			pj: &v1.ProwJob{
+			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PresubmitJob,
 					Report: false,
@@ -41,7 +44,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "should not report periodic job",
-			pj: &v1.ProwJob{
+			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PeriodicJob,
 					Report: true,
@@ -51,7 +54,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "should report postsubmit job",
-			pj: &v1.ProwJob{
+			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PostsubmitJob,
 					Report: true,
@@ -61,7 +64,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "should not report batch job",
-			pj: &v1.ProwJob{
+			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.BatchJob,
 					Report: true,
@@ -71,7 +74,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "should report presubmit job",
-			pj: &v1.ProwJob{
+			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PresubmitJob,
 					Report: true,
@@ -81,7 +84,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "knative only, don't report kubernetes agent job",
-			pj: &v1.ProwJob{
+			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PresubmitJob,
 					Agent:  v1.KubernetesAgent,
@@ -93,7 +96,7 @@ func TestShouldReport(t *testing.T) {
 		},
 		{
 			name: "knative only, report knative agent job",
-			pj: &v1.ProwJob{
+			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PresubmitJob,
 					Agent:  v1.KnativeBuildAgent,
@@ -103,15 +106,33 @@ func TestShouldReport(t *testing.T) {
 			report:      true,
 			reportAgent: v1.KnativeBuildAgent,
 		},
+		{
+			name: "github should not report gerrit jobs",
+			pj: v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritReportLabel: "plus-one-this-gerrit-label-please",
+					},
+				},
+				Spec: v1.ProwJobSpec{
+					Type:   v1.PresubmitJob,
+					Report: true,
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
-		c := NewReporter(nil, nil, tc.reportAgent)
-		r := c.ShouldReport(tc.pj)
-
-		if r != tc.report {
-			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",
-				tc.name, tc.report, r)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			c := NewReporter(nil, nil, tc.reportAgent)
+			if r := c.ShouldReport(&tc.pj); r == tc.report {
+				return
+			}
+			if tc.report {
+				t.Error("failed to report")
+			} else {
+				t.Error("unexpectedly reported")
+			}
+		})
 	}
 }
