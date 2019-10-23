@@ -24,6 +24,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 // Agent watches a path and automatically loads the secrets stored.
@@ -48,7 +52,7 @@ func (a *Agent) Start(paths []string) error {
 		go a.reloadSecret(secretPath)
 	}
 
-	logrus.SetFormatter(a.GetCensoringFormatter(logrus.StandardLogger().Formatter))
+	logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, a.getSecrets))
 
 	return nil
 }
@@ -110,20 +114,6 @@ func (a *Agent) GetTokenGenerator(secretPath string) func() []byte {
 	}
 }
 
-type censoringFormatter struct {
-	agent    *Agent
-	delegate logrus.Formatter
-}
-
-func (f censoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	raw, err := f.delegate.Format(entry)
-	if err != nil {
-		return raw, err
-	}
-
-	return f.agent.Censor(raw), nil
-}
-
 const censored = "CENSORED"
 
 var censoredBytes = []byte(censored)
@@ -137,11 +127,12 @@ func (a *Agent) Censor(content []byte) []byte {
 	return content
 }
 
-// GetCensoringFormatter returns a logrus Formatter that censors values of the
-// stored secrets from the logged message.
-func (a *Agent) GetCensoringFormatter(f logrus.Formatter) logrus.Formatter {
-	return censoringFormatter{
-		agent:    a,
-		delegate: f,
+func (a *Agent) getSecrets() sets.String {
+	a.RLock()
+	defer a.RUnlock()
+	secrets := sets.NewString()
+	for _, v := range a.secretsMap {
+		secrets.Insert(string(v))
 	}
+	return secrets
 }

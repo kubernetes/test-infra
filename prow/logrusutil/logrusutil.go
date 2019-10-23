@@ -18,7 +18,11 @@ limitations under the License.
 package logrusutil
 
 import (
+	"bytes"
+
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // DefaultFieldsFormatter wraps another logrus.Formatter, injecting
@@ -72,4 +76,40 @@ func (f *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		Message: entry.Message,
 		Caller:  entry.Caller,
 	})
+}
+
+// CensoringFormatter represents a logrus formatter that
+// can be used to censor sensitive information
+type CensoringFormatter struct {
+	delegate   logrus.Formatter
+	getSecrets func() sets.String
+}
+
+func (f CensoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	raw, err := f.delegate.Format(entry)
+	if err != nil {
+		return raw, err
+	}
+	return f.censor(raw), nil
+}
+
+const censored = "CENSORED"
+
+var censoredBytes = []byte(censored)
+
+// Censor replaces sensitive parts of the content with a placeholder.
+func (f CensoringFormatter) censor(content []byte) []byte {
+	for _, secret := range f.getSecrets().List() {
+		content = bytes.ReplaceAll(content, []byte(secret), censoredBytes)
+	}
+	return content
+}
+
+// NewCensoringFormatter generates a `CensoringFormatter` with
+// a formatter as delegate and a set of strings to censor
+func NewCensoringFormatter(f logrus.Formatter, getSecrets func() sets.String) CensoringFormatter {
+	return CensoringFormatter{
+		getSecrets: getSecrets,
+		delegate:   f,
+	}
 }
