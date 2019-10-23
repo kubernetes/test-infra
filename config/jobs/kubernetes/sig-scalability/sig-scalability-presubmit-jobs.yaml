@@ -213,6 +213,7 @@ presubmits:
         - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
+        - --use-logexporter
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
@@ -271,6 +272,7 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=1200m
+        - --use-logexporter
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
@@ -392,6 +394,7 @@ presubmits:
             - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
+            - --use-logexporter
           image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-master
           resources:
             requests:
