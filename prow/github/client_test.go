@@ -2062,10 +2062,89 @@ func TestCreateRepo(t *testing.T) {
 			}))
 			defer ts.Close()
 			c := getClient(ts.URL)
-			if _, err := c.CreateTeam("foo", Team{Name: ""}); err == nil {
-				t.Errorf("client should reject empty name")
-			}
 			switch repo, err := c.CreateRepo(org, tc.isUser, tc.repo); {
+			case err != nil && !tc.expectError:
+				t.Errorf("unexpected error: %v", err)
+			case err == nil && tc.expectError:
+				t.Errorf("expected error, but got none")
+			case err == nil && !reflect.DeepEqual(repo, tc.expectRepo):
+				t.Errorf("%s: repo differs from expected:\n%s", tc.description, diff.ObjectReflectDiff(tc.expectRepo, repo))
+			}
+		})
+	}
+}
+
+func TestUpdateRepo(t *testing.T) {
+	org := "org"
+	repoName := "repository"
+	yes := true
+	testCases := []struct {
+		description string
+		repo        RepoUpdateRequest
+		statusCode  int
+
+		expectError bool
+		expectRepo  *Repo
+	}{
+		{
+			description: "Update repository",
+			repo: RepoUpdateRequest{
+				RepoRequest: RepoRequest{
+					Name: &repoName,
+				},
+				Archived: &yes,
+			},
+			statusCode: http.StatusOK,
+			expectRepo: &Repo{
+				Name:        "repository",
+				Description: "UPDATED",
+				Archived:    true,
+			},
+		},
+		{
+			description: "errors are handled",
+			repo: RepoUpdateRequest{
+				RepoRequest: RepoRequest{
+					Name: &repoName,
+				},
+				Archived: &yes,
+			},
+			statusCode:  http.StatusForbidden,
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodPatch {
+					t.Errorf("Bad method: %s (expected %s)", r.Method, http.MethodPatch)
+				}
+				expectedPath := "/repos/org/repository"
+				if r.URL.Path != expectedPath {
+					t.Errorf("Bad request path to create user-owned repo: %s (expected %s)", r.URL.Path, expectedPath)
+				}
+				b, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Fatalf("Could not read request body: %v", err)
+				}
+				var repo Repo
+				switch err := json.Unmarshal(b, &repo); {
+				case err != nil:
+					t.Errorf("Could not unmarshal request: %v", err)
+				case repo.Name == "":
+					t.Errorf("client should reject empty names")
+				}
+				repo.Description = "UPDATED"
+				b, err = json.Marshal(repo)
+				if err != nil {
+					t.Fatalf("Didn't expect error: %v", err)
+				}
+				w.WriteHeader(tc.statusCode) // 200
+				fmt.Fprint(w, string(b))
+			}))
+			defer ts.Close()
+			c := getClient(ts.URL)
+			switch repo, err := c.UpdateRepo(org, repoName, tc.repo); {
 			case err != nil && !tc.expectError:
 				t.Errorf("unexpected error: %v", err)
 			case err == nil && tc.expectError:

@@ -352,7 +352,7 @@ type RepoCreateRequest struct {
 	LicenseTemplate   *string `json:"license_template,omitempty"`
 }
 
-func (r RepoCreateRequest) ToRepo() *Repo {
+func (r RepoRequest) ToRepo() *Repo {
 	setString := func(dest, src *string) {
 		if src != nil {
 			*dest = *src
@@ -377,6 +377,38 @@ func (r RepoCreateRequest) ToRepo() *Repo {
 	setBool(&repo.AllowRebaseMerge, r.AllowRebaseMerge)
 
 	return &repo
+}
+
+// Defined returns true if at least one of the pointer fields are not nil
+func (r RepoRequest) Defined() bool {
+	return r.Name != nil || r.Description != nil || r.Homepage != nil || r.Private != nil ||
+		r.HasIssues != nil || r.HasProjects != nil || r.HasWiki != nil || r.AllowSquashMerge != nil ||
+		r.AllowMergeCommit != nil || r.AllowRebaseMerge != nil
+}
+
+// RepoUpdateRequest contains metadata used for updating a repository
+// See also: https://developer.github.com/v3/repos/#edit
+type RepoUpdateRequest struct {
+	RepoRequest `json:",omitempty"`
+
+	DefaultBranch *string `json:"default_branch,omitempty"`
+	Archived      *bool   `json:"archived,omitempty"`
+}
+
+func (r RepoUpdateRequest) ToRepo() *Repo {
+	repo := r.RepoRequest.ToRepo()
+	if r.DefaultBranch != nil {
+		repo.DefaultBranch = *r.DefaultBranch
+	}
+	if r.Archived != nil {
+		repo.Archived = *r.Archived
+	}
+
+	return repo
+}
+
+func (r RepoUpdateRequest) Defined() bool {
+	return r.RepoRequest.Defined() || r.DefaultBranch != nil || r.Archived != nil
 }
 
 // RepoPermissions describes which permission level an entity has in a

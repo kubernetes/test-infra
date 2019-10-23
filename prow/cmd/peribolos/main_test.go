@@ -2523,6 +2523,50 @@ func (f fakeRepoClient) CreateRepo(owner string, isUser bool, repoReq github.Rep
 	return repo, nil
 }
 
+func (f fakeRepoClient) UpdateRepo(owner, name string, want github.RepoUpdateRequest) (*github.Repo, error) {
+	if name == "fail" {
+		return nil, fmt.Errorf("injected UpdateRepo failure")
+	}
+	if want.Archived != nil && !*want.Archived {
+		f.t.Errorf("UpdateRepo() called to unarchive a repo (not supported by API)")
+		return nil, fmt.Errorf("UpdateRepo() called to unarchive a repo (not supported by API)")
+	}
+
+	have, exists := f.repos[name]
+	if !exists {
+		f.t.Errorf("UpdateRepo() called on repo that does not exists")
+		return nil, fmt.Errorf("UpdateRepo() called on repo that does not exist")
+	}
+
+	updateString := func(have, want *string) {
+		if want != nil {
+			*have = *want
+		}
+	}
+
+	updateBool := func(have, want *bool) {
+		if want != nil {
+			*have = *want
+		}
+	}
+
+	updateString(&have.Name, want.Name)
+	updateString(&have.DefaultBranch, want.DefaultBranch)
+	updateString(&have.Homepage, want.Homepage)
+	updateString(&have.Description, want.Description)
+	updateBool(&have.Archived, want.Archived)
+	updateBool(&have.Private, want.Private)
+	updateBool(&have.HasIssues, want.HasIssues)
+	updateBool(&have.HasProjects, want.HasProjects)
+	updateBool(&have.HasWiki, want.HasWiki)
+	updateBool(&have.AllowSquashMerge, want.AllowSquashMerge)
+	updateBool(&have.AllowMergeCommit, want.AllowMergeCommit)
+	updateBool(&have.AllowRebaseMerge, want.AllowRebaseMerge)
+
+	f.repos[name] = have
+	return &have, nil
+}
+
 func makeFakeRepoClient(t *testing.T, repos ...github.Repo) fakeRepoClient {
 	fc := fakeRepoClient{
 		repos: make(map[string]github.Repo, len(repos)),
@@ -2538,6 +2582,9 @@ func makeFakeRepoClient(t *testing.T, repos ...github.Repo) fakeRepoClient {
 func TestConfigureRepos(t *testing.T) {
 	orgName := "test-org"
 	isOrg := false
+	no := false
+	yes := true
+	updated := "UPDATED"
 
 	oldName := "old"
 	oldRepo := github.Repo{
@@ -2557,12 +2604,13 @@ func TestConfigureRepos(t *testing.T) {
 	}
 
 	fail := "fail"
-	failConfigRepo := org.Repo{
-		Description: &newDescription,
+	failRepo := github.Repo{
+		Name: fail,
 	}
 
 	testCases := []struct {
 		description     string
+		opts            options
 		orgConfig       org.Config
 		orgNameOverride string
 		repos           []github.Repo
@@ -2600,19 +2648,6 @@ func TestConfigureRepos(t *testing.T) {
 			expectedRepos: []github.Repo{newRepo, oldRepo},
 		},
 		{
-			// test current functionality: this test will need to change once
-			// we implement repository updates
-			description: "existing repo is unchanged",
-			orgConfig: org.Config{
-				Repos: map[string]org.Repo{
-					oldName: newConfigRepo,
-				},
-			},
-			repos: []github.Repo{oldRepo},
-
-			expectedRepos: []github.Repo{oldRepo},
-		},
-		{
 			description:     "GetRepos failure is propagated",
 			orgNameOverride: "fail",
 			orgConfig: org.Config{
@@ -2629,7 +2664,7 @@ func TestConfigureRepos(t *testing.T) {
 			description: "CreateRepo failure is propagated",
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
-					fail: failConfigRepo,
+					fail: newConfigRepo,
 				},
 			},
 			repos: []github.Repo{oldRepo},
@@ -2642,7 +2677,7 @@ func TestConfigureRepos(t *testing.T) {
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
 					"repo": newConfigRepo,
-					"REPO": failConfigRepo,
+					"REPO": newConfigRepo,
 				},
 			},
 			repos: []github.Repo{oldRepo},
@@ -2650,15 +2685,103 @@ func TestConfigureRepos(t *testing.T) {
 			expectError:   true,
 			expectedRepos: []github.Repo{oldRepo},
 		},
+		{
+			description: "existing repo is updated",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: newConfigRepo,
+				},
+			},
+			repos: []github.Repo{oldRepo},
+			expectedRepos: []github.Repo{
+				{
+					Name:        oldName,
+					Description: newDescription,
+					FullName:    fmt.Sprintf("%s/%s", orgName, oldName),
+				},
+			},
+		},
+		{
+			description: "UpdateRepo failure is propagated",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"fail": newConfigRepo,
+				},
+			},
+			repos:         []github.Repo{failRepo},
+			expectError:   true,
+			expectedRepos: []github.Repo{failRepo},
+		},
+		{
+			// https://developer.github.com/v3/repos/#edit
+			// "Note: You cannot unarchive repositories through the API."
+			description: "request to unarchive a repo fails, but updates other fields",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: {Archived: &no, Description: &updated},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Archived: true, Description: "OLD"}},
+			expectError:   true,
+			expectedRepos: []github.Repo{{Name: oldName, Archived: true, Description: updated}},
+		},
+		{
+			description: "request to archive repo fails when not allowed, but updates other fields",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: {Archived: &yes, Description: &updated},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Archived: false, Description: "OLD"}},
+			expectError:   true,
+			expectedRepos: []github.Repo{{Name: oldName, Archived: false, Description: updated}},
+		},
+		{
+			description: "request to archive repo succeeds when allowed",
+			opts: options{
+				allowRepoArchival: true,
+			},
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: {Archived: &yes},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Archived: false}},
+			expectedRepos: []github.Repo{{Name: oldName, Archived: true}},
+		},
+		{
+			description: "request to publish a private repo fails when not allowed, but updates other fields",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: {Private: &no, Description: &updated},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Private: true, Description: "OLD"}},
+			expectError:   true,
+			expectedRepos: []github.Repo{{Name: oldName, Private: true, Description: updated}},
+		},
+		{
+			description: "request to publish a private repo succeeds when allowed",
+			opts: options{
+				allowRepoPublish: true,
+			},
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: {Private: &no},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Private: true}},
+			expectedRepos: []github.Repo{{Name: oldName, Private: false}},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			fc := makeFakeRepoClient(t, tc.repos...)
 			var err error
 			if len(tc.orgNameOverride) > 0 {
-				err = configureRepos(fc, tc.orgNameOverride, tc.orgConfig)
+				err = configureRepos(tc.opts, fc, tc.orgNameOverride, tc.orgConfig)
 			} else {
-				err = configureRepos(fc, orgName, tc.orgConfig)
+				err = configureRepos(tc.opts, fc, orgName, tc.orgConfig)
 			}
 			if err != nil && !tc.expectError {
 				t.Errorf("%s: unexpected error: %v", tc.description, err)
@@ -2672,7 +2795,7 @@ func TestConfigureRepos(t *testing.T) {
 				t.Fatalf("%s: unexpected GetRepos error: %v", tc.description, err)
 			}
 			if !reflect.DeepEqual(reposAfter, tc.expectedRepos) {
-				t.Errorf("%s: unexpected repos after configureRepos():\n%s", tc.description, diff.ObjectReflectDiff(reposAfter, tc.repos))
+				t.Errorf("%s: unexpected repos after configureRepos():\n%s", tc.description, diff.ObjectReflectDiff(reposAfter, tc.expectedRepos))
 			}
 		})
 	}
@@ -2715,6 +2838,78 @@ func TestValidateRepos(t *testing.T) {
 				t.Errorf("%s: expected error, got none", tc.description)
 			} else if err != nil && !tc.expectError {
 				t.Errorf("%s: unexpected error: %v", tc.description, err)
+			}
+		})
+	}
+}
+
+func TestNewRepoUpdateRequest(t *testing.T) {
+	repoName := "repo-name"
+	newRepoName := "renamed-repo"
+	description := "description of repo-name"
+	homepage := "https://somewhe.re"
+	master := "master"
+	branch := "branch"
+
+	testCases := []struct {
+		description string
+		current     github.Repo
+		name        string
+		newState    org.Repo
+
+		expected github.RepoUpdateRequest
+	}{
+		{
+			description: "update is just a delta from current state",
+			current: github.Repo{
+				Name:          repoName,
+				Description:   description,
+				Homepage:      homepage,
+				DefaultBranch: master,
+			},
+			name: repoName,
+			newState: org.Repo{
+				Description:   &description,
+				DefaultBranch: &branch,
+			},
+			expected: github.RepoUpdateRequest{
+				DefaultBranch: &branch,
+			},
+		},
+		{
+			description: "empty delta is returned when no update is needed",
+			current: github.Repo{
+				Name:        repoName,
+				Description: description,
+			},
+			name: repoName,
+			newState: org.Repo{
+				Description: &description,
+			},
+		},
+		{
+			description: "request to rename a repo works",
+			current: github.Repo{
+				Name: repoName,
+			},
+			name: newRepoName,
+			newState: org.Repo{
+				Description: &description,
+			},
+			expected: github.RepoUpdateRequest{
+				RepoRequest: github.RepoRequest{
+					Name:        &newRepoName,
+					Description: &description,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			update := newRepoUpdateRequest(tc.current, tc.name, tc.newState)
+			if !reflect.DeepEqual(tc.expected, update) {
+				t.Errorf("%s: update request differs from expected:%s", tc.description, diff.ObjectReflectDiff(tc.expected, update))
 			}
 		})
 	}

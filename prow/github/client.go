@@ -154,6 +154,7 @@ type RepositoryClient interface {
 	CreateFork(owner, repo string) error
 	ListRepoTeams(org, repo string) ([]Team, error)
 	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*Repo, error)
+	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*Repo, error)
 }
 
 // TeamClient interface for team related API actions
@@ -1694,6 +1695,28 @@ func (c *client) CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (
 		path:        path,
 		requestBody: &repo,
 		exitCodes:   []int{201},
+	}, &retRepo)
+	return &retRepo, err
+}
+
+// UpdateRepo edits an existing repository
+// See https://developer.github.com/v3/repos/#edit
+func (c *client) UpdateRepo(owner, name string, repo RepoUpdateRequest) (*Repo, error) {
+	c.log("UpdateRepo", owner, name, repo)
+
+	if c.fake {
+		return nil, nil
+	} else if c.dry {
+		return repo.ToRepo(), nil
+	}
+
+	path := fmt.Sprintf("/repos/%s/%s", owner, name)
+	var retRepo Repo
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        path,
+		requestBody: &repo,
+		exitCodes:   []int{200},
 	}, &retRepo)
 	return &retRepo, err
 }
