@@ -21,6 +21,7 @@ package reporter
 import (
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/report"
 )
 
@@ -53,19 +54,15 @@ func (c *Client) GetName() string {
 // ShouldReport returns if this prowjob should be reported by the github reporter
 func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 
-	if !pj.Spec.Report {
-		// Respect report field
-		return false
-	}
-
-	if pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob {
-		// Report presubmit and postsubmit github jobs for github reporter
-		return false
-	}
-
-	if c.reportAgent != "" && pj.Spec.Agent != c.reportAgent {
-		// Only report for specified agent
-		return false
+	switch {
+	case pj.Labels[client.GerritReportLabel] != "":
+		return false // TODO(fejta): opt-in to github reporting
+	case !pj.Spec.Report:
+		return false // Respect report field
+	case pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob:
+		return false // Report presubmit and postsubmit github jobs for github reporter
+	case c.reportAgent != "" && pj.Spec.Agent != c.reportAgent:
+		return false // Only report for specified agent
 	}
 
 	return true
