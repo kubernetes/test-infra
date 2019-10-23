@@ -80,6 +80,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.0.0
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+	github.com/prometheus/common v0.4.1
 	github.com/prometheus/procfs v0.0.5 // indirect
 	github.com/rogpeppe/go-internal v1.3.2 // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
