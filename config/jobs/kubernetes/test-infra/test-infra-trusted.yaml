@@ -876,7 +876,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20191019-6567e5c
+      - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
         command:
         - /run.sh
         args:
@@ -1119,7 +1119,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20191022-7c8165546
+      image: gcr.io/k8s-prow/branchprotector:v20191023-5d6c24c6f
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1153,7 +1153,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20191022-7c8165546
+      image: gcr.io/k8s-prow/label_sync:v20191023-5d6c24c6f
       command:
       - /app/label_sync/app.binary
       args:
