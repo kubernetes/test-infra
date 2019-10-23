@@ -17,11 +17,14 @@ limitations under the License.
 package pjutil
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
+	ktypes "k8s.io/apimachinery/pkg/types"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github/reporter"
@@ -29,7 +32,7 @@ import (
 
 // prowClient a minimalistic prow client required by the aborter
 type prowClient interface {
-	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Patch(name string, pt ktypes.PatchType, data []byte, subresources ...string) (result *prowapi.ProwJob, err error)
 }
 
 // ProwJobResourcesCleanup type for a callback function which it is expected to clean up
@@ -93,6 +96,7 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 			dupes[ji] = i
 		}
 		toCancel := pjs[cancelIndex]
+		prevPJ := toCancel
 
 		// TODO cancel the prow job before cleaning up its resources and make this system
 		// independent.
@@ -102,7 +106,6 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 		}
 
 		toCancel.SetComplete()
-		prevState := toCancel.Status.State
 		toCancel.Status.State = prowapi.AbortedState
 		if toCancel.Status.PrevReportStates == nil {
 			toCancel.Status.PrevReportStates = map[string]prowapi.ProwJobState{}
@@ -110,15 +113,36 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 		toCancel.Status.PrevReportStates[reporter.GitHubReporterName] = toCancel.Status.State
 
 		log.WithFields(ProwJobFields(&toCancel)).
-			WithField("from", prevState).
+			WithField("from", prevPJ.Status.State).
 			WithField("to", toCancel.Status.State).Info("Transitioning states")
 
-		npj, err := pjc.Update(&toCancel)
+		newPJ, err := PatchProwjob(pjc, log, prevPJ, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[cancelIndex] = *npj
+		pjs[cancelIndex] = *newPJ
 	}
 
 	return nil
+}
+
+func PatchProwjob(pjc prowClient, log *logrus.Entry, srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob) (*prowapi.ProwJob, error) {
+	srcPJData, err := json.Marshal(srcPJ)
+	if err != nil {
+		return nil, fmt.Errorf("marshal source prow job: %v", err)
+	}
+
+	destPJData, err := json.Marshal(destPJ)
+	if err != nil {
+		return nil, fmt.Errorf("marshal dest prow job: %v", err)
+	}
+
+	patch, err := jsonpatch.CreateMergePatch(srcPJData, destPJData)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create JSON patch: %v", err)
+	}
+
+	newPJ, err := pjc.Patch(srcPJ.Name, ktypes.MergePatchType, patch)
+	log.WithFields(ProwJobFields(&destPJ)).Debug("Patched ProwJob.")
+	return newPJ, err
 }
