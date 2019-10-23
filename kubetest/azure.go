@@ -912,6 +912,9 @@ func (c Cluster) DumpClusterLogs(localPath, gcsPath string) error {
 		log.Println("Skippng DumpClusterLogs due to CCM not being enabled.")
 		return nil
 	}
+	if err := os.Setenv("ARTIFACTS", localPath); err != nil {
+		return err
+	}
 
 	logDumpDir := util.K8s("cloud-provider-azure", "hack", "log-dump")
 	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump.sh")); os.IsNotExist(err) {
