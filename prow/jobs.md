@@ -5,13 +5,27 @@ For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"]
 For a brief cookbook for jobs intended for [prow.k8s.io], please refer to
 [`config/jobs/README.md`](/config/jobs/README.md)
 
+Make sure prow has been [deployed] correctly:
+
+* The `horologium` component schedules periodic jobs.
+* The `hook` component schedules presubmit and postsubmit jobs, ensuring the repo:
+  - enabled `trigger` in [`plugins.yaml`]
+  - sends GitHub webhooks to prow.
+* The `plank` component schedules the pod requested by a prowjob.
+* The `crier` component reports status back to github.
+
 ## How to configure new jobs
 
 To configure a new job you'll need to add an entry into [config.yaml](/config/prow/config.yaml).
 If you have [update-config](/prow/plugins/updateconfig) plugin deployed then the
 config will be automatically updated once the PR is merged, else you will need
 to run `make update-config`. This does not require redeploying any binaries,
-and will take effect within a minute.
+and will take effect within a few minutes.
+
+Prow requires you to have a basic understanding of kubernetes, such
+that you can define pods in yaml.  Please see kubernetes documentation
+for help here, for example the [Pod overview] and [PodSpec api
+reference].
 
 Periodic config looks like so:
 
@@ -20,6 +34,8 @@ periodics:
 - name: foo-job         # Names need not be unique, but must match the regex ^[A-Za-z0-9-._]+$
   decorate: true        # Enable Pod Utility decoration. (see below)
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
+  # Alternatively use a cron instead of an interval, for example:
+  # cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
   spec: {}              # Valid Kubernetes PodSpec.
 ```
 
@@ -156,17 +172,21 @@ to Prow in some other context, like `/close`. It is similarly not suggested to d
 
 #### Posting GitHub Status Contexts
 
-Presubmit and postsubmit jobs that always run will always post a status context on GitHub to the commit under test, unless the job is configured with `skip_report: true`.
-Jobs that run conditionally but do not match the content of the pull request will _not_ post "Skipped" status contexts to the pull request.
-<!--- TODO(skuznets|fejta): remove mention of negative behavior by July --->
+Presubmit and postsubmit jobs post a status context to the GitHub
+commit under test once they start, unless the job is configured
+with `skip_report: true`.
 
-If a conditional job matched a pull request at some point in the past, ran and failed
-it will post a failed status context to the pull request. If the conditional job still
-matches the pull request, a `/retest` or `/test job-name` will re-trigger it and
-potentially update the failed context to passing. If the job no longer matches the pull
-request, you may still re-trigger it with `/test job-name`, but if it is no longer
-relevant to the pull request, use the `/skip` command to dismiss the status context on
-GitHub.
+Use a `/retest` or `/test job-name` to re-trigger the test and
+hopefully update the failed context to passing.
+
+If a job should no longer trigger on the pull request, use the
+`/skip` command to dismiss a failing status context (depends on
+`skip` plugin).
+
+Repo administrators can also `/override job-name` in case of emergency
+(depends on the `override` plugin).
+
+
 
 ### Requiring Job Statuses
 #### Requiring Jobs for Auto-Merge Through Tide
@@ -244,5 +264,18 @@ Batch Job:
 
 See ["How to test a ProwJob"](/prow/build_test_update.md#How-to-test-a-ProwJob).
 
-[`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
+## Badges
+
+Prow can display badges that signal whether jobs are passing ([example](https://prow.k8s.io/badge.svg?jobs=post-test-infra-bazel)).
+
+The format to send your `deck` URL is `/badge.svg?jobs=single-job-name` or `/badge.svg?jobs=common-job-prefix-*`.
+
+<!-- links -->
+
+[Pod overview]: https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/#pod-templates
 [PodPresets]: https://kubernetes.io/docs/concepts/workloads/pods/podpreset/
+[PodSpec api reference]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.16/#podspec-v1-core
+[`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
+[`plugins.yaml`]: /config/prow/plugins.yaml
+[deployed]: https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md
+
