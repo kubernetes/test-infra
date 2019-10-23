@@ -19,6 +19,7 @@ tide:
     multicloudlab/mygit: squash
     multicloudlab/test-infra: squash
     multicloudlab/tools: squash
+    rh-ibm-synergy/multicloud-manager: squash
     IBM/go-repo-template: squash
     IBM/test-infra: squash
     IBM/multicloud-operators-subscription-release: squash
@@ -37,6 +38,7 @@ tide:
     - multicloudlab/mygit
     - multicloudlab/test-infra
     - multicloudlab/tools
+    - rh-ibm-synergy/multicloud-manager
     - IBM/go-repo-template
     - IBM/test-infra
     - IBM/multicloud-operators-subscription-release
