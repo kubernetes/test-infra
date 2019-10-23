@@ -112,6 +112,9 @@ periodics:
   annotations:
     testgrid-dashboards: sig-big-data
     description: Periodic testing of Kubeflow on the latest master branch.
+    # TODO: use a public email group
+    testgrid-alert-email: kubeflow-engineering@google.com
+    testgrid-num-failures-to-alert: "3"
 - name: kubeflow-manifests-periodic-master
   interval: 8h
   labels:
