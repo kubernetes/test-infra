@@ -2,7 +2,7 @@
 agent_queue_id: trigger-pipelines
 description: Premerge testing for Prow
 github:
-  default_branch: master
+  default_branch: improbable2
 teams:
 - name: Everyone
   permission: BUILD_AND_READ
