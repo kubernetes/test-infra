@@ -142,9 +142,12 @@ presets:
     value: "true"
   - name: PROMETHEUS_SCRAPE_ETCD
     value: "true"
+  # Disable kubernetes-dashboard
+  - name: KUBE_ENABLE_CLUSTER_UI
+    value: "false"
 
 ###### Scalability Envs
-### Common env variables for all scalability-related suites.
+### Common env variables for node scalability-related suites.
 - labels:
     preset-e2e-scalability-node: "true"
   env:
