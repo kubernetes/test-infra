@@ -1,39 +1,39 @@
 test_groups:
 # OpenShift Dedicated integration
 - name: osd-int-4.1
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-int-4.1
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.1
 - name: osd-int-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-int-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2
 - name: osd-upgrade-int-4.1-4.1
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-int-4.1-4.1
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.1-4.1
 - name: osd-upgrade-int-4.1-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-int-4.1-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.1-4.2
 - name: osd-upgrade-int-4.2-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-int-4.2-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.2
 
 # OpenShift Dedicated staging
 - name: osd-stage-4.1
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.1
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.1
 - name: osd-stage-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-stage-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2
 - name: osd-upgrade-stage-4.1-4.1
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-stage-4.1-4.1
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.1-4.1
 - name: osd-upgrade-stage-4.1-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-stage-4.1-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.1-4.2
 - name: osd-upgrade-stage-4.2-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-stage-4.2-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-stage-4.2-4.2
 
 # OpenShift Dedicated production
 - name: osd-prod-4.1
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.1
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.1
 - name: osd-prod-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-prod-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.2
 - name: osd-upgrade-prod-4.1-4.1
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-prod-4.1-4.1
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.1-4.1
 - name: osd-upgrade-prod-4.1-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-prod-4.1-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.1-4.2
 - name: osd-upgrade-prod-4.2-4.2
-  gcs_prefix: redhat-openshift-osd-e2e/logs/osd-upgrade-prod-4.2-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-prod-4.2-4.2
 
 dashboards:
 # OpenShift Dedicated integration dashboard
@@ -46,19 +46,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-int-4.2
     description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 integration cluster.
     test_group_name: osd-int-4.2
@@ -66,19 +66,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-int-4.1-4.1
     description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in integration.
     test_group_name: osd-upgrade-int-4.1-4.1
@@ -86,19 +86,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-int-4.1-4.2
     description: Runs upgrade tests between OpenShift Dedicated 4.1 and 4.2 in integration.
     test_group_name: osd-upgrade-int-4.1-4.2
@@ -106,19 +106,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-int-4.2-4.2
     description: Runs upgrade tests between OpenShift Dedicated 4.2 and 4.2 in integration.
     test_group_name: osd-upgrade-int-4.2-4.2
@@ -126,19 +126,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
 
 # OpenShift Dedicated staging dashboard
 - name: redhat-osd-stage
@@ -150,19 +150,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-stage-4.2
     description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 staging cluster.
     test_group_name: osd-stage-4.2
@@ -170,19 +170,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-stage-4.1-4.1
     description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in staging.
     test_group_name: osd-upgrade-stage-4.1-4.1
@@ -190,19 +190,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-stage-4.1-4.2
     description: Runs upgrade tests between OpenShift Dedicated 4.1 and 4.2 in staging.
     test_group_name: osd-upgrade-stage-4.1-4.2
@@ -210,19 +210,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-stage-4.2-4.2
     description: Runs upgrade tests between OpenShift Dedicated 4.2 and 4.2 in staging.
     test_group_name: osd-upgrade-stage-4.2-4.2
@@ -230,19 +230,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
 
 # OpenShift Dedicated production dashboard
 - name: redhat-osd-prod
@@ -254,19 +254,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-prod-4.2
     description: Runs cluster acceptance tests on an OpenShift Dedicated 4.2 production cluster.
     test_group_name: osd-prod-4.2
@@ -274,19 +274,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-prod-4.1-4.1
     description: Runs upgrade tests between OpenShift Dedicated 4.1 patch releases in production.
     test_group_name: osd-upgrade-prod-4.1-4.1
@@ -294,19 +294,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-prod-4.1-4.2
     description: Runs upgrade tests between OpenShift Dedicated 4.1 and 4.2 in production.
     test_group_name: osd-upgrade-prod-4.1-4.2
@@ -314,19 +314,19 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
   - name: osd-upgrade-prod-4.2-4.2
     description: Runs upgrade tests between OpenShift Dedicated 4.2 and 4.2 in production.
     test_group_name: osd-upgrade-prod-4.2-4.2
@@ -334,16 +334,16 @@ dashboards:
     open_test_template: # The URL template to visit after clicking on a cell
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     file_bug_template: # The URL template to visit when filing a bug
-      url: https://github.com/openshift/origin/issues/new
+      url: https://github.com/openshift/osde2e/issues/new
       options:
         - key: title
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
     open_bug_template: # The URL template to visit when visiting an associated bug
-      url: https://github.com/openshift/origin/issues/
+      url: https://github.com/openshift/osde2e/issues/
     results_url_template: # The URL template to visit after clicking
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    code_search_path: github.com/openshift/origin/search # URL for regression search links.
+    code_search_path: github.com/openshift/osde2e/search # URL for regression search links.
     code_search_url_template: # The URL template to visit when searching for changelists
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+      url: https://github.com/openshift/osde2e/compare/<start-custom-0>...<end-custom-0>
