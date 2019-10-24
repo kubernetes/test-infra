@@ -46,6 +46,7 @@ release(
     ),
     component("hook", "service", "deployment"),
     component("horologium", "deployment"),
+    component("ing", "ingress"),
     component(
         "mem-limit-range",
         "limitrange",
@@ -54,6 +55,7 @@ release(
     component("needs-rebase", "deployment"),
     component("pipeline", "deployment"),
     component("plank", "service", "deployment"),
+    component("prow-canary-k8s-io", "managedcertificate"),
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
     component("sinker", "service", "deployment"),

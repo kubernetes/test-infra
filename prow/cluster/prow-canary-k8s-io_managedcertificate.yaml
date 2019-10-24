@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: prow-canary-k8s-io
+spec:
+  domains:
+  - prow-canary.k8s.io

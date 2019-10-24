@@ -19,6 +19,8 @@ release(
     component("alertmanager_rbac", MULTI_KIND),
     component("alertmanager_expose", MULTI_KIND),
     component("prow", "alertmanager"),
+    component("ing", "ingress"),
+    component("monitoring-prow-canary-k8s-io", "managedcertificate"),
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
