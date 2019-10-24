@@ -33,7 +33,7 @@
           {
             alert: 'TidePoolErrorRateIndividual',
             expr: |||
-              (max(sum(increase(tidepoolerrors[10m])) by (org, repo, branch)) or vector(0)) >= 3
+              (max(sum(increase(tidepoolerrors{org!="kubeflow"}[10m])) by (org, repo, branch)) or vector(0)) >= 3
             |||,
             'for': '5m',
             labels: {
