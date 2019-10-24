@@ -146,7 +146,8 @@ func (st *syncTime) currentState() (client.LastSyncState, error) {
 	}
 	var state client.LastSyncState
 	if err := json.Unmarshal(buf, &state); err != nil {
-		return nil, fmt.Errorf("unmarshall state: %v", err)
+		// Don't error on unmarshall error, let it default
+		return nil, nil
 	}
 	return state, nil
 }
