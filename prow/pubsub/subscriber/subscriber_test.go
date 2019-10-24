@@ -38,6 +38,8 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pubsub/reporter"
+
+	v1 "k8s.io/api/core/v1"
 )
 
 type pubSubTestClient struct {
@@ -232,6 +234,37 @@ func TestHandleMessage(t *testing.T) {
 	}
 }
 
+func CheckProwJob(pe *PeriodicProwJobEvent, pj *prowapi.ProwJob) error {
+	// checking labels
+	for label, value := range pe.Labels {
+		if pj.Labels[label] != value {
+			return fmt.Errorf("label %s should be set to %s, found %s instead", label, value, pj.Labels[label])
+		}
+	}
+	// Checking Annotations
+	for annotation, value := range pe.Annotations {
+		if pj.Annotations[annotation] != value {
+			return fmt.Errorf("annotation %s should be set to %s, found %s instead", annotation, value, pj.Annotations[annotation])
+		}
+	}
+	if pj.Spec.PodSpec != nil {
+		// Checking Envs
+		for _, container := range pj.Spec.PodSpec.Containers {
+			envs := map[string]string{}
+			for _, env := range container.Env {
+				envs[env.Name] = env.Value
+			}
+			for env, value := range pe.Envs {
+				if envs[env] != value {
+					return fmt.Errorf("env %s should be set to %s, found %s instead", env, value, pj.Annotations[env])
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func TestHandlePeriodicJob(t *testing.T) {
 	for _, tc := range []struct {
 		name        string
@@ -268,13 +301,30 @@ func TestHandlePeriodicJob(t *testing.T) {
 					reporter.PubSubRunIDLabel:   "runid",
 					reporter.PubSubTopicLabel:   "topic",
 				},
+				Labels: map[string]string{
+					"label1": "label1",
+					"label2": "label2",
+				},
+				Envs: map[string]string{
+					"env1": "env1",
+					"env2": "env2",
+				},
 			},
 			config: &config.Config{
 				JobConfig: config.JobConfig{
 					Periodics: []config.Periodic{
 						{
 							JobBase: config.JobBase{
-								Name: "test",
+								Name:        "test",
+								Labels:      map[string]string{},
+								Annotations: map[string]string{},
+								Spec: &v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Name: "test",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -351,24 +401,29 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t.Error(err)
 			}
 			m.ID = "id"
-			if err := s.handlePeriodicJob(logrus.NewEntry(logrus.New()), &pubSubMessage{*m}, tc.s); err != nil {
+			err = s.handlePeriodicJob(logrus.NewEntry(logrus.New()), &pubSubMessage{*m}, tc.s)
+			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
-				} else if tc.err == "" {
-					var created []*prowapi.ProwJob
-					for _, action := range fakeProwJobClient.Fake.Actions() {
-						switch action := action.(type) {
-						case clienttesting.CreateActionImpl:
-							if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
-								created = append(created, prowjob)
+				}
+			} else if tc.err == "" {
+				var created []*prowapi.ProwJob
+				for _, action := range fakeProwJobClient.Fake.Actions() {
+					switch action := action.(type) {
+					case clienttesting.CreateActionImpl:
+						if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
+							created = append(created, prowjob)
+							if err := CheckProwJob(tc.pe, prowjob); err != nil {
+								t.Error(err)
 							}
 						}
 					}
-					if len(created) != 1 {
-						t.Errorf("Expected to create 1 ProwJobs, got %d", len(created))
-					}
+				}
+				if len(created) != 1 {
+					t.Errorf("Expected to create 1 ProwJobs, got %d", len(created))
 				}
 			}
+
 			if fr.reported != tc.reported {
 				t1.Errorf("Expected Reporting: %t, found: %t", tc.reported, fr.reported)
 			}
