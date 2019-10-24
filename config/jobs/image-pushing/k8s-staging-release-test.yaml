@@ -16,13 +16,14 @@ periodics:
       args:
         - --project=k8s-staging-release-test
         - --scratch-bucket=gs://k8s-staging-release-test-gcb
-        - --gcb-config=build.yaml
         - --variant=build-ci
         - --no-source
-        - gcb/
+        - gcb/build
       env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
+        - name: LOG_TO_STDOUT
+          value: "y"
       volumeMounts:
         - name: creds
           mountPath: /creds
@@ -54,13 +55,14 @@ periodics:
       args:
         - --project=k8s-staging-release-test
         - --scratch-bucket=gs://k8s-staging-release-test-gcb
-        - --gcb-config=build.yaml
         - --variant=build-ci-fast
         - --no-source
-        - gcb/
+        - gcb/build
       env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
+        - name: LOG_TO_STDOUT
+          value: "y"
       volumeMounts:
         - name: creds
           mountPath: /creds
@@ -98,6 +100,8 @@ postsubmits:
             env:
               - name: GOOGLE_APPLICATION_CREDENTIALS
                 value: /creds/service-account.json
+              - name: LOG_TO_STDOUT
+                value: "y"
             volumeMounts:
               - name: creds
                 mountPath: /creds
@@ -127,6 +131,8 @@ postsubmits:
             env:
               - name: GOOGLE_APPLICATION_CREDENTIALS
                 value: /creds/service-account.json
+              - name: LOG_TO_STDOUT
+                value: "y"
             volumeMounts:
               - name: creds
                 mountPath: /creds
@@ -156,6 +162,8 @@ postsubmits:
             env:
               - name: GOOGLE_APPLICATION_CREDENTIALS
                 value: /creds/service-account.json
+              - name: LOG_TO_STDOUT
+                value: "y"
             volumeMounts:
               - name: creds
                 mountPath: /creds
