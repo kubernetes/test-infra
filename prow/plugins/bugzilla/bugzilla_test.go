@@ -1173,7 +1173,8 @@ func TestValidateBug(t *testing.T) {
 			name:    "dependent status requirement with no dependent bugs means a valid bug",
 			bug:     bugzilla.Bug{DependsOn: []int{}},
 			options: plugins.BugzillaBranchOptions{DependentBugStates: &verified},
-			valid:   true,
+			valid:   false,
+			why:     []string{"expected [Bugzilla bug 0](bugzilla.com/show_bug.cgi?id=0) to depend on a bug in one of the following states: VERIFIED, but no dependents were found"},
 		},
 		{
 			name:       "not matching dependent bug status requirement means an invalid bug",
