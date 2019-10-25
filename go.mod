@@ -40,6 +40,7 @@ require (
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/go-openapi/spec v0.19.2
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
+	github.com/go-test/deep v1.0.4
 	github.com/gobuffalo/envy v1.6.15 // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b

@@ -2179,3 +2179,11 @@ def go_repositories():
         sum = "h1:9zdDQZ7Thm29KFXgAX/+yaf3eVbP7djjWp/dXAppNCc=",
         version = "v0.0.0-20190717185122-a985d3407aa7",
     )
+    go_repository(
+        name = "com_github_go_test_deep",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/go-test/deep",
+        sum = "h1:u2CU3YKy9I2pmu9pX0eq50wCgjfGIt539SqR7FbHiho=",
+        version = "v1.0.4",
+    )

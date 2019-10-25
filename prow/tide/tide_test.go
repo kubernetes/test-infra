@@ -28,12 +28,16 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/go-test/deep"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -673,10 +677,50 @@ func TestDividePool(t *testing.T) {
 			"k/k heads/release-1.6": "789",
 		},
 	}
-	c := &Controller{
-		ghc:    fc,
-		gc:     &git.Client{},
-		logger: logrus.WithField("component", "tide"),
+	configGetter := func() *config.Config {
+		return &config.Config{
+			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "default",
+			},
+		}
+	}
+
+	client := &indexingClient{
+		Client:     fakectrlruntimeclient.NewFakeClient(),
+		indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{},
+	}
+	mgr := &fakeManager{
+		client: client,
+		fakeFieldIndexer: &fakeFieldIndexer{
+			client: client,
+		},
+	}
+
+	c, err := newSyncController(
+		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, &git.Client{}, nil, nil,
+	)
+	if err != nil {
+		t.Fatalf("failed to construct sync controller: %v", err)
+	}
+	for idx, pj := range testPJs {
+		prowjob := &prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("pj-%d", idx),
+				Namespace: "default",
+			},
+			Spec: prowapi.ProwJobSpec{
+				Type: pj.jobType,
+				Refs: &prowapi.Refs{
+					Org:     pj.org,
+					Repo:    pj.repo,
+					BaseRef: pj.baseRef,
+					BaseSHA: pj.baseSHA,
+				},
+			},
+		}
+		if err := mgr.GetClient().Create(context.Background(), prowjob); err != nil {
+			t.Fatalf("failed to create prowjob: %v", err)
+		}
 	}
 	pulls := make(map[string]PullRequest)
 	for _, p := range testPulls {
@@ -687,21 +731,7 @@ func TestDividePool(t *testing.T) {
 		npr.Repository.Owner.Login = githubql.String(p.org)
 		pulls[prKey(&npr)] = npr
 	}
-	var pjs []prowapi.ProwJob
-	for _, pj := range testPJs {
-		pjs = append(pjs, prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Type: pj.jobType,
-				Refs: &prowapi.Refs{
-					Org:     pj.org,
-					Repo:    pj.repo,
-					BaseRef: pj.baseRef,
-					BaseSHA: pj.baseSHA,
-				},
-			},
-		})
-	}
-	sps, err := c.dividePool(pulls, pjs)
+	sps, err := c.dividePool(pulls)
 	if err != nil {
 		t.Fatalf("Error dividing pool: %v", err)
 	}
@@ -726,8 +756,14 @@ func TestDividePool(t *testing.T) {
 			if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {
 				t.Errorf("PJ with bad type in subpool %s: %+v", name, pj)
 			}
-			if pj.Spec.Refs.Org != sp.org || pj.Spec.Refs.Repo != sp.repo || pj.Spec.Refs.BaseRef != sp.branch || pj.Spec.Refs.BaseSHA != sp.sha {
-				t.Errorf("PJ in wrong subpool. Got PJ %+v in subpool %s.", pj, name)
+			referenceRef := &prowapi.Refs{
+				Org:     sp.org,
+				Repo:    sp.repo,
+				BaseRef: sp.branch,
+				BaseSHA: sp.sha,
+			}
+			if diff := deep.Equal(pj.Spec.Refs, referenceRef); diff != nil {
+				t.Errorf("Got PJ with wrong refs, diff: %v", diff)
 			}
 		}
 	}
@@ -3059,4 +3095,158 @@ func getPR(org, name string, number int, opts ...func(*PullRequest)) PullRequest
 		opt(&pr)
 	}
 	return pr
+}
+
+func TestCacheIndexFuncReturnsDifferentResultsForDifferentInputs(t *testing.T) {
+	type orgRepoBranch struct{ org, repo, branch string }
+
+	results := sets.String{}
+	inputs := []orgRepoBranch{
+		{"org-a", "repo-a", "branch-a"},
+		{"org-a", "repo-a", "branch-b"},
+		{"org-a", "repo-b", "branch-a"},
+		{"org-b", "repo-a", "branch-a"},
+	}
+	for _, input := range inputs {
+		pj := getProwJob(prowapi.PresubmitJob, input.org, input.repo, input.branch, "123")
+		idx := cacheIndexFunc(pj)
+		if n := len(idx); n != 1 {
+			t.Fatalf("expected to get exactly one index back, got %d", n)
+		}
+		if results.Has(idx[0]) {
+			t.Errorf("got duplicate idx %q", idx)
+		}
+		results.Insert(idx[0])
+	}
+}
+
+func TestCacheIndexFunc(t *testing.T) {
+	testCases := []struct {
+		name           string
+		prowjob        *prowapi.ProwJob
+		expectedResult string
+	}{
+		{
+			name:    "Wrong type, no result",
+			prowjob: &prowapi.ProwJob{},
+		},
+		{
+			name:    "No refs, no result",
+			prowjob: getProwJob(prowapi.PresubmitJob, "", "", "", ""),
+		},
+		{
+			name:           "presubmit job",
+			prowjob:        getProwJob(prowapi.PresubmitJob, "org", "repo", "master", "123"),
+			expectedResult: "org/repo:master@123",
+		},
+		{
+			name:           "Batch job",
+			prowjob:        getProwJob(prowapi.BatchJob, "org", "repo", "next", "1234"),
+			expectedResult: "org/repo:next@1234",
+		},
+	}
+
+	for idx := range testCases {
+		tc := testCases[idx]
+		t.Run(tc.name, func(t *testing.T) {
+			result := cacheIndexFunc(tc.prowjob)
+			if n := len(result); n > 1 {
+				t.Errorf("expected at most one result, got %d", n)
+			}
+
+			var resultString string
+			if len(result) == 1 {
+				resultString = result[0]
+			}
+
+			if resultString != tc.expectedResult {
+				t.Errorf("Expected result %q, got result %q", tc.expectedResult, resultString)
+			}
+		})
+	}
+}
+
+func getProwJob(pjtype prowapi.ProwJobType, org, repo, branch, sha string) *prowapi.ProwJob {
+	pj := &prowapi.ProwJob{}
+	pj.Spec.Type = pjtype
+	if org != "" || repo != "" || branch != "" || sha != "" {
+		pj.Spec.Refs = &prowapi.Refs{
+			Org:     org,
+			Repo:    repo,
+			BaseRef: branch,
+			BaseSHA: sha,
+		}
+	}
+	return pj
+}
+
+type fakeManager struct {
+	client *indexingClient
+	*fakeFieldIndexer
+}
+
+type fakeFieldIndexer struct {
+	client *indexingClient
+}
+
+func (fi *fakeFieldIndexer) IndexField(_ runtime.Object, field string, extractValue ctrlruntimeclient.IndexerFunc) error {
+	fi.client.indexFuncs[field] = extractValue
+	return nil
+}
+
+func (fm *fakeManager) GetClient() ctrlruntimeclient.Client {
+	return fm.client
+}
+
+func (fm *fakeManager) GetFieldIndexer() ctrlruntimeclient.FieldIndexer {
+	return fm.fakeFieldIndexer
+}
+
+type indexingClient struct {
+	ctrlruntimeclient.Client
+	indexFuncs map[string]ctrlruntimeclient.IndexerFunc
+}
+
+func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...ctrlruntimeclient.ListOption) error {
+	if err := c.Client.List(ctx, list, opts...); err != nil {
+		return err
+	}
+
+	listOpts := &ctrlruntimeclient.ListOptions{}
+	for _, opt := range opts {
+		opt.ApplyToList(listOpts)
+	}
+
+	if n := len(listOpts.FieldSelector.Requirements()); n == 0 {
+		return nil
+	} else if n > 1 {
+		return fmt.Errorf("the indexing client supports at most one field selector requirement, got %d", n)
+	}
+
+	indexKey := listOpts.FieldSelector.Requirements()[0].Field
+	if indexKey == "" {
+		return nil
+	}
+
+	indexFunc, ok := c.indexFuncs[indexKey]
+	if !ok {
+		return fmt.Errorf("no index with key %q found", indexKey)
+	}
+
+	pjList, ok := list.(*prowapi.ProwJobList)
+	if !ok {
+		return errors.New("indexes are only supported for ProwJobLists")
+	}
+
+	result := prowapi.ProwJobList{}
+	for _, pj := range pjList.Items {
+		for _, indexVal := range indexFunc(&pj) {
+			if indexVal == listOpts.FieldSelector.Requirements()[0].Value {
+				result.Items = append(result.Items, pj)
+			}
+		}
+	}
+
+	*pjList = result
+	return nil
 }
