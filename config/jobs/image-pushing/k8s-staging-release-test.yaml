@@ -10,7 +10,7 @@ periodics:
     path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
+    - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
       command:
         - /run.sh
       args:
@@ -49,7 +49,7 @@ periodics:
     path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
+    - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
       command:
         - /run.sh
       args:
@@ -89,7 +89,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:
@@ -120,7 +120,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:
@@ -151,7 +151,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191022-f781192
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:
