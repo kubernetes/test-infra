@@ -247,6 +247,12 @@ slack:
     - sig-release
     whitelist:
     - k8s-ci-robot
+  - repos:
+    - kubernetes/k8s.io
+    channels:
+    - wg-k8s-infra
+    whitelist:
+    - k8s-ci-robot
 
 milestone_applier:
   kubernetes/enhancements:
