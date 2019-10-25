@@ -67,6 +67,10 @@ presets:
     value: 300
   - name: PROMETHEUS_SCRAPE_ETCD
     value: "true"
+  # Disable kubernetes-dashboard
+  - name: KUBE_ENABLE_CLUSTER_UI
+    value: "false"
+
 ### kubemark-gce-scale
 - labels:
     preset-e2e-kubemark-gce-scale: "true"
