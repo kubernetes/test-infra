@@ -91,7 +91,7 @@ presubmits:
         - "--acsengine-agentvmsize=Standard_D4s_v3"
         - "--acsengine-ccm=True"
         - "--acsengine-hyperkube=True"
-        - "--acsengine-location=eastus2"
+        - "--acsengine-location=westus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
@@ -144,7 +144,7 @@ presubmits:
         - "--acsengine-agentvmsize=Standard_D4s_v3"
         - "--acsengine-ccm=True"
         - "--acsengine-hyperkube=True"
-        - "--acsengine-location=eastus2"
+        - "--acsengine-location=westus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
@@ -223,7 +223,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -282,7 +282,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-autoscaler.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -342,7 +342,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -401,7 +401,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/e2e-slow.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -459,7 +459,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -524,7 +524,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -582,7 +582,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -641,7 +641,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
@@ -700,7 +700,7 @@ periodics:
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
