@@ -5,11 +5,11 @@ metadata:
     kubernetes.io/ingress.global-static-ip-name: prow-monitoring-managed-certs
     kubernetes.io/ingress.class: "gce"
     networking.gke.io/managed-certificates: monitoring-prow-canary-k8s-io
-  name: grafana
+  name: ing
   namespace: prow-monitoring
 spec:
   rules:
-  - host: monitoring.prow.k8s.io
+  - host: monitoring.prow-canary.k8s.io
     http:
       paths:
       - backend:
