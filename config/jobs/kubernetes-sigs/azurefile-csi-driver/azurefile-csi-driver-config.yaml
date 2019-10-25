@@ -20,7 +20,7 @@ presubmits:
         - make
         - verify
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-verify
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run code verification tests for Azure File CSI driver."
@@ -45,7 +45,7 @@ presubmits:
         - make
         - unit-test
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-unit
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run unit tests for Azure File CSI driver."
@@ -73,7 +73,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-sanity
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run sanity tests for Azure File CSI driver."
@@ -101,7 +101,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-integration
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run integration tests for Azure File CSI driver."
@@ -150,7 +150,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-e2e
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run E2E tests for Azure File CSI driver."

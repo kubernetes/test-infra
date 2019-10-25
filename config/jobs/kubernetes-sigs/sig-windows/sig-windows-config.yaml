@@ -82,7 +82,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-windows
+      testgrid-dashboards: sig-windows, provider-azure-on-call
       testgrid-tab-name: aks-engine-azure-windows-presubmit
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Presubmit job for Windows tests on k8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -127,7 +127,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows
+    testgrid-dashboards: sig-windows, provider-azure-on-call
     testgrid-tab-name: aks-engine-azure-windows-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -171,7 +171,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-release-1.14-all, sig-windows
+    testgrid-dashboards: sig-release-1.14-all, sig-windows, provider-azure-on-call
     testgrid-tab-name: aks-engine-azure-1-14-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
@@ -215,7 +215,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-release-1.15-all, sig-windows
+    testgrid-dashboards: sig-release-1.15-all, sig-windows, provider-azure-on-call
     testgrid-tab-name: aks-engine-azure-1-15-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
@@ -259,7 +259,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows, sig-release-1.16-informing, sig-release-master-informing
+    testgrid-dashboards: sig-windows, sig-release-1.16-informing, sig-release-master-informing, provider-azure-on-call
     testgrid-tab-name: aks-engine-azure-1-16-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -305,5 +305,4 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows
     testgrid-tab-name: aks-engine-azure-windows-master-staging
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
