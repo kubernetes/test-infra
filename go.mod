@@ -2,23 +2,27 @@ module k8s.io/test-infra
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
-// Pin all k8s.io staging repositories to kubernetes-1.15.3.
+// Pin all k8s.io staging repositories to kubernetes-1.16.2.
 // When bumping Kubernetes dependencies, you should update each of these lines
 // to point to the same kubernetes-1.x.y release branch before running update-deps.sh.
 replace (
-	k8s.io/api => k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604
-	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20190918200256-06eb1244587a
-	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190612205613-18da4a14b22b
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
+	k8s.io/api => k8s.io/api v0.0.0-20191016110408-35e52d86657a
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191016113550-5357c4baaf65
+	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20191016111102-bec269661e48
+	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20191004115455-8e001e5d1894
 )
 
 require (
 	cloud.google.com/go v0.44.3
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
-	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
+	github.com/Azure/azure-sdk-for-go v32.5.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
-	github.com/Azure/go-autorest v11.1.2+incompatible
+	github.com/Azure/go-autorest/autorest v0.9.0
+	github.com/Azure/go-autorest/autorest/adal v0.5.0
+	github.com/Azure/go-autorest/autorest/to v0.3.0 // indirect
+	github.com/Azure/go-autorest/autorest/validation v0.2.0 // indirect
 	github.com/GoogleCloudPlatform/testgrid v0.0.0-20191016232453-9f0319fc1197
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
@@ -41,7 +45,6 @@ require (
 	github.com/go-openapi/spec v0.19.2
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/gobuffalo/envy v1.6.15 // indirect
-	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
 	github.com/gomodule/redigo v1.7.0
@@ -63,7 +66,6 @@ require (
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
 	github.com/jinzhu/inflection v0.0.0-20190603042836-f5c5f50e6090 // indirect
 	github.com/jinzhu/now v1.0.1 // indirect
-	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
@@ -100,16 +102,15 @@ require (
 	google.golang.org/api v0.9.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-	k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
+	k8s.io/api v0.0.0-20191016110408-35e52d86657a
 	k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604
-	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
+	k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/code-generator v0.0.0-20190831074504-732c9ca86353
-	k8s.io/gengo v0.0.0-20190306031000-7a1b7fb0289f // indirect
+	k8s.io/code-generator v0.0.0-20191004115455-8e001e5d1894
 	k8s.io/klog v0.4.0
 	k8s.io/kubernetes v1.14.7 // indirect
 	k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce
-	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
+	k8s.io/utils v0.0.0-20190801114015-581e00157fb1
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.3.0
 	sigs.k8s.io/yaml v1.1.0
