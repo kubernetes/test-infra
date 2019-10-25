@@ -1,0 +1,13 @@
+presubmits:
+  kubernetes-sigs/apiserver-network-proxy:
+  - name: pull-apiserver-network-proxy-test
+    always_run: true
+    skip_report: false
+    decorate: true
+    spec:
+      containers:
+      - image: golang:1.12
+        command:
+        - make
+        args:
+        - test
