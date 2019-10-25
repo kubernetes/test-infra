@@ -842,6 +842,22 @@ func TestListProwJobs(t *testing.T) {
 			},
 			expected: sets.NewString("shown"),
 		},
+		{
+			name: "hidden repo or org in extra_refs hides it",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-repo"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-org"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
+					return in
+				},
+			},
+			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+		},
 	}
 
 	for _, testCase := range testCases {
