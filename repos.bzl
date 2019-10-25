@@ -77,8 +77,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/aws/aws-sdk-go",
-        sum = "h1:POeH34ZME++pr7GBGh+ZO6Y5kOwSMQpqp5BGUgooJ6k=",
-        version = "v1.16.36",
+        sum = "h1://WJvJi9iq/i5TWHuK3hIC23xCZYH7Qv7SIN2vZVqxY=",
+        version = "v1.22.1",
     )
     go_repository(
         name = "com_github_azure_azure_pipeline_go",
@@ -434,8 +434,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/gogo/protobuf",
-        sum = "h1:3PaI8p3seN09VjbTYC/QWlUZdZ1qS1zGjy7LH2Wt07I=",
-        version = "v1.2.2-0.20190723190241-65acae22fc9d",
+        sum = "h1:G8O7TerXerS4F6sx9OV7/nRfJdnXgHZu/S/7F2SN+UE=",
+        version = "v1.3.0",
     )
     go_repository(
         name = "com_github_golang_glog",
@@ -835,16 +835,16 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/knative/build",
-        sum = "h1:3KvuoUpgXYkK3WKaSBVN/0FSwRaukf212t2bQkMSWjY=",
-        version = "v0.3.1-0.20190330033454-38ace00371c7",
+        sum = "h1:YqqiShED6wILhPRZyUJjTX2B6OgbgEqWe1WNrAcDclw=",
+        version = "v0.7.0",
     )
     go_repository(
         name = "com_github_knative_pkg",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/knative/pkg",
-        sum = "h1:WE+sMoCzGTt6OhWGWkXwtuzmfqofaqfyx0i9qte+NLQ=",
-        version = "v0.0.0-20190330034653-916205998db9",
+        sum = "h1:WY2V2AsGOAZfiZsGImXyb31dLnDNroyOWhuPc4dnXBg=",
+        version = "v0.0.0-20191025140835-7dc1697d41ac",
     )
     go_repository(
         name = "com_github_konsorten_go_windows_terminal_sequences",
@@ -2229,4 +2229,44 @@ def go_repositories():
         importpath = "github.com/Azure/go-autorest/tracing",
         sum = "h1:TRn4WjSnkcSy5AEG3pnbtFSwNtwzjr4VYyQflFE619k=",
         version = "v0.5.0",
+    )
+    go_repository(
+        name = "com_github_census_instrumentation_opencensus_proto",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/census-instrumentation/opencensus-proto",
+        sum = "h1:glEXhBS5PSLLv4IXzLA5yPRVX4bilULVyxxbrfOtDAk=",
+        version = "v0.2.1",
+    )
+    go_repository(
+        name = "com_github_google_addlicense",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/google/addlicense",
+        sum = "h1:ydbHzabf84uucKri5fcfiqYxGg+rYgP/zQfLLN8lyP0=",
+        version = "v0.0.0-20190510175307-22550fa7c1b0",
+    )
+    go_repository(
+        name = "dev_knative_pkg",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "knative.dev/pkg",
+        sum = "h1:iaXsAlXiR+K/yR/+qVquvmkXQsZemmOhwUzP5fUuRuE=",
+        version = "v0.0.0-20191025140835-7dc1697d41ac",
+    )
+    go_repository(
+        name = "io_opencensus_go_contrib_exporter_prometheus",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "contrib.go.opencensus.io/exporter/prometheus",
+        sum = "h1:SByaIoWwNgMdPSgl5sMqM2KDE5H/ukPWBRo314xiDvg=",
+        version = "v0.1.0",
+    )
+    go_repository(
+        name = "io_opencensus_go_contrib_exporter_stackdriver",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "contrib.go.opencensus.io/exporter/stackdriver",
+        sum = "h1:XWDDoMSlZchLyQZw8HKE+7vn3FpfaVR5Yz9E4ifxiU0=",
+        version = "v0.12.7",
     )

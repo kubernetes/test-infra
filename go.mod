@@ -16,6 +16,8 @@ replace (
 
 require (
 	cloud.google.com/go v0.44.3
+	contrib.go.opencensus.io/exporter/prometheus v0.1.0 // indirect
+	contrib.go.opencensus.io/exporter/stackdriver v0.12.7 // indirect
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v32.5.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
@@ -27,7 +29,7 @@ require (
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
-	github.com/aws/aws-sdk-go v1.16.36
+	github.com/aws/aws-sdk-go v1.22.1
 	github.com/bazelbuild/bazel-gazelle v0.18.1
 	github.com/bazelbuild/buildtools v0.0.0-20190404153937-93253d6efaa9
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -60,7 +62,6 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce // indirect
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
-	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v0.0.0-20170316141641-572d0a0ab1eb
@@ -69,8 +70,8 @@ require (
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
-	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
-	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
+	github.com/knative/build v0.7.0
+	github.com/knative/pkg v0.0.0-20191025140835-7dc1697d41ac
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/markbates/inflect v1.0.4 // indirect
@@ -111,6 +112,7 @@ require (
 	k8s.io/kubernetes v1.14.7 // indirect
 	k8s.io/repo-infra v0.0.0-20190921032325-1fedfadec8ce
 	k8s.io/utils v0.0.0-20190801114015-581e00157fb1
+	knative.dev/pkg v0.0.0-20191025140835-7dc1697d41ac // indirect
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.3.0
 	sigs.k8s.io/yaml v1.1.0
