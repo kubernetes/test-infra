@@ -91,6 +91,7 @@ Prow is used by the following organizations and projects:
 - [Daisy(google compute image tools)](https://github.com/GoogleCloudPlatform/compute-image-tools/tree/master/test-infra#prow-and-gubenator)
 - [KubeEdge (Kubernetes Native Edge Computing Framework)](https://github.com/kubeedge/kubeedge)
 - [Volcano (Kubernetes Native Batch System)](https://github.com/volcano-sh/volcano)
+- [Loodse](https://public-prow.loodse.com/)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 
