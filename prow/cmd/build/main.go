@@ -117,7 +117,7 @@ func newBuildConfig(cfg rest.Config, stop <-chan struct{}) (*buildConfig, error)
 	// Ensure the knative-build CRD is deployed
 	// TODO(fejta): probably a better way to do this
 	buildList := &buildv1alpha1.BuildList{}
-	if err := mgr.GetClient().List(context.TODO(), buildList, listSingleItem{}); err != nil {
+	if err := mgr.GetAPIReader().List(context.TODO(), buildList, listSingleItem{}); err != nil {
 		return nil, err
 	}
 	cache := mgr.GetCache()
