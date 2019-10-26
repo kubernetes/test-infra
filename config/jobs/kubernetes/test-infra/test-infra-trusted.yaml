@@ -783,7 +783,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191021-v2.3.1-34-ge32056e
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
         command:
         - cip
         args:
@@ -817,7 +817,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191021-v2.3.1-34-ge32056e
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
         command:
         - cip
         args:
@@ -1212,7 +1212,7 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191021-v2.3.1-34-ge32056e
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
       command:
       - cip
       args:
