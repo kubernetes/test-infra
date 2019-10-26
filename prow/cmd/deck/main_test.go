@@ -407,6 +407,9 @@ func TestRerun(t *testing.T) {
 			}
 
 			req, err := http.NewRequest(tc.httpMethod, "/rerun?prowjob=wowsuch", nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
 			req.AddCookie(&http.Cookie{
 				Name:    "github_login",
 				Value:   tc.login,
@@ -421,9 +424,6 @@ func TestRerun(t *testing.T) {
 			}
 			session.Values["access-token"] = &oauth2.Token{AccessToken: "validtoken"}
 
-			if err != nil {
-				t.Fatalf("Error making request: %v", err)
-			}
 			rr := httptest.NewRecorder()
 			mockConfig := &config.GitHubOAuthConfig{
 				CookieStore: mockCookieStore,

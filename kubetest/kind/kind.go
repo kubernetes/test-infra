@@ -348,6 +348,9 @@ func (d *Deployer) IsUp() error {
 
 	// Check if kubectl reports nodes.
 	cmd, err := d.KubectlCommand()
+	if err != nil {
+		return err
+	}
 	cmd.Args = append(cmd.Args, []string{"get", "nodes", "--no-headers"}...)
 	o, err := d.control.Output(cmd)
 	if err != nil {
