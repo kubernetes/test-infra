@@ -1,10 +1,14 @@
 # Announcements
 
 New features added to each component:
- - *October 07, 2010* Added a `default_decoration_configs` option to the Plank config
-    that allows to specify different plank's default configuration for each organization 
-    or a specific repository. `default_decoration_config` will be deprecated on April, 2020
-    and it will be replaced with the `*` value in `default_decoration_configs`.
+ - *October 27, 2019* The `trusted_org` functionality in trigger is being
+   deprecated in favour of being more explicit in the fact that org members or
+   repo collaborators are the trusted users. This option will be removed
+   completely in January 2020.
+ - *October 07, 2019* Added a `default_decoration_configs` option to the Plank config
+   that allows to specify different plank's default configuration for each organization
+   or a specific repository. `default_decoration_config` will be deprecated in April 2020
+   and it will be replaced with the `*` value in `default_decoration_configs`.
  - *August 29, 2019* Added a `batch_size_limit` option to the Tide config that
    allows the batch size limit to be specified globally, per org, or per repo.
    Values default to 0 indicating no size limit. A value of -1 disables batches.
