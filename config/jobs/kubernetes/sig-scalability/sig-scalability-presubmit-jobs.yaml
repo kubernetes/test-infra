@@ -26,7 +26,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-nodes=100
-        - --gcp-project=k8s-presubmit-scale
+        - --gcp-project-type=scalability-presubmit-project
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
@@ -185,7 +185,7 @@ presubmits:
         - --gcp-master-size=n1-standard-4
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=7
-        - --gcp-project=k8s-presubmit-scale
+        - --gcp-project-type=scalability-presubmit-project
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=500
