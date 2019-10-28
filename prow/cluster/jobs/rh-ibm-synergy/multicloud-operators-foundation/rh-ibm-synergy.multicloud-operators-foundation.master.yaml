@@ -36,7 +36,7 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
 
 postsubmits:
-  IBM/multicloud-operators-foundation:
+  rh-ibm-synergy/multicloud-operators-foundation:
   - name: test_multicloud-operators-foundation_postsubmit
     branches:
     - ^master$
@@ -51,31 +51,31 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_multicloud-operators-foundation_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-multicloud-operators-foundation-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
+  # - name: coverage_multicloud-operators-foundation_postsubmit
+  #   branches:
+  #   - ^master$
+  #   decorate: true
+  #   path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+  #   spec:
+  #     containers:
+  #     - command:
+  #       - make
+  #       - coverage
+  #       image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+  #       name: ""
+  #       env:
+  #       - name: CODECOV_TOKEN
+  #         valueFrom:
+  #           secretKeyRef:
+  #             name: rh-ibm-synergy-multicloud-operators-foundation-codecov-token
+  #             key: codecov-token
+  #       securityContext:
+  #         privileged: true
   - name: build_multicloud-operators-foundation_postsubmit
     branches:
     - ^master$
     decorate: true
-    path_alias: github.com/IBM/multicloud-operators-foundation
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
     spec:
       containers:
       - command:
