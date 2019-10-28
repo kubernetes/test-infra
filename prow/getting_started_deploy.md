@@ -487,6 +487,34 @@ This results in:
 
 See [mkbuild-cluster][5] for more details about how to create/update `cluster.yaml`.
 
+Alternatively to `cluster.yaml`, one can use [a `kubeconfig` file](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) to instruct prow components to use the build clusters:
+All contexts in `kubeconfig` are used as build clusters and the [`InClusterConfig`](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod) as default.
+For example, it contains a context `other` which is a build cluster:
+
+```bash
+$ kubectl config get-contexts -o name
+other
+```
+
+After creating a secret `build-cluster-kubeconfig` with the `kubconfig` file, we add `--kubconfig` flag to prow component, e.g., plank:
+
+```yaml
+spec:
+  containers:
+  - name: plank
+    args:
+    - --kubeconfig=/etc/foo/kubeconfig
+    volumeMounts:
+    - mountPath: /etc/foo
+      name: kubeconfig
+      readOnly: true
+  volumes:
+  - name: kubeconfig
+    secret:
+      defaultMode: 420
+      secretName: build-cluster-kubeconfig
+```
+
 ### Enable merge automation using Tide
 
 PRs satisfying a set of predefined criteria can be configured to be
