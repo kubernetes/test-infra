@@ -5,7 +5,7 @@ presubmits:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/rh-ibm-synergy/multicloud-operators-foundation
     rerun_command: /test build multicloud-operators-foundation
     spec:
       containers:
@@ -22,7 +22,7 @@ presubmits:
     - ^master$
     decorate: true
     always_run: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/rh-ibm-synergy/multicloud-operators-foundation
     rerun_command: /test test multicloud-operators-foundation
     spec:
       containers:
@@ -41,7 +41,7 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/rh-ibm-synergy/multicloud-operators-foundation
     spec:
       containers:
       - command:
@@ -55,7 +55,7 @@ postsubmits:
   #   branches:
   #   - ^master$
   #   decorate: true
-  #   path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+  #   path_alias: github.com/rh-ibm-synergy/multicloud-operators-foundation
   #   spec:
   #     containers:
   #     - command:
@@ -75,7 +75,7 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
-    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    path_alias: github.com/rh-ibm-synergy/multicloud-operators-foundation
     spec:
       containers:
       - command:
