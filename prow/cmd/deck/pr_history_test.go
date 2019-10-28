@@ -282,37 +282,47 @@ func TestGetPRBuildData(t *testing.T) {
 			},
 		},
 	}
-	expected := map[string]buildData{
+	expected := map[string]struct {
+		fixedDuration bool
+		buildData     buildData
+	}{
 		"pr-logs/pull/123/build-snowman/456": {
-			prefix:       "pr-logs/pull/123/build-snowman/456",
-			jobName:      "build-snowman",
-			index:        0,
-			ID:           "456",
-			SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/123/build-snowman/456",
-			Started:      time.Unix(55555, 0),
-			Duration:     time.Unix(66666, 0).Sub(time.Unix(55555, 0)),
-			Result:       "SUCCESS",
-			commitHash:   "1244ee66517bbe603d899bbd24458ebc0e185fd9",
+			fixedDuration: true,
+			buildData: buildData{
+				prefix:       "pr-logs/pull/123/build-snowman/456",
+				jobName:      "build-snowman",
+				index:        0,
+				ID:           "456",
+				SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/123/build-snowman/456",
+				Started:      time.Unix(55555, 0),
+				Duration:     time.Unix(66666, 0).Sub(time.Unix(55555, 0)),
+				Result:       "SUCCESS",
+				commitHash:   "1244ee66517bbe603d899bbd24458ebc0e185fd9",
+			},
 		},
 		"pr-logs/pull/123/build-snowman/789": {
-			prefix:       "pr-logs/pull/123/build-snowman/789",
-			jobName:      "build-snowman",
-			index:        1,
-			ID:           "789",
-			SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/123/build-snowman/789",
-			Started:      time.Unix(98765, 0),
-			Result:       "Unknown",
-			commitHash:   "bbdebedaf24c03f9e2eeb88e8ea4bb10c9e1fbfc",
+			buildData: buildData{
+				prefix:       "pr-logs/pull/123/build-snowman/789",
+				jobName:      "build-snowman",
+				index:        1,
+				ID:           "789",
+				SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/123/build-snowman/789",
+				Started:      time.Unix(98765, 0),
+				Result:       "Pending",
+				commitHash:   "bbdebedaf24c03f9e2eeb88e8ea4bb10c9e1fbfc",
+			},
 		},
 		"pr-logs/pull/765/eat-bread/999": {
-			prefix:       "pr-logs/pull/765/eat-bread/999",
-			jobName:      "eat-bread",
-			index:        0,
-			ID:           "999",
-			SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/765/eat-bread/999",
-			Started:      time.Unix(12345, 0),
-			Result:       "Unknown",
-			commitHash:   "52252bcc81712c96940fca1d3c913dd76af3d2a2",
+			buildData: buildData{
+				prefix:       "pr-logs/pull/765/eat-bread/999",
+				jobName:      "eat-bread",
+				index:        0,
+				ID:           "999",
+				SpyglassLink: "/view/gcs/chum-bucket/pr-logs/pull/765/eat-bread/999",
+				Started:      time.Unix(12345, 0),
+				Result:       "Pending",
+				commitHash:   "52252bcc81712c96940fca1d3c913dd76af3d2a2",
+			},
 		},
 	}
 	builds := getPRBuildData(testBucket, jobs)
@@ -320,9 +330,12 @@ func TestGetPRBuildData(t *testing.T) {
 		t.Errorf("expected %d builds, found %d", len(expected), len(builds))
 	}
 	for _, build := range builds {
-		if expBuild, ok := expected[build.prefix]; ok {
-			if !reflect.DeepEqual(build, expBuild) {
-				t.Errorf("build %s mismatch:\n%s", build.prefix, diff.ObjectReflectDiff(expBuild, build))
+		if exp, ok := expected[build.prefix]; ok {
+			if !exp.fixedDuration {
+				build.Duration = 0
+			}
+			if !reflect.DeepEqual(build, exp.buildData) {
+				t.Errorf("build %s mismatch:\n%s", build.prefix, diff.ObjectReflectDiff(exp.buildData, build))
 			}
 		} else {
 			t.Errorf("found unexpected build %s", build.prefix)

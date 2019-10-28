@@ -302,13 +302,16 @@ func getBuildData(bucket storageBucket, dir string) (buildData, error) {
 	finished := gcs.Finished{}
 	err = readJSON(bucket, path.Join(dir, "finished.json"), &finished)
 	if err != nil {
-		logrus.Infof("failed to read finished.json (job might be unfinished): %v", err)
+		b.Result = "Pending"
+		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
 	}
 	if finished.Revision != "" {
 		b.commitHash = finished.Revision
 	}
 	if finished.Timestamp != nil {
 		b.Duration = time.Unix(*finished.Timestamp, 0).Sub(b.Started)
+	} else {
+		b.Duration = time.Now().Sub(b.Started).Round(time.Second)
 	}
 	if finished.Result != "" {
 		b.Result = finished.Result
