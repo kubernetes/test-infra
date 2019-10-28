@@ -21,6 +21,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-master
         command:
+        - "runner.sh"
         - "./test/e2e/init.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-etcdadm
