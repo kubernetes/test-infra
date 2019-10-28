@@ -471,15 +471,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 
 	var filtered []prowapi.ProwJob
 	for _, item := range prowJobList.Items {
-		refs := item.Spec.Refs
-		if refs == nil {
-			if len(item.Spec.ExtraRefs) > 0 {
-				refs = &item.Spec.ExtraRefs[0]
-			} else {
-				refs = &prowapi.Refs{}
-			}
-		}
-		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) || item.Spec.Hidden
+		shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
 		if shouldHide && c.showHidden {
 			filtered = append(filtered, item)
 		} else if shouldHide == c.hiddenOnly {
@@ -489,6 +481,20 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 		}
 	}
 	return filtered, nil
+}
+
+func (c *filteringProwJobLister) pjHasHiddenRefs(pj prowapi.ProwJob) bool {
+	allRefs := pj.Spec.ExtraRefs
+	if pj.Spec.Refs != nil {
+		allRefs = append(allRefs, *pj.Spec.Refs)
+	}
+	for _, refs := range allRefs {
+		if c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
