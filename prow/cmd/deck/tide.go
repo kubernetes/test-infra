@@ -113,13 +113,13 @@ func fetchTideData(log *logrus.Entry, path string, data interface{}) error {
 	}
 
 	// Either combine previous errors with the returned error, or if we succeeded
-	// warn once about any errors we saw before succeeding.
+	// log once about any errors we saw before succeeding.
 	prevErr := errorutil.NewAggregate(prevErrs...)
 	if err != nil {
 		return errorutil.NewAggregate(err, prevErr)
 	}
 	if prevErr != nil {
-		log.WithError(prevErr).Warnf(
+		log.WithError(prevErr).Infof(
 			"Failed %d retries fetching Tide data before success: %v.",
 			len(prevErrs),
 			prevErr,
