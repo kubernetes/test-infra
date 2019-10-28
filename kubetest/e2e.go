@@ -201,10 +201,11 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
+	var kubemarkUpErr error
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
-			if err := kubemarkUp(dump, o, deploy); err != nil {
-				return err
+			if kubemarkUpErr = kubemarkUp(dump, o, deploy); err != nil {
+				return kubemarkUpErr
 			}
 			// running test in clusterloader, or other custom commands, skip the ginkgo call
 			if o.testCmd != "" {
@@ -214,7 +215,7 @@ func run(deploy deployer, o options) error {
 		}))
 	}
 
-	if o.testCmd != "" {
+	if kubemarkUpErr == nil && o.testCmd != "" {
 		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
 		} else {
