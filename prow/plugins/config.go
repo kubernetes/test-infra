@@ -342,8 +342,11 @@ type Label struct {
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	// TrustedOrg is the org whose members' PRs will be automatically built
-	// for PRs to the above repos. The default is the PR's org.
+	// TrustedOrg is the org whose members' PRs will be automatically built for
+	// PRs to the above repos. The default is the PR's org.
+	//
+	// Deprecated: TrustedOrg functionality is deprecated and will be removed in
+	// January 2020.
 	TrustedOrg string `json:"trusted_org,omitempty"`
 	// JoinOrgURL is a link that redirects users to a location where they
 	// should be able to read more about joining the organization in order
@@ -1017,6 +1020,17 @@ func validateProjectManager(pm ProjectManager) error {
 	return nil
 }
 
+var warnTriggerTrustedOrg time.Time
+
+func validateTrigger(triggers []Trigger) error {
+	for _, trigger := range triggers {
+		if trigger.TrustedOrg != "" {
+			warnDeprecated(&warnTriggerTrustedOrg, 5*time.Minute, "trusted_org functionality is deprecated. Please ensure your configuration is updated before the end of December 2019.")
+		}
+	}
+	return nil
+}
+
 func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
@@ -1084,8 +1098,10 @@ func (c *Configuration) Validate() error {
 	if err := validateRequireMatchingLabel(c.RequireMatchingLabel); err != nil {
 		return err
 	}
-
 	if err := validateProjectManager(c.ProjectManager); err != nil {
+		return err
+	}
+	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
 
