@@ -769,6 +769,9 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-iscsi-serial
     test_group_name: pull-kubernetes-e2e-gce-iscsi-serial
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce-storage-disruptive
+    test_group_name: pull-kubernetes-e2e-gce-storage-disruptive
+    base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
 - name: vmware-presubmits-cloud-provider-vsphere

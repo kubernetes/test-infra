@@ -233,6 +233,42 @@ presubmits:
 
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-e2e-gce-storage-disruptive
+    always_run: false
+    optional: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=300
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --extract=local
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-disruptive
+        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --timeout=240m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191024-4a89182-master
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
 periodics:
 - interval: 24h
   name: ci-kubernetes-e2e-gce-iscsi
