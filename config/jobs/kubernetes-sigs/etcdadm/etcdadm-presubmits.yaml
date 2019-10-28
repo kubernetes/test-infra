@@ -13,3 +13,15 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-etcdadm
       testgrid-tab-name: pr-verify
+  - name: pull-etcdadm-test-init
+    path_alias: "sigs.k8s.io/etcdadm"
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191024-4a89182-master
+        command:
+        - "./test/e2e/init.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-etcdadm
+      testgrid-tab-name: pr-test-init
