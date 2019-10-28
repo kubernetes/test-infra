@@ -342,7 +342,7 @@ func checkParams() error {
 		return fmt.Errorf("no credentials file path specified")
 	}
 	if *aksResourceName == "" {
-		*aksResourceName = "kubetest-" + uuid.NewV1().String()
+		*aksResourceName = fmt.Sprintf("%s-%s", os.Getenv("JOB_NAME"), os.Getenv("BUILD_ID"))
 	}
 	if *aksResourceGroupName == "" {
 		*aksResourceGroupName = *aksResourceName
