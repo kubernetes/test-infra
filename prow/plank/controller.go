@@ -272,8 +272,7 @@ func (c *Controller) Sync() error {
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
 	syncProwJobs(c.log, c.syncTriggeredJob, maxSyncRoutines, triggeredCh, reportCh, errCh, pm)
 
-	var pjob prowapi.ProwJob
-	c.cleanUpPods(pjob)
+	c.cleanUpPods()
 	close(errCh)
 	close(reportCh)
 
@@ -613,7 +612,7 @@ func (c *Controller) patchProwjob(srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob)
 // Get the jobs that we need to retain so horologium can continue working
 // as intended.
 // And clean up old pods.
-func (c *Controller) cleanUpPods(pj prowapi.ProwJob) {
+func (c *Controller) cleanUpPods() {
 
 	isFinished := sets.NewString()
 	isExist := sets.NewString()

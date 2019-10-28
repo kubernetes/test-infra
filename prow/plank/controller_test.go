@@ -96,12 +96,16 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 					PodPendingTimeout: &metav1.Duration{Duration: podPendingTimeout},
 					PodRunningTimeout: &metav1.Duration{Duration: podRunningTimeout},
 				},
+				Sinker: config.Sinker{
+					MaxPodAge:     &metav1.Duration{Duration: maxPodAge},
+				},
 			},
 			JobConfig: config.JobConfig{
 				Presubmits: presubmitMap,
 			},
 		},
 	}
+	
 }
 
 func (f *fca) Config() *config.Config {
@@ -1687,7 +1691,6 @@ func TestMaxConcurency(t *testing.T) {
 }
 
 const (
-	maxProwJobAge = 2 * 24 * time.Hour
 	maxPodAge     = 12 * time.Hour
 )
 
@@ -1828,38 +1831,28 @@ func TestCleanUpPods(t *testing.T) {
 		"old-succeeded",
 		"old-pending-abort",
 		"old-running",
+		"old-just-complete",
+		"new-failed",
+		"old-pending",
 	)
 
-	podsTrusted := []runtime.Object{
-		&v1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "old-failed-trusted",
-				Namespace: "ns",
-				Labels: map[string]string{
-					kube.CreatedByProw: "true",
-				},
-			},
-			Status: v1.PodStatus{
-				Phase:     v1.PodFailed,
-				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
-			},
-		},
-	}
-	deletedPodsTrusted := sets.NewString("old-failed-trusted")
-
-	fkc := []*fake.Clientset{fake.NewSimpleClientset(pods...), fake.NewSimpleClientset(podsTrusted...)}
+	
+	var fkc  []*fake.Clientset
+	fkc = append(fkc,fake.NewSimpleClientset(pods...))
 	var fpc []corev1.PodInterface
 	for _, fakeClient := range fkc {
 		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
+		
 	}
+
 	c := Controller{
-		podClients: fpc,
-		config:     newFakeConfigAgent(t, 0).Config,
+	podClients:    fpc,
+	log:           logrus.NewEntry(logrus.StandardLogger()),
+	config:        newFakeConfigAgent(t, 0).Config,
 	}
-	var pj prowapi.ProwJob
-	c.cleanUpPods(pj)
+	c.cleanUpPods()
+	
 	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
-	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
 }
 
 func getDeletedObjectNames(actions []clienttesting.Action) sets.String {
