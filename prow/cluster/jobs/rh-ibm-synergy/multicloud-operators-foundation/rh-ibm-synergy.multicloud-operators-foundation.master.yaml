@@ -45,7 +45,7 @@ presubmits:
 
 postsubmits:
   rh-ibm-synergy/multicloud-operators-foundation:
-  - name: test_multicloud-operators-foundation_postsubmit
+  - name: test-multicloud-operators-foundation_postsubmit
     branches:
     - ^master$
     decorate: true
@@ -63,7 +63,7 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  # - name: coverage_multicloud-operators-foundation_postsubmit
+  # - name: coverage-multicloud-operators-foundation_postsubmit
   #   branches:
   #   - ^master$
   #   decorate: true
@@ -87,7 +87,7 @@ postsubmits:
   #             key: codecov-token
   #       securityContext:
   #         privileged: true
-  - name: build_multicloud-operators-foundation_postsubmit
+  - name: build-multicloud-operators-foundation_postsubmit
     branches:
     - ^master$
     decorate: true
