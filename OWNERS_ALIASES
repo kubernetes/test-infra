@@ -1,5 +1,5 @@
 aliases:
-  # business hours oncall for prow etc
+  # business hours oncall for prow etc (https://storage.cloud.google.com/test-infra-oncall/oncall.html)
   test-infra-oncall:
   - BenTheElder
   - chases2
