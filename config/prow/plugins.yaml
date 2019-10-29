@@ -207,25 +207,37 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.13:
-            - aleksandra-malinowska # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - tpepper # Patch Release Team
         release-1.14:
             - aleksandra-malinowska # Patch Release Team
+            - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
             - tpepper # Patch Release Team
         release-1.15:
             - aleksandra-malinowska # Patch Release Team
+            - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
             - tpepper # Patch Release Team
         release-1.16:
+            - aleksandra-malinowska # Patch Release Team
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - tpepper # Patch Release Team
+        release-1.17:
+            - aleksandra-malinowska # Patch Release Team
             - bubblemelon # Branch Manager
-            - idealhack # Branch Manager
-            - justaugustus # Release Manager Associate
+            - cpanato # Branch Manager
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - justaugustus # Branch Manager
+            - tpepper # Patch Release Team
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -240,11 +252,20 @@ slack:
     - k8s-ci-robot
   - repos:
     - kubernetes/sig-release
+    channels:
+    - sig-release
+    whitelist:
+    - k8s-ci-robot
+  - repos:
     - kubernetes/release
     channels:
     - sig-release
     whitelist:
     - k8s-ci-robot
+    branch_whitelist:
+        prototype:
+            - justaugustus # k8s-infra prototype Branch Manager
+            - tpepper # k8s-infra prototype Branch Manager
   - repos:
     - kubernetes/k8s.io
     channels:
