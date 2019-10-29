@@ -49,6 +49,7 @@ prow_push(
             "commenter": "//robots/commenter:image",
             "pr-creator": "//robots/pr-creator:image",
             "issue-creator": "//robots/issue-creator:image",
+            "transfigure": "//testgrid/cmd/transfigure:image",
         },
     ),
 )
