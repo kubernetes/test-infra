@@ -708,11 +708,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	if scenario == "" {
-		entry := jobName
-		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
-			entry = strings.Replace(entry, "pull-security-kubernetes", "pull-kubernetes", -1)
-		}
-
 		if !scenarioArgs {
 			if strings.Contains(imageName, "kubekins-e2e") ||
 				strings.Contains(imageName, "bootstrap") ||
@@ -721,7 +716,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 			}
 			return nil
 		}
-
 	} else {
 		if _, err := os.Stat(fmt.Sprintf("../../../scenarios/%s.py", scenario)); err != nil {
 			return fmt.Errorf("job %s: scenario %s does not exist: %s", jobName, scenario, err)

@@ -100,7 +100,7 @@ func slicesAreEqual(sliceA, sliceB []string) bool {
 	if len(sliceA) != len(sliceB) {
 		return false
 	}
-	matched := false
+	var matched bool
 	for _, stringA := range sliceA {
 		matched = false
 		for _, stringB := range sliceB {

@@ -18,10 +18,11 @@ package suggestion
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/lint"
 	"regexp"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+	"golang.org/x/lint"
 )
 
 var (
@@ -45,7 +46,7 @@ var lintHandlersMap = map[*regexp.Regexp]func(lint.Problem, []string) string{
 // SuggestCodeChange returns code suggestions for a given lint.Problem
 // Returns empty string if no suggestion can be given
 func SuggestCodeChange(p lint.Problem) string {
-	var suggestion = ""
+	var suggestion string
 	for regex, handler := range lintHandlersMap {
 		matches := regex.FindStringSubmatch(p.Text)
 		suggestion = handler(p, matches)

@@ -191,8 +191,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 
 	var projectID int
 	var ok bool
+
 	// Only fetch the other repos in the org if we did not find the project in the same repo as the issue/pr
-	if projectID, ok = projectNameToIDMap[proposedProject]; !ok {
+	if _, ok = projectNameToIDMap[proposedProject]; !ok {
 		repos, err := gc.GetRepos(org, false)
 		if err != nil {
 			return err
@@ -206,6 +207,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 			projects = append(projects, repoProjects...)
 		}
 	}
+
 	// Only fetch org projects if we can't find the proposed project / project to clear in the repo projects
 	updateProjectNameToIDMap(projects)
 	if projectID, ok = projectNameToIDMap[proposedProject]; !ok {
