@@ -15,7 +15,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -64,7 +64,7 @@ periodics:
     nodeSelector:
       dedicated: "ubuntu"
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -111,7 +111,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.16
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -152,7 +152,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.16
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -193,7 +193,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.15
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -234,7 +234,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.14
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -275,7 +275,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191028-e674b0d-1.13
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
