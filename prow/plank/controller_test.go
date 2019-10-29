@@ -97,7 +97,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 					PodRunningTimeout: &metav1.Duration{Duration: podRunningTimeout},
 				},
 				Sinker: config.Sinker{
-					MaxPodAge:     &metav1.Duration{Duration: maxPodAge},
+					MaxPodAge: &metav1.Duration{Duration: maxPodAge},
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -105,7 +105,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 			},
 		},
 	}
-	
+
 }
 
 func (f *fca) Config() *config.Config {
@@ -1691,7 +1691,7 @@ func TestMaxConcurency(t *testing.T) {
 }
 
 const (
-	maxPodAge     = 12 * time.Hour
+	maxPodAge = 12 * time.Hour
 )
 
 func TestCleanUpPods(t *testing.T) {
@@ -1836,22 +1836,21 @@ func TestCleanUpPods(t *testing.T) {
 		"old-pending",
 	)
 
-	
-	var fkc  []*fake.Clientset
-	fkc = append(fkc,fake.NewSimpleClientset(pods...))
+	var fkc []*fake.Clientset
+	fkc = append(fkc, fake.NewSimpleClientset(pods...))
 	var fpc []corev1.PodInterface
 	for _, fakeClient := range fkc {
 		fpc = append(fpc, fakeClient.CoreV1().Pods("ns"))
-		
+
 	}
 
 	c := Controller{
-	podClients:    fpc,
-	log:           logrus.NewEntry(logrus.StandardLogger()),
-	config:        newFakeConfigAgent(t, 0).Config,
+		podClients: fpc,
+		log:        logrus.NewEntry(logrus.StandardLogger()),
+		config:     newFakeConfigAgent(t, 0).Config,
 	}
 	c.cleanUpPods()
-	
+
 	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
 }
 
