@@ -30,15 +30,15 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-node-kubelet,
       sig-node-cri-1.12
     testgrid-tab-name: node-kubelet-1.14
-  interval: 6h
+  interval: 24h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-stable2
+  name: ci-kubernetes-node-kubelet-stable3
   spec:
     containers:
     - args:
@@ -69,7 +69,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-features-stable2
+  name: ci-kubernetes-node-kubelet-features-stable3
   spec:
     containers:
     - args:
@@ -100,7 +100,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-stable2
+  name: ci-kubernetes-build-stable3
   spec:
     containers:
     - args:
@@ -111,7 +111,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-stable2
+      - --extra-publish-file=k8s-stable3
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20191021-5489305
@@ -123,7 +123,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
     testgrid-tab-name: verify-1.14
   decorate: true
@@ -132,11 +132,11 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-stable2
+  name: ci-kubernetes-verify-stable3
   spec:
     containers:
     - args:
@@ -160,8 +160,7 @@ periodics:
           cpu: "4"
       securityContext:
         privileged: true
-- name: periodic-kubernetes-bazel-build-1-14
-  annotations:
+- annotations:
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
     testgrid-tab-name: bazel-build-1.14
   interval: 6h
@@ -169,6 +168,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
+  name: periodic-kubernetes-bazel-build-1-14
   spec:
     containers:
     - args:
@@ -191,8 +191,7 @@ periodics:
       resources:
         requests:
           memory: 6Gi
-- name: periodic-kubernetes-bazel-test-1-14
-  annotations:
+- annotations:
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
     testgrid-tab-name: bazel-test-1.14
   interval: 6h
@@ -200,6 +199,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
+  name: periodic-kubernetes-bazel-test-1-14
   spec:
     containers:
     - args:
@@ -227,14 +227,14 @@ periodics:
         requests:
           memory: 6Gi
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
     testgrid-tab-name: integration-1.14
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-stable2
+  name: ci-kubernetes-integration-stable3
   spec:
     containers:
     - args:
@@ -253,17 +253,17 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 8-23/24 * * *
+    fork-per-release-cron: ""
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all
     testgrid-num-failures-to-alert: "4"
     testgrid-tab-name: gce-device-gpu-plugin-1.14
-  cron: 0 8-23/12 * * *
+  cron: 0 8-23/24 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable3
   spec:
     containers:
     - args:
@@ -272,7 +272,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/k8s-stable2
+      - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
@@ -283,17 +283,17 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 8-20/12 * * *
+    fork-per-release-cron: ""
     testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-scalability-gce,
       google-gce
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: gce-cos-1.14-scalability-100
-  cron: 0 4-16/12 * * *
+  cron: 0 8-20/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable3
   spec:
     containers:
     - args:
@@ -303,8 +303,8 @@ periodics:
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
-      - --cluster=e2e-big-stable2
-      - --extract=ci/k8s-stable2
+      - --cluster=e2e-big-stable3
+      - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -326,25 +326,25 @@ periodics:
       name: ""
       resources: {}
   tags:
-  - 'perfDashPrefix: gce-100Nodes-stable2'
+  - 'perfDashPrefix: gce-100Nodes-stable3'
   - 'perfDashJobType: performance'
 - annotations:
+    description: Runs tests on a Kubernetes 1.14 cluster with Windows nodes on GCE
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: google-windows, sig-release-1.14-informing, sig-windows
     testgrid-tab-name: gce-windows-stable2
-    description: Runs tests on a Kubernetes 1.14 cluster with Windows nodes on GCE
-  name: ci-kubernetes-e2e-windows-gce-stable2
   decorate: true
   extra_refs:
-  - org: yujuhong
-    repo: gce-k8s-windows-testing
-    base_ref: master
+  - base_ref: master
+    org: yujuhong
     path_alias: k8s.io/gce-k8s-windows-testing
+    repo: gce-k8s-windows-testing
   interval: 2h
   labels:
+    preset-e2e-gce-windows: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-e2e-gce-windows: "true"
+  name: ci-kubernetes-e2e-windows-gce-stable3
   spec:
     containers:
     - command:
@@ -353,22 +353,22 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-stable2
+      - --extract=ci/k8s-stable3
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
 postsubmits:
   kubernetes/kubernetes:
-  - name: ci-kubernetes-bazel-build-1-14
-    annotations:
+  - annotations:
       testgrid-dashboards: sig-release-1.14-all
     branches:
     - release-1.14
@@ -376,6 +376,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
+    name: ci-kubernetes-bazel-build-1-14
     spec:
       containers:
       - args:
@@ -396,8 +397,7 @@ postsubmits:
         resources:
           requests:
             memory: 6Gi
-  - name: ci-kubernetes-bazel-test-1-14
-    annotations:
+  - annotations:
       testgrid-dashboards: sig-release-1.14-all
     branches:
     - release-1.14
@@ -405,6 +405,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
+    name: ci-kubernetes-bazel-test-1-14
     spec:
       containers:
       - args:

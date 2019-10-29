@@ -10,7 +10,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.16
+      - --repo=k8s.io/kubernetes=release-1.17
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -27,7 +27,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-gkespec
@@ -42,7 +42,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.16
+      - --repo=k8s.io/kubernetes=release-1.17
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -59,7 +59,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sbeta
     testgrid-tab-name: ubuntu1-k8sbeta-serial
@@ -74,7 +74,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.15
+      - --repo=k8s.io/kubernetes=release-1.16
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -91,7 +91,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-gkespec
@@ -106,7 +106,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.15
+      - --repo=k8s.io/kubernetes=release-1.16
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -123,7 +123,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable1
     testgrid-tab-name: ubuntu1-k8sstable1-serial
@@ -138,7 +138,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.14
+      - --repo=k8s.io/kubernetes=release-1.15
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -155,7 +155,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-gkespec
@@ -170,7 +170,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.14
+      - --repo=k8s.io/kubernetes=release-1.15
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -187,7 +187,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable2
     testgrid-tab-name: ubuntu1-k8sstable2-serial
@@ -202,7 +202,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -219,7 +219,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.14
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-gkespec
@@ -234,7 +234,7 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.13
+      - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -251,7 +251,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.14
   annotations:
     testgrid-dashboards: canonical-ubuntu1-k8sstable3
     testgrid-tab-name: ubuntu1-k8sstable3-serial
@@ -266,7 +266,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.16
+      - --repo=k8s.io/kubernetes=release-1.17
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -283,7 +283,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.16
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.17
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sbeta
     testgrid-tab-name: ubuntu2-k8sbeta-gkespec
@@ -298,6 +298,70 @@ periodics:
     containers:
     - args:
       - --timeout=320
+      - --repo=k8s.io/kubernetes=release-1.17
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=300m
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
+      - --gcp-project=ubuntu-image-validation
+      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.17
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sbeta
+    testgrid-tab-name: ubuntu2-k8sbeta-serial
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --repo=k8s.io/kubernetes=release-1.16
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=120m
+      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+      - --node-args=--system-spec-name=gke
+      - --gcp-project=ubuntu-image-validation
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.16
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sstable1
+    testgrid-tab-name: ubuntu2-k8sstable1-gkespec
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.16
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -315,71 +379,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.16
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sbeta
-    testgrid-tab-name: ubuntu2-k8sbeta-serial
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.15
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=120m
-      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
-      - --node-args=--system-spec-name=gke
-      - --gcp-project=ubuntu-image-validation
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.15
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sstable1
-    testgrid-tab-name: ubuntu2-k8sstable1-gkespec
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.15
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=300m
-      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
-      - --gcp-project=ubuntu-image-validation
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.15
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.16
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable1
     testgrid-tab-name: ubuntu2-k8sstable1-serial
@@ -394,7 +394,7 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.14
+      - --repo=k8s.io/kubernetes=release-1.15
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -411,7 +411,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.14
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.15
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable2
     testgrid-tab-name: ubuntu2-k8sstable2-gkespec
@@ -426,6 +426,70 @@ periodics:
     containers:
     - args:
       - --timeout=320
+      - --repo=k8s.io/kubernetes=release-1.15
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=300m
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
+      - --gcp-project=ubuntu-image-validation
+      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.15
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sstable2
+    testgrid-tab-name: ubuntu2-k8sstable2-serial
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --repo=k8s.io/kubernetes=release-1.14
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --node-tests=true
+      - --provider=gce
+      - --gcp-zone=us-west1-b
+      - --image-family=pipeline-2
+      - --image-project=ubuntu-os-gke-cloud-devel
+      - --timeout=120m
+      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+      - --node-args=--system-spec-name=gke
+      - --gcp-project=ubuntu-image-validation
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.14
+  annotations:
+    testgrid-dashboards: canonical-ubuntu2-k8sstable3
+    testgrid-tab-name: ubuntu2-k8sstable3-gkespec
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  labels:
+    preset-service-account: 'true'
+    preset-k8s-ssh: 'true'
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=320
       - --repo=k8s.io/kubernetes=release-1.14
       - --root=/go/src
       - --scenario=kubernetes_e2e
@@ -443,71 +507,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.14
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sstable2
-    testgrid-tab-name: ubuntu2-k8sstable2-serial
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=release-1.13
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=120m
-      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
-      - --node-args=--system-spec-name=gke
-      - --gcp-project=ubuntu-image-validation
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
-  annotations:
-    testgrid-dashboards: canonical-ubuntu2-k8sstable3
-    testgrid-tab-name: ubuntu2-k8sstable3-gkespec
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  labels:
-    preset-service-account: 'true'
-    preset-k8s-ssh: 'true'
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --repo=k8s.io/kubernetes=release-1.13
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --node-tests=true
-      - --provider=gce
-      - --gcp-zone=us-west1-b
-      - --image-family=pipeline-2
-      - --image-project=ubuntu-os-gke-cloud-devel
-      - --timeout=300m
-      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
-      - --gcp-project=ubuntu-image-validation
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.14
   annotations:
     testgrid-dashboards: canonical-ubuntu2-k8sstable3
     testgrid-tab-name: ubuntu2-k8sstable3-serial
@@ -538,10 +538,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-default
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -569,10 +569,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-slow
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -600,10 +600,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sbeta-serial
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -631,10 +631,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-default
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -662,10 +662,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-slow
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -693,10 +693,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable1-serial
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -724,10 +724,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-default
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -755,10 +755,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-slow
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -786,10 +786,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable2-serial
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -817,10 +817,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-default
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -848,10 +848,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-slow
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -879,10 +879,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu1-k8sstable3-serial
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -910,10 +910,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-default
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -941,10 +941,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-slow
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -972,10 +972,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sbeta-serial
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1003,10 +1003,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-default
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1034,10 +1034,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-slow
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1065,10 +1065,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable1-serial
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1096,10 +1096,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-default
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1127,10 +1127,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-slow
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1158,10 +1158,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable2-serial
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1189,10 +1189,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-default
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1220,10 +1220,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-slow
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1251,10 +1251,10 @@ periodics:
       - --check-leaked-resources=false
       - --gcp-project=ubuntu-os-gke-cloud-dev-tests
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-ubuntu2-k8sstable3-serial
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -1283,10 +1283,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-alphafeatures
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -1316,10 +1316,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-default
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -1348,10 +1348,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-flaky
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -1380,10 +1380,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-reboot
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -1413,10 +1413,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-serial
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -1446,10 +1446,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-slow
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -1479,10 +1479,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-updown
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 0 1-23/2 * * *
@@ -1514,10 +1514,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sbeta-gpu
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu1-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1546,10 +1546,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-alphafeatures
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1579,10 +1579,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-default
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1611,10 +1611,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-flaky
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1643,10 +1643,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-reboot
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1676,10 +1676,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-serial
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1709,10 +1709,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-slow
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -1742,10 +1742,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-updown
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 0 2-23/4 * * *
@@ -1777,10 +1777,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable1-gpu
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu1-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1809,10 +1809,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-alphafeatures
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1842,10 +1842,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-default
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1874,10 +1874,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-flaky
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1906,10 +1906,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-reboot
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1939,10 +1939,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-serial
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -1972,10 +1972,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-slow
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2005,10 +2005,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-updown
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 30 5-23/6 * * *
@@ -2040,10 +2040,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable2-gpu
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu1-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2072,10 +2072,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-alphafeatures
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2105,10 +2105,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-default
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2137,10 +2137,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-flaky
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2169,10 +2169,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-reboot
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2202,10 +2202,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-serial
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2235,10 +2235,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-slow
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2268,10 +2268,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-updown
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 30 0-23/6 * * *
@@ -2303,10 +2303,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu1-k8sstable3-gpu
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu1-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu1-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -2335,10 +2335,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-alphafeatures
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -2368,10 +2368,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-default
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -2400,10 +2400,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-flaky
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -2432,10 +2432,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-reboot
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -2465,10 +2465,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-serial
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -2498,10 +2498,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-slow
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -2531,10 +2531,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-updown
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 30 1-23/2 * * *
@@ -2566,10 +2566,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sbeta-gpu
-    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sbeta
+    testgrid-dashboards: sig-release-1.17-all, canonical-ubuntu2-k8sbeta
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -2598,10 +2598,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-alphafeatures
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -2631,10 +2631,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-default
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -2663,10 +2663,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-flaky
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -2695,10 +2695,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-reboot
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -2728,10 +2728,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-serial
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -2761,10 +2761,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-slow
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 4h
@@ -2794,10 +2794,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-updown
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 30 2-23/4 * * *
@@ -2829,10 +2829,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable1-gpu
-    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable1
+    testgrid-dashboards: sig-release-1.16-all, canonical-ubuntu2-k8sstable1
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2861,10 +2861,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-alphafeatures
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2894,10 +2894,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-default
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2926,10 +2926,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-flaky
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2958,10 +2958,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-reboot
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -2991,10 +2991,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-serial
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3024,10 +3024,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-slow
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3057,10 +3057,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-updown
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 30 2-23/6 * * *
@@ -3092,10 +3092,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable2-gpu
-    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable2
+    testgrid-dashboards: sig-release-1.15-all, canonical-ubuntu2-k8sstable2
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3124,10 +3124,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-alphafeatures
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3157,10 +3157,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-default
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3189,10 +3189,10 @@ periodics:
       - --timeout=300m
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-flaky
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3221,10 +3221,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-reboot
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3254,10 +3254,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-serial
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3287,10 +3287,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-slow
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -3320,10 +3320,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --ginkgo-parallel
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-updown
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   cron: 0 1-23/6 * * *
@@ -3355,10 +3355,10 @@ periodics:
       - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
       - --gcp-zone=us-west1-b
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-ubuntu2-k8sstable3-gpu
-    testgrid-dashboards: sig-release-1.13-all, canonical-ubuntu2-k8sstable3
+    testgrid-dashboards: sig-release-1.14-all, canonical-ubuntu2-k8sstable3
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3382,10 +3382,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-reboot
-    testgrid-dashboards: sig-release-1.16-blocking
+    testgrid-dashboards: sig-release-1.17-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3410,10 +3410,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-ingress
-    testgrid-dashboards: sig-release-1.16-blocking
+    testgrid-dashboards: sig-release-1.17-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3439,10 +3439,10 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-default
-    testgrid-dashboards: sig-release-1.16-informing
+    testgrid-dashboards: sig-release-1.17-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -3468,10 +3468,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-serial
-    testgrid-dashboards: sig-release-1.16-informing
+    testgrid-dashboards: sig-release-1.17-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -3497,10 +3497,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-slow
-    testgrid-dashboards: sig-release-1.16-informing
+    testgrid-dashboards: sig-release-1.17-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -3529,10 +3529,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sbeta-ingress
-    testgrid-dashboards: sig-release-1.16-all
+    testgrid-dashboards: sig-release-1.17-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3559,10 +3559,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sbeta-reboot
-    testgrid-dashboards: sig-release-1.16-all
+    testgrid-dashboards: sig-release-1.17-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3591,10 +3591,10 @@ periodics:
       - --ginkgo-parallel=30
       - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sbeta-default
-    testgrid-dashboards: sig-release-1.16-all
+    testgrid-dashboards: sig-release-1.17-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3622,10 +3622,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sbeta-serial
-    testgrid-dashboards: sig-release-1.16-all
+    testgrid-dashboards: sig-release-1.17-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3653,10 +3653,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sbeta-slow
-    testgrid-dashboards: sig-release-1.16-all
+    testgrid-dashboards: sig-release-1.17-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 1h
@@ -3682,10 +3682,10 @@ periodics:
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-alphafeatures
-    testgrid-dashboards: sig-release-1.16-blocking
+    testgrid-dashboards: sig-release-1.17-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3709,10 +3709,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-reboot
-    testgrid-dashboards: sig-release-1.15-blocking
+    testgrid-dashboards: sig-release-1.16-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3737,10 +3737,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-ingress
-    testgrid-dashboards: sig-release-1.15-blocking
+    testgrid-dashboards: sig-release-1.16-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3766,10 +3766,10 @@ periodics:
       - --ginkgo-parallel=30
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-default
-    testgrid-dashboards: sig-release-1.15-informing
+    testgrid-dashboards: sig-release-1.16-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -3795,10 +3795,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-serial
-    testgrid-dashboards: sig-release-1.15-informing
+    testgrid-dashboards: sig-release-1.16-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -3824,10 +3824,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-slow
-    testgrid-dashboards: sig-release-1.15-informing
+    testgrid-dashboards: sig-release-1.16-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -3856,10 +3856,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable1-ingress
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.16-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3886,10 +3886,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable1-reboot
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.16-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3917,10 +3917,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable1-default
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.16-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3948,10 +3948,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable1-serial
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.16-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -3979,10 +3979,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable1-slow
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-release-1.16-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -4007,10 +4007,10 @@ periodics:
       - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-alphafeatures
-    testgrid-dashboards: sig-release-1.15-blocking
+    testgrid-dashboards: sig-release-1.16-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4034,10 +4034,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-reboot
-    testgrid-dashboards: sig-release-1.14-blocking
+    testgrid-dashboards: sig-release-1.15-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4062,10 +4062,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-ingress
-    testgrid-dashboards: sig-release-1.14-blocking
+    testgrid-dashboards: sig-release-1.15-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4090,10 +4090,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-default
-    testgrid-dashboards: sig-release-1.14-informing
+    testgrid-dashboards: sig-release-1.15-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -4119,10 +4119,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-serial
-    testgrid-dashboards: sig-release-1.14-informing
+    testgrid-dashboards: sig-release-1.15-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -4148,10 +4148,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-slow
-    testgrid-dashboards: sig-release-1.14-informing
+    testgrid-dashboards: sig-release-1.15-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -4180,10 +4180,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable2-ingress
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-1.15-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4210,10 +4210,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable2-reboot
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-1.15-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4241,10 +4241,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable2-default
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-1.15-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4272,10 +4272,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable2-serial
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-1.15-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4303,10 +4303,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable2-slow
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-1.15-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4331,10 +4331,10 @@ periodics:
       - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-alphafeatures
-    testgrid-dashboards: sig-release-1.14-blocking
+    testgrid-dashboards: sig-release-1.15-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4359,10 +4359,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-ingress
-    testgrid-dashboards: sig-release-1.13-blocking
+    testgrid-dashboards: sig-release-1.14-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4386,10 +4386,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-reboot
-    testgrid-dashboards: sig-release-1.13-blocking
+    testgrid-dashboards: sig-release-1.14-blocking
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4414,10 +4414,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-default
-    testgrid-dashboards: sig-release-1.13-informing
+    testgrid-dashboards: sig-release-1.14-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -4443,10 +4443,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-serial
-    testgrid-dashboards: sig-release-1.13-informing
+    testgrid-dashboards: sig-release-1.14-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -4472,10 +4472,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-slow
-    testgrid-dashboards: sig-release-1.13-informing
+    testgrid-dashboards: sig-release-1.14-informing
     testgrid-num-failures-to-alert: '6'
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -4504,10 +4504,10 @@ periodics:
       - --timeout=150m
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable3-ingress
-    testgrid-dashboards: sig-release-1.13-all
+    testgrid-dashboards: sig-release-1.14-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4534,10 +4534,10 @@ periodics:
       - --timeout=180m
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable3-reboot
-    testgrid-dashboards: sig-release-1.13-all
+    testgrid-dashboards: sig-release-1.14-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4565,10 +4565,10 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable3-default
-    testgrid-dashboards: sig-release-1.13-all
+    testgrid-dashboards: sig-release-1.14-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4596,10 +4596,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable3-serial
-    testgrid-dashboards: sig-release-1.13-all
+    testgrid-dashboards: sig-release-1.14-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -4627,10 +4627,10 @@ periodics:
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gke-cos-k8sstable3-slow
-    testgrid-dashboards: sig-release-1.13-all
+    testgrid-dashboards: sig-release-1.14-all
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 24h
@@ -4655,7 +4655,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
       - --env=KUBE_FEATURE_GATES=AllAlpha=true
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-alphafeatures
-    testgrid-dashboards: sig-release-1.13-blocking
+    testgrid-dashboards: sig-release-1.14-blocking
