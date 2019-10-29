@@ -49,6 +49,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-master
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-release-0-4
   decorate: true
   interval: 1h
@@ -79,35 +81,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-release-0-4
-- name: periodic-cluster-api-provider-aws-bazel-e2e-release-0-3
-  decorate: true
-  interval: 1h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: release-0.3
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-experimental
-      command: ["runner.sh"]
-      args: ["make", "e2e"]
-      env:
-      - name: BOSKOS_HOST
-        value: "boskos.test-pods.svc.cluster.local"
-      - name: AWS_REGION
-        value: "us-west-2"
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: bazel-periodic-e2e-release-0-3
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
 postsubmits:
   kubernetes-sigs/cluster-api-provider-aws:
   - name: ci-cluster-api-provider-aws-e2e-master
@@ -139,6 +114,7 @@ postsubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: bazel-ci-e2e-master
       testgrid-num-columns-recent: '20'
+      testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
   - name: ci-cluster-api-provider-aws-e2e-release-0-4
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     decorate: true
@@ -168,31 +144,4 @@ postsubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: bazel-ci-e2e-release-0-4
       testgrid-num-columns-recent: '20'
-  - name: ci-cluster-api-provider-aws-bazel-e2e
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    decorate: true
-    max_concurrency: 5
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-    branches:
-    - release-0.3
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-experimental
-        command: ["runner.sh"]
-        args: ["make", "e2e"]
-        env:
-        - name: BOSKOS_HOST
-          value: "boskos.test-pods.svc.cluster.local"
-        - name: AWS_REGION
-          value: "us-west-2"
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: bazel-ci-e2e-release-0-3
-      testgrid-num-columns-recent: '20'
+      testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
