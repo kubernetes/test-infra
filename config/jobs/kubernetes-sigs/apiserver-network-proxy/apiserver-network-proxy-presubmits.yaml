@@ -11,3 +11,7 @@ presubmits:
         - make
         args:
         - test
+    annotations:
+      testgrid-dashboards: sig-cloudprovider-apiserver-network-proxy
+      testgrid-tab-name: pr-test
+      description: Tests the apiserver-network-proxy
