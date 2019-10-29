@@ -1,45 +1,6 @@
 periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: release-managers@kubernetes.io
-    testgrid-dashboards: sig-release-prototype-1.17-blocking, sig-release-1.17-all
-    testgrid-tab-name: build-1.17
-  cluster: test-infra-trusted
-  decorate: true
-  extra_refs:
-  - base_ref: master
-    org: kubernetes
-    path_alias: k8s.io/release
-    repo: release
-  interval: 1h
-  name: ci-kubernetes-prototype-build-beta
-  spec:
-    containers:
-    - args:
-      - --project=k8s-staging-release-test
-      - --scratch-bucket=gs://k8s-staging-release-test-gcb
-      - --variant=build-ci
-      - --no-source
-      - gcb/build
-      command:
-      - /run.sh
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /creds/service-account.json
-      - name: LOG_TO_STDOUT
-        value: "y"
-      image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
-      name: ""
-      resources: {}
-      volumeMounts:
-      - mountPath: /creds
-        name: creds
-    volumes:
-    - name: creds
-      secret:
-        secretName: deployer-service-account
-- annotations:
-    fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-release-team@googlegroups.com, kubernetes-sig-cli@googlegroups.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.17-blocking, sig-cli-master
