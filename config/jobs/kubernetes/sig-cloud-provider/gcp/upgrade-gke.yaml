@@ -285,7 +285,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, google-gke-upgrade
+    testgrid-dashboards: sig-release-job-config-errors, google-gke-upgrade
     testgrid-tab-name: gke-gci-1.12-gci-1.13-upgrade-cluster
 - interval: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
@@ -316,7 +316,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, google-gke-upgrade
+    testgrid-dashboards: sig-release-job-config-errors, google-gke-upgrade
     testgrid-tab-name: gke-gci-1.12-gci-1.13-upgrade-cluster-new
 - interval: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
@@ -347,7 +347,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, google-gke-upgrade
+    testgrid-dashboards: sig-release-job-config-errors, google-gke-upgrade
     testgrid-tab-name: gke-gci-1.12-gci-1.13-upgrade-master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
@@ -378,7 +378,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, google-gke-upgrade
+    testgrid-dashboards: sig-release-job-config-errors, google-gke-upgrade
     testgrid-tab-name: gke-gci-1.11-gci-1.13-upgrade-cluster
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
@@ -410,7 +410,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, google-gke-upgrade
+    testgrid-dashboards: sig-release-job-config-errors, google-gke-upgrade
     testgrid-tab-name: gke-gci-1.11-gci-1.13-upgrade-cluster-new
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
@@ -441,7 +441,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.13-all, google-gke-upgrade
+    testgrid-dashboards: sig-release-job-config-errors, google-gke-upgrade
     testgrid-tab-name: gke-gci-1.11-gci-1.13-upgrade-master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
