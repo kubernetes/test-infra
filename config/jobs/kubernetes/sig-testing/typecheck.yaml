@@ -10,6 +10,9 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     spec:
       containers:
       - name: main
