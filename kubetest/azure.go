@@ -337,6 +337,15 @@ func checkParams() error {
 	if *acsNetworkPlugin != "azure" {
 		*aksNetworkPlugin = *acsNetworkPlugin
 	}
+	if *acsAzureEnv != "AzurePublicCloud" {
+		*aksAzureEnv = *acsAzureEnv
+	}
+	if *acsIdentitySystem != "azure_ad" {
+		*aksIdentitySystem = *acsIdentitySystem
+	}
+	if *acsCustomCloudURL != "" {
+		*aksCustomCloudURL = *acsCustomCloudURL
+	}
 
 	if *aksCredentialsFile == "" {
 		return fmt.Errorf("no credentials file path specified")
@@ -347,8 +356,14 @@ func checkParams() error {
 	if *aksResourceGroupName == "" {
 		*aksResourceGroupName = *aksResourceName
 	}
+	if len(*aksResourceGroupName) > 90 {
+		return fmt.Errorf("the length of the resource group name must be no longer than 90 characters")
+	}
 	if *aksDnsPrefix == "" {
 		*aksDnsPrefix = *aksResourceName
+	}
+	if len(*aksDnsPrefix) < 3 || len(*aksDnsPrefix) > 45 {
+		return fmt.Errorf("the length of the dns prefix must be between 3 to 45 characters")
 	}
 	if *aksSSHPublicKeyPath == "" {
 		*aksSSHPublicKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa.pub"
@@ -380,16 +395,16 @@ func newAksEngine() (*Cluster, error) {
 		outputDir:               tempdir,
 		sshPublicKey:            fmt.Sprintf("%s", sshKey),
 		credentials:             &Creds{},
-		masterVMSize:            *acsMasterVmSize,
-		agentVMSize:             *acsAgentVmSize,
-		adminUsername:           *acsAdminUsername,
-		adminPassword:           *acsAdminPassword,
-		agentPoolCount:          *acsAgentPoolCount,
-		k8sVersion:              *acsOrchestratorRelease,
-		networkPlugin:           *acsNetworkPlugin,
-		azureEnvironment:        *acsAzureEnv,
-		azureIdentitySystem:     *acsIdentitySystem,
-		azureCustomCloudURL:     *acsCustomCloudURL,
+		masterVMSize:            *aksMasterVmSize,
+		agentVMSize:             *aksAgentVmSize,
+		adminUsername:           *aksAdminUsername,
+		adminPassword:           *aksAdminPassword,
+		agentPoolCount:          *aksAgentPoolCount,
+		k8sVersion:              *aksOrchestratorRelease,
+		networkPlugin:           *aksNetworkPlugin,
+		azureEnvironment:        *aksAzureEnv,
+		azureIdentitySystem:     *aksIdentitySystem,
+		azureCustomCloudURL:     *aksCustomCloudURL,
 		aksCustomHyperKubeURL:   "",
 		aksCustomWinBinariesURL: "",
 		aksCustomCcmURL:         "",
