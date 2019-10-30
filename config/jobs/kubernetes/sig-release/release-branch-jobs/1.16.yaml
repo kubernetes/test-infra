@@ -96,7 +96,7 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-1.16-all
-    testgrid-tab-name: node-kubelet-features-beta
+    testgrid-tab-name: node-kubelet-features-stable1
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
