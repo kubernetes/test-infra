@@ -17,6 +17,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-kops
     - sig-cluster-lifecycle-etcdadm
     - sig-cluster-lifecycle-image-pushes
+    - sig-cluster-lifecycle-system-validators
 
 dashboards:
 - name: sig-cluster-lifecycle-all
@@ -44,6 +45,7 @@ dashboards:
 - name: sig-cluster-lifecycle-kops
 - name: sig-cluster-lifecycle-etcdadm
 - name: sig-cluster-lifecycle-image-pushes
+- name: sig-cluster-lifecycle-system-validators
 
 test_groups:
 # @luxas' multiarch e2e results
