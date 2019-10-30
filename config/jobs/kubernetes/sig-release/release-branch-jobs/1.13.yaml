@@ -234,7 +234,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
       name: ""
       resources: {}
 - annotations:
@@ -279,7 +279,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
       name: ""
       resources: {}
   tags:

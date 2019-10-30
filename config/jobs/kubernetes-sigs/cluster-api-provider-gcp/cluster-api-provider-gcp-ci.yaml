@@ -45,7 +45,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
         env:
           - name: "CAPI_BRANCH"
             value: "master"
@@ -93,7 +93,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
@@ -139,7 +139,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-4802b07-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
