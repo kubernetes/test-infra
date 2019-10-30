@@ -2817,6 +2817,50 @@ func TestConfigureRepos(t *testing.T) {
 			expectError:   true,
 			expectedRepos: []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
 		},
+		{
+			description: "error detected when both a repo and a repo of its previous name exist",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName}, Description: &newDescription},
+				},
+			},
+			repos: []github.Repo{
+				{Name: oldName, Description: "this repo shall not be touched"},
+				{Name: newName, Description: "this repo shall not be touched too"},
+			},
+			expectError: true,
+			expectedRepos: []github.Repo{
+				{Name: newName, Description: "this repo shall not be touched too"},
+				{Name: oldName, Description: "this repo shall not be touched"},
+			},
+		},
+		{
+			description: "error detected when multiple previous repos exist",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName, "even-older"}, Description: &newDescription},
+				},
+			},
+			repos: []github.Repo{
+				{Name: oldName, Description: "this repo shall not be touched"},
+				{Name: "even-older", Description: "this repo shall not be touched too"},
+			},
+			expectError: true,
+			expectedRepos: []github.Repo{
+				{Name: "even-older", Description: "this repo shall not be touched too"},
+				{Name: oldName, Description: "this repo shall not be touched"},
+			},
+		},
+		{
+			description: "repos are renamed to defined case even without explicit `previously` field",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"CamelCase": {Description: &newDescription},
+				},
+			},
+			repos:         []github.Repo{{Name: "CAMELCASE", Description: newDescription}},
+			expectedRepos: []github.Repo{{Name: "CamelCase", Description: newDescription}},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
