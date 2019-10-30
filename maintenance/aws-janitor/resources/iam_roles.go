@@ -43,6 +43,11 @@ func roleIsManaged(role *iam.Role) bool {
 		return false
 	}
 
+	// CAPA roles have names end with `cluster-api-provider-aws.sigs.k8s.io`
+	if strings.HasSuffix(name, "cluster-api-provider-aws.sigs.k8s.io") {
+		return true
+	}
+
 	// kops roles have names start with `masters.` or `nodes.`
 	if strings.HasPrefix(name, "masters.") || strings.HasPrefix(name, "nodes.") {
 		return true
