@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	rest "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 	prow "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
@@ -182,4 +182,16 @@ func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (
 		buildClients[context] = client.CoreV1().Pods(namespace)
 	}
 	return buildClients, nil
+}
+
+// BuildClusterClients returns K8S clients for build clusters.
+func (o *KubernetesOptions) BuildClusterK8SClients(dryRun bool) (buildClusterClients map[string]kubernetes.Interface, err error) {
+	if err := o.resolve(dryRun); err != nil {
+		return nil, err
+	}
+
+	if o.dryRun {
+		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
+	}
+	return o.kubernetesClientsByContext, nil
 }

@@ -21,6 +21,10 @@ config_updater:
     path/to/some/other/thing2:
       name: thing2-config
       namespace: otherNamespace
+      # specify the cluster that the configmap targets
+      # which requies that either --build-cluster or --kubeconfig arg is enabled for Hook
+      # https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md#run-test-pods-in-different-clusters
+      cluster: other
     # Update the config configmap whenever config.yaml changes
     config/prow/config.yaml:
       name: config

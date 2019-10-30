@@ -420,6 +420,15 @@ type ConfigMapSpec struct {
 	GZIP *bool `json:"gzip,omitempty"`
 	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
 	Namespaces []string `json:"-"`
+	// Cluster in which the configMap needs to be deployed. If no cluster is specified
+	// it will be deployed to "default".
+	Cluster string `json:"cluster,omitempty"`
+	// Clusters in which the configMap needs to be deployed, in addition to the above
+	// cluster provided, or the default if it is not set.
+	AdditionalClusters []string `json:"additional_clusters,omitempty"`
+	// Clusters is the fully resolved list of Clusters to deploy the ConfigMap in
+	// Together with Namespaces, the configmap is updated for each ns in Namespaces and for each c in Clusters
+	Clusters []string `json:"-"`
 }
 
 // ConfigUpdater contains the configuration for the config-updater plugin.
@@ -799,6 +808,7 @@ func (c *ConfigUpdater) SetDefaults() {
 
 	for name, spec := range c.Maps {
 		spec.Namespaces = append([]string{spec.Namespace}, spec.AdditionalNamespaces...)
+		spec.Clusters = append([]string{spec.Cluster}, spec.AdditionalClusters...)
 		c.Maps[name] = spec
 	}
 }
