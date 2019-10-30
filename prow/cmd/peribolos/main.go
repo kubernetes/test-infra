@@ -883,14 +883,15 @@ func validateRepos(repos map[string]org.Repo) error {
 	var dups []string
 
 	for wantName, repo := range repos {
-		toCheck := []string{wantName}
-		toCheck = append(toCheck, repo.Previously...)
+		toCheck := append([]string{wantName}, repo.Previously...)
 		for _, name := range toCheck {
 			normName := strings.ToLower(name)
 			if seenName, have := seen[normName]; have {
 				dups = append(dups, fmt.Sprintf("%s/%s", seenName, name))
-				continue
 			}
+		}
+		for _, name := range toCheck {
+			normName := strings.ToLower(name)
 			seen[normName] = name
 		}
 

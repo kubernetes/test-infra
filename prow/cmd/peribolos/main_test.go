@@ -2784,6 +2784,16 @@ func TestConfigureRepos(t *testing.T) {
 			expectedRepos: []github.Repo{{Name: newName, Description: "renamed repo"}},
 		},
 		{
+			description: "renaming a repo by just changing case is successful",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"repo": {Previously: []string{"REPO"}},
+				},
+			},
+			repos:         []github.Repo{{Name: "REPO", Description: "renamed repo"}},
+			expectedRepos: []github.Repo{{Name: "repo", Description: "renamed repo"}},
+		},
+		{
 			description: "dup between a repo name and a previous name is detected",
 			orgConfig: org.Config{
 				Repos: map[string]org.Repo{
@@ -2878,6 +2888,12 @@ func TestValidateRepos(t *testing.T) {
 				"another-repo": {Previously: []string{"conflict"}},
 			},
 			expectError: true,
+		},
+		{
+			description: "allows case-duplicate name between former and current name",
+			config: map[string]org.Repo{
+				"repo": {Previously: []string{"REPO"}},
+			},
 		},
 	}
 
