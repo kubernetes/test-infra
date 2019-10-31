@@ -95,7 +95,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-node-kubelet, sig-release-1.16-all
+    testgrid-dashboards: sig-node-kubelet, sig-release-1.16-informing
     testgrid-tab-name: node-kubelet-features-stable1
   interval: 1h
   labels:
@@ -210,7 +210,7 @@ periodics:
   - 'perfDashBuildsCount: 500'
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-dashboards: sig-release-1.16-blocking, sig-release-1.16-all, google-unit
+    testgrid-dashboards: sig-release-1.16-blocking, google-unit
     testgrid-tab-name: bazel-build-1.16
   decorate: true
   extra_refs:
@@ -246,7 +246,7 @@ periodics:
       resources: {}
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-dashboards: sig-release-1.16-blocking, sig-release-1.16-all, google-unit
+    testgrid-dashboards: sig-release-1.16-blocking, google-unit
     testgrid-tab-name: bazel-test-1.16
   decorate: true
   extra_refs:
@@ -387,7 +387,7 @@ periodics:
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
-      testgrid-dashboards: sig-release-1.16-all
+      testgrid-dashboards: sig-release-job-config-errors
     branches:
     - release-1.16
     labels:
@@ -416,7 +416,7 @@ postsubmits:
           requests:
             memory: 6Gi
   - annotations:
-      testgrid-dashboards: sig-release-1.16-all
+      testgrid-dashboards: sig-release-job-config-errors
     branches:
     - release-1.16
     decorate: true

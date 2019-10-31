@@ -472,7 +472,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gke-1.13-1.14-upgrade-cluster
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
@@ -503,7 +503,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gke-1.13-1.14-upgrade-cluster-new
 - interval: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
@@ -534,7 +534,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gke-1.13-1.14-upgrade-master
 - interval: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
@@ -565,7 +565,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gke-1.14-1.13-downgrade-cluster
 - interval: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
@@ -597,7 +597,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gke-1.14-1.13-downgrade-cluster-parallel
 - interval: 2h
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster

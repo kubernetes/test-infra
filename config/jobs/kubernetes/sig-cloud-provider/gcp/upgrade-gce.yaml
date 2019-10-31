@@ -25,7 +25,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.13-1.14-upgrade-cluster
 
 - interval: 2h
@@ -54,7 +54,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.13-1.14-upgrade-cluster-parallel
 
 - interval: 2h
@@ -83,7 +83,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.13-1.14-upgrade-cluster-new
 
 - interval: 2h
@@ -113,7 +113,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-beta --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.13-1.14-upgrade-cluster-new-parallel
 
 - interval: 2h
@@ -141,7 +141,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-beta
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.13-1.14-upgrade-master
 
 - interval: 2h
@@ -170,7 +170,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-beta
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.13-1.14-upgrade-master-parallel
 
 - interval: 12h
@@ -343,7 +343,7 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.14-1.13-downgrade-cluster
 
 - interval: 2h
@@ -374,5 +374,5 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterDowngrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: gce-1.14-1.13-downgrade-cluster-parallel

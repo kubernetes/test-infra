@@ -130,7 +130,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-node-kubelet, sig-release-1.17-all
+    testgrid-dashboards: sig-node-kubelet, sig-release-1.17-informing
     testgrid-tab-name: node-kubelet-features-beta
   interval: 1h
   labels:
@@ -433,7 +433,7 @@ periodics:
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
-      testgrid-dashboards: google-unit, sig-release-1.17-all
+      testgrid-dashboards: google-unit, sig-release-job-config-errors
     branches:
     - release-1.17
     labels:

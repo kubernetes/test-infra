@@ -136,7 +136,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-node-kubelet
+    testgrid-dashboards: sig-node-kubelet, sig-release-master-informing
     testgrid-tab-name: node-kubelet-features
   spec:
     containers:
