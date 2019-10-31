@@ -1,0 +1,6 @@
+#
+# Define dashboards
+#
+dashboards:
+  # Tabs are defined at the job level..
+- name: gcp-guest
