@@ -28,19 +28,19 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.16-blocking, google-gce
     testgrid-num-failures-to-alert: "12"
     testgrid-tab-name: gce-device-plugin-gpu-1.16
-  cron: 0 0-23/2 * * *
+  cron: 0 3-23/6 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   spec:
     containers:
     - args:
@@ -61,15 +61,15 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.16
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-beta
+  name: ci-kubernetes-node-kubelet-stable1
   spec:
     containers:
     - args:
@@ -96,12 +96,12 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-1.16-all
-    testgrid-tab-name: node-kubelet-features-beta
+    testgrid-tab-name: node-kubelet-features-stable1
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-features-beta
+  name: ci-kubernetes-node-kubelet-features-stable1
   spec:
     containers:
     - args:
@@ -134,7 +134,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-build-beta
+  name: ci-kubernetes-build-stable1
   spec:
     containers:
     - args:
@@ -145,7 +145,7 @@ periodics:
       - --scenario=kubernetes_build
       - --
       - --allow-dup
-      - --extra-publish-file=k8s-beta
+      - --extra-publish-file=k8s-stable1
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-testimages/bootstrap:v20191021-5489305
@@ -157,19 +157,19 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *
     fork-per-release-generic-suffix: "true"
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-scalability-gce, google-gce,
       google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.16-scalability-100
-  cron: 0 */6 * * *
+  cron: 0 0/12 * * *
   labels:
     preset-e2e-scalability-common: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   spec:
     containers:
     - args:
@@ -208,8 +208,7 @@ periodics:
   - 'perfDashPrefix: gce-100Nodes'
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
-- name: periodic-kubernetes-bazel-build-1-16
-  annotations:
+- annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-release-1.16-all, google-unit
     testgrid-tab-name: bazel-build-1.16
@@ -225,6 +224,7 @@ periodics:
   labels:
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
+  name: periodic-kubernetes-bazel-build-1-16
   spec:
     containers:
     - args:
@@ -244,8 +244,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.16
       name: ""
       resources: {}
-- name: periodic-kubernetes-bazel-test-1-16
-  annotations:
+- annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-release-1.16-all, google-unit
     testgrid-tab-name: bazel-test-1.16
@@ -261,6 +260,7 @@ periodics:
   labels:
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
+  name: periodic-kubernetes-bazel-test-1-16
   spec:
     containers:
     - args:
@@ -280,7 +280,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     testgrid-dashboards: sig-release-1.16-blocking, google-unit
     testgrid-tab-name: integration-1.16
@@ -288,7 +288,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-integration-beta
+  name: ci-kubernetes-integration-stable1
   spec:
     containers:
     - args:
@@ -308,7 +308,7 @@ periodics:
         privileged: true
 - annotations:
     fork-per-release-generic-suffix: "true"
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.16-blocking, google-unit
     testgrid-tab-name: verify-1.16
@@ -322,7 +322,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-verify-beta
+  name: ci-kubernetes-verify-stable1
   spec:
     containers:
     - args:
@@ -347,22 +347,22 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
+    description: Runs tests on a Kubernetes 1.16 cluster with Windows nodes on GCE
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: google-windows, sig-release-1.16-informing, sig-windows
     testgrid-tab-name: gce-windows-beta
-    description: Runs tests on a Kubernetes 1.16 cluster with Windows nodes on GCE
   decorate: true
   extra_refs:
-  - org: yujuhong
-    repo: gce-k8s-windows-testing
-    base_ref: master
+  - base_ref: master
+    org: yujuhong
     path_alias: k8s.io/gce-k8s-windows-testing
+    repo: gce-k8s-windows-testing
   interval: 2h
   labels:
+    preset-e2e-gce-windows: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-e2e-gce-windows: "true"
-  name: ci-kubernetes-e2e-windows-gce-beta
+  name: ci-kubernetes-e2e-windows-gce-stable1
   spec:
     containers:
     - command:
@@ -371,22 +371,22 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-beta
+      - --extract=ci/k8s-stable1
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
 
 postsubmits:
   kubernetes/kubernetes:
-  - name: ci-kubernetes-bazel-build-1-16
-    annotations:
+  - annotations:
       testgrid-dashboards: sig-release-1.16-all
     branches:
     - release-1.16
@@ -394,6 +394,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
+    name: ci-kubernetes-bazel-build-1-16
     spec:
       containers:
       - args:
@@ -414,8 +415,7 @@ postsubmits:
         resources:
           requests:
             memory: 6Gi
-  - name: post-kubernetes-bazel-test-1-16
-    annotations:
+  - annotations:
       testgrid-dashboards: sig-release-1.16-all
     branches:
     - release-1.16
@@ -427,6 +427,7 @@ postsubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
+    name: post-kubernetes-bazel-test-1-16
     spec:
       containers:
       - args:

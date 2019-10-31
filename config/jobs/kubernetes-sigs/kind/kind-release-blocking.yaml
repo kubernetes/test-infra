@@ -262,7 +262,7 @@ periodics:
 - interval: 1h
   name: ci-kubernetes-kind-e2e-parallel-latest-1-13
   annotations:
-    testgrid-dashboards: sig-release-1.13-blocking, sig-testing-kind
+    testgrid-dashboards: sig-release-job-config-errors, sig-testing-kind
     testgrid-tab-name: kind-1.13-parallel
     description: Uses kubetest to run e2e tests (+Conformance, -Serial) against a latest kubernetes release-1.13 cluster created with sigs.k8s.io/kind
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-managers@kubernetes.io

@@ -24,6 +24,9 @@ presubmits:
     - release-\d+\.\d+ # per-release image
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -511,7 +514,7 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.13-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: soak-gci-gce-1.13
 
 - interval: 12h
@@ -540,5 +543,5 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.13-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: soak-gci-gce-1.12

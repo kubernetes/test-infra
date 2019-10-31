@@ -166,6 +166,7 @@ presubmits:
       preset-e2e-kubemark-common: "true"
     annotations:
       fork-per-release: "true"
+      testgrid-create-test-group: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master

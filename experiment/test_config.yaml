@@ -799,19 +799,19 @@ k8sVersions:
   beta:
     args:
     - --extract=ci/k8s-beta
-    version: '1.16'
+    version: '1.17'
   stable1:
     args:
     - --extract=ci/k8s-stable1
-    version: '1.15'
+    version: '1.16'
   stable2:
     args:
     - --extract=ci/k8s-stable2
-    version: '1.14'
+    version: '1.15'
   stable3:
     args:
     - --extract=ci/k8s-stable3
-    version: '1.13'
+    version: '1.14'
 
 testSuites:
   alphafeatures:
@@ -923,20 +923,20 @@ nodeK8sVersions:
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   beta:
     args:
+    - --repo=k8s.io/kubernetes=release-1.17
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.17
+  stable1:
+    args:
     - --repo=k8s.io/kubernetes=release-1.16
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.16
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.15
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.15
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.14
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-1.14
-  stable3:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.13
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191029-3656cc1-1.13
 
 nodeTestSuites:
   default:

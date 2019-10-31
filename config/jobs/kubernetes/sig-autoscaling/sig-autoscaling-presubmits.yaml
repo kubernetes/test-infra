@@ -4,7 +4,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-cluster-autoscaler
       testgrid-tab-name: gci-gce-autoscaling-pull
-      fork-per-release: "true"
     always_run: false
     optional: true
     run_if_changed: '^(cluster/gce/manifests/cluster-autoscaler.manifest$|cluster/addons/rbac/cluster-autoscaler)'
