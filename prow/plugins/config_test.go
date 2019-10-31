@@ -105,8 +105,8 @@ func TestSetDefault_Maps(t *testing.T) {
 		{
 			name: "nothing",
 			expected: map[string]ConfigMapSpec{
-				"config/prow/config.yaml":  {Name: "config", Namespaces: []string{""}, Clusters: []string{""}},
-				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: []string{""}},
+				"config/prow/config.yaml":  {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -118,8 +118,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				},
 			},
 			expected: map[string]ConfigMapSpec{
-				"hello.yaml": {Name: "my-cm", Namespaces: []string{""}, Clusters: []string{""}},
-				"world.yaml": {Name: "you-cm", Namespaces: []string{""}, Clusters: []string{""}},
+				"hello.yaml": {Name: "my-cm", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"world.yaml": {Name: "you-cm", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -128,8 +128,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				ConfigFile: "foo.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"foo.yaml":                 {Name: "config", Namespaces: []string{""}, Clusters: []string{""}},
-				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: []string{""}},
+				"foo.yaml":                 {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -138,8 +138,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "bar.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"bar.yaml":                {Name: "plugins", Namespaces: []string{""}, Clusters: []string{""}},
-				"config/prow/config.yaml": {Name: "config", Namespaces: []string{""}, Clusters: []string{""}},
+				"bar.yaml":                {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config/prow/config.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -149,8 +149,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "bar.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"foo.yaml": {Name: "config", Namespaces: []string{""}, Clusters: []string{""}},
-				"bar.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: []string{""}},
+				"foo.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"bar.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -165,9 +165,9 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "plugins.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}, Clusters: []string{""}},
-				"plugins.yaml":       {Name: "overwrite-plugins", Namespaces: []string{""}, Clusters: []string{""}},
-				"unconflicting.yaml": {Name: "ignored", Namespaces: []string{""}, Clusters: []string{""}},
+				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"plugins.yaml":       {Name: "overwrite-plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"unconflicting.yaml": {Name: "ignored", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 	}
@@ -1191,10 +1191,9 @@ func TestValidateConfigUpdater(t *testing.T) {
 						Namespace: "some-namespace",
 					},
 					"somewhere/else/plugins.yaml": {
-						Name:      "plugins",
-						Key:       "plugins.yaml",
-						Namespace: "some-namespace",
-						Cluster:   "other",
+						Name:     "plugins",
+						Key:      "plugins.yaml",
+						Clusters: map[string][]string{"other": {"some-namespace"}},
 					},
 				},
 			},

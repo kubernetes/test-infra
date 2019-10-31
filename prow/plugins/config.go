@@ -29,8 +29,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 )
 
@@ -420,15 +422,9 @@ type ConfigMapSpec struct {
 	GZIP *bool `json:"gzip,omitempty"`
 	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
 	Namespaces []string `json:"-"`
-	// Cluster in which the configMap needs to be deployed. If no cluster is specified
-	// it will be deployed to "default".
-	Cluster string `json:"cluster,omitempty"`
-	// Clusters in which the configMap needs to be deployed, in addition to the above
-	// cluster provided, or the default if it is not set.
-	AdditionalClusters []string `json:"additional_clusters,omitempty"`
-	// Clusters is the fully resolved list of Clusters to deploy the ConfigMap in
-	// Together with Namespaces, the configmap is updated for each ns in Namespaces and for each c in Clusters
-	Clusters []string `json:"-"`
+	// Clusters is a map from cluster to namespaces
+	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
+	Clusters map[string][]string `json:"clusters"`
 }
 
 // ConfigUpdater contains the configuration for the config-updater plugin.
@@ -807,8 +803,15 @@ func (c *ConfigUpdater) SetDefaults() {
 	}
 
 	for name, spec := range c.Maps {
+		if spec.Namespace != "" || len(spec.AdditionalNamespaces) > 0 {
+			logrus.Warnf("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin, use 'clusters' instead")
+		}
+		// as a result, namespaces will never be an empty slice (namespace in the slice could be empty string)
+		// and clusters will never be an empty map (map[cluster] could be am empty slice)
 		spec.Namespaces = append([]string{spec.Namespace}, spec.AdditionalNamespaces...)
-		spec.Clusters = append([]string{spec.Cluster}, spec.AdditionalClusters...)
+		if len(spec.Clusters) == 0 {
+			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: spec.Namespaces}
+		}
 		c.Maps[name] = spec
 	}
 }
@@ -955,37 +958,42 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	return nil
 }
 
-// ConfigMapID is a name/namespace combination that identifies a config map
+// ConfigMapID is a name/namespace/cluster combination that identifies a config map
 type ConfigMapID struct {
 	Name, Namespace, Cluster string
 }
 
 func validateConfigUpdater(updater *ConfigUpdater) error {
+	updater.SetDefaults()
 	files := sets.NewString()
 	configMapKeys := map[ConfigMapID]sets.String{}
 	for file, config := range updater.Maps {
-		cmID := ConfigMapID{
-			Name:      config.Name,
-			Namespace: config.Namespace,
-			Cluster:   config.Cluster,
-		}
-		if files.Has(file) {
-			return fmt.Errorf("file %s listed more than once in config updater config", file)
-		}
-		files.Insert(file)
+		for cluster, namespaces := range config.Clusters {
+			for _, namespace := range namespaces {
+				cmID := ConfigMapID{
+					Name:      config.Name,
+					Namespace: namespace,
+					Cluster:   cluster,
+				}
+				if files.Has(file) {
+					return fmt.Errorf("file %s listed more than once in config updater config", file)
+				}
+				files.Insert(file)
 
-		key := config.Key
-		if key == "" {
-			key = path.Base(file)
-		}
+				key := config.Key
+				if key == "" {
+					key = path.Base(file)
+				}
 
-		if _, ok := configMapKeys[cmID]; ok {
-			if configMapKeys[cmID].Has(key) {
-				return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+				if _, ok := configMapKeys[cmID]; ok {
+					if configMapKeys[cmID].Has(key) {
+						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+					}
+					configMapKeys[cmID].Insert(key)
+				} else {
+					configMapKeys[cmID] = sets.NewString(key)
+				}
 			}
-			configMapKeys[cmID].Insert(key)
-		} else {
-			configMapKeys[cmID] = sets.NewString(key)
 		}
 	}
 	return nil

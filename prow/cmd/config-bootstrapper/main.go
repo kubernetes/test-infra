@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
+
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -98,6 +99,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
 
+	buildClusterCoreV1Clients, err := o.kubernetes.BuildClusterCoreV1Clients(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes clients for build cluster.")
+	}
+
 	// act like the whole repo just got committed
 	var changes []github.PullRequestChange
 	filepath.Walk(o.sourcePath, func(path string, info os.FileInfo, err error) error {
@@ -124,8 +130,13 @@ func main() {
 		if cm.Namespace == "" {
 			cm.Namespace = configAgent.Config().ProwJobNamespace
 		}
-		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, nil, logger); err != nil {
+		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
+		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
+		if err != nil {
+			logrus.WithError(err).Errorf("Failed to find configMap client")
+			continue
+		}
+		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, configMapClient, cm.Name, cm.Namespace, data, nil, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 			errors++
 		} else {

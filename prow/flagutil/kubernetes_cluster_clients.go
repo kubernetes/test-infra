@@ -184,8 +184,8 @@ func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (
 	return buildClients, nil
 }
 
-// BuildClusterClients returns K8S clients for build clusters.
-func (o *KubernetesOptions) BuildClusterK8SClients(dryRun bool) (buildClusterClients map[string]kubernetes.Interface, err error) {
+// BuildClusterCoreV1Clients returns core v1 clients for build clusters.
+func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients map[string]corev1.CoreV1Interface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -193,5 +193,10 @@ func (o *KubernetesOptions) BuildClusterK8SClients(dryRun bool) (buildClusterCli
 	if o.dryRun {
 		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
 	}
-	return o.kubernetesClientsByContext, nil
+
+	clients := map[string]corev1.CoreV1Interface{}
+	for context, client := range o.kubernetesClientsByContext {
+		clients[context] = client.CoreV1()
+	}
+	return clients, nil
 }
