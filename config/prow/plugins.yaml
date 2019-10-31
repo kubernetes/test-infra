@@ -65,6 +65,7 @@ approve:
   - kubernetes/release
   - kubernetes/sig-release
   - kubernetes/steering
+  - kubernetes/system-validators
   - kubernetes/utils
   require_self_approval: false
   lgtm_acts_as_approve: true
@@ -579,6 +580,9 @@ plugins:
   - milestone
   - milestoneapplier
   - override
+
+  kubernetes/system-validators:
+  - milestone
 
   kubernetes/test-infra:
   - config-updater

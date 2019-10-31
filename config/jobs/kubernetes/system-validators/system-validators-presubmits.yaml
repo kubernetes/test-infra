@@ -1,0 +1,14 @@
+# k8s.io/system-validators presubmits
+presubmits:
+  kubernetes/system-validators:
+  - name: pull-system-validators-verify
+    path_alias: "k8s.io/system-validators"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190329-811f7954b-master
+        command:
+        - "./hack/verify-all.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-system-validators
+      testgrid-tab-name: pr-verify
