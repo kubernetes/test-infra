@@ -17,6 +17,9 @@ limitations under the License.
 package resources
 
 import (
+	"net/http"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/pkg/errors"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -51,6 +54,13 @@ func CleanAll(sess *session.Session, region string) error {
 		for _, typ := range RegionalTypeList {
 			set, err := typ.ListAll(sess, acct, r)
 			if err != nil {
+				// ignore errors for resources we do not have permissions to list
+				if reqerr, ok := errors.Cause(err).(awserr.RequestFailure); ok {
+					if reqerr.StatusCode() == http.StatusForbidden {
+						klog.V(1).Infof("Skipping resources of type %T, account does not have permission to list", typ)
+						continue
+					}
+				}
 				errs = append(errs, errors.Wrapf(err, "Failed to list resources of type %T", typ))
 				continue
 			}
