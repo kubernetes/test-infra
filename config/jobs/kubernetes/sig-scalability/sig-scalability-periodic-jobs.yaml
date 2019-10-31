@@ -354,20 +354,22 @@ periodics:
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 55m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=55
-      - --root=/go/src
-      - --scenario=execute
-      - --
+      command:
       - ./hack/jenkins/benchmark-dockerized.sh
+      args:
       - ./test/integration/scheduler_perf
       env:
-      - name: GOPATH
-        value: /go
       - name: KUBE_TIMEOUT
         value: --timeout 40m
 
