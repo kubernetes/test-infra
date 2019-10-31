@@ -274,7 +274,7 @@ class E2ETest(object):
         elif self.job.get('releaseInforming'):
             dashboards.append('sig-release-%s-informing' % version)
         else:
-            dashboards.append('sig-release-%s-all' % version)
+            dashboards.append('sig-release-job-config-errors')
         return dashboards
 
     def generate(self):

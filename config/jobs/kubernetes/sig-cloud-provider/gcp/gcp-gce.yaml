@@ -455,7 +455,7 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: soak-gci-gce-1.15
 
 - interval: 12h
@@ -485,7 +485,7 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191029-0f73fe4-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: soak-gci-gce-1.14
 
 - interval: 12h

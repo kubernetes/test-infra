@@ -171,7 +171,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-release-1.14-all, sig-windows, provider-azure-on-call
+    testgrid-dashboards: sig-release-job-config-errors, sig-windows, provider-azure-on-call
     testgrid-tab-name: aks-engine-azure-1-14-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.14 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
@@ -215,7 +215,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-release-1.15-all, sig-windows, provider-azure-on-call
+    testgrid-dashboards: sig-release-job-config-errors, sig-windows, provider-azure-on-call
     testgrid-tab-name: aks-engine-azure-1-15-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
