@@ -31,7 +31,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-periodic-interval: ""
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-node-kubelet,
+    testgrid-dashboards: sig-release-1.14-blocking, sig-node-kubelet,
       sig-node-cri-1.12
     testgrid-tab-name: node-kubelet-1.14
   interval: 24h
@@ -63,7 +63,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: sig-release-job-config-errors
     testgrid-tab-name: node-kubetlet-features-1.15
   interval: 1h
   labels:
@@ -94,7 +94,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
+    testgrid-dashboards: sig-release-1.14-blocking, google-unit
     testgrid-tab-name: build-1.14
   interval: 1h
   labels:
@@ -124,7 +124,7 @@ periodics:
         privileged: true
 - annotations:
     fork-per-release-periodic-interval: ""
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
+    testgrid-dashboards: sig-release-1.14-blocking, google-unit
     testgrid-tab-name: verify-1.14
   decorate: true
   extra_refs:
@@ -161,7 +161,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
+    testgrid-dashboards: sig-release-1.14-blocking, google-unit
     testgrid-tab-name: bazel-build-1.14
   interval: 6h
   labels:
@@ -192,7 +192,7 @@ periodics:
         requests:
           memory: 6Gi
 - annotations:
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
+    testgrid-dashboards: sig-release-1.14-blocking, google-unit
     testgrid-tab-name: bazel-test-1.14
   interval: 6h
   labels:
@@ -228,7 +228,7 @@ periodics:
           memory: 6Gi
 - annotations:
     fork-per-release-periodic-interval: ""
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, google-unit
+    testgrid-dashboards: sig-release-1.14-blocking, google-unit
     testgrid-tab-name: integration-1.14
   interval: 24h
   labels:
@@ -255,7 +255,7 @@ periodics:
 - annotations:
     fork-per-release-cron: ""
     testgrid-alert-stale-results-hours: "24"
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all
+    testgrid-dashboards: sig-release-1.14-blocking
     testgrid-num-failures-to-alert: "4"
     testgrid-tab-name: gce-device-gpu-plugin-1.14
   cron: 0 8-23/24 * * *
@@ -284,7 +284,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-cron: ""
-    testgrid-dashboards: sig-release-1.14-blocking, sig-release-1.14-all, sig-scalability-gce,
+    testgrid-dashboards: sig-release-1.14-blocking, sig-scalability-gce,
       google-gce
     testgrid-num-failures-to-alert: "1"
     testgrid-tab-name: gce-cos-1.14-scalability-100
@@ -369,7 +369,7 @@ periodics:
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
-      testgrid-dashboards: sig-release-1.14-all
+      testgrid-dashboards: sig-release-job-config-errors
     branches:
     - release-1.14
     labels:
@@ -398,7 +398,7 @@ postsubmits:
           requests:
             memory: 6Gi
   - annotations:
-      testgrid-dashboards: sig-release-1.14-all
+      testgrid-dashboards: sig-release-job-config-errors
     branches:
     - release-1.14
     labels:
