@@ -3,6 +3,7 @@ presubmits:
   kubernetes/system-validators:
   - name: pull-system-validators-verify
     path_alias: "k8s.io/system-validators"
+    always_run: true
     decorate: true
     spec:
       containers:
