@@ -63,7 +63,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-node-kubelet, sig-release-1.14-informing
     testgrid-tab-name: node-kubetlet-features-1.15
   interval: 1h
   labels:

@@ -95,7 +95,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-node-kubelet, sig-release-job-config-errors
+    testgrid-dashboards: sig-node-kubelet, sig-release-1.16-informing
     testgrid-tab-name: node-kubelet-features-stable1
   interval: 1h
   labels:

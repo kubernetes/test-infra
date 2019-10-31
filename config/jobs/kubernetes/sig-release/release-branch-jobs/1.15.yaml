@@ -95,7 +95,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: sig-node-kubelet, sig-release-1.15-informing
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
