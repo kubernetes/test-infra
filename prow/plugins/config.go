@@ -955,10 +955,20 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	return nil
 }
 
+// ConfigMapID is a name/namespace combination that identifies a config map
+type ConfigMapID struct {
+	Name, Namespace, Cluster string
+}
+
 func validateConfigUpdater(updater *ConfigUpdater) error {
 	files := sets.NewString()
-	configMapKeys := map[string]sets.String{}
+	configMapKeys := map[ConfigMapID]sets.String{}
 	for file, config := range updater.Maps {
+		cmID := ConfigMapID{
+			Name:      config.Name,
+			Namespace: config.Namespace,
+			Cluster:   config.Cluster,
+		}
 		if files.Has(file) {
 			return fmt.Errorf("file %s listed more than once in config updater config", file)
 		}
@@ -969,13 +979,13 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 			key = path.Base(file)
 		}
 
-		if _, ok := configMapKeys[config.Name]; ok {
-			if configMapKeys[config.Name].Has(key) {
+		if _, ok := configMapKeys[cmID]; ok {
+			if configMapKeys[cmID].Has(key) {
 				return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
 			}
-			configMapKeys[config.Name].Insert(key)
+			configMapKeys[cmID].Insert(key)
 		} else {
-			configMapKeys[config.Name] = sets.NewString(key)
+			configMapKeys[cmID] = sets.NewString(key)
 		}
 	}
 	return nil

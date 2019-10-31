@@ -1137,3 +1137,83 @@ func TestStatesMatch(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateConfigUpdater(t *testing.T) {
+	testCases := []struct {
+		name        string
+		cu          *ConfigUpdater
+		expected    error
+		expectedMsg string
+	}{
+		{
+			name: "same key of different cms in the same ns",
+			cu: &ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"core-services/prow/02_config/_plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+					"somewhere/else/plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "other-namespace",
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "same key of a cm in the same ns",
+			cu: &ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"core-services/prow/02_config/_plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+					"somewhere/else/plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+				},
+			},
+			expected: fmt.Errorf("key plugins.yaml in configmap plugins updated with more than one file"),
+		},
+		{
+			name: "same key of a cm in the same ns different clusters",
+			cu: &ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"core-services/prow/02_config/_plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+					"somewhere/else/plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+						Cluster:   "other",
+					},
+				},
+			},
+			expected: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := validateConfigUpdater(tc.cu)
+			if tc.expected == nil && actual != nil {
+				t.Errorf("unexpected error: '%v'", actual)
+			}
+			if tc.expected != nil && actual == nil {
+				t.Errorf("expected error '%v'', but it is nil", tc.expected)
+			}
+			if tc.expected != nil && actual != nil && tc.expected.Error() != actual.Error() {
+				t.Errorf("expected error '%v', but it is '%v'", tc.expected, actual)
+			}
+		})
+	}
+}

@@ -176,10 +176,7 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	return nil
 }
 
-// ConfigMapID is a name/namespace combination that identifies a config map
-type ConfigMapID struct {
-	Name, Namespace, Cluster string
-}
+type ConfigMapID plugins.ConfigMapID
 
 // ConfigMapUpdate is populated with information about a config map that should
 // be updated.
