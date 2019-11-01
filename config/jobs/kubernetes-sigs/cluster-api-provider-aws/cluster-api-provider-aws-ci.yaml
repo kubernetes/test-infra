@@ -100,7 +100,7 @@ periodics:
     - master
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-master
         args:
           - "--repo=k8s.io/kubernetes=master"
           - "--repo=sigs.k8s.io/image-builder=master"
@@ -132,7 +132,7 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: bazel-ci-conformance-master
+    testgrid-tab-name: capa-conformance-master
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-conformance-release-0-4
@@ -152,7 +152,7 @@ periodics:
     - release-0.4
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-master
         args:
           - "--repo=k8s.io/kubernetes=master"
           - "--repo=sigs.k8s.io/image-builder=master"
