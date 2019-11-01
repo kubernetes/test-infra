@@ -18,6 +18,7 @@ dashboard_groups:
   - sig-release-publishing-bot
   - sig-release-release-notes-presubmits
   - sig-release-prototype-master-blocking
+  - sig-release-generated
   - sig-release-job-config-errors
 
 # Dashboards
@@ -64,4 +65,5 @@ dashboards:
     test_group_name: pull-release-notes-test
     base_options: width=10
 - name: sig-release-prototype-master-blocking
+- name: sig-release-generated
 - name: sig-release-job-config-errors
