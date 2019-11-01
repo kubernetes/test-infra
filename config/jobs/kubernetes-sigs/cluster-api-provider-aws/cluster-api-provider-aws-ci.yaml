@@ -85,7 +85,6 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-aws-conformance-master
   path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-  decorate: true
   interval: 3h
   max_concurrency: 5
   labels:
@@ -137,7 +136,6 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-conformance-release-0-4
   path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-  decorate: true
   interval: 3h
   max_concurrency: 5
   labels:
