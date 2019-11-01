@@ -14,7 +14,7 @@ set -o pipefail
 main() {
   branch="transfigure-branch"
 
-  if [[ ! $# -eq 5 ]]; then
+  if [[ $# -ne 5 ]]; then
     echo "Usage: $(basename "$0") [github_token] [prow_config] [prow_job_config] [testgrid_yaml] [repo_subdir]" >&2
     echo "All [arguments] are required paths" >&2
     exit 1
@@ -76,23 +76,23 @@ main() {
 }
 
 parse-args() {
-  token=$(readlink -f "$1")
+  token=$(readlink -m "$1")
   prow_config="${CONFIG_PATH:-$2}"
   job_config="${JOB_CONFIG_PATH:-$3}"
   testgrid_config="${TESTGRID_CONFIG:-$4}"
   testgrid_subdir="${TESTGRID_LOCAL_SUBDIR:-$5}"
   remote_fork_repo="${FORK_GH_REPO:-"test-infra"}"
 
-  if [[ -f ${token} ]]; then
-    echo "Error: [github_token] ${token} must be a file path." >&2
+  if [[ ! -f ${token} ]]; then
+    echo "ERROR: [github_token] ${token} must be a file path." >&2
     exit 1
-  elif [[ -f "${prow_config}" ]]; then
+  elif [[ ! -f "${prow_config}" ]]; then
     echo "ERROR: [prow_config] ${prow_config} must be a file path." >&2
     exit 1
-  elif [[ -e "${job_config}" ]]; then
+  elif [[ ! -e "${job_config}" ]]; then
     echo "ERROR: [prow_job_config] ${job_config} must exist." >&2
     exit 1
-  elif [[ -e "${testgrid_config}" ]]; then
+  elif [[ ! -e "${testgrid_config}" ]]; then
     echo "ERROR: [testgrid_yaml] ${testgrid_config} must exist." >&2
     exit 1
   elif [[ -z "${testgrid_subdir}" ]]; then
