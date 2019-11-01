@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -88,12 +88,6 @@ func containers(jb config.JobBase) []v1.Container {
 	if jb.Spec != nil {
 		containers = append(containers, jb.Spec.Containers...)
 		containers = append(containers, jb.Spec.InitContainers...)
-	}
-	if jb.BuildSpec != nil {
-		containers = append(containers, jb.BuildSpec.Steps...)
-		if jb.BuildSpec.Source != nil && jb.BuildSpec.Source.Custom != nil {
-			containers = append(containers, *jb.BuildSpec.Source.Custom)
-		}
 	}
 	return containers
 }

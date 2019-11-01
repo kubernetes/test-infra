@@ -44,7 +44,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
-	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/git"
@@ -923,7 +922,7 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
 			return err
 		}
 	}
@@ -939,7 +938,7 @@ func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
 func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, ps.BuildSpec, c.Presets); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
 			return err
 		}
 	}
@@ -954,7 +953,7 @@ func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error 
 func defaultPeriodics(periodics []Periodic, c *Config) error {
 	c.defaultPeriodicFields(periodics)
 	for _, periodic := range periodics {
-		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, periodic.BuildSpec, c.Presets); err != nil {
+		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, c.Presets); err != nil {
 			return err
 		}
 	}
@@ -1053,7 +1052,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 		return err
 	}
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
-		return nil // knative-build and jenkins jobs have no spec
+		return nil // jenkins jobs have no spec
 	}
 	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0) {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
@@ -1468,10 +1467,9 @@ func validateLabels(labels map[string]string) error {
 
 func validateAgent(v JobBase, podNamespace string) error {
 	k := string(prowapi.KubernetesAgent)
-	b := string(prowapi.KnativeBuildAgent)
 	j := string(prowapi.JenkinsAgent)
 	p := string(prowapi.TektonAgent)
-	agents := sets.NewString(k, b, j, p)
+	agents := sets.NewString(k, j, p)
 	agent := v.Agent
 	switch {
 	case !agents.Has(agent):
@@ -1481,27 +1479,20 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("job specs require agent: %s (found %q)", k, agent)
 	case agent == k && v.Spec == nil:
 		return errors.New("kubernetes jobs require a spec")
-	case v.BuildSpec != nil && agent != b:
-		return fmt.Errorf("job build_specs require agent: %s (found %q)", b, agent)
-	case agent == b && v.BuildSpec == nil:
-		return errors.New("knative-build jobs require a build_spec")
 	case v.PipelineRunSpec != nil && agent != p:
 		return fmt.Errorf("job pipeline_run_spec require agent: %s (found %q)", p, agent)
 	case agent == p && v.PipelineRunSpec == nil:
 		return fmt.Errorf("agent: %s jobs require a pipeline_run_spec", p)
-	case v.DecorationConfig != nil && agent != k && agent != b:
+	case v.DecorationConfig != nil && agent != k:
 		// TODO(fejta): only source decoration supported...
-		return fmt.Errorf("decoration requires agent: %s or %s (found %q)", k, b, agent)
+		return fmt.Errorf("decoration requires agent: %s (found %q)", k, agent)
 	case v.ErrorOnEviction && agent != k:
 		return fmt.Errorf("error_on_eviction only applies to agent: %s (found %q)", k, agent)
 	case v.Namespace == nil || *v.Namespace == "":
 		return fmt.Errorf("failed to default namespace")
-	case *v.Namespace != podNamespace && agent != b && agent != p:
+	case *v.Namespace != podNamespace && agent != p:
 		// TODO(fejta): update plank to allow this (depends on client change)
-		return fmt.Errorf("namespace customization requires agent: %s or %s (found %q)", b, p, agent)
-	}
-	if agent == b {
-		logrus.Warningf("knative-build jobs types are no longer supported, these jobs will stop working Nov 2019")
+		return fmt.Errorf("namespace customization requires agent: %s (found %q)", p, agent)
 	}
 	return nil
 }
@@ -1522,17 +1513,11 @@ func validateDecoration(container v1.Container, config *prowapi.DecorationConfig
 	return nil
 }
 
-func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, buildSpec *buildapi.BuildSpec, presets []Preset) error {
+func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
 	for _, preset := range presets {
 		if spec != nil {
 			if err := mergePreset(preset, labels, spec.Containers, &spec.Volumes); err != nil {
 				return fmt.Errorf("job %s failed to merge presets for podspec: %v", name, err)
-			}
-		}
-
-		if buildSpec != nil {
-			if err := mergePreset(preset, labels, buildSpec.Steps, &buildSpec.Volumes); err != nil {
-				return fmt.Errorf("job %s failed to merge presets for buildspec: %v", name, err)
 			}
 		}
 	}

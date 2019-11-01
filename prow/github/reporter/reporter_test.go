@@ -21,7 +21,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
 )
 
@@ -81,30 +81,6 @@ func TestShouldReport(t *testing.T) {
 				},
 			},
 			report: true,
-		},
-		{
-			name: "knative only, don't report kubernetes agent job",
-			pj: v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Type:   v1.PresubmitJob,
-					Agent:  v1.KubernetesAgent,
-					Report: true,
-				},
-			},
-			report:      false,
-			reportAgent: v1.KnativeBuildAgent,
-		},
-		{
-			name: "knative only, report knative agent job",
-			pj: v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Type:   v1.PresubmitJob,
-					Agent:  v1.KnativeBuildAgent,
-					Report: true,
-				},
-			},
-			report:      true,
-			reportAgent: v1.KnativeBuildAgent,
 		},
 		{
 			name: "github should not report gerrit jobs",
