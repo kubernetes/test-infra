@@ -96,7 +96,7 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 			dupes[ji] = i
 		}
 		toCancel := pjs[cancelIndex]
-		prevPJ := toCancel
+		prevPJ := *toCancel.DeepCopy()
 
 		// TODO cancel the prow job before cleaning up its resources and make this system
 		// independent.

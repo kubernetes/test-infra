@@ -355,7 +355,7 @@ func syncProwJobs(
 func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
-	prevPJ := pj
+	prevPJ := *pj.DeepCopy()
 
 	pod, podExists := pm[pj.ObjectMeta.Name]
 	if !podExists {
