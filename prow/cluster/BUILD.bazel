@@ -30,8 +30,6 @@ release(
         "deployment",
         cluster = BUILD_CLUSTER,
     ),
-    component("build", "deployment"),
-    component("build_rbac", MULTI_KIND),
     component("cert-manager", MULTI_KIND),
     component("cluster-issuer", MULTI_KIND),
     component("crier", "deployment"),

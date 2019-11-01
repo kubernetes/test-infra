@@ -834,8 +834,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/knative/build",
-        sum = "h1:3KvuoUpgXYkK3WKaSBVN/0FSwRaukf212t2bQkMSWjY=",
-        version = "v0.3.1-0.20190330033454-38ace00371c7",
+        sum = "h1:o/VYWA3HKyZlNqdU2hDE5LHpanBe8gazgPKL97XJ6bo=",
+        version = "v0.1.2",
     )
     go_repository(
         name = "com_github_knative_pkg",

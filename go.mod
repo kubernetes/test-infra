@@ -68,7 +68,6 @@ require (
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
-	github.com/knative/build v0.3.1-0.20190330033454-38ace00371c7
 	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
