@@ -29,12 +29,11 @@ def repositories():
         urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.12.0.tar.gz"],
     )
 
-    git_repository(
+    http_archive(
         name = "io_bazel_rules_k8s",
-        commit = "c7db606023bef31ca5c2ad49942f33c6137cb7f8",
-        remote = "https://github.com/bazelbuild/rules_k8s.git",
-        shallow_since = "1571437004 -0400",
-        # branch = master
+        sha256 = "a34539941fd920432b7c545f720129e2f2e6b2285f1beb66de25e429f91759bf",
+        strip_prefix = "rules_k8s-0.3",
+        urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3/rules_k8s-v0.3.tar.gz"],
     )
 
     # https://github.com/bazelbuild/rules_nodejs
