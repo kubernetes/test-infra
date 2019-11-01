@@ -21,11 +21,11 @@
 base="$(dirname $0)"
 
 # The latest stable Kubernetes version for testing alpha repos
-latest_stable_k8s_version="1.15.0"
-latest_stable_k8s_minor_version="1.15"
+latest_stable_k8s_version="1.16.2"
+latest_stable_k8s_minor_version="1.16"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -137,6 +137,17 @@ job_name () {
     echo "$name"
 }
 
+# Given a X.Y.Z version string, returns the minor version.
+get_minor_version() {
+    local ver="$1"
+    local minor="$ver"
+
+    if [ "$ver" != "master" ]; then
+      ver="$(echo "${ver}" | sed -e 's/\([0-9]*\)\.\([0-9]*\).*/\1\.\2/')"
+    fi
+    echo "$ver"
+}
+
 # Generates the testgrid annotations. "ci" jobs all land in the same
 # "sig-storage-csi-ci" and send alert emails, "pull" jobs land in "sig-storage-csi-<repo>"
 # and don't alert. Some repos only have a single pull job. Those
@@ -151,10 +162,7 @@ annotations () {
     local kubernetes="$5"
     local description
 
-    # We only care about major.minor version numbers here.
-    if [ "$kubernetes" != "master" ]; then
-      kubernetes="$(echo "${kubernetes}" | sed -e 's/\([0-9]*\)\.\([0-9]*\).*/\1\.\2/')"
-    fi
+    kubernetes="$(get_minor_version "$kubernetes")"
 
     echo "annotations:"
     case "$type" in
@@ -224,7 +232,15 @@ expand_tests () {
 # "alpha" features can be breaking across releases and
 # therefore cannot be a required job
 pull_optional() {
-    if [ "$1" == "alpha" ]; then
+    local tests="$1"
+    local kubernetes="$2"
+
+    if [ "$tests" == "alpha" ]; then
+        echo "true"
+    elif [ "$kubernetes" == "1.16.2" ]; then
+        # Testing 1.16 requires release-tools to be updated in all
+        # kubernetes-csi repos. Once that is done, and tests
+        # are passing, this can be removed.
         echo "true"
     else
         echo "false"
@@ -249,8 +265,8 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.14 1.15; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-            for kubernetes in 1.14.0 1.15.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+        for deployment in 1.14 1.15 1.16; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+            for kubernetes in 1.14.6 1.15.3 1.16.2; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
                 # Once we have more than two supported Kubernetes releases we should limit this to the most
@@ -265,7 +281,7 @@ EOF
                         cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
     always_run: $(pull_alwaysrun "$tests")
-    optional: $(pull_optional "$tests")
+    optional: $(pull_optional "$tests" "$kubernetes")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -469,8 +485,8 @@ periodics:
 EOF
 
 for tests in non-alpha alpha; do
-    for deployment in 1.14 1.15; do
-        for kubernetes in 1.14 1.15 master; do
+    for deployment in 1.14 1.15 1.16; do
+        for kubernetes in 1.14 1.15 1.16 master; do
             if [ "$tests" = "alpha" ]; then
                 # No version skew testing of alpha features, deployment has to match Kubernetes.
                 if ! echo "$kubernetes" | grep -q "^$deployment"; then
@@ -529,7 +545,7 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in 1.14.0 1.15 master; do
+for kubernetes in 1.14.6 1.15.3 1.16.2 master; do
     actual="${kubernetes/master/latest}"
 
     for tests in non-alpha alpha; do
@@ -540,7 +556,7 @@ for kubernetes in 1.14.0 1.15 master; do
         alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
         cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: $(job_name "ci" "" "$tests" "canary" "$kubernetes")
+  name: $(job_name "ci" "" "$tests" "canary" "$(get_minor_version "$kubernetes")")
   decorate: true
   extra_refs:
   - org: kubernetes-csi
