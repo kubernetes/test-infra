@@ -1,6 +1,8 @@
 periodics:
 - name: ci-aws-ebs-csi-driver-migration-test-latest
   decorate: true
+  decoration_config:
+    timeout: 4h
   interval: 6h
   labels:
     preset-service-account: "true"
