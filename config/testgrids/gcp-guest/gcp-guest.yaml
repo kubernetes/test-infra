@@ -3,4 +3,6 @@
 #
 dashboards:
   # Tabs are defined at the job level..
-- name: gcp-guest
+- name: google-gcp-guest
+  dashboard_tab:
+  - name: gcp-guest-osconfig-presubmit

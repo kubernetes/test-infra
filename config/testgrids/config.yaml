@@ -873,6 +873,7 @@ dashboard_groups:
   - google-cel
   - google-gce
   - google-gce-compute-image-tools
+  - google-gcp-guest
   - google-gci
   - google-gke
   - google-gke-stackdriver
