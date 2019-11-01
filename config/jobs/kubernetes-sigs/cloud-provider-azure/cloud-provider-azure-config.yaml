@@ -426,6 +426,7 @@ periodics:
     preset-service-account: "true"
     preset-cloudprovider-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
     repo: cloud-provider-azure
@@ -460,15 +461,14 @@ periodics:
       - --acsengine-ccm=True
       - --acsengine-hyperkube=True
       - --acsengine-location=westus2
-      - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
-      - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
-      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
+      - --acsengine-public-key=$KUBE_SSH_PUBLIC_KEY_PATH
+      - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.43.0/aks-engine-v0.43.0-linux-amd64.tar.gz
       # Skip three kinds of test cases:
       # 1. regular resource usage tracking, haven't found the cause of the failures.
-      # 2. DNS config map nameserver, the coredns configmap config in aks-engine is set to reconcile, making it impossible for the newly generated configmap in test cases to overwrite the original one. https://github.com/Azure/aks-engine/blob/master/parts/k8s/addons/coredns.yaml#L59
-      # 3. validates MaxPods limit number of pods that are allowed to run, related to issue kubernetes/kubernetes#80177
-      # 4. Checks that the node becomes unreachable, the external IP is unavailable since the corresponding configuration in aks-engine is set to false.
-      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|should\sunmount|When\skubelet\srestarts|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun|DNS\sconfigMap\snameserver|Checks\sthat\sthe\snode\sbecomes\sunreachable|Should\stest\sthat\spv\swritten\sbefore\skubelet\srestart\sis\sreadable\safter\srestart --minStartupPods=8
+      # 2. validates MaxPods limit number of pods that are allowed to run, related to issue kubernetes/kubernetes#80177
+      # 3. Checks that the node becomes unreachable, the external IP is unavailable since the corresponding configuration in aks-engine is set to false.
+      - --test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun|Checks\sthat\sthe\snode\sbecomes\sunreachable --minStartupPods=8
       - --timeout=600m
       securityContext:
         privileged: true
@@ -477,6 +477,12 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: cloud-provider-azure
+      - name: KUBE_SSH_PUBLIC_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-public # Requires preset-k8s-ssh label
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private # Requires preset-k8s-ssh label
+      - name: KUBE_SSH_USER
+        value: azureuser
   annotations:
     testgrid-dashboards: provider-azure-master, provider-azure-on-call
     testgrid-tab-name: cloud-provider-azure-serial
