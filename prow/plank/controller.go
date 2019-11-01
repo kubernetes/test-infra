@@ -17,14 +17,12 @@ limitations under the License.
 package plank
 
 import (
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
-	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
@@ -357,7 +355,7 @@ func syncProwJobs(
 func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
-	prevPJ := pj
+	prevPJ := *pj.DeepCopy()
 
 	pod, podExists := pm[pj.ObjectMeta.Name]
 	if !podExists {
@@ -485,7 +483,8 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
 
-	return c.patchProwjob(prevPJ, pj)
+	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, prevPJ, pj)
+	return err
 }
 
 func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
@@ -537,7 +536,8 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	return c.patchProwjob(prevPJ, pj)
+	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, prevPJ, pj)
+	return err
 }
 
 // TODO: No need to return the pod name since we already have the
@@ -577,25 +577,4 @@ func getPodBuildID(pod *coreapi.Pod) string {
 	}
 	logrus.Warningf("BUILD_ID was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
-}
-
-func (c *Controller) patchProwjob(srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob) error {
-	srcPJData, err := json.Marshal(srcPJ)
-	if err != nil {
-		return fmt.Errorf("marshal source prow job: %v", err)
-	}
-
-	destPJData, err := json.Marshal(destPJ)
-	if err != nil {
-		return fmt.Errorf("marshal dest prow job: %v", err)
-	}
-
-	patch, err := jsonpatch.CreateMergePatch(srcPJData, destPJData)
-	if err != nil {
-		return fmt.Errorf("cannot create JSON patch: %v", err)
-	}
-
-	_, err = c.prowJobClient.Patch(srcPJ.Name, ktypes.MergePatchType, patch)
-	c.log.WithFields(pjutil.ProwJobFields(&destPJ)).Debug("Patched ProwJob.")
-	return err
 }

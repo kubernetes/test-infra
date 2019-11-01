@@ -22,24 +22,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
+	clienttesting "k8s.io/client-go/testing"
+
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 )
-
-type fakeProwClient struct {
-	replacedJobs map[string]*prowjobv1.ProwJob
-}
-
-func newFakeProwClient() *fakeProwClient {
-	return &fakeProwClient{
-		replacedJobs: map[string]*prowjobv1.ProwJob{},
-	}
-}
-
-func (c *fakeProwClient) Update(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
-	c.replacedJobs[pj.Name] = pj.DeepCopy()
-	return pj, nil
-}
 
 func TestTerminateOlderJobs(t *testing.T) {
 	fakePJNS := "prow-job"
@@ -443,7 +432,12 @@ func TestTerminateOlderJobs(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			pjc := newFakeProwClient()
+			var prowJobs []runtime.Object
+			for i := range tc.pjs {
+				prowJobs = append(prowJobs, &tc.pjs[i])
+			}
+			fakeProwJobClient := prowfake.NewSimpleClientset(prowJobs...)
+			pjc := fakeProwJobClient.ProwV1().ProwJobs(fakePJNS)
 			log := logrus.NewEntry(logrus.StandardLogger())
 			cleanedupPJs := sets.NewString()
 			err := TerminateOlderJobs(pjc, log, tc.pjs, func(pj prowjobv1.ProwJob) error {
@@ -462,11 +456,11 @@ func TestTerminateOlderJobs(t *testing.T) {
 			}
 
 			replacedJobs := sets.NewString()
-			for _, pj := range pjc.replacedJobs {
-				if pj.Status.State != prowjobv1.AbortedState {
-					t.Errorf("%s: did not aborted the prow job: name=%s, state=%s", tc.name, pj.GetName(), pj.Status.State)
+			for _, action := range fakeProwJobClient.Fake.Actions() {
+				switch action := action.(type) {
+				case clienttesting.PatchActionImpl:
+					replacedJobs.Insert(action.Name)
 				}
-				replacedJobs.Insert(pj.GetName())
 			}
 			if missing := tc.terminateddPJs.Difference(replacedJobs); missing.Len() > 0 {
 				t.Errorf("%s: did not replace the expected jobs: %v", tc.name, missing.Len())
