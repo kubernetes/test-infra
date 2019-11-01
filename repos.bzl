@@ -112,21 +112,14 @@ def go_repositories():
         sum = "h1:viZ3tV5l4gE2Sw0xrasFHytCGtzYCrT+um/rrSQ1BfA=",
         version = "v11.1.2+incompatible",
     )
-    go_repository(
-        name = "com_github_bazelbuild_bazel_gazelle",
-        build_file_generation = "on",
-        build_file_proto_mode = "disable",
-        importpath = "github.com/bazelbuild/bazel-gazelle",
-        sum = "h1:nJsPG30GPtJUtYmjU4NEpnGp3nsRFN46ROgh6pawuhw=",
-        version = "v0.18.1",
-    )
+
     go_repository(
         name = "com_github_bazelbuild_buildtools",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/bazelbuild/buildtools",
-        sum = "h1:WHyHxJd9ZTyyXqlEuheY93v4cPJLBy0SIEshPCcK0xQ=",
-        version = "v0.0.0-20190404153937-93253d6efaa9",
+        sum = "h1:3B/ZE1a6eEJ/4Jf/M6RM2KBouN8yKCUcMmXzSyWqa3g=",
+        version = "v0.0.0-20190917191645-69366ca98f89",
     )
     go_repository(
         name = "com_github_beorn7_perks",
@@ -433,8 +426,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/gogo/protobuf",
-        sum = "h1:/s5zKNz0uPFCZ5hddgPdo2TK2TVrUNMn0OOX8/aZMTE=",
-        version = "v1.2.1",
+        sum = "h1:3PaI8p3seN09VjbTYC/QWlUZdZ1qS1zGjy7LH2Wt07I=",
+        version = "v1.2.2-0.20190723190241-65acae22fc9d",
     )
     go_repository(
         name = "com_github_golang_glog",
@@ -794,8 +787,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/kisielk/errcheck",
-        sum = "h1:ZqfnKyx9KGpRcW04j5nnPDgRgoXUeLh2YFBeFzphcA0=",
-        version = "v1.1.0",
+        sum = "h1:reN85Pxc5larApoH1keMBiu2GWtPqXQ1nc9gx+jOU+E=",
+        version = "v1.2.0",
     )
     go_repository(
         name = "com_github_kisielk_gotool",
@@ -1534,8 +1527,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "k8s.io/klog",
-        sum = "h1:lCJCxf/LIowc2IGS9TPjWDyXY4nOmdGdfcwwDQCOURQ=",
-        version = "v0.4.0",
+        sum = "h1:Pt+yjF5aB1xDSVbau4VsWe+dQNzA0qv1LlXdC2dF6Q8=",
+        version = "v1.0.0",
     )
     go_repository(
         name = "io_k8s_kube_openapi",
@@ -1553,14 +1546,7 @@ def go_repositories():
         sum = "h1:wJx/r2HuPVaaBeCUk/P47GSK0eyrj3mI/kESRFBp6/A=",
         version = "v1.14.7",
     )
-    go_repository(
-        name = "io_k8s_repo_infra",
-        build_file_generation = "on",
-        build_file_proto_mode = "disable",
-        importpath = "k8s.io/repo-infra",
-        sum = "h1:jIQbeKQfMFZT2gT2k6axlU42Uu7cW7DP8vBHeobDWtU=",
-        version = "v0.0.0-20190921032325-1fedfadec8ce",
-    )
+
     go_repository(
         name = "io_k8s_sigs_yaml",
         build_file_generation = "on",
@@ -1702,8 +1688,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "golang.org/x/tools",
-        sum = "h1:Dh6fw+p6FyRl5x/FvNswO1ji0lIGzm3KP8Y9VkS9PTE=",
-        version = "v0.0.0-20190628153133-6cdbf07be9d0",
+        sum = "h1:bw9doJza/SFBEweII/rHQh338oozWyiFsBRHtrflcws=",
+        version = "v0.0.0-20190920225731-5eefd052ad72",
     )
     go_repository(
         name = "org_uber_go_atomic",
@@ -1847,8 +1833,8 @@ def go_repositories():
         build_file_generation = "off",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/GoogleCloudPlatform/testgrid",
-        sum = "h1:CyF0eU2zgmEnZSlo2tlTYuzHu7etOg07+WwuE4kVn58=",
-        version = "v0.0.0-20191016232453-9f0319fc1197",
+        sum = "h1:XHE9GtJC7xr2r71pKwcD2PSb/2Mk4TPlgWdpKUPDsz4=",
+        version = "v0.0.0-20191021162744-e7f8ba7c55cb",
     )
     go_repository(
         name = "com_github_munnerz_goautoneg",
@@ -1962,14 +1948,7 @@ def go_repositories():
         sum = "h1:7ccXrupWZIS3twbUGrtKmHS2DXY6xegFua+6O3xgAFU=",
         version = "v1.0.0",
     )
-    go_repository(
-        name = "org_golang_x_build",
-        build_file_generation = "on",
-        build_file_proto_mode = "disable",
-        importpath = "golang.org/x/build",
-        sum = "h1:Hgyq56/B1VbKi6tNXTJq3eo63zJbRzQr4uBZqiciilA=",
-        version = "v0.0.0-20171220025321-125f04e1fc4b",
-    )
+
     go_repository(
         name = "com_github_asaskevich_govalidator",
         build_file_generation = "on",
