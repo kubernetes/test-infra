@@ -723,3 +723,80 @@ periodics:
     testgrid-tab-name: ci-cloud-provider-azure-multiple-zones
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Runs Kubernetes multiple availability zones tests with cloud-provider-azure (https://github.com/kubernetes/cloud-provider-azure) on VMSS."
+
+# scalability tests
+- interval: 8h
+  # ci-kubernetes-kubemark-100-azure runs kubemark tests with cloud-provider-azure of 100 nodes.
+  name: ci-kubernetes-kubemark-100-azure
+  tags:
+  - "perfDashPrefix: kubemark-100Nodes"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: provider-azure-scalability
+    testgrid-tab-name: ci-kubernetes-kubemark-100-azure
+    testgrid-num-failures-to-alert: '3'
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled."
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-master
+      args:
+      - --job=$(JOB_NAME)
+      - --repo=k8s.io/kubernetes=release-1.16
+      - --repo=k8s.io/$(REPO_NAME)=master
+      - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=260
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-100
+      - --extract=ci/latest
+      - --deployment=acsengine
+      - --build=bazel
+      - --provider=skeleton
+      - --ginkgo-parallel=30
+      - --acsengine-agentpoolcount=2
+      - --acsengine-admin-username=azureuser
+      - --acsengine-creds=$AZURE_CREDENTIALS
+      - --acsengine-orchestratorRelease=1.16
+      - --acsengine-mastervmsize=Standard_DS2_v2
+      - --acsengine-agentvmsize=Standard_D4s_v3
+      - --acsengine-ccm=True
+      - --acsengine-hyperkube=True
+      - --acsengine-location=westus2
+      - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
+      - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
+      - --kubemark
+      - --kubemark-nodes=100
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-node-exporter=true
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=240m
+      - --use-logexporter
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
