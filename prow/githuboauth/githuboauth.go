@@ -18,6 +18,7 @@ package githuboauth
 
 import (
 	"crypto/subtle"
+	"encoding/gob"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -25,12 +26,11 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
+	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/net/xsrftoken"
 	"golang.org/x/oauth2"
-
-	configgithub "k8s.io/test-infra/prow/config/github"
 )
 
 const (
@@ -40,6 +40,29 @@ const (
 	oauthSessionCookie = "oauth-session"
 	stateKey           = "state"
 )
+
+// Config is a config for requesting users access tokens from GitHub API. It also has
+// a Cookie Store that retains user credentials deriving from GitHub API.
+type Config struct {
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	RedirectURL  string   `json:"redirect_url"`
+	Scopes       []string `json:"scopes,omitempty"`
+
+	CookieStore *sessions.CookieStore `json:"-"`
+}
+
+// InitGitHubOAuthConfig creates an OAuthClient using GitHubOAuth config and a Cookie Store
+// to retain user credentials.
+func (c *Config) InitGitHubOAuthConfig(cookie *sessions.CookieStore) {
+	// The `oauth2.Token` needs to be stored in the CookieStore with a specific encoder.
+	// Since we are using `gorilla/sessions` which uses `gorilla/securecookie`,
+	// it has to be registered to `encoding/gob`.
+	//
+	// See https://github.com/gorilla/securecookie/blob/master/doc.go#L56-L59
+	gob.Register(&oauth2.Token{})
+	c.CookieStore = cookie
+}
 
 // GitHubClientWrapper is an interface for github clients which implements GetUser method
 // that returns github.User.
@@ -94,12 +117,12 @@ func (cli client) WithFinalRedirectURL(path string) (OAuthClient, error) {
 // Agent represents an agent that takes care GitHub authentication process such as handles
 // login request from users or handles redirection from GitHub OAuth server.
 type Agent struct {
-	gc     *configgithub.OAuthConfig
+	gc     *Config
 	logger *logrus.Entry
 }
 
 // NewAgent returns a new GitHub OAuth Agent.
-func NewAgent(config *configgithub.OAuthConfig, logger *logrus.Entry) *Agent {
+func NewAgent(config *Config, logger *logrus.Entry) *Agent {
 	return &Agent{
 		gc:     config,
 		logger: logger,

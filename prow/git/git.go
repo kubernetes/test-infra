@@ -58,6 +58,8 @@ type Client struct {
 	// GitHub, but for tests set it to a directory with git repos.
 	base string
 	// host is the git host.
+	// TODO: use either base or host. the redundancy here is to help landing
+	// #14609 easier.
 	host string
 
 	// The mutex protects repoLocks which protect individual repos. This is
@@ -102,6 +104,7 @@ func NewClientWithHost(host string) (*Client, error) {
 // SetRemote sets the remote for the client. This is not thread-safe, and is
 // useful for testing. The client will clone from remote/org/repo, and Repo
 // objects spun out of the client will also hit that path.
+// TODO: c.host field needs to be updated accordingly.
 func (c *Client) SetRemote(remote string) {
 	c.base = remote
 }

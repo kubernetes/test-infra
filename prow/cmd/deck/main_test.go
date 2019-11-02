@@ -50,7 +50,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	configgithub "k8s.io/test-infra/prow/config/github"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
@@ -426,7 +425,7 @@ func TestRerun(t *testing.T) {
 			session.Values["access-token"] = &oauth2.Token{AccessToken: "validtoken"}
 
 			rr := httptest.NewRecorder()
-			mockConfig := &configgithub.OAuthConfig{
+			mockConfig := &githuboauth.Config{
 				CookieStore: mockCookieStore,
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})

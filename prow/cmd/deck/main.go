@@ -55,7 +55,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	configgithub "k8s.io/test-infra/prow/config/github"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -590,7 +589,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			logrus.WithError(err).Fatal("Could not read cookie secret file.")
 		}
 
-		var githubOAuthConfig configgithub.OAuthConfig
+		var githubOAuthConfig githuboauth.Config
 		if err := yaml.Unmarshal(githubOAuthConfigRaw, &githubOAuthConfig); err != nil {
 			logrus.WithError(err).Fatal("Error unmarshalling github oauth config")
 		}
@@ -1484,7 +1483,7 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 	}
 }
 
-func isValidatedGitOAuthConfig(githubOAuthConfig *configgithub.OAuthConfig) bool {
+func isValidatedGitOAuthConfig(githubOAuthConfig *githuboauth.Config) bool {
 	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
 		githubOAuthConfig.RedirectURL != ""
 }

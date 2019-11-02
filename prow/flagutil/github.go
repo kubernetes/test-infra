@@ -17,9 +17,11 @@ limitations under the License.
 package flagutil
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -129,7 +131,14 @@ func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (cl
 // GitHubClientWithAccessToken creates a GitHub client from an access token.
 func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
 	return github.NewClient(func() []byte { return []byte(token) }, func(content []byte) []byte {
-		return []byte("CENSORED")
+		trimmedToken := strings.TrimSpace(token)
+		if trimmedToken != token {
+			token = trimmedToken
+		}
+		if token == "" {
+			return content
+		}
+		return bytes.ReplaceAll(content, []byte(token), []byte("CENSORED"))
 	}, o.graphqlEndpoint, o.endpoint.Strings()...)
 }
 

@@ -30,9 +30,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	configgithub "k8s.io/test-infra/prow/config/github"
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/githuboauth"
 )
 
 const (
@@ -71,8 +71,8 @@ type PullRequestWithContexts struct {
 // It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
 	repos  []string
-	goac   *configgithub.OAuthConfig
-	github *prowflagutil.GitHubOptions
+	goac   *githuboauth.Config
+	github *flagutil.GitHubOptions
 
 	log *logrus.Entry
 }
@@ -145,7 +145,7 @@ type searchQuery struct {
 }
 
 // NewDashboardAgent creates a new user dashboard agent .
-func NewDashboardAgent(repos []string, config *configgithub.OAuthConfig, github *prowflagutil.GitHubOptions, log *logrus.Entry) *DashboardAgent {
+func NewDashboardAgent(repos []string, config *githuboauth.Config, github *flagutil.GitHubOptions, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		repos:  repos,
 		goac:   config,
