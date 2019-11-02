@@ -34,7 +34,6 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
-	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	untypedcorev1 "k8s.io/api/core/v1"
@@ -49,6 +48,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
+	"knative.dev/pkg/apis"
 )
 
 const (
@@ -499,7 +499,7 @@ func finalState(status prowjobv1.ProwJobState) bool {
 }
 
 // description computes the ProwJobStatus description for this condition or falling back to a default if none is provided.
-func description(cond duckv1alpha1.Condition, fallback string) string {
+func description(cond apis.Condition, fallback string) string {
 	switch {
 	case cond.Message != "":
 		return cond.Message
@@ -523,7 +523,7 @@ const (
 func prowJobStatus(ps pipelinev1alpha1.PipelineRunStatus) (prowjobv1.ProwJobState, string) {
 	started := ps.StartTime
 	finished := ps.CompletionTime
-	pcond := ps.GetCondition(duckv1alpha1.ConditionSucceeded)
+	pcond := ps.GetCondition(apis.ConditionSucceeded)
 	if pcond == nil {
 		if !finished.IsZero() {
 			return prowjobv1.ErrorState, descMissingCondition
@@ -589,7 +589,7 @@ func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.Prow
 		ObjectMeta: pipelineMeta(name, pj),
 		Spec: pipelinev1alpha1.PipelineResourceSpec{
 			Type: pipelinev1alpha1.PipelineResourceTypeGit,
-			Params: []pipelinev1alpha1.Param{
+			Params: []pipelinev1alpha1.ResourceParam{
 				{
 					Name:  "url",
 					Value: sourceURL,
@@ -633,8 +633,11 @@ func makeResources(pj prowjobv1.ProwJob) (*pipelinev1alpha1.PipelineRun, []pipel
 		val := env[key]
 		// TODO: make this handle existing values/substitutions.
 		p.Spec.Params = append(p.Spec.Params, pipelinev1alpha1.Param{
-			Name:  key,
-			Value: val,
+			Name: key,
+			Value: pipelinev1alpha1.ArrayOrString{
+				Type:      pipelinev1alpha1.ParamTypeString,
+				StringVal: val,
+			},
 		})
 	}
 

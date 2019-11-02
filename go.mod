@@ -6,6 +6,7 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed
 // When bumping Kubernetes dependencies, you should update each of these lines
 // to point to the same kubernetes-1.x.y release branch before running update-deps.sh.
 replace (
+	cloud.google.com/go => cloud.google.com/go v0.44.3
 	k8s.io/api => k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190918201827-3de75813f604
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
@@ -14,7 +15,9 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.44.3
+	cloud.google.com/go v0.45.1
+	contrib.go.opencensus.io/exporter/prometheus v0.1.0 // indirect
+	contrib.go.opencensus.io/exporter/stackdriver v0.12.8 // indirect
 	github.com/Azure/azure-pipeline-go v0.1.9 // indirect
 	github.com/Azure/azure-sdk-for-go v21.1.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.0.0-20190123011202-457680cc0804
@@ -23,7 +26,7 @@ require (
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/andygrunwald/go-gerrit v0.0.0-20190120104749-174420ebee6c
 	github.com/aws/aws-k8s-tester v0.0.0-20190114231546-b411acf57dfe
-	github.com/aws/aws-sdk-go v1.16.36
+	github.com/aws/aws-sdk-go v1.23.20
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bwmarrin/snowflake v0.0.0
@@ -40,7 +43,6 @@ require (
 	github.com/go-openapi/spec v0.19.2
 	github.com/go-sql-driver/mysql v0.0.0-20160411075031-7ebe0a500653 // indirect
 	github.com/go-test/deep v1.0.4
-	github.com/gobuffalo/envy v1.6.15 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/mock v1.3.1
 	github.com/gomodule/redigo v1.7.0
@@ -65,10 +67,8 @@ require (
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/klauspost/pgzip v1.2.1
-	github.com/knative/pkg v0.0.0-20190330034653-916205998db9
 	github.com/lib/pq v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
-	github.com/markbates/inflect v1.0.4 // indirect
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a // indirect
 	github.com/mattn/go-sqlite3 v0.0.0-20160514122348-38ee283dabf1 // indirect
 	github.com/mattn/go-zglob v0.0.1
@@ -79,22 +79,21 @@ require (
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 	github.com/prometheus/common v0.4.1
 	github.com/prometheus/procfs v0.0.5 // indirect
-	github.com/rogpeppe/go-internal v1.3.2 // indirect
 	github.com/satori/go.uuid v0.0.0-20160713180306-0aa62d5ddceb
 	github.com/shurcooL/githubv4 v0.0.0-20180925043049-51d7b505e2e9
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.3.2
-	github.com/tektoncd/pipeline v0.1.1-0.20190327171839-7c43fbae2816
+	github.com/tektoncd/pipeline v0.8.0
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
 	golang.org/x/lint v0.0.0-20190409202823-959b441ac422
-	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297
+	golang.org/x/net v0.0.0-20190912160710-24e19bdeb0f2
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72
-	google.golang.org/api v0.9.0
+	google.golang.org/api v0.10.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 	k8s.io/api v0.0.0-20190918195907-bd6ac527cfd2
@@ -106,6 +105,7 @@ require (
 	k8s.io/klog v1.0.0
 	k8s.io/kubernetes v1.14.7 // indirect
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
+	knative.dev/pkg v0.0.0-20191101194912-56c2594e4f11
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.3.0
 	sigs.k8s.io/yaml v1.1.0
