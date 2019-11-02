@@ -5,7 +5,7 @@ periodics:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
-    testgrid-tab-name: GCE, master (dev)
+    testgrid-tab-name: Conformance - GCE - master
     description: Runs conformance tests using kubetest against kubernetes master on GCE
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '24'

@@ -4,7 +4,7 @@ periodics:
     testgrid-dashboards: sig-release-1.15-blocking, conformance-all, conformance-gce
     testgrid-num-columns-recent: "3"
     testgrid-num-failures-to-alert: "1"
-    testgrid-tab-name: GCE, 1.15 (dev)
+    testgrid-tab-name: Conformance - GCE - 1.15
   interval: 3h
   labels:
     preset-k8s-ssh: "true"
