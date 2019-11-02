@@ -11,6 +11,25 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/openshift/origin/issues/new
+    name: canary-release-openshift-origin-installer-e2e-aws-4.3-cnv
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: canary-release-openshift-origin-installer-e2e-aws-4.3-cnv
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
     name: release-openshift-ocp-installer-console-aws-4.3
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -19,6 +38,25 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-console-aws-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-ocp-installer-e2e-aws-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-ocp-installer-e2e-aws-4.3
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -95,6 +133,25 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-aws-proxy-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-ocp-installer-e2e-aws-serial-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-ocp-installer-e2e-aws-serial-4.3
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -391,14 +448,14 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/openshift/origin/issues/new
-    name: release-openshift-openshift-ansible-e2e-aws-scaleup-rhel7-4.3
+    name: release-openshift-origin-installer-e2e-aws-4.3
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-openshift-ansible-e2e-aws-scaleup-rhel7-4.3
+    test_group_name: release-openshift-origin-installer-e2e-aws-4.3
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -410,18 +467,307 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/openshift/origin/issues/new
-    name: release-promote-openshift-machine-os-content-e2e-aws-4.3
+    name: release-openshift-origin-installer-e2e-aws-compact-4.3
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-promote-openshift-machine-os-content-e2e-aws-4.3
-  name: redhat-openshift-release-4.3-informing-ocp
+    test_group_name: release-openshift-origin-installer-e2e-aws-compact-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-disruptive-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-disruptive-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-serial-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-serial-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-upgrade-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2-to-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2-to-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-azure-compact-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-azure-compact-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-azure-upgrade-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-azure-upgrade-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-gcp-compact-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-gcp-compact-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-e2e-gcp-upgrade-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-e2e-gcp-upgrade-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.3
+  name: redhat-openshift-ocp-release-4.3-informing
 test_groups:
+- gcs_prefix: origin-ci-test/logs/canary-release-openshift-origin-installer-e2e-aws-4.3-cnv
+  name: canary-release-openshift-origin-installer-e2e-aws-4.3-cnv
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-console-aws-4.3
   name: release-openshift-ocp-installer-console-aws-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-4.3
+  name: release-openshift-ocp-installer-e2e-aws-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-fips-4.3
   name: release-openshift-ocp-installer-e2e-aws-fips-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-fips-serial-4.3
@@ -430,6 +776,8 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-aws-mirrors-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-proxy-4.3
   name: release-openshift-ocp-installer-e2e-aws-proxy-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.3
+  name: release-openshift-ocp-installer-e2e-aws-serial-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-upi-4.3
   name: release-openshift-ocp-installer-e2e-aws-upi-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-4.3
@@ -460,7 +808,37 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-vsphere-upi-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-vsphere-upi-serial-4.3
   name: release-openshift-ocp-installer-e2e-vsphere-upi-serial-4.3
-- gcs_prefix: origin-ci-test/logs/release-openshift-openshift-ansible-e2e-aws-scaleup-rhel7-4.3
-  name: release-openshift-openshift-ansible-e2e-aws-scaleup-rhel7-4.3
-- gcs_prefix: origin-ci-test/logs/release-promote-openshift-machine-os-content-e2e-aws-4.3
-  name: release-promote-openshift-machine-os-content-e2e-aws-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-4.3
+  name: release-openshift-origin-installer-e2e-aws-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-compact-4.3
+  name: release-openshift-origin-installer-e2e-aws-compact-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-disruptive-4.3
+  name: release-openshift-origin-installer-e2e-aws-disruptive-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.3
+  name: release-openshift-origin-installer-e2e-aws-sdn-multitenant-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-serial-4.3
+  name: release-openshift-origin-installer-e2e-aws-serial-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.3
+  name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3
+  name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.3
+  name: release-openshift-origin-installer-e2e-aws-upgrade-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2-to-4.3
+  name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2-to-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3
+  name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.3
+  name: release-openshift-origin-installer-e2e-azure-compact-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.3
+  name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.3
+  name: release-openshift-origin-installer-e2e-azure-upgrade-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-compact-4.3
+  name: release-openshift-origin-installer-e2e-gcp-compact-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.3
+  name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.3
+  name: release-openshift-origin-installer-e2e-gcp-upgrade-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-old-rhcos-e2e-aws-4.3
+  name: release-openshift-origin-installer-old-rhcos-e2e-aws-4.3
