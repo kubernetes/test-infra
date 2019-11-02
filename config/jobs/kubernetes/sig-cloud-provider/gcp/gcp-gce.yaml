@@ -455,7 +455,7 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.15
 
 - interval: 12h
@@ -485,7 +485,7 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.14
 
 - interval: 12h
@@ -514,7 +514,7 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.13
 
 - interval: 12h
@@ -543,5 +543,5 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gce
     testgrid-tab-name: soak-gci-gce-1.12
