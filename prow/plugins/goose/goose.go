@@ -84,24 +84,24 @@ type realGaggle struct {
 	keyPath string
 }
 
-func (c *realGaggle) setKey(keyPath string, log *logrus.Entry) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	if !time.Now().After(c.update) {
+func (g *realGaggle) setKey(keyPath string, log *logrus.Entry) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+	if !time.Now().After(g.update) {
 		return
 	}
-	c.update = time.Now().Add(1 * time.Minute)
+	g.update = time.Now().Add(1 * time.Minute)
 	if keyPath == "" {
-		c.key = ""
+		g.key = ""
 		return
 	}
 	b, err := ioutil.ReadFile(keyPath)
 	if err == nil {
-		c.key = strings.TrimSpace(string(b))
+		g.key = strings.TrimSpace(string(b))
 		return
 	}
 	log.WithError(err).Errorf("failed to read key at %s", keyPath)
-	c.key = ""
+	g.key = ""
 }
 
 type gooseResult struct {
