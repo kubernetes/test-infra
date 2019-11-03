@@ -275,7 +275,7 @@ func TestExpectedStatus(t *testing.T) {
 		}
 		blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{}, blocks)
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{}, blocks, "")
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -394,7 +394,7 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		sc := &statusController{ghc: fc, gc: &git.Client{}, config: ca.Config, logger: log}
-		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{})
+		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
 		} else if str != initialLog {

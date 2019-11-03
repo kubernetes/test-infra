@@ -362,6 +362,7 @@ func (c *Controller) Sync() error {
 	c.sc.Lock()
 	c.sc.blocks = blocks
 	c.sc.poolPRs = poolPRMap(filteredPools)
+	c.sc.baseSHAs = baseSHAMap(filteredPools)
 	select {
 	case c.sc.newPoolPending <- true:
 	default:
@@ -541,6 +542,14 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 	}
 
 	return false
+}
+
+func baseSHAMap(subpoolMap map[string]*subpool) map[string]string {
+	baseSHAs := make(map[string]string, len(subpoolMap))
+	for key, sp := range subpoolMap {
+		baseSHAs[key] = sp.sha
+	}
+	return baseSHAs
 }
 
 // poolPRMap collects all subpool PRs into a map containing all pooled PRs.

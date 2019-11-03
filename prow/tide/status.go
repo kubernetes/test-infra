@@ -74,8 +74,9 @@ type statusController struct {
 	lastSyncStart time.Time
 
 	sync.Mutex
-	poolPRs map[string]PullRequest
-	blocks  blockers.Blockers
+	poolPRs  map[string]PullRequest
+	blocks   blockers.Blockers
+	baseSHAs map[string]string
 
 	storedState
 	opener io.Opener
@@ -225,7 +226,14 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker, blocks blockers.Blockers) (string, string) {
+func expectedStatus(
+	queryMap *config.QueryMap,
+	pr *PullRequest,
+	pool map[string]PullRequest,
+	cc contextChecker,
+	blocks blockers.Blockers,
+	baseSHA string,
+) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
 		// if the branch is blocked forget checking for a diff
 		blockingIssues := blocks.GetApplicable(string(pr.Repository.Owner.Login), string(pr.Repository.Name), string(pr.BaseRef.Name))
@@ -276,7 +284,12 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	return link
 }
 
-func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest, blocks blockers.Blockers) {
+func (sc *statusController) setStatuses(
+	all []PullRequest,
+	pool map[string]PullRequest,
+	blocks blockers.Blockers,
+	baseSHAs map[string]string,
+) {
 	// queryMap caches which queries match a repo.
 	// Make a new one each sync loop as queries will change.
 	queryMap := sc.config().Tide.Queries.QueryMap()
@@ -295,8 +308,9 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 		repo := string(pr.Repository.Name)
 		branch := string(pr.BaseRef.Name)
 		headSHA := string(pr.HeadRefOID)
+		baseSHA := baseSHAs[poolKey(org, repo, branch)]
 		baseSHAGetter := func() (string, error) {
-			return sc.ghc.GetRef(org, repo, "heads/"+branch)
+			return baseSHA, nil
 		}
 
 		cr, err := sc.config().GetTideContextPolicy(sc.gc, org, repo, branch, baseSHAGetter, headSHA)
@@ -305,7 +319,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr, blocks)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr, blocks, baseSHA)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -439,8 +453,9 @@ func (sc *statusController) waitSync() {
 			sc.Lock()
 			pool := sc.poolPRs
 			blocks := sc.blocks
+			baseSHAs := sc.baseSHAs
 			sc.Unlock()
-			sc.sync(pool, blocks)
+			sc.sync(pool, blocks, baseSHAs)
 			return
 		case more := <-sc.newPoolPending:
 			if !more {
@@ -450,7 +465,11 @@ func (sc *statusController) waitSync() {
 	}
 }
 
-func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Blockers) {
+func (sc *statusController) sync(
+	pool map[string]PullRequest,
+	blocks blockers.Blockers,
+	baseSHAs map[string]string,
+) {
 	sc.lastSyncStart = time.Now()
 	defer func() {
 		duration := time.Since(sc.lastSyncStart)
@@ -458,7 +477,7 @@ func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Bl
 		tideMetrics.statusUpdateDuration.Set(duration.Seconds())
 	}()
 
-	sc.setStatuses(sc.search(), pool, blocks)
+	sc.setStatuses(sc.search(), pool, blocks, baseSHAs)
 }
 
 func (sc *statusController) search() []PullRequest {
