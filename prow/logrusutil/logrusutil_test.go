@@ -74,3 +74,56 @@ func TestCensoringFormatter(t *testing.T) {
 		})
 	}
 }
+
+func TestCensoringFormatterWithCornerCases(t *testing.T) {
+	entry := &logrus.Entry{Message: "message", Data: logrus.Fields{"key": fmt.Errorf("A SECRET is a secret")}}
+	expectedEntry := "level=panic msg=message key=\"A CENSORED is a secret\"\n"
+
+	testCases := []struct {
+		description string
+		secrets     sets.String
+		expected    string
+	}{
+		{
+			description: "empty string",
+			secrets:     sets.NewString("SECRET", ""),
+			expected:    expectedEntry,
+		},
+		{
+			description: "leading line break",
+			secrets:     sets.NewString("\nSECRET", ""),
+			expected:    expectedEntry,
+		},
+		{
+			description: "tailing line break",
+			secrets:     sets.NewString("SECRET\n", ""),
+			expected:    expectedEntry,
+		},
+		{
+			description: "leading space and tailing space",
+			secrets:     sets.NewString(" SECRET ", ""),
+			expected:    expectedEntry,
+		},
+	}
+
+	baseFormatter := &logrus.TextFormatter{
+		DisableColors:    true,
+		DisableTimestamp: true,
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			formatter := NewCensoringFormatter(baseFormatter, func() sets.String {
+				return tc.secrets
+			})
+
+			censored, err := formatter.Format(entry)
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if string(censored) != tc.expected {
+				t.Errorf("Expected '%s', got '%s'", tc.expected, string(censored))
+			}
+		})
+	}
+}
