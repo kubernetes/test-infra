@@ -259,6 +259,92 @@ periodics:
         path: /sys/fs/cgroup
         type: Directory
 
+- name: ci-kubernetes-e2e-kubeadm-kind-1-17
+  interval: 12h
+  decorate: true
+  labels:
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.17-informing
+    testgrid-tab-name: kubeadm-kind-1-17
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kind); Uses kubeadm/kind to create a cluster and run the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
+  decoration_config:
+    timeout: 40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.17
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-1.17
+      env:
+      # for bazel caching
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # kind specific args
+      - --provider=skeleton
+      - --deployment=kind
+      - --kind-binary-version=build
+      - --kind-config-path=./../../k8s.io/kubeadm/tests/e2e/kind/ha-cp/ha-cp.yaml
+      # generic e2e test args
+      - --build=bazel
+      - --up
+      - --test
+      - --check-version-skew=false
+      - --down
+      # specific e2e test args
+      # TODO(bentheelder): num-nodes in particular is brittle. it would be better for kubetest to handle this
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=\[Serial\] --num-nodes=3
+      - --ginkgo-parallel
+      - --timeout=30m
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      # kind needs /lib/modules and cgroups from the host
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+
 - name: ci-kubernetes-e2e-kubeadm-kind-master
   interval: 2h
   decorate: true
