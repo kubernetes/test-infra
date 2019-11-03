@@ -63,7 +63,7 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config 
 
 // defaultErrRE matches keywords and glog error messages.
 // It is only used if higlight_regexes is not specified in the lens config.
-var defaultErrRE = regexp.MustCompile(`timed out|ERROR:|(\s|^)(FAIL|Failure \[)\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
+var defaultErrRE = regexp.MustCompile(`timed out|ERROR:|(FAIL|Failure \[)\b|panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
 
 func init() {
 	lenses.RegisterLens(Lens{})
