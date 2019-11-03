@@ -21,14 +21,17 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-test/deep"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/tide/blockers"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/tide/blockers"
 )
 
 func TestExpectedStatus(t *testing.T) {
@@ -37,15 +40,17 @@ func TestExpectedStatus(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		baseref         string
-		branchWhitelist []string
-		branchBlacklist []string
-		sameBranchReqs  bool
-		labels          []string
-		milestone       string
-		contexts        []Context
-		inPool          bool
-		blocks          []int
+		baseref          string
+		branchWhitelist  []string
+		branchBlacklist  []string
+		sameBranchReqs   bool
+		labels           []string
+		milestone        string
+		contexts         []Context
+		inPool           bool
+		blocks           []int
+		prowJobs         []runtime.Object
+		requiredContexts []string
 
 		state string
 		desc  string
@@ -206,82 +211,127 @@ func TestExpectedStatus(t *testing.T) {
 			state: github.StatusError,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging is blocked by issues 1, 2."),
 		},
+		{
+			name:             "missing passing up-to-date context",
+			inPool:           true,
+			baseref:          "baseref",
+			requiredContexts: []string{"foo", "bar"},
+			prowJobs: []runtime.Object{
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "123"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "foo",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.SuccessState,
+					},
+				},
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "1234"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "bar",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+			},
+
+			state: github.StatusPending,
+			desc:  "Not mergeable. Waiting for retest of Job [bar]",
+		},
 	}
 
 	for _, tc := range testcases {
-		t.Logf("Test Case: %q\n", tc.name)
-		secondQuery := config.TideQuery{
-			Orgs:      []string{""},
-			Labels:    []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
-			Milestone: "v1.0",
-		}
-		if tc.sameBranchReqs {
-			secondQuery.ExcludedBranches = tc.branchBlacklist
-			secondQuery.IncludedBranches = tc.branchWhitelist
-		}
-		queriesByRepo := config.TideQueries{
-			config.TideQuery{
-				Orgs:             []string{""},
-				ExcludedBranches: tc.branchBlacklist,
-				IncludedBranches: tc.branchWhitelist,
-				Labels:           neededLabels,
-				MissingLabels:    forbiddenLabels,
-				Milestone:        "v1.0",
-			},
-			secondQuery,
-		}.QueryMap()
-		var pr PullRequest
-		pr.BaseRef = struct {
-			Name   githubql.String
-			Prefix githubql.String
-		}{
-			Name: githubql.String(tc.baseref),
-		}
-		for _, label := range tc.labels {
-			pr.Labels.Nodes = append(
-				pr.Labels.Nodes,
-				struct{ Name githubql.String }{Name: githubql.String(label)},
-			)
-		}
-		if len(tc.contexts) > 0 {
-			pr.HeadRefOID = githubql.String("head")
-			pr.Commits.Nodes = append(
-				pr.Commits.Nodes,
-				struct{ Commit Commit }{
-					Commit: Commit{
-						Status: struct{ Contexts []Context }{
-							Contexts: tc.contexts,
-						},
-						OID: githubql.String("head"),
-					},
+		t.Run(tc.name, func(t *testing.T) {
+			secondQuery := config.TideQuery{
+				Orgs:      []string{""},
+				Labels:    []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
+				Milestone: "v1.0",
+			}
+			if tc.sameBranchReqs {
+				secondQuery.ExcludedBranches = tc.branchBlacklist
+				secondQuery.IncludedBranches = tc.branchWhitelist
+			}
+			queriesByRepo := config.TideQueries{
+				config.TideQuery{
+					Orgs:             []string{""},
+					ExcludedBranches: tc.branchBlacklist,
+					IncludedBranches: tc.branchWhitelist,
+					Labels:           neededLabels,
+					MissingLabels:    forbiddenLabels,
+					Milestone:        "v1.0",
 				},
-			)
-		}
-		if tc.milestone != "" {
-			pr.Milestone = &struct {
-				Title githubql.String
-			}{githubql.String(tc.milestone)}
-		}
-		var pool map[string]PullRequest
-		if tc.inPool {
-			pool = map[string]PullRequest{"#0": {}}
-		}
-		blocks := blockers.Blockers{
-			Repo: map[blockers.OrgRepo][]blockers.Blocker{},
-		}
-		var items []blockers.Blocker
-		for _, block := range tc.blocks {
-			items = append(items, blockers.Blocker{Number: block})
-		}
-		blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
+				secondQuery,
+			}.QueryMap()
+			var pr PullRequest
+			pr.BaseRef = struct {
+				Name   githubql.String
+				Prefix githubql.String
+			}{
+				Name: githubql.String(tc.baseref),
+			}
+			for _, label := range tc.labels {
+				pr.Labels.Nodes = append(
+					pr.Labels.Nodes,
+					struct{ Name githubql.String }{Name: githubql.String(label)},
+				)
+			}
+			pr.HeadRefOID = githubql.String("head")
+			if len(tc.contexts) > 0 {
+				pr.Commits.Nodes = append(
+					pr.Commits.Nodes,
+					struct{ Commit Commit }{
+						Commit: Commit{
+							Status: struct{ Contexts []Context }{
+								Contexts: tc.contexts,
+							},
+							OID: githubql.String("head"),
+						},
+					},
+				)
+			}
+			if tc.milestone != "" {
+				pr.Milestone = &struct {
+					Title githubql.String
+				}{githubql.String(tc.milestone)}
+			}
+			var pool map[string]PullRequest
+			if tc.inPool {
+				pool = map[string]PullRequest{"#0": {}}
+			}
+			blocks := blockers.Blockers{
+				Repo: map[blockers.OrgRepo][]blockers.Blocker{},
+			}
+			var items []blockers.Blocker
+			for _, block := range tc.blocks {
+				items = append(items, blockers.Blocker{Number: block})
+			}
+			blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{}, blocks, "")
-		if state != tc.state {
-			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
-		}
-		if desc != tc.desc {
-			t.Errorf("Expected status description %q, but got %q.", tc.desc, desc)
-		}
+			sc, err := newStatusController(logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, nil, nil, "")
+			if err != nil {
+				t.Fatalf("failed to get statusController: %v", err)
+			}
+			cc := &config.TideContextPolicy{RequiredContexts: tc.requiredContexts}
+			state, desc := sc.expectedStatus(sc.logger, queriesByRepo, &pr, pool, cc, blocks, tc.baseref)
+			if state != tc.state {
+				t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
+			}
+			if desc != tc.desc {
+				t.Errorf("Expected status description %q, but got %q.", tc.desc, desc)
+			}
+		})
 	}
 }
 
@@ -393,7 +443,10 @@ func TestSetStatuses(t *testing.T) {
 			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
 
-		sc := &statusController{ghc: fc, gc: &git.Client{}, config: ca.Config, logger: log}
+		sc, err := newStatusController(log, fc, newFakeManager(), nil, ca.Config, nil, "")
+		if err != nil {
+			t.Fatalf("failed to get statusController: %v", err)
+		}
 		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
@@ -488,4 +541,42 @@ func TestOpenPRsQuery(t *testing.T) {
 	checkTok("repo:\"k8s/t-i\"")
 	checkTok("-repo:\"org/repo1\"")
 	checkTok("-repo:\"org/repo2\"")
+}
+
+func TestIndexFuncPassingJobs(t *testing.T) {
+	testCases := []struct {
+		name     string
+		pj       *prowapi.ProwJob
+		expected []string
+	}{
+		{
+			name: "Jobs that are not presubmit or batch are ignored",
+			pj:   getProwJob(prowapi.PeriodicJob, "org", "", "repo", "baseSHA", prowapi.SuccessState, []prowapi.Pull{{SHA: "head"}}),
+		},
+		{
+			name: "Non-Passing jobs are ignored",
+			pj:   getProwJob(prowapi.PresubmitJob, "org", "repo", "", "baseSHA", prowapi.FailureState, []prowapi.Pull{{SHA: "head"}}),
+		},
+		{
+			name:     "Indexkey is returned for presubmit job",
+			pj:       getProwJob(prowapi.PresubmitJob, "org", "repo", "", "baseSHA", prowapi.SuccessState, []prowapi.Pull{{SHA: "head"}}),
+			expected: []string{"org/repo@baseSHA+head"},
+		},
+		{
+			name:     "Indexkeys are returned for batch job",
+			pj:       getProwJob(prowapi.BatchJob, "org", "repo", "", "baseSHA", prowapi.SuccessState, []prowapi.Pull{{SHA: "head"}, {SHA: "head-2"}}),
+			expected: []string{"org/repo@baseSHA+head", "org/repo@baseSHA+head-2"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var results []string
+			for _, result := range indexFuncPassingJobs(tc.pj) {
+				results = append(results, result)
+			}
+			if diff := deep.Equal(tc.expected, results); diff != nil {
+				t.Errorf("expected does not match result, diff: %v", diff)
+			}
+		})
+	}
 }

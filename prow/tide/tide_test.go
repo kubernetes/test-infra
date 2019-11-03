@@ -685,17 +685,7 @@ func TestDividePool(t *testing.T) {
 		}
 	}
 
-	client := &indexingClient{
-		Client:     fakectrlruntimeclient.NewFakeClient(),
-		indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{},
-	}
-	mgr := &fakeManager{
-		client: client,
-		fakeFieldIndexer: &fakeFieldIndexer{
-			client: client,
-		},
-	}
-
+	mgr := newFakeManager()
 	c, err := newSyncController(
 		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, &git.Client{}, nil, nil,
 	)
@@ -1702,6 +1692,7 @@ func TestSync(t *testing.T) {
 			t.Fatalf("Failed to create history client: %v", err)
 		}
 		sc := &statusController{
+			pjClient:       fakectrlruntimeclient.NewFakeClient(),
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
 			gc:             &git.Client{},
@@ -3108,7 +3099,7 @@ func TestCacheIndexFuncReturnsDifferentResultsForDifferentInputs(t *testing.T) {
 		{"org-b", "repo-a", "branch-a"},
 	}
 	for _, input := range inputs {
-		pj := getProwJob(prowapi.PresubmitJob, input.org, input.repo, input.branch, "123")
+		pj := getProwJob(prowapi.PresubmitJob, input.org, input.repo, input.branch, "123", "", nil)
 		idx := cacheIndexFunc(pj)
 		if n := len(idx); n != 1 {
 			t.Fatalf("expected to get exactly one index back, got %d", n)
@@ -3132,16 +3123,16 @@ func TestCacheIndexFunc(t *testing.T) {
 		},
 		{
 			name:    "No refs, no result",
-			prowjob: getProwJob(prowapi.PresubmitJob, "", "", "", ""),
+			prowjob: getProwJob(prowapi.PresubmitJob, "", "", "", "", "", nil),
 		},
 		{
 			name:           "presubmit job",
-			prowjob:        getProwJob(prowapi.PresubmitJob, "org", "repo", "master", "123"),
+			prowjob:        getProwJob(prowapi.PresubmitJob, "org", "repo", "master", "123", "", nil),
 			expectedResult: "org/repo:master@123",
 		},
 		{
 			name:           "Batch job",
-			prowjob:        getProwJob(prowapi.BatchJob, "org", "repo", "next", "1234"),
+			prowjob:        getProwJob(prowapi.BatchJob, "org", "repo", "next", "1234", "", nil),
 			expectedResult: "org/repo:next@1234",
 		},
 	}
@@ -3166,7 +3157,7 @@ func TestCacheIndexFunc(t *testing.T) {
 	}
 }
 
-func getProwJob(pjtype prowapi.ProwJobType, org, repo, branch, sha string) *prowapi.ProwJob {
+func getProwJob(pjtype prowapi.ProwJobType, org, repo, branch, sha string, state prowapi.ProwJobState, pulls []prowapi.Pull) *prowapi.ProwJob {
 	pj := &prowapi.ProwJob{}
 	pj.Spec.Type = pjtype
 	if org != "" || repo != "" || branch != "" || sha != "" {
@@ -3175,9 +3166,24 @@ func getProwJob(pjtype prowapi.ProwJobType, org, repo, branch, sha string) *prow
 			Repo:    repo,
 			BaseRef: branch,
 			BaseSHA: sha,
+			Pulls:   pulls,
 		}
 	}
+	pj.Status.State = state
 	return pj
+}
+
+func newFakeManager(objs ...runtime.Object) *fakeManager {
+	client := &indexingClient{
+		Client:     fakectrlruntimeclient.NewFakeClient(objs...),
+		indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{},
+	}
+	return &fakeManager{
+		client: client,
+		fakeFieldIndexer: &fakeFieldIndexer{
+			client: client,
+		},
+	}
 }
 
 type fakeManager struct {
