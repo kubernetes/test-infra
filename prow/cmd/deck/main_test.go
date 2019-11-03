@@ -19,6 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -46,7 +47,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clienttesting "k8s.io/client-go/testing"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
@@ -57,6 +57,8 @@ import (
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 )
 
@@ -865,14 +867,12 @@ func TestListProwJobs(t *testing.T) {
 		for _, generator := range testCase.prowJobs {
 			data = append(data, generator(templateJob.DeepCopy()))
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(data...)
-		if testCase.listErr {
-			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-				return true, nil, errors.New("could not list ProwJobs")
-			})
+		fakeProwJobClient := &possiblyErroringFakeCtrlRuntimeClient{
+			Client:      fakectrlruntimeclient.NewFakeClient(data...),
+			shouldError: testCase.listErr,
 		}
 		lister := filteringProwJobLister{
-			client:      fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			client:      fakeProwJobClient,
 			hiddenRepos: testCase.hiddenRepos,
 			hiddenOnly:  testCase.hiddenOnly,
 			showHidden:  testCase.showHidden,
@@ -1108,4 +1108,19 @@ func TestHandlePluginConfig(t *testing.T) {
 	if !reflect.DeepEqual(c, res) {
 		t.Errorf("Invalid config. Got %v, expected %v", res, c)
 	}
+}
+
+type possiblyErroringFakeCtrlRuntimeClient struct {
+	ctrlruntimeclient.Client
+	shouldError bool
+}
+
+func (p *possiblyErroringFakeCtrlRuntimeClient) List(
+	ctx context.Context,
+	pjl *prowapi.ProwJobList,
+	opts ...ctrlruntimeclient.ListOption) error {
+	if p.shouldError {
+		return errors.New("could not list ProwJobs")
+	}
+	return p.Client.List(ctx, pjl, opts...)
 }

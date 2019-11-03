@@ -47,10 +47,13 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/simplifypath"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -456,16 +459,26 @@ func (c *podLogClient) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte
 	return ioutil.ReadAll(reader)
 }
 
+type pjListingClient interface {
+	List(context.Context, *prowapi.ProwJobList, ...ctrlruntimeclient.ListOption) error
+}
+
 type filteringProwJobLister struct {
-	client      prowv1.ProwJobInterface
+	ctx         context.Context
+	client      pjListingClient
 	hiddenRepos sets.String
 	hiddenOnly  bool
 	showHidden  bool
 }
 
 func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
-	prowJobList, err := c.client.List(metav1.ListOptions{LabelSelector: selector})
+	prowJobList := &prowapi.ProwJobList{}
+	parsedSelector, err := labels.Parse(selector)
 	if err != nil {
+		return nil, fmt.Errorf("failed to parse selector: %v", err)
+	}
+	listOpts := &ctrlruntimeclient.ListOptions{LabelSelector: parsedSelector}
+	if err := c.client.List(c.ctx, prowJobList, listOpts); err != nil {
 		return nil, err
 	}
 
@@ -497,12 +510,42 @@ func (c *filteringProwJobLister) pjHasHiddenRefs(pj prowapi.ProwJob) bool {
 	return false
 }
 
+type pjListingClientWrapper struct {
+	reader ctrlruntimeclient.Reader
+}
+
+func (w *pjListingClientWrapper) List(
+	ctx context.Context,
+	pjl *prowapi.ProwJobList,
+	opts ...ctrlruntimeclient.ListOption) error {
+	return w.reader.List(ctx, pjl, opts...)
+}
+
 // prodOnlyMain contains logic only used when running deployed, not locally
 func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options, mux *http.ServeMux) *http.ServeMux {
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
 	}
+	restCfg, err := o.kubernetes.InfrastructureClusterConfig(false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
+	}
+	mgr, err := manager.New(restCfg, manager.Options{
+		Namespace:          cfg().ProwJobNamespace,
+		MetricsBindAddress: "0",
+		LeaderElection:     false},
+	)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting manager.")
+	}
+	go func() {
+		if err := mgr.Start(make(chan struct{})); err != nil {
+			logrus.WithError(err).Fatal("Error starting manager.")
+		} else {
+			logrus.Info("Manager stopped gracefully.")
+		}
+	}()
 
 	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
 	if err != nil {
@@ -515,7 +558,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	}
 
 	ja := jobs.NewJobAgent(&filteringProwJobLister{
-		client:      prowJobClient,
+		client:      &pjListingClientWrapper{mgr.GetClient()},
 		hiddenRepos: sets.NewString(cfg().Deck.HiddenRepos...),
 		hiddenOnly:  o.hiddenOnly,
 		showHidden:  o.showHidden,
