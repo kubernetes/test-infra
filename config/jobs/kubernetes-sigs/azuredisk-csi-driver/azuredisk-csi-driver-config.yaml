@@ -143,7 +143,7 @@ presubmits:
         - "--acsengine-agentvmsize=Standard_D4s_v3"
         - "--acsengine-location=eastus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
         - "--test-azure-disk-csi-driver=True"
         - "--timeout=420m"
