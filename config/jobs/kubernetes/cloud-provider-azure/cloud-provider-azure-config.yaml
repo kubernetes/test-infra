@@ -800,3 +800,8 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      env:
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: cloud-provider-azure
