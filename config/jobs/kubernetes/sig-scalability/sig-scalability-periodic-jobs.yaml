@@ -348,9 +348,6 @@ periodics:
   - "perfDashPrefix: scheduler-benchmark"
   - "perfDashJobType: benchmark"
   interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler
