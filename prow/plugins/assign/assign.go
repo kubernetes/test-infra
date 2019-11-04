@@ -43,21 +43,21 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The assign plugin assigns or requests reviews from users. Specific users can be assigned with the command '/assign @user1' or have reviews requested of them with the command '/cc @user1'. If no user is specified the commands default to targeting the user who created the command. Assignments and requested reviews can be removed in the same way that they are added by prefixing the commands with 'un'.",
+		Description: "The assign plugin assigns or requests reviews from users. Specific users can be assigned with the command '/assign @user1' or have reviews requested of them with the command '/cc @user1'. If no users are specified, the commands default to targeting the user who created the command. Assignments and requested reviews can be removed in the same way that they are added by prefixing the commands with 'un'.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[un]assign [[@]<username>...]",
-		Description: "Assigns an assignee to the PR",
+		Description: "Assigns assignee(s) to the PR",
 		Featured:    true,
-		WhoCanUse:   "Anyone can use the command, but the target user must be an org member, a repo collaborator, or should have previously commented on the issue or PR.",
-		Examples:    []string{"/assign", "/unassign", "/assign @k8s-ci-robot"},
+		WhoCanUse:   "Anyone can use the command, but the target user(s) must be an org member, a repo collaborator, or should have previously commented on the issue or PR.",
+		Examples:    []string{"/assign", "/unassign", "/assign @spongebob", "/assign spongebob patrick"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[un]cc [[@]<username>...]",
 		Description: "Requests a review from the user(s).",
 		Featured:    true,
-		WhoCanUse:   "Anyone can use the command, but the target user must be a member of the org that owns the repository.",
-		Examples:    []string{"/cc", "/uncc", "/cc @k8s-ci-robot"},
+		WhoCanUse:   "Anyone can use the command, but the target user(s) must be a member of the org that owns the repository.",
+		Examples:    []string{"/cc", "/uncc", "/cc @spongebob", "/cc spongebob patrick"},
 	})
 	return pluginHelp, nil
 }
