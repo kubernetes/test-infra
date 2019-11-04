@@ -2773,6 +2773,94 @@ func TestConfigureRepos(t *testing.T) {
 			repos:         []github.Repo{{Name: oldName, Private: true}},
 			expectedRepos: []github.Repo{{Name: oldName, Private: false}},
 		},
+		{
+			description: "renaming a repo is successful",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName}},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Description: "renamed repo"}},
+			expectedRepos: []github.Repo{{Name: newName, Description: "renamed repo"}},
+		},
+		{
+			description: "renaming a repo by just changing case is successful",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"repo": {Previously: []string{"REPO"}},
+				},
+			},
+			repos:         []github.Repo{{Name: "REPO", Description: "renamed repo"}},
+			expectedRepos: []github.Repo{{Name: "repo", Description: "renamed repo"}},
+		},
+		{
+			description: "dup between a repo name and a previous name is detected",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName}},
+					oldName: {Description: &newDescription},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+			expectError:   true,
+			expectedRepos: []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+		},
+		{
+			description: "dup between two previous names is detected",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"wants-projects": {Previously: []string{oldName}, HasProjects: &yes, HasWiki: &no},
+					"wants-wiki":     {Previously: []string{oldName}, HasProjects: &no, HasWiki: &yes},
+				},
+			},
+			repos:         []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+			expectError:   true,
+			expectedRepos: []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+		},
+		{
+			description: "error detected when both a repo and a repo of its previous name exist",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName}, Description: &newDescription},
+				},
+			},
+			repos: []github.Repo{
+				{Name: oldName, Description: "this repo shall not be touched"},
+				{Name: newName, Description: "this repo shall not be touched too"},
+			},
+			expectError: true,
+			expectedRepos: []github.Repo{
+				{Name: newName, Description: "this repo shall not be touched too"},
+				{Name: oldName, Description: "this repo shall not be touched"},
+			},
+		},
+		{
+			description: "error detected when multiple previous repos exist",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					newName: {Previously: []string{oldName, "even-older"}, Description: &newDescription},
+				},
+			},
+			repos: []github.Repo{
+				{Name: oldName, Description: "this repo shall not be touched"},
+				{Name: "even-older", Description: "this repo shall not be touched too"},
+			},
+			expectError: true,
+			expectedRepos: []github.Repo{
+				{Name: "even-older", Description: "this repo shall not be touched too"},
+				{Name: oldName, Description: "this repo shall not be touched"},
+			},
+		},
+		{
+			description: "repos are renamed to defined case even without explicit `previously` field",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					"CamelCase": {Description: &newDescription},
+				},
+			},
+			repos:         []github.Repo{{Name: "CAMELCASE", Description: newDescription}},
+			expectedRepos: []github.Repo{{Name: "CamelCase", Description: newDescription}},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
@@ -2828,6 +2916,28 @@ func TestValidateRepos(t *testing.T) {
 				"Repo": {Description: &description},
 			},
 			expectError: true,
+		},
+		{
+			description: "finds name confict between previous and current names",
+			config: map[string]org.Repo{
+				"repo":     {Previously: []string{"conflict"}},
+				"conflict": {Description: &description},
+			},
+			expectError: true,
+		},
+		{
+			description: "finds name confict between two previous names",
+			config: map[string]org.Repo{
+				"repo":         {Previously: []string{"conflict"}},
+				"another-repo": {Previously: []string{"conflict"}},
+			},
+			expectError: true,
+		},
+		{
+			description: "allows case-duplicate name between former and current name",
+			config: map[string]org.Repo{
+				"repo": {Previously: []string{"REPO"}},
+			},
 		},
 	}
 

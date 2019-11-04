@@ -882,13 +882,19 @@ func validateRepos(repos map[string]org.Repo) error {
 	seen := map[string]string{}
 	var dups []string
 
-	for name := range repos {
-		normName := strings.ToLower(name)
-		if seenName, have := seen[normName]; have {
-			dups = append(dups, fmt.Sprintf("%s/%s", seenName, name))
-			continue
+	for wantName, repo := range repos {
+		toCheck := append([]string{wantName}, repo.Previously...)
+		for _, name := range toCheck {
+			normName := strings.ToLower(name)
+			if seenName, have := seen[normName]; have {
+				dups = append(dups, fmt.Sprintf("%s/%s", seenName, name))
+			}
 		}
-		seen[normName] = name
+		for _, name := range toCheck {
+			normName := strings.ToLower(name)
+			seen[normName] = name
+		}
+
 	}
 
 	if len(dups) > 0 {
@@ -952,6 +958,22 @@ func sanitizeRepoDelta(opt options, delta *github.RepoUpdateRequest) []error {
 	return errs
 }
 
+func repoExists(repos map[string]github.Repo, name string, previousNames []string) (*github.Repo, error) {
+	var ret *github.Repo
+	for _, name := range append([]string{name}, previousNames...) {
+		if repo, exists := repos[strings.ToLower(name)]; exists {
+			switch {
+			case ret == nil:
+				ret = &repo
+			case ret.Name != repo.Name:
+				return nil, fmt.Errorf("different repos already exist for current and previous names: %s and %s", ret.Name, repo.Name)
+			}
+		}
+	}
+
+	return ret, nil
+}
+
 func configureRepos(opt options, client repoClient, orgName string, orgConfig org.Config) error {
 	if err := validateRepos(orgConfig.Repos); err != nil {
 		return err
@@ -969,29 +991,34 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 
 	var allErrors []error
 	for wantName, wantRepo := range orgConfig.Repos {
-		if _, have := byName[strings.ToLower(wantName)]; !have {
-			logrus.WithField("repo", wantName).Info("repo does not exist, creating")
+		repoLogger := logrus.WithField("repoExists", wantName)
+		repoExists, err := repoExists(byName, wantName, wantRepo.Previously)
+		if err != nil {
+			allErrors = append(allErrors, err)
+			continue
+		}
+		if repoExists == nil {
+			repoLogger.Info("repoExists does not exist, creating")
 			created, err := client.CreateRepo(orgName, false, newRepoCreateRequest(wantName, wantRepo))
 			if err != nil {
 				allErrors = append(allErrors, err)
 			} else {
-				byName[wantName] = *created
+				repoExists = created
 			}
 		}
 
-		if current, have := byName[wantName]; have {
-			repoLogger := logrus.WithField("repo", wantName)
-			repoLogger.Info("repo exists, considering an update")
-			delta := newRepoUpdateRequest(current, wantName, wantRepo)
+		if repoExists != nil {
+			repoLogger.Info("repoExists exists, considering an update")
+			delta := newRepoUpdateRequest(*repoExists, wantName, wantRepo)
 			if deltaErrors := sanitizeRepoDelta(opt, &delta); len(deltaErrors) > 0 {
 				for _, err := range deltaErrors {
-					repoLogger.WithError(err).Error("requested repo change is not allowed, removing from delta")
+					repoLogger.WithError(err).Error("requested repoExists change is not allowed, removing from delta")
 				}
 				allErrors = append(allErrors, deltaErrors...)
 			}
 			if delta.Defined() {
-				repoLogger.Info("repo exists and differs from desired state, updating")
-				if _, err := client.UpdateRepo(orgName, current.Name, delta); err != nil {
+				repoLogger.Info("repoExists exists and differs from desired state, updating")
+				if _, err := client.UpdateRepo(orgName, repoExists.Name, delta); err != nil {
 					allErrors = append(allErrors, err)
 				}
 			}
