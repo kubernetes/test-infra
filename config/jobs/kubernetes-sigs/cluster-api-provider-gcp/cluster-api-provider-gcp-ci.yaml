@@ -43,29 +43,31 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "master"
           - name: "CABPK_BRANCH"
             value: "master"
-        args:
-          - "--repo=k8s.io/kubernetes=master"
-          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=master"
-          - "--repo=sigs.k8s.io/cluster-api=master"
-          - "--repo=sigs.k8s.io/image-builder=master"
-          - "--repo=sigs.k8s.io/kind=master"
-          - "--root=/go/src"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--scenario=execute"
-          - "--"
-          - "bash"
-          - "--"
-          - "-c"
-          - "cd ./../../sigs.k8s.io/cluster-api-provider-gcp && scripts/ci-e2e.sh"
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -91,27 +93,31 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
           - name: "CABPK_BRANCH"
             value: "stable"
-        args:
-          - "--repo=k8s.io/kubernetes=master"
-          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=release-0.2"
-          - "--repo=sigs.k8s.io/image-builder=master"
-          - "--root=/go/src"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--scenario=execute"
-          - "--"
-          - "bash"
-          - "--"
-          - "-c"
-          - "cd ./../../sigs.k8s.io/cluster-api-provider-gcp && scripts/ci-e2e.sh"
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -137,27 +143,31 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
           - name: "CABPK_BRANCH"
             value: "stable"
-        args:
-          - "--repo=k8s.io/kubernetes=master"
-          - "--repo=sigs.k8s.io/cluster-api-provider-gcp=release-0.2"
-          - "--repo=sigs.k8s.io/image-builder=master"
-          - "--root=/go/src"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--scenario=execute"
-          - "--"
-          - "bash"
-          - "--"
-          - "-c"
-          - "cd ./../../sigs.k8s.io/cluster-api-provider-gcp && scripts/ci-e2e.sh --use-ci-artifacts"
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
