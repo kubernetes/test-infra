@@ -30,6 +30,7 @@ periodics:
   - org: kubernetes-sigs
     repo: kind
     base_ref: master
+    base_sha: 3907329b4ece1feab97d6281de23ea6e11812a1a # v0.5.1
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
@@ -116,6 +117,7 @@ periodics:
   - org: kubernetes-sigs
     repo: kind
     base_ref: master
+    base_sha: 3907329b4ece1feab97d6281de23ea6e11812a1a # v0.5.1
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
@@ -202,6 +204,7 @@ periodics:
   - org: kubernetes-sigs
     repo: kind
     base_ref: master
+    base_sha: 3907329b4ece1feab97d6281de23ea6e11812a1a # v0.5.1
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
@@ -288,6 +291,7 @@ periodics:
   - org: kubernetes-sigs
     repo: kind
     base_ref: master
+    base_sha: 3907329b4ece1feab97d6281de23ea6e11812a1a # v0.5.1
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
@@ -374,6 +378,7 @@ periodics:
   - org: kubernetes-sigs
     repo: kind
     base_ref: master
+    base_sha: 3907329b4ece1feab97d6281de23ea6e11812a1a # v0.5.1
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
