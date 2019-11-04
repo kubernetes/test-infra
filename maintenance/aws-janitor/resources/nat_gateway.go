@@ -48,7 +48,7 @@ func (NATGateway) MarkAndSweep(sess *session.Session, acct string, region string
 			if set.Mark(g) {
 				inp := &ec2.DeleteNatGatewayInput{NatGatewayId: gw.NatGatewayId}
 				if _, err := svc.DeleteNatGateway(inp); err != nil {
-					klog.Warningf("%v: delete failed: %v", g.ARN(), err)
+					klog.Warningf("%s: delete failed: %v", g.ARN(), err)
 				}
 			}
 		}

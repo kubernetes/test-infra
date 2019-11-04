@@ -18,6 +18,7 @@ package resources
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -46,7 +47,7 @@ func CleanAll(sess *session.Session, region string) error {
 	} else {
 		regionList = []string{region}
 	}
-	klog.Infof("Regions: %+v", regionList)
+	klog.Infof("Regions: %s", strings.Join(regionList, ", "))
 
 	var errs []error
 

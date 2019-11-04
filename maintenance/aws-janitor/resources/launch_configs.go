@@ -38,7 +38,7 @@ func (LaunchConfigurations) MarkAndSweep(sess *session.Session, acct string, reg
 		for _, lc := range page.LaunchConfigurations {
 			l := &launchConfiguration{ID: *lc.LaunchConfigurationARN, Name: *lc.LaunchConfigurationName}
 			if set.Mark(l) {
-				klog.Warningf("%s: deleting %T: %v", l.ARN(), lc, lc)
+				klog.Warningf("%s: deleting %T: %s", l.ARN(), lc, l.Name)
 				toDelete = append(toDelete, l)
 			}
 		}
@@ -55,7 +55,7 @@ func (LaunchConfigurations) MarkAndSweep(sess *session.Session, acct string, reg
 		}
 
 		if _, err := svc.DeleteLaunchConfiguration(deleteReq); err != nil {
-			klog.Warningf("%v: delete failed: %v", lc.ARN(), err)
+			klog.Warningf("%s: delete failed: %v", lc.ARN(), err)
 		}
 	}
 

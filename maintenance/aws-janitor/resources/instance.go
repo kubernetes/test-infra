@@ -18,6 +18,7 @@ package resources
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -55,7 +56,7 @@ func (Instances) MarkAndSweep(sess *session.Session, acct string, region string,
 				}
 
 				if set.Mark(i) {
-					klog.Warningf("%s: deleting %T: %v", i.ARN(), inst, inst)
+					klog.Warningf("%s: deleting %T: %s", i.ARN(), inst, i.InstanceID)
 					toDelete = append(toDelete, inst.InstanceId)
 				}
 			}
@@ -71,7 +72,7 @@ func (Instances) MarkAndSweep(sess *session.Session, acct string, region string,
 		// TODO(zmerlynn): In theory this should be split up into
 		// blocks of 1000, but burn that bridge if it ever happens...
 		if _, err := svc.TerminateInstances(&ec2.TerminateInstancesInput{InstanceIds: toDelete}); err != nil {
-			klog.Warningf("Termination failed: %v (for %v)", err, toDelete)
+			klog.Warningf("Termination failed for instances: %s : %v", strings.Join(aws.StringValueSlice(toDelete), ", "), err)
 		}
 	}
 

@@ -98,7 +98,7 @@ func (Route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string
 
 					o := &route53ResourceRecordSet{zone: z, obj: rrs}
 					if set.Mark(o) {
-						klog.Warningf("%s: deleting %T: %v", o.ARN(), rrs, rrs)
+						klog.Warningf("%s: deleting %T: %s", o.ARN(), rrs, *rrs.Name)
 						toDelete = append(toDelete, o)
 					}
 				}
@@ -181,7 +181,7 @@ func (Route53ResourceRecordSets) ListAll(sess *session.Session, acct, region str
 				return true
 			})
 			if err != nil {
-				klog.Errorf("couldn't describe route53 resources for %q in %q zone %q: %v", acct, region, *z.Id, err)
+				errors.Wrapf(err, "couldn't describe route53 resources for %q in %q zone %q", acct, region, *z.Id)
 			}
 
 		}

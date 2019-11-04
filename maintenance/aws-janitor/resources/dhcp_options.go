@@ -18,6 +18,7 @@ package resources
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -73,16 +74,16 @@ func (DHCPOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 
 		dh := &dhcpOption{Account: acct, Region: region, ID: *dhcp.DhcpOptionsId}
 		if set.Mark(dh) {
-			klog.Warningf("%s: deleting %T: %v", dh.ARN(), dhcp, dhcp)
+			klog.Warningf("%s: deleting %T: %s", dh.ARN(), dhcp, dh.ID)
 
 			if _, err := svc.DeleteDhcpOptions(&ec2.DeleteDhcpOptionsInput{DhcpOptionsId: dhcp.DhcpOptionsId}); err != nil {
-				klog.Warningf("%v: delete failed: %v", dh.ARN(), err)
+				klog.Warningf("%s: delete failed: %v", dh.ARN(), err)
 			}
 		}
 	}
 
 	if len(defaults) > 1 {
-		klog.Errorf("Found more than one default-looking DHCP option set: %v", defaults)
+		klog.Errorf("Found more than one default-looking DHCP option set: %s", strings.Join(defaults, ", "))
 	}
 
 	return nil
