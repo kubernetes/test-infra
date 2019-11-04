@@ -82,7 +82,7 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --extract=ci/latest-1.15
+        - --extract=ci/latest
         - --ginkgo-parallel
         - --kops-build
         - --provider=aws
