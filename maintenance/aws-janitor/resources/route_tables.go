@@ -56,25 +56,25 @@ func (RouteTables) MarkAndSweep(sess *session.Session, acct string, region strin
 		r := &routeTable{Account: acct, Region: region, ID: *rt.RouteTableId}
 		if set.Mark(r) {
 			for _, assoc := range rt.Associations {
-				klog.Infof("%v: disassociating from %v", r.ARN(), *assoc.SubnetId)
+				klog.Infof("%s: disassociating from %s", r.ARN(), *assoc.SubnetId)
 
 				disReq := &ec2.DisassociateRouteTableInput{
 					AssociationId: assoc.RouteTableAssociationId,
 				}
 
 				if _, err := svc.DisassociateRouteTable(disReq); err != nil {
-					klog.Warningf("%v: disassociation from subnet %v failed: %v", r.ARN(), *assoc.SubnetId, err)
+					klog.Warningf("%s: disassociation from subnet %s failed: %v", r.ARN(), *assoc.SubnetId, err)
 				}
 			}
 
-			klog.Warningf("%s: deleting %T: %v", r.ARN(), rt, rt)
+			klog.Warningf("%s: deleting %T: %s", r.ARN(), rt, r.ID)
 
 			deleteReq := &ec2.DeleteRouteTableInput{
 				RouteTableId: rt.RouteTableId,
 			}
 
 			if _, err := svc.DeleteRouteTable(deleteReq); err != nil {
-				klog.Warningf("%v: delete failed: %v", r.ARN(), err)
+				klog.Warningf("%s: delete failed: %v", r.ARN(), err)
 			}
 		}
 	}

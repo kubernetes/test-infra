@@ -17,7 +17,6 @@ limitations under the License.
 package resources
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -51,13 +50,13 @@ func (IAMInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 			}
 
 			if !managed {
-				klog.Infof("ignoring unmanaged profile %s", aws.StringValue(p.Arn))
+				klog.Infof("%s: ignoring unmanaged profile", aws.StringValue(p.Arn))
 				continue
 			}
 
 			o := &iamInstanceProfile{profile: p}
 			if set.Mark(o) {
-				klog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
+				klog.Warningf("%s: deleting %T: %s", o.ARN(), o, o.ARN())
 				toDelete = append(toDelete, o)
 			}
 		}
@@ -70,7 +69,7 @@ func (IAMInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 
 	for _, o := range toDelete {
 		if err := o.delete(svc); err != nil {
-			klog.Warningf("%v: delete failed: %v", o.ARN(), err)
+			klog.Warningf("%s: delete failed: %v", o.ARN(), err)
 		}
 	}
 	return nil
@@ -118,7 +117,7 @@ func (p iamInstanceProfile) delete(svc *iam.IAM) error {
 		}
 
 		if _, err := svc.RemoveRoleFromInstanceProfile(request); err != nil {
-			return fmt.Errorf("error removing role %q: %v", aws.StringValue(role.RoleName), err)
+			return errors.Wrapf(err, "error removing role %q", aws.StringValue(role.RoleName))
 		}
 	}
 
