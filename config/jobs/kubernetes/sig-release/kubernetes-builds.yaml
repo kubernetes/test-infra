@@ -94,7 +94,7 @@ periodics:
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     description: 'Ends up running: make quick-release'
 
-- interval: 30m
+- interval: 4h
   name: ci-release-build-packages-debs
   decorate: true
   spec:
@@ -118,7 +118,7 @@ periodics:
     testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: build-packages-debs
 
-- interval: 30m
+- interval: 4h
   name: ci-release-build-packages-rpms
   decorate: true
   spec:
