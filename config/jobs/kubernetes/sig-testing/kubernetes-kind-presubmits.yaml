@@ -220,7 +220,7 @@ presubmits:
           type: Directory
 
   - name: pull-kubernetes-e2e-kind
-    optional: true
+    optional: false
     always_run: true
     decorate: true
     skip_branches:
