@@ -82,7 +82,6 @@ presubmits:
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
         - --cluster=
-        - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.15.txt
         - --extract=ci/latest-1.15
         - --ginkgo-parallel
         - --kops-build
