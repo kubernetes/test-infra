@@ -106,7 +106,7 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run integration tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-azuredisk-csi-driver-e2e
+  - name: pull-azuredisk-csi-driver-e2e-single-az
     always_run: true
     branches:
     - master
@@ -146,12 +146,63 @@ presubmits:
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
         - "--test-azure-disk-csi-driver=True"
+        - "--test_args=--ginkgo.focus=\\[single-az\\]"
         - "--timeout=420m"
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: provider-azure-master, provider-azure-on-call
-      testgrid-tab-name: pr-azuredisk-csi-driver-e2e
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-single-az
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      description: "Run E2E tests for Azure Disk CSI driver."
+      description: "Run E2E tests on a single-az cluster for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-e2e-multi-az
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-cloudprovider-azure-cred: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=k8s.io/kubernetes"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_e2e"
+        - "--timeout=450"
+        - --
+        - "--gce-ssh="
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine"
+        - "--build=bazel"
+        - "--provider=skeleton"
+        - "--ginkgo-parallel=1"
+        - "--acsengine-agentpoolcount=2"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
+        - "--acsengine-orchestratorRelease=1.16"
+        - "--acsengine-mastervmsize=Standard_DS2_v2"
+        - "--acsengine-agentvmsize=Standard_D4s_v3"
+        - "--acsengine-location=eastus2"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json"
+        - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
+        - "--test-azure-disk-csi-driver=True"
+        - "--test_args=--ginkgo.focus=\\[multi-az\\]"
+        - "--timeout=420m"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-azuredisk-csi-driver-e2e-multi-az
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
