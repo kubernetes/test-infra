@@ -466,7 +466,7 @@ type pjListingClient interface {
 type filteringProwJobLister struct {
 	ctx         context.Context
 	client      pjListingClient
-	hiddenRepos sets.String
+	hiddenRepos func() sets.String
 	hiddenOnly  bool
 	showHidden  bool
 }
@@ -502,7 +502,7 @@ func (c *filteringProwJobLister) pjHasHiddenRefs(pj prowapi.ProwJob) bool {
 		allRefs = append(allRefs, *pj.Spec.Refs)
 	}
 	for _, refs := range allRefs {
-		if c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) {
+		if c.hiddenRepos().HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) {
 			return true
 		}
 	}
@@ -558,10 +558,12 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	}
 
 	ja := jobs.NewJobAgent(&filteringProwJobLister{
-		client:      &pjListingClientWrapper{mgr.GetClient()},
-		hiddenRepos: sets.NewString(cfg().Deck.HiddenRepos...),
-		hiddenOnly:  o.hiddenOnly,
-		showHidden:  o.showHidden,
+		client: &pjListingClientWrapper{mgr.GetClient()},
+		hiddenRepos: func() sets.String {
+			return sets.NewString(cfg().Deck.HiddenRepos...)
+		},
+		hiddenOnly: o.hiddenOnly,
+		showHidden: o.showHidden,
 	}, podLogClients, cfg)
 	ja.Start()
 
@@ -611,9 +613,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			updatePeriod: func() time.Duration {
 				return cfg().Deck.TideUpdatePeriod.Duration
 			},
-			hiddenRepos: cfg().Deck.HiddenRepos,
-			hiddenOnly:  o.hiddenOnly,
-			showHidden:  o.showHidden,
+			hiddenRepos: func() []string {
+				return cfg().Deck.HiddenRepos
+			},
+			hiddenOnly: o.hiddenOnly,
+			showHidden: o.showHidden,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta, logrus.WithField("handler", "/tide.js"))))
