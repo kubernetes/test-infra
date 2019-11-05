@@ -125,6 +125,25 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-ocp-installer-e2e-aws-ovn-kubernetes-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-ocp-installer-e2e-aws-ovn-kubernetes-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
     name: release-openshift-ocp-installer-e2e-aws-proxy-4.3
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -239,6 +258,25 @@ dashboards:
       - key: body
         value: <test-url>
       url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-ocp-installer-e2e-azure-ovn-kubernetes-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-ocp-installer-e2e-azure-ovn-kubernetes-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
     name: release-openshift-ocp-installer-e2e-azure-serial-4.3
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -304,6 +342,25 @@ dashboards:
     results_url_template:
       url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-gcp-fips-serial-4.3
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: title
+        value: 'E2E: <test-name>'
+      - key: body
+        value: <test-url>
+      url: https://github.com/openshift/origin/issues/new
+    name: release-openshift-ocp-installer-e2e-gcp-ovn-kubernetes-4.3
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.svc.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.svc.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-ocp-installer-e2e-gcp-ovn-kubernetes-4.3
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -774,6 +831,8 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-aws-fips-serial-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-mirrors-4.3
   name: release-openshift-ocp-installer-e2e-aws-mirrors-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-ovn-kubernetes-4.3
+  name: release-openshift-ocp-installer-e2e-aws-ovn-kubernetes-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-proxy-4.3
   name: release-openshift-ocp-installer-e2e-aws-proxy-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-serial-4.3
@@ -786,6 +845,8 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-azure-fips-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-fips-serial-4.3
   name: release-openshift-ocp-installer-e2e-azure-fips-serial-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-ovn-kubernetes-4.3
+  name: release-openshift-ocp-installer-e2e-azure-ovn-kubernetes-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-azure-serial-4.3
   name: release-openshift-ocp-installer-e2e-azure-serial-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-4.3
@@ -794,6 +855,8 @@ test_groups:
   name: release-openshift-ocp-installer-e2e-gcp-fips-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-fips-serial-4.3
   name: release-openshift-ocp-installer-e2e-gcp-fips-serial-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-ovn-kubernetes-4.3
+  name: release-openshift-ocp-installer-e2e-gcp-ovn-kubernetes-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-serial-4.3
   name: release-openshift-ocp-installer-e2e-gcp-serial-4.3
 - gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-metal-4.3
