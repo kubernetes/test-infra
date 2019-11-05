@@ -55,7 +55,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.16
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
@@ -143,7 +143,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.16
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '36'
@@ -173,7 +173,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.15
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '36'
@@ -203,7 +203,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.14
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '36'
@@ -233,7 +233,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.15
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '24'
@@ -263,7 +263,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
   annotations:
-    testgrid-dashboards: sig-release-job-config-errors
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.14
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-stale-results-hours: '24'
