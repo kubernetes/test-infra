@@ -22,7 +22,7 @@ main() {
 
   parse-args "$@"
   user-from-token
-  ensure-git-config
+  email-from-token
 
   echo "Ensuring kubernetes/test-infra repo"
   if [[ -d test-infra ]]; then
@@ -40,6 +40,7 @@ main() {
   echo "Checking out ${branch}"
   cd "${k8s_repo}"
   git checkout -B "${branch}"
+  ensure-git-config
 
   echo "Generating testgrid yaml"
   /configurator \
@@ -77,11 +78,11 @@ main() {
 
 parse-args() {
   token=$(readlink -m "$1")
-  prow_config="${CONFIG_PATH:-$2}"
-  job_config="${JOB_CONFIG_PATH:-$3}"
-  testgrid_config="${TESTGRID_CONFIG:-$4}"
-  testgrid_subdir="${TESTGRID_LOCAL_SUBDIR:-$5}"
-  remote_fork_repo="${FORK_GH_REPO:-"test-infra"}"
+  prow_config=$(readlink -m "$2")
+  job_config=$(readlink -m "$3")
+  testgrid_config=$(readlink -m "$4")
+  testgrid_subdir="$5"
+  remote_fork_repo="test-infra"
 
   if [[ ! -f ${token} ]]; then
     echo "ERROR: [github_token] ${token} must be a file path." >&2
@@ -103,6 +104,12 @@ parse-args() {
 
 user-from-token() {
   user=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
+  echo "Using user from GitHub: ${user}"
+}
+
+email-from-token() {
+  email=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"email\": \"\(.*\)\",/\1/p")
+  echo "Using email from GitHub: ${email}"
 }
 
 cleanup-repository() {
@@ -112,6 +119,9 @@ cleanup-repository() {
 }
 
 ensure-git-config() {
+  git config user.name ${user}
+  git config user.email ${email}
+
   git config user.name &>/dev/null && git config user.email &>/dev/null && return 0
   echo "ERROR: git config user.name, user.email unset. No defaults provided" >&2
   return 1
