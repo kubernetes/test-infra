@@ -212,7 +212,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
 
   annotations:
-    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-dashboards: sig-autoscaling-hpa, sig-release-master-blocking
     testgrid-tab-name: gci-gce-autoscaling-hpa-cm
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
@@ -272,7 +272,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
 
   annotations:
-    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-dashboards: sig-autoscaling-hpa, sig-release-master-blocking
     testgrid-tab-name: gci-gce-autoscaling-migs-hpa
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa-cm
@@ -301,7 +301,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
 
   annotations:
-    testgrid-dashboards: sig-autoscaling-hpa
+    testgrid-dashboards: sig-autoscaling-hpa, sig-release-master-blocking
     testgrid-tab-name: gci-gke-autoscaling-hpa-cm
 - interval: 30m
   name: ci-kubernetes-e2e-autoscaling-hpa-cpu
