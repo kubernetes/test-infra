@@ -33,7 +33,7 @@ steps:
 substitutions:
   _GIT_TAG: '12345'
   _CONFIG: master
-  _GO_VERSION: 1.12.12
+  _GO_VERSION: 1.13.4
   _K8S_RELEASE: stable
   _BAZEL_VERSION: 0.23.2
   _UPGRADE_DOCKER: 'false'
