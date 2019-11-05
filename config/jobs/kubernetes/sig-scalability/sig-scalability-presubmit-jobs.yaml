@@ -258,7 +258,7 @@ presubmits:
         - --extract=local
         - --gcp-node-size=n1-standard-8
         - --gcp-nodes=82
-        - --gcp-project=k8s-scale-testing
+        - --gcp-project=k8s-presubmit-scale
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=5000
