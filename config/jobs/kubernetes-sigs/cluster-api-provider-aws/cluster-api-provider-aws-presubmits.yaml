@@ -76,7 +76,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: verify
     # conformance test against kubernetes master branch with `kind` + cluster-api-provider-aws
-  - name: pull-cluster-api-provider-aws-conformance
+  - name: pull-cluster-api-provider-aws-make-conformance
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -85,33 +85,31 @@ presubmits:
       preset-aws-credential: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: true
     optional: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
-          args:
-            - "--job=$(JOB_NAME)"
-            - "--root=/go/src"
-            - "--repo=k8s.io/kubernetes=master"
-            - "--repo=sigs.k8s.io/cluster-api=master"
-            - "--repo=sigs.k8s.io/image-builder=master"
-            - "--repo=sigs.k8s.io/cluster-api-provider-aws=$(PULL_REFS)"
-            - "--repo=sigs.k8s.io/kind=master"
-            - "--service-account=/etc/service-account/service-account.json"
-            - "--upload=gs://kubernetes-jenkins/pr-logs"
-            - "--scenario=execute"
-            - "--"
-            - "bash"
-            - "--"
-            - "-c"
-            - "cd ./../../sigs.k8s.io/cluster-api-provider-aws && scripts/ci-conformance.sh"
-          # we need privileged mode in order to do docker in docker
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
+          command:
+            - "runner.sh"
+            - "./scripts/ci-conformance.sh"
           env:
             - name: BOSKOS_HOST
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
+          # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
           resources:
