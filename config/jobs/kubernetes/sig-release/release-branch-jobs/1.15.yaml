@@ -49,7 +49,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/latest
+      - --extract=ci/latest-1.15
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
@@ -180,7 +180,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=e2e-big
-      - --extract=ci/latest
+      - --extract=ci/latest-1.15
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
@@ -367,7 +367,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
-      - --extract=ci/k8s-stable2
+      - --extract=ci/latest-1.15
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
       - --provider=gce
