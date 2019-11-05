@@ -29,49 +29,37 @@ import (
 )
 
 // K8s returns $GOPATH/src/k8s.io/...
-func K8s(topdir string, parts ...string) string {
-	gopathList := filepath.SplitList(build.Default.GOPATH)
-	found := false
-	var kubedir string
-	for _, gopath := range gopathList {
-		kubedir = filepath.Join(gopath, "src", "k8s.io", topdir)
-		if _, err := os.Stat(kubedir); !os.IsNotExist(err) {
-			found = true
-			break
-		}
-	}
-	if !found {
-		// Default to the first item in GOPATH list.
-		kubedir = filepath.Join(gopathList[0], "src", "k8s.io", topdir)
-		log.Printf(
-			"Warning: Couldn't find directory src/k8s.io/%s under any of GOPATH %s, defaulting to %s",
-			topdir, build.Default.GOPATH, kubedir)
-	}
-	p := []string{kubedir}
-	p = append(p, parts...)
-	return filepath.Join(p...)
+func K8s(projectName string, parts ...string) string {
+	return getProjectDir("k8s.io", projectName, parts...)
 }
 
-// githubProjectPath returns $GOPATH/src/github.com/<username>/<projectName>
-func K8sSigs(projectName string) string {
+// K8sSigs returns $GOPATH/src/sigs.k8s.io/...
+func K8sSigs(projectName string, parts ...string) string {
+	return getProjectDir("sigs.k8s.io", projectName, parts...)
+}
+
+// GetProjectDir returns $GOPATH/src/<project-namespace>/...
+func getProjectDir(namespace, projectName string, parts ...string) string {
 	gopathList := filepath.SplitList(build.Default.GOPATH)
 	found := false
-	var githubDir string
+	var projectDir string
 	for _, gopath := range gopathList {
-		githubDir = filepath.Join(gopath, "src", "sigs.k8s.io")
-		if _, err := os.Stat(githubDir); !os.IsNotExist(err) {
+		projectDir = filepath.Join(gopath, "src", namespace, projectName)
+		if _, err := os.Stat(projectDir); !os.IsNotExist(err) {
 			found = true
 			break
 		}
 	}
 	if !found {
 		// Default to the first item in GOPATH list.
-		githubDir = filepath.Join(gopathList[0], "src", "sigs.k8s.io")
+		projectDir = filepath.Join(gopathList[0], "src", "k8s.io", projectName)
 		log.Printf(
-			"Warning: Couldn't find directory src/github.com/kubernetes-sigs under any of GOPATH %s, defaulting to %s",
-			build.Default.GOPATH, githubDir)
+			"Warning: Couldn't find directory src/%s/%s under any of GOPATH %s, defaulting to %s",
+			namespace, projectName, build.Default.GOPATH, projectDir)
 	}
-	return filepath.Join(githubDir, projectName)
+	p := []string{projectDir}
+	p = append(p, parts...)
+	return filepath.Join(p...)
 }
 
 // AppendError does append(errs, err) if err != nil

@@ -41,7 +41,6 @@ use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019: tru
 approve:
 - repos:
   - kubernetes/cloud-provider-aws
-  - kubernetes/cloud-provider-azure
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
@@ -529,12 +528,6 @@ plugins:
   - release-note
   - require-matching-label
 
-  kubernetes/cloud-provider-azure:
-  - milestone
-  - milestonestatus
-  - release-note
-  - require-matching-label
-
   kubernetes/cloud-provider-openstack:
   - override
 
@@ -706,6 +699,12 @@ plugins:
   - welcome
   - wip
   - yuks
+
+  kubernetes-sigs/cloud-provider-azure:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - release-note
