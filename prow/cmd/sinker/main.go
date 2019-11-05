@@ -130,22 +130,10 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating build cluster clients.")
-	}
-
-	var podClients []corev1.PodInterface
-	for _, client := range buildClusterClients {
-		// sinker doesn't care about build cluster aliases
-		podClients = append(podClients, client)
-	}
-
 	c := controller{
 		ctx:           context.Background(),
 		logger:        logrus.NewEntry(logrus.StandardLogger()),
 		prowJobClient: mgr.GetClient(),
-		podClients:    podClients,
 		config:        cfg,
 		runOnce:       o.runOnce,
 	}
@@ -162,7 +150,6 @@ type controller struct {
 	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
-	podClients    []corev1.PodInterface
 	config        config.Getter
 	runOnce       bool
 }

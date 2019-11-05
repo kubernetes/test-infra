@@ -104,9 +104,6 @@ type Controller struct {
 	// if skip report job results to github
 	skipReport bool
 
-	// pod client
-	podClients []corev1.PodInterface
-
 	clock clock.Clock
 }
 
@@ -609,22 +606,33 @@ func (c *Controller) patchProwjob(srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob)
 
 }
 
+type plankMetrics struct {
+	podsCreated            int
+	podsRemoved            map[string]int
+	podRemovalErrors       map[string]int
+
+}
 // Get the jobs that we need to retain so horologium can continue working
 // as intended.
 // And clean up old pods.
 func (c *Controller) cleanUpPods() {
+
+		metrics := 	      plankMetrics{
+		podsRemoved:  	  map[string]int{},
+		podRemovalErrors: map[string]int{}}
 
 	isFinished := sets.NewString()
 	isExist := sets.NewString()
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	for _, client := range c.podClients {
+	for _, client := range c.buildClients {
 		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		if err != nil {
 			c.log.WithError(err).Error("Error listing pods.")
 			return
 		}
+		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
@@ -645,8 +653,10 @@ func (c *Controller) cleanUpPods() {
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
 				c.log.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+				metrics.podsRemoved[reason]++
 			} else {
 				c.log.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
+				metrics.podRemovalErrors[string(k8serrors.ReasonForError(err))]++
 			}
 		}
 	}
