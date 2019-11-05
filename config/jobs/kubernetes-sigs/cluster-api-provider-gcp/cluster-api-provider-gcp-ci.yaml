@@ -171,6 +171,7 @@ periodics:
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
+          - "--use-ci-artifacts"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
