@@ -34,7 +34,7 @@ periodics:
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191105-e60677a-1.14
       env:
       # for bazel caching
       - name: REPO_OWNER
@@ -121,7 +121,7 @@ periodics:
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191105-e60677a-1.15
       env:
       # for bazel caching
       - name: REPO_OWNER
@@ -208,7 +208,7 @@ periodics:
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191105-e60677a-1.16
       env:
       # for bazel caching
       - name: REPO_OWNER
@@ -295,7 +295,7 @@ periodics:
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191105-e60677a-1.17
       env:
       # for bazel caching
       - name: REPO_OWNER
@@ -382,7 +382,7 @@ periodics:
     path_alias: sigs.k8s.io/kind
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191105-e60677a-master
       env:
       # for bazel caching
       - name: REPO_OWNER
