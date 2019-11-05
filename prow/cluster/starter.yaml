@@ -142,7 +142,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20191104-e7d5b8453
+        image: gcr.io/k8s-prow/hook:v20191105-3cd32f35e
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -221,7 +221,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20191104-e7d5b8453
+        image: gcr.io/k8s-prow/plank:v20191105-3cd32f35e
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -260,7 +260,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20191104-e7d5b8453
+        image: gcr.io/k8s-prow/sinker:v20191105-3cd32f35e
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -298,7 +298,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20191104-e7d5b8453
+        image: gcr.io/k8s-prow/deck:v20191105-3cd32f35e
         args:
         - --config-path=/etc/config/config.yaml
         - --plugin-config=/etc/plugins/plugins.yaml
@@ -378,7 +378,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20191104-e7d5b8453
+        image: gcr.io/k8s-prow/horologium:v20191105-3cd32f35e
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -412,7 +412,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20191104-e7d5b8453
+        image: gcr.io/k8s-prow/tide:v20191105-3cd32f35e
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -489,7 +489,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20191104-e7d5b8453
+        image: gcr.io/k8s-prow/status-reconciler:v20191105-3cd32f35e
         args:
         - --dry-run=false
         - --continue-on-error=true
