@@ -105,8 +105,8 @@ func TestSetDefault_Maps(t *testing.T) {
 		{
 			name: "nothing",
 			expected: map[string]ConfigMapSpec{
-				"config/prow/config.yaml":  {Name: "config", Namespaces: []string{""}},
-				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
+				"config/prow/config.yaml":  {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -118,8 +118,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				},
 			},
 			expected: map[string]ConfigMapSpec{
-				"hello.yaml": {Name: "my-cm", Namespaces: []string{""}},
-				"world.yaml": {Name: "you-cm", Namespaces: []string{""}},
+				"hello.yaml": {Name: "my-cm", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"world.yaml": {Name: "you-cm", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -128,8 +128,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				ConfigFile: "foo.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"foo.yaml":                 {Name: "config", Namespaces: []string{""}},
-				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}},
+				"foo.yaml":                 {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config/prow/plugins.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -138,8 +138,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "bar.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"bar.yaml":                {Name: "plugins", Namespaces: []string{""}},
-				"config/prow/config.yaml": {Name: "config", Namespaces: []string{""}},
+				"bar.yaml":                {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"config/prow/config.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -149,8 +149,8 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "bar.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"foo.yaml": {Name: "config", Namespaces: []string{""}},
-				"bar.yaml": {Name: "plugins", Namespaces: []string{""}},
+				"foo.yaml": {Name: "config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"bar.yaml": {Name: "plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 		{
@@ -165,9 +165,9 @@ func TestSetDefault_Maps(t *testing.T) {
 				PluginFile: "plugins.yaml",
 			},
 			expected: map[string]ConfigMapSpec{
-				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}},
-				"plugins.yaml":       {Name: "overwrite-plugins", Namespaces: []string{""}},
-				"unconflicting.yaml": {Name: "ignored", Namespaces: []string{""}},
+				"config.yaml":        {Name: "overwrite-config", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"plugins.yaml":       {Name: "overwrite-plugins", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
+				"unconflicting.yaml": {Name: "ignored", Namespaces: []string{""}, Clusters: map[string][]string{"default": {""}}},
 			},
 		},
 	}
@@ -1133,6 +1133,85 @@ func TestStatesMatch(t *testing.T) {
 			actual := statesMatch(tc.first, tc.second)
 			if actual != tc.expected {
 				t.Errorf("%s: expected %t, got %t", tc.name, tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestValidateConfigUpdater(t *testing.T) {
+	testCases := []struct {
+		name        string
+		cu          *ConfigUpdater
+		expected    error
+		expectedMsg string
+	}{
+		{
+			name: "same key of different cms in the same ns",
+			cu: &ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"core-services/prow/02_config/_plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+					"somewhere/else/plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "other-namespace",
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "same key of a cm in the same ns",
+			cu: &ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"core-services/prow/02_config/_plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+					"somewhere/else/plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+				},
+			},
+			expected: fmt.Errorf("key plugins.yaml in configmap plugins updated with more than one file"),
+		},
+		{
+			name: "same key of a cm in the same ns different clusters",
+			cu: &ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"core-services/prow/02_config/_plugins.yaml": {
+						Name:      "plugins",
+						Key:       "plugins.yaml",
+						Namespace: "some-namespace",
+					},
+					"somewhere/else/plugins.yaml": {
+						Name:     "plugins",
+						Key:      "plugins.yaml",
+						Clusters: map[string][]string{"other": {"some-namespace"}},
+					},
+				},
+			},
+			expected: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := validateConfigUpdater(tc.cu)
+			if tc.expected == nil && actual != nil {
+				t.Errorf("unexpected error: '%v'", actual)
+			}
+			if tc.expected != nil && actual == nil {
+				t.Errorf("expected error '%v'', but it is nil", tc.expected)
+			}
+			if tc.expected != nil && actual != nil && tc.expected.Error() != actual.Error() {
+				t.Errorf("expected error '%v', but it is '%v'", tc.expected, actual)
 			}
 		})
 	}

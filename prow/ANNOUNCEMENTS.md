@@ -1,6 +1,9 @@
 # Announcements
 
 New features added to each component:
+ - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
+    by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
+    The fields _namespace_ and _additional_namespaces_ are deprecated.
  - *October 27, 2019* The `trusted_org` functionality in trigger is being
    deprecated in favour of being more explicit in the fact that org members or
    repo collaborators are the trusted users. This option will be removed

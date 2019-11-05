@@ -151,6 +151,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client for infrastructure cluster.")
 	}
 
+	buildClusterCoreV1Clients, err := o.kubernetes.BuildClusterCoreV1Clients(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes clients for build cluster.")
+	}
+
 	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
@@ -178,13 +183,14 @@ func main() {
 	ownersClient := repoowners.NewClient(gitClient, githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
 
 	clientAgent := &plugins.ClientAgent{
-		GitHubClient:     githubClient,
-		ProwJobClient:    prowJobClient,
-		KubernetesClient: infrastructureClient,
-		GitClient:        gitClient,
-		SlackClient:      slackClient,
-		OwnersClient:     ownersClient,
-		BugzillaClient:   bugzillaClient,
+		GitHubClient:              githubClient,
+		ProwJobClient:             prowJobClient,
+		KubernetesClient:          infrastructureClient,
+		BuildClusterCoreV1Clients: buildClusterCoreV1Clients,
+		GitClient:                 gitClient,
+		SlackClient:               slackClient,
+		OwnersClient:              ownersClient,
+		BugzillaClient:            bugzillaClient,
 	}
 
 	promMetrics := hook.NewMetrics()
