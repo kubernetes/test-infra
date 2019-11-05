@@ -44,6 +44,10 @@ periodics:
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  - org: kubernetes-sigs
     repo: cluster-api
     base_ref: master
     path_alias: "sigs.k8s.io/cluster-api"
@@ -55,10 +59,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-gcp
-    base_ref: master
-    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -96,6 +96,10 @@ periodics:
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-0.2
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  - org: kubernetes-sigs
     repo: cluster-api
     base_ref: master
     path_alias: "sigs.k8s.io/cluster-api"
@@ -107,10 +111,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-gcp
-    base_ref: release-0.2
-    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -148,6 +148,10 @@ periodics:
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-0.2
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  - org: kubernetes-sigs
     repo: cluster-api
     base_ref: master
     path_alias: "sigs.k8s.io/cluster-api"
@@ -159,10 +163,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-gcp
-    base_ref: release-0.2
-    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental

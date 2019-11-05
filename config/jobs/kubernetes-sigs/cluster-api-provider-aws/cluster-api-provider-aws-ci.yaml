@@ -97,6 +97,10 @@ periodics:
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  - org: kubernetes-sigs
     repo: image-builder
     base_ref: master
     path_alias: "sigs.k8s.io/image-builder"
@@ -104,10 +108,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: master
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -150,6 +150,10 @@ periodics:
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: release-0.4
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  - org: kubernetes-sigs
     repo: image-builder
     base_ref: master
     path_alias: "sigs.k8s.io/image-builder"
@@ -157,10 +161,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: release-0.4
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -203,6 +203,10 @@ periodics:
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: release-0.4
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  - org: kubernetes-sigs
     repo: image-builder
     base_ref: master
     path_alias: "sigs.k8s.io/image-builder"
@@ -210,10 +214,6 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-aws
-    base_ref: release-0.4
-    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
