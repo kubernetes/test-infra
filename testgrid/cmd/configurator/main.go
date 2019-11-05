@@ -200,11 +200,12 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		if err != nil {
 			return err
 		}
-		if val, err := yamlcfg.LoadDefaults(b); err != nil {
+		val, err := yamlcfg.LoadDefaults(b)
+		if err != nil {
 			return err
-		} else {
-			d = &val
 		}
+		d = &val
+
 	}
 
 	if err := applyProwjobAnnotations(&c, d, prowConfigAgent); err != nil {
