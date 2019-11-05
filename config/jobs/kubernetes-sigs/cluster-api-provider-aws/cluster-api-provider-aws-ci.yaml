@@ -84,7 +84,6 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-aws-make-conformance-master
-  path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   interval: 3h
   max_concurrency: 5
   labels:
@@ -95,8 +94,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  branches:
-    - master
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
@@ -107,6 +104,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -136,7 +137,6 @@ periodics:
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-make-conformance-stable
-  path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   interval: 3h
   max_concurrency: 5
   labels:
@@ -147,8 +147,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  branches:
-    - release-0.4
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
@@ -159,6 +157,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: release-0.4
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -188,7 +190,6 @@ periodics:
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
 - name: ci-cluster-api-provider-aws-make-conformance-stable-k8s-ci-artifacts
-  path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   interval: 3h
   max_concurrency: 5
   labels:
@@ -199,8 +200,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-  branches:
-    - release-0.4
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
@@ -211,6 +210,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: release-0.4
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental

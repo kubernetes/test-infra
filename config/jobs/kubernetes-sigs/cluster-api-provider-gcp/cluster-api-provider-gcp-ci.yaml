@@ -35,15 +35,12 @@ periodics:
     testgrid-tab-name: unit tests
 - name: ci-cluster-api-provider-gcp-make-conformance-master
   interval: 3h
-  branches:
-  - master
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
@@ -58,6 +55,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: master
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -86,15 +87,12 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-gcp-make-conformance-stable
   interval: 3h
-  branches:
-  - release-0.2
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
@@ -109,6 +107,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-0.2
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
@@ -137,15 +139,12 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-provider-gcp-make-conformance-stable-k8s-ci-artifacts
   interval: 3h
-  branches:
-  - release-0.2
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-  path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
@@ -160,6 +159,10 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-0.2
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
