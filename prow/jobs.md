@@ -164,7 +164,7 @@ contains one or more of the following phrases:
  - `/test all` : When posting `/test all`, all automatically run jobs will run
    conditionally.
 
-Note: is is possible to configure a job's `trigger` to match any of the above keywords
+Note: It is possible to configure a job's `trigger` to match any of the above keywords
 (`/retest` and/or `/test all`) but this behavior is not suggested as it will confuse
 developers that expect consistent behavior from these commands. More generally, it is
 possible to configure a job's `trigger` to match any command that is otherwise known
