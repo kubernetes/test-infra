@@ -1199,6 +1199,18 @@ func TestValidateConfigUpdater(t *testing.T) {
 			},
 			expected: nil,
 		},
+		{
+			name: "a cm with additional namespaces",
+			cu: &ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"ci-operator/templates/openshift/installer/cluster-launch-installer-src.yaml": {
+						Name:                 "prow-job-cluster-launch-installer-src",
+						AdditionalNamespaces: []string{"ci-stg"},
+					},
+				},
+			},
+			expected: nil,
+		},
 	}
 
 	for _, tc := range testCases {

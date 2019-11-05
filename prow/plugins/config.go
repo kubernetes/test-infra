@@ -965,7 +965,6 @@ type ConfigMapID struct {
 
 func validateConfigUpdater(updater *ConfigUpdater) error {
 	updater.SetDefaults()
-	files := sets.NewString()
 	configMapKeys := map[ConfigMapID]sets.String{}
 	for file, config := range updater.Maps {
 		for cluster, namespaces := range config.Clusters {
@@ -975,10 +974,6 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 					Namespace: namespace,
 					Cluster:   cluster,
 				}
-				if files.Has(file) {
-					return fmt.Errorf("file %s listed more than once in config updater config", file)
-				}
-				files.Insert(file)
 
 				key := config.Key
 				if key == "" {
