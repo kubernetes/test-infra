@@ -108,7 +108,7 @@ periodics:
       # fetch a release version of cri-tools from GitHub before it exists.
       #
       # ref: https://github.com/kubernetes/kubernetes/issues/84548
-      - -packages kubelet,kubectl,kubeadm,kubernetes-cni
+      - -packages=kubelet,kubectl,kubeadm,kubernetes-cni
       resources:
         requests:
           cpu: 4
