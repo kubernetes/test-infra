@@ -57,22 +57,23 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
     optional: true
     decorate: true
     extra_refs:
-      - org: kubernetes-sigs
-        repo: cluster-api
-        base_ref: master
-        path_alias: "sigs.k8s.io/cluster-api"
-      - org: kubernetes-sigs
-        repo: image-builder
-        base_ref: master
-        path_alias: "sigs.k8s.io/image-builder"
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20191103-6816af1-experimental
