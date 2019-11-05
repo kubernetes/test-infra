@@ -1731,6 +1731,7 @@ func TestDumpOrgConfig(t *testing.T) {
 	repoName := "project"
 	repoDescription := "awesome testing project"
 	repoHomepage := "https://www.somewhe.re/something/"
+	master := "master-branch"
 	cases := []struct {
 		name              string
 		orgOverride       string
@@ -1830,7 +1831,17 @@ func TestDumpOrgConfig(t *testing.T) {
 				7: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}, {Name: "admin-repo", Permissions: github.RepoPermissions{Admin: true}}},
 			},
 			repos: []github.Repo{
-				{Name: repoName, Description: repoDescription, Homepage: repoHomepage, Private: false, HasIssues: true, HasProjects: true, HasWiki: true},
+				{
+					Name:          repoName,
+					Description:   repoDescription,
+					Homepage:      repoHomepage,
+					Private:       false,
+					HasIssues:     true,
+					HasProjects:   true,
+					HasWiki:       true,
+					Archived:      true,
+					DefaultBranch: master,
+				},
 			},
 			expected: org.Config{
 				Metadata: org.Metadata{
@@ -1896,6 +1907,8 @@ func TestDumpOrgConfig(t *testing.T) {
 						AllowMergeCommit: &no,
 						AllowRebaseMerge: &no,
 						AllowSquashMerge: &no,
+						Archived:         &yes,
+						DefaultBranch:    &master,
 					},
 				},
 			},

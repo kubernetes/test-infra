@@ -355,6 +355,8 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 			AllowMergeCommit: &repos[idx].AllowMergeCommit,
 			AllowSquashMerge: &repos[idx].AllowSquashMerge,
 			AllowRebaseMerge: &repos[idx].AllowRebaseMerge,
+			Archived:         &repos[idx].Archived,
+			DefaultBranch:    &repos[idx].DefaultBranch,
 		}
 	}
 
