@@ -1743,7 +1743,7 @@ func TestDumpOrgConfig(t *testing.T) {
 		teamMembers       map[int][]string
 		maintainers       map[int][]string
 		repoPermissions   map[int][]github.Repo
-		repos             []github.Repo
+		repos             []github.FullRepo
 		expected          org.Config
 		err               bool
 	}{
@@ -1780,9 +1780,11 @@ func TestDumpOrgConfig(t *testing.T) {
 		{
 			name: "fails if GetTeams fails",
 			err:  true,
-			repos: []github.Repo{
+			repos: []github.FullRepo{
 				{
-					Name: "fail",
+					Repo: github.Repo{
+						Name: "fail",
+					},
 				},
 			},
 		},
@@ -1830,17 +1832,19 @@ func TestDumpOrgConfig(t *testing.T) {
 				6: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}},
 				7: {{Name: "pull-repo", Permissions: github.RepoPermissions{Pull: true}}, {Name: "admin-repo", Permissions: github.RepoPermissions{Admin: true}}},
 			},
-			repos: []github.Repo{
+			repos: []github.FullRepo{
 				{
-					Name:          repoName,
-					Description:   repoDescription,
-					Homepage:      repoHomepage,
-					Private:       false,
-					HasIssues:     true,
-					HasProjects:   true,
-					HasWiki:       true,
-					Archived:      true,
-					DefaultBranch: master,
+					Repo: github.Repo{
+						Name:          repoName,
+						Description:   repoDescription,
+						Homepage:      repoHomepage,
+						Private:       false,
+						HasIssues:     true,
+						HasProjects:   true,
+						HasWiki:       true,
+						Archived:      true,
+						DefaultBranch: master,
+					},
 				},
 			},
 			expected: org.Config{
@@ -2062,7 +2066,7 @@ type fakeDumpClient struct {
 	teamMembers     map[int][]string
 	maintainers     map[int][]string
 	repoPermissions map[int][]github.Repo
-	repos           []github.Repo
+	repos           []github.FullRepo
 }
 
 func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
@@ -2139,13 +2143,28 @@ func (c fakeDumpClient) ListTeamRepos(id int) ([]github.Repo, error) {
 }
 
 func (c fakeDumpClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	var repos []github.Repo
 	for _, repo := range c.repos {
 		if repo.Name == "fail" {
 			return nil, fmt.Errorf("injected GetRepos error")
 		}
+		repos = append(repos, repo.Repo)
 	}
 
-	return c.repos, nil
+	return repos, nil
+}
+
+func (c fakeDumpClient) GetRepo(owner, repo string) (github.FullRepo, error) {
+	for _, r := range c.repos {
+		switch {
+		case r.Name == "fail":
+			return r, fmt.Errorf("injected GetRepo error")
+		case r.Name == repo:
+			return r, nil
+		}
+	}
+
+	return github.FullRepo{}, fmt.Errorf("not found")
 }
 
 func fixup(ret *org.Config) {
@@ -2496,7 +2515,15 @@ func TestConfigureTeamRepos(t *testing.T) {
 
 type fakeRepoClient struct {
 	t     *testing.T
-	repos map[string]github.Repo
+	repos map[string]github.FullRepo
+}
+
+func (f fakeRepoClient) GetRepo(owner, name string) (github.FullRepo, error) {
+	repo, ok := f.repos[name]
+	if !ok {
+		return repo, fmt.Errorf("repo not found")
+	}
+	return repo, nil
 }
 
 func (f fakeRepoClient) GetRepos(orgName string, isUser bool) ([]github.Repo, error) {
@@ -2506,7 +2533,7 @@ func (f fakeRepoClient) GetRepos(orgName string, isUser bool) ([]github.Repo, er
 
 	repos := make([]github.Repo, 0, len(f.repos))
 	for _, repo := range f.repos {
-		repos = append(repos, repo)
+		repos = append(repos, repo.Repo)
 	}
 
 	// sort for deterministic output
@@ -2517,7 +2544,7 @@ func (f fakeRepoClient) GetRepos(orgName string, isUser bool) ([]github.Repo, er
 	return repos, nil
 }
 
-func (f fakeRepoClient) CreateRepo(owner string, isUser bool, repoReq github.RepoCreateRequest) (*github.Repo, error) {
+func (f fakeRepoClient) CreateRepo(owner string, isUser bool, repoReq github.RepoCreateRequest) (*github.FullRepo, error) {
 	if *repoReq.Name == "fail" {
 		return nil, fmt.Errorf("injected CreateRepo failure")
 	}
@@ -2533,7 +2560,7 @@ func (f fakeRepoClient) CreateRepo(owner string, isUser bool, repoReq github.Rep
 	return repo, nil
 }
 
-func (f fakeRepoClient) UpdateRepo(owner, name string, want github.RepoUpdateRequest) (*github.Repo, error) {
+func (f fakeRepoClient) UpdateRepo(owner, name string, want github.RepoUpdateRequest) (*github.FullRepo, error) {
 	if name == "fail" {
 		return nil, fmt.Errorf("injected UpdateRepo failure")
 	}
@@ -2577,9 +2604,9 @@ func (f fakeRepoClient) UpdateRepo(owner, name string, want github.RepoUpdateReq
 	return &have, nil
 }
 
-func makeFakeRepoClient(t *testing.T, repos ...github.Repo) fakeRepoClient {
+func makeFakeRepoClient(t *testing.T, repos ...github.FullRepo) fakeRepoClient {
 	fc := fakeRepoClient{
-		repos: make(map[string]github.Repo, len(repos)),
+		repos: make(map[string]github.FullRepo, len(repos)),
 		t:     t,
 	}
 	for _, repo := range repos {
@@ -2623,7 +2650,7 @@ func TestConfigureRepos(t *testing.T) {
 		opts            options
 		orgConfig       org.Config
 		orgNameOverride string
-		repos           []github.Repo
+		repos           []github.FullRepo
 
 		expectError   bool
 		expectedRepos []github.Repo
@@ -2653,7 +2680,7 @@ func TestConfigureRepos(t *testing.T) {
 					newName: newConfigRepo,
 				},
 			},
-			repos: []github.Repo{oldRepo},
+			repos: []github.FullRepo{{Repo: oldRepo}},
 
 			expectedRepos: []github.Repo{newRepo, oldRepo},
 		},
@@ -2665,7 +2692,7 @@ func TestConfigureRepos(t *testing.T) {
 					newName: newConfigRepo,
 				},
 			},
-			repos: []github.Repo{oldRepo},
+			repos: []github.FullRepo{{Repo: oldRepo}},
 
 			expectError:   true,
 			expectedRepos: []github.Repo{oldRepo},
@@ -2677,7 +2704,7 @@ func TestConfigureRepos(t *testing.T) {
 					fail: newConfigRepo,
 				},
 			},
-			repos: []github.Repo{oldRepo},
+			repos: []github.FullRepo{{Repo: oldRepo}},
 
 			expectError:   true,
 			expectedRepos: []github.Repo{oldRepo},
@@ -2690,7 +2717,7 @@ func TestConfigureRepos(t *testing.T) {
 					"REPO": newConfigRepo,
 				},
 			},
-			repos: []github.Repo{oldRepo},
+			repos: []github.FullRepo{{Repo: oldRepo}},
 
 			expectError:   true,
 			expectedRepos: []github.Repo{oldRepo},
@@ -2702,7 +2729,7 @@ func TestConfigureRepos(t *testing.T) {
 					oldName: newConfigRepo,
 				},
 			},
-			repos: []github.Repo{oldRepo},
+			repos: []github.FullRepo{{Repo: oldRepo}},
 			expectedRepos: []github.Repo{
 				{
 					Name:        oldName,
@@ -2718,7 +2745,7 @@ func TestConfigureRepos(t *testing.T) {
 					"fail": newConfigRepo,
 				},
 			},
-			repos:         []github.Repo{failRepo},
+			repos:         []github.FullRepo{{Repo: failRepo}},
 			expectError:   true,
 			expectedRepos: []github.Repo{failRepo},
 		},
@@ -2731,7 +2758,7 @@ func TestConfigureRepos(t *testing.T) {
 					oldName: {Archived: &no, Description: &updated},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Archived: true, Description: "OLD"}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Archived: true, Description: "OLD"}}},
 			expectError:   true,
 			expectedRepos: []github.Repo{{Name: oldName, Archived: true, Description: updated}},
 		},
@@ -2742,7 +2769,7 @@ func TestConfigureRepos(t *testing.T) {
 					oldName: {Archived: &yes, Description: &updated},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Archived: false, Description: "OLD"}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Archived: false, Description: "OLD"}}},
 			expectError:   true,
 			expectedRepos: []github.Repo{{Name: oldName, Archived: false, Description: updated}},
 		},
@@ -2756,7 +2783,7 @@ func TestConfigureRepos(t *testing.T) {
 					oldName: {Archived: &yes},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Archived: false}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Archived: false}}},
 			expectedRepos: []github.Repo{{Name: oldName, Archived: true}},
 		},
 		{
@@ -2766,7 +2793,7 @@ func TestConfigureRepos(t *testing.T) {
 					oldName: {Private: &no, Description: &updated},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Private: true, Description: "OLD"}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Private: true, Description: "OLD"}}},
 			expectError:   true,
 			expectedRepos: []github.Repo{{Name: oldName, Private: true, Description: updated}},
 		},
@@ -2780,7 +2807,7 @@ func TestConfigureRepos(t *testing.T) {
 					oldName: {Private: &no},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Private: true}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Private: true}}},
 			expectedRepos: []github.Repo{{Name: oldName, Private: false}},
 		},
 		{
@@ -2790,7 +2817,7 @@ func TestConfigureRepos(t *testing.T) {
 					newName: {Previously: []string{oldName}},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Description: "renamed repo"}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Description: "renamed repo"}}},
 			expectedRepos: []github.Repo{{Name: newName, Description: "renamed repo"}},
 		},
 		{
@@ -2800,7 +2827,7 @@ func TestConfigureRepos(t *testing.T) {
 					"repo": {Previously: []string{"REPO"}},
 				},
 			},
-			repos:         []github.Repo{{Name: "REPO", Description: "renamed repo"}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: "REPO", Description: "renamed repo"}}},
 			expectedRepos: []github.Repo{{Name: "repo", Description: "renamed repo"}},
 		},
 		{
@@ -2811,7 +2838,7 @@ func TestConfigureRepos(t *testing.T) {
 					oldName: {Description: &newDescription},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Description: "this repo shall not be touched"}}},
 			expectError:   true,
 			expectedRepos: []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
 		},
@@ -2823,7 +2850,7 @@ func TestConfigureRepos(t *testing.T) {
 					"wants-wiki":     {Previously: []string{oldName}, HasProjects: &no, HasWiki: &yes},
 				},
 			},
-			repos:         []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: oldName, Description: "this repo shall not be touched"}}},
 			expectError:   true,
 			expectedRepos: []github.Repo{{Name: oldName, Description: "this repo shall not be touched"}},
 		},
@@ -2834,9 +2861,9 @@ func TestConfigureRepos(t *testing.T) {
 					newName: {Previously: []string{oldName}, Description: &newDescription},
 				},
 			},
-			repos: []github.Repo{
-				{Name: oldName, Description: "this repo shall not be touched"},
-				{Name: newName, Description: "this repo shall not be touched too"},
+			repos: []github.FullRepo{
+				{Repo: github.Repo{Name: oldName, Description: "this repo shall not be touched"}},
+				{Repo: github.Repo{Name: newName, Description: "this repo shall not be touched too"}},
 			},
 			expectError: true,
 			expectedRepos: []github.Repo{
@@ -2851,9 +2878,9 @@ func TestConfigureRepos(t *testing.T) {
 					newName: {Previously: []string{oldName, "even-older"}, Description: &newDescription},
 				},
 			},
-			repos: []github.Repo{
-				{Name: oldName, Description: "this repo shall not be touched"},
-				{Name: "even-older", Description: "this repo shall not be touched too"},
+			repos: []github.FullRepo{
+				{Repo: github.Repo{Name: oldName, Description: "this repo shall not be touched"}},
+				{Repo: github.Repo{Name: "even-older", Description: "this repo shall not be touched too"}},
 			},
 			expectError: true,
 			expectedRepos: []github.Repo{
@@ -2868,7 +2895,7 @@ func TestConfigureRepos(t *testing.T) {
 					"CamelCase": {Description: &newDescription},
 				},
 			},
-			repos:         []github.Repo{{Name: "CAMELCASE", Description: newDescription}},
+			repos:         []github.FullRepo{{Repo: github.Repo{Name: "CAMELCASE", Description: newDescription}}},
 			expectedRepos: []github.Repo{{Name: "CamelCase", Description: newDescription}},
 		},
 	}
@@ -2973,7 +3000,7 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 
 	testCases := []struct {
 		description string
-		current     github.Repo
+		current     github.FullRepo
 		name        string
 		newState    org.Repo
 
@@ -2981,11 +3008,13 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 	}{
 		{
 			description: "update is just a delta from current state",
-			current: github.Repo{
-				Name:          repoName,
-				Description:   description,
-				Homepage:      homepage,
-				DefaultBranch: master,
+			current: github.FullRepo{
+				Repo: github.Repo{
+					Name:          repoName,
+					Description:   description,
+					Homepage:      homepage,
+					DefaultBranch: master,
+				},
 			},
 			name: repoName,
 			newState: org.Repo{
@@ -2998,10 +3027,10 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 		},
 		{
 			description: "empty delta is returned when no update is needed",
-			current: github.Repo{
+			current: github.FullRepo{Repo: github.Repo{
 				Name:        repoName,
 				Description: description,
-			},
+			}},
 			name: repoName,
 			newState: org.Repo{
 				Description: &description,
@@ -3009,9 +3038,9 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 		},
 		{
 			description: "request to rename a repo works",
-			current: github.Repo{
+			current: github.FullRepo{Repo: github.Repo{
 				Name: repoName,
-			},
+			}},
 			name: newRepoName,
 			newState: org.Repo{
 				Description: &description,

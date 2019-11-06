@@ -49,7 +49,7 @@ type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
-	GetRepo(owner, name string) (github.Repo, error)
+	GetRepo(owner, name string) (github.FullRepo, error)
 	IsMember(org, user string) (bool, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
@@ -509,7 +509,7 @@ func waitForRepo(owner, name string, ghc githubClient) error {
 				continue
 			}
 			ghErr = ""
-			if repoExists(owner+"/"+name, []github.Repo{repo}) {
+			if repoExists(owner+"/"+name, []github.Repo{repo.Repo}) {
 				return nil
 			}
 		case <-after:
