@@ -14,9 +14,9 @@ set -o pipefail
 main() {
   branch="transfigure-branch"
 
-  if [[ $# -ne 5 ]]; then
-    echo "Usage: $(basename "$0") [github_token] [prow_config] [prow_job_config] [testgrid_yaml] [repo_subdir]" >&2
-    echo "All [arguments] are required paths" >&2
+  if [[ $# -lt 5 ]]; then
+    echo "Usage: $(basename "$0") [github_token] [prow_config] [prow_job_config] [testgrid_yaml] [repo_subdir] (remote_fork_repo)" >&2
+    echo "All [] arguments are required paths" >&2
     exit 1
   fi
 
@@ -82,7 +82,7 @@ parse-args() {
   job_config=$(readlink -m "$3")
   testgrid_config=$(readlink -m "$4")
   testgrid_subdir="$5"
-  remote_fork_repo="test-infra"
+  remote_fork_repo=${6:-"test-infra"}
 
   if [[ ! -f ${token} ]]; then
     echo "ERROR: [github_token] ${token} must be a file path." >&2
@@ -98,6 +98,9 @@ parse-args() {
     exit 1
   elif [[ -z "${testgrid_subdir}" ]]; then
     echo "ERROR: [repo_subdir] must be specified." >&2
+    exit 1
+  elif [[ -z "${remote_fork_repo}" ]]; then
+    echo "ERROR: [remote_fork_repo] cannot be empty" >&2
     exit 1
   fi
 }
