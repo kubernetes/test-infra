@@ -574,6 +574,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/krte/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
