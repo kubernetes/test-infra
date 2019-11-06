@@ -253,7 +253,7 @@ presubmits:
         - "--timeout=1220"
         - --scenario=kubernetes_e2e
         - --
-        - --build
+        - --build=bazel
         - --cluster=
         - --extract=local
         - --gcp-node-size=n1-standard-8
@@ -283,6 +283,8 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true # TODO(fejta): https://github.com/kubernetes/kubernetes/issues/76484
 
   kubernetes/perf-tests:
   - name: pull-perf-tests-clusterloader2
