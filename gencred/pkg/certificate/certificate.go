@@ -102,11 +102,11 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 	}
 
 	csrName := csrObj.Name
+	appendApprovalCondition(csrObj)
 
 	// Approve CSR.
 	err = wait.Poll(waitInterval, waitTimeout, func() (bool, error) {
-		appendApprovalCondition(csrObj)
-		csrObj, err = client.UpdateApproval(csrObj)
+		_, err = client.UpdateApproval(csrObj)
 		if err != nil {
 			return false, err
 		}
