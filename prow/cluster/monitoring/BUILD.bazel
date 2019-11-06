@@ -21,6 +21,8 @@ release(
     component("prow", "alertmanager"),
     component("ing", "ingress"),
     component("monitoring-prow-canary-k8s-io", "managedcertificate"),
+    component("additional-scrape-configs", "secret"),
+    component("blackbox_prober", MULTI_KIND),
 )
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
