@@ -25,6 +25,13 @@ dashboard_groups:
 
 dashboards:
 - name: sig-release-master-blocking
+  dashboard_tab:
+  - name: gci-gce-autoscaling-hpa-cm
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-autoscaling-test-failures@googlegroups.com
+  - name: gci-gce-autoscaling-migs-hpa
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-autoscaling-test-failures@googlegroups.com
 - name: sig-release-master-informing
 - name: sig-release-1.17-blocking
 - name: sig-release-1.17-informing
