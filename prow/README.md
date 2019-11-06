@@ -8,7 +8,7 @@ not make any attempt to preserve backwards compatibility.
 
 For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"](/prow/life_of_a_prow_job.md).
 
-For a sequence diagram of common usage and interactions flow, click [here](https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/docs/pr-interactions-sequence.svg?sanitize=true).
+To see common Prow usage and interactions flow, see the pull request interactions [sequence diagram](https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/docs/pr-interactions-sequence.svg?sanitize=true).
 
 #### Functions and Features
 * Job execution for testing, batch processing, artifact publishing.
