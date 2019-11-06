@@ -48,7 +48,7 @@ type tideAgent struct {
 	updatePeriod func() time.Duration
 
 	// Config for hiding repos
-	hiddenRepos []string
+	hiddenRepos func() []string
 	hiddenOnly  bool
 	showHidden  bool
 
@@ -156,45 +156,49 @@ func (ta *tideAgent) updateHistory() error {
 }
 
 func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
-	if len(ta.hiddenRepos) == 0 {
+	if len(ta.hiddenRepos()) == 0 {
 		return pools
 	}
 
 	filtered := make([]tide.Pool, 0, len(pools))
 	for _, pool := range pools {
-		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos)
+		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos())
+		var ignored []string
 		if needsHide && ta.showHidden {
 			filtered = append(filtered, pool)
 		} else if needsHide == ta.hiddenOnly {
 			filtered = append(filtered, pool)
 		} else {
-			ta.log.Debugf("Ignoring pool for %s.", pool.Org+"/"+pool.Repo)
+			ignored = append(ignored, pool.Org+"/"+pool.Repo)
 		}
+		ta.log.Debugf("Ignoring pools for %v.", ignored)
 	}
 	return filtered
 }
 
 func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[string][]history.Record {
-	if len(ta.hiddenRepos) == 0 {
+	if len(ta.hiddenRepos()) == 0 {
 		return hist
 	}
 
 	filtered := make(map[string][]history.Record, len(hist))
 	for pool, records := range hist {
-		needsHide := matches(strings.Split(pool, ":")[0], ta.hiddenRepos)
+		needsHide := matches(strings.Split(pool, ":")[0], ta.hiddenRepos())
+		var ignored []string
 		if needsHide && ta.showHidden {
 			filtered[pool] = records
 		} else if needsHide == ta.hiddenOnly {
 			filtered[pool] = records
 		} else {
-			ta.log.Debugf("Ignoring history for %s.", pool)
+			ignored = append(ignored, pool)
 		}
+		ta.log.Debugf("Ignoring history for %v.", ignored)
 	}
 	return filtered
 }
 
 func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.TideQuery {
-	if len(ta.hiddenRepos) == 0 {
+	if len(ta.hiddenRepos()) == 0 {
 		return queries
 	}
 
@@ -204,18 +208,20 @@ func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.Ti
 		// This will exclude the query even if a single
 		// repo in the query is included in hiddenRepos.
 		for _, repo := range qc.Repos {
-			if matches(repo, ta.hiddenRepos) {
+			if matches(repo, ta.hiddenRepos()) {
 				includesHidden = true
 				break
 			}
 		}
+		var ignored []string
 		if includesHidden && ta.showHidden {
 			filtered = append(filtered, qc)
 		} else if includesHidden == ta.hiddenOnly {
 			filtered = append(filtered, qc)
 		} else {
-			ta.log.Debugf("Ignoring query: %s", qc.Query())
+			ignored = append(ignored, qc.Query())
 		}
+		ta.log.Debugf("Ignoring queries: %v", ignored)
 	}
 	return filtered
 }

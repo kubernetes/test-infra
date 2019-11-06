@@ -495,7 +495,10 @@ func TestTide(t *testing.T) {
 		},
 	})
 	ta := tideAgent{
-		path:         s.URL,
+		path: s.URL,
+		hiddenRepos: func() []string {
+			return []string{}
+		},
 		updatePeriod: func() time.Duration { return time.Minute },
 	}
 	if err := ta.updatePools(); err != nil {
@@ -556,7 +559,10 @@ func TestTideHistory(t *testing.T) {
 	}))
 
 	ta := tideAgent{
-		path:         s.URL,
+		path: s.URL,
+		hiddenRepos: func() []string {
+			return []string{}
+		},
 		updatePeriod: func() time.Duration { return time.Minute },
 	}
 	if err := ta.updateHistory(); err != nil {
@@ -872,10 +878,12 @@ func TestListProwJobs(t *testing.T) {
 			shouldError: testCase.listErr,
 		}
 		lister := filteringProwJobLister{
-			client:      fakeProwJobClient,
-			hiddenRepos: testCase.hiddenRepos,
-			hiddenOnly:  testCase.hiddenOnly,
-			showHidden:  testCase.showHidden,
+			client: fakeProwJobClient,
+			hiddenRepos: func() sets.String {
+				return testCase.hiddenRepos
+			},
+			hiddenOnly: testCase.hiddenOnly,
+			showHidden: testCase.showHidden,
 		}
 
 		filtered, err := lister.ListProwJobs(testCase.selector)
