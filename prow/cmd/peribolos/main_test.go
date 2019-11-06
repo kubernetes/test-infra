@@ -1900,10 +1900,7 @@ func TestDumpOrgConfig(t *testing.T) {
 					"project": {
 						Description:      &repoDescription,
 						HomePage:         &repoHomepage,
-						Private:          &no,
-						HasIssues:        &yes,
 						HasProjects:      &yes,
-						HasWiki:          &yes,
 						AllowMergeCommit: &no,
 						AllowRebaseMerge: &no,
 						AllowSquashMerge: &no,
@@ -3033,6 +3030,75 @@ func TestNewRepoUpdateRequest(t *testing.T) {
 			update := newRepoUpdateRequest(tc.current, tc.name, tc.newState)
 			if !reflect.DeepEqual(tc.expected, update) {
 				t.Errorf("%s: update request differs from expected:%s", tc.description, diff.ObjectReflectDiff(tc.expected, update))
+			}
+		})
+	}
+}
+
+func TestPruneRepoDefaults(t *testing.T) {
+	empty := ""
+	nonEmpty := "string that is not empty"
+	yes := true
+	no := false
+	master := "master"
+	notMaster := "not-master"
+	testCases := []struct {
+		description string
+		repo        org.Repo
+		expected    org.Repo
+	}{
+		{
+			description: "default values are pruned",
+			repo: org.Repo{
+				Description:      &empty,
+				HomePage:         &empty,
+				Private:          &no,
+				HasIssues:        &yes,
+				HasProjects:      &yes,
+				HasWiki:          &yes,
+				AllowSquashMerge: &yes,
+				AllowMergeCommit: &yes,
+				AllowRebaseMerge: &yes,
+				DefaultBranch:    &master,
+				Archived:         &no,
+			},
+			expected: org.Repo{HasProjects: &yes},
+		},
+		{
+			description: "non-default values are not pruned",
+			repo: org.Repo{
+				Description:      &nonEmpty,
+				HomePage:         &nonEmpty,
+				Private:          &yes,
+				HasIssues:        &no,
+				HasProjects:      &no,
+				HasWiki:          &no,
+				AllowSquashMerge: &no,
+				AllowMergeCommit: &no,
+				AllowRebaseMerge: &no,
+				DefaultBranch:    &notMaster,
+				Archived:         &yes,
+			},
+			expected: org.Repo{Description: &nonEmpty,
+				HomePage:         &nonEmpty,
+				Private:          &yes,
+				HasIssues:        &no,
+				HasProjects:      &no,
+				HasWiki:          &no,
+				AllowSquashMerge: &no,
+				AllowMergeCommit: &no,
+				AllowRebaseMerge: &no,
+				DefaultBranch:    &notMaster,
+				Archived:         &yes,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			pruned := pruneRepoDefaults(tc.repo)
+			if !reflect.DeepEqual(tc.expected, pruned) {
+				t.Errorf("%s: result differs from expected:\n", diff.ObjectReflectDiff(tc.expected, pruned))
 			}
 		})
 	}

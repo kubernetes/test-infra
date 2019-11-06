@@ -345,7 +345,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	out.Repos = make(map[string]org.Repo, len(repos))
 	for idx, repo := range repos {
 		logrus.WithField("repo", repo.FullName).Debug("Recording repo.")
-		out.Repos[repos[idx].Name] = org.Repo{
+		out.Repos[repos[idx].Name] = pruneRepoDefaults(org.Repo{
 			Description:      &repos[idx].Description,
 			HomePage:         &repos[idx].Homepage,
 			Private:          &repos[idx].Private,
@@ -357,10 +357,43 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 			AllowRebaseMerge: &repos[idx].AllowRebaseMerge,
 			Archived:         &repos[idx].Archived,
 			DefaultBranch:    &repos[idx].DefaultBranch,
-		}
+		})
 	}
 
 	return &out, nil
+}
+
+// pruneRepoDefaults finds values in org.Repo config that matches the default
+// values replaces them with nil pointer. This reduces the size of an org dump
+// by omitting the fields that would be set to the same value when not set at all.
+// See https://developer.github.com/v3/repos/#edit
+func pruneRepoDefaults(repo org.Repo) org.Repo {
+	pruneString := func(p **string, def string) {
+		if *p != nil && **p == def {
+			*p = nil
+		}
+	}
+	pruneBool := func(p **bool, def bool) {
+		if *p != nil && **p == def {
+			*p = nil
+		}
+	}
+
+	pruneString(&repo.Description, "")
+	pruneString(&repo.HomePage, "")
+
+	pruneBool(&repo.Private, false)
+	pruneBool(&repo.HasIssues, true)
+	// Projects' defaults depend on org setting, do not prune
+	pruneBool(&repo.HasWiki, true)
+	pruneBool(&repo.AllowRebaseMerge, true)
+	pruneBool(&repo.AllowSquashMerge, true)
+	pruneBool(&repo.AllowMergeCommit, true)
+
+	pruneBool(&repo.Archived, false)
+	pruneString(&repo.DefaultBranch, "master")
+
+	return repo
 }
 
 type orgClient interface {
