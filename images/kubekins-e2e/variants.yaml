@@ -1,18 +1,18 @@
 variants:
   experimental:
     CONFIG: experimental
-    GO_VERSION: 1.12.12
+    GO_VERSION: 1.13.4
     K8S_RELEASE: stable
     BAZEL_VERSION: 0.28.1
     UPGRADE_DOCKER: 'true'
   master:
     CONFIG: master
-    GO_VERSION: 1.12.12
+    GO_VERSION: 1.13.4
     K8S_RELEASE: stable
     BAZEL_VERSION: 0.23.2
   '1.17':
     CONFIG: '1.17'
-    GO_VERSION: 1.12.12
+    GO_VERSION: 1.13.4
     K8S_RELEASE: latest-1.17
     BAZEL_VERSION: 0.23.2
   '1.16':
