@@ -372,8 +372,10 @@ type Controller struct {
 	// number.
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
 
-	// AllowCancellations enables aborting presubmit jobs for commits that
-	// have been superseded by newer commits in GitHub pull requests.
+	// Deprecated: AllowCancellations enables aborting presubmit jobs for
+	// commits that have been superseded by newer commits in GitHub pull
+	// requests.
+	// This option will be removed and set to always true in March 2020.
 	AllowCancellations bool `json:"allow_cancellations,omitempty"`
 }
 
@@ -1194,6 +1196,10 @@ func parseProwConfig(c *Config) error {
 		c.Plank.PodRunningTimeout = &metav1.Duration{Duration: 48 * time.Hour}
 	}
 
+	if !c.Plank.AllowCancellations {
+		logrus.Warning("The `plank.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
+	}
+
 	if c.Gerrit.TickInterval == nil {
 		c.Gerrit.TickInterval = &metav1.Duration{Duration: time.Minute}
 	}
@@ -1229,6 +1235,10 @@ func parseProwConfig(c *Config) error {
 		}
 		if len(c.JenkinsOperators) == 1 && c.JenkinsOperators[0].LabelSelectorString != "" {
 			return errors.New("label_selector is invalid when used for a single jenkins-operator")
+		}
+
+		if !c.JenkinsOperators[i].AllowCancellations {
+			logrus.Warning("The `jenkins_operators.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
 		}
 	}
 
