@@ -121,7 +121,7 @@ presubmits:
     always_run: false
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h45m
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
