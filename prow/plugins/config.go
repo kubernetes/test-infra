@@ -686,6 +686,64 @@ func (r RequireMatchingLabel) Describe() string {
 	return str.String()
 }
 
+// ApproveFor finds the Approve for a repo, if one exists.
+// Approval configuration can be listed for a repository
+// or an organization.
+func (c *Configuration) ApproveFor(org, repo string) *Approve {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+
+	a := func() *Approve {
+		// First search for repo config
+		for _, approve := range c.Approve {
+			if !sets.NewString(approve.Repos...).Has(fullName) {
+				continue
+			}
+			return &approve
+		}
+
+		// If you don't find anything, loop again looking for an org config
+		for _, approve := range c.Approve {
+			if !sets.NewString(approve.Repos...).Has(org) {
+				continue
+			}
+			return &approve
+		}
+
+		// Return an empty config, and use plugin defaults
+		return &Approve{}
+	}()
+	if a.DeprecatedImplicitSelfApprove == nil && a.RequireSelfApproval == nil && c.UseDeprecatedSelfApprove {
+		no := false
+		a.DeprecatedImplicitSelfApprove = &no
+	}
+	if a.DeprecatedReviewActsAsApprove == nil && a.IgnoreReviewState == nil && c.UseDeprecatedReviewApprove {
+		no := false
+		a.DeprecatedReviewActsAsApprove = &no
+	}
+	return a
+}
+
+// LgtmFor finds the Lgtm for a repo, if one exists
+// a trigger can be listed for the repo itself or for the
+// owning organization
+func (c *Configuration) LgtmFor(org, repo string) *Lgtm {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	for _, lgtm := range c.Lgtm {
+		if !sets.NewString(lgtm.Repos...).Has(fullName) {
+			continue
+		}
+		return &lgtm
+	}
+	// If you don't find anything, loop again looking for an org config
+	for _, lgtm := range c.Lgtm {
+		if !sets.NewString(lgtm.Repos...).Has(org) {
+			continue
+		}
+		return &lgtm
+	}
+	return &Lgtm{}
+}
+
 // TriggerFor finds the Trigger for a repo, if one exists
 // a trigger can be listed for the repo itself or for the
 // owning organization
