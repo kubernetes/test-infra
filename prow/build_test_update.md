@@ -90,12 +90,12 @@ cluster named `mkpod` is created if one does not already exist.
 be decorated with the pod utilities if needed and will exactly match what would be
 applied in prod with two exceptions:
 	1. The job logs, metadata, and artifacts will be copied to disk rather than
-	uploaded to GCS. By default these files are copied to `/etc/prowjob-out/<job-name>/<build-id>/`
+	uploaded to GCS. By default these files are copied to `/mnt/disks/prowjob-out/<job-name>/<build-id>/`
 	on the host machine.
 	1. Any volume mounts may be substituted for `emptyDir` or `hostPath` volumes at the
 	interactive prompt to replace dependencies that are only available in prod.
-	Note: In order for `hostPath` to reach the host and not just the Kind "node" container,
-	use paths under `/etc/kind-node` or set `$NODE_DIR` before the mkpod cluster is created.
+	__NOTE!__ In order for `hostPath` volume sources to reach the host and not just the Kind "node" container,
+	use paths under `/mnt/disks/kind-node` or set `$NODE_DIR` before the mkpod cluster is created.
 1. Applies the Pod to the [Kind] cluster and starts watching it (interrupt whenever,
 this is for convenience). At this point the Pod will start running if configured
 correctly.
