@@ -150,7 +150,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         command:
         - "make"
         args:
@@ -171,7 +171,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         command:
         - "make"
         args:
@@ -195,7 +195,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         command:
         - "make"
         args:
@@ -226,7 +226,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         resources:
           requests:
             cpu: "1000m"
@@ -257,7 +257,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         resources:
           requests:
             cpu: "1000m"
