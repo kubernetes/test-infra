@@ -38,6 +38,9 @@ var (
 		github.IssueActionPinned:       true,
 		github.IssueActionUnpinned:     true,
 		github.IssueActionTransferred:  true,
+		github.IssueActionDeleted:      true,
+		github.IssueActionLocked:       true,
+		github.IssueActionUnlocked:     true,
 	}
 	nonCommentPullRequestActions = map[github.PullRequestEventAction]bool{
 		github.PullRequestActionAssigned:             true,
