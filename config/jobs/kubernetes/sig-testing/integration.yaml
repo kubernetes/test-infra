@@ -57,6 +57,12 @@ presubmits:
 periodics:
 - interval: 1h
   name: ci-kubernetes-integration-master
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -70,15 +76,11 @@ periodics:
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20191021-5489305
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
+      command:
+      - runner.sh
       args:
-      - --repo=k8s.io/kubernetes
-      - --timeout=100
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=master
-      - --force
-      - --prow
+      - ./hack/jenkins/test-dockerized.sh
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
