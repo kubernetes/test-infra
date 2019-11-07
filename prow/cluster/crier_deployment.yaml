@@ -39,6 +39,7 @@ spec:
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --slack-token-file=/etc/slack/token
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -48,6 +49,9 @@ spec:
           readOnly: true
         - name: oauth
           mountPath: /etc/github
+          readOnly: true
+        - name: slack
+          mountPath: /etc/slack
           readOnly: true
       volumes:
       - name: config
@@ -59,3 +63,6 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: slack
+        secret:
+          secretName: slack-token
