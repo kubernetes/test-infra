@@ -157,7 +157,7 @@ func main() {
 		var bc *pipelineConfig
 		bc, err = newPipelineConfig(cfg, interrupts.Context().Done())
 		if apierrors.IsNotFound(err) {
-			logrus.WithError(err).Warnf("Ignoring %s: knative pipeline CRD not deployed", context)
+			logrus.WithError(err).Infof("Ignoring cluster context %s: tekton pipeline CRD not deployed", context)
 			continue
 		}
 		if err != nil {
