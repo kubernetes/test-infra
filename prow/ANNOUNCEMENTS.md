@@ -86,6 +86,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 7, 2019*  The `plank.allow_cancellations` and `jenkins_operators.allow_cancellations`
+    settings are deprecated and will be removed and set to always `true` in March 2020.
  - *October 7, 2019* Prow will drop support for the deprecated knative-builds in
    November 2019.
  - *September 24, 2019* Sending an http `GET` request to the `/hook` endpoint now returns a `405`
