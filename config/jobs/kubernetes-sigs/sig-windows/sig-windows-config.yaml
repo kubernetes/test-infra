@@ -219,7 +219,7 @@ periodics:
     testgrid-tab-name: aks-engine-azure-1-15-windows
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Release tests for K8s 1.15 on Clusters with Windows nodes provided by aks-engine on Azure cloud.
-- interval: 6h
+- interval: 12h
   name: ci-kubernetes-e2e-aks-engine-azure-1-16-windows
   labels:
     preset-service-account: "true"
@@ -250,7 +250,8 @@ periodics:
       - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
       - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--acsengine-winZipBuildScript=$WIN_BUILD"
-      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_master.json"
+      - "--acsengine-orchestratorRelease=1.16"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_16.json"
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
