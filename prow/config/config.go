@@ -152,7 +152,7 @@ type InRepoConfig struct {
 	// Enabled describes whether InRepoConfig is enabled for a given repository. This can
 	// be set globally, per org or per repo using '*', 'org' or 'org/repo' as key. The
 	// narrowest match always takes precedence.
-	Enabled map[string]*bool
+	Enabled map[string]*bool `json:"enabled,omitempty"`
 }
 
 // InRepoConfigEnabled returns whether InRepoConfig is enabled. Currently
@@ -304,11 +304,11 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 // to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 type OwnersDirBlacklist struct {
 	// Repos configures a directory blacklist per repo (or org)
-	Repos map[string][]string `json:"repos"`
+	Repos map[string][]string `json:"repos,omitempty"`
 	// Default configures a default blacklist for all repos (or orgs).
 	// Some directories like ".git", "_output" and "vendor/.*/OWNERS"
 	// are already preconfigured to be blacklisted, and need not be included here.
-	Default []string `json:"default"`
+	Default []string `json:"default,omitempty"`
 	// By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
 	// are preconfigured to be blacklisted.
 	// If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
@@ -480,7 +480,7 @@ type LensConfig struct {
 	Name string `json:"name"`
 	// Config is some lens-specific configuration. Interpreting it is the responsibility of the
 	// lens in question.
-	Config json.RawMessage `json:"config"`
+	Config json.RawMessage `json:"config,omitempty"`
 }
 
 // LensFileConfig is a single entry under Lenses, describing how to configure a lens
@@ -597,7 +597,7 @@ type GitHubOptions struct {
 
 	// LinkURL is the url representation of LinkURLFromConfig. This variable should be used
 	// in all places internally.
-	LinkURL *url.URL
+	LinkURL *url.URL `json:"-"`
 }
 
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden

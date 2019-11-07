@@ -39,7 +39,7 @@ type TideContextPolicy struct {
 	// whether to consider unknown contexts optional (skip) or required.
 	SkipUnknownContexts       *bool    `json:"skip-unknown-contexts,omitempty"`
 	RequiredContexts          []string `json:"required-contexts,omitempty"`
-	RequiredIfPresentContexts []string `json:"required-if-present-contexts"`
+	RequiredIfPresentContexts []string `json:"required-if-present-contexts,omitempty"`
 	OptionalContexts          []string `json:"optional-contexts,omitempty"`
 	// Infer required and optional jobs from Branch Protection configuration
 	FromBranchProtection *bool `json:"from-branch-protection,omitempty"`
