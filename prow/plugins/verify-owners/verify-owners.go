@@ -122,7 +122,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 
 	var skipTrustedUserCheck bool
 	for _, r := range pc.PluginConfig.Owners.SkipCollaborators {
-		if r == pre.Repo.Name {
+		if r == pre.Repo.FullName {
 			skipTrustedUserCheck = true
 			break
 		}
@@ -146,7 +146,7 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 
 	var skipTrustedUserCheck bool
 	for _, r := range pc.PluginConfig.Owners.SkipCollaborators {
-		if r == e.Repo.Name {
+		if r == e.Repo.FullName {
 			skipTrustedUserCheck = true
 			break
 		}
