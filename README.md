@@ -17,10 +17,7 @@ automation for the entire project. Everyone can participate in a
 self-service PR-based workflow, where changes are automatically deployed
 after they have been reviewed. All job configs are located in [`config/jobs`]
 
-- [Add or update job configs](/config/jobs/README.md#adding-or-updating-jobs)
-- [Delete job configs](/config/jobs/README.md#deleting-jobs)
-- [Test job configs locally](/config/jobs/README.md#testing-jobs-locally)
-- [Trigger jobs on PRs using bot commmands](https://go.k8s.io/bot-commands)
+To get started see the docs for how to use [ProwJobs](https://github.com/kubernetes/test-infra/blob/master/prow/jobs.md) generally and the custom [configs](/config/jobs/README.md) available to use on [prow.k8s.io]
 
 ## Dashboards
 
