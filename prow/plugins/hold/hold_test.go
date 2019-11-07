@@ -98,6 +98,27 @@ func TestHandle(t *testing.T) {
 			shouldLabel:   false,
 			shouldUnlabel: false,
 		},
+		{
+			name:          "requested unhold",
+			body:          "/unhold",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+		},
+		{
+			name:          "requested unhold with whitespace",
+			body:          "/unhold    ",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+		},
+		{
+			name:          "requested unhold, Label already gone",
+			body:          "/unhold",
+			hasLabel:      false,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+		},
 	}
 
 	for _, tc := range tests {
