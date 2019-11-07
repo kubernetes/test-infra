@@ -13,7 +13,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
       command:
       - "./scripts/ci-aws-cred-test.sh"
   annotations:
@@ -35,7 +35,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -67,7 +67,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -259,7 +259,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -289,7 +289,7 @@ postsubmits:
       - release-0.4
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-experimental
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
