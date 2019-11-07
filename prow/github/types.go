@@ -610,6 +610,8 @@ const (
 	IssueActionPinned IssueEventAction = "pinned"
 	// IssueActionUnpinned means the issue was unpinned.
 	IssueActionUnpinned IssueEventAction = "unpinned"
+	// IssueActionTransferred means the issue was transferred to another repo.
+	IssueActionTransferred IssueEventAction = "transferred"
 )
 
 // IssueEvent represents an issue event from a webhook payload (not from the events API).
