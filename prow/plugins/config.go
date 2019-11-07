@@ -1173,25 +1173,25 @@ func (pluginConfig *ProjectConfig) GetOrgColumnMap(org string) map[string]string
 type Bugzilla struct {
 	// Default settings mapped by branch in any repo in any org.
 	// The `*` wildcard will apply to all branches.
-	Default map[string]BugzillaBranchOptions `json:"default"`
+	Default map[string]BugzillaBranchOptions `json:"default,omitempty"`
 	// Options for specific orgs. The `*` wildcard will apply to all orgs.
-	Orgs map[string]BugzillaOrgOptions `json:"orgs"`
+	Orgs map[string]BugzillaOrgOptions `json:"orgs,omitempty"`
 }
 
 // BugzillaOrgOptions holds options for checking Bugzilla bugs for an org.
 type BugzillaOrgOptions struct {
 	// Default settings mapped by branch in any repo in this org.
 	// The `*` wildcard will apply to all branches.
-	Default map[string]BugzillaBranchOptions `json:"default"`
+	Default map[string]BugzillaBranchOptions `json:"default,omitempty"`
 	// Options for specific repos. The `*` wildcard will apply to all repos.
-	Repos map[string]BugzillaRepoOptions `json:"repos"`
+	Repos map[string]BugzillaRepoOptions `json:"repos,omitempty"`
 }
 
 // BugzillaRepoOptions holds options for checking Bugzilla bugs for a repo.
 type BugzillaRepoOptions struct {
 	// Options for specific branches in this repo.
 	// The `*` wildcard will apply to all branches.
-	Branches map[string]BugzillaBranchOptions `json:"branches"`
+	Branches map[string]BugzillaBranchOptions `json:"branches,omitempty"`
 }
 
 // BugzillaBugState describes bug states in the Bugzilla plugin config, used
@@ -1286,7 +1286,7 @@ type BugzillaBranchOptions struct {
 	// StateAfterValidation is the state to which the bug will be moved after being
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
 	// if others are set.
-	StateAfterValidation *BugzillaBugState `json:"state_after_validation"`
+	StateAfterValidation *BugzillaBugState `json:"state_after_validation,omitempty"`
 	// AddExternalLink determines whether the pull request will be added to the Bugzilla
 	// bug using the ExternalBug tracker API after being validated
 	AddExternalLink *bool `json:"add_external_link,omitempty"`
