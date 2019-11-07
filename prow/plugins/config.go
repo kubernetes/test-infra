@@ -723,6 +723,27 @@ func (c *Configuration) ApproveFor(org, repo string) *Approve {
 	return a
 }
 
+// LgtmFor finds the Lgtm for a repo, if one exists
+// a trigger can be listed for the repo itself or for the
+// owning organization
+func (c *Configuration) LgtmFor(org, repo string) *Lgtm {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	for _, lgtm := range c.Lgtm {
+		if !sets.NewString(lgtm.Repos...).Has(fullName) {
+			continue
+		}
+		return &lgtm
+	}
+	// If you don't find anything, loop again looking for an org config
+	for _, lgtm := range c.Lgtm {
+		if !sets.NewString(lgtm.Repos...).Has(org) {
+			continue
+		}
+		return &lgtm
+	}
+	return &Lgtm{}
+}
+
 // TriggerFor finds the Trigger for a repo, if one exists
 // a trigger can be listed for the repo itself or for the
 // owning organization
