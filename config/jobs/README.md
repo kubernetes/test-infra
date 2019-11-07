@@ -55,16 +55,61 @@ eg:
 Prow supports [Presets](/prow/jobs.md#presets) to define and patch in common
 env vars and volumes used for credentials or common job config. Some are
 defined centrally in [`config/prow/config.yaml`], while others can be defined in
-files here. eg:
+files here. 
 
-- [`preset-service-account: "true"`] ensures the prowjob has a GCP service
-  account in a well known location, with well known env vars pointing to it.
-- [`preset-pull-kubernetes-e2e: "true"`] sets environment variables to make
-  kubernetes e2e tests less susceptible to flakes
-- [`preset-aws-credentials: "true"`] ensures the prowjob has AWS credentials
-  for kops tests in a well known location, with an env var pointint to it
-- [the default preset with no labels] is used to set the `GOPROXY` env var
-  for all jobs by default
+Presers are configured using `labels` e.g.
+
+```yaml
+periodics:
+- name: ptest
+  labels:
+    preset-service-account: "true"
+```
+
+Supported presets include:
+
+| Preset                                                       | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| (default)                                                    | Exposes `GOPROXY=https://proxy.golang.org`                   |
+| preset-service-account                                       | storage e2e tests borrow this as a preconfigured key instead of creating. Exposes `GOOGLE_APPLICATION_CREDENTIALS` and `E2E_GOOGLE_APPLICATION_CREDENTIALS`environment variables |
+| preset-gke-alpha-service                                     | Exposes `GOOGLE_APPLICATION_CREDENTIALS` and `E2E_GOOGLE_APPLICATION_CREDENTIALS`environment variables |
+| preset-istio-service                                         | Exposes `GOOGLE_APPLICATION_CREDENTIALS` and `E2E_GOOGLE_APPLICATION_CREDENTIALS`environment variables |
+| preset-k8s-ssh                                               | Exposes `JENKINS_GCE_SSH_PRIVATE_KEY_FILE` and `JENKINS_GCE_SSH_PUBLIC_KEY_FILE` |
+| preset-aws-ssh                                               | Exposes `AWS_SSH_PRIVATE_KEY_FILE` and `AWS_SSH_PUBLIC_KEY_FILE` |
+| preset-bazel-scratch-dir                                     | Exposes `TEST_TMPDIR`                                        |
+| preset-bazel-remote-cache-enabled                            | Exposes `BAZEL_REMOTE_CACHE_ENABLED`                         |
+| preset-dind-enabled                                          | NOTE: using this also requires using `images/bootstrap`  ensuring you run your test under either the ENTRYPOINT or: <br/> /usr/local/bin/runner my-test-command --foo --bar <br/> AND setting the following on your PodSpec: <br/> `securityContext:<br/>   privileged: true` |
+| preset-kind-volume-mounts                                    |                                                              |
+| preset-pull-kubernetes-e2e                                   | Exposes `GINKGO_TOLERATE_FLAKES=y` and `KUBE_GCS_UPDATE_LATEST=n` to make tests less susceptible to flakes |
+| [preset-pull-kubernetes-e2e-gce](https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/config/jobs/kubernetes/sig-gcp/sig-gcp-gce-config.yaml#L2-L8) | Exposes `ENABLE_POD_SECURITY_POLICY=true` and `CREATE_CUSTOM_NETWORK=true` |
+| [preset-aws-credential](https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/config/jobs/kubernetes/sig-aws/sig-aws-credentials.yaml#L3-L15) | Exposes `AWS_SHARED_CREDENTIALS_FILE` to access AWS account *768319786644* for kops CNCF tests |
+| [preset-aws-credential-aws-oss-testing](https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/config/jobs/kubernetes/sig-aws/sig-aws-credentials.yaml#L18-L30) | Exposes `AWS_SHARED_CREDENTIALS_FILE` to access AWS account *607362164682* for kops/eks tests |
+## TestGrid
+
+Dashboards on testgrid are configured using annotations, e.g.
+
+```yaml
+presubmits:
+  kubernetes/community:
+  - name: pull-community-verify 
+    annotations:
+      testgrid-dashboards: sig-contribex-community
+      testgrid-tab-name: pull-verify
+```
+
+Supported annotations include:
+
+| Annotation                         | Description | Valid Values |
+| ---------------------------------- | ----------- | ------------ |
+| testgrid-dashboards                |             |              |
+| testgrid-tab-name                  |             |              |
+| testgrid-alert-email               |             |              |
+| testgrid-num-failures-to-alert     |             | '1'          |
+| testgrid-alert-stale-results-hours |             | '12'         |
+| description                        |             |              |
+
+
+
 
 ## Job Examples
 
@@ -215,7 +260,3 @@ bazel run //experiment/config-forker -- \
 [pull-release-notes-lint]: https://github.com/kubernetes/test-infra/blob/294d73f1e1c87e6b93f60287196438325bc35677/config/jobs/kubernetes-sigs/release-notes/release-notes-presubmits.yaml#L69-L80
 [pull-org-test-all]: https://github.com/kubernetes/test-infra/blob/294d73f1e1c87e6b93f60287196438325bc35677/config/jobs/kubernetes/org/kubernetes-org-jobs.yaml#L3-L13
 
-[`preset-service-account: "true"`]: https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/prow/config.yaml#L467-L483
-[`preset-pull-kubernetes-e2e: "true"`]: https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/config/jobs/kubernetes/sig-gcp/sig-gcp-gce-config.yaml#L2-L8
-[`preset-aws-credentials: "true"`]: https://github.com/kubernetes/test-infra/blob/f4e6553b27d9ee8b35b2f2e588ea2e18c3fa818b/config/jobs/kubernetes/sig-aws/sig-aws-credentials.yaml#L3-L15
-[the default preset with no labels]: https://github.com/kubernetes/test-infra/blob/551edb4702e262989fe5d162a2c642c3201bf68e/prow/config.yaml#L630
