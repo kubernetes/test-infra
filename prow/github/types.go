@@ -598,6 +598,8 @@ const (
 	IssueActionOpened IssueEventAction = "opened"
 	// IssueActionEdited means issue body was edited.
 	IssueActionEdited IssueEventAction = "edited"
+	// IssueActionDeleted means the issue was deleted.
+	IssueActionDeleted IssueEventAction = "deleted"
 	// IssueActionMilestoned means the milestone was added/changed.
 	IssueActionMilestoned IssueEventAction = "milestoned"
 	// IssueActionDemilestoned means a milestone was removed.
@@ -612,6 +614,10 @@ const (
 	IssueActionUnpinned IssueEventAction = "unpinned"
 	// IssueActionTransferred means the issue was transferred to another repo.
 	IssueActionTransferred IssueEventAction = "transferred"
+	// IssueActionLocked means the issue was locked.
+	IssueActionLocked IssueEventAction = "locked"
+	// IssueActionUnlocked means the issue was unlocked.
+	IssueActionUnlocked IssueEventAction = "unlocked"
 )
 
 // IssueEvent represents an issue event from a webhook payload (not from the events API).
