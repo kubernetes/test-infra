@@ -2,9 +2,11 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-integration
     always_run: true
-    skip_branches:
+    branches:
     # we migrated to podutils for v1.17+
-    - master
+    - release-1.16
+    - release-1.15
+    - release-1.14
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -27,16 +29,17 @@ presubmits:
         resources:
           requests:
             cpu: 4
-    annotations:
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-stale-results-hours: '24'
-      testgrid-create-test-group: 'true'
   # this replaces the bootstrap / scenario based job going forward
   - name: pull-kubernetes-integration
     always_run: true
     decorate: true
-    branches:
-    - master
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
