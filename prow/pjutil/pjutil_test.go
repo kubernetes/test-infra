@@ -25,7 +25,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 
@@ -572,6 +574,22 @@ func TestNewProwJob(t *testing.T) {
 				"extraannotation":      "foo",
 			},
 		},
+		{
+			name: "job with podspec",
+			spec: prowapi.ProwJobSpec{
+				Job:     "job",
+				Type:    prowapi.PeriodicJob,
+				PodSpec: &corev1.PodSpec{}, // Needed to catch race
+			},
+			expectedLabels: map[string]string{
+				kube.CreatedByProw:     "true",
+				kube.ProwJobAnnotation: "job",
+				kube.ProwJobTypeLabel:  "periodic",
+			},
+			expectedAnnotations: map[string]string{
+				kube.ProwJobAnnotation: "job",
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		pj := NewProwJob(testCase.spec, testCase.labels, testCase.annotations)
@@ -583,6 +601,30 @@ func TestNewProwJob(t *testing.T) {
 		}
 		if actual, expected := pj.Annotations, testCase.expectedAnnotations; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJob annotations created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if pj.Spec.PodSpec != nil {
+			futzWithPodSpec := func(spec *corev1.PodSpec, val string) {
+				if spec == nil {
+					return
+				}
+				if spec.NodeSelector == nil {
+					spec.NodeSelector = map[string]string{}
+				}
+				spec.NodeSelector["foo"] = val
+				for i := range spec.Containers {
+					c := &spec.Containers[i]
+					if c.Resources.Limits == nil {
+						c.Resources.Limits = corev1.ResourceList{}
+					}
+					if c.Resources.Requests == nil {
+						c.Resources.Requests = corev1.ResourceList{}
+					}
+					c.Resources.Limits[corev1.ResourceCPU] = resource.MustParse(val)
+					c.Resources.Requests[corev1.ResourceCPU] = resource.MustParse(val)
+				}
+			}
+			go futzWithPodSpec(pj.Spec.PodSpec, "12M")
+			futzWithPodSpec(testCase.spec.PodSpec, "34M")
 		}
 	}
 }

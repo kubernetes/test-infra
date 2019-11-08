@@ -50,7 +50,7 @@ func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Spec: spec,
+		Spec: *spec.DeepCopy(),
 		Status: prowapi.ProwJobStatus{
 			StartTime: metav1.Now(),
 			State:     prowapi.TriggeredState,
