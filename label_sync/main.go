@@ -319,6 +319,10 @@ func GetOrg(org string) (string, bool) {
 	return org, false
 }
 
+// securityForkNameRE is a regexp matching repos that are temporary security forks
+// https://help.github.com/en/github/managing-security-vulnerabilities/collaborating-in-a-temporary-private-fork-to-resolve-a-security-vulnerability
+var securityForkNameRE = regexp.MustCompile(`^[\w-]+-ghsa-[\w-]+$`)
+
 // loadRepos read what (filtered) repos exist under an org
 func loadRepos(org string, gc client) ([]string, error) {
 	org, isUser := GetOrg(org)
@@ -328,7 +332,12 @@ func loadRepos(org string, gc client) ([]string, error) {
 	}
 	var rl []string
 	for _, r := range repos {
+		// Skip Archived repos as they can't be modified in this way
 		if r.Archived {
+			continue
+		}
+		// Skip private security forks as they can't be modified in this way
+		if r.Private && securityForkNameRE.MatchString(r.Name) {
 			continue
 		}
 		rl = append(rl, r.Name)
