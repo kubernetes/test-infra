@@ -719,21 +719,31 @@ func (c *Cluster) buildCcm() error {
 
 func (c *Cluster) buildHyperKube() error {
 
+	var push_cmd *exec.Cmd
 	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v-%v", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8]))
 	if err := c.dockerLogin(); err != nil {
 		return err
 	}
 	log.Println("Building hyperkube.")
-	cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "WHAT=cmd/hyperkube")
-	// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
-	cmd.Stdout = ioutil.Discard
-	if err := control.FinishRunning(cmd); err != nil {
-		return err
+	hyperkube_cmd_path := util.K8s("kubernetes/cmd/hyperkube")
+	_, err := os.Stat(hyperkube_cmd_path)
+	if err == nil {
+		// cmd/hyperkube binary still exists in repo
+		cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "WHAT=cmd/hyperkube")
+		// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
+		cmd.Stdout = ioutil.Discard
+		if err := control.FinishRunning(cmd); err != nil {
+			return err
+		}
+		hyperkubeBin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
+		push_cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkubeBin))
+
+	} else if os.IsNotExist(err) {
+		push_cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push")
+
 	}
 	log.Println("Pushing hyperkube.")
-	hyperkubeBin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
-	cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkubeBin))
-	if err := control.FinishRunning(cmd); err != nil {
+	if err := control.FinishRunning(push_cmd); err != nil {
 		return err
 	}
 	c.aksCustomHyperKubeURL = fmt.Sprintf("%s/hyperkube-amd64:%s", os.Getenv("REGISTRY"), os.Getenv("VERSION"))
