@@ -98,7 +98,8 @@ type syncTime struct {
 }
 
 func (st *syncTime) init(hostProjects client.ProjectsFlag) error {
-	logrus.WithField("projects", hostProjects).Debug(st.val)
+	timeNow := time.Now()
+	logrus.WithField("projects", hostProjects).Info(st.val)
 	st.lock.RLock()
 	zero := st.val == nil
 	st.lock.RUnlock()
@@ -115,15 +116,25 @@ func (st *syncTime) init(hostProjects client.ProjectsFlag) error {
 		return err
 	}
 	if state != nil {
+		// Initialize new hosts, projects
+		for host, projects := range hostProjects {
+			if _, ok := state[host]; !ok {
+				state[host] = map[string]time.Time{}
+			}
+			for _, project := range projects {
+				if _, ok := state[host][project]; !ok {
+					state[host][project] = timeNow
+				}
+			}
+		}
 		st.val = state
 		logrus.Warnf("Reset lastSyncFallback to %v", st.val)
 	} else {
-		currentTime := time.Now()
 		targetState := client.LastSyncState{}
 		for host, projects := range hostProjects {
 			targetState[host] = map[string]time.Time{}
 			for _, project := range projects {
-				targetState[host][project] = currentTime
+				targetState[host][project] = timeNow
 			}
 		}
 		st.val = targetState

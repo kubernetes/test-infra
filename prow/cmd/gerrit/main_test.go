@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"io/ioutil"
@@ -194,5 +195,43 @@ func TestSyncTime(t *testing.T) {
 	}
 	if actual := st.Current()["foo"]["bar"]; now.After(actual) || actual.After(later) {
 		t.Fatalf("should initialize to start %v <= actual <= later %v, but got %v", now, later, actual)
+	}
+}
+
+func TestNewProjectAddition(t *testing.T) {
+	dir, err := ioutil.TempDir("", "fake-gerrit-value")
+	if err != nil {
+		t.Fatalf("Could not create temp file: %v", err)
+	}
+	defer os.RemoveAll(dir)
+	path := filepath.Join(dir, "value.txt")
+
+	testTime := time.Now().Add(-time.Minute)
+	testStVal := client.LastSyncState{"foo": {"bar": testTime}}
+	testStValBytes, _ := json.Marshal(testStVal)
+	_ = ioutil.WriteFile(path, testStValBytes, os.ModePerm)
+
+	var noCreds string
+	ctx := context.Background()
+	open, err := io.NewOpener(ctx, noCreds)
+	if err != nil {
+		t.Fatalf("Failed to create opener: %v", err)
+	}
+	testProjectsFlag := client.ProjectsFlag{"foo": []string{"bar"}, "qwe": []string{"qux"}}
+
+	st := syncTime{
+		path:   path,
+		opener: open,
+		ctx:    ctx,
+	}
+
+	if err := st.init(testProjectsFlag); err != nil {
+		t.Fatalf("Failed init: %v", err)
+	}
+	if _, ok := st.val["qwe"]; !ok {
+		t.Error("expected tracker to initialize a new entry for qwe, but did not")
+	}
+	if _, ok := st.val["qwe"]["qux"]; !ok {
+		t.Error("expected tracker to initialize a new entry for qwe/qux, but did not")
 	}
 }
