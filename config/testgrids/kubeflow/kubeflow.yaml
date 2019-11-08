@@ -3,7 +3,7 @@ test_groups:
 - name: kubeflow-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_kubeflow/kubeflow-postsubmit
 - name: kubeflow-examples-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_kubeflow/kubeflow-examples-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_examples/kubeflow-examples-postsubmit
 - name: kubeflow-pytorch-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_pytorch-operator/kubeflow-pytorch-operator-postsubmit
 - name: kubeflow-mxnet-operator-postsubmit
