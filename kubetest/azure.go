@@ -995,7 +995,9 @@ func (c Cluster) IsUp() error {
 	return isUp(c)
 }
 
-func (_ Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (c Cluster) KubectlCommand() (*exec.Cmd, error) {
+	return exec.Command("kubectl"), nil
+}
 
 // BuildTester returns a standard ginkgo-script tester or a custom one if testCcm is enabled
 func (c *Cluster) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
