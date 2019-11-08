@@ -638,6 +638,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
       --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
@@ -688,6 +689,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
       --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
@@ -738,6 +740,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --runtime-config=api/all=true
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
