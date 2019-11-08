@@ -221,9 +221,15 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 			return fmt.Errorf("list repos: %v", err)
 		}
 		for _, r := range rs {
-			if !r.Archived {
-				repos = append(repos, r.Name)
+			// Skip Archived repos as they can't be modified in this way
+			if r.Archived {
+				continue
 			}
+			// Skip private security forks as they can't be modified in this way
+			if r.Private && github.SecurityForkNameRE.MatchString(r.Name) {
+				continue
+			}
+			repos = append(repos, r.Name)
 		}
 	} else {
 		// Unopinionated org, just set explicitly defined repos
@@ -251,8 +257,12 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 	if err != nil {
 		return fmt.Errorf("could not get repo to check for archival: %v", err)
 	}
+	// Skip Archived repos as they can't be modified in this way
 	if githubRepo.Archived {
-		// nothing to do
+		return nil
+	}
+	// Skip private security forks as they can't be modified in this way
+	if githubRepo.Private && github.SecurityForkNameRE.MatchString(githubRepo.Name) {
 		return nil
 	}
 
