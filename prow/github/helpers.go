@@ -19,9 +19,14 @@ package github
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+// SecurityForkNameRE is a regexp matching repos that are temporary security forks
+// https://help.github.com/en/github/managing-security-vulnerabilities/collaborating-in-a-temporary-private-fork-to-resolve-a-security-vulnerability
+var SecurityForkNameRE = regexp.MustCompile(`^[\w-]+-ghsa-[\w-]+$`)
 
 // HasLabel checks if label is in the label set "issueLabels".
 func HasLabel(label string, issueLabels []Label) bool {
