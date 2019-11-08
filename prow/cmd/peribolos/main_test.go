@@ -1787,6 +1787,11 @@ func TestDumpOrgConfig(t *testing.T) {
 			},
 		},
 		{
+			name:   "fails if not as an admin of the org",
+			err:    true,
+			admins: []string{"not-admin"},
+		},
+		{
 			name: "basically works",
 			meta: github.Organization{
 				Name:                         hello,
@@ -1794,7 +1799,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				DefaultRepositoryPermission:  string(perm),
 			},
 			members: []string{"george", "jungle", "banana"},
-			admins:  []string{"james", "giant", "peach"},
+			admins:  []string{"admin", "james", "giant", "peach"},
 			teams: []github.Team{
 				{
 					ID:          5,
@@ -1895,7 +1900,7 @@ func TestDumpOrgConfig(t *testing.T) {
 					},
 				},
 				Members: []string{"george", "jungle", "banana"},
-				Admins:  []string{"james", "giant", "peach"},
+				Admins:  []string{"admin", "james", "giant", "peach"},
 				Repos: map[string]org.Repo{
 					"project": {
 						Description:      &repoDescription,
@@ -1919,7 +1924,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				DefaultRepositoryPermission:  string(perm),
 			},
 			members: []string{"george", "jungle", "banana"},
-			admins:  []string{"james", "giant", "peach"},
+			admins:  []string{"admin", "james", "giant", "peach"},
 			teams: []github.Team{
 				{
 					ID:          5,
@@ -2008,7 +2013,7 @@ func TestDumpOrgConfig(t *testing.T) {
 					},
 				},
 				Members: []string{"george", "jungle", "banana"},
-				Admins:  []string{"james", "giant", "peach"},
+				Admins:  []string{"admin", "james", "giant", "peach"},
 				Repos:   map[string]org.Repo{},
 			},
 		},
@@ -2146,6 +2151,10 @@ func (c fakeDumpClient) GetRepos(org string, isUser bool) ([]github.Repo, error)
 	}
 
 	return c.repos, nil
+}
+
+func (c fakeDumpClient) BotName() (string, error) {
+	return "admin", nil
 }
 
 func fixup(ret *org.Config) {

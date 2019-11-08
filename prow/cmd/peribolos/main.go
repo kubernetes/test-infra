@@ -211,6 +211,7 @@ type dumpClient interface {
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	ListTeamRepos(id int) ([]github.Repo, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
+	BotName() (string, error)
 }
 
 func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
@@ -231,6 +232,11 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	out.Metadata.DefaultRepositoryPermission = &drp
 	out.Metadata.MembersCanCreateRepositories = &meta.MembersCanCreateRepositories
 
+	var runningAsAdmin bool
+	runningAs, err := client.BotName()
+	if err != nil {
+		return nil, fmt.Errorf("failed to obtain username for this token")
+	}
 	admins, err := client.ListOrgMembers(orgName, github.RoleAdmin)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list org admins: %v", err)
@@ -239,6 +245,13 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	for _, m := range admins {
 		logrus.WithField("login", m.Login).Debug("Recording admin.")
 		out.Admins = append(out.Admins, m.Login)
+		if runningAs == m.Login {
+			runningAsAdmin = true
+		}
+	}
+
+	if !runningAsAdmin {
+		return nil, fmt.Errorf("--dump must be run with admin:org scope token")
 	}
 
 	orgMembers, err := client.ListOrgMembers(orgName, github.RoleMember)
