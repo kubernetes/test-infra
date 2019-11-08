@@ -1244,7 +1244,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20191021-b891e54-master
       command:
-      - "./infra/gcp/backup_tools/backup.sh /etc/k8s-artifacts-prod-bak-service-account"
+      - "./infra/gcp/backup_tools/backup.sh /etc/k8s-artifacts-prod-bak-service-account/service-account.json"
       volumeMounts:
       - name: k8s-artifacts-prod-bak-service-account-creds
         mountPath: /etc/k8s-artifacts-prod-bak-service-account
