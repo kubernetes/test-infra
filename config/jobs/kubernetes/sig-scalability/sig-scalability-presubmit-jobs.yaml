@@ -84,7 +84,7 @@ presubmits:
         - --extract=local
         - --gcp-nodes=500
         - --gcp-project=k8s-presubmit-scale
-        - --gcp-zone=us-east1-a
+        - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
@@ -131,7 +131,7 @@ presubmits:
         - --extract=local
         - --gcp-nodes=2000
         - --gcp-project=k8s-presubmit-scale
-        - --gcp-zone=us-east1-a
+        - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
         - --test=false
