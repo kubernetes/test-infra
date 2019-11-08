@@ -38,7 +38,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -74,7 +74,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-k8s-e2e
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Run e2e tests

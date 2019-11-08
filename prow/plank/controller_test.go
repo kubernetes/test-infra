@@ -101,7 +101,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 				},
 			},
 			JobConfig: config.JobConfig{
-				Presubmits: presubmitMap,
+				PresubmitsStatic: presubmitMap,
 			},
 		},
 	}
@@ -329,10 +329,8 @@ func TestTerminateDupes(t *testing.T) {
 		observedCompletedProwJobs := sets.NewString()
 		for _, action := range fakeProwJobClient.Fake.Actions() {
 			switch action := action.(type) {
-			case clienttesting.UpdateActionImpl:
-				if prowJob, ok := action.Object.(*prowapi.ProwJob); ok && prowJob.Complete() {
-					observedCompletedProwJobs.Insert(prowJob.Name)
-				}
+			case clienttesting.PatchActionImpl:
+				observedCompletedProwJobs.Insert(action.Name)
 			}
 		}
 		if missing := tc.terminatedPJs.Difference(observedCompletedProwJobs); missing.Len() > 0 {

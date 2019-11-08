@@ -14,6 +14,7 @@ presubmits:
     - release-\d+\.\d+
     annotations:
       fork-per-release: "true"
+      testgrid-create-test-group: "true"
     always_run: true
     optional: true
     max_concurrency: 12
@@ -26,7 +27,7 @@ presubmits:
       preset-pull-gce-device-plugin-gpu: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -57,6 +58,7 @@ presubmits:
     - release-\d+\.\d+
     annotations:
       fork-per-release: "true"
+      testgrid-create-test-group: "true"
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -66,7 +68,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

@@ -59,7 +59,7 @@ periodics:
       env:
       - name: OVERRIDE_NODE_BINARY_TAR_URL
         value: "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/kubernetes-node-windows-amd64.tar.gz"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       resources:
         requests:
           memory: "8Gi"
@@ -97,7 +97,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
@@ -138,7 +138,7 @@ periodics:
       env:
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows
     testgrid-tab-name: gce-windows-master-alpha-features
@@ -174,7 +174,7 @@ periodics:
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=240m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
     testgrid-dashboards: google-windows
     testgrid-tab-name: windows-gce-serial
@@ -182,6 +182,8 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-windows-gce
     decorate: true
+    decoration_config:
+      timeout: 200m
     path_alias: k8s.io/kubernetes
     extra_refs:
     - org: kubernetes
@@ -195,7 +197,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-      preset-pull-kubernetes-e2e-windows-gce: "true"
+      preset-e2e-gce-windows: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
@@ -222,8 +224,8 @@ presubmits:
         - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
         - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
         - --test-cmd-args=--node-os-distro=windows
-        - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        - --timeout=150m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

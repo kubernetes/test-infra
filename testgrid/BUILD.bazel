@@ -10,6 +10,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//testgrid/cmd/configurator:all-srcs",
+        "//testgrid/cmd/transfigure:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

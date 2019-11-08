@@ -24,7 +24,6 @@ import (
 	"strings"
 	"time"
 
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,8 +72,6 @@ const (
 	KubernetesAgent ProwJobAgent = "kubernetes"
 	// JenkinsAgent means prow will schedule the job on jenkins.
 	JenkinsAgent ProwJobAgent = "jenkins"
-	// KnativeBuildAgent means prow will schedule the job via a build-crd resource.
-	KnativeBuildAgent ProwJobAgent = "knative-build"
 	// TektonAgent means prow will schedule the job via a tekton PipelineRun CRD resource.
 	TektonAgent = "tekton-pipeline"
 )
@@ -142,11 +139,6 @@ type ProwJobSpec struct {
 	// PodSpec provides the basis for running the test under
 	// a Kubernetes agent
 	PodSpec *corev1.PodSpec `json:"pod_spec,omitempty"`
-
-	// BuildSpec provides the basis for running the test as
-	// a build-crd resource
-	// https://github.com/knative/build
-	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
 
 	// JenkinsSpec holds configuration specific to Jenkins jobs
 	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`

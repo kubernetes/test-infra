@@ -48,12 +48,9 @@ cleanup() {
 install_kind() {
     # install `kind` to tempdir
     TMP_DIR=$(mktemp -d)
-    # ensure bin dir
-    mkdir -p "${TMP_DIR}/bin"
-    pushd "${TMP_DIR}"
-    env "GOPATH=${TMP_DIR}" GO111MODULE="on" go get -u "sigs.k8s.io/kind@${STABLE_KIND_VERSION}"
-    popd
-    PATH="${TMP_DIR}/bin:${PATH}"
+    curl -sLo "${TMP_DIR}/kind" https://github.com/kubernetes-sigs/kind/releases/download/${STABLE_KIND_VERSION}/kind-linux-amd64
+    chmod +x "${TMP_DIR}/kind"
+    PATH="${TMP_DIR}:${PATH}"
     export PATH
 }
 

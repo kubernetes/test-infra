@@ -161,10 +161,12 @@ You can add a reporter that implements the above interface, and add a flag to tu
 
 ## Migration from plank for github report
 
-Both plank and crier will call into the [github report lib](prow/github/report) when a prowjob needs to be reported,
+Both plank and crier will call into the [github report lib](https://github.com/kubernetes/test-infra/tree/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/github/report) when a prowjob needs to be reported,
 so as a user you only want to make one of them to report :-)
 
-Before migrating, be sure plank is setting the [PrevReportStatus field](https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L403)
+To disable GitHub reporting in Plank, add the `--skip-report=true` flag to the Plank [deployment](https://github.com/kubernetes/test-infra/blob/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/cluster/plank_deployment.yaml#L45).
+
+Before migrating, be sure plank is setting the [PrevReportStates field](https://github.com/kubernetes/test-infra/blob/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/apis/prowjobs/v1/types.go#L566)
 by describing a finished presubmit prowjob. Plank started to set this field after commit [2118178](https://github.com/kubernetes/test-infra/pull/10975/commits/211817826fc3c4f3315a02e46f3d6aa35573d22f), if not, you want to upgrade your plank to a version includes this commit before moving forward.
 
 you can check this entry by:
@@ -182,7 +184,7 @@ fb09e7d8-3abb-11e9-816a-0a580a6c0f7f	success
 
 ```
 
-You want to add a crier deployment, similar to ours [prow/cluster/crier_deployment.yaml](prow/cluster/crier_deployment.yaml),
+You want to add a crier deployment, similar to ours [prow/cluster/crier_deployment.yaml](https://github.com/kubernetes/test-infra/blob/de3775a7480fe0a724baacf24a87cbf058cd9fd5/prow/cluster/crier_deployment.yaml),
 flags need to be specified:
 - point `config-path` and `--job-config-path` to your prow config and job configs accordingly.
 - Set `--github-worker` to be number of parallel github reporting threads you need

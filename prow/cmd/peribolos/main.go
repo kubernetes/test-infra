@@ -57,7 +57,10 @@ type options struct {
 	fixTeamMembers    bool
 	fixTeams          bool
 	fixTeamRepos      bool
+	fixRepos          bool
 	ignoreSecretTeams bool
+	allowRepoArchival bool
+	allowRepoPublish  bool
 	github            flagutil.GitHubOptions
 	tokenBurst        int
 	tokensPerHour     int
@@ -90,6 +93,9 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
 	flags.BoolVar(&o.fixTeamMembers, "fix-team-members", false, "Add/remove team members if set")
 	flags.BoolVar(&o.fixTeamRepos, "fix-team-repos", false, "Add/remove team permissions on repos if set")
+	flags.BoolVar(&o.fixRepos, "fix-repos", false, "Create/update repositories if set")
+	flags.BoolVar(&o.allowRepoArchival, "allow-repo-archival", false, "If set, archiving repos is allowed while updating repos")
+	flags.BoolVar(&o.allowRepoPublish, "allow-repo-publish", false, "If set, making private repos public is allowed while updating repos")
 	flags.StringVar(&o.logLevel, "log-level", logrus.InfoLevel.String(), fmt.Sprintf("Logging level, one of %v", logrus.AllLevels))
 	o.github.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
@@ -204,6 +210,7 @@ type dumpClient interface {
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	ListTeamRepos(id int) ([]github.Repo, error)
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
 }
 
 func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
@@ -330,7 +337,63 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 		out.Teams[names[id]] = makeChild(id)
 	}
 
+	repos, err := client.GetRepos(orgName, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list org repos: %v", err)
+	}
+	logrus.Debugf("Found %d repos", len(repos))
+	out.Repos = make(map[string]org.Repo, len(repos))
+	for idx, repo := range repos {
+		logrus.WithField("repo", repo.FullName).Debug("Recording repo.")
+		out.Repos[repos[idx].Name] = pruneRepoDefaults(org.Repo{
+			Description:      &repos[idx].Description,
+			HomePage:         &repos[idx].Homepage,
+			Private:          &repos[idx].Private,
+			HasIssues:        &repos[idx].HasIssues,
+			HasProjects:      &repos[idx].HasProjects,
+			HasWiki:          &repos[idx].HasWiki,
+			AllowMergeCommit: &repos[idx].AllowMergeCommit,
+			AllowSquashMerge: &repos[idx].AllowSquashMerge,
+			AllowRebaseMerge: &repos[idx].AllowRebaseMerge,
+			Archived:         &repos[idx].Archived,
+			DefaultBranch:    &repos[idx].DefaultBranch,
+		})
+	}
+
 	return &out, nil
+}
+
+// pruneRepoDefaults finds values in org.Repo config that matches the default
+// values replaces them with nil pointer. This reduces the size of an org dump
+// by omitting the fields that would be set to the same value when not set at all.
+// See https://developer.github.com/v3/repos/#edit
+func pruneRepoDefaults(repo org.Repo) org.Repo {
+	pruneString := func(p **string, def string) {
+		if *p != nil && **p == def {
+			*p = nil
+		}
+	}
+	pruneBool := func(p **bool, def bool) {
+		if *p != nil && **p == def {
+			*p = nil
+		}
+	}
+
+	pruneString(&repo.Description, "")
+	pruneString(&repo.HomePage, "")
+
+	pruneBool(&repo.Private, false)
+	pruneBool(&repo.HasIssues, true)
+	// Projects' defaults depend on org setting, do not prune
+	pruneBool(&repo.HasWiki, true)
+	pruneBool(&repo.AllowRebaseMerge, true)
+	pruneBool(&repo.AllowSquashMerge, true)
+	pruneBool(&repo.AllowMergeCommit, true)
+
+	pruneBool(&repo.Archived, false)
+	pruneString(&repo.DefaultBranch, "master")
+
+	return repo
 }
 
 type orgClient interface {
@@ -703,7 +766,7 @@ func updateBool(have, want *bool) bool {
 	case want == nil:
 		return false // do not care what we have
 	case *have == *want:
-		return false //already have it
+		return false // already have it
 	}
 	*have = *want // update value
 	return true
@@ -784,6 +847,13 @@ func configureOrg(opt options, client github.Client, orgName string, orgConfig o
 		return fmt.Errorf("failed to configure %s members: %v", orgName, err)
 	}
 
+	// Create repositories in the org
+	if !opt.fixRepos {
+		logrus.Info("Skipping org repositories configuration")
+	} else if err := configureRepos(opt, client, orgName, orgConfig); err != nil {
+		return fmt.Errorf("failed to configure %s repos: %v", orgName, err)
+	}
+
 	if !opt.fixTeams {
 		logrus.Infof("Skipping team and team member configuration")
 		return nil
@@ -810,6 +880,187 @@ func configureOrg(opt options, client github.Client, orgName string, orgConfig o
 		}
 	}
 	return nil
+}
+
+type repoClient interface {
+	GetRepos(orgName string, isUser bool) ([]github.Repo, error)
+	CreateRepo(owner string, isUser bool, repo github.RepoCreateRequest) (*github.Repo, error)
+	UpdateRepo(owner, name string, repo github.RepoUpdateRequest) (*github.Repo, error)
+}
+
+func newRepoCreateRequest(name string, definition org.Repo) github.RepoCreateRequest {
+	repoCreate := github.RepoCreateRequest{
+		RepoRequest: github.RepoRequest{
+			Name:             &name,
+			Description:      definition.Description,
+			Homepage:         definition.HomePage,
+			Private:          definition.Private,
+			HasIssues:        definition.HasIssues,
+			HasProjects:      definition.HasProjects,
+			HasWiki:          definition.HasWiki,
+			AllowSquashMerge: definition.AllowSquashMerge,
+			AllowMergeCommit: definition.AllowMergeCommit,
+			AllowRebaseMerge: definition.AllowRebaseMerge,
+		},
+	}
+
+	if definition.OnCreate != nil {
+		repoCreate.AutoInit = definition.OnCreate.AutoInit
+		repoCreate.GitignoreTemplate = definition.OnCreate.GitignoreTemplate
+		repoCreate.LicenseTemplate = definition.OnCreate.LicenseTemplate
+	}
+
+	return repoCreate
+}
+
+func validateRepos(repos map[string]org.Repo) error {
+	seen := map[string]string{}
+	var dups []string
+
+	for wantName, repo := range repos {
+		toCheck := append([]string{wantName}, repo.Previously...)
+		for _, name := range toCheck {
+			normName := strings.ToLower(name)
+			if seenName, have := seen[normName]; have {
+				dups = append(dups, fmt.Sprintf("%s/%s", seenName, name))
+			}
+		}
+		for _, name := range toCheck {
+			normName := strings.ToLower(name)
+			seen[normName] = name
+		}
+
+	}
+
+	if len(dups) > 0 {
+		return fmt.Errorf("found duplicate repo names (GitHub repo names are case-insensitive): %s", strings.Join(dups, ", "))
+	}
+
+	return nil
+}
+
+// newRepoUpdateRequest creates a minimal github.RepoUpdateRequest instance
+// needed to update the current repo into the target state.
+func newRepoUpdateRequest(current github.Repo, name string, repo org.Repo) github.RepoUpdateRequest {
+	setString := func(current string, want *string) *string {
+		if want != nil && *want != current {
+			return want
+		}
+		return nil
+	}
+	setBool := func(current bool, want *bool) *bool {
+		if want != nil && *want != current {
+			return want
+		}
+		return nil
+	}
+	repoUpdate := github.RepoUpdateRequest{
+		RepoRequest: github.RepoRequest{
+			Name:             setString(current.Name, &name),
+			Description:      setString(current.Description, repo.Description),
+			Homepage:         setString(current.Homepage, repo.HomePage),
+			Private:          setBool(current.Private, repo.Private),
+			HasIssues:        setBool(current.HasIssues, repo.HasIssues),
+			HasProjects:      setBool(current.HasProjects, repo.HasProjects),
+			HasWiki:          setBool(current.HasWiki, repo.HasWiki),
+			AllowSquashMerge: setBool(current.AllowSquashMerge, repo.AllowSquashMerge),
+			AllowMergeCommit: setBool(current.AllowMergeCommit, repo.AllowMergeCommit),
+			AllowRebaseMerge: setBool(current.AllowRebaseMerge, repo.AllowRebaseMerge),
+		},
+		DefaultBranch: setString(current.DefaultBranch, repo.DefaultBranch),
+		Archived:      setBool(current.Archived, repo.Archived),
+	}
+
+	return repoUpdate
+
+}
+
+func sanitizeRepoDelta(opt options, delta *github.RepoUpdateRequest) []error {
+	var errs []error
+	if delta.Archived != nil && !*delta.Archived {
+		delta.Archived = nil
+		errs = append(errs, fmt.Errorf("asked to unarchive an archived repo, unsupported by GH API"))
+	}
+	if delta.Archived != nil && *delta.Archived && !opt.allowRepoArchival {
+		delta.Archived = nil
+		errs = append(errs, fmt.Errorf("asked to archive a repo but this is not allowed by default (see --allow-repo-archival)"))
+	}
+	if delta.Private != nil && !(*delta.Private || opt.allowRepoPublish) {
+		delta.Private = nil
+		errs = append(errs, fmt.Errorf("asked to publish a private repo but this is not allowed by default (see --allow-repo-publish)"))
+	}
+
+	return errs
+}
+
+func repoExists(repos map[string]github.Repo, name string, previousNames []string) (*github.Repo, error) {
+	var ret *github.Repo
+	for _, name := range append([]string{name}, previousNames...) {
+		if repo, exists := repos[strings.ToLower(name)]; exists {
+			switch {
+			case ret == nil:
+				ret = &repo
+			case ret.Name != repo.Name:
+				return nil, fmt.Errorf("different repos already exist for current and previous names: %s and %s", ret.Name, repo.Name)
+			}
+		}
+	}
+
+	return ret, nil
+}
+
+func configureRepos(opt options, client repoClient, orgName string, orgConfig org.Config) error {
+	if err := validateRepos(orgConfig.Repos); err != nil {
+		return err
+	}
+
+	repoList, err := client.GetRepos(orgName, false)
+	if err != nil {
+		return fmt.Errorf("failed to get repos: %v", err)
+	}
+	logrus.Debugf("Found %d repositories", len(repoList))
+	byName := make(map[string]github.Repo, len(repoList))
+	for _, repo := range repoList {
+		byName[strings.ToLower(repo.Name)] = repo
+	}
+
+	var allErrors []error
+	for wantName, wantRepo := range orgConfig.Repos {
+		repoLogger := logrus.WithField("repoExists", wantName)
+		repoExists, err := repoExists(byName, wantName, wantRepo.Previously)
+		if err != nil {
+			allErrors = append(allErrors, err)
+			continue
+		}
+		if repoExists == nil {
+			repoLogger.Info("repoExists does not exist, creating")
+			created, err := client.CreateRepo(orgName, false, newRepoCreateRequest(wantName, wantRepo))
+			if err != nil {
+				allErrors = append(allErrors, err)
+			} else {
+				repoExists = created
+			}
+		}
+
+		if repoExists != nil {
+			repoLogger.Info("repoExists exists, considering an update")
+			delta := newRepoUpdateRequest(*repoExists, wantName, wantRepo)
+			if deltaErrors := sanitizeRepoDelta(opt, &delta); len(deltaErrors) > 0 {
+				for _, err := range deltaErrors {
+					repoLogger.WithError(err).Error("requested repoExists change is not allowed, removing from delta")
+				}
+				allErrors = append(allErrors, deltaErrors...)
+			}
+			if delta.Defined() {
+				repoLogger.Info("repoExists exists and differs from desired state, updating")
+				if _, err := client.UpdateRepo(orgName, repoExists.Name, delta); err != nil {
+					allErrors = append(allErrors, err)
+				}
+			}
+		}
+	}
+
+	return errorutil.NewAggregate(allErrors...)
 }
 
 func configureTeamAndMembers(opt options, client github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {

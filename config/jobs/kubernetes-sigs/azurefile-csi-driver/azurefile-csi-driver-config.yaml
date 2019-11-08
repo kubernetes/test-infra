@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -20,7 +20,7 @@ presubmits:
         - make
         - verify
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-verify
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run code verification tests for Azure File CSI driver."
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -45,7 +45,7 @@ presubmits:
         - make
         - unit-test
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-unit
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run unit tests for Azure File CSI driver."
@@ -59,7 +59,7 @@ presubmits:
       preset-cloudprovider-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -73,7 +73,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-sanity
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run sanity tests for Azure File CSI driver."
@@ -87,7 +87,7 @@ presubmits:
       preset-cloudprovider-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -101,7 +101,7 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-integration
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run integration tests for Azure File CSI driver."
@@ -116,7 +116,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -143,14 +143,14 @@ presubmits:
         - "--acsengine-agentvmsize=Standard_D4s_v3"
         - "--acsengine-location=eastus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
-        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz"
         - "--test-azure-file-csi-driver=True"
         - "--timeout=420m"
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-azure-master
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-azurefile-csi-driver-e2e
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run E2E tests for Azure File CSI driver."

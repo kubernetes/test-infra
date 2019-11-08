@@ -562,9 +562,9 @@ func (k kops) TestSetup() error {
 
 // BuildTester returns a standard ginkgo-script tester, except for GCE where we build an e2e.Tester
 func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
-	// Start by only enabling this on GCE
-	if !k.isGoogleCloud() {
-		return &GinkgoScriptTester{}, nil
+	kubecfg, err := parseKubeconfig(k.kubecfg)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing kubeconfig %q: %v", k.kubecfg, err)
 	}
 
 	log.Printf("running ginkgo tests directly")
@@ -576,6 +576,10 @@ func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	t.Provider = k.provider
 
 	t.ClusterID = k.cluster
+
+	if len(kubecfg.Clusters) > 0 {
+		t.KubeMasterURL = kubecfg.Clusters[0].Cluster.Server
+	}
 
 	if k.provider == "gce" {
 		t.GCEProject = k.gcpProject
@@ -589,6 +593,19 @@ func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 				return nil, fmt.Errorf("unexpected format for GCE zone: %q", zone)
 			}
 			t.GCERegion = zone[0:lastDash]
+		}
+	} else if k.provider == "aws" {
+		if len(k.zones) > 0 {
+			zone := k.zones[0]
+			// These GCE fields are actually provider-agnostic
+			t.GCEZone = zone
+
+			if zone == "" {
+				return nil, errors.New("zone cannot be a empty string")
+			}
+
+			// us-east-1a => us-east-1
+			t.GCERegion = zone[0 : len(zone)-1]
 		}
 	}
 
@@ -723,5 +740,31 @@ func getAWSEC2Session(region string) (*ec2.EC2, error) {
 	}
 
 	return ec2.New(s, config), nil
+}
 
+// kubeconfig is a simplified version of the kubernetes Config type
+type kubeconfig struct {
+	Clusters []struct {
+		Cluster struct {
+			Server string `json:"server"`
+		} `json:"cluster"`
+	} `json:"clusters"`
+}
+
+// parseKubeconfig uses kubectl to extract the current kubeconfig configuration
+func parseKubeconfig(kubeconfigPath string) (*kubeconfig, error) {
+	cmd := "kubectl"
+
+	o, err := control.Output(exec.Command(cmd, "config", "view", "--minify", "-ojson", "--kubeconfig", kubeconfigPath))
+	if err != nil {
+		log.Printf("kubectl config view failed: %s\n%s", wrapError(err).Error(), string(o))
+		return nil, err
+	}
+
+	cfg := &kubeconfig{}
+	if err := json.Unmarshal(o, cfg); err != nil {
+		return nil, fmt.Errorf("error parsing kubectl config view output: %v", err)
+	}
+
+	return cfg, nil
 }

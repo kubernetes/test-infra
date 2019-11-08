@@ -35,6 +35,7 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for Kubeflow.
+      # TODO: use a public email group
       testgrid-alert-email: kubeflow-engineering@google.com
       testgrid-num-failures-to-alert: "3"
   kubeflow/kfctl:
@@ -250,7 +251,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:

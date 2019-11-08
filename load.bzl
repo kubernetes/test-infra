@@ -16,11 +16,13 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
 def repositories():
-    git_repository(
+    http_archive(
         name = "io_k8s_repo_infra",
-        commit = "db6ceb5f992254db76af7c25db2edc5469b5ea82",
-        remote = "https://github.com/kubernetes/repo-infra.git",
-        shallow_since = "1570128715 -0700",
+        sha256 = "5ee2a8e306af0aaf2844b5e2c79b5f3f53fc9ce3532233f0615b8d0265902b2a",
+        strip_prefix = "repo-infra-0.0.1-alpha.1",
+        urls = [
+            "https://github.com/kubernetes/repo-infra/archive/v0.0.1-alpha.1.tar.gz",
+        ],
     )
     http_archive(
         name = "io_bazel_rules_docker",
@@ -29,11 +31,11 @@ def repositories():
         urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.12.0.tar.gz"],
     )
 
-    git_repository(
+    http_archive(
         name = "io_bazel_rules_k8s",
-        commit = "9de8297b3bb96b010ddc69d025db058c72f7a609",
-        remote = "https://github.com/bazelbuild/rules_k8s.git",
-        shallow_since = "1570817943 -0400",
+        sha256 = "a34539941fd920432b7c545f720129e2f2e6b2285f1beb66de25e429f91759bf",
+        strip_prefix = "rules_k8s-0.3",
+        urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3/rules_k8s-v0.3.tar.gz"],
     )
 
     # https://github.com/bazelbuild/rules_nodejs

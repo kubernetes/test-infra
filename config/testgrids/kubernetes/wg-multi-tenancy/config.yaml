@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: wg-multi-tenancy
+  dashboard_names:
+    - wg-multi-tenancy-hnc
+
+dashboards:
+- name: wg-multi-tenancy-hnc

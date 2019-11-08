@@ -85,7 +85,7 @@ func updateJobBase(j *config.JobBase, old, new string) {
 }
 
 func updateEverything(c *config.JobConfig, old, new string) {
-	for _, presubmits := range c.PresubmitsStatic() {
+	for _, presubmits := range c.PresubmitsStatic {
 		for i := range presubmits {
 			updateJobBase(&presubmits[i].JobBase, old, new)
 		}
@@ -137,7 +137,7 @@ func main() {
 	updateEverything(&c, o.oldVersion, o.newVersion)
 
 	output, err := yaml.Marshal(map[string]interface{}{
-		"presubmits":  c.PresubmitsStatic(),
+		"presubmits":  c.PresubmitsStatic,
 		"postsubmits": c.Postsubmits,
 		"periodics":   c.Periodics,
 	})

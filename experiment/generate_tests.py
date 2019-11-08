@@ -45,7 +45,7 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
 """
 
 
@@ -107,7 +107,7 @@ def apply_job_overrides(envs_or_args, job_envs_or_args):
         envs_or_args.append(job_env_or_arg)
 
 
-class E2ENodeTest:
+class E2ENodeTest(object):
 
     def __init__(self, job_name, job, config):
         self.job_name = job_name
@@ -214,10 +214,10 @@ class E2ENodeTest:
         return job_config, prow_config, None
 
 
-class E2ETest:
+class E2ETest(object):
 
     def __init__(self, output_dir, job_name, job, config):
-        self.env_filename = os.path.join(output_dir, '%s.env' % job_name)
+        self.env_filename = os.path.join(output_dir, '%s.env' % job_name),
         self.job_name = job_name
         self.job = job
         self.common = config['common']
@@ -274,7 +274,7 @@ class E2ETest:
         elif self.job.get('releaseInforming'):
             dashboards.append('sig-release-%s-informing' % version)
         else:
-            dashboards.append('sig-release-%s-all' % version)
+            dashboards.append('sig-release-generated')
         return dashboards
 
     def generate(self):

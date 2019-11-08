@@ -258,8 +258,23 @@ func (r *Repo) CheckoutNewBranch(branch string) error {
 // Merge attempts to merge commitlike into the current branch. It returns true
 // if the merge completes. It returns an error if the abort fails.
 func (r *Repo) Merge(commitlike string) (bool, error) {
+	return r.MergeWithStrategy(commitlike, prowgithub.MergeMerge)
+}
+
+// MergeWithStrategy attempts to merge commitlike into the current branch given the merge strategy.
+// It returns true if the merge completes. It returns an error if the abort fails.
+func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.PullRequestMergeType) (bool, error) {
 	r.logger.Infof("Merging %s.", commitlike)
-	co := r.gitCommand("merge", "--no-ff", "--no-stat", "-m merge", commitlike)
+	mergeFlag := ""
+	switch mergeStrategy {
+	case prowgithub.MergeMerge:
+		mergeFlag = "--no-ff"
+	case prowgithub.MergeSquash:
+		mergeFlag = "--squash"
+	default:
+		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
+	}
+	co := r.gitCommand("merge", mergeFlag, "--no-stat", "-m merge", commitlike)
 
 	b, err := co.CombinedOutput()
 	if err == nil {
@@ -284,29 +299,17 @@ func (r *Repo) MergeAndCheckout(baseSHA string, headSHAs []string, mergeStrategy
 		return errors.New("at least one headSHA must be provided")
 	}
 	r.logger.Infof("Merging headSHAs %v onto base %s using strategy %s", headSHAs, baseSHA, mergeStrategy)
-
-	mergeFlag := ""
-	switch mergeStrategy {
-	case prowgithub.MergeMerge:
-		mergeFlag = "--no-ff"
-	case prowgithub.MergeSquash:
-		mergeFlag = "--squash"
-	default:
-		return fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
-	}
-
-	if b, err := r.gitCommand("checkout", baseSHA).CombinedOutput(); err != nil {
-		return fmt.Errorf("git checkout failed for revision %q: %v. output: %s", baseSHA, err, string(b))
-	}
-	if b, err := r.gitCommand("config", "user.email", "denna@protonmail.com").CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to set email prior to merging: %v. output: %s", err, string(b))
+	if err := r.Checkout(baseSHA); err != nil {
+		return err
 	}
 	for _, headSHA := range headSHAs {
-		if b, err := r.gitCommand("merge", mergeFlag, "--no-stat", "-m merge", headSHA).CombinedOutput(); err != nil {
-			return fmt.Errorf("merge failed with error %v. output: %s", err, string(b))
+		ok, err := r.MergeWithStrategy(headSHA, mergeStrategy)
+		if err != nil {
+			return err
+		} else if !ok {
+			return fmt.Errorf("failed to merge %q", headSHA)
 		}
 	}
-
 	return nil
 }
 

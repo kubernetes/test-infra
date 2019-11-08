@@ -62,6 +62,15 @@ presets:
   # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
   - name: KUBE_GCE_PRIVATE_CLUSTER
     value: "true"
+  # We create approx. 70 hollow nodes per VM. Allow ~4 connections from each of them.
+  - name: KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM
+    value: 300
+  - name: PROMETHEUS_SCRAPE_ETCD
+    value: "true"
+  # Disable kubernetes-dashboard
+  - name: KUBE_ENABLE_CLUSTER_UI
+    value: "false"
+
 ### kubemark-gce-scale
 - labels:
     preset-e2e-kubemark-gce-scale: "true"
@@ -135,9 +144,14 @@ presets:
   # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
   - name: KUBE_GCE_PRIVATE_CLUSTER
     value: "true"
+  - name: PROMETHEUS_SCRAPE_ETCD
+    value: "true"
+  # Disable kubernetes-dashboard
+  - name: KUBE_ENABLE_CLUSTER_UI
+    value: "false"
 
 ###### Scalability Envs
-### Common env variables for all scalability-related suites.
+### Common env variables for node scalability-related suites.
 - labels:
     preset-e2e-scalability-node: "true"
   env:

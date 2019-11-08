@@ -9,13 +9,11 @@ triggers:
   - kubernetes-csi
   - kubernetes-incubator
   - kubernetes-sigs
-  trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
 - repos:
   - google/cadvisor
   - GoogleCloudPlatform/k8s-multicluster-ingress
-  trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
   - containerd/cri
@@ -43,7 +41,6 @@ use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019: tru
 approve:
 - repos:
   - kubernetes/cloud-provider-aws
-  - kubernetes/cloud-provider-azure
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
@@ -67,6 +64,7 @@ approve:
   - kubernetes/release
   - kubernetes/sig-release
   - kubernetes/steering
+  - kubernetes/system-validators
   - kubernetes/utils
   require_self_approval: false
   lgtm_acts_as_approve: true
@@ -138,8 +136,10 @@ blockades:
   blockregexps:
   - ^events/2016
   - ^events/2017
+  - ^events/2018
   - ^events/elections/2017
   - ^events/elections/2018
+  - ^events/elections/2019
   explanation: "These files are historical, and from events that have already occurred."
 - repos:
   - kubernetes/community
@@ -207,25 +207,37 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.13:
-            - aleksandra-malinowska # Patch Release Team
-            - feiskyer # Patch Release Team
-            - hoegaarden # Patch Release Team
-            - tpepper # Patch Release Team
         release-1.14:
             - aleksandra-malinowska # Patch Release Team
+            - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
             - tpepper # Patch Release Team
         release-1.15:
             - aleksandra-malinowska # Patch Release Team
+            - dougm # Patch Release Team
             - feiskyer # Patch Release Team
             - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
             - tpepper # Patch Release Team
         release-1.16:
+            - aleksandra-malinowska # Patch Release Team
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - tpepper # Patch Release Team
+        release-1.17:
+            - aleksandra-malinowska # Patch Release Team
             - bubblemelon # Branch Manager
-            - idealhack # Branch Manager
-            - justaugustus # Release Manager Associate
+            - cpanato # Branch Manager
+            - dougm # Patch Release Team
+            - feiskyer # Patch Release Team
+            - hoegaarden # Patch Release Team
+            - idealhack # Patch Release Team
+            - justaugustus # Branch Manager
+            - tpepper # Patch Release Team
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -240,9 +252,24 @@ slack:
     - k8s-ci-robot
   - repos:
     - kubernetes/sig-release
+    channels:
+    - sig-release
+    whitelist:
+    - k8s-ci-robot
+  - repos:
     - kubernetes/release
     channels:
     - sig-release
+    whitelist:
+    - k8s-ci-robot
+    branch_whitelist:
+        prototype:
+            - justaugustus # k8s-infra prototype Branch Manager
+            - tpepper # k8s-infra prototype Branch Manager
+  - repos:
+    - kubernetes/k8s.io
+    channels:
+    - wg-k8s-infra
     whitelist:
     - k8s-ci-robot
 
@@ -251,10 +278,10 @@ milestone_applier:
     master: v1.17
   kubernetes/kubernetes:
     master: v1.17
+    release-1.17: v1.17
     release-1.16: v1.16
     release-1.15: v1.15
     release-1.14: v1.14
-    release-1.13: v1.13
   kubernetes/release:
     master: v1.17
   kubernetes/sig-release:
@@ -342,7 +369,9 @@ config_updater:
   maps:
     label_sync/labels.yaml:
       name: label-config
-      namespace: test-pods
+      clusters:
+        test-infra-trusted:
+          - test-pods
     config/prow/config.yaml:
       name: config
     config/prow/plugins.yaml:
@@ -501,12 +530,6 @@ plugins:
   - release-note
   - require-matching-label
 
-  kubernetes/cloud-provider-azure:
-  - milestone
-  - milestonestatus
-  - release-note
-  - require-matching-label
-
   kubernetes/cloud-provider-openstack:
   - override
 
@@ -552,6 +575,9 @@ plugins:
   - milestone
   - milestoneapplier
   - override
+
+  kubernetes/system-validators:
+  - milestone
 
   kubernetes/test-infra:
   - config-updater
@@ -675,6 +701,12 @@ plugins:
   - welcome
   - wip
   - yuks
+
+  kubernetes-sigs/cloud-provider-azure:
+  - milestone
+  - milestonestatus
+  - release-note
+  - require-matching-label
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - release-note

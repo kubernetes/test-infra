@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -32,34 +32,20 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         command:
         - "runner.sh"
         - "./scripts/ci-make.sh"
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-make
@@ -71,27 +57,29 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
     optional: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: master
+      path_alias: "sigs.k8s.io/cluster-api"
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
-          args:
-            - "--job=$(JOB_NAME)"
-            - "--root=/go/src"
-            - "--repo=k8s.io/kubernetes=master"
-            - "--repo=sigs.k8s.io/cluster-api=master"
-            - "--repo=sigs.k8s.io/image-builder=master"
-            - "--repo=sigs.k8s.io/cluster-api-provider-gcp=$(PULL_REFS)"
-            - "--repo=sigs.k8s.io/kind=master"
-            - "--service-account=/etc/service-account/service-account.json"
-            - "--upload=gs://kubernetes-jenkins/pr-logs"
-            - "--scenario=execute"
-            - "--"
-            - "bash"
-            - "--"
-            - "-c"
-            - "cd ./../../sigs.k8s.io/cluster-api-provider-gcp && scripts/ci-e2e.sh"
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-experimental
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e.sh"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -104,4 +92,4 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e
+      testgrid-tab-name: pr-conformance

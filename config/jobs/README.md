@@ -19,7 +19,7 @@ info, it was sourced from the following:
 
 There are three types of prow jobs:
 
-- **Presubumits** run against code in PRs
+- **Presubmits** run against code in PRs
 - **Postsubmits** run after merging code
 - **Periodics** run on a periodic basis
 

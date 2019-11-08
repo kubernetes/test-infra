@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 const (
@@ -75,6 +76,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	IsCollaborator(org, repo, user string) (bool, error)
+	IsMember(org, user string) (bool, error)
 }
 
 type client struct {
@@ -90,10 +93,11 @@ func getClient(pc plugins.Agent) client {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
+	t := pc.PluginConfig.TriggerFor(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name)
+	return handlePR(getClient(pc), t, pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
 }
 
-func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) error {
+func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeTemplate string) error {
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
 		return nil
@@ -104,10 +108,19 @@ func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) err
 		return nil
 	}
 
-	// search for PRs from the author in this repo
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
 	user := pre.PullRequest.User.Login
+
+	trusted, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
+	if err != nil {
+		return fmt.Errorf("check if user %s is trusted: %v", user, err)
+	}
+	if trusted {
+		return nil
+	}
+
+	// search for PRs from the author in this repo
 	query := fmt.Sprintf("is:pr repo:%s/%s author:%s", org, repo, user)
 	issues, err := c.GitHubClient.FindIssues(query, "", false)
 	if err != nil {

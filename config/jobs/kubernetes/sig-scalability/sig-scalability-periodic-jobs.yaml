@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -45,7 +45,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -93,7 +93,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -127,13 +127,15 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
       # TODO(oxddr): renable this once the current impact is understood
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
+      - --use-logexporter
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -154,7 +156,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -192,6 +194,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=70m
+      - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -214,7 +217,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -243,6 +246,8 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
@@ -252,6 +257,7 @@ periodics:
       # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
+      - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -276,7 +282,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -313,6 +319,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
+      - --use-logexporter
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -327,7 +334,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -341,28 +348,27 @@ periodics:
   - "perfDashPrefix: scheduler-benchmark"
   - "perfDashJobType: benchmark"
   interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=55
-      - --root=/go/src
-      - --scenario=execute
-      - --
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
+      command:
       - ./hack/jenkins/benchmark-dockerized.sh
+      args:
       - ./test/integration/scheduler_perf
       env:
-      - name: GOPATH
-        value: /go
       - name: KUBE_TIMEOUT
-        value: --timeout 40m
+        value: --timeout=1h50m
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
@@ -377,7 +383,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -412,7 +418,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

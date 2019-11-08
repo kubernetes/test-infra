@@ -23,6 +23,8 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 func TestCensoringFormatter(t *testing.T) {
@@ -82,7 +84,7 @@ func TestCensoringFormatter(t *testing.T) {
 		DisableColors:    true,
 		DisableTimestamp: true,
 	}
-	formatter := agent.GetCensoringFormatter(baseFormatter)
+	formatter := logrusutil.NewCensoringFormatter(baseFormatter, agent.getSecrets)
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {

@@ -372,6 +372,12 @@ func TestMergeAndCheckout(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Cloning failed: %v", err)
 			}
+			if err := clonedRepo.Config("user.name", "prow"); err != nil {
+				t.Fatalf("failed to set name for test repo: %v", err)
+			}
+			if err := clonedRepo.Config("user.email", "prow@localhost"); err != nil {
+				t.Fatalf("failed to set email for test repo: %v", err)
+			}
 			if err := clonedRepo.Config("commit.gpgsign", "false"); err != nil {
 				t.Fatalf("failed to disable gpg signing for test repo: %v", err)
 			}

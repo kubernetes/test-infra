@@ -900,9 +900,8 @@ func getTextColor(backgroundColor string) (string, error) {
 
 	if (L+0.05)/(0.0+0.05) > (1.0+0.05)/(L+0.05) {
 		return "000000", nil
-	} else {
-		return "ffffff", nil
 	}
+	return "ffffff", nil
 }
 
 func writeCSS(tmplPath string, outPath string, config Configuration) error {

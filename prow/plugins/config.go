@@ -29,8 +29,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 )
 
@@ -342,8 +344,11 @@ type Label struct {
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	// TrustedOrg is the org whose members' PRs will be automatically built
-	// for PRs to the above repos. The default is the PR's org.
+	// TrustedOrg is the org whose members' PRs will be automatically built for
+	// PRs to the above repos. The default is the PR's org.
+	//
+	// Deprecated: TrustedOrg functionality is deprecated and will be removed in
+	// January 2020.
 	TrustedOrg string `json:"trusted_org,omitempty"`
 	// JoinOrgURL is a link that redirects users to a location where they
 	// should be able to read more about joining the organization in order
@@ -417,6 +422,9 @@ type ConfigMapSpec struct {
 	GZIP *bool `json:"gzip,omitempty"`
 	// Namespaces is the fully resolved list of Namespaces to deploy the ConfigMap in
 	Namespaces []string `json:"-"`
+	// Clusters is a map from cluster to namespaces
+	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
+	Clusters map[string][]string `json:"clusters"`
 }
 
 // ConfigUpdater contains the configuration for the config-updater plugin.
@@ -678,6 +686,64 @@ func (r RequireMatchingLabel) Describe() string {
 	return str.String()
 }
 
+// ApproveFor finds the Approve for a repo, if one exists.
+// Approval configuration can be listed for a repository
+// or an organization.
+func (c *Configuration) ApproveFor(org, repo string) *Approve {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+
+	a := func() *Approve {
+		// First search for repo config
+		for _, approve := range c.Approve {
+			if !sets.NewString(approve.Repos...).Has(fullName) {
+				continue
+			}
+			return &approve
+		}
+
+		// If you don't find anything, loop again looking for an org config
+		for _, approve := range c.Approve {
+			if !sets.NewString(approve.Repos...).Has(org) {
+				continue
+			}
+			return &approve
+		}
+
+		// Return an empty config, and use plugin defaults
+		return &Approve{}
+	}()
+	if a.DeprecatedImplicitSelfApprove == nil && a.RequireSelfApproval == nil && c.UseDeprecatedSelfApprove {
+		no := false
+		a.DeprecatedImplicitSelfApprove = &no
+	}
+	if a.DeprecatedReviewActsAsApprove == nil && a.IgnoreReviewState == nil && c.UseDeprecatedReviewApprove {
+		no := false
+		a.DeprecatedReviewActsAsApprove = &no
+	}
+	return a
+}
+
+// LgtmFor finds the Lgtm for a repo, if one exists
+// a trigger can be listed for the repo itself or for the
+// owning organization
+func (c *Configuration) LgtmFor(org, repo string) *Lgtm {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	for _, lgtm := range c.Lgtm {
+		if !sets.NewString(lgtm.Repos...).Has(fullName) {
+			continue
+		}
+		return &lgtm
+	}
+	// If you don't find anything, loop again looking for an org config
+	for _, lgtm := range c.Lgtm {
+		if !sets.NewString(lgtm.Repos...).Has(org) {
+			continue
+		}
+		return &lgtm
+	}
+	return &Lgtm{}
+}
+
 // TriggerFor finds the Trigger for a repo, if one exists
 // a trigger can be listed for the repo itself or for the
 // owning organization
@@ -795,7 +861,15 @@ func (c *ConfigUpdater) SetDefaults() {
 	}
 
 	for name, spec := range c.Maps {
+		if spec.Namespace != "" || len(spec.AdditionalNamespaces) > 0 {
+			logrus.Warnf("'namespace' and 'additional_namespaces' are deprecated for config-updater plugin, use 'clusters' instead")
+		}
+		// as a result, namespaces will never be an empty slice (namespace in the slice could be empty string)
+		// and clusters will never be an empty map (map[cluster] could be am empty slice)
 		spec.Namespaces = append([]string{spec.Namespace}, spec.AdditionalNamespaces...)
+		if len(spec.Clusters) == 0 {
+			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: spec.Namespaces}
+		}
 		c.Maps[name] = spec
 	}
 }
@@ -942,27 +1016,37 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	return nil
 }
 
+// ConfigMapID is a name/namespace/cluster combination that identifies a config map
+type ConfigMapID struct {
+	Name, Namespace, Cluster string
+}
+
 func validateConfigUpdater(updater *ConfigUpdater) error {
-	files := sets.NewString()
-	configMapKeys := map[string]sets.String{}
+	updater.SetDefaults()
+	configMapKeys := map[ConfigMapID]sets.String{}
 	for file, config := range updater.Maps {
-		if files.Has(file) {
-			return fmt.Errorf("file %s listed more than once in config updater config", file)
-		}
-		files.Insert(file)
+		for cluster, namespaces := range config.Clusters {
+			for _, namespace := range namespaces {
+				cmID := ConfigMapID{
+					Name:      config.Name,
+					Namespace: namespace,
+					Cluster:   cluster,
+				}
 
-		key := config.Key
-		if key == "" {
-			key = path.Base(file)
-		}
+				key := config.Key
+				if key == "" {
+					key = path.Base(file)
+				}
 
-		if _, ok := configMapKeys[config.Name]; ok {
-			if configMapKeys[config.Name].Has(key) {
-				return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+				if _, ok := configMapKeys[cmID]; ok {
+					if configMapKeys[cmID].Has(key) {
+						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+					}
+					configMapKeys[cmID].Insert(key)
+				} else {
+					configMapKeys[cmID] = sets.NewString(key)
+				}
 			}
-			configMapKeys[config.Name].Insert(key)
-		} else {
-			configMapKeys[config.Name] = sets.NewString(key)
 		}
 	}
 	return nil
@@ -1012,6 +1096,17 @@ func validateProjectManager(pm ProjectManager) error {
 				}
 				labelSets = append(labelSets, s_set)
 			}
+		}
+	}
+	return nil
+}
+
+var warnTriggerTrustedOrg time.Time
+
+func validateTrigger(triggers []Trigger) error {
+	for _, trigger := range triggers {
+		if trigger.TrustedOrg != "" {
+			warnDeprecated(&warnTriggerTrustedOrg, 5*time.Minute, "trusted_org functionality is deprecated. Please ensure your configuration is updated before the end of December 2019.")
 		}
 	}
 	return nil
@@ -1084,8 +1179,10 @@ func (c *Configuration) Validate() error {
 	if err := validateRequireMatchingLabel(c.RequireMatchingLabel); err != nil {
 		return err
 	}
-
 	if err := validateProjectManager(c.ProjectManager); err != nil {
+		return err
+	}
+	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
 
@@ -1134,25 +1231,25 @@ func (pluginConfig *ProjectConfig) GetOrgColumnMap(org string) map[string]string
 type Bugzilla struct {
 	// Default settings mapped by branch in any repo in any org.
 	// The `*` wildcard will apply to all branches.
-	Default map[string]BugzillaBranchOptions `json:"default"`
+	Default map[string]BugzillaBranchOptions `json:"default,omitempty"`
 	// Options for specific orgs. The `*` wildcard will apply to all orgs.
-	Orgs map[string]BugzillaOrgOptions `json:"orgs"`
+	Orgs map[string]BugzillaOrgOptions `json:"orgs,omitempty"`
 }
 
 // BugzillaOrgOptions holds options for checking Bugzilla bugs for an org.
 type BugzillaOrgOptions struct {
 	// Default settings mapped by branch in any repo in this org.
 	// The `*` wildcard will apply to all branches.
-	Default map[string]BugzillaBranchOptions `json:"default"`
+	Default map[string]BugzillaBranchOptions `json:"default,omitempty"`
 	// Options for specific repos. The `*` wildcard will apply to all repos.
-	Repos map[string]BugzillaRepoOptions `json:"repos"`
+	Repos map[string]BugzillaRepoOptions `json:"repos,omitempty"`
 }
 
 // BugzillaRepoOptions holds options for checking Bugzilla bugs for a repo.
 type BugzillaRepoOptions struct {
 	// Options for specific branches in this repo.
 	// The `*` wildcard will apply to all branches.
-	Branches map[string]BugzillaBranchOptions `json:"branches"`
+	Branches map[string]BugzillaBranchOptions `json:"branches,omitempty"`
 }
 
 // BugzillaBugState describes bug states in the Bugzilla plugin config, used
@@ -1247,7 +1344,7 @@ type BugzillaBranchOptions struct {
 	// StateAfterValidation is the state to which the bug will be moved after being
 	// deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
 	// if others are set.
-	StateAfterValidation *BugzillaBugState `json:"state_after_validation"`
+	StateAfterValidation *BugzillaBugState `json:"state_after_validation,omitempty"`
 	// AddExternalLink determines whether the pull request will be added to the Bugzilla
 	// bug using the ExternalBug tracker API after being validated
 	AddExternalLink *bool `json:"add_external_link,omitempty"`

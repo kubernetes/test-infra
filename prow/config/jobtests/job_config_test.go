@@ -95,7 +95,7 @@ func missingMountsForSpec(spec *v1.PodSpec) sets.String {
 
 // verify that all volume mounts reference volumes that exist
 func TestMountsHaveVolumes(t *testing.T) {
-	for _, job := range c.AllPresubmits(nil) {
+	for _, job := range c.AllStaticPresubmits(nil) {
 		if job.Spec != nil {
 			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
@@ -130,7 +130,7 @@ func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 }
 
 func TestContextMatches(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		for _, p := range presubmits {
 			checkContext(t, repo, p)
 		}
@@ -147,7 +147,7 @@ func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 }
 
 func TestRetestMatchJobsName(t *testing.T) {
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		checkRetest(t, repo, presubmits)
 	}
 }
@@ -181,7 +181,7 @@ func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
 	{ // Find all presubmit jobs
 		q := []cfg.Presubmit{}
 
-		for _, p := range c.Presubmits {
+		for _, p := range c.PresubmitsStatic {
 			for _, p2 := range p {
 				q = append(q, p2)
 			}

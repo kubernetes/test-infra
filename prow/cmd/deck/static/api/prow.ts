@@ -1,6 +1,6 @@
 export type ProwJobType = "presubmit" | "postsubmit" | "batch" | "periodic";
 export type ProwJobState = "triggered" | "pending" | "success" | "failure" | "aborted" | "error" | "unknown" | "";
-export type ProwJobAgent = "kubernetes" | "jenkins" | "knative-build" | "tekton-pipeline";
+export type ProwJobAgent = "kubernetes" | "jenkins" | "tekton-pipeline";
 
 // Pull describes a pull request at a particular point in time.
 // Pull mirrors the Pull struct defined in prow/apis/prowjobs/v1/types.go.

@@ -23,7 +23,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu
@@ -53,9 +53,9 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
-    testgrid-dashboards: sig-release-1.16-all
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.16
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
@@ -83,7 +83,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverAcceleratorMonitoring\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
@@ -111,7 +111,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100
@@ -141,9 +141,9 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
-    testgrid-dashboards: sig-release-1.16-all
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.16
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '36'
@@ -171,9 +171,9 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.15
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '36'
@@ -201,9 +201,9 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.14
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '36'
@@ -231,9 +231,9 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
-    testgrid-dashboards: sig-release-1.15-all
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.15
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '24'
@@ -261,9 +261,9 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
-    testgrid-dashboards: sig-release-1.14-all
+    testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.14
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-stale-results-hours: '24'
@@ -292,7 +292,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
   annotations:
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'

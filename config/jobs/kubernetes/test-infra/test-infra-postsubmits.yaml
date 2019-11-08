@@ -1,24 +1,5 @@
 postsubmits:
   kubernetes/test-infra:
-  - name: post-test-infra-build-smoke
-    agent: knative-build
-    decorate: true
-    build_spec:
-      steps:
-      - name: first
-        image: busybox
-        args: ["echo", "hello"]
-      - name: second
-        image: busybox
-        args: ["echo", "world"]
-      - name: third
-        image: busybox
-        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-postsubmits.yaml"]
-    annotations:
-      testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: post-build-smoke
-      description: basic postsubmit to ensure build controller works correctly
-
   - name: post-test-infra-bazel
     branches:
     - master

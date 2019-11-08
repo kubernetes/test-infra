@@ -1151,6 +1151,10 @@ func TestSyncResources(t *testing.T) {
 			t.Errorf("Test %v: \n got \t\t%v, \n expected \t%v", tc.name, resources, tc.expectedRes)
 		}
 		lfs, err := c.Storage.GetDynamicResourceLifeCycles()
+		if err != nil {
+			t.Errorf("failed to get dynamic resources life cycles: %v", err)
+			continue
+		}
 		sort.SliceStable(lfs, func(i, j int) bool {
 			{
 				return lfs[i].GetName() < lfs[j].GetName()

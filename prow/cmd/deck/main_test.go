@@ -19,6 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -46,7 +47,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clienttesting "k8s.io/client-go/testing"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
@@ -57,6 +57,8 @@ import (
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 )
 
@@ -407,6 +409,9 @@ func TestRerun(t *testing.T) {
 			}
 
 			req, err := http.NewRequest(tc.httpMethod, "/rerun?prowjob=wowsuch", nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
 			req.AddCookie(&http.Cookie{
 				Name:    "github_login",
 				Value:   tc.login,
@@ -421,9 +426,6 @@ func TestRerun(t *testing.T) {
 			}
 			session.Values["access-token"] = &oauth2.Token{AccessToken: "validtoken"}
 
-			if err != nil {
-				t.Fatalf("Error making request: %v", err)
-			}
 			rr := httptest.NewRecorder()
 			mockConfig := &config.GitHubOAuthConfig{
 				CookieStore: mockCookieStore,
@@ -493,7 +495,10 @@ func TestTide(t *testing.T) {
 		},
 	})
 	ta := tideAgent{
-		path:         s.URL,
+		path: s.URL,
+		hiddenRepos: func() []string {
+			return []string{}
+		},
 		updatePeriod: func() time.Duration { return time.Minute },
 	}
 	if err := ta.updatePools(); err != nil {
@@ -554,7 +559,10 @@ func TestTideHistory(t *testing.T) {
 	}))
 
 	ta := tideAgent{
-		path:         s.URL,
+		path: s.URL,
+		hiddenRepos: func() []string {
+			return []string{}
+		},
 		updatePeriod: func() time.Duration { return time.Minute },
 	}
 	if err := ta.updateHistory(); err != nil {
@@ -842,6 +850,22 @@ func TestListProwJobs(t *testing.T) {
 			},
 			expected: sets.NewString("shown"),
 		},
+		{
+			name: "hidden repo or org in extra_refs hides it",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-repo"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-org"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
+					return in
+				},
+			},
+			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -849,17 +873,17 @@ func TestListProwJobs(t *testing.T) {
 		for _, generator := range testCase.prowJobs {
 			data = append(data, generator(templateJob.DeepCopy()))
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(data...)
-		if testCase.listErr {
-			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-				return true, nil, errors.New("could not list ProwJobs")
-			})
+		fakeProwJobClient := &possiblyErroringFakeCtrlRuntimeClient{
+			Client:      fakectrlruntimeclient.NewFakeClient(data...),
+			shouldError: testCase.listErr,
 		}
 		lister := filteringProwJobLister{
-			client:      fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			hiddenRepos: testCase.hiddenRepos,
-			hiddenOnly:  testCase.hiddenOnly,
-			showHidden:  testCase.showHidden,
+			client: fakeProwJobClient,
+			hiddenRepos: func() sets.String {
+				return testCase.hiddenRepos
+			},
+			hiddenOnly: testCase.hiddenOnly,
+			showHidden: testCase.showHidden,
 		}
 
 		filtered, err := lister.ListProwJobs(testCase.selector)
@@ -984,7 +1008,7 @@ func TestHandleConfig(t *testing.T) {
 	trueVal := true
 	c := config.Config{
 		JobConfig: config.JobConfig{
-			Presubmits: map[string][]config.Presubmit{
+			PresubmitsStatic: map[string][]config.Presubmit{
 				"org/repo": {
 					{
 						Reporter: config.Reporter{
@@ -1092,4 +1116,19 @@ func TestHandlePluginConfig(t *testing.T) {
 	if !reflect.DeepEqual(c, res) {
 		t.Errorf("Invalid config. Got %v, expected %v", res, c)
 	}
+}
+
+type possiblyErroringFakeCtrlRuntimeClient struct {
+	ctrlruntimeclient.Client
+	shouldError bool
+}
+
+func (p *possiblyErroringFakeCtrlRuntimeClient) List(
+	ctx context.Context,
+	pjl *prowapi.ProwJobList,
+	opts ...ctrlruntimeclient.ListOption) error {
+	if p.shouldError {
+		return errors.New("could not list ProwJobs")
+	}
+	return p.Client.List(ctx, pjl, opts...)
 }

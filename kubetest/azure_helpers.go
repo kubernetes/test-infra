@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	resources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -32,9 +33,8 @@ type AksEngineAPIModel struct {
 	Location   string            `json:"location,omitempty"`
 	Name       string            `json:"name,omitempty"`
 	Tags       map[string]string `json:"tags,omitempty"`
-	APIVersion string            `json:"APIVersion"`
-
-	Properties *Properties `json:"properties"`
+	APIVersion string            `json:"apiVersion"`
+	Properties *Properties       `json:"properties"`
 }
 
 type Properties struct {
@@ -99,27 +99,28 @@ type KubernetesAddon struct {
 }
 
 type KubernetesConfig struct {
-	CustomWindowsPackageURL      string            `json:"customWindowsPackageURL,omitempty"`
-	CustomHyperkubeImage         string            `json:"customHyperkubeImage,omitempty"`
-	CustomCcmImage               string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
-	UseCloudControllerManager    *bool             `json:"useCloudControllerManager,omitempty"`
-	NetworkPlugin                string            `json:"networkPlugin,omitempty"`
-	PrivateAzureRegistryServer   string            `json:"privateAzureRegistryServer,omitempty"`
-	AzureCNIURLLinux             string            `json:"azureCNIURLLinux,omitempty"`
-	AzureCNIURLWindows           string            `json:"azureCNIURLWindows,omitempty"`
-	Addons                       []KubernetesAddon `json:"addons,omitempty"`
-	NetworkPolicy                string            `json:"networkPolicy,omitempty"`
-	CloudProviderRateLimitQPS    float64           `json:"cloudProviderRateLimitQPS,omitempty"`
-	CloudProviderRateLimitBucket int               `json:"cloudProviderRateLimitBucket,omitempty"`
-	APIServerConfig              map[string]string `json:"apiServerConfig,omitempty"`
-	KubernetesImageBase          string            `json:"kubernetesImageBase,omitempty"`
-	ControllerManagerConfig      map[string]string `json:"controllerManagerConfig,omitempty"`
-	KubeletConfig                map[string]string `json:"kubeletConfig,omitempty"`
-	KubeProxyMode                string            `json:"kubeProxyMode,omitempty"`
-	LoadBalancerSku              string            `json:"loadBalancerSku,omitempty"`
-	ExcludeMasterFromStandardLB  *bool             `json:"excludeMasterFromStandardLB,omitempty"`
-	ServiceCidr                  string            `json:"serviceCidr,omitempty"`
-	DNSServiceIP                 string            `json:"dnsServiceIP,omitempty"`
+	CustomWindowsPackageURL          string            `json:"customWindowsPackageURL,omitempty"`
+	CustomHyperkubeImage             string            `json:"customHyperkubeImage,omitempty"`
+	CustomCcmImage                   string            `json:"customCcmImage,omitempty"` // Image for cloud-controller-manager
+	UseCloudControllerManager        *bool             `json:"useCloudControllerManager,omitempty"`
+	NetworkPlugin                    string            `json:"networkPlugin,omitempty"`
+	PrivateAzureRegistryServer       string            `json:"privateAzureRegistryServer,omitempty"`
+	AzureCNIURLLinux                 string            `json:"azureCNIURLLinux,omitempty"`
+	AzureCNIURLWindows               string            `json:"azureCNIURLWindows,omitempty"`
+	Addons                           []KubernetesAddon `json:"addons,omitempty"`
+	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
+	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
+	APIServerConfig                  map[string]string `json:"apiServerConfig,omitempty"`
+	KubernetesImageBase              string            `json:"kubernetesImageBase,omitempty"`
+	ControllerManagerConfig          map[string]string `json:"controllerManagerConfig,omitempty"`
+	KubeletConfig                    map[string]string `json:"kubeletConfig,omitempty"`
+	KubeProxyMode                    string            `json:"kubeProxyMode,omitempty"`
+	LoadBalancerSku                  string            `json:"loadBalancerSku,omitempty"`
+	ExcludeMasterFromStandardLB      *bool             `json:"excludeMasterFromStandardLB,omitempty"`
+	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
+	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
+	OutboundRuleIdleTimeoutInMinutes int32             `json:"outboundRuleIdleTimeoutInMinutes,omitempty"`
 }
 
 type OrchestratorProfile struct {
@@ -129,13 +130,15 @@ type OrchestratorProfile struct {
 }
 
 type MasterProfile struct {
-	Count          int                 `json:"count"`
-	Distro         string              `json:"distro"`
-	DNSPrefix      string              `json:"dnsPrefix"`
-	VMSize         string              `json:"vmSize" validate:"required"`
-	IPAddressCount int                 `json:"ipAddressCount,omitempty"`
-	Extensions     []map[string]string `json:"extensions,omitempty"`
-	OSDiskSizeGB   int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	Count               int                 `json:"count"`
+	Distro              string              `json:"distro"`
+	DNSPrefix           string              `json:"dnsPrefix"`
+	VMSize              string              `json:"vmSize" validate:"required"`
+	IPAddressCount      int                 `json:"ipAddressCount,omitempty"`
+	Extensions          []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB        int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	AvailabilityProfile string              `json:"availabilityProfile,omitempty"`
+	AvailabilityZones   []string            `json:"availabilityZones,omitempty"`
 }
 
 type AgentPoolProfile struct {
@@ -145,6 +148,7 @@ type AgentPoolProfile struct {
 	VMSize                 string              `json:"vmSize"`
 	OSType                 string              `json:"osType,omitempty"`
 	AvailabilityProfile    string              `json:"availabilityProfile"`
+	AvailabilityZones      []string            `json:"availabilityZones,omitempty"`
 	IPAddressCount         int                 `json:"ipAddressCount,omitempty"`
 	PreProvisionExtension  map[string]string   `json:"preProvisionExtension,omitempty"`
 	Extensions             []map[string]string `json:"extensions,omitempty"`
@@ -222,9 +226,15 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 func (az *AzureClient) EnsureResourceGroup(ctx context.Context, name, location string, managedBy *string) (resourceGroup *resources.Group, err error) {
 	var tags map[string]*string
 	group, err := az.groupsClient.Get(ctx, name)
-	if err == nil {
+	if err == nil && group.Tags != nil {
 		tags = group.Tags
+	} else {
+		tags = make(map[string]*string)
 	}
+	// Tags for correlating resource groups with prow jobs on testgrid
+	tags["buildID"] = stringPointer(os.Getenv("BUILD_ID"))
+	tags["jobName"] = stringPointer(os.Getenv("JOB_NAME"))
+	tags["creationTimestamp"] = stringPointer(time.Now().UTC().Format(time.RFC3339))
 
 	response, err := az.groupsClient.CreateOrUpdate(ctx, name, resources.Group{
 		Name:      &name,
@@ -295,4 +305,8 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 	c.groupsClient.Authorizer = authorizer
 
 	return c
+}
+
+func stringPointer(s string) *string {
+	return &s
 }

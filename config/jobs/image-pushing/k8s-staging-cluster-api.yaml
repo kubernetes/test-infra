@@ -12,7 +12,7 @@ postsubmits:
         - ^release-0.2$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:
@@ -43,7 +43,7 @@ postsubmits:
         - ^release-0.4$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:
@@ -73,7 +73,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:
@@ -103,7 +103,7 @@ postsubmits:
         - ^release-0.2$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:
@@ -133,7 +133,7 @@ postsubmits:
         - ^master$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190927-21e0205
+          - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
             command:
               - /run.sh
             args:

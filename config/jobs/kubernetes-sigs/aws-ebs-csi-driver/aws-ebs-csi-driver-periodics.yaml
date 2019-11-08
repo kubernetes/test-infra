@@ -1,6 +1,8 @@
 periodics:
 - name: ci-aws-ebs-csi-driver-migration-test-latest
   decorate: true
+  decoration_config:
+    timeout: 5h45m
   interval: 6h
   labels:
     preset-service-account: "true"
@@ -12,7 +14,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       command:
       - runner.sh
       args:

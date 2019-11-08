@@ -7,6 +7,9 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -30,6 +33,9 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -67,7 +73,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -97,7 +103,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
         command:
         - bash
         args:
@@ -204,7 +210,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       command:
       - bash
       args:

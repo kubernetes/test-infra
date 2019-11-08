@@ -32,6 +32,7 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -70,7 +71,7 @@ type githubClient interface {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater, pc.Metrics.ConfigMapGauges)
+	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.BuildClusterCoreV1Clients, pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater, pc.Metrics.ConfigMapGauges)
 }
 
 // FileGetter knows how to get the contents of a file by name
@@ -174,11 +175,6 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	return nil
 }
 
-// ConfigMapID is a name/namespace combination that identifies a config map
-type ConfigMapID struct {
-	Name, Namespace string
-}
-
 // ConfigMapUpdate is populated with information about a config map that should
 // be updated.
 type ConfigMapUpdate struct {
@@ -188,8 +184,8 @@ type ConfigMapUpdate struct {
 
 // FilterChanges determines which of the changes are relevant for config updating, returning mapping of
 // config map to key to filename to update that key from.
-func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, log *logrus.Entry) map[ConfigMapID][]ConfigMapUpdate {
-	toUpdate := map[ConfigMapID][]ConfigMapUpdate{}
+func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, log *logrus.Entry) map[plugins.ConfigMapID][]ConfigMapUpdate {
+	toUpdate := map[plugins.ConfigMapID][]ConfigMapUpdate{}
 	for _, change := range changes {
 		var cm plugins.ConfigMapSpec
 		found := false
@@ -214,34 +210,36 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 		}
 
 		// Yes, update the configmap with the contents of this file
-		for _, ns := range append(cm.Namespaces) {
-			id := ConfigMapID{Name: cm.Name, Namespace: ns}
-			key := cm.Key
-			if key == "" {
-				key = path.Base(change.Filename)
-				// if the key changed, we need to remove the old key
-				if change.Status == github.PullRequestFileRenamed {
-					oldKey := path.Base(change.PreviousFilename)
-					// not setting the filename field will cause the key to be
-					// deleted
-					toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: oldKey})
+		for cluster, namespaces := range cm.Clusters {
+			for _, ns := range namespaces {
+				id := plugins.ConfigMapID{Name: cm.Name, Namespace: ns, Cluster: cluster}
+				key := cm.Key
+				if key == "" {
+					key = path.Base(change.Filename)
+					// if the key changed, we need to remove the old key
+					if change.Status == github.PullRequestFileRenamed {
+						oldKey := path.Base(change.PreviousFilename)
+						// not setting the filename field will cause the key to be
+						// deleted
+						toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: oldKey})
+					}
 				}
-			}
-			if change.Status == github.PullRequestFileRemoved {
-				toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key})
-			} else {
-				gzip := cfg.GZIP
-				if cm.GZIP != nil {
-					gzip = *cm.GZIP
+				if change.Status == github.PullRequestFileRemoved {
+					toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key})
+				} else {
+					gzip := cfg.GZIP
+					if cm.GZIP != nil {
+						gzip = *cm.GZIP
+					}
+					toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key, Filename: change.Filename, GZIP: gzip})
 				}
-				toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key, Filename: change.Filename, GZIP: gzip})
 			}
 		}
 	}
 	return toUpdate
 }
 
-func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
+func handle(gc githubClient, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -266,10 +264,13 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string
 		return err
 	}
 
-	message := func(name, namespace string, updates []ConfigMapUpdate, indent string) string {
+	message := func(name, cluster, namespace string, updates []ConfigMapUpdate, indent string) string {
 		identifier := fmt.Sprintf("`%s` configmap", name)
 		if namespace != "" {
 			identifier = fmt.Sprintf("%s in namespace `%s`", identifier, namespace)
+		}
+		if cluster != "" {
+			identifier = fmt.Sprintf("%s at cluster `%s`", identifier, cluster)
 		}
 		msg := fmt.Sprintf("%s using the following files:", identifier)
 		for _, u := range updates {
@@ -290,11 +291,16 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string
 		if cm.Namespace == "" {
 			cm.Namespace = defaultNamespace
 		}
-		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, kc.ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, metrics, logger); err != nil {
+		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
+		configMapClient, err := GetConfigMapClient(kc, cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
+		if err != nil {
+			log.WithError(err).Errorf("Failed to find configMap client")
+			continue
+		}
+		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, configMapClient, cm.Name, cm.Namespace, data, metrics, logger); err != nil {
 			return err
 		}
-		updated = append(updated, message(cm.Name, cm.Namespace, data, indent))
+		updated = append(updated, message(cm.Name, cm.Cluster, cm.Namespace, data, indent))
 	}
 
 	var msg string
@@ -314,4 +320,17 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, defaultNamespace string
 		return fmt.Errorf("comment err: %v", err)
 	}
 	return nil
+}
+
+// GetConfigMapClient returns a configMap interface according to the given cluster and namespace
+func GetConfigMapClient(kc corev1.ConfigMapsGetter, namespace string, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, cluster string) (corev1.ConfigMapInterface, error) {
+	configMapClient := kc.ConfigMaps(namespace)
+	if cluster != kube.DefaultClusterAlias {
+		if client, ok := buildClusterCoreV1Clients[cluster]; ok {
+			configMapClient = client.ConfigMaps(namespace)
+		} else {
+			return nil, fmt.Errorf("no k8s client is found for build cluster: '%s'", cluster)
+		}
+	}
+	return configMapClient, nil
 }

@@ -20,7 +20,17 @@ config_updater:
       # Using ProwJobNamespace by default.
     path/to/some/other/thing2:
       name: thing2-config
+      # DEPRECATED: Please use "clusters" below
       namespace: otherNamespace
+      # specify the clusters and namespaces that the configmap targets
+      # which requires that either --build-cluster or --kubeconfig arg is enabled for Hook
+      # https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md#run-test-pods-in-different-clusters
+      # if not set or empty, it uses the cluster where prow components are running
+      # and the specified namespace(s)
+      # if defined, the above namespace will be ignored
+      clusters: 
+        others:
+        - namespace1
     # Update the config configmap whenever config.yaml changes
     config/prow/config.yaml:
       name: config

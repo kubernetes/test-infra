@@ -33,6 +33,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -203,8 +204,13 @@ func init() {
 	prometheus.MustRegister(tideMetrics.poolErrors)
 }
 
+type manager interface {
+	GetClient() ctrlruntimeclient.Client
+	GetFieldIndexer() ctrlruntimeclient.FieldIndexer
+}
+
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus github.Client, prowJobClient ctrlruntimeclient.Client, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -212,6 +218,7 @@ func NewController(ghcSync, ghcStatus github.Client, prowJobClient ctrlruntimecl
 	if err != nil {
 		return nil, fmt.Errorf("error initializing history client from %q: %v", historyURI, err)
 	}
+
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
 		ghc:            ghcStatus,
@@ -223,11 +230,30 @@ func NewController(ghcSync, ghcStatus github.Client, prowJobClient ctrlruntimecl
 		path:           statusURI,
 	}
 	go sc.run()
+	return newSyncController(logger, ghcSync, mgr, cfg, gc, sc, hist)
+}
+
+func newSyncController(
+	logger *logrus.Entry,
+	ghcSync githubClient,
+	mgr manager,
+	cfg config.Getter,
+	gc *git.Client,
+	sc *statusController,
+	hist *history.History,
+) (*Controller, error) {
+	if err := mgr.GetFieldIndexer().IndexField(
+		&prowapi.ProwJob{},
+		cacheIndexName,
+		cacheIndexFunc,
+	); err != nil {
+		return nil, fmt.Errorf("failed to add baseSHA index to cache: %v", err)
+	}
 	return &Controller{
 		ctx:           context.Background(),
 		logger:        logger.WithField("controller", "sync"),
 		ghc:           ghcSync,
-		prowJobClient: prowJobClient,
+		prowJobClient: mgr.GetClient(),
 		config:        cfg,
 		gc:            gc,
 		sc:            sc,
@@ -308,19 +334,9 @@ func (c *Controller) Sync() error {
 		"duration", time.Since(start).String(),
 	).Debugf("Found %d (unfiltered) pool PRs.", len(prs))
 
-	var pjs []prowapi.ProwJob
 	var blocks blockers.Blockers
 	var err error
 	if len(prs) > 0 {
-		start := time.Now()
-		pjList := &prowapi.ProwJobList{}
-		if err := c.prowJobClient.List(c.ctx, pjList, ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace)); err != nil {
-			c.logger.WithField("duration", time.Since(start).String()).Debug("Failed to list ProwJobs from the cluster.")
-			return err
-		}
-		c.logger.WithField("duration", time.Since(start).String()).Debug("Listed ProwJobs from the cluster.")
-		pjs = pjList.Items
-
 		if label := c.config().Tide.BlockerLabel; label != "" {
 			c.logger.Debugf("Searching for blocking issues (label %q).", label)
 			orgExcepts, repos := c.config().Tide.Queries.OrgExceptionsAndRepos()
@@ -336,7 +352,7 @@ func (c *Controller) Sync() error {
 		}
 	}
 	// Partition PRs into subpools and filter out non-pool PRs.
-	rawPools, err := c.dividePool(prs, pjs)
+	rawPools, err := c.dividePool(prs)
 	if err != nil {
 		return err
 	}
@@ -1382,7 +1398,7 @@ func poolKey(org, repo, branch string) string {
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool map[string]PullRequest, pjs []prowapi.ProwJob) (map[string]*subpool, error) {
+func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
 		org := string(pr.Repository.Owner.Login)
@@ -1410,15 +1426,19 @@ func (c *Controller) dividePool(pool map[string]PullRequest, pjs []prowapi.ProwJ
 		}
 		sps[fn].prs = append(sps[fn].prs, pr)
 	}
-	for _, pj := range pjs {
-		if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {
-			continue
+
+	for subpoolkey, sp := range sps {
+		pjs := &prowapi.ProwJobList{}
+		err := c.prowJobClient.List(
+			c.ctx,
+			pjs,
+			ctrlruntimeclient.MatchingField(cacheIndexName, cacheIndexKey(sp.org, sp.repo, sp.branch, sp.sha)),
+			ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace))
+		if err != nil {
+			return nil, fmt.Errorf("failed to list jobs for subpool %s: %v", subpoolkey, err)
 		}
-		fn := poolKey(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseRef)
-		if sps[fn] == nil || pj.Spec.Refs.BaseSHA != sps[fn].sha {
-			continue
-		}
-		sps[fn].pjs = append(sps[fn].pjs, pj)
+		c.logger.WithField("subpool", subpoolkey).Debugf("Found %d prowjobs.", len(pjs.Items))
+		sps[subpoolkey].pjs = pjs.Items
 	}
 	return sps, nil
 }
@@ -1570,4 +1590,29 @@ func orgRepoQueryString(orgs, repos []string, orgExceptions map[string]sets.Stri
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
 	}
 	return strings.Join(toks, " ")
+}
+
+// cacheIndexName is the name of the index that indexes presubmit+batch ProwJobs by
+// org+repo+branch+baseSHA. Use the cacheIndexKey func to get the correct key.
+const cacheIndexName = "tide-global-index"
+
+// cacheIndexKey returns the index key for the tideCacheIndex
+func cacheIndexKey(org, repo, branch, baseSHA string) string {
+	return fmt.Sprintf("%s/%s:%s@%s", org, repo, branch, baseSHA)
+}
+
+func cacheIndexFunc(obj runtime.Object) []string {
+	pj, ok := obj.(*prowapi.ProwJob)
+	// Should never happen
+	if !ok {
+		return nil
+	}
+	// We do not care about jobs other than presubmit and batch
+	if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {
+		return nil
+	}
+	if pj.Spec.Refs == nil {
+		return nil
+	}
+	return []string{cacheIndexKey(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseRef, pj.Spec.Refs.BaseSHA)}
 }

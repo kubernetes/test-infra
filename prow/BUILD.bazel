@@ -13,7 +13,6 @@ prow_push(
             "artifact-uploader",
             "autobump",
             "branchprotector",
-            "build",
             "checkconfig",
             "clonerefs",
             "config-bootstrapper",
@@ -49,6 +48,7 @@ prow_push(
             "commenter": "//robots/commenter:image",
             "pr-creator": "//robots/pr-creator:image",
             "issue-creator": "//robots/issue-creator:image",
+            "transfigure": "//testgrid/cmd/transfigure:image",
         },
     ),
 )
@@ -76,7 +76,6 @@ filegroup(
         "//prow/cmd/artifact-uploader:all-srcs",
         "//prow/cmd/autobump:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
-        "//prow/cmd/build:all-srcs",
         "//prow/cmd/checkconfig:all-srcs",
         "//prow/cmd/clonerefs:all-srcs",
         "//prow/cmd/config-bootstrapper:all-srcs",

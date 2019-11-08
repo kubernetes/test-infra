@@ -17,7 +17,6 @@ limitations under the License.
 package resources
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -65,7 +64,7 @@ func (IAMRoles) MarkAndSweep(sess *session.Session, acct string, region string, 
 
 			l := &iamRole{arn: aws.StringValue(r.Arn), roleID: aws.StringValue(r.RoleId), roleName: aws.StringValue(r.RoleName)}
 			if set.Mark(l) {
-				klog.Warningf("%s: deleting %T: %v", l.ARN(), r, r)
+				klog.Warningf("%s: deleting %T: %s", l.ARN(), r, l.roleName)
 				toDelete = append(toDelete, l)
 			}
 		}
@@ -78,7 +77,7 @@ func (IAMRoles) MarkAndSweep(sess *session.Session, acct string, region string, 
 
 	for _, r := range toDelete {
 		if err := r.delete(svc); err != nil {
-			klog.Warningf("%v: delete failed: %v", r.ARN(), err)
+			klog.Warningf("%s: delete failed: %v", r.ARN(), err)
 		}
 	}
 
@@ -136,7 +135,7 @@ func (r iamRole) delete(svc *iam.IAM) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		return errors.Wrapf(err, "error listing IAM role policies for %q", roleName)
 	}
 
 	for _, policyName := range policyNames {
@@ -148,7 +147,7 @@ func (r iamRole) delete(svc *iam.IAM) error {
 		}
 
 		if _, err := svc.DeleteRolePolicy(deletePolicyReq); err != nil {
-			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
+			return errors.Wrapf(err, "error deleting IAM role policy %q %q", roleName, policyName)
 		}
 	}
 
@@ -159,7 +158,7 @@ func (r iamRole) delete(svc *iam.IAM) error {
 	}
 
 	if _, err := svc.DeleteRole(deleteReq); err != nil {
-		return fmt.Errorf("error deleting IAM role %q: %v", roleName, err)
+		return errors.Wrapf(err, "error deleting IAM role %q", roleName)
 	}
 
 	return nil

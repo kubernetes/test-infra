@@ -39,12 +39,19 @@ const (
 type fakeClient struct {
 	commentsAdded map[int][]string
 	prs           map[string]sets.Int
+
+	// orgMembers maps org name to a list of member names.
+	orgMembers map[string][]string
+
+	// collaborators is a list of collaborators names.
+	collaborators []string
 }
 
 func newFakeClient() *fakeClient {
 	return &fakeClient{
 		commentsAdded: make(map[int][]string),
 		prs:           make(map[string]sets.Int),
+		orgMembers:    make(map[string][]string),
 	}
 }
 
@@ -66,6 +73,34 @@ func (fc *fakeClient) NumComments() int {
 		n += len(comments)
 	}
 	return n
+}
+
+// IsMember returns true if user is in org.
+func (fc *fakeClient) IsMember(org, user string) (bool, error) {
+	for _, m := range fc.orgMembers[org] {
+		if m == user {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// IsCollaborator returns true if the user is a collaborator of the repo.
+func (fc *fakeClient) IsCollaborator(org, repo, login string) (bool, error) {
+	for _, collab := range fc.collaborators {
+		if collab == login {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (fc *fakeClient) addOrgMember(org, user string) {
+	fc.orgMembers[org] = append(fc.orgMembers[org], user)
+}
+
+func (fc *fakeClient) addCollaborator(user string) {
+	fc.collaborators = append(fc.collaborators, user)
 }
 
 var (
@@ -142,6 +177,16 @@ func TestHandlePR(t *testing.T) {
 		Name:  "contributorB fullname",
 		Type:  github.UserTypeUser,
 	}
+	member := github.User{
+		Login: "member",
+		Name:  "Member Member",
+		Type:  github.UserTypeUser,
+	}
+	collaborator := github.User{
+		Login: "collab",
+		Name:  "Collab Collab",
+		Type:  github.UserTypeUser,
+	}
 	robot := github.User{
 		Login: "robot",
 		Name:  "robot fullname",
@@ -152,6 +197,10 @@ func TestHandlePR(t *testing.T) {
 	fc.AddPR("kubernetes", "test-infra", contributorA, 1)
 	fc.AddPR("kubernetes", "test-infra", contributorB, 2)
 	fc.AddPR("kubernetes", "test-infra", contributorB, 3)
+
+	// members & collaborators
+	fc.addOrgMember("kubernetes", member.Login)
+	fc.addCollaborator(collaborator.Login)
 
 	testCases := []struct {
 		name          string
@@ -218,6 +267,24 @@ func TestHandlePR(t *testing.T) {
 			prNumber:      500,
 			expectComment: false,
 		},
+		{
+			name:          "new contribution from the org member",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        member,
+			prNumber:      101,
+			prAction:      github.PullRequestActionOpened,
+			expectComment: false,
+		},
+		{
+			name:          "new contribution from collaborator",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        collaborator,
+			prNumber:      102,
+			prAction:      github.PullRequestActionOpened,
+			expectComment: false,
+		},
 	}
 
 	c := client{
@@ -234,8 +301,13 @@ func TestHandlePR(t *testing.T) {
 			fc.AddPR(tc.repoOwner, tc.repoName, tc.author, tc.prNumber)
 		}
 
+		tr := plugins.Trigger{
+			TrustedOrg:     "kubernetes",
+			OnlyOrgMembers: false,
+		}
+
 		// try handling it
-		if err := handlePR(c, event, testWelcomeTemplate); err != nil {
+		if err := handlePR(c, tr, event, testWelcomeTemplate); err != nil {
 			t.Fatalf("did not expect error handling PR for case '%s': %v", tc.name, err)
 		}
 

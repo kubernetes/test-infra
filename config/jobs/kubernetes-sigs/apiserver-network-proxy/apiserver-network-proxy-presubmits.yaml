@@ -1,0 +1,18 @@
+presubmits:
+  kubernetes-sigs/apiserver-network-proxy:
+  - name: pull-apiserver-network-proxy-test
+    always_run: true
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    spec:
+      containers:
+      - image: golang:1.12
+        command:
+        - make
+        args:
+        - test
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-test
+      description: Tests the apiserver-network-proxy

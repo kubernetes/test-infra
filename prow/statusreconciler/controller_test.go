@@ -779,7 +779,7 @@ func TestControllerReconcile(t *testing.T) {
 	if err := yaml.Unmarshal([]byte(oldConfigData), &oldConfig); err != nil {
 		t.Fatalf("could not unmarshal old config: %v", err)
 	}
-	for _, presubmits := range oldConfig.Presubmits {
+	for _, presubmits := range oldConfig.PresubmitsStatic {
 		if err := config.SetPresubmitRegexes(presubmits); err != nil {
 			t.Fatalf("could not set presubmit regexes for old config: %v", err)
 		}
@@ -787,7 +787,7 @@ func TestControllerReconcile(t *testing.T) {
 	if err := yaml.Unmarshal([]byte(newConfigData), &newConfig); err != nil {
 		t.Fatalf("could not unmarshal new config: %v", err)
 	}
-	for _, presubmits := range newConfig.Presubmits {
+	for _, presubmits := range newConfig.PresubmitsStatic {
 		if err := config.SetPresubmitRegexes(presubmits); err != nil {
 			t.Fatalf("could not set presubmit regexes for new config: %v", err)
 		}

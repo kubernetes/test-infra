@@ -35,7 +35,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       args:
       - --job=$(JOB_NAME)
       - --repo=k8s.io/kubernetes=master
@@ -70,7 +70,7 @@ periodics:
       securityContext:
          privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-on-call
     testgrid-tab-name: dualstack-azure-e2e
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"

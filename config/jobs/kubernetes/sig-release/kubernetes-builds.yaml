@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
+      - image: gcr.io/k8s-testimages/bootstrap:v20191021-5489305
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -37,7 +37,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
+    - image: gcr.io/k8s-testimages/bootstrap:v20191021-5489305
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -71,7 +71,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20191017-29b34a0
+    - image: gcr.io/k8s-testimages/bootstrap:v20191021-5489305
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -94,7 +94,7 @@ periodics:
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     description: 'Ends up running: make quick-release'
 
-- interval: 30m
+- interval: 4h
   name: ci-release-build-packages-debs
   decorate: true
   spec:
@@ -103,6 +103,12 @@ periodics:
       imagePullPolicy: Always
       command:
       - ./debs
+      args:
+      # We explicitly don't build the cri-tools package as the tooling will attempt to
+      # fetch a release version of cri-tools from GitHub before it exists.
+      #
+      # ref: https://github.com/kubernetes/kubernetes/issues/84548
+      - -packages=kubelet,kubectl,kubeadm,kubernetes-cni
       resources:
         requests:
           cpu: 4
@@ -112,7 +118,7 @@ periodics:
     testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: build-packages-debs
 
-- interval: 30m
+- interval: 4h
   name: ci-release-build-packages-rpms
   decorate: true
   spec:

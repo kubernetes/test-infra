@@ -29,13 +29,13 @@ import (
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
 	awsboskos "k8s.io/test-infra/boskos/common/aws"
-	"k8s.io/test-infra/maintenance/aws-janitor/regions"
 	"k8s.io/test-infra/maintenance/aws-janitor/resources"
 )
 
 var (
 	boskosURL          = flag.String("boskos-url", "http://boskos", "Boskos URL")
-	sweepCount         = flag.Int("sweep-count", 3, "Number of times to sweep the resources")
+	region             = flag.String("region", "", "The region to clean (otherwise defaults to all regions)")
+	sweepCount         = flag.Int("sweep-count", 5, "Number of times to sweep the resources")
 	sweepSleep         = flag.String("sweep-sleep", "30s", "The duration to pause between sweeps")
 	sweepSleepDuration time.Duration
 )
@@ -77,6 +77,7 @@ func run(boskos *client.Client) error {
 			if err := boskos.ReleaseOne(res.Name, common.Free); err != nil {
 				return errors.Wrapf(err, "Failed to release resoures %q", res.Name)
 			}
+			logrus.WithField("name", res.Name).Info("Released resource")
 		}
 	}
 }
@@ -96,7 +97,7 @@ func cleanResource(res *common.Resource) error {
 	start := time.Now()
 
 	for i := 0; i < *sweepCount; i++ {
-		if err := resources.CleanAll(s, regions.Default); err != nil {
+		if err := resources.CleanAll(s, *region); err != nil {
 			if i == *sweepCount-1 {
 				logrus.WithError(err).Warningf("Failed to clean resource %q", res.Name)
 			}

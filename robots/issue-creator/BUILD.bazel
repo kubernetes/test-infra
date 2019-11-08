@@ -48,10 +48,3 @@ filegroup(
     ],
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "test-owners-csv",
-    srcs = [
-        "test_owners.csv",
-    ],
-)

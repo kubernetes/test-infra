@@ -47,9 +47,13 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/simplifypath"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -78,6 +82,7 @@ import (
 	_ "k8s.io/test-infra/prow/spyglass/lenses/coverage"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/restcoverage"
 )
 
 // Omittable ProwJob fields.
@@ -246,34 +251,57 @@ func traceHandler(h http.Handler) http.Handler {
 		trw := &traceResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 		h.ServeHTTP(trw, r)
 		latency := time.Since(t)
-		labels := prometheus.Labels{"path": getPathPrefix(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode)}
+		labels := prometheus.Labels{"path": simplifier.Simplify(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode)}
 		deckMetrics.httpRequestDuration.With(labels).Observe(latency.Seconds())
 		deckMetrics.httpResponseSize.With(labels).Observe(float64(trw.size))
 	})
 }
 
-func getPathPrefix(path string) string {
-	prefixes := []string{
-		"/tide",
-		"/plugin-help.js",
-		"/data.js",
-		"/prowjobs.js",
-		"/pr-data.js",
-		"/log",
-		"/rerun",
-		"/prowjob",
-		"/spyglass/",
-		"/view/",
-		"/job-history/",
-		"/pr-history/"}
+var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+	l("badge.svg"),
+	l("command-help"),
+	l("config"),
+	l("data.js"),
+	l("favicon.ico"),
+	l("github-login",
+		l("redirect")),
+	l("job-history",
+		v("job")),
+	l("log"),
+	l("plugin-config"),
+	l("plugin-help"),
+	l("plugins"),
+	l("pr"),
+	l("pr-data.js"),
+	l("pr-history"),
+	l("prowjob"),
+	l("prowjobs.js"),
+	l("rerun"),
+	l("spyglass",
+		l("static",
+			v("path")),
+		l("lens",
+			v("lens",
+				v("job")),
+		)),
+	l("static",
+		v("path")),
+	l("tide"),
+	l("tide-history"),
+	l("tide-history.js"),
+	l("tide.js"),
+	l("view",
+		v("job")),
+))
 
-	for _, p := range prefixes {
-		if strings.HasPrefix(path, p) {
-			return p
-		}
-	}
-	// for other cases
-	return "others"
+// l and v keep the tree legible
+
+func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
+	return simplifypath.L(fragment, children...)
+}
+
+func v(fragment string, children ...simplifypath.Node) simplifypath.Node {
+	return simplifypath.V(fragment, children...)
 }
 
 func main() {
@@ -432,30 +460,32 @@ func (c *podLogClient) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte
 	return ioutil.ReadAll(reader)
 }
 
+type pjListingClient interface {
+	List(context.Context, *prowapi.ProwJobList, ...ctrlruntimeclient.ListOption) error
+}
+
 type filteringProwJobLister struct {
-	client      prowv1.ProwJobInterface
-	hiddenRepos sets.String
+	ctx         context.Context
+	client      pjListingClient
+	hiddenRepos func() sets.String
 	hiddenOnly  bool
 	showHidden  bool
 }
 
 func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
-	prowJobList, err := c.client.List(metav1.ListOptions{LabelSelector: selector})
+	prowJobList := &prowapi.ProwJobList{}
+	parsedSelector, err := labels.Parse(selector)
 	if err != nil {
+		return nil, fmt.Errorf("failed to parse selector: %v", err)
+	}
+	listOpts := &ctrlruntimeclient.ListOptions{LabelSelector: parsedSelector}
+	if err := c.client.List(c.ctx, prowJobList, listOpts); err != nil {
 		return nil, err
 	}
 
 	var filtered []prowapi.ProwJob
 	for _, item := range prowJobList.Items {
-		refs := item.Spec.Refs
-		if refs == nil {
-			if len(item.Spec.ExtraRefs) > 0 {
-				refs = &item.Spec.ExtraRefs[0]
-			} else {
-				refs = &prowapi.Refs{}
-			}
-		}
-		shouldHide := c.hiddenRepos.HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) || item.Spec.Hidden
+		shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
 		if shouldHide && c.showHidden {
 			filtered = append(filtered, item)
 		} else if shouldHide == c.hiddenOnly {
@@ -467,12 +497,56 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 	return filtered, nil
 }
 
+func (c *filteringProwJobLister) pjHasHiddenRefs(pj prowapi.ProwJob) bool {
+	allRefs := pj.Spec.ExtraRefs
+	if pj.Spec.Refs != nil {
+		allRefs = append(allRefs, *pj.Spec.Refs)
+	}
+	for _, refs := range allRefs {
+		if c.hiddenRepos().HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) {
+			return true
+		}
+	}
+
+	return false
+}
+
+type pjListingClientWrapper struct {
+	reader ctrlruntimeclient.Reader
+}
+
+func (w *pjListingClientWrapper) List(
+	ctx context.Context,
+	pjl *prowapi.ProwJobList,
+	opts ...ctrlruntimeclient.ListOption) error {
+	return w.reader.List(ctx, pjl, opts...)
+}
+
 // prodOnlyMain contains logic only used when running deployed, not locally
 func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options, mux *http.ServeMux) *http.ServeMux {
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
 	}
+	restCfg, err := o.kubernetes.InfrastructureClusterConfig(false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
+	}
+	mgr, err := manager.New(restCfg, manager.Options{
+		Namespace:          cfg().ProwJobNamespace,
+		MetricsBindAddress: "0",
+		LeaderElection:     false},
+	)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting manager.")
+	}
+	go func() {
+		if err := mgr.Start(make(chan struct{})); err != nil {
+			logrus.WithError(err).Fatal("Error starting manager.")
+		} else {
+			logrus.Info("Manager stopped gracefully.")
+		}
+	}()
 
 	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
 	if err != nil {
@@ -485,10 +559,12 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	}
 
 	ja := jobs.NewJobAgent(&filteringProwJobLister{
-		client:      prowJobClient,
-		hiddenRepos: sets.NewString(cfg().Deck.HiddenRepos...),
-		hiddenOnly:  o.hiddenOnly,
-		showHidden:  o.showHidden,
+		client: &pjListingClientWrapper{mgr.GetClient()},
+		hiddenRepos: func() sets.String {
+			return sets.NewString(cfg().Deck.HiddenRepos...)
+		},
+		hiddenOnly: o.hiddenOnly,
+		showHidden: o.showHidden,
 	}, podLogClients, cfg)
 	ja.Start()
 
@@ -538,9 +614,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			updatePeriod: func() time.Duration {
 				return cfg().Deck.TideUpdatePeriod.Duration
 			},
-			hiddenRepos: cfg().Deck.HiddenRepos,
-			hiddenOnly:  o.hiddenOnly,
-			showHidden:  o.showHidden,
+			hiddenRepos: func() []string {
+				return cfg().Deck.HiddenRepos
+			},
+			hiddenOnly: o.hiddenOnly,
+			showHidden: o.showHidden,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta, logrus.WithField("handler", "/tide.js"))))

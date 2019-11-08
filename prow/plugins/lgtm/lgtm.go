@@ -72,9 +72,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		var opts *plugins.Lgtm
 		switch len(parts) {
 		case 1:
-			opts = optionsForRepo(config, orgRepo, "")
+			opts = config.LgtmFor(orgRepo, "")
 		case 2:
-			opts = optionsForRepo(config, parts[0], parts[1])
+			opts = config.LgtmFor(parts[0], parts[1])
 		default:
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
@@ -110,25 +110,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Examples:    []string{"/lgtm", "/lgtm cancel", "<a href=\"https://help.github.com/articles/about-pull-request-reviews/\">'Approve' or 'Request Changes'</a>"},
 	})
 	return pluginHelp, nil
-}
-
-// optionsForRepo gets the plugins.Lgtm struct that is applicable to the indicated repo.
-func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Lgtm {
-	fullName := fmt.Sprintf("%s/%s", org, repo)
-	for _, c := range config.Lgtm {
-		if !sets.NewString(c.Repos...).Has(fullName) {
-			continue
-		}
-		return &c
-	}
-	// If you don't find anything, loop again looking for an org config
-	for _, c := range config.Lgtm {
-		if !sets.NewString(c.Repos...).Has(org) {
-			continue
-		}
-		return &c
-	}
-	return &plugins.Lgtm{}
 }
 
 type githubClient interface {
@@ -176,7 +157,7 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 
 func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) error {
 	// If ReviewActsAsLgtm is disabled, ignore review event.
-	opts := optionsForRepo(pc.PluginConfig, e.Repo.Owner.Login, e.Repo.Name)
+	opts := pc.PluginConfig.LgtmFor(e.Repo.Owner.Login, e.Repo.Name)
 	if !opts.ReviewActsAsLgtm {
 		return nil
 	}
@@ -342,7 +323,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	hasLGTM := github.HasLabel(LGTMLabel, labels)
 
 	// remove the label if necessary, we're done after this
-	opts := optionsForRepo(config, rc.repo.Owner.Login, rc.repo.Name)
+	opts := config.LgtmFor(rc.repo.Owner.Login, rc.repo.Name)
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
 		if err := gc.RemoveLabel(org, repoName, number, LGTMLabel); err != nil {
@@ -422,7 +403,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	repo := pe.PullRequest.Base.Repo.Name
 	number := pe.PullRequest.Number
 
-	opts := optionsForRepo(config, org, repo)
+	opts := config.LgtmFor(org, repo)
 	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org, repo) {
 		// If the author is trusted, skip tree hash verification and LGTM removal.
 		return nil

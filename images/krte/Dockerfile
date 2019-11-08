@@ -59,6 +59,7 @@ RUN echo "Installing Packages ..." \
         file \
         git \
         gnupg2 \
+        kmod \
         lsb-release \
         mercurial \
         pkg-config \

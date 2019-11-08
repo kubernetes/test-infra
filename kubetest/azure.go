@@ -695,7 +695,7 @@ func (c *Cluster) buildCcm() error {
 		return err
 	}
 	log.Println("Building ccm.")
-	projectPath := util.K8s("cloud-provider-azure")
+	projectPath := util.K8sSigs("cloud-provider-azure")
 	log.Printf("projectPath %v", projectPath)
 	cmd := exec.Command("docker", "build", "-t", image, ".")
 	cmd.Dir = projectPath
@@ -908,7 +908,26 @@ func (c Cluster) Down() error {
 }
 
 func (c Cluster) DumpClusterLogs(localPath, gcsPath string) error {
-	return nil
+	if *aksCcm == false {
+		log.Println("Skippng DumpClusterLogs due to CCM not being enabled.")
+		return nil
+	}
+	if err := os.Setenv("ARTIFACTS", localPath); err != nil {
+		return err
+	}
+
+	logDumpDir := util.K8sSigs("cloud-provider-azure", "hack", "log-dump")
+	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump.sh")); os.IsNotExist(err) {
+		return fmt.Errorf("log-dump.sh not found in cloud-provider-azure repo")
+	}
+	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump-daemonset.yaml")); os.IsNotExist(err) {
+		return fmt.Errorf("log-dump-daemonset.yaml not found in cloud-provider-azure repo")
+	}
+
+	cmd := exec.Command("bash", "-c", "./log-dump.sh")
+	cmd.Dir = logDumpDir
+	err := control.FinishRunning(cmd)
+	return err
 }
 
 func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
@@ -1007,7 +1026,7 @@ func (t *GinkgoCCMTester) Run(control *process.Control, testArgs []string) error
 		return err
 	}
 	cmd := exec.Command("make", "test-ccm-e2e")
-	projectPath := util.K8s("cloud-provider-azure")
+	projectPath := util.K8sSigs("cloud-provider-azure")
 	cmd.Dir = projectPath
 	testErr := control.FinishRunning(cmd)
 	return testErr

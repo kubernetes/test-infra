@@ -24,7 +24,6 @@ import (
 	"testing"
 	"time"
 
-	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -38,6 +37,9 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+
+	"knative.dev/pkg/apis"
+	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
 )
 
 const (
@@ -369,7 +371,7 @@ func TestReconcile(t *testing.T) {
 					Agent:   prowjobv1.TektonAgent,
 					Cluster: "target-cluster",
 					PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
-						ServiceAccount: "robot",
+						ServiceAccountName: "robot",
 					},
 				},
 				Status: prowjobv1.ProwJobStatus{
@@ -400,7 +402,7 @@ func TestReconcile(t *testing.T) {
 					Agent:   prowjobv1.TektonAgent,
 					Cluster: "target-cluster",
 					PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
-						ServiceAccount: "robot",
+						ServiceAccountName: "robot",
 					},
 				},
 				Status: prowjobv1.ProwJobStatus{
@@ -431,7 +433,7 @@ func TestReconcile(t *testing.T) {
 				Spec: prowjobv1.ProwJobSpec{
 					Agent: prowjobv1.TektonAgent,
 					PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
-						ServiceAccount: "robot",
+						ServiceAccountName: "robot",
 					},
 				},
 				Status: prowjobv1.ProwJobStatus{
@@ -445,7 +447,7 @@ func TestReconcile(t *testing.T) {
 				pj.Spec.Type = prowjobv1.PeriodicJob
 				pj.Spec.Agent = prowjobv1.TektonAgent
 				pj.Spec.PipelineRunSpec = &pipelinev1alpha1.PipelineRunSpec{
-					ServiceAccount: "robot",
+					ServiceAccountName: "robot",
 				}
 				pj.Status.BuildID = pipelineID
 				p, _, err := makeResources(pj)
@@ -483,8 +485,8 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				p.Status.SetCondition(&duckv1alpha1.Condition{
-					Type:    duckv1alpha1.ConditionReady,
+				p.Status.SetCondition(&apis.Condition{
+					Type:    apis.ConditionReady,
 					Message: "hello",
 				})
 				return p
@@ -521,8 +523,8 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				p.Status.SetCondition(&duckv1alpha1.Condition{
-					Type:    duckv1alpha1.ConditionSucceeded,
+				p.Status.SetCondition(&apis.Condition{
+					Type:    apis.ConditionSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
@@ -561,8 +563,8 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				p.Status.SetCondition(&duckv1alpha1.Condition{
-					Type:    duckv1alpha1.ConditionSucceeded,
+				p.Status.SetCondition(&apis.Condition{
+					Type:    apis.ConditionSucceeded,
 					Status:  corev1.ConditionFalse,
 					Message: "hello",
 				})
@@ -608,8 +610,8 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				p.Status.SetCondition(&duckv1alpha1.Condition{
-					Type:    duckv1alpha1.ConditionSucceeded,
+				p.Status.SetCondition(&apis.Condition{
+					Type:    apis.ConditionSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
@@ -690,8 +692,8 @@ func TestReconcile(t *testing.T) {
 				if err != nil {
 					panic(err)
 				}
-				p.Status.SetCondition(&duckv1alpha1.Condition{
-					Type:    duckv1alpha1.ConditionSucceeded,
+				p.Status.SetCondition(&apis.Condition{
+					Type:    apis.ConditionSucceeded,
 					Status:  corev1.ConditionTrue,
 					Message: "hello",
 				})
@@ -851,7 +853,7 @@ func TestMakePipelineGitResource(t *testing.T) {
 				ObjectMeta: pipelineMeta(resourceName, pj),
 				Spec: pipelinev1alpha1.PipelineResourceSpec{
 					Type: pipelinev1alpha1.PipelineResourceTypeGit,
-					Params: []pipelinev1alpha1.Param{
+					Params: []pipelinev1alpha1.ResourceParam{
 						{
 							Name:  "url",
 							Value: tc.expectedURL,
@@ -912,15 +914,60 @@ func TestMakeResources(t *testing.T) {
 				pr.Spec.Resources[0].ResourceRef = pipelinev1alpha1.PipelineResourceRef{
 					Name: pr.Name + "-implicit-ref",
 				}
-				pr.Spec.Params[3].Value = string(prowjobv1.PresubmitJob)
+				pr.Spec.Params[3].Value = pipelinev1alpha1.ArrayOrString{
+					Type:      pipelinev1alpha1.ParamTypeString,
+					StringVal: string(prowjobv1.PresubmitJob),
+				}
 				pr.Spec.Params = append(pr.Spec.Params,
-					pipelinev1alpha1.Param{Name: "PULL_BASE_REF", Value: "feature-branch"},
-					pipelinev1alpha1.Param{Name: "PULL_BASE_SHA", Value: ""},
-					pipelinev1alpha1.Param{Name: "PULL_NUMBER", Value: "1"},
-					pipelinev1alpha1.Param{Name: "PULL_PULL_SHA", Value: ""},
-					pipelinev1alpha1.Param{Name: "PULL_REFS", Value: "feature-branch,1:"},
-					pipelinev1alpha1.Param{Name: "REPO_NAME", Value: ""},
-					pipelinev1alpha1.Param{Name: "REPO_OWNER", Value: ""},
+					pipelinev1alpha1.Param{
+						Name: "PULL_BASE_REF",
+						Value: pipelinev1alpha1.ArrayOrString{
+							Type:      pipelinev1alpha1.ParamTypeString,
+							StringVal: "feature-branch",
+						},
+					},
+					pipelinev1alpha1.Param{
+						Name: "PULL_BASE_SHA",
+						Value: pipelinev1alpha1.ArrayOrString{
+							Type:      pipelinev1alpha1.ParamTypeString,
+							StringVal: "",
+						},
+					},
+					pipelinev1alpha1.Param{
+						Name: "PULL_NUMBER",
+						Value: pipelinev1alpha1.ArrayOrString{
+							Type:      pipelinev1alpha1.ParamTypeString,
+							StringVal: "1",
+						},
+					},
+					pipelinev1alpha1.Param{
+						Name: "PULL_PULL_SHA",
+						Value: pipelinev1alpha1.ArrayOrString{
+							Type:      pipelinev1alpha1.ParamTypeString,
+							StringVal: "",
+						},
+					},
+					pipelinev1alpha1.Param{
+						Name: "PULL_REFS",
+						Value: pipelinev1alpha1.ArrayOrString{
+							Type:      pipelinev1alpha1.ParamTypeString,
+							StringVal: "feature-branch,1:",
+						},
+					},
+					pipelinev1alpha1.Param{
+						Name: "REPO_NAME",
+						Value: pipelinev1alpha1.ArrayOrString{
+							Type:      pipelinev1alpha1.ParamTypeString,
+							StringVal: "",
+						},
+					},
+					pipelinev1alpha1.Param{
+						Name: "REPO_OWNER",
+						Value: pipelinev1alpha1.ArrayOrString{
+							Type:      pipelinev1alpha1.ParamTypeString,
+							StringVal: "",
+						},
+					},
 				)
 				return pr
 			},
@@ -1015,24 +1062,39 @@ func TestMakeResources(t *testing.T) {
 			}
 			expectedRun.Spec.Params = []pipelinev1alpha1.Param{
 				{
-					Name:  "BUILD_ID",
-					Value: randomPipelineRunID,
+					Name: "BUILD_ID",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: randomPipelineRunID,
+					},
 				},
 				{
-					Name:  "JOB_NAME",
-					Value: pj.Spec.Job,
+					Name: "JOB_NAME",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: pj.Spec.Job,
+					},
 				},
 				{
-					Name:  "JOB_SPEC",
-					Value: string(jobSpecRaw),
+					Name: "JOB_SPEC",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: string(jobSpecRaw),
+					},
 				},
 				{
-					Name:  "JOB_TYPE",
-					Value: string(prowjobv1.PeriodicJob),
+					Name: "JOB_TYPE",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: string(prowjobv1.PeriodicJob),
+					},
 				},
 				{
-					Name:  "PROW_JOB_ID",
-					Value: pj.Name,
+					Name: "PROW_JOB_ID",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: pj.Name,
+					},
 				},
 			}
 			if tc.pipelineRun != nil {
@@ -1083,7 +1145,7 @@ func TestDescription(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		bc := duckv1alpha1.Condition{
+		bc := apis.Condition{
 			Message: tc.message,
 			Reason:  tc.reason,
 		}
@@ -1111,11 +1173,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "truly succeeded state returns success",
 			input: pipelinev1alpha1.PipelineRunStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    duckv1alpha1.ConditionSucceeded,
-						Status:  corev1.ConditionTrue,
-						Message: "fancy",
+				Status: duckv1beta1.Status{
+					Conditions: []apis.Condition{
+						{
+							Type:    apis.ConditionSucceeded,
+							Status:  corev1.ConditionTrue,
+							Message: "fancy",
+						},
 					},
 				},
 			},
@@ -1126,11 +1190,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "falsely succeeded state returns failure",
 			input: pipelinev1alpha1.PipelineRunStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    duckv1alpha1.ConditionSucceeded,
-						Status:  corev1.ConditionFalse,
-						Message: "weird",
+				Status: duckv1beta1.Status{
+					Conditions: []apis.Condition{
+						{
+							Type:    apis.ConditionSucceeded,
+							Status:  corev1.ConditionFalse,
+							Message: "weird",
+						},
 					},
 				},
 			},
@@ -1141,11 +1207,13 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unstarted job returns pending/initializing",
 			input: pipelinev1alpha1.PipelineRunStatus{
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    duckv1alpha1.ConditionSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				Status: duckv1beta1.Status{
+					Conditions: []apis.Condition{
+						{
+							Type:    apis.ConditionSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1157,11 +1225,13 @@ func TestProwJobStatus(t *testing.T) {
 			name: "unfinished job returns running",
 			input: pipelinev1alpha1.PipelineRunStatus{
 				StartTime: now.DeepCopy(),
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    duckv1alpha1.ConditionSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				Status: duckv1beta1.Status{
+					Conditions: []apis.Condition{
+						{
+							Type:    apis.ConditionSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1174,11 +1244,13 @@ func TestProwJobStatus(t *testing.T) {
 			input: pipelinev1alpha1.PipelineRunStatus{
 				StartTime:      now.DeepCopy(),
 				CompletionTime: later.DeepCopy(),
-				Conditions: []duckv1alpha1.Condition{
-					{
-						Type:    duckv1alpha1.ConditionSucceeded,
-						Status:  corev1.ConditionUnknown,
-						Message: "hola",
+				Status: duckv1beta1.Status{
+					Conditions: []apis.Condition{
+						{
+							Type:    apis.ConditionSucceeded,
+							Status:  corev1.ConditionUnknown,
+							Message: "hola",
+						},
 					},
 				},
 			},
@@ -1204,7 +1276,7 @@ func TestProwJobStatus(t *testing.T) {
 			tc.name += " [fallback]"
 			cond := tc.input.Conditions[0]
 			cond.Message = ""
-			tc.input.Conditions = []duckv1alpha1.Condition{cond}
+			tc.input.Conditions = []apis.Condition{cond}
 			cases = append(cases, tc)
 		}
 	}

@@ -1,23 +1,10 @@
-#  -- Yaml representation for configuring testgrid.k8s.io
-#
-#  To add a new test:
-#   1. Append a new testgroup under test_groups, specify the name and where to get the log.
-#   2. Append a new dashboardtab under the dashboard you would like to add the testgroup to,
-#      or create a new dashboard and assign the testgroup to the dashboard.
-#      * The testgroup name from a dashboardtab should match the name from a testgroup
-#      ** Note that a testgroup can be within multiple dashboards.
-#   3. Run config_test.go to make sure the config is valid.
-#
+# DEPRECATED: Please do not add to this document.
+# If you have test groups or tabs in this document, please:
+# 1. Move them to a .yaml file in an appropriate subdirectory. Create one, if needed.
+# 2. If there isn't an OWNERS file, create one and add yourself and others who work with these test groups.
+# See the OWNERS docs at https://go.k8s.io/owners for more info
 
 # Start testgroups
-#
-# NOTE: If you're adding a periodic or postsubmit and don't want to specially configure your test
-# group, you don't need to add it here: we implicitly assume a testgroup exists for all periodics
-# and postsubmits. You still need to add presubmits here, and all jobs still need to be added to a
-# dashboard further down.
-#
-# If you want to do some special configuration on your test group (e.g. specifying name_elements,
-# days_of_results, num_columns_recent, etc.) you can still add it to this test_groups list manually.
 test_groups:
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
@@ -103,13 +90,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-containerd-node-e2e-1-1
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-1-1
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-containerd-node-e2e-1-2
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-1-2
   test_name_config:
@@ -119,13 +99,6 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-containerd-node-e2e-features
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-containerd-node-e2e-features-1-1
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features-1-1
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -738,6 +711,11 @@ dashboards:
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: bentheelder+alerts@google.com
+  - name: pull-kubernetes-e2e-kind-ipv6-canary
+    test_group_name: pull-kubernetes-e2e-kind-ipv6
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-e2e-aks-engine-azure
     test_group_name: pull-kubernetes-e2e-aks-engine-azure
     base_options: width=10
@@ -895,6 +873,7 @@ dashboard_groups:
   - google-cel
   - google-gce
   - google-gce-compute-image-tools
+  - google-gcp-guest
   - google-gci
   - google-gke
   - google-gke-stackdriver

@@ -4,7 +4,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-cluster-autoscaler
       testgrid-tab-name: gci-gce-autoscaling-pull
-      fork-per-release: "true"
     always_run: false
     optional: true
     run_if_changed: '^(cluster/gce/manifests/cluster-autoscaler.manifest$|cluster/addons/rbac/cluster-autoscaler)'
@@ -22,7 +21,7 @@ presubmits:
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=350
+        - --timeout=450
         - --scenario=kubernetes_e2e
         - --
         - --build=bazel
@@ -44,5 +43,5 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-autoscaling
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
-        - --timeout=300m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+        - --timeout=400m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master

@@ -1,7 +1,7 @@
 # periodic jobs
 
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-16-master
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-17-master
   interval: 2h
   decorate: true
   labels:
@@ -9,12 +9,12 @@ periodics:
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-master-informing
-    testgrid-tab-name: kubeadm-kinder-upgrade-1-16-master
+    testgrid-tab-name: kubeadm-kinder-upgrade-1-17-master
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "4"
-    testgrid-alert-stale-results-hours: "8"
+    testgrid-num-failures-to-alert: "8"
+    testgrid-alert-stale-results-hours: "16"
   decoration_config:
     timeout: 40m
   extra_refs:
@@ -28,12 +28,52 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
-      - "upgrade-1.16-master"
+      - "upgrade-1.17-master"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-16-1-17
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm,sig-release-1.17-informing
+    testgrid-tab-name: kubeadm-kinder-upgrade-1-16-1-17
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
+  decoration_config:
+    timeout: 40m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.17
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: master
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.17
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "upgrade-1.16-1.17"
       securityContext:
         privileged: true
       resources:
@@ -53,8 +93,8 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "2"
-    testgrid-alert-stale-results-hours: "24"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
   decoration_config:
     timeout: 40m
   extra_refs:
@@ -68,7 +108,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.16
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -93,8 +133,8 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "2"
-    testgrid-alert-stale-results-hours: "24"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
   decoration_config:
     timeout: 40m
   extra_refs:
@@ -108,7 +148,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.15
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -133,8 +173,8 @@ periodics:
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster, upgrade it and run kubeadm-e2e and the conformance suite"
     testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "2"
-    testgrid-alert-stale-results-hours: "24"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
   decoration_config:
     timeout: 40m
   extra_refs:
@@ -148,7 +188,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191106-09649c7-1.14
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

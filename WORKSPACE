@@ -12,7 +12,6 @@ _repo_infra_repos()
 load("@io_k8s_repo_infra//:repos.bzl", "configure")
 
 configure(
-    go_modules = None,
     go_version = "1.13",
     nogo = "@//:nogo_vet",
 )
@@ -34,6 +33,9 @@ load("@io_bazel_rules_docker//go:image.bzl", _go_repositories = "repositories")
 _go_repositories()
 
 load("@io_bazel_rules_k8s//k8s:k8s.bzl", _k8s_repos = "k8s_repositories")
+load("@io_bazel_rules_k8s//toolchains/kubectl:kubectl_configure.bzl", "kubectl_configure")
+
+kubectl_configure(name = "k8s_config")
 
 _k8s_repos()
 
@@ -66,12 +68,7 @@ load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 
 ts_setup_workspace()
 
-# TODO(clarketm): when `io_bazel_rules_python` supports `python3` interpreter, replace "//:pip.bzl" w/ "@io_bazel_rules_python//python:pip.bzl"
-# https://github.com/bazelbuild/rules_python/issues/85
-# https://github.com/bazelbuild/rules_python/issues/158
-# https://github.com/bazelbuild/rules_python/issues/179
-# https://github.com/bazelbuild/rules_python/issues/220
-load("//:pip.bzl", "pip_import")
+load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
 
 pip_import(
     name = "py_deps",

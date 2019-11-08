@@ -5,41 +5,35 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
+  - sig-release-1.17-blocking
+  - sig-release-1.17-informing
   - sig-release-1.16-blocking
   - sig-release-1.16-informing
-  - sig-release-1.16-all
   - sig-release-1.15-blocking
   - sig-release-1.15-informing
-  - sig-release-1.15-all
   - sig-release-1.14-blocking
   - sig-release-1.14-informing
-  - sig-release-1.14-all
-  - sig-release-1.13-blocking
-  - sig-release-1.13-informing
-  - sig-release-1.13-all
   - sig-release-image-pushes
   - sig-release-misc
   - sig-release-publishing-bot
   - sig-release-release-notes-presubmits
-  - sig-release-shadow-master-blocking
+  - sig-release-prototype-master-blocking
+  - sig-release-generated
+  - sig-release-job-config-errors
 
 # Dashboards
 
 dashboards:
-- name: sig-release-1.13-all
-- name: sig-release-1.13-blocking
-- name: sig-release-1.13-informing
-- name: sig-release-1.14-all
-- name: sig-release-1.14-blocking
-- name: sig-release-1.14-informing
-- name: sig-release-1.15-all
-- name: sig-release-1.15-blocking
-- name: sig-release-1.15-informing
-- name: sig-release-1.16-all
-- name: sig-release-1.16-blocking
-- name: sig-release-1.16-informing
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
+- name: sig-release-1.17-blocking
+- name: sig-release-1.17-informing
+- name: sig-release-1.16-blocking
+- name: sig-release-1.16-informing
+- name: sig-release-1.15-blocking
+- name: sig-release-1.15-informing
+- name: sig-release-1.14-blocking
+- name: sig-release-1.14-informing
   dashboard_tab:
   - name: Conformance - OpenStack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
@@ -70,4 +64,6 @@ dashboards:
   - name: test
     test_group_name: pull-release-notes-test
     base_options: width=10
-- name: sig-release-shadow-master-blocking
+- name: sig-release-prototype-master-blocking
+- name: sig-release-generated
+- name: sig-release-job-config-errors

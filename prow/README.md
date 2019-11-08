@@ -1,4 +1,4 @@
-![prow logo](logo_horizontal_solid.png)
+# ![Prow](logo_horizontal_solid.png)
 
 Prow is a Kubernetes based CI/CD system. Jobs can be triggered by various types of events and report their status to many different services. In addition to job execution, Prow provides GitHub automation in the form of policy enforcement, chat-ops via `/foo` style commands, and automatic PR merging.
 
@@ -8,7 +8,7 @@ not make any attempt to preserve backwards compatibility.
 
 For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"](/prow/life_of_a_prow_job.md).
 
-For a sequence diagram of common usage and interactions flow, click [here](https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/docs/pr-interactions-sequence.svg?sanitize=true).
+To see common Prow usage and interactions flow, see the pull request interactions [sequence diagram](https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/docs/pr-interactions-sequence.svg?sanitize=true).
 
 #### Functions and Features
 * Job execution for testing, batch processing, artifact publishing.
@@ -91,6 +91,7 @@ Prow is used by the following organizations and projects:
 - [Daisy(google compute image tools)](https://github.com/GoogleCloudPlatform/compute-image-tools/tree/master/test-infra#prow-and-gubenator)
 - [KubeEdge (Kubernetes Native Edge Computing Framework)](https://github.com/kubeedge/kubeedge)
 - [Volcano (Kubernetes Native Batch System)](https://github.com/volcano-sh/volcano)
+- [Loodse](https://public-prow.loodse.com/)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 

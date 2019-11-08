@@ -543,5 +543,25 @@ resources:
     - k8s-presubmit-scale-8
     - k8s-presubmit-scale-9
     - k8s-presubmit-scale-10
+    - k8s-presubmit-scale-11
+    - k8s-presubmit-scale-12
+    - k8s-presubmit-scale-13
+    - k8s-presubmit-scale-14
+    - k8s-presubmit-scale-15
+    - k8s-presubmit-scale-16
+    - k8s-presubmit-scale-17
+    - k8s-presubmit-scale-18
+    - k8s-presubmit-scale-19
+    - k8s-presubmit-scale-20
+    - k8s-presubmit-scale-21
+    - k8s-presubmit-scale-22
+    - k8s-presubmit-scale-23
+    - k8s-presubmit-scale-24
+    - k8s-presubmit-scale-25
+    - k8s-presubmit-scale-26
+    - k8s-presubmit-scale-27
+    - k8s-presubmit-scale-28
+    - k8s-presubmit-scale-29
+    - k8s-presubmit-scale-30
   state: dirty
   type: scalability-presubmit-project

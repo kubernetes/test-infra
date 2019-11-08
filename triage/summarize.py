@@ -484,8 +484,7 @@ def render(builds, clustered):
 
 SIG_LABEL_RE = re.compile(r'\[sig-([^]]*)\]')
 
-
-def annotate_owners(data, builds, owners): # pylint: disable=too-many-branches
+def annotate_owners(data, builds, owners):
     """
     Assign ownership to a cluster based on the share of hits in the last day.
     """
