@@ -42,6 +42,11 @@ main() {
   git checkout -B "${branch}"
   ensure-git-config
 
+  if [[ ! -d "${testgrid_dir}/${testgrid_subdir}" ]]; then
+    echo "Subdirectory ${testgrid_subdir} doesn't exist; creating it" >&2
+    mkdir -p "${testgrid_dir}/${testgrid_subdir}"
+  fi
+
   echo "Generating testgrid yaml"
   /configurator \
     --prow-config "${prow_config}" \
