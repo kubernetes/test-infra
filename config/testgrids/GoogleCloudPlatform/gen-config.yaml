@@ -1,0 +1,48 @@
+dashboards:
+- dashboard_tab:
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
+    description: osconfig-presubmit-gocheck
+    name: OSConfig presubmits - gocheck
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/
+    test_group_name: osconfig-presubmit-gocheck
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
+    description: osconfig-presubmit-gobuild
+    name: OSConfig presubmits - gobuild
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/
+    test_group_name: osconfig-presubmit-gobuild
+  - code_search_url_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/compare/<start-custom-0>...<end-custom-0>
+    description: osconfig-presubmit-gotest
+    name: OSConfig presubmits - gotest
+    open_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/
+    test_group_name: osconfig-presubmit-gotest
+  name: google-gcp-guest
+test_groups:
+- gcs_prefix: oss-prow/logs/ci-test-infra-autobump-prow
+  name: ci-test-infra-autobump-prow
+- gcs_prefix: oss-prow/logs/guest-config-build
+  name: guest-config-build
+- gcs_prefix: oss-prow/logs/oslogin-build
+  name: oslogin-build
+- gcs_prefix: oss-prow/logs/osconfig-build
+  name: osconfig-build
+- gcs_prefix: oss-prow/logs/post-test-infra-deploy-prow
+  name: post-test-infra-deploy-prow
+- gcs_prefix: oss-prow/logs/push-testgrid-images
+  name: push-testgrid-images
+- gcs_prefix: oss-prow/logs/guest-agent-build
+  name: guest-agent-build
+- gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gocheck
+  name: osconfig-presubmit-gocheck
+  num_columns_recent: 20
+- gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gobuild
+  name: osconfig-presubmit-gobuild
+  num_columns_recent: 20
+- gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gotest
+  name: osconfig-presubmit-gotest
+  num_columns_recent: 20
