@@ -23,6 +23,7 @@ dashboard, add annotations to that Prow job.
 
 If it's a Prow job in [the k8s.io instance](/config/jobs), you don't need to do anything else.
 
+If it's a Prow job in another instance of Prow, use [`transfigure`](cmd/transfigure).
 
 Add this to your Prow job:
 
