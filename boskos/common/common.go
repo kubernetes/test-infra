@@ -134,8 +134,8 @@ type Metric struct {
 }
 
 // IsInUse reports if the resource is owned by anything else than Boskos.
-func (r *Resource) IsInUse() bool {
-	return r.Owner != ""
+func (res *Resource) IsInUse() bool {
+	return res.Owner != ""
 }
 
 // NewResource creates a new Boskos Resource.

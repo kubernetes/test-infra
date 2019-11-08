@@ -731,8 +731,8 @@ func (c *Cluster) buildHyperKube() error {
 		return err
 	}
 	log.Println("Pushing hyperkube.")
-	hyperkube_bin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
-	cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkube_bin))
+	hyperkubeBin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
+	cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkubeBin))
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
