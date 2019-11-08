@@ -822,7 +822,7 @@ postsubmits:
         command:
         - cip
         args:
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
         - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
         - -dry-run=false
         volumeMounts:
@@ -1217,7 +1217,7 @@ periodics:
       command:
       - cip
       args:
-      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
       - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
       - -dry-run=false
       volumeMounts:
