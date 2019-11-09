@@ -45,7 +45,7 @@ To install prow run the following from the `test-infra` directory and follow the
 bazel run //prow/cmd/tackle
 ```
 
-The will help you through the following steps:
+This will help you through the following steps:
 
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
