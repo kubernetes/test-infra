@@ -101,7 +101,8 @@ presubmits:
   - name: pull-kops-e2e-kubernetes-aws-1-15
     branches:
     - release-1.15
-    always_run: true
+    always_run: false
+    skip_report: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -143,7 +144,8 @@ presubmits:
   - name: pull-kops-e2e-kubernetes-aws-1-16
     branches:
     - release-1.16
-    always_run: true
+    always_run: false
+    skip_report: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
