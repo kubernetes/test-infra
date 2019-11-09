@@ -1230,30 +1230,3 @@ periodics:
         secretName: k8s-artifacts-prod-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
-  # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
-- interval: 1h
-  cluster: test-infra-trusted
-  max_concurrency: 1
-  name: ci-k8sio-backup
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: k8s.io
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191108-9467d02-master
-      command:
-      - infra/gcp/backup_tools/backup.sh
-      args:
-      - /etc/k8s-artifacts-prod-bak-service-account/service-account.json
-      volumeMounts:
-      - name: k8s-artifacts-prod-bak-service-account-creds
-        mountPath: /etc/k8s-artifacts-prod-bak-service-account
-        readOnly: true
-    volumes:
-    - name: k8s-artifacts-prod-bak-service-account-creds
-      secret:
-        secretName: k8s-artifacts-prod-bak-service-account
-  annotations:
-    testgrid-dashboards: sig-release-misc
