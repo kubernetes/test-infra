@@ -204,6 +204,8 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
+	var syncErrs []error
+
 	pjs, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: c.selector})
 	c.log.WithField("selector", c.selector).Debug("List ProwJobs.")
 	if err != nil {
@@ -219,7 +221,8 @@ func (c *Controller) Sync() error {
 		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
 		c.log.WithField("selector", selector).Debug("List Pods.")
 		if err != nil {
-			return fmt.Errorf("error listing pods in cluster %q: %v", alias, err)
+			syncErrs = append(syncErrs, fmt.Errorf("error listing pods in cluster %q: %v", alias, err))
+			continue
 		}
 		for _, pod := range pods.Items {
 			pm[pod.ObjectMeta.Name] = pod
@@ -238,7 +241,6 @@ func (c *Controller) Sync() error {
 		return k8sJobs[i].CreationTimestamp.Before(&k8sJobs[j].CreationTimestamp)
 	})
 
-	var syncErrs []error
 	if err := c.terminateDupes(k8sJobs, pm); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
