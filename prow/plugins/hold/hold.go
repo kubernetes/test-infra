@@ -39,7 +39,7 @@ const (
 
 var (
 	labelRe       = regexp.MustCompile(`(?mi)^/hold(\s.*)?$`)
-	labelCancelRe = regexp.MustCompile(`(?mi)^/hold\s+cancel\s*$`)
+	labelCancelRe = regexp.MustCompile(`(?mi)^/(hold\s+cancel|unhold)\s*$`)
 )
 
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
@@ -54,11 +54,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "The hold plugin allows anyone to add or remove the '" + labels.Hold + "' Label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/hold [cancel]",
+		Usage:       "/[un]hold [cancel]",
 		Description: "Adds or removes the `" + labels.Hold + "` Label which is used to indicate that the PR should not be automatically merged.",
 		Featured:    false,
 		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + labels.Hold + "' Label.",
-		Examples:    []string{"/hold", "/hold cancel"},
+		Examples:    []string{"/hold", "/hold cancel", "/unhold"},
 	})
 	return pluginHelp, nil
 }
