@@ -412,7 +412,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		simple := &SimpleConfig{}
 		if err := decodeOwnersMdConfig(path, simple); err != nil {
-			log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
+			log.WithError(err).Info("Error decoding OWNERS config from '*.md' file.")
 			return nil
 		}
 
