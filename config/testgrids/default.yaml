@@ -5,6 +5,7 @@ default_test_group:
   days_of_results: 14 # Number of days of test results to gather and serve.
   tests_name_policy: 2 # replace the name of the test
   ignore_pending: false # Show in-progress tests.
+  ignore_skip: true # Don't show skipped tests by default.
   column_header:
     - configuration_value: Commit # Shows the commit number on column header
     - configuration_value: infra-commit
