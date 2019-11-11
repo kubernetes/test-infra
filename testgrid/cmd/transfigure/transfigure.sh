@@ -15,7 +15,7 @@ main() {
   branch="transfigure-branch"
 
   if [[ $# -lt 5 ]]; then
-    echo "Usage: $(basename "$0") [github_token] [prow_config] [prow_job_config] [testgrid_yaml] [repo_subdir] (remote_fork_repo)" >&2
+    echo "Usage: $(basename "$0") [github_token] [prow_config] [prow_job_config] [testgrid_yaml] [repo_subdir] (remote_fork_repo) (git_user) (git_email)" >&2
     echo "All [] arguments are required paths" >&2
     exit 1
   fi
@@ -88,6 +88,8 @@ parse-args() {
   testgrid_config=$(readlink -m "$4")
   testgrid_subdir="$5"
   remote_fork_repo=${6:-"test-infra"}
+  user="$7"
+  email="$8"
 
   if [[ ! -f ${token} ]]; then
     echo "ERROR: [github_token] ${token} must be a file path." >&2
@@ -111,13 +113,21 @@ parse-args() {
 }
 
 user-from-token() {
-  user=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
-  echo "Using user from GitHub: ${user}"
+  if [[ -z "${user}" ]]; then
+    user=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
+    echo "Using user from GitHub: ${user}"
+  else
+    echo "Using email from Argument: ${user}"
+  fi
 }
 
 email-from-token() {
-  email=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"email\": \"\(.*\)\",/\1/p")
-  echo "Using email from GitHub: ${email}"
+  if [[ -z "${email}" ]]; then
+    email=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"email\": \"\(.*\)\",/\1/p")
+    echo "Using email from GitHub: ${email}"
+  else
+    echo "Using email from Argument: ${email}"
+  fi
 }
 
 cleanup-repository() {
