@@ -200,6 +200,22 @@ slack:
     whitelist:
     - k8s-ci-robot
   - repos:
+    - kubernetes/api
+    - kubernetes/apiextensions-apiserver
+    - kubernetes/apimachinery
+    - kubernetes/apiserver
+    - kubernetes/client-go
+    - kubernetes/code-generator
+    - kubernetes/component-base
+    - kubernetes/kube-aggregator
+    - kubernetes/kube-controller-manager
+    - kubernetes/sample-apiserver
+    - kubernetes/sample-controller
+    channels:
+    - sig-api-machinery
+    whitelist:
+    - k8s-publishing-bot
+  - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
