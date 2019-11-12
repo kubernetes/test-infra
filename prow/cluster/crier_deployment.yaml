@@ -39,6 +39,7 @@ spec:
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --slack-workers=1
         - --slack-token-file=/etc/slack/token
         volumeMounts:
         - name: config
