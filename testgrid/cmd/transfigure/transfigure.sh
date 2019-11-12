@@ -88,8 +88,8 @@ parse-args() {
   testgrid_config=$(readlink -m "$4")
   testgrid_subdir="$5"
   remote_fork_repo=${6:-"test-infra"}
-  user="$7"
-  email="$8"
+  user=${7:-""}
+  email=${8:-""}
 
   if [[ ! -f ${token} ]]; then
     echo "ERROR: [github_token] ${token} must be a file path." >&2
