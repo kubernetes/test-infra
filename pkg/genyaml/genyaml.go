@@ -251,11 +251,11 @@ func fieldType(field *ast.Field, recurse bool) (string, bool) {
 
 // getType returns the type's name within its package for a defined type. For other (non-defined) types it returns the empty string.
 func getType(typ interface{}) string {
-	if t := reflect.TypeOf(typ); t.Kind() == reflect.Ptr {
+	t := reflect.TypeOf(typ)
+	if t.Kind() == reflect.Ptr {
 		return t.Elem().Name()
-	} else {
-		return t.Name()
 	}
+	return t.Name()
 }
 
 // genDocMap extracts the name of the field as it should appear in YAML format and returns the resultant string.
