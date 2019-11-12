@@ -36,7 +36,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	cron "gopkg.in/robfig/cron.v2"
+	"gopkg.in/robfig/cron.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -91,15 +91,16 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
-	Tide             Tide             `json:"tide,omitempty"`
-	Plank            Plank            `json:"plank,omitempty"`
-	Sinker           Sinker           `json:"sinker,omitempty"`
-	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
-	Gerrit           Gerrit           `json:"gerrit,omitempty"`
-	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
-	SlackReporter    *SlackReporter   `json:"slack_reporter,omitempty"`
-	InRepoConfig     InRepoConfig     `json:"in_repo_config"`
+	Tide                 Tide                 `json:"tide,omitempty"`
+	Plank                Plank                `json:"plank,omitempty"`
+	Sinker               Sinker               `json:"sinker,omitempty"`
+	Deck                 Deck                 `json:"deck,omitempty"`
+	BranchProtection     BranchProtection     `json:"branch-protection,omitempty"`
+	Gerrit               Gerrit               `json:"gerrit,omitempty"`
+	GitHubReporter       GitHubReporter       `json:"github_reporter,omitempty"`
+	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
+	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
+	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -611,6 +612,26 @@ type SlackReporter struct {
 	ReportTemplate    string                 `json:"report_template"`
 }
 
+// SlackReporterConfigs represents the config for the Slack reporter(s).
+// Use `org/repo`, `org` or `*` as key and an `SlackReporter` struct as value.
+type SlackReporterConfigs map[string]SlackReporter
+
+func (cfg SlackReporterConfigs) GetSlackReporter(refs *prowapi.Refs) SlackReporter {
+	if refs == nil {
+		return cfg["*"]
+	}
+
+	if slack, exists := cfg[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]; exists {
+		return slack
+	}
+
+	if slack, exists := cfg[refs.Org]; exists {
+		return slack
+	}
+
+	return cfg["*"]
+}
+
 func (cfg *SlackReporter) DefaultAndValidate() error {
 	// Default ReportTemplate
 	if cfg.ReportTemplate == "" {
@@ -1023,11 +1044,27 @@ func (c *Config) validateComponentConfig() error {
 		}
 	}
 
+	// TODO(@clarketm): Remove in May 2020
 	if c.SlackReporter != nil {
-		if err := c.SlackReporter.DefaultAndValidate(); err != nil {
-			return fmt.Errorf("failed to validate slackreporter config: %v", err)
+		logrus.Warning("slack_reporter will be deprecated on May 2020, and it will be replaced with slack_reporter_configs['*'].")
+
+		if c.SlackReporterConfigs != nil {
+			return errors.New("slack_reporter and slack_reporter_configs['*'] are mutually exclusive")
+		}
+
+		c.SlackReporterConfigs = map[string]SlackReporter{"*": *c.SlackReporter}
+		c.SlackReporter = nil
+	}
+
+	if c.SlackReporterConfigs != nil {
+		for k, config := range c.SlackReporterConfigs {
+			if err := config.DefaultAndValidate(); err != nil {
+				return fmt.Errorf("failed to validate slackreporter config: %v", err)
+			}
+			c.SlackReporterConfigs[k] = config
 		}
 	}
+
 	return nil
 }
 
