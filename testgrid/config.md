@@ -44,7 +44,7 @@ annotations:
 ```
 
 This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a _different_
-instance of Prow, you may want to invoke Configurator [differently](cmd/configurator#deserialization-options).
+instance of Prow, you may want to use [Transfigure](cmd/transfigure) instead.
 
 If you need to create a new dashboard, or do anything more advanced, read on.
 
