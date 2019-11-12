@@ -228,9 +228,11 @@ func (n localCluster) Down() error {
 	}
 	// make sure all containers are removed
 	removeAllContainers(cli)
-	err = control.FinishRunning(exec.Command("pkill", processes...))
-	if err != nil {
-		log.Printf("unable to kill kubernetes processes: %v", err)
+	for _, p := range processes {
+		err = control.FinishRunning(exec.Command("pkill", p))
+		if err != nil {
+			log.Printf("unable to kill kubernetes process %q: %v", p, err)
+		}
 	}
 	err = control.FinishRunning(exec.Command("pkill", "etcd"))
 	if err != nil {
