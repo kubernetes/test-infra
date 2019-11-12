@@ -63,10 +63,10 @@ func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagS
 // Validate validates GitHub options.
 func (o *GitHubOptions) Validate(dryRun bool) error {
 	for _, uri := range o.endpoint.Strings() {
-		if uri != "" {
-			if _, err := url.ParseRequestURI(uri); err != nil {
-				return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
-			}
+		if uri == "" {
+			uri = github.DefaultAPIEndpoint
+		} else if _, err := url.ParseRequestURI(uri); err != nil {
+			return fmt.Errorf("invalid -github-endpoint URI: %q", uri)
 		}
 	}
 

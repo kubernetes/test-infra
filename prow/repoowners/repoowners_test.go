@@ -1264,7 +1264,6 @@ reviewers:
 		if test.expected != s {
 			t.Errorf("result '%s' is differ from expected: '%s'", s, test.expected)
 		}
-
 		simple, err := LoadSimpleConfig(b)
 		if err != nil {
 			t.Errorf("unexpected error when load simple config: %v", err)
