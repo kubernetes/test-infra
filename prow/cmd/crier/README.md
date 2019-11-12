@@ -105,25 +105,57 @@ spec:
 
 Additionally, in order for it to work with Prow you must add the following to your `config.yaml`:
 
+> **NOTE:** `slack_reporter_configs` is a map of `org`, `org/repo`, or `*` (i.e. catch-all wildcard) to a set of slack reporter configs. 
+
+```yaml
+slack_reporter_configs:
+
+  # Wildcard (i.e. catch-all) slack config
+  "*":
+    # default: None
+    job_types_to_report: 
+      - presubmit
+      - postsubmit
+    # default: None
+    job_states_to_report:
+      - failure
+      - error
+    # required
+    channel: my-slack-channel
+    # The template shown below is the default
+    report_template: "Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>"
+
+  # "org/repo" slack config
+  istio/proxy:
+    job_types_to_report:
+      - presubmit
+    job_states_to_report:
+      - error
+    channel: istio-proxy-channel
+
+  # "org" slack config
+  istio:
+    job_types_to_report:
+      - periodic
+    job_states_to_report:
+      - failure
+    channel: istio-channel
 ```
-slack_reporter:
-  # Default: None
-  job_types_to_report:
-  - presubmit
-  - postsubmit
-  - periodic
-  - batch
-  # Default: None
-  job_states_to_report:
-  - triggered
-  - pending
-  - success
-  - failure
-  - aborted
-  - error
-  channel: my-slack-channel
-  # The template shown below is the default
-  report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
+
+The Slack `channel` can be overridden at the ProwJob level via the `reporter_config.slack.channel` field:
+```yaml
+postsubmits:
+  some-org/some-repo:
+    - name: example-job
+      decorate: true
+      reporter_config:
+        slack:
+          channel: 'override-channel-name'
+      spec:
+        containers:
+          - image: alpine
+            command:
+              - echo
 ```
 
 ## Implementation details
