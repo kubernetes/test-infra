@@ -686,7 +686,8 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 	d := path
 	if !o.enableMDYAML || !strings.HasSuffix(path, ".md") {
 		// if path is a directory, this will remove the leaf directory, and returns "." for topmost dir
-		d = canonicalize(filepath.Dir(path))
+		d = filepath.Dir(d)
+		d = canonicalize(path)
 	}
 
 	out := sets.NewString()

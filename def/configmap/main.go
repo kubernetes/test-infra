@@ -26,7 +26,7 @@ import (
 	"os"
 	"strings"
 
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -56,16 +56,17 @@ func (mkv *multiKeyValue) String() string {
 }
 
 func (mkv *multiKeyValue) Set(v string) error {
-	if mkv == nil {
-		return fmt.Errorf("multiKeyValue is nil")
-	}
-
 	p := strings.SplitN(v, "=", 2)
 	if len(p) != 2 {
 		return fmt.Errorf("%s does not match label=value", v)
 	}
-
-	(*mkv)[p[0]] = p[1]
+	if mkv == nil {
+		mkv = &multiKeyValue{
+			p[0]: p[1],
+		}
+	} else {
+		(*mkv)[p[0]] = p[1]
+	}
 	return nil
 }
 

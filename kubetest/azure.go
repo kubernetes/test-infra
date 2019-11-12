@@ -598,10 +598,6 @@ func (c *Cluster) loadARMTemplates() error {
 func (c *Cluster) getARMClient(ctx context.Context) error {
 	// instantiate Azure Resource Manager Client
 	env, err := azure.EnvironmentFromName(c.azureEnvironment)
-	if err != nil {
-		return err
-	}
-
 	var client *AzureClient
 	if c.isAzureStackCloud() && strings.EqualFold(c.azureIdentitySystem, ADFSIdentitySystem) {
 		if client, err = getAzureClient(env,
