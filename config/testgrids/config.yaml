@@ -725,6 +725,9 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-storage-slow
     test_group_name: pull-kubernetes-e2e-gce-storage-slow
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce-storage-snapshot
+    test_group_name: pull-kubernetes-e2e-gce-storage-snapshot
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-storage-slow-rbe
     test_group_name: pull-kubernetes-e2e-gce-storage-slow-rbe
     base_options: width=10

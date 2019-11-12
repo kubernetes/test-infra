@@ -116,6 +116,12 @@ dashboards:
       description: storage iSCSI serial e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+    - name: volume-snapshot
+      test_group_name: ci-kubernetes-e2e-snapshot
+      base_options: include-filter-by-regex=Volume%7Cstorage
+      description: storage snapshot e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
 
 - name: sig-storage-local-static-provisioner
   dashboard_tab:
