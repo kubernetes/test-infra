@@ -37,7 +37,7 @@ data:
     modules:
       http_2xx:
         prober: http
-        timeout: 5s
+        timeout: 8s
         http:
           # valid_status_codes defaults to 2xx
           method: GET
