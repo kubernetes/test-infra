@@ -18,7 +18,6 @@ limitations under the License.
 package projectmanager
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -34,8 +33,15 @@ const (
 )
 
 var (
-	failedToAddProjectCard = "Failed to add project card for the issue"
-	issueAlreadyInProject  = "The issue %d already assigned to the project %s"
+	failedToAddProjectCard = "Failed to add project card for the issue/PR"
+	issueAlreadyInProject  = "The issue/PR %d already assigned to the project %s"
+
+	handleIssueActions = map[github.IssueEventAction]bool{
+		github.IssueActionOpened:    true,
+		github.IssueActionReopened:  true,
+		github.IssueActionLabeled:   true,
+		github.IssueActionUnlabeled: true,
+	}
 )
 
 /* Sample projectmanager configuration
@@ -58,12 +64,10 @@ org/repos:
                 - area/conformance
                   area/sig-testing
 */
-
-// TODO Create a new handler for issues, look in hook/server.go
 // TODO Handle Label deletion, pr/issue should be removed from the project when label criteria does  not meet
 // TODO Pr/issue state change, pr/iisue is on project board only if its state is listed in the configuration
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterIssueHandler(pluginName, handleIssueOrPullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -81,7 +85,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	for orgRepoName, managedOrgRepo := range config.ProjectManager.OrgRepos {
 		for projectName, managedProject := range managedOrgRepo.Projects {
 			for _, managedColumn := range managedProject.Columns {
-				repoDescr = fmt.Sprintf("%s\nPR/Issues org: %s, with matching labels: %s and state: %s will be added to the project: %s\n", repoDescr, managedColumn.Org, managedColumn.Labels, managedColumn.State, projectName)
+				repoDescr = fmt.Sprintf("%s\nIssue/PRs org: %s, with matching labels: %s and state: %s will be added to the project: %s\n", repoDescr, managedColumn.Org, managedColumn.Labels, managedColumn.State, projectName)
 			}
 		}
 		configString[orgRepoName] = repoDescr
@@ -94,10 +98,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return pluginHelp, nil
 }
 
-func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
-	return handlePR(pc.GitHubClient, pc.PluginConfig.ProjectManager, pc.Logger, pe)
-}
-
 // Strict subset of *github.Client methods.
 type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
@@ -108,25 +108,57 @@ type githubClient interface {
 	CreateProjectCard(columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error)
 }
 
-func handlePR(gc githubClient, projectManager plugins.ProjectManager, log *logrus.Entry, pe github.PullRequestEvent) error {
-	// Only respond to label add or issue/PR open events
-	if pe.Action != github.PullRequestActionOpened &&
-		pe.Action != github.PullRequestActionReopened &&
-		pe.Action != github.PullRequestActionLabeled {
+type eventData struct {
+	id     int
+	number int
+	isPR   bool
+	org    string
+	repo   string
+	state  string
+	labels []github.Label
+	remove bool
+}
+
+type DuplicateCard struct {
+	projectName string
+	issueURL    string
+}
+
+func (m *DuplicateCard) Error() string {
+	return fmt.Sprintf(issueAlreadyInProject, m.issueURL, m.projectName)
+}
+
+func handleIssueOrPullRequest(pc plugins.Agent, ie github.IssueEvent) error {
+	if !handleIssueActions[ie.Action] {
 		return nil
 	}
+	eventData := eventData{
+		id:     ie.Issue.ID,
+		number: ie.Issue.Number,
+		isPR:   ie.Issue.IsPullRequest(),
+		org:    ie.Repo.Owner.Login,
+		repo:   ie.Repo.Name,
+		state:  ie.Issue.State,
+		labels: ie.Issue.Labels,
+		remove: (ie.Action == github.IssueActionUnlabeled),
+	}
+
+	return handle(pc.GitHubClient, pc.PluginConfig.ProjectManager, pc.Logger, eventData)
+}
+
+func handle(gc githubClient, projectManager plugins.ProjectManager, log *logrus.Entry, e eventData) error {
+
 	// Get any ManagedProjects that match this PR
-	matchedColumnIDs := getMatchingColumnIDs(gc, projectManager.OrgRepos, pe, log)
+	matchedColumnIDs := getMatchingColumnIDs(gc, projectManager.OrgRepos, e, log)
 
 	// For each ManagedColumn that matches this PR, add this PR to that Project Column
 	// All the matchedColumnID are valid column ids and the checked to see if the project card
 	// we are adding is not already part of the project and thus avoiding duplication.
 	for _, matchedColumnID := range matchedColumnIDs {
-		err := addPRToColumn(gc, matchedColumnID, pe)
+		err := addIssueToColumn(gc, matchedColumnID, e)
 		if err != nil {
 			log.WithError(err).WithFields(logrus.Fields{
-				"pullRequestNumber": pe.Number,
-				"matchedColumnID":   matchedColumnID,
+				"matchedColumnID": matchedColumnID,
 			}).Error(failedToAddProjectCard)
 			return err
 		}
@@ -134,35 +166,37 @@ func handlePR(gc githubClient, projectManager plugins.ProjectManager, log *logru
 	return nil
 }
 
-func getMatchingColumnIDs(gc githubClient, orgRepos map[string]plugins.ManagedOrgRepo, pe github.PullRequestEvent, log *logrus.Entry) []int {
+func getMatchingColumnIDs(gc githubClient, orgRepos map[string]plugins.ManagedOrgRepo, e eventData, log *logrus.Entry) []int {
 	var matchedColumnIDs []int
-	// Don't use GetIssueLabels unless it's required and keep track of whether the labels have been fetched to avoid unnecessary API usage.
-	var labels []github.Label
 	var err error
-	// Fetch the labels, GetIssueLabels works for PRs as they are considered issues in the API
-	labels, err = gc.GetIssueLabels(pe.Repo.Owner.Login, pe.Repo.Name, pe.Number)
-	if err != nil {
-		log.Infof("Error geting labels on the issue %d, ignoring processing the event", pe.Number)
-		return nil
+	// Don't use GetIssueLabels unless it's required and keep track of whether the labels have been fetched to avoid unnecessary API usage.
+	if len(e.labels) == 0 {
+		e.labels, err = gc.GetIssueLabels(e.org, e.repo, e.number)
+		if err != nil {
+			log.Infof("Cannot get labels for issue/PR: %d, error: %s", e.number, err)
+		}
 	}
 
-	issueURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%v", pe.Repo.Owner.Login, pe.Repo.Name, pe.Number)
+	issueURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%v", e.org, e.repo, e.number)
 	for orgRepoName, managedOrgRepo := range orgRepos {
 		for projectName, managedProject := range managedOrgRepo.Projects {
 			for _, managedColumn := range managedProject.Columns {
 				// Org is not specified or does not match we just ignore processing this column
-				if managedColumn.Org != "" || managedColumn.Org != pe.Repo.Owner.Login {
+				if managedColumn.Org == "" || managedColumn.Org != e.org {
+					log.Infof("Ignoring column: {%v}, for issue/PR: %d, due to org: %v", managedColumn, e.number, e.org)
 					continue
 				}
 				// If state is not matching we ignore processing this column
 				// If state is empty then it defaults to 'open'
-				if managedColumn.State != "" && managedColumn.State != pe.PullRequest.State {
+				if managedColumn.State != "" && managedColumn.State != e.state {
+					log.Infof("Ignoring column: {%v}, for issue/PR: %d, due to state: %v", managedColumn, e.number, e.state)
 					continue
 				}
 
 				// if labels do not match we continue to the next project
 				// if labels are empty on the column, the match should return false
-				if !github.HasLabels(managedColumn.Labels, labels) {
+				if !github.HasLabels(managedColumn.Labels, e.labels) {
+					log.Infof("Ignoring column: {%v}, for issue/PR: %d, labels due to labels: %v ", managedColumn, e.number, e.labels)
 					continue
 				}
 
@@ -174,7 +208,11 @@ func getMatchingColumnIDs(gc githubClient, orgRepos map[string]plugins.ManagedOr
 					var err error
 					columnID, err = getColumnID(gc, orgRepoName, projectName, managedColumn.Name, issueURL)
 					if err != nil {
-						log.Infof("Cannot add the issue: %d to the project: %s, column: %s, error: %s", pe.Number, projectName, managedColumn.Name, err)
+						if err, ok := err.(*DuplicateCard); ok {
+							log.Infof("Card already exists for issue: %s, under project: %s", err.issueURL, err.projectName)
+						}
+						log.Infof("Cannot add the issue/PR: %d to the project: %s, column: %s, error: %s", e.number, projectName, managedColumn.Name, err)
+
 						break
 					}
 				}
@@ -222,7 +260,7 @@ func getColumnID(gc githubClient, orgRepoName, projectName, columnName, issueURL
 
 				for _, card := range cards {
 					if card.ContentURL == issueURL {
-						return nil, errors.New(fmt.Sprintf(issueAlreadyInProject, issueURL, projectName))
+						return nil, &DuplicateCard{issueURL: issueURL, projectName: projectName}
 					}
 				}
 			}
@@ -237,12 +275,15 @@ func getColumnID(gc githubClient, orgRepoName, projectName, columnName, issueURL
 	return nil, fmt.Errorf("could not find project %s in org/repo %s", projectName, orgRepoName)
 }
 
-func addPRToColumn(gc githubClient, columnID int, pe github.PullRequestEvent) error {
+func addIssueToColumn(gc githubClient, columnID int, e eventData) error {
 	// Create project card and add this PR
-	projectCard := github.ProjectCard{
-		ContentType: "PullRequest",
-		ContentID:   pe.PullRequest.ID,
+	projectCard := github.ProjectCard{}
+	if e.isPR {
+		projectCard.ContentType = "PullRequest"
+	} else {
+		projectCard.ContentType = "Issue"
 	}
+	projectCard.ContentID = e.id
 	_, err := gc.CreateProjectCard(columnID, projectCard)
 	return err
 }
