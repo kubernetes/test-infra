@@ -219,18 +219,30 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 		return nil, fmt.Errorf("error initializing history client from %q: %v", historyURI, err)
 	}
 
-	sc := &statusController{
+	sc, err := newStatusController(logger, ghcStatus, mgr, gc, cfg, opener, statusURI)
+	if err != nil {
+		return nil, err
+	}
+	go sc.run()
+
+	return newSyncController(logger, ghcSync, mgr, cfg, gc, sc, hist)
+}
+
+func newStatusController(logger *logrus.Entry, ghc githubClient, mgr manager, gc *git.Client, cfg config.Getter, opener io.Opener, statusURI string) (*statusController, error) {
+	if err := mgr.GetFieldIndexer().IndexField(&prowapi.ProwJob{}, indexNamePassingJobs, indexFuncPassingJobs); err != nil {
+		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %v", err)
+	}
+	return &statusController{
+		pjClient:       mgr.GetClient(),
 		logger:         logger.WithField("controller", "status-update"),
-		ghc:            ghcStatus,
+		ghc:            ghc,
 		gc:             gc,
 		config:         cfg,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
 		opener:         opener,
 		path:           statusURI,
-	}
-	go sc.run()
-	return newSyncController(logger, ghcSync, mgr, cfg, gc, sc, hist)
+	}, nil
 }
 
 func newSyncController(
@@ -362,6 +374,7 @@ func (c *Controller) Sync() error {
 	c.sc.Lock()
 	c.sc.blocks = blocks
 	c.sc.poolPRs = poolPRMap(filteredPools)
+	c.sc.baseSHAs = baseSHAMap(filteredPools)
 	select {
 	case c.sc.newPoolPending <- true:
 	default:
@@ -541,6 +554,14 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 	}
 
 	return false
+}
+
+func baseSHAMap(subpoolMap map[string]*subpool) map[string]string {
+	baseSHAs := make(map[string]string, len(subpoolMap))
+	for key, sp := range subpoolMap {
+		baseSHAs[key] = sp.sha
+	}
+	return baseSHAs
 }
 
 // poolPRMap collects all subpool PRs into a map containing all pooled PRs.
@@ -1602,11 +1623,7 @@ func cacheIndexKey(org, repo, branch, baseSHA string) string {
 }
 
 func cacheIndexFunc(obj runtime.Object) []string {
-	pj, ok := obj.(*prowapi.ProwJob)
-	// Should never happen
-	if !ok {
-		return nil
-	}
+	pj := obj.(*prowapi.ProwJob)
 	// We do not care about jobs other than presubmit and batch
 	if pj.Spec.Type != prowapi.PresubmitJob && pj.Spec.Type != prowapi.BatchJob {
 		return nil
