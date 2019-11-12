@@ -886,7 +886,7 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, l
 		tmpl, err := getJobHistory(r.URL, cfg(), gcsClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
-			log.WithField("url", r.URL).Error(msg)
+			log.WithField("url", r.URL.String()).Error(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
@@ -904,7 +904,7 @@ func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gi
 		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient, gitHubClient, gitClient)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
-			log.WithField("url", r.URL).Info(msg)
+			log.WithField("url", r.URL.String()).Info(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
