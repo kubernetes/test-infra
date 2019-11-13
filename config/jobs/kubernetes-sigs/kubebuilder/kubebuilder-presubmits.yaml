@@ -11,7 +11,7 @@ presubmits:
       containers:
       - image: golang:1.12
         command:
-        - ./test_ci.sh
+        - ./test.sh
         resources:
           requests:
             cpu: 4000m
