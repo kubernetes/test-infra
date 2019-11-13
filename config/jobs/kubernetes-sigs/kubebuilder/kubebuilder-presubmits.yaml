@@ -27,7 +27,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191009-4f1de38-master
         command:
         - ./test_e2e.sh
         resources:
