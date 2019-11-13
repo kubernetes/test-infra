@@ -207,7 +207,7 @@ var (
 				Help:    "http request duration in seconds",
 				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 20},
 			},
-			[]string{"path", "method", "status"},
+			[]string{"path", "method", "status", "user_agent"},
 		),
 		httpResponseSize: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
@@ -215,7 +215,7 @@ var (
 				Help:    "http response size in bytes",
 				Buckets: []float64{16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432},
 			},
-			[]string{"path", "method", "status"},
+			[]string{"path", "method", "status", "user_agent"},
 		),
 	}
 )
@@ -251,7 +251,7 @@ func traceHandler(h http.Handler) http.Handler {
 		trw := &traceResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 		h.ServeHTTP(trw, r)
 		latency := time.Since(t)
-		labels := prometheus.Labels{"path": simplifier.Simplify(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode)}
+		labels := prometheus.Labels{"path": simplifier.Simplify(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode), "user_agent": r.Header.Get("User-Agent")}
 		deckMetrics.httpRequestDuration.With(labels).Observe(latency.Seconds())
 		deckMetrics.httpResponseSize.With(labels).Observe(float64(trw.size))
 	})
