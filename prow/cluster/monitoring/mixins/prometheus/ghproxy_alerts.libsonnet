@@ -13,7 +13,7 @@
               severity: 'slack',
             },
             annotations: {
-              message: '{{ $value | humanizePercentage }} of all requests for {{ $labels.path }} through the GitHub proxy are errorring with code {{ $labels.status }}.',
+              message: '{{ $value | humanizePercentage }} of all requests for {{ $labels.path }} through the GitHub proxy are errorring with code {{ $labels.status }}. Check <https://monitoring.prow.k8s.io/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=9>' % $._config.grafanaDashboardIDs['ghproxy.json'],
             },
           },
           {
@@ -25,7 +25,7 @@
               severity: 'slack',
             },
             annotations: {
-              message: '{{ $value | humanizePercentage }} of all API requests through the GitHub proxy are errorring with code {{ $labels.status }}.',
+              message: '{{ $value | humanizePercentage }} of all API requests through the GitHub proxy are errorring with code {{ $labels.status }}. Check <https://monitoring.prow.k8s.io/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=8|grafana>' % $._config.grafanaDashboardIDs['ghproxy.json'],
             },
           },
           {
