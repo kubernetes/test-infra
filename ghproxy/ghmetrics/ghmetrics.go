@@ -57,6 +57,16 @@ var ghRequestDurationHistVec = prometheus.NewHistogramVec(
 	[]string{"token_hash", "path", "status", "user_agent"},
 )
 
+// cacheCounter provides the 'ghcache_responses' counter vec that is indexed
+// by the cache response mode.
+var cacheCounter = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "ghcache_responses",
+		Help: "How many cache responses of each cache response mode there are.",
+	},
+	[]string{"mode", "path"},
+)
+
 var muxTokenUsage, muxRequestMetrics sync.Mutex
 var lastGitHubResponse time.Time
 
@@ -64,6 +74,7 @@ func init() {
 	prometheus.MustRegister(ghTokenUntilResetGaugeVec)
 	prometheus.MustRegister(ghTokenUsageGaugeVec)
 	prometheus.MustRegister(ghRequestDurationHistVec)
+	prometheus.MustRegister(cacheCounter)
 }
 
 // CollectGitHubTokenMetrics publishes the rate limits of the github api to
@@ -106,4 +117,9 @@ func timestampStringToTime(tstamp string) time.Time {
 		logrus.WithField("timestamp", tstamp).Info("Couldn't convert unix timestamp")
 	}
 	return time.Unix(timestamp, 0)
+}
+
+// CollectCacheRequestMetrics records a cache outcome for a specific path
+func CollectCacheRequestMetrics(mode, path string) {
+	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path)}).Inc()
 }

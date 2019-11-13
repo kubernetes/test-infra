@@ -77,16 +77,6 @@ func CacheModeIsFree(mode CacheResponseMode) bool {
 	return false
 }
 
-// cacheCounter provides the 'ghcache_responses' counter vec that is indexed
-// by the cache response mode.
-var cacheCounter = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "ghcache_responses",
-		Help: "How many cache responses of each cache response mode there are.",
-	},
-	[]string{"mode"},
-)
-
 // outboundConcurrencyGauge provides the 'concurrent_outbound_requests' gauge that
 // is global to the proxy.
 var outboundConcurrencyGauge = prometheus.NewGauge(prometheus.GaugeOpts{
@@ -102,7 +92,7 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 })
 
 func init() {
-	prometheus.MustRegister(cacheCounter)
+
 	prometheus.MustRegister(outboundConcurrencyGauge)
 	prometheus.MustRegister(pendingOutboundConnectionsGauge)
 }
