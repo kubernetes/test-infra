@@ -160,7 +160,6 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 
 		if !RepoLabelsExisting.Has(labelToAdd) {
-			nonexistent = append(nonexistent, labelToAdd)
 			continue
 		}
 
@@ -177,7 +176,6 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 
 		if !RepoLabelsExisting.Has(labelToRemove) {
-			nonexistent = append(nonexistent, labelToRemove)
 			continue
 		}
 
