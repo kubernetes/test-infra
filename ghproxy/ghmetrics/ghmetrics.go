@@ -54,7 +54,7 @@ var ghRequestDurationHistVec = prometheus.NewHistogramVec(
 		Help:    "GitHub request duration by API path.",
 		Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
 	},
-	[]string{"token_hash", "path", "status"},
+	[]string{"token_hash", "path", "status", "user_agent"},
 )
 
 var muxTokenUsage, muxRequestMetrics sync.Mutex
@@ -94,8 +94,8 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 
 // CollectGitHubRequestMetrics publishes the number of requests by API path to
 // `github_requests` on prometheus.
-func CollectGitHubRequestMetrics(tokenHash, path, statusCode string, roundTripTime float64) {
-	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "status": statusCode}).Observe(roundTripTime)
+func CollectGitHubRequestMetrics(tokenHash, path, statusCode, userAgent string, roundTripTime float64) {
+	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "status": statusCode, "user_agent": userAgent}).Observe(roundTripTime)
 }
 
 // timestampStringToTime takes a unix timestamp and returns a `time.Time`
