@@ -1409,7 +1409,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 		name := r.URL.Query().Get("prowjob")
 		l := log.WithField("prowjob", name)
 		if name == "" {
-			http.Error(w, "request did not provide the 'name' query parameter", http.StatusBadRequest)
+			http.Error(w, "request did not provide the 'prowjob' query parameter", http.StatusBadRequest)
 			return
 		}
 		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
@@ -1422,6 +1422,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			return
 		}
 		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
+		l = l.WithField("job", newPJ.Spec.Job)
 		switch r.Method {
 		case http.MethodGet:
 			handleSerialize(w, "prowjob", newPJ, l)
@@ -1449,30 +1450,31 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 					http.Error(w, "Error retrieving GitHub login", http.StatusUnauthorized)
 					return
 				}
+				l = l.WithField("user", login)
 				allowed, err = canTriggerJob(login, newPJ, authConfig, cli, pluginAgent, l)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error checking if user can trigger job: %v", err), http.StatusInternalServerError)
 					l.WithError(err).Errorf("Error checking if user can trigger job")
 					return
 				}
-				l.WithFields(logrus.Fields{
-					"user":    login,
-					"job":     newPJ.Spec.Job,
-					"allowed": allowed,
-				}).Info("Attempted rerun")
 			}
 
+			l = l.WithField("allowed", allowed)
+			l.Info("Attempted rerun")
 			if !allowed {
 				if _, err = w.Write([]byte("You don't have permission to rerun that job")); err != nil {
 					l.WithError(err).Error("Error writing to rerun response.")
 				}
 				return
 			}
-			if _, err := prowJobClient.Create(&newPJ); err != nil {
+			created, err := prowJobClient.Create(&newPJ)
+			if err != nil {
 				l.WithError(err).Error("Error creating job")
 				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
 				return
 			}
+			l = l.WithField("new-prowjob", created.Name)
+			l.Info("Successfully created a rerun PJ.")
 			if _, err = w.Write([]byte("Job successfully triggered. Wait 30 seconds and refresh the page for the job to show up")); err != nil {
 				l.WithError(err).Error("Error writing to rerun response.")
 			}
