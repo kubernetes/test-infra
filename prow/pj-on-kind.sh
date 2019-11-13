@@ -20,6 +20,8 @@ set -o nounset
 set -o pipefail
 
 function main() {
+  # Point kubectl at the mkpod cluster.
+  export KUBECONFIG="${HOME}/.kube/kind-config-mkpod"
   parseArgs "$@"
   ensureInstall
 
@@ -31,7 +33,7 @@ function main() {
 
   # Deploy pod and watch.
   echo "Applying pod to the mkpod cluster. Configure kubectl for the mkpod cluster with:"
-  echo '>  export KUBECONFIG="$(kind get kubeconfig-path --name=mkpod)"'
+  echo ">  export KUBECONFIG='${KUBECONFIG}'"
   pod=$(kubectl apply -f "${PWD}/pod.yaml" | cut -d ' ' -f 1)
   kubectl get "${pod}" -w
 }
@@ -106,8 +108,6 @@ EOF
       rm "${temp_config}"
     fi
   fi
-  # Point kubectl at the mkpod cluster.
-  export KUBECONFIG="$(kind get kubeconfig-path --name="mkpod")"
 }
 
 main "$@"
