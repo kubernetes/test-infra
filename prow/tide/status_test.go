@@ -248,7 +248,49 @@ func TestExpectedStatus(t *testing.T) {
 			},
 
 			state: github.StatusPending,
-			desc:  "Not mergeable. Waiting for retest of Job [bar]",
+			desc:  "Not mergeable. Retesting: bar",
+		},
+		{
+			name:    "long list of not up-to-date contexts results in shortened message",
+			inPool:  true,
+			baseref: "baseref",
+			requiredContexts: []string{
+				strings.Repeat("very-long-context", 8),
+				strings.Repeat("also-long-content", 8),
+			},
+			prowJobs: []runtime.Object{
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "123"},
+					Spec: prowapi.ProwJobSpec{
+						Context: strings.Repeat("very-long-context", 8),
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "1234"},
+					Spec: prowapi.ProwJobSpec{
+						Context: strings.Repeat("also-long-content", 8),
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+			},
+
+			state: github.StatusPending,
+			desc:  "Not mergeable. Retesting 2 jobs.",
 		},
 	}
 

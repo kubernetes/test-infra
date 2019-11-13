@@ -50,6 +50,8 @@ const (
 	// The '%s' field is populated with the reason why the PR is not in a
 	// tide pool or the empty string if the reason is unknown. See requirementDiff.
 	statusNotInPool = "Not mergeable.%s"
+
+	maxStatusDescriptionLength = 140
 )
 
 type storedState struct {
@@ -272,13 +274,21 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		passingUpToDateContexts = append(passingUpToDateContexts, pj.Spec.Context)
 	}
 	if diff := cc.MissingRequiredContexts(passingUpToDateContexts); len(diff) > 0 {
-		var s string
-		if len(diff) > 1 {
-			s = "s"
-		}
-		return github.StatePending, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Waiting for retest of Job%s %v", s, diff))
+		return github.StatePending, retestingStatus(diff)
 	}
 	return github.StatusSuccess, statusInPool
+}
+
+func retestingStatus(retested []string) string {
+	all := fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Retesting: %s", strings.Join(retested, " ")))
+	if len(all) > maxStatusDescriptionLength {
+		s := ""
+		if len(retested) > 1 {
+			s = "s"
+		}
+		return fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Retesting %d job%s.", len(retested), s))
+	}
+	return all
 }
 
 // targetURL determines the URL used for more details in the status
@@ -341,6 +351,11 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 				actualState = ctx.State
 				actualDesc = string(ctx.Description)
 			}
+		}
+		if len(wantDesc) > maxStatusDescriptionLength {
+			original := wantDesc
+			wantDesc = fmt.Sprintf("%s...", wantDesc[0:(maxStatusDescriptionLength-3)])
+			log.WithField("original-desc", original).Warn("GitHub status description needed to be truncated to fit GH API limit")
 		}
 		if wantState != strings.ToLower(string(actualState)) || wantDesc != actualDesc {
 			if err := sc.ghc.CreateStatus(
