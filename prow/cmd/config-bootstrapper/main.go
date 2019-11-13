@@ -19,7 +19,6 @@ package main
 import (
 	"errors"
 	"flag"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -136,7 +135,7 @@ func main() {
 			logrus.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
-		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, configMapClient, cm.Name, cm.Namespace, data, nil, logger); err != nil {
+		if err := updateconfig.Update(&updateconfig.OSFileGetter{Root: o.sourcePath}, configMapClient, cm.Name, cm.Namespace, data, nil, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 			errors++
 		} else {
@@ -147,12 +146,4 @@ func main() {
 	if errors > 0 {
 		logrus.WithField("fail-count", errors).Fatalf("errors occurred during update")
 	}
-}
-
-type osFileGetter struct {
-	root string
-}
-
-func (g *osFileGetter) GetFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filepath.Join(g.root, filename))
 }

@@ -32,12 +32,101 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
 
+	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const defaultNamespace = "default"
+
+var remoteFiles = map[string]map[string]string{
+	"prow/config.yaml": {
+		"master": "old-config",
+		"12345":  "new-config",
+	},
+	"prow/binary.yaml": {
+		"master": "old-binary\x00\xFF\xFF",
+		"12345":  "new-binary\x00\xFF\xFF",
+	},
+	"prow/becoming-binary.yaml": {
+		"master": "not-yet-binary",
+		"12345":  "now-binary\x00\xFF\xFF",
+	},
+	"prow/becoming-text.yaml": {
+		"master": "not-yet-text\x00\xFF\xFF",
+		"12345":  "now-text",
+	},
+	"prow/plugins.yaml": {
+		"master": "old-plugins",
+		"12345":  "new-plugins",
+	},
+	"boskos/resources.yaml": {
+		"master": "old-boskos-config",
+		"12345":  "new-boskos-config",
+	},
+	"config/foo.yaml": {
+		"master": "old-foo-config",
+		"12345":  "new-foo-config",
+	},
+	"config/bar.yaml": {
+		"master": "old-bar-config",
+		"12345":  "new-bar-config",
+	},
+	"dir/subdir/fejta.yaml": {
+		"master": "old-fejta-config",
+		"12345":  "new-fejta-config",
+	},
+	"dir/subdir/fejtaverse/krzyzacy.yaml": {
+		"master": "old-krzyzacy-config",
+		"12345":  "new-krzyzacy-config",
+	},
+	"dir/subdir/fejtaverse/fejtabot.yaml": {
+		"54321": "new-fejtabot-config",
+	},
+	"dir/subdir/fejtaverse/sig-foo/added.yaml": {
+		"12345": "new-added-config",
+	},
+	"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
+		"master": "old-removed-config",
+	},
+}
+
+func setupLocalGitRepo(t *testing.T, org, repo string) *git.Client {
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making local git repo: %v", err)
+	}
+	if err := lg.MakeFakeRepo(org, repo); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.Checkout(org, repo, "master"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.AddCommit(org, repo, getFileMap("master")); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+	if err := lg.CheckoutNewBranch(org, repo, "12345"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.AddCommit(org, repo, getFileMap("12345")); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+	if err := lg.Checkout(org, repo, "master"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.CheckoutNewBranch(org, repo, "54321"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.AddCommit(org, repo, getFileMap("54321")); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+	if err := lg.Checkout(org, repo, "master"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	return c
+}
 
 func TestUpdateConfig(t *testing.T) {
 	basicPR := github.PullRequest{
@@ -1009,57 +1098,6 @@ func TestUpdateConfig(t *testing.T) {
 				basicPR.Number: tc.changes,
 			},
 			IssueComments: map[int][]github.IssueComment{},
-			RemoteFiles: map[string]map[string]string{
-				"prow/config.yaml": {
-					"master": "old-config",
-					"12345":  "new-config",
-				},
-				"prow/binary.yaml": {
-					"master": "old-binary\x00\xFF\xFF",
-					"12345":  "new-binary\x00\xFF\xFF",
-				},
-				"prow/becoming-binary.yaml": {
-					"master": "not-yet-binary",
-					"12345":  "now-binary\x00\xFF\xFF",
-				},
-				"prow/becoming-text.yaml": {
-					"master": "not-yet-text\x00\xFF\xFF",
-					"12345":  "now-text",
-				},
-				"prow/plugins.yaml": {
-					"master": "old-plugins",
-					"12345":  "new-plugins",
-				},
-				"boskos/resources.yaml": {
-					"master": "old-boskos-config",
-					"12345":  "new-boskos-config",
-				},
-				"config/foo.yaml": {
-					"master": "old-foo-config",
-					"12345":  "new-foo-config",
-				},
-				"config/bar.yaml": {
-					"master": "old-bar-config",
-					"12345":  "new-bar-config",
-				},
-				"dir/subdir/fejta.yaml": {
-					"master": "old-fejta-config",
-					"12345":  "new-fejta-config",
-				},
-				"dir/subdir/fejtaverse/krzyzacy.yaml": {
-					"master": "old-krzyzacy-config",
-					"12345":  "new-krzyzacy-config",
-				},
-				"dir/subdir/fejtaverse/fejtabot.yaml": {
-					"54321": "new-fejtabot-config",
-				},
-				"dir/subdir/fejtaverse/sig-foo/added.yaml": {
-					"12345": "new-added-config",
-				},
-				"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
-					"master": "old-removed-config",
-				},
-			},
 		}
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 
@@ -1092,7 +1130,11 @@ func TestUpdateConfig(t *testing.T) {
 		}
 		m.SetDefaults()
 
-		if err := handle(fgc, fkc.CoreV1(), nil, defaultNamespace, log, event, *m, nil); err != nil {
+		org := event.PullRequest.Base.Repo.Owner.Login
+		repo := event.PullRequest.Base.Repo.Name
+		c := setupLocalGitRepo(t, org, repo)
+
+		if err := handle(fgc, c, fkc.CoreV1(), nil, defaultNamespace, log, event, *m, nil); err != nil {
 			t.Errorf("%s: unexpected error handling: %s", tc.name, err)
 			continue
 		}
@@ -1155,6 +1197,18 @@ func TestUpdateConfig(t *testing.T) {
 			}
 		}
 	}
+}
+
+func getFileMap(s string) map[string][]byte {
+	result := map[string][]byte{}
+	for file, v := range remoteFiles {
+		for sha, content := range v {
+			if sha == s {
+				result[file] = []byte(content)
+			}
+		}
+	}
+	return result
 }
 
 func boolPtr(b bool) *bool {
