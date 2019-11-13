@@ -302,6 +302,18 @@ type DecorationConfig struct {
 	// CookieFileSecret is the name of a kubernetes secret that contains
 	// a git http.cookiefile, which should be used during the cloning process.
 	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
+	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
+	// which is going to be used for fetching a private repository.
+	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+}
+
+// OauthTokenSecret holds the information of the oauth token's secret name and key.
+type OauthTokenSecret struct {
+	// Name is the name of a kubernetes secret.
+	Name string `json:"name,omitempty"`
+	// Key is the a key of the corresponding kubernetes secret that
+	// holds the value of the OAuth token.
+	Key string `json:"key,omitempty"`
 }
 
 // ApplyDefault applies the defaults for the ProwJob decoration. If a field has a zero value, it
