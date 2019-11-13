@@ -1254,7 +1254,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 				return nil, err
 			}
 			if !shouldRun {
-				log.Debug("Presubmit excluded by ps.ShouldRun", "presubmit", ps.Context)
+				log.WithField("context", ps.Context).Debug("Presubmit excluded by ps.ShouldRun")
 				continue
 			}
 
@@ -1289,7 +1289,7 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 			return nil, err
 		}
 		if !shouldRun {
-			log.Debug("Presubmit excluded by ps.ShouldRun", "presubmit", ps.Context)
+			log.WithField("context", ps.Context).Debug("Presubmit excluded by ps.ShouldRun")
 			continue
 		}
 
