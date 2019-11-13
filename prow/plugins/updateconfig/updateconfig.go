@@ -20,7 +20,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"io/ioutil"
 	"path"
+	"path/filepath"
 	"unicode/utf8"
 
 	"github.com/mattn/go-zglob"
@@ -31,6 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -67,11 +70,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.KubernetesClient.CoreV1(), pc.BuildClusterCoreV1Clients, pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater, pc.Metrics.ConfigMapGauges)
+	return handle(pc.GitHubClient, pc.GitClient, pc.KubernetesClient.CoreV1(), pc.BuildClusterCoreV1Clients, pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater, pc.Metrics.ConfigMapGauges)
 }
 
 // FileGetter knows how to get the contents of a file by name
@@ -79,13 +81,12 @@ type FileGetter interface {
 	GetFile(filename string) ([]byte, error)
 }
 
-type gitHubFileGetter struct {
-	org, repo, commit string
-	client            githubClient
+type OSFileGetter struct {
+	Root string
 }
 
-func (g *gitHubFileGetter) GetFile(filename string) ([]byte, error) {
-	return g.client.GetFile(g.org, g.repo, filename, g.commit)
+func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filepath.Join(g.Root, filename))
 }
 
 // Update updates the configmap with the data from the identified files
@@ -239,7 +240,12 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 	return toUpdate
 }
 
-func handle(gc githubClient, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
+type gitClient interface {
+	Clone(repo string) (*git.Repo, error)
+	Clean() error
+}
+
+func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -287,6 +293,20 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clien
 	if len(toUpdate) > 1 {
 		indent = "   " // three spaces for sub bullets
 	}
+
+	gitRepo, err := gitClient.Clone(fmt.Sprintf("%s/%s", org, repo))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := gitClient.Clean(); err != nil {
+			log.WithError(err).Error("Could not clean up git client cache.")
+		}
+	}()
+	if err := gitRepo.Checkout(*pr.MergeSHA); err != nil {
+		return err
+	}
+
 	for cm, data := range toUpdate {
 		if cm.Namespace == "" {
 			cm.Namespace = defaultNamespace
@@ -297,7 +317,7 @@ func handle(gc githubClient, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clien
 			log.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
-		if err := Update(&gitHubFileGetter{org: org, repo: repo, commit: *pr.MergeSHA, client: gc}, configMapClient, cm.Name, cm.Namespace, data, metrics, logger); err != nil {
+		if err := Update(&OSFileGetter{Root: gitRepo.Dir}, configMapClient, cm.Name, cm.Namespace, data, metrics, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Cluster, cm.Namespace, data, indent))
