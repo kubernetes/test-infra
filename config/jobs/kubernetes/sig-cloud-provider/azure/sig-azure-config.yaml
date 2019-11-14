@@ -120,7 +120,7 @@ presubmits:
         - "--acsengine-location=westus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json"
-        - "--acsengine-download-url=https://chuwontest.blob.core.windows.net/aks-engine/aks-engine-8cf7c2a74-linux-amd64.tar.gz"
+        - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
         - "--test-azure-disk-csi-driver=True"
         - "--timeout=420m"
         securityContext:
@@ -175,7 +175,7 @@ presubmits:
         - "--acsengine-location=westus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json"
-        - "--acsengine-download-url=https://chuwontest.blob.core.windows.net/aks-engine/aks-engine-8cf7c2a74-linux-amd64.tar.gz"
+        - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
         - "--test-azure-disk-csi-driver=True"
         - "--timeout=420m"
         securityContext:
