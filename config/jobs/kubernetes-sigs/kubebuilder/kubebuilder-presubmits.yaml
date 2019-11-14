@@ -9,7 +9,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golang:1.12
+      - image: golang:1.13
         command:
         - ./test.sh
         resources:
