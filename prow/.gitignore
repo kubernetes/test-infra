@@ -12,7 +12,6 @@ cmd/hook/hook
 cmd/horologium/horologium
 cmd/initupload/initupload
 cmd/jenkins-operator/jenkins-operator
-cmd/mkbuild-cluster/mkbuild-cluster
 cmd/mkpj/mkpj
 cmd/mkpod/mkpod
 cmd/peribolos/peribolos
