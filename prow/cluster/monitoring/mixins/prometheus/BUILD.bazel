@@ -9,15 +9,8 @@ jsonnet_to_json(
     name = "prow_prometheusrule",
     src = "prow_prometheusrule.jsonnet",
     outs = ["prow_prometheusrule.yaml"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
     visibility = ["//visibility:public"],
-    deps = [
-        ":prom_lib",
-        "//prow/cluster/monitoring/mixins/lib",
-    ],
+    deps = [":prom_lib"],
 )
 
 filegroup(

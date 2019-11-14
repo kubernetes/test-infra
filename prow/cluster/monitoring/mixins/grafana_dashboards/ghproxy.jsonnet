@@ -1,4 +1,3 @@
-local config =  import 'config.libsonnet';
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local graphPanel = grafana.graphPanel;
@@ -13,7 +12,7 @@ local legendConfig = {
     };
 
 local dashboardConfig = {
-        uid: config._config.grafanaDashboardIDs['ghproxy.json'],
+        uid: 'd72fe8d0400b2912e319b1e95d0ab1b3',
     };
 
 local histogramQuantileTarget(phi) = prometheus.target(
@@ -239,7 +238,7 @@ dashboard.new(
     ) + legendConfig)
     .addTarget(prometheus.target(
         'sum(rate(github_request_duration_count{status="${status}",job="ghproxy"}[${range}])) by (path)',
-         legendFormat='{{path}}',
+         legendFormat='{{status}}',
     )), gridPos={
     h: 9,
     w: 24,
