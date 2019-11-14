@@ -229,7 +229,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
 	// Only consider newly merged PRs
-	if pre.Action != github.PullRequestActionClosed {
+	if pre.Action != github.PullRequestActionClosed && pre.Action != github.PullRequestActionLabeled {
 		return nil
 	}
 
