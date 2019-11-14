@@ -81,7 +81,7 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		StartTime    time.Time
 		FinishedTime time.Time
 		Elapsed      time.Duration
-		Metadata     map[string]string
+		Metadata     map[string]interface{}
 	}
 	metadataViewData := MetadataViewData{Status: "Pending"}
 	started := gcs.Started{}
@@ -117,14 +117,12 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		metadataViewData.Elapsed = metadataViewData.Elapsed.Round(time.Second)
 	}
 
-	metadataViewData.Metadata = map[string]string{"node": started.Node}
+	metadataViewData.Metadata = map[string]interface{}{"node": started.Node}
 
 	metadatas := []metadata.Metadata{started.Metadata, finished.Metadata}
 	for _, m := range metadatas {
-		for k, v := range m {
-			if s, ok := v.(string); ok && v != "" {
-				metadataViewData.Metadata[k] = s
-			}
+		for k, v := range lens.flattenMetadata(m) {
+			metadataViewData.Metadata[k] = v
 		}
 	}
 
@@ -137,4 +135,22 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()
+}
+
+// flattenMetadata flattens the metadata for use by Body.
+func (lens Lens) flattenMetadata(metadata map[string]interface{}) map[string]string {
+	results := map[string]string{}
+
+	for k1, v1 := range metadata {
+		if s, ok := v1.(map[string]interface{}); ok && len(s) > 0 {
+			subObjectResults := lens.flattenMetadata(s)
+			for k2, v2 := range subObjectResults {
+				results[fmt.Sprintf("%s.%s", k1, k2)] = v2
+			}
+		} else if s, ok := v1.(string); ok && v1 != "" { // We ought to consider relaxing this so that non-strings will be considered
+			results[k1] = s
+		}
+	}
+
+	return results
 }
