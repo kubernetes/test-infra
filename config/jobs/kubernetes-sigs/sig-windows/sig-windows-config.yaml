@@ -111,7 +111,7 @@ periodics:
       - "--down=true"
       - "--deployment=acsengine"
       - "--provider=skeleton"
-      - "--build=bazel"
+      - "--build=host-go"
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
