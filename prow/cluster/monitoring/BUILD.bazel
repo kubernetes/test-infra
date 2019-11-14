@@ -95,6 +95,7 @@ filegroup(
         ":package-srcs",
         "//prow/cluster/monitoring/mixins/dashboards_out:all-srcs",
         "//prow/cluster/monitoring/mixins/grafana_dashboards:all-srcs",
+        "//prow/cluster/monitoring/mixins/lib:all-srcs",
         "//prow/cluster/monitoring/mixins/prometheus:all-srcs",
         "//prow/cluster/monitoring/mixins/prometheus_out:all-srcs",
         "//prow/cluster/monitoring/mixins/vendor/grafonnet:all-srcs",
