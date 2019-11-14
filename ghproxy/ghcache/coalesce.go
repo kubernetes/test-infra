@@ -24,6 +24,8 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/ghproxy/ghmetrics"
 )
 
 // requestCoalescer allows concurrent requests for the same URI to share a
@@ -127,7 +129,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		return resp, nil
 	}()
 
-	cacheCounter.WithLabelValues(string(cacheMode)).Inc()
+	ghmetrics.CollectCacheRequestMetrics(string(cacheMode), req.URL.Path)
 	if resp != nil {
 		resp.Header.Set(CacheModeHeader, string(cacheMode))
 	}
