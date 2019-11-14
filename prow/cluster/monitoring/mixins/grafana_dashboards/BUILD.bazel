@@ -4,105 +4,63 @@ jsonnet_to_json(
     name = "deck",
     src = "deck.jsonnet",
     outs = ["deck.json"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
+    imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
-    ],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
     name = "ghproxy",
     src = "ghproxy.jsonnet",
     outs = ["ghproxy.json"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
+    imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
-    ],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
     name = "hook",
     src = "hook.jsonnet",
     outs = ["hook.json"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
+    imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
-    ],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
     name = "plank",
     src = "plank.jsonnet",
     outs = ["plank.json"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
+    imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
-    ],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
     name = "prow",
     src = "prow.jsonnet",
     outs = ["prow.json"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
+    imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
-    ],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
     name = "tide",
     src = "tide.jsonnet",
     outs = ["tide.json"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
+    imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
-    ],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 jsonnet_to_json(
     name = "sinker",
     src = "sinker.jsonnet",
     outs = ["sinker.json"],
-    imports = [
-        "../lib/",
-        "../vendor/",
-    ],
+    imports = ["../vendor/"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/cluster/monitoring/mixins/lib",
-        "//prow/cluster/monitoring/mixins/vendor/grafonnet",
-    ],
+    deps = ["//prow/cluster/monitoring/mixins/vendor/grafonnet"],
 )
 
 filegroup(
