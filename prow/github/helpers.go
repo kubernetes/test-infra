@@ -24,9 +24,12 @@ import (
 	"strings"
 )
 
-// SecurityForkNameRE is a regexp matching repos that are temporary security forks
+// SecurityForkNameRE is a regexp matching repos that are temporary security forks.
 // https://help.github.com/en/github/managing-security-vulnerabilities/collaborating-in-a-temporary-private-fork-to-resolve-a-security-vulnerability
 var SecurityForkNameRE = regexp.MustCompile(`^[\w-]+-ghsa-[\w-]+$`)
+
+// ImageSizeLimit is the maximum image size GitHub allows in bytes (5MB).
+const ImageSizeLimit = 5242880
 
 // HasLabel checks if label is in the label set "issueLabels".
 func HasLabel(label string, issueLabels []Label) bool {
@@ -38,7 +41,7 @@ func HasLabel(label string, issueLabels []Label) bool {
 	return false
 }
 
-// hasLabels checks if all labels are in the github.label set "issueLabels"
+// HasLabels checks if all labels are in the github.label set "issueLabels".
 func HasLabels(labels []string, issueLabels []Label) bool {
 	for _, label := range labels {
 		if !HasLabel(label, issueLabels) {
@@ -48,10 +51,8 @@ func HasLabels(labels []string, issueLabels []Label) bool {
 	return true
 }
 
-// ImageTooBig checks if image is bigger than github limits
+// ImageTooBig checks if image is bigger than github limits.
 func ImageTooBig(url string) (bool, error) {
-	// limit is 10MB
-	limit := 10000000
 	// try to get the image size from Content-Length header
 	resp, err := http.Head(url)
 	if err != nil {
@@ -61,14 +62,14 @@ func ImageTooBig(url string) (bool, error) {
 		return true, fmt.Errorf("failing %d response", sc)
 	}
 	size, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
-	if size > limit {
+	if size > ImageSizeLimit {
 		return true, nil
 	}
 	return false, nil
 }
 
 // LevelFromPermissions adapts a repo permissions struct to the
-// appropriate permission level used elsewhere
+// appropriate permission level used elsewhere.
 func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
 	if permissions.Admin {
 		return Admin
@@ -82,7 +83,7 @@ func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
 }
 
 // PermissionsFromLevel adapts a repo permission level to the
-// appropriate permissions struct used elsewhere
+// appropriate permissions struct used elsewhere.
 func PermissionsFromLevel(permission RepoPermissionLevel) RepoPermissions {
 	switch permission {
 	case None:
