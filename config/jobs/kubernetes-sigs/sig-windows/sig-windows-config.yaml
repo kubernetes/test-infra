@@ -243,7 +243,6 @@ periodics:
       - "--deployment=acsengine"
       - "--provider=skeleton"
       - "--build=bazel"
-      - "--acsengine-location=eastus2"
       - "--acsengine-admin-username=azureuser"
       - "--acsengine-admin-password=AdminPassw0rd"
       - "--acsengine-creds=$AZURE_CREDENTIALS"
