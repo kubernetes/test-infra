@@ -56,7 +56,7 @@ def parse_project(path):
     return None
 
 
-def clean_project(project, hours=24, dryrun=False, ratelimit=None):
+def clean_project(project, hours=24, dryrun=False, ratelimit=None, filter=None):
     """Execute janitor for target GCP project """
     # Multiple jobs can share the same project, woooo
     if project in CHECKED:
@@ -71,6 +71,8 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None):
         cmd.append('--ratelimit=%d' % ratelimit)
     if VERBOSE:
         cmd.append('--verbose')
+    if filter:
+        cmd.append('--filter=%s' % filter)
 
     try:
         check(*cmd)
@@ -144,7 +146,7 @@ def check_ci_jobs():
     clean_project('k8s-jkns-ci-node-e2e')
 
 
-def main(mode, ratelimit, projects, age, artifacts):
+def main(mode, ratelimit, projects, age, artifacts, filter):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
@@ -153,7 +155,7 @@ def main(mode, ratelimit, projects, age, artifacts):
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
-            clean_project(proj.strip(), hours=age, ratelimit=ratelimit)
+            clean_project(proj.strip(), hours=age, ratelimit=ratelimit, filter=filter)
     else:
         check_ci_jobs()
 
@@ -208,6 +210,10 @@ if __name__ == '__main__':
         '--artifacts',
         help='generate junit style xml to target path',
         default=os.environ.get('ARTIFACTS', None))
+    PARSER.add_argument(
+        '--filter',
+        default=None,
+        help='Filter down to these instances(passed into gcp_janitor.py)')
     ARGS = PARSER.parse_args()
     VERBOSE = ARGS.verbose
-    main(ARGS.mode, ARGS.ratelimit, ARGS.projects, ARGS.age, ARGS.artifacts)
+    main(ARGS.mode, ARGS.ratelimit, ARGS.projects, ARGS.age, ARGS.artifacts, ARGS.filter)
