@@ -1114,8 +1114,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/procfs",
-        sum = "h1:3+auTFlqw+ZaQYJARz6ArODtkaIwtvBTx3N2NehQlL8=",
-        version = "v0.0.5",
+        sum = "h1:0qbH+Yqu/cj1ViVLvEWCP6qMQ4efWUj6bQqOEA0V0U4=",
+        version = "v0.0.6",
     )
 
     go_repository(
@@ -1526,8 +1526,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "go.opencensus.io",
-        sum = "h1:8dP3SGL7MPB94crU3bEPplMPe83FI4EouesJUeFHv50=",
-        version = "v0.22.1",
+        sum = "h1:75k/FF0Q2YM8QYo07VPddOLBslDt1MZOdEslOHvmzAs=",
+        version = "v0.22.2",
     )
     go_repository(
         name = "ml_vbom_util",
@@ -1750,8 +1750,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/clarketm/json",
-        sum = "h1:2QUf53Z4n4k0YffMgrpzinxP/6WR/ssoX/3xkYpv+ys=",
-        version = "v1.13.1",
+        sum = "h1:0JketcMdLC16WGnRGJiNmTXuQznDEQaiknxSPRBxg+k=",
+        version = "v1.13.4",
     )
     go_repository(
         name = "com_github_golang_lint",
