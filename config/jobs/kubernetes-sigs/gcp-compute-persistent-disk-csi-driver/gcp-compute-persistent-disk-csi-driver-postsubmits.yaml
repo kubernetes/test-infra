@@ -125,7 +125,7 @@ periodics:
     testgrid-tab-name: Migration Kubernetes Master Driver Stable
     description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver Stable
 - name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-migration
-  interval: 4h
+  interval: 1h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
