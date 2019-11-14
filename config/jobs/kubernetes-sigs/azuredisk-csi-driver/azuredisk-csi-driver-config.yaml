@@ -263,7 +263,7 @@ presubmits:
       testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-in-tree-azure-disk-e2e
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      description: "Run Azure Disk CSI e2e test with Azure Disk in-tree plugin."
+      description: "Run Azure Disk e2e test with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
   - name: pull-in-tree-azure-disk-e2e-vmss
     always_run: false
@@ -317,5 +317,5 @@ presubmits:
       testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-in-tree-azure-disk-e2e-vmss
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      description: "Run Azure Disk CSI e2e test with Azure Disk in-tree plugin."
+      description: "Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
