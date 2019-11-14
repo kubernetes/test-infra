@@ -655,6 +655,7 @@ dashboards:
 
 - name: sig-big-data
 - name: presubmits-cloud-provider-alibaba
+- name: presubmits-alibaba-cloud-csi-driver
 - name: sig-multicluster-kubemci
 
 - name: presubmits-kubernetes-blocking
@@ -899,6 +900,7 @@ dashboard_groups:
   - presubmits-kube-batch
   - presubmits-misc
   - presubmits-cloud-provider-alibaba
+  - presubmits-alibaba-cloud-csi-driver
 
 - name: sig-multicluster
   dashboard_names:
