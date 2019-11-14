@@ -120,8 +120,6 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-migration-test-latest
     always_run: false
     decorate: true
-    decoration_config:
-      timeout: 5h45m
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
