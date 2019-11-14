@@ -56,7 +56,7 @@ def parse_project(path):
     return None
 
 
-def clean_project(project, hours=24, dryrun=False, ratelimit=None, filter=None):
+def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
     """Execute janitor for target GCP project """
     # Multiple jobs can share the same project, woooo
     if project in CHECKED:
@@ -71,8 +71,8 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None, filter=None):
         cmd.append('--ratelimit=%d' % ratelimit)
     if VERBOSE:
         cmd.append('--verbose')
-    if filter:
-        cmd.append('--filter=%s' % filter)
+    if filt:
+        cmd.append('--filter=%s' % filt)
 
     try:
         check(*cmd)
@@ -146,7 +146,7 @@ def check_ci_jobs():
     clean_project('k8s-jkns-ci-node-e2e')
 
 
-def main(mode, ratelimit, projects, age, artifacts, filter):
+def main(mode, ratelimit, projects, age, artifacts, filt):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
@@ -155,7 +155,7 @@ def main(mode, ratelimit, projects, age, artifacts, filter):
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
-            clean_project(proj.strip(), hours=age, ratelimit=ratelimit, filter=filter)
+            clean_project(proj.strip(), hours=age, ratelimit=ratelimit, filt=filt)
     else:
         check_ci_jobs()
 
