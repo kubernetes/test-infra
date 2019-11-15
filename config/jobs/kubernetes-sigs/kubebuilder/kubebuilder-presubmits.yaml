@@ -30,7 +30,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
-        - /usr/local/bin/runner.sh 
+        - /usr/local/bin/runner.sh
         - test_e2e.sh
         resources:
           requests:

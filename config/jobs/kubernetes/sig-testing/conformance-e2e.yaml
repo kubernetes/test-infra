@@ -129,7 +129,7 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--scenario=execute"
       - "--"
-            # the script must run from kubernetes, but we're checking out kind
+      # the script must run from kubernetes, but we're checking out kind
       - "bash"
       - "--"
       - "-c"
