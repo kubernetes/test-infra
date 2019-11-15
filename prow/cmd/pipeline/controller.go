@@ -268,7 +268,7 @@ func (c *controller) enqueueKey(ctx string, obj interface{}) {
 
 type reconciler interface {
 	getProwJob(name string) (*prowjobv1.ProwJob, error)
-	updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
+	patchProwJob(pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
 	getPipelineRun(context, namespace, name string) (*pipelinev1alpha1.PipelineRun, error)
 	deletePipelineRun(context, namespace, name string) error
 	createPipelineRun(context, namespace string, b *pipelinev1alpha1.PipelineRun) (*pipelinev1alpha1.PipelineRun, error)
@@ -294,9 +294,9 @@ func (c *controller) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 	return c.pjLister.ProwJobs(c.pjNamespace()).Get(name)
 }
 
-func (c *controller) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
-	logrus.Debugf("updateProwJob(%s)", pj.Name)
-	return c.pjc.ProwV1().ProwJobs(c.pjNamespace()).Update(pj)
+func (c *controller) patchProwJob(pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+	logrus.Debugf("patchProwJob(%s)", pj.Name)
+	return pjutil.PatchProwjob(c.pjc.ProwV1().ProwJobs(c.pjNamespace()), logrus.NewEntry(logrus.StandardLogger()), *pj, *newpj)
 }
 
 func (c *controller) getPipelineRun(context, namespace, name string) (*pipelinev1alpha1.PipelineRun, error) {
@@ -368,6 +368,7 @@ func reconcile(c reconciler, key string) error {
 
 	var wantPipelineRun bool
 	pj, err := c.getProwJob(name)
+	newpj := pj.DeepCopy()
 	switch {
 	case apierrors.IsNotFound(err):
 		// Do not want pipeline
@@ -422,14 +423,14 @@ func reconcile(c reconciler, key string) error {
 	case wantPipelineRun && pj.Spec.PipelineRunSpec == nil:
 		return fmt.Errorf("nil PipelineRunSpec in ProwJob/%s", key)
 	case wantPipelineRun && !havePipelineRun:
-		id, url, err := c.pipelineID(*pj)
+		id, url, err := c.pipelineID(*newpj)
 		if err != nil {
 			return fmt.Errorf("failed to get pipeline id: %v", err)
 		}
-		pj.Status.BuildID = id
-		pj.Status.URL = url
+		newpj.Status.BuildID = id
+		newpj.Status.URL = url
 		newPipelineRun = true
-		pipelineRun, resources, err := makeResources(*pj)
+		pipelineRun, resources, err := makeResources(*newpj)
 		if err != nil {
 			return fmt.Errorf("error preparing resources: %v", err)
 		}
@@ -452,7 +453,7 @@ func reconcile(c reconciler, key string) error {
 			jerr := fmt.Errorf("start pipeline: %v", err)
 			// Set the prow job in error state to avoid an endless loop when
 			// the pipeline cannot be executed (e.g. referenced pipeline does not exist)
-			return updateProwJobState(c, key, newPipelineRun, pj, prowjobv1.ErrorState, jerr.Error())
+			return updateProwJobState(c, key, newPipelineRun, pj, newpj, prowjobv1.ErrorState, jerr.Error())
 		}
 	}
 
@@ -460,29 +461,29 @@ func reconcile(c reconciler, key string) error {
 		return fmt.Errorf("no pipelinerun found or created for %q, wantPipelineRun was %v", key, wantPipelineRun)
 	}
 	wantState, wantMsg := prowJobStatus(p.Status)
-	return updateProwJobState(c, key, newPipelineRun, pj, wantState, wantMsg)
+	return updateProwJobState(c, key, newPipelineRun, pj, newpj, wantState, wantMsg)
 }
 
-func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowjobv1.ProwJob, state prowjobv1.ProwJobState, msg string) error {
-	haveState := pj.Status.State
-	haveMsg := pj.Status.Description
+func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob, state prowjobv1.ProwJobState, msg string) error {
+	haveState := newpj.Status.State
+	haveMsg := newpj.Status.Description
 	if newPipelineRun || haveState != state || haveMsg != msg {
-		npj := pj.DeepCopy()
 		if haveState != state && state == prowjobv1.PendingState {
 			now := c.now()
-			npj.Status.PendingTime = &now
+			newpj.Status.PendingTime = &now
 		}
-		if npj.Status.StartTime.IsZero() {
-			npj.Status.StartTime = c.now()
+		if newpj.Status.StartTime.IsZero() {
+			newpj.Status.StartTime = c.now()
 		}
-		if npj.Status.CompletionTime.IsZero() && finalState(state) {
+		if newpj.Status.CompletionTime.IsZero() && finalState(state) {
 			now := c.now()
-			npj.Status.CompletionTime = &now
+			newpj.Status.CompletionTime = &now
 		}
-		npj.Status.State = state
-		npj.Status.Description = msg
+		newpj.Status.State = state
+		newpj.Status.Description = msg
 		logrus.Infof("Update ProwJob/%s: %s -> %s: %s", key, haveState, state, msg)
-		if _, err := c.updateProwJob(npj); err != nil {
+
+		if _, err := c.patchProwJob(pj, newpj); err != nil {
 			return fmt.Errorf("update prow status: %v", err)
 		}
 	}
