@@ -165,6 +165,8 @@ periodics:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-experimental
         env:
+          - name: CI_VERSION
+            value: "v1.16.3"
           - name: CAPI_BRANCH
             value: "stable"
           - name: BOSKOS_HOST
