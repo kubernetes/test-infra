@@ -78,8 +78,8 @@ func (r *fakeReconciler) getProwJob(name string) (*prowjobv1.ProwJob, error) {
 	return &pj, nil
 }
 
-func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
-	logrus.Debugf("updateProwJob: name=%s", pj.GetName())
+func (r *fakeReconciler) patchProwJob(pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error) {
+	logrus.Debugf("patchProwJob: name=%s", pj.GetName())
 	if pj.Name == errorUpdateProwJob {
 		return nil, errors.New("injected update prowjob error")
 	}
@@ -90,8 +90,8 @@ func (r *fakeReconciler) updateProwJob(pj *prowjobv1.ProwJob) (*prowjobv1.ProwJo
 	if _, present := r.jobs[k]; !present {
 		return nil, apierrors.NewNotFound(prowjobv1.Resource("ProwJob"), pj.Name)
 	}
-	r.jobs[k] = *pj
-	return pj, nil
+	r.jobs[k] = *newpj
+	return newpj, nil
 }
 
 func (r *fakeReconciler) getPipelineRun(context, namespace, name string) (*pipelinev1alpha1.PipelineRun, error) {
