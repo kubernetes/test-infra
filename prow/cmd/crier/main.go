@@ -28,6 +28,7 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pjutil"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -179,11 +180,11 @@ func main() {
 	var controllers []*crier.Controller
 
 	if o.slackWorkers > 0 {
-		if cfg().SlackReporter == nil {
+		if cfg().SlackReporter == nil && cfg().SlackReporterConfigs == nil {
 			logrus.Fatal("slackreporter is enabled but has no config")
 		}
-		slackConfig := func() *config.SlackReporter {
-			return cfg().SlackReporter
+		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
+			return cfg().SlackReporterConfigs.GetSlackReporter(refs)
 		}
 		slackReporter, err := slackreporter.New(slackConfig, o.dryrun, o.slackTokenFile)
 		if err != nil {

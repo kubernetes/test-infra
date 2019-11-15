@@ -2351,39 +2351,182 @@ func TestValidateComponentConfig(t *testing.T) {
 func TestSlackReporterValidation(t *testing.T) {
 	testCases := []struct {
 		name            string
-		channel         string
-		reportTemplate  string
+		config          func() Config
 		successExpected bool
 	}{
 		{
-			name:            "Valid config - no error",
-			channel:         "my-channel",
+			name: "Valid config w/ slack_reporter - no error",
+			config: func() Config {
+				slack := &SlackReporter{
+					Channel: "my-channel",
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporter: slack,
+					},
+				}
+			},
 			successExpected: true,
 		},
 		{
-			name: "No channel - error",
+			name: "Valid config w/ wildcard slack_reporter_configs - no error",
+			config: func() Config {
+				slackCfg := map[string]SlackReporter{
+					"*": {
+						Channel: "my-channel",
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: true,
 		},
 		{
-			name:           "Invalid template - error",
-			channel:        "my-channel",
-			reportTemplate: "{{ if .Spec.Name}}",
+			name: "Valid config w/ org/repo slack_reporter_configs - no error",
+			config: func() Config {
+				slackCfg := map[string]SlackReporter{
+					"istio/proxy": {
+						Channel: "my-channel",
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: true,
 		},
 		{
-			name:           "Template accessed invalid property - error",
-			channel:        "my-channel",
-			reportTemplate: "{{ .Undef}}",
+			name: "Valid config w/ repo slack_reporter_configs - no error",
+			config: func() Config {
+				slackCfg := map[string]SlackReporter{
+					"proxy": {
+						Channel: "my-channel",
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: true,
+		},
+		{
+			name: "Invalid config b/c both slack_reporter and slack_reporter_configs - error",
+			config: func() Config {
+				slack := &SlackReporter{
+					Channel: "my-channel",
+				}
+				slackCfg := map[string]SlackReporter{
+					"*": {
+						Channel: "my-channel",
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporter:        slack,
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: false,
+		},
+		{
+			name: "No channel w/ slack_reporter - error",
+			config: func() Config {
+				slack := &SlackReporter{}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporter: slack,
+					},
+				}
+			},
+			successExpected: false,
+		},
+		{
+			name: "No channel w/ slack_reporter_configs - error",
+			config: func() Config {
+				slackCfg := map[string]SlackReporter{
+					"*": {
+						JobTypesToReport: []prowapi.ProwJobType{"presubmit"},
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: false,
+		},
+		{
+			name: "Empty config - no error",
+			config: func() Config {
+				slackCfg := map[string]SlackReporter{}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: true,
+		},
+		{
+			name: "Invalid template - error",
+			config: func() Config {
+				slackCfg := map[string]SlackReporter{
+					"*": {
+						Channel:        "my-channel",
+						ReportTemplate: "{{ if .Spec.Name}}",
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: false,
+		},
+		{
+			name: "Template accessed invalid property - error",
+			config: func() Config {
+				slackCfg := map[string]SlackReporter{
+					"*": {
+						Channel:        "my-channel",
+						ReportTemplate: "{{ .Undef}}",
+					},
+				}
+				return Config{
+					ProwConfig: ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			successExpected: false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg := &SlackReporter{
-				Channel:        tc.channel,
-				ReportTemplate: tc.reportTemplate,
-			}
-
-			if err := cfg.DefaultAndValidate(); (err == nil) != tc.successExpected {
+			cfg := tc.config()
+			if err := cfg.validateComponentConfig(); (err == nil) != tc.successExpected {
 				t.Errorf("Expected success=%t but got err=%v", tc.successExpected, err)
+			}
+			if tc.successExpected {
+				for _, config := range cfg.SlackReporterConfigs {
+					if config.ReportTemplate == "" {
+						t.Errorf("expected default ReportTemplate to be set")
+					}
+					if config.Channel == "" {
+						t.Errorf("expected Channel to be required")
+					}
+				}
 			}
 		})
 	}

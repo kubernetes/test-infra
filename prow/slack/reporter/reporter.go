@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	slackclient "k8s.io/test-infra/prow/slack"
@@ -33,12 +34,12 @@ const reporterName = "slackreporter"
 
 type slackReporter struct {
 	client *slackclient.Client
-	config func() *config.SlackReporter
+	config func(*prowapi.Refs) config.SlackReporter
 	logger *logrus.Entry
 	dryRun bool
 }
 
-func channel(cfg *config.SlackReporter, pj *v1.ProwJob) string {
+func channel(cfg config.SlackReporter, pj *v1.ProwJob) string {
 	if pj.Spec.ReporterConfig != nil && pj.Spec.ReporterConfig.Slack != nil && pj.Spec.ReporterConfig.Slack.Channel != "" {
 		return pj.Spec.ReporterConfig.Slack.Channel
 	}
@@ -46,7 +47,7 @@ func channel(cfg *config.SlackReporter, pj *v1.ProwJob) string {
 }
 
 func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
-	config := sr.config()
+	config := sr.config(pj.Spec.Refs)
 	channel := channel(config, pj)
 	b := &bytes.Buffer{}
 	tmpl, err := template.New("").Parse(config.ReportTemplate)
@@ -77,7 +78,7 @@ func (sr *slackReporter) GetName() string {
 }
 
 func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
-	config := sr.config()
+	config := sr.config(pj.Spec.Refs)
 
 	stateShouldReport := false
 	for _, stateToReport := range config.JobStatesToReport {
@@ -100,7 +101,7 @@ func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
 	return stateShouldReport && typeShouldReport
 }
 
-func New(cfg func() *config.SlackReporter, dryRun bool, tokenFile string) (*slackReporter, error) {
+func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, tokenFile string) (*slackReporter, error) {
 	token, err := ioutil.ReadFile(tokenFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read -token-file: %v", err)
