@@ -5,21 +5,29 @@
         name: 'ghproxy',
         rules: [
           {
-            alert: 'ghproxy-status-code-abnormal-%sXX' % code_prefix,
-            // excluding 404 because it does not indicate any error in the system
+            alert: 'ghproxy-specific-status-code-abnormal',
             expr: |||
-              sum(rate(github_request_duration_count{status=~"%s..", status!="404"}[5m])) / sum(rate(github_request_duration_count{status!="404"}[5m])) * 100 > 5
-            ||| % code_prefix,
+              sum(rate(github_request_duration_count{status=~"[45]..",status!="404",status!="410"}[5m])) by (status,path) / ignoring(status) group_left sum(rate(github_request_duration_count[5m])) by (path) * 100 > 10
+            |||,
             labels: {
               severity: 'slack',
             },
             annotations: {
-              message: 'ghproxy has {{ $value | humanize }}%% of status code %sXX in the last 5 minutes.' % code_prefix,
+              message: '{{ $value | humanize }}%% of all requests for {{ $labels.path }} through the GitHub proxy are errorring with code {{ $labels.status }}. Check <https://monitoring.prow.k8s.io/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=9>' % $._config.grafanaDashboardIDs['ghproxy.json'],
             },
-          }
-          for code_prefix in ['4', '5']
-        ] +
-        [
+          },
+          {
+            alert: 'ghproxy-global-status-code-abnormal',
+            expr: |||
+              sum(rate(github_request_duration_count{status=~"[45]..",status!="404",status!="410"}[5m])) by (status) / ignoring(status) group_left sum(rate(github_request_duration_count[5m])) * 100 > 3
+            |||,
+            labels: {
+              severity: 'slack',
+            },
+            annotations: {
+              message: '{{ $value | humanize }}%% of all API requests through the GitHub proxy are errorring with code {{ $labels.status }}. Check <https://monitoring.prow.k8s.io/d/%s/github-cache?orgId=1&refresh=1m&fullscreen&panelId=8|grafana>' % $._config.grafanaDashboardIDs['ghproxy.json'],
+            },
+          },
           {
             alert: 'ghproxy-running-out-github-tokens-in-a-hour',
             // check 30% of the capacity (5000): 1500
