@@ -39,7 +39,8 @@ const (
 )
 
 var extraFiles = map[string]bool{
-	"experiment/generate_tests.py": true,
+	"experiment/generate_tests.py":   true,
+	"images/kubekins-e2e/Dockerfile": true,
 }
 
 func cdToRootDir() error {
