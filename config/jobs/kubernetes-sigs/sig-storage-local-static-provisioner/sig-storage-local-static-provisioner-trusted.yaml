@@ -37,7 +37,7 @@ postsubmits:
       - name: pusher-docker-config
         secret:
           secretName: sig-storage-local-static-provisioner-pusher
-  # A postsubmit job to build release image on release tags.
+    # A postsubmit job to build release image on release tags.
     annotations:
       testgrid-dashboards: sig-storage-local-static-provisioner
       testgrid-tab-name: master-canary-build

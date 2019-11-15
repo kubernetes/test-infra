@@ -115,10 +115,10 @@ periodics:
         privileged: true
     resources:
       requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
         memory: "9000Mi"
-          # during the tests more like 3-20m is used
+        # during the tests more like 3-20m is used
         cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
@@ -151,10 +151,10 @@ periodics:
         privileged: true
     resources:
       requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
         memory: "9000Mi"
-          # during the tests more like 3-20m is used
+        # during the tests more like 3-20m is used
         cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver

@@ -137,7 +137,7 @@ periodics:
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master
 
-# kubectl skew tests
+  # kubectl skew tests
   annotations:
     testgrid-dashboards: sig-cli-master
     testgrid-tab-name: aws
