@@ -83,6 +83,118 @@ func TestClean(t *testing.T) {
 	pods := []runtime.Object{
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-running-pod-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-running",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-running-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-running",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-pending",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-unknown-pod-pending",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-unknown",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-unknown-pod-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-unknown",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-unknown-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-unknown",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed",
 				Namespace: "ns",
 				Labels: map[string]string{
@@ -210,6 +322,12 @@ func TestClean(t *testing.T) {
 		},
 	}
 	deletedPods := sets.NewString(
+		"job-complete-pod-failed",
+		"job-complete-pod-pending",
+		"job-complete-pod-succeeded",
+		"job-unknown-pod-failed",
+		"job-unknown-pod-pending",
+		"job-unknown-pod-succeeded",
 		"new-running-no-pj",
 		"old-failed",
 		"old-succeeded",
@@ -221,6 +339,25 @@ func TestClean(t *testing.T) {
 		return &completed
 	}
 	prowJobs := []runtime.Object{
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+				CompletionTime: setComplete(-time.Second),
+			},
+		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-running",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+		},
 		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed",
@@ -360,6 +497,7 @@ func TestClean(t *testing.T) {
 		},
 	}
 	deletedProwJobs := sets.NewString(
+		"job-complete",
 		"old-failed",
 		"old-succeeded",
 		"old-complete",
