@@ -280,6 +280,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 }
 
 func retestingStatus(retested []string) string {
+	sort.Strings(retested)
 	all := fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Retesting: %s", strings.Join(retested, " ")))
 	if len(all) > maxStatusDescriptionLength {
 		s := ""
