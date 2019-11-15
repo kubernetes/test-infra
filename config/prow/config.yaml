@@ -590,7 +590,7 @@ presets:
 # docker-in-docker (with images/bootstrap) preset
 # NOTE: using this also requires using that image,
 # ensuring you run your test under either the ENTRYPOINT or:
-# /usr/local/bin/runner my-test-command --foo --bar
+# /usr/local/bin/runner.sh my-test-command --foo --bar
 # AND setting the following on your PodSpec:
 # securityContext:
 #   privileged: true
