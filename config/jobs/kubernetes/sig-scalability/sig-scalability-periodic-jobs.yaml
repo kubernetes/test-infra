@@ -347,8 +347,8 @@ periodics:
   tags:
   - "perfDashPrefix: scheduler-benchmark"
   - "perfDashJobType: benchmark"
-  interval: 2h
-  annotations:
+  interval: 6h
+  annotation:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler
   decorate: true
@@ -358,7 +358,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 1h55m
+    timeout: 5h55m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master
@@ -368,7 +368,7 @@ periodics:
       - ./test/integration/scheduler_perf
       env:
       - name: KUBE_TIMEOUT
-        value: --timeout=1h50m
+        value: --timeout=5h50m
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
