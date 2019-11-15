@@ -373,12 +373,21 @@ func (c *controller) clean() {
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
 			reason := reasonPodAged
-			if !isFinished.Has(pod.ObjectMeta.Name) {
+
+			// by default, use the pod name as the key to match the associated prow job
+			// this is to support legacy plank in case the kube.ProwJobIDLabel label is not set
+			podJobName := pod.ObjectMeta.Name
+			// if the pod has the kube.ProwJobIDLabel label, use this instead of the pod name
+			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
+				podJobName = value
+			}
+
+			if !isFinished.Has(podJobName) {
 				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
 				clean = false
 			}
-			if !isExist.Has(pod.ObjectMeta.Name) {
+			if !isExist.Has(podJobName) {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
 				reason = reasonPodOrphaned
 				clean = true
