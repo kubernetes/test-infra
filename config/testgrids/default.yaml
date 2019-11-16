@@ -2,7 +2,8 @@
 # In this repository, if you don't set something in your configuration file or prow job, it will use the value here
 
 default_test_group:
-  days_of_results: 14 # Number of days of test results to gather and serve.
+  # TODO: Reduce this back down to 14 once a full update has completed.
+  days_of_results: 15 # Number of days of test results to gather and serve.
   tests_name_policy: 2 # replace the name of the test
   ignore_pending: false # Show in-progress tests.
   ignore_skip: true # Don't show skipped tests by default.
