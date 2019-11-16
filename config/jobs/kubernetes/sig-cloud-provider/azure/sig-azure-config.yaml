@@ -79,3 +79,107 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Run e2e tests
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-azure-disk
+    always_run: false
+    optional: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=sigs.k8s.io/azuredisk-csi-driver"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=460"
+        - "--scenario=kubernetes_e2e"
+        - --
+        - "--gce-ssh="
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine"
+        - "--build=host-go"
+        - "--provider=skeleton"
+        - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-azure-disk"
+        - "--ginkgo-parallel=1"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
+        - "--acsengine-orchestratorRelease=1.16"
+        - "--acsengine-hyperkube=True"
+        - "--acsengine-location=westus2"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json"
+        - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+        - "--test-azure-disk-csi-driver=True"
+        - "--timeout=420m"
+        securityContext:
+          privileged: true
+        env:
+          - name: AZURE_STORAGE_DRIVER
+            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-k8s-e2e-azure-disk
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin.
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-azure-disk-vmss
+    always_run: false
+    optional: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=sigs.k8s.io/azuredisk-csi-driver"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=460"
+        - "--scenario=kubernetes_e2e"
+        - --
+        - "--gce-ssh="
+        - "--test=true"
+        - "--up=true"
+        - "--down=true"
+        - "--deployment=acsengine"
+        - "--build=host-go"
+        - "--provider=skeleton"
+        - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-azure-disk-vmss"
+        - "--ginkgo-parallel=1"
+        - "--acsengine-admin-username=azureuser"
+        - "--acsengine-creds=$AZURE_CREDENTIALS"
+        - "--acsengine-orchestratorRelease=1.16"
+        - "--acsengine-hyperkube=True"
+        - "--acsengine-location=westus2"
+        - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+        - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json"
+        - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+        - "--test-azure-disk-csi-driver=True"
+        - "--timeout=420m"
+        securityContext:
+          privileged: true
+        env:
+          - name: AZURE_STORAGE_DRIVER
+            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-k8s-e2e-azure-disk-vmss
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      description: Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin.
+      testgrid-num-columns-recent: '30'
