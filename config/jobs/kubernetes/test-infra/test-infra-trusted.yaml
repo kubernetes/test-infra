@@ -1242,11 +1242,19 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191108-9467d02-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191115-01e3204-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
-      args:
-      - /etc/k8s-artifacts-prod-bak-service-account/service-account.json
+      env:
+      # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+      # here anyway in case the underlying image changes (the backup.sh script
+      # needs it to be defined).
+      - name: GOPATH
+        value: /go
+      - name: GCRANE_REF
+        value: 7683b4ee5f6150cb47a791309f781c522b95a58f # Known-good commit from 2019-10-23
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/k8s-artifacts-prod-bak-service-account/service-account.json
       volumeMounts:
       - name: k8s-artifacts-prod-bak-service-account-creds
         mountPath: /etc/k8s-artifacts-prod-bak-service-account
@@ -1257,3 +1265,6 @@ periodics:
         secretName: k8s-artifacts-prod-bak-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
+    # TODO: enable alerting once the job has stabilized
+    # testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    # testgrid-num-failures-to-alert: '1'
