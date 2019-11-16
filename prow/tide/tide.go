@@ -375,6 +375,7 @@ func (c *Controller) Sync() error {
 	c.sc.blocks = blocks
 	c.sc.poolPRs = poolPRMap(filteredPools)
 	c.sc.baseSHAs = baseSHAMap(filteredPools)
+	c.sc.requiredContexts = requiredContextsMap(filteredPools)
 	select {
 	case c.sc.newPoolPending <- true:
 	default:
@@ -573,6 +574,20 @@ func poolPRMap(subpoolMap map[string]*subpool) map[string]PullRequest {
 		}
 	}
 	return prs
+}
+
+func requiredContextsMap(subpoolMap map[string]*subpool) map[string][]string {
+	requiredContextsMap := map[string][]string{}
+	for _, sp := range subpoolMap {
+		for _, pr := range sp.prs {
+			requiredContextsSet := sets.String{}
+			for _, requiredJob := range sp.presubmits[int(pr.Number)] {
+				requiredContextsSet.Insert(requiredJob.Context)
+			}
+			requiredContextsMap[prKey(&pr)] = requiredContextsSet.List()
+		}
+	}
+	return requiredContextsMap
 }
 
 type simpleState string

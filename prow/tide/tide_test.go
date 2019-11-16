@@ -514,6 +514,7 @@ type fgc struct {
 	refs      map[string]string
 	merged    int
 	setStatus bool
+	statuses  map[string]github.Status
 	mergeErrs map[int]error
 
 	expectedSHA    string
@@ -551,6 +552,10 @@ func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) e
 func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
 	switch s.State {
 	case github.StatusSuccess, github.StatusError, github.StatusPending, github.StatusFailure:
+		if f.statuses == nil {
+			f.statuses = map[string]github.Status{}
+		}
+		f.statuses[org+"/"+repo+"/"+ref] = s
 		f.setStatus = true
 		return nil
 	}

@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -595,7 +596,7 @@ func TestSetStatuses(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to get statusController: %v", err)
 		}
-		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil)
+		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil, nil)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
 		} else if str != initialLog {
@@ -726,5 +727,50 @@ func TestIndexFuncPassingJobs(t *testing.T) {
 				t.Errorf("expected does not match result, diff: %v", diff)
 			}
 		})
+	}
+}
+
+func TestSetStatusRespectsRequiredContexts(t *testing.T) {
+	var pr PullRequest
+	pr.Commits.Nodes = []struct{ Commit Commit }{{}}
+	pr.Repository.NameWithOwner = githubql.String("org/repo")
+	pr.Number = githubql.Int(2)
+	requiredContexts := map[string][]string{"org/repo#2": {"foo", "bar"}}
+
+	fghc := &fgc{
+		refs: map[string]string{"/ heads/": "SHA"},
+	}
+	log := logrus.WithField("component", "tide")
+	initialLog, err := log.String()
+	if err != nil {
+		t.Fatalf("Failed to get log output before testing: %v", err)
+	}
+	sc := &statusController{
+		logger: log,
+		ghc:    fghc,
+		config: func() *config.Config {
+			return &config.Config{}
+		},
+		pjClient: fakectrlruntimeclient.NewFakeClient(),
+	}
+	pool := map[string]PullRequest{prKey(&pr): pr}
+	sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil, requiredContexts)
+	if str, err := log.String(); err != nil {
+		t.Fatalf("Failed to get log output: %v", err)
+	} else if str != initialLog {
+		t.Errorf("Error setting status: %s", str)
+	}
+
+	if n := len(fghc.statuses); n != 1 {
+		t.Fatalf("expected exactly one status to be set, got %d", n)
+	}
+
+	expectedDescription := "Not mergeable. Retesting: bar foo"
+	val, exists := fghc.statuses["//"]
+	if !exists {
+		t.Fatal("Status didn't get set")
+	}
+	if val.Description != expectedDescription {
+		t.Errorf("Expected description to be %q, was %q", expectedDescription, val.Description)
 	}
 }

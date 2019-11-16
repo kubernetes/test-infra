@@ -80,9 +80,10 @@ type statusController struct {
 	lastSyncStart time.Time
 
 	sync.Mutex
-	poolPRs  map[string]PullRequest
-	blocks   blockers.Blockers
-	baseSHAs map[string]string
+	poolPRs          map[string]PullRequest
+	requiredContexts map[string][]string
+	blocks           blockers.Blockers
+	baseSHAs         map[string]string
 
 	storedState
 	opener io.Opener
@@ -314,7 +315,7 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	return link
 }
 
-func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest, blocks blockers.Blockers, baseSHAs map[string]string) {
+func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
 	// queryMap caches which queries match a repo.
 	// Make a new one each sync loop as queries will change.
 	queryMap := sc.config().Tide.Queries.QueryMap()
@@ -338,7 +339,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			return baseSHA, nil
 		}
 
-		cr, err := sc.config().GetTideContextPolicy(sc.gc, org, repo, branch, baseSHAGetter, headSHA)
+		cr, err := getContextCheckerWithRequiredContexts(sc.config(), sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
 		if err != nil {
 			log.WithError(err).Error("setting up context register")
 			return
@@ -484,8 +485,9 @@ func (sc *statusController) waitSync() {
 			pool := sc.poolPRs
 			blocks := sc.blocks
 			baseSHAs := sc.baseSHAs
+			requiredContexts := sc.requiredContexts
 			sc.Unlock()
-			sc.sync(pool, blocks, baseSHAs)
+			sc.sync(pool, blocks, baseSHAs, requiredContexts)
 			return
 		case more := <-sc.newPoolPending:
 			if !more {
@@ -495,7 +497,7 @@ func (sc *statusController) waitSync() {
 	}
 }
 
-func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Blockers, baseSHAs map[string]string) {
+func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
 	sc.lastSyncStart = time.Now()
 	defer func() {
 		duration := time.Since(sc.lastSyncStart)
@@ -503,7 +505,7 @@ func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Bl
 		tideMetrics.statusUpdateDuration.Set(duration.Seconds())
 	}()
 
-	sc.setStatuses(sc.search(), pool, blocks, baseSHAs)
+	sc.setStatuses(sc.search(), pool, blocks, baseSHAs, requiredContexts)
 }
 
 func (sc *statusController) search() []PullRequest {
@@ -577,4 +579,13 @@ func indexFuncPassingJobs(obj runtime.Object) []string {
 		result = append(result, indexKeyPassingJobs(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.BaseSHA, pull.SHA))
 	}
 	return result
+}
+
+func getContextCheckerWithRequiredContexts(cfg *config.Config, gc *git.Client, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string, requiredContexts []string) (contextChecker, error) {
+	contextPolicy, err := cfg.GetTideContextPolicy(gc, org, repo, branch, baseSHAGetter, headSHA)
+	if err != nil {
+		return nil, err
+	}
+	contextPolicy.RequiredContexts = requiredContexts
+	return contextPolicy, nil
 }
