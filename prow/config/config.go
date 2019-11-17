@@ -1053,7 +1053,6 @@ func (c *Config) validateComponentConfig() error {
 		}
 
 		c.SlackReporterConfigs = map[string]SlackReporter{"*": *c.SlackReporter}
-		c.SlackReporter = nil
 	}
 
 	if c.SlackReporterConfigs != nil {
