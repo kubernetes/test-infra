@@ -251,6 +251,112 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  "Not mergeable. Retesting: bar",
 		},
 		{
+			name:             "missing passing up-to-date contexts",
+			inPool:           true,
+			baseref:          "baseref",
+			requiredContexts: []string{"foo", "bar", "baz"},
+			prowJobs: []runtime.Object{
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "123"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "foo",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.SuccessState,
+					},
+				},
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "1234"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "bar",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "12345"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "baz",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+			},
+
+			state: github.StatusPending,
+			desc:  "Not mergeable. Retesting: bar baz",
+		},
+		{
+			name:             "missing passing up-to-date contexts with different ordering",
+			inPool:           true,
+			baseref:          "baseref",
+			requiredContexts: []string{"foo", "bar", "baz"},
+			prowJobs: []runtime.Object{
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "123"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "foo",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.SuccessState,
+					},
+				},
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "1234"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "baz",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+				&prowapi.ProwJob{
+					ObjectMeta: metav1.ObjectMeta{Name: "12345"},
+					Spec: prowapi.ProwJobSpec{
+						Context: "bar",
+						Refs: &prowapi.Refs{
+							BaseSHA: "baseref",
+							Pulls:   []prowapi.Pull{{SHA: "head"}},
+						},
+						Type: prowapi.PresubmitJob,
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+			},
+
+			state: github.StatusPending,
+			desc:  "Not mergeable. Retesting: bar baz",
+		},
+		{
 			name:    "long list of not up-to-date contexts results in shortened message",
 			inPool:  true,
 			baseref: "baseref",
