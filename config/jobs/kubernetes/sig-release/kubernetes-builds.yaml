@@ -49,7 +49,7 @@ periodics:
       - --extra-publish-file=k8s-master
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
-        # docker-in-docker needs privileged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:

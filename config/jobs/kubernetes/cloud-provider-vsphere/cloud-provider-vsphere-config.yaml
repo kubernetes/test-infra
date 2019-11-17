@@ -159,7 +159,7 @@ presubmits:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
-    # Executes the unit tests.
+  # Executes the unit tests.
   - name: pull-cloud-provider-vsphere-unit-test
     decorate: true
     branches:

@@ -45,7 +45,7 @@ presubmits:
         - make
         - test-check
 
-  # pull-cloud-provider-azure-e2e runs kubernetes conformance tests.
+    # pull-cloud-provider-azure-e2e runs kubernetes conformance tests.
     annotations:
       testgrid-dashboards: provider-azure-master, provider-azure-on-call
       testgrid-tab-name: pr-cloud-provider-check
@@ -105,7 +105,7 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run Kubernetes e2e tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
-# pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
+  # pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm
     always_run: true
     branches:

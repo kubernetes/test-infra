@@ -49,7 +49,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-make
-    # conformance test against kubernetes master branch with `kind` + cluster-api-provider-gcp
+  # conformance test against kubernetes master branch with `kind` + cluster-api-provider-gcp
   - name: pull-cluster-api-provider-gcp-make-conformance
     labels:
       preset-service-account: "true"

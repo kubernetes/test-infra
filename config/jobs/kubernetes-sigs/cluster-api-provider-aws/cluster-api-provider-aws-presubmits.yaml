@@ -75,7 +75,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: verify
-    # conformance test against kubernetes master branch with `kind` + cluster-api-provider-aws
+  # conformance test against kubernetes master branch with `kind` + cluster-api-provider-aws
   - name: pull-cluster-api-provider-aws-make-conformance
     labels:
       preset-dind-enabled: "true"

@@ -27,9 +27,9 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191115-01e3204-master
 
-# The -parallel form of the test includes Slow tests, but skips Serial and Disruptive.
-# The non -parallel form of the test includes Serial and Disruptive, so it must run serially;
-# we skip Slow tests though so that the runtime is reasonable.
+  # The -parallel form of the test includes Slow tests, but skips Serial and Disruptive.
+  # The non -parallel form of the test includes Serial and Disruptive, so it must run serially;
+  # we skip Slow tests though so that the runtime is reasonable.
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-new-gci-master-upgrade-cluster

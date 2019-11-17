@@ -58,7 +58,7 @@ periodics:
         value: "n"
       securityContext:
         privileged: true
-# coverage for same tests that run in ci-kubernetes-e2e-gci-gce
+  # coverage for same tests that run in ci-kubernetes-e2e-gci-gce
   annotations:
     testgrid-dashboards: sig-testing-canaries
     description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
