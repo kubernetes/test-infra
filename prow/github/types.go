@@ -46,6 +46,9 @@ const (
 	// DefaultAPIEndpoint is the default GitHub API endpoint.
 	DefaultAPIEndpoint = "https://api.github.com"
 
+	// DefaultHost is the default GitHub base endpoint.
+	DefaultHost = "github.com"
+
 	// DefaultGraphQLEndpoint is the default GitHub GraphQL API endpoint.
 	DefaultGraphQLEndpoint = "https://api.github.com/graphql"
 )

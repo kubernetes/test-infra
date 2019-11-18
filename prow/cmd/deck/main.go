@@ -42,7 +42,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
 	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -638,7 +637,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			logrus.WithError(err).Fatal("Could not read cookie secret file.")
 		}
 
-		var githubOAuthConfig config.GitHubOAuthConfig
+		var githubOAuthConfig githuboauth.Config
 		if err := yaml.Unmarshal(githubOAuthConfigRaw, &githubOAuthConfig); err != nil {
 			logrus.WithError(err).Fatal("Error unmarshalling github oauth config")
 		}
@@ -657,20 +656,19 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		githubOAuthConfig.InitGitHubOAuthConfig(cookie)
 
 		goa = githuboauth.NewAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
-		oauthClient := githuboauth.NewClient(&oauth2.Config{
+		oauthClient := o.github.GitHubOAuthClient(&oauth2.Config{
 			ClientID:     githubOAuthConfig.ClientID,
 			ClientSecret: githubOAuthConfig.ClientSecret,
 			RedirectURL:  githubOAuthConfig.RedirectURL,
 			Scopes:       githubOAuthConfig.Scopes,
-			Endpoint:     github.Endpoint,
-		},
-		)
+		})
 
 		repos := cfg().AllRepos.List()
 
 		prStatusAgent := prstatus.NewDashboardAgent(
 			repos,
 			&githubOAuthConfig,
+			&o.github,
 			logrus.WithField("client", "pr-status"))
 
 		secure := !o.allowInsecure
@@ -680,10 +678,10 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		// Handles login request.
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient, secure))
 		// Handles redirect from GitHub OAuth server.
-		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGitHubClientGetter(), secure))
+		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, &o.github, secure))
 	}
 
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, githuboauth.NewGitHubClientGetter(), githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, cfgGetter, goa, &o.github, githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
 
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if o.redirectHTTPTo != "" {
@@ -1535,7 +1533,7 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 	}
 }
 
-func isValidatedGitOAuthConfig(githubOAuthConfig *config.GitHubOAuthConfig) bool {
+func isValidatedGitOAuthConfig(githubOAuthConfig *githuboauth.Config) bool {
 	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
 		githubOAuthConfig.RedirectURL != ""
 }

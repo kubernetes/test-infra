@@ -157,7 +157,6 @@ go_library(
         "@org_golang_google_api//iterator:go_default_library",
         "@org_golang_google_api//option:go_default_library",
         "@org_golang_x_oauth2//:go_default_library",
-        "@org_golang_x_oauth2//github:go_default_library",
     ],
 )
 

@@ -32,8 +32,6 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/net/xsrftoken"
 	"golang.org/x/oauth2"
-
-	"k8s.io/test-infra/prow/config"
 )
 
 const mockAccessToken = "justSomeRandomSecretToken"
@@ -63,13 +61,13 @@ func (c mockOAuthClient) AuthCodeURL(state string, opts ...oauth2.AuthCodeOption
 	return c.config.AuthCodeURL(state, opts...)
 }
 
-func getMockConfig(cookie *sessions.CookieStore) *config.GitHubOAuthConfig {
+func getMockConfig(cookie *sessions.CookieStore) *Config {
 	clientID := "mock-client-id"
 	clientSecret := "mock-client-secret"
 	redirectURL := "uni-test/redirect-url"
 	scopes := []string{}
 
-	return &config.GitHubOAuthConfig{
+	return &Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		RedirectURL:  redirectURL,
@@ -79,7 +77,7 @@ func getMockConfig(cookie *sessions.CookieStore) *config.GitHubOAuthConfig {
 	}
 }
 
-func createMockStateToken(config *config.GitHubOAuthConfig) string {
+func createMockStateToken(config *Config) string {
 	stateToken := xsrftoken.Generate(config.ClientSecret, "", "")
 	state := hex.EncodeToString([]byte(stateToken))
 

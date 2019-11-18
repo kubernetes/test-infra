@@ -427,7 +427,7 @@ func TestRerun(t *testing.T) {
 			session.Values["access-token"] = &oauth2.Token{AccessToken: "validtoken"}
 
 			rr := httptest.NewRecorder()
-			mockConfig := &config.GitHubOAuthConfig{
+			mockConfig := &githuboauth.Config{
 				CookieStore: mockCookieStore,
 			}
 			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})

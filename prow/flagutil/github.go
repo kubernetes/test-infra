@@ -17,23 +17,38 @@ limitations under the License.
 package flagutil
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 
+	"k8s.io/test-infra/pkg/ghclient"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/githuboauth"
 )
 
 // GitHubOptions holds options for interacting with GitHub.
 type GitHubOptions struct {
+	host                string
 	endpoint            Strings
 	graphqlEndpoint     string
 	TokenPath           string
 	deprecatedTokenFile string
+}
+
+// NewGitHubOptions creates a GitHubOptions with default values.
+func NewGitHubOptions() *GitHubOptions {
+	return &GitHubOptions{
+		host:            github.DefaultHost,
+		endpoint:        NewStrings(github.DefaultAPIEndpoint),
+		graphqlEndpoint: github.DefaultAPIEndpoint,
+	}
 }
 
 // AddFlags injects GitHub options into the given FlagSet.
@@ -49,6 +64,7 @@ func (o *GitHubOptions) AddFlagsWithoutDefaultGitHubTokenPath(fs *flag.FlagSet) 
 }
 
 func (o *GitHubOptions) addFlags(wantDefaultGitHubTokenPath bool, fs *flag.FlagSet) {
+	fs.StringVar(&o.host, "github-host", github.DefaultHost, "GitHub's default host (may differ for enterprise)")
 	o.endpoint = NewStrings(github.DefaultAPIEndpoint)
 	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
@@ -112,9 +128,23 @@ func (o *GitHubOptions) GitHubClient(secretAgent *secret.Agent, dryRun bool) (cl
 	return o.GitHubClientWithLogFields(secretAgent, dryRun, logrus.Fields{})
 }
 
+// GitHubClientWithAccessToken creates a GitHub client from an access token.
+func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
+	return github.NewClient(func() []byte { return []byte(token) }, func(content []byte) []byte {
+		trimmedToken := strings.TrimSpace(token)
+		if trimmedToken != token {
+			token = trimmedToken
+		}
+		if token == "" {
+			return content
+		}
+		return bytes.ReplaceAll(content, []byte(token), []byte("CENSORED"))
+	}, o.graphqlEndpoint, o.endpoint.Strings()...)
+}
+
 // GitClient returns a Git client.
 func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (client *git.Client, err error) {
-	client, err = git.NewClient()
+	client, err = git.NewClientWithHost(o.host)
 	if err != nil {
 		return nil, err
 	}
@@ -140,4 +170,18 @@ func (o *GitHubOptions) GitClient(secretAgent *secret.Agent, dryRun bool) (clien
 	client.SetCredentials(botName, secretAgent.GetTokenGenerator(o.TokenPath))
 
 	return client, nil
+}
+
+// GitHubOAuthClient returns an oauth client.
+func (o *GitHubOptions) GitHubOAuthClient(oauthConfig *oauth2.Config) githuboauth.OAuthClient {
+	oauthConfig.Endpoint = oauth2.Endpoint{
+		AuthURL:  fmt.Sprintf("https://%s/login/oauth/authorize", o.host),
+		TokenURL: fmt.Sprintf("https://%s/login/oauth/access_token", o.host),
+	}
+	return githuboauth.NewClient(oauthConfig)
+}
+
+// GetGitHubClient returns a github client wrapper.
+func (o *GitHubOptions) GetGitHubClient(accessToken string, dryRun bool) githuboauth.GitHubClientWrapper {
+	return ghclient.NewClientWithEndpoint(o.endpoint.Strings()[0], accessToken, dryRun)
 }
