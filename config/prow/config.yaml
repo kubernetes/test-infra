@@ -62,6 +62,7 @@ deck:
       - clarketm
     github_team_ids:
       - 2009231 #test-infra-admins
+      - 3523872 #ci-signal
 
 prowjob_namespace: default
 pod_namespace: test-pods
