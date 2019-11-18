@@ -1059,6 +1059,9 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0) {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
 	}
+	if err := v.UtilityConfig.Validate(); err != nil {
+		return err
+	}
 	return validateDecoration(v.Spec.Containers[0], v.DecorationConfig)
 }
 
