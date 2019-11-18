@@ -136,6 +136,15 @@ func TestJokes(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			body:          "/joke",
 			joke:          "[hello](url)",
+			shouldComment: true,
+			shouldError:   false,
+		},
+		{
+			name:          "empty joke",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/joke",
+			joke:          "",
 			shouldComment: false,
 			shouldError:   true,
 		},
@@ -163,6 +172,58 @@ func TestJokes(t *testing.T) {
 			t.Errorf("For case %s, should have commented.", tc.name)
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
 			t.Errorf("For case %s, should not have commented.", tc.name)
+		}
+	}
+}
+
+// TestEscapeMarkdown tests escapeMarkdown
+func TestEscapeMarkdown(t *testing.T) {
+	var testcases = []struct {
+		name     string
+		joke     string
+		expected string
+	}{
+		{
+			name:     "simple characters, all allowed",
+			joke:     "this? that.",
+			expected: "this? that.",
+		},
+		{
+			name:     "markdown url",
+			joke:     "[hello](url)",
+			expected: "&#91;hello&#93;&#40;url&#41;",
+		},
+		{
+			name:     "bold move",
+			joke:     "I made a <b>bold</b> move today: **move**",
+			expected: "I made a &#60;b&#62;bold&#60;&#47;b&#62; move today&#58; &#42;&#42;move&#42;&#42;",
+		},
+		{
+			name:     "helm symbol",
+			joke:     "⎈",
+			expected: "&#9096;",
+		},
+		{
+			name:     "xss attempt",
+			joke:     "<img src=404 onerror=alert('k8s')>",
+			expected: "&#60;img src&#61;404 onerror&#61;alert&#40;'k8s'&#41;&#62;",
+		},
+		{
+			name:     "empty joke",
+			joke:     "",
+			expected: "",
+		},
+		{
+			name:     "longcat is long",
+			joke:     "longcat is\n\n\n\n\n\n\nlong",
+			expected: "longcat is&#10;&#10;&#10;&#10;&#10;&#10;&#10;long",
+		},
+	}
+	for _, tc := range testcases {
+		output := escapeMarkdown(tc.joke)
+		if tc.expected != output {
+			t.Errorf("For case %s, expected `%s` got `%s`", tc.name, tc.expected, output)
+			continue
 		}
 	}
 }
