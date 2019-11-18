@@ -25,7 +25,7 @@ latest_stable_k8s_version="1.16.2"
 latest_stable_k8s_minor_version="1.16"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191031-df9cbb4-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -265,7 +265,7 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.14 1.15 1.16; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+        for deployment in 1.14 1.15 1.16 1.17; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
             for kubernetes in 1.14.6 1.15.3 1.16.2; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
