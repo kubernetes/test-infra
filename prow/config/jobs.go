@@ -17,8 +17,11 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
+	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
@@ -432,6 +435,36 @@ type UtilityConfig struct {
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
 	DecorationConfig *prowapi.DecorationConfig `json:"decoration_config,omitempty"`
+}
+
+func (u *UtilityConfig) Validate() error {
+	cloneURIValidate := func(cloneURI string) error {
+		if u.DecorationConfig != nil && len(u.DecorationConfig.SSHKeySecrets) > 0 {
+			if len(u.CloneURI) == 0 {
+				return errors.New("SSH key secrets provided but no clone_uri has been found")
+			}
+
+			// Trim user from uri if exists.
+			cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
+		}
+
+		if _, err := url.Parse(cloneURI); err != nil {
+			return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
+		}
+		return nil
+	}
+
+	if err := cloneURIValidate(u.CloneURI); err != nil {
+		return err
+	}
+
+	for i, ref := range u.ExtraRefs {
+		if err := cloneURIValidate(ref.CloneURI); err != nil {
+			return fmt.Errorf("extra_ref[%d]: %v", i, err)
+		}
+	}
+
+	return nil
 }
 
 // SetPresubmits updates c.PresubmitStatic to jobs, after compiling and validating their regexes.
