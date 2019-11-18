@@ -25,6 +25,8 @@ import (
 	"testing"
 
 	coreapi "k8s.io/api/core/v1"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 var c *Config
@@ -916,6 +918,130 @@ func TestPostsubmitShouldRun(t *testing.T) {
 			}
 			if jobShouldRun != testCase.expectedRun {
 				t.Errorf("%s: did not determine if job should run correctly, expected %v but got %v", testCase.name, testCase.expectedRun, jobShouldRun)
+			}
+		})
+	}
+}
+
+func TestUtilityConfigValidation(t *testing.T) {
+	testCases := []struct {
+		id    string
+		valid bool
+		uc    UtilityConfig
+	}{
+		{
+			id:    "empty UtilityConfig, no error",
+			valid: true,
+			uc:    UtilityConfig{},
+		},
+		{
+			id: "clone_uri is a not valid, error",
+			uc: UtilityConfig{CloneURI: "://notvalidURI"},
+		},
+		{
+			id: "one of the clone_uri is not valid, error",
+			uc: UtilityConfig{
+				CloneURI: "://notvalidURI",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "https://github.com/kubernetes/test-infra.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "://notvalidURI",
+					},
+				},
+			},
+		},
+
+		{
+			id: "ssh_keys specified but clone_uri is empty, error",
+			uc: UtilityConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id: "ssh_keys specified but clone_uri is invalid, error",
+			uc: UtilityConfig{
+				CloneURI: "://notvalidURI",
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id:    "ssh_keys specified and clone_uri is valid, no error",
+			valid: true,
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id:    "ssh_keys specified and all of clone_uri are valid, no error",
+			valid: true,
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "github.com:org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "git@github.com:org2/repo2.git",
+					},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id: "ssh_keys specified and one of the clone_uri is invalid, error",
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "git@github.com:org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "://notvalidURI",
+					},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.id, func(t *testing.T) {
+			if err := tc.uc.Validate(); err != nil && tc.valid {
+				t.Fatalf("No validation error expected: %v", err)
+			}
+			if err := tc.uc.Validate(); err == nil && !tc.valid {
+				t.Fatalf("Validation error expected: %v", err)
 			}
 		})
 	}
