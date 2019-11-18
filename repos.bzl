@@ -1114,8 +1114,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/prometheus/procfs",
-        sum = "h1:0qbH+Yqu/cj1ViVLvEWCP6qMQ4efWUj6bQqOEA0V0U4=",
-        version = "v0.0.6",
+        sum = "h1:RS5GAlMbnkWkhs4+bPocMTmGjYkuCY5djjqEDdXOhcQ=",
+        version = "v0.0.7",
     )
 
     go_repository(
