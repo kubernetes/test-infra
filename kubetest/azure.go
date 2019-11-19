@@ -101,7 +101,8 @@ var (
 	// Azure Disk CSI Driver flag
 	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
 	// Commonly used environment variables
-	registry = os.Getenv("REGISTRY")
+	imageRegistry = os.Getenv("REGISTRY")
+	imageTag      = fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
 )
 
 const (
@@ -426,7 +427,7 @@ func newAksEngine() (*Cluster, error) {
 	return &c, nil
 }
 
-func (c *Cluster) populateAPIModelTemplate() error {
+func (c *Cluster) populateApiModelTemplate() error {
 	var err error
 	v := AksEngineAPIModel{}
 	if c.apiModelPath != "" {
@@ -505,8 +506,8 @@ func (c *Cluster) populateAPIModelTemplate() error {
 
 	if c.customHyperkubeImage != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.customHyperkubeImage
-		if strings.Contains(registry, "azurecr") {
-			v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = registry
+		if strings.Contains(imageRegistry, "azurecr") {
+			v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = imageRegistry
 		}
 	}
 	if c.aksCustomWinBinariesURL != "" {
@@ -697,7 +698,7 @@ func (c *Cluster) dockerLogin() error {
 	server := ""
 	var err error
 
-	if !strings.Contains(registry, "azurecr.io") {
+	if !strings.Contains(imageRegistry, "azurecr.io") {
 		// if REGISTRY is not ACR, then use docker cred
 		log.Println("Attempting Docker login with docker cred.")
 		username = os.Getenv("DOCKER_USERNAME")
@@ -712,7 +713,7 @@ func (c *Cluster) dockerLogin() error {
 		log.Println("Attempting Docker login with azure cred.")
 		username = c.credentials.ClientID
 		pwd = c.credentials.ClientSecret
-		server = registry
+		server = imageRegistry
 	}
 	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
 	if err = cmd.Run(); err != nil {
@@ -721,6 +722,7 @@ func (c *Cluster) dockerLogin() error {
 	log.Println("Docker login success.")
 	return nil
 }
+
 func dockerLogout() error {
 	log.Println("Docker logout.")
 	cmd := exec.Command("docker", "logout")
@@ -729,10 +731,9 @@ func dockerLogout() error {
 
 func (c *Cluster) buildAzureCloudComponents() error {
 	log.Println("Building cloud controller manager and cloud node manager.")
-	imageTag := fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
 
 	// Set environment variables for building cloud comopnents' images
-	if err := os.Setenv("IMAGE_REGISTRY", registry); err != nil {
+	if err := os.Setenv("IMAGE_REGISTRY", imageRegistry); err != nil {
 		return err
 	}
 	if err := os.Setenv("IMAGE_TAG", imageTag); err != nil {
@@ -744,11 +745,11 @@ func (c *Cluster) buildAzureCloudComponents() error {
 		return err
 	}
 
-	c.customCcmImage = fmt.Sprintf("%s/%s:%s", registry, ccmImageName, imageTag)
+	c.customCcmImage = fmt.Sprintf("%s/%s:%s", imageRegistry, ccmImageName, imageTag)
 	log.Printf("Custom cloud controller manager image: %s", c.customCcmImage)
 
 	if *aksCnm {
-		c.customCnmImage = fmt.Sprintf("%s/%s:%s", registry, cnmImageName, imageTag)
+		c.customCnmImage = fmt.Sprintf("%s/%s:%s", imageRegistry, cnmImageName, imageTag)
 		log.Printf("Custom cloud node manager image: %s", c.customCnmImage)
 	}
 
@@ -758,7 +759,7 @@ func (c *Cluster) buildAzureCloudComponents() error {
 func (c *Cluster) buildHyperKube() error {
 
 	var push_cmd *exec.Cmd
-	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v-%v", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8]))
+	os.Setenv("VERSION", imageTag)
 	log.Println("Building hyperkube.")
 	hyperkube_cmd_path := util.K8s("kubernetes/cmd/hyperkube")
 	_, err := os.Stat(hyperkube_cmd_path)
@@ -782,7 +783,7 @@ func (c *Cluster) buildHyperKube() error {
 		return err
 	}
 
-	c.customHyperkubeImage = fmt.Sprintf("%s/%s:%s", registry, hyperkubeImageName, os.Getenv("VERSION"))
+	c.customHyperkubeImage = fmt.Sprintf("%s/%s:%s", imageRegistry, hyperkubeImageName, imageTag)
 	log.Printf("Custom hyperkube URL: %v .", c.customHyperkubeImage)
 	return nil
 }
@@ -893,7 +894,7 @@ func (c Cluster) Up() error {
 	var err error
 	err = c.dockerLogin()
 	if err != nil {
-		return nil
+		return err
 	}
 	defer func() {
 		err = dockerLogout()
@@ -928,7 +929,7 @@ func (c Cluster) Up() error {
 		c.apiModelPath = templateFile
 	}
 
-	err = c.populateAPIModelTemplate()
+	err = c.populateApiModelTemplate()
 	if err != nil {
 		return fmt.Errorf("failed to populate aks-engine apimodel template: %v", err)
 	}
