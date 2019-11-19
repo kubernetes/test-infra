@@ -312,21 +312,26 @@ gcloud iam service-accounts keys create --iam-account "${identifier}" service-ac
 kubectl -n test-pods create secret generic gcs-credentials --from-file=service-account.json # step 6
 ```
 
-Before we can update plank's `default_decoration_config` we'll need to know the version we're using
+### Configure the version of plank's utility images
+
+Before we can update plank's `default_decoration_config` we'll need to retrieve the version of plank using the following:
+
 ```sh
 $ kubectl get pod -lapp=plank -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d: -f2
-v20190619-25afbb545
+v20191108-08fbf64ac
 ```
+Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_config` in `config.yaml`:
 
-Then, setup plank's `default_decoration_config` in `config.yaml`:
+For more information on how the pod utility images for prow are versioned see [autobump](/prow/cmd/autobump/README.md)
+
 ```yaml
 plank:
   default_decoration_config:
     utility_images: # using the tag we identified above
-      clonerefs: "gcr.io/k8s-prow/clonerefs:v20190619-25afbb545"
-      initupload: "gcr.io/k8s-prow/initupload:v20190619-25afbb545"
-      entrypoint: "gcr.io/k8s-prow/entrypoint:v20190619-25afbb545"
-      sidecar: "gcr.io/k8s-prow/sidecar:v20190619-25afbb545"
+      clonerefs: "gcr.io/k8s-prow/clonerefs:v20191108-08fbf64ac"
+      initupload: "gcr.io/k8s-prow/initupload:v20191108-08fbf64ac"
+      entrypoint: "gcr.io/k8s-prow/entrypoint:v20191108-08fbf64ac"
+      sidecar: "gcr.io/k8s-prow/sidecar:v20191108-08fbf64ac"
     gcs_configuration:
       bucket: prow-artifacts # the bucket we just made
       path_strategy: explicit
