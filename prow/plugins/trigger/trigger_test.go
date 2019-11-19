@@ -31,7 +31,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -322,7 +322,7 @@ func TestRunAndSkipJobs(t *testing.T) {
 			GitHubClient:  &fakeGitHubClient,
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			Logger:        logrus.WithField("testcase", testCase.name),
-			GitClient:     &git.Client{},
+			GitClient:     nil,
 		}
 
 		err := RunAndSkipJobs(client, pr, fakegithub.TestRef, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
@@ -621,7 +621,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ *git.Client, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
@@ -645,7 +645,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ *git.Client, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},

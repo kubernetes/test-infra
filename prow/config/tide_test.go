@@ -23,10 +23,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	utilpointer "k8s.io/utils/pointer"
+
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
-	utilpointer "k8s.io/utils/pointer"
 )
 
 var testQuery = TideQuery{
@@ -580,7 +581,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			baseSHAGetter := func() (string, error) {
 				return "baseSHA", nil
 			}
-			p, err := tc.config.GetTideContextPolicy(&git.Client{}, org, repo, branch, baseSHAGetter, "some-sha")
+			p, err := tc.config.GetTideContextPolicy(nil, org, repo, branch, baseSHAGetter, "some-sha")
 			if !reflect.DeepEqual(p, &tc.expected) {
 				t.Errorf("%s - did not get expected policy: %s", tc.name, diff.ObjectReflectDiff(&tc.expected, p))
 			}
@@ -1034,7 +1035,7 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 }
 
 func fakeProwYAMLGetterFactory(presubmits []Presubmit) ProwYAMLGetter {
-	return func(_ *Config, _ *git.Client, _, _ string, _ ...string) (*ProwYAML, error) {
+	return func(_ *Config, _ git.ClientFactory, _, _ string, _ ...string) (*ProwYAML, error) {
 		return &ProwYAML{
 			Presubmits: presubmits,
 		}, nil

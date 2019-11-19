@@ -28,7 +28,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -70,7 +70,7 @@ type overrideClient interface {
 
 type client struct {
 	ghc           githubClient
-	gc            *git.Client
+	gc            git.ClientFactory
 	config        *config.Config
 	ownersClient  ownersClient
 	prowJobClient prowJobClient

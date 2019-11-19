@@ -61,7 +61,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
@@ -538,7 +538,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
 	// presubmits dynamically which we need for the PR history page.
 	var githubClient deckGitHubClient
-	var gitClient *git.Client
+	var gitClient git.ClientFactory
 	secretAgent := &secret.Agent{}
 	if o.github.TokenPath != "" {
 		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
@@ -548,10 +548,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
-		gitClient, err = o.github.GitClient(secretAgent, o.dryRun)
+		g, err := o.github.GitClient(secretAgent, o.dryRun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Git client.")
 		}
+		gitClient = git.ClientFactoryFrom(g)
 	} else {
 		if len(cfg().InRepoConfig.Enabled) > 0 {
 			logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
@@ -670,7 +671,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	return mux
 }
 
-func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient *git.Client) {
+func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient git.ClientFactory) {
 	var c *storage.Client
 	var err error
 	if o.gcsCredentialsFile == "" {
@@ -857,7 +858,7 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, l
 // The url must look like this:
 //
 // /pr-history?org=<org>&repo=<repo>&pr=<pr number>
-func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient *git.Client, log *logrus.Entry) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient git.ClientFactory, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient, gitHubClient, gitClient)

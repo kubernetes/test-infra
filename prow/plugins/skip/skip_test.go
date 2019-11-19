@@ -23,7 +23,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -325,7 +324,7 @@ func TestSkipStatus(t *testing.T) {
 			},
 		}
 
-		if err := handle(fghc, l, test.event, c, &git.Client{}, true); err != nil {
+		if err := handle(fghc, l, test.event, c, nil, true); err != nil {
 			t.Errorf("%s: unexpected error: %v", test.name, err)
 			continue
 		}

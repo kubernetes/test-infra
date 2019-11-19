@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 
 	prowConf "k8s.io/test-infra/prow/config"
@@ -101,7 +101,7 @@ var _ Interface = &Client{}
 
 // Client is the repoowners client
 type Client struct {
-	git    *git.Client
+	git    git.ClientFactory
 	ghc    githubClient
 	logger *logrus.Entry
 
@@ -115,7 +115,7 @@ type Client struct {
 
 // NewClient is the constructor for Client
 func NewClient(
-	gc *git.Client,
+	gc git.ClientFactory,
 	ghc github.Client,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
@@ -189,7 +189,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha {
 		// entry is non-existent or stale.
-		gitRepo, err := c.git.Clone(org, repo)
+		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
@@ -223,7 +223,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	defer c.lock.Unlock()
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
-		gitRepo, err := c.git.Clone(org, repo)
+		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}

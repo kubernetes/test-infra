@@ -2,10 +2,20 @@ package git
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
+
+func OrgRepo(full string) (string, string, error) {
+	if strings.Count(full, "/") != 1 {
+		return "", "", fmt.Errorf("full repo name %s does not follow the org/repo format", full)
+	}
+	parts := strings.Split(full, "/")
+	return parts[0], parts[1], nil
+}
 
 // ClientFactoryFrom adapts the v1 client to a v2 client
 func ClientFactoryFrom(c *git.Client) ClientFactory {
@@ -49,7 +59,7 @@ func (a *repoClientAdapter) Commit(title, body string) error {
 }
 
 func (a *repoClientAdapter) ForcePush(branch string) error {
-	return errors.New("no ForcePush implementation exists in the v1 repo client")
+	return a.Repo.Push(branch)
 }
 
 func (a *repoClientAdapter) MirrorClone() error {
