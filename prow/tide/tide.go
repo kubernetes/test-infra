@@ -41,7 +41,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
@@ -74,7 +74,7 @@ type Controller struct {
 	config        config.Getter
 	ghc           githubClient
 	prowJobClient ctrlruntimeclient.Client
-	gc            *git.Client
+	gc            git.ClientFactory
 
 	sc *statusController
 
@@ -210,7 +210,7 @@ type manager interface {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Getter, gc *git.Client, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
+func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Getter, gc git.ClientFactory, maxRecordsPerPool int, opener io.Opener, historyURI, statusURI string, logger *logrus.Entry) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -228,7 +228,7 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	return newSyncController(logger, ghcSync, mgr, cfg, gc, sc, hist)
 }
 
-func newStatusController(logger *logrus.Entry, ghc githubClient, mgr manager, gc *git.Client, cfg config.Getter, opener io.Opener, statusURI string) (*statusController, error) {
+func newStatusController(logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string) (*statusController, error) {
 	if err := mgr.GetFieldIndexer().IndexField(&prowapi.ProwJob{}, indexNamePassingJobs, indexFuncPassingJobs); err != nil {
 		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %v", err)
 	}
@@ -250,7 +250,7 @@ func newSyncController(
 	ghcSync githubClient,
 	mgr manager,
 	cfg config.Getter,
-	gc *git.Client,
+	gc git.ClientFactory,
 	sc *statusController,
 	hist *history.History,
 ) (*Controller, error) {
@@ -848,7 +848,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullReq
 	}
 	sp.log.Debugf("of %d possible PRs, %d are passing tests", len(sp.prs), len(candidates))
 
-	r, err := c.gc.Clone(sp.org, sp.repo)
+	r, err := c.gc.ClientFor(sp.org, sp.repo)
 	if err != nil {
 		return nil, nil, err
 	}

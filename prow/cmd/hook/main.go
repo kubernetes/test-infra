@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"k8s.io/test-infra/prow/git/v2"
 	"net/http"
 	"os"
 	"strconv"
@@ -180,14 +181,14 @@ func main() {
 	ownersDirBlacklist := func() config.OwnersDirBlacklist {
 		return configAgent.Config().OwnersDirBlacklist
 	}
-	ownersClient := repoowners.NewClient(gitClient, githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
+	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:              githubClient,
 		ProwJobClient:             prowJobClient,
 		KubernetesClient:          infrastructureClient,
 		BuildClusterCoreV1Clients: buildClusterCoreV1Clients,
-		GitClient:                 gitClient,
+		GitClient:                 git.ClientFactoryFrom(gitClient),
 		SlackClient:               slackClient,
 		OwnersClient:              ownersClient,
 		BugzillaClient:            bugzillaClient,

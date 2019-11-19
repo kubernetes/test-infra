@@ -32,7 +32,7 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -202,7 +202,7 @@ func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
 }
 
 // getGCSDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
-func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient *git.Client, org, repo string, prNumber int) (map[string]sets.String, error) {
+func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient git.ClientFactory, org, repo string, prNumber int) (map[string]sets.String, error) {
 	toSearch := make(map[string]sets.String)
 	fullRepo := org + "/" + repo
 
@@ -244,7 +244,7 @@ func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient 
 	return toSearch, nil
 }
 
-func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient *git.Client) (prHistoryTemplate, error) {
+func getPRHistory(url *url.URL, config *config.Config, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient git.ClientFactory) (prHistoryTemplate, error) {
 	start := time.Now()
 	template := prHistoryTemplate{}
 

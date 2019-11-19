@@ -32,7 +32,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -124,7 +124,7 @@ func uniqProblems(problems []string) []string {
 
 // problemsInFiles runs buildifier on the files. It returns a map from the file to
 // a list of problems with that file.
-func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string, error) {
+func problemsInFiles(r git.RepoClient, files map[string]string) (map[string][]string, error) {
 	problems := make(map[string][]string)
 	for f := range files {
 		src, err := ioutil.ReadFile(filepath.Join(r.Directory(), f))
@@ -149,7 +149,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string,
 	return problems, nil
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
 	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -178,7 +178,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 
 	// Clone the repo, checkout the PR.
 	startClone := time.Now()
-	r, err := gc.Clone(org, repo)
+	r, err := gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}

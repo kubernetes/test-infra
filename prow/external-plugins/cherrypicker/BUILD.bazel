@@ -13,7 +13,7 @@ go_library(
         "//pkg/flagutil:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/git:go_default_library",
+        "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
         "//prow/interrupts:go_default_library",
         "//prow/pluginhelp:go_default_library",

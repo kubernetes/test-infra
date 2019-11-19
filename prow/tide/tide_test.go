@@ -42,7 +42,6 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/history"
@@ -692,7 +691,7 @@ func TestDividePool(t *testing.T) {
 
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, &git.Client{}, nil, nil,
+		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, nil, nil, nil,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -1700,7 +1699,7 @@ func TestSync(t *testing.T) {
 			pjClient:       fakectrlruntimeclient.NewFakeClient(),
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
-			gc:             &git.Client{},
+			gc:             nil,
 			config:         ca.Config,
 			newPoolPending: make(chan bool, 1),
 			shutDown:       make(chan bool),
@@ -1710,7 +1709,7 @@ func TestSync(t *testing.T) {
 		c := &Controller{
 			config:        ca.Config,
 			ghc:           fgc,
-			gc:            &git.Client{},
+			gc:            nil,
 			prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 			logger:        logrus.WithField("controller", "sync"),
 			sc:            sc,
@@ -2455,7 +2454,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		c := &Controller{
 			config: cfgAgent.Config,
 			ghc:    &fgc{},
-			gc:     &git.Client{},
+			gc:     nil,
 			changedFiles: &changedFilesAgent{
 				ghc:             &fgc{},
 				changeCache:     tc.initialChangeCache,

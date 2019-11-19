@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"k8s.io/test-infra/prow/git/v2"
 	"net/http"
 	"os"
 	"strconv"
@@ -170,7 +171,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, gitClient, o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}

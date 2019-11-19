@@ -30,7 +30,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -79,7 +79,7 @@ type Server struct {
 	botName        string
 	email          string
 
-	gc *git.Client
+	gc git.ClientFactory
 	// Used for unit testing
 	push func(newBranch string) error
 	ghc  githubClient
@@ -358,7 +358,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.Clone(org, repo)
+	r, err := s.gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}
@@ -422,12 +422,12 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		return s.createComment(org, repo, num, comment, resp)
 	}
 
-	push := r.Push
+	push := r.ForcePush
 	if s.push != nil {
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(repo, newBranch); err != nil {
+	if err := push(newBranch); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.createComment(org, repo, num, comment, resp)

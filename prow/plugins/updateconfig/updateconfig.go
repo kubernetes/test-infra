@@ -33,7 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -240,12 +240,7 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 	return toUpdate
 }
 
-type gitClient interface {
-	Clone(org, repo string) (*git.Repo, error)
-	Clean() error
-}
-
-func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
+func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -294,7 +289,7 @@ func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, bu
 		indent = "   " // three spaces for sub bullets
 	}
 
-	gitRepo, err := gitClient.Clone(fmt.Sprintf("%s/%s", org, repo))
+	gitRepo, err := gitClient.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}
