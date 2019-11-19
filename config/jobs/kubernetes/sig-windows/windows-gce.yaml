@@ -146,12 +146,14 @@ periodics:
 
 - name: ci-kubernetes-e2e-windows-gce-serial
   decorate: true
+  decoration_config:
+    timeout: 24h
   extra_refs:
   - org: yujuhong
     repo: gce-k8s-windows-testing
     base_ref: master
     path_alias: k8s.io/gce-k8s-windows-testing
-  interval: 4h
+  interval: 24h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
