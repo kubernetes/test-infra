@@ -95,14 +95,16 @@ var (
 	aksAzureEnv            = flag.String("aksengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
+	aksCustomK8sComponents = flag.Bool("aksengine-custom-k8s-comopnents", false, "Set to True if you want to build k8s from source and deploy it via aks-engine")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	// Azure File CSI Driver flag
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 	// Azure Disk CSI Driver flag
 	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
 	// Commonly used environment variables
-	imageRegistry = os.Getenv("REGISTRY")
-	imageTag      = fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
+	imageRegistry     = os.Getenv("REGISTRY")
+	imageTag          = fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
+	k8sPackageTarball = util.K8s("kubernetes", "kubernetes-node-linux-amd64.tar.gz")
 )
 
 const (
@@ -110,11 +112,17 @@ const (
 	AzureStackCloud = "AzureStackCloud"
 	// ADFSIdentitySystem is a const for ADFS identifier on Azure Stack cloud
 	ADFSIdentitySystem = "adfs"
+)
 
-	ccmImageName       = "azure-cloud-controller-manager"
-	cnmImageName       = "azure-cloud-node-manager"
-	cnmAddonName       = "cloud-node-manager"
-	hyperkubeImageName = "hyperkube-amd64"
+const (
+	ccmImageName                   = "azure-cloud-controller-manager"
+	cnmImageName                   = "azure-cloud-node-manager"
+	cnmAddonName                   = "cloud-node-manager"
+	hyperkubeImageName             = "hyperkube-amd64"
+	kubeAPIServerImageName         = "kube-apiserver-amd64"
+	kubeControllerManagerImageName = "kube-controller-manager-amd64"
+	kubeSchedulerImageName         = "kube-scheduler-amd64"
+	kubeProxyImageName             = "kube-proxy-amd64"
 )
 
 type Creds struct {
@@ -131,33 +139,38 @@ type Config struct {
 }
 
 type Cluster struct {
-	ctx                     context.Context
-	credentials             *Creds
-	location                string
-	resourceGroup           string
-	name                    string
-	apiModelPath            string
-	dnsPrefix               string
-	templateJSON            map[string]interface{}
-	parametersJSON          map[string]interface{}
-	outputDir               string
-	sshPublicKey            string
-	adminUsername           string
-	adminPassword           string
-	masterVMSize            string
-	agentVMSize             string
-	customHyperkubeImage    string
-	aksCustomWinBinariesURL string
-	aksEngineBinaryPath     string
-	customCcmImage          string // custom cloud controller manager (ccm) image
-	customCnmImage          string // custom cloud node manager (cnm) image
-	azureEnvironment        string
-	azureIdentitySystem     string
-	azureCustomCloudURL     string
-	agentPoolCount          int
-	k8sVersion              string
-	networkPlugin           string
-	azureClient             *AzureClient
+	ctx                              context.Context
+	credentials                      *Creds
+	location                         string
+	resourceGroup                    string
+	name                             string
+	apiModelPath                     string
+	dnsPrefix                        string
+	templateJSON                     map[string]interface{}
+	parametersJSON                   map[string]interface{}
+	outputDir                        string
+	sshPublicKey                     string
+	adminUsername                    string
+	adminPassword                    string
+	masterVMSize                     string
+	agentVMSize                      string
+	customHyperkubeImage             string
+	aksCustomWinBinariesURL          string
+	aksEngineBinaryPath              string
+	customCcmImage                   string // custom cloud controller manager (ccm) image
+	customCnmImage                   string // custom cloud node manager (cnm) image
+	customKubeAPIServerImage         string
+	customKubeControllerManagerImage string
+	customKubeProxyImage             string
+	customKubeSchedulerImage         string
+	customKubeBinaryURL              string
+	azureEnvironment                 string
+	azureIdentitySystem              string
+	azureCustomCloudURL              string
+	agentPoolCount                   int
+	k8sVersion                       string
+	networkPlugin                    string
+	azureClient                      *AzureClient
 }
 
 // IsAzureStackCloud return true if the cloud is AzureStack
@@ -369,6 +382,9 @@ func checkParams() error {
 	if *aksCnm && !*aksCcm {
 		return fmt.Errorf("--aksengine-cnm cannot be true without --aksengine-ccm also being true")
 	}
+	if *aksHyperKube && *aksCustomK8sComponents {
+		return fmt.Errorf("--aksengine-custom-k8s-comopnents and --aksengine-hyperkube cannot be true at the same time. For k8s 1.17 and onward, use --aksengine-custom-k8s-comopnents. Otherwise, use --aksengine-hyperkube")
+	}
 
 	return nil
 }
@@ -384,30 +400,35 @@ func newAksEngine() (*Cluster, error) {
 		return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
 	}
 	c := Cluster{
-		ctx:                     context.Background(),
-		apiModelPath:            *aksTemplateURL,
-		name:                    *aksResourceName,
-		dnsPrefix:               *aksDnsPrefix,
-		location:                *aksLocation,
-		resourceGroup:           *aksResourceGroupName,
-		outputDir:               tempdir,
-		sshPublicKey:            fmt.Sprintf("%s", sshKey),
-		credentials:             &Creds{},
-		masterVMSize:            *acsMasterVmSize,
-		agentVMSize:             *acsAgentVmSize,
-		adminUsername:           *acsAdminUsername,
-		adminPassword:           *acsAdminPassword,
-		agentPoolCount:          *acsAgentPoolCount,
-		k8sVersion:              *acsOrchestratorRelease,
-		networkPlugin:           *acsNetworkPlugin,
-		azureEnvironment:        *acsAzureEnv,
-		azureIdentitySystem:     *acsIdentitySystem,
-		azureCustomCloudURL:     *acsCustomCloudURL,
-		customHyperkubeImage:    "",
-		aksCustomWinBinariesURL: "",
-		customCcmImage:          "",
-		customCnmImage:          "",
-		aksEngineBinaryPath:     "aks-engine", // use the one in path by default
+		ctx:                              context.Background(),
+		apiModelPath:                     *aksTemplateURL,
+		name:                             *aksResourceName,
+		dnsPrefix:                        *aksDnsPrefix,
+		location:                         *aksLocation,
+		resourceGroup:                    *aksResourceGroupName,
+		outputDir:                        tempdir,
+		sshPublicKey:                     fmt.Sprintf("%s", sshKey),
+		credentials:                      &Creds{},
+		masterVMSize:                     *acsMasterVmSize,
+		agentVMSize:                      *acsAgentVmSize,
+		adminUsername:                    *acsAdminUsername,
+		adminPassword:                    *acsAdminPassword,
+		agentPoolCount:                   *acsAgentPoolCount,
+		k8sVersion:                       *acsOrchestratorRelease,
+		networkPlugin:                    *acsNetworkPlugin,
+		azureEnvironment:                 *acsAzureEnv,
+		azureIdentitySystem:              *acsIdentitySystem,
+		azureCustomCloudURL:              *acsCustomCloudURL,
+		customHyperkubeImage:             "",
+		aksCustomWinBinariesURL:          "",
+		customCcmImage:                   "",
+		customCnmImage:                   "",
+		customKubeAPIServerImage:         "",
+		customKubeControllerManagerImage: "",
+		customKubeProxyImage:             "",
+		customKubeSchedulerImage:         "",
+		customKubeBinaryURL:              "",
+		aksEngineBinaryPath:              "aks-engine", // use the one in path by default
 	}
 	c.getAzCredentials()
 	err = c.SetCustomCloudProfileEnvironment()
@@ -543,6 +564,21 @@ func (c *Cluster) populateApiModelTemplate() error {
 		if !found {
 			v.Properties.OrchestratorProfile.KubernetesConfig.Addons = append(v.Properties.OrchestratorProfile.KubernetesConfig.Addons, cnmAddon)
 		}
+	}
+	if c.customKubeAPIServerImage != "" {
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeAPIServerImage = c.customKubeAPIServerImage
+	}
+	if c.customKubeControllerManagerImage != "" {
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeControllerManagerImage = c.customKubeControllerManagerImage
+	}
+	if c.customKubeProxyImage != "" {
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeProxyImage = c.customKubeProxyImage
+	}
+	if c.customKubeSchedulerImage != "" {
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeSchedulerImage = c.customKubeSchedulerImage
+	}
+	if c.customKubeBinaryURL != "" {
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeBinaryURL = c.customKubeBinaryURL
 	}
 
 	if c.isAzureStackCloud() {
@@ -729,6 +765,19 @@ func dockerLogout() error {
 	return cmd.Run()
 }
 
+func dockerPush(image string) error {
+	log.Printf("Pushing %s.", image)
+	cmd := exec.Command("docker", "logout")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to push %s: %v", image, err)
+	}
+	return nil
+}
+
+func getDockerImage(imageName string) string {
+	return fmt.Sprintf("%s/%s:%s", imageRegistry, imageName, imageTag)
+}
+
 func (c *Cluster) buildAzureCloudComponents() error {
 	log.Println("Building cloud controller manager and cloud node manager.")
 
@@ -745,11 +794,11 @@ func (c *Cluster) buildAzureCloudComponents() error {
 		return err
 	}
 
-	c.customCcmImage = fmt.Sprintf("%s/%s:%s", imageRegistry, ccmImageName, imageTag)
+	c.customCcmImage = getDockerImage(ccmImageName)
 	log.Printf("Custom cloud controller manager image: %s", c.customCcmImage)
 
 	if *aksCnm {
-		c.customCnmImage = fmt.Sprintf("%s/%s:%s", imageRegistry, cnmImageName, imageTag)
+		c.customCnmImage = getDockerImage(cnmImageName)
 		log.Printf("Custom cloud node manager image: %s", c.customCnmImage)
 	}
 
@@ -783,16 +832,60 @@ func (c *Cluster) buildHyperKube() error {
 		return err
 	}
 
-	c.customHyperkubeImage = fmt.Sprintf("%s/%s:%s", imageRegistry, hyperkubeImageName, imageTag)
+	c.customHyperkubeImage = getDockerImage(hyperkubeImageName)
 	log.Printf("Custom hyperkube URL: %v .", c.customHyperkubeImage)
 	return nil
 }
 
-func (c *Cluster) uploadZip(zipPath string) error {
+func (c *Cluster) buildK8sComponents() error {
+	// Set environment variables for building individual k8s component
+	if err := os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
+		return err
+	}
+	if err := os.Setenv("KUBE_DOCKER_IMAGE_TAG", imageTag); err != nil {
+		return err
+	}
+
+	// Build and push k8s components to registry
+	cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "quick-release-images")
+	if err := control.FinishRunning(cmd); err != nil {
+		return err
+	}
+	c.customKubeAPIServerImage = getDockerImage(kubeAPIServerImageName)
+	if err := dockerPush(c.customKubeAPIServerImage); err != nil {
+		return err
+	}
+	c.customKubeControllerManagerImage = getDockerImage(kubeControllerManagerImageName)
+	if err := dockerPush(c.customKubeControllerManagerImage); err != nil {
+		return err
+	}
+	c.customKubeProxyImage = getDockerImage(kubeProxyImageName)
+	if err := dockerPush(c.customKubeProxyImage); err != nil {
+		return err
+	}
+	c.customKubeSchedulerImage = getDockerImage(kubeSchedulerImageName)
+	if err := dockerPush(c.customKubeSchedulerImage); err != nil {
+		return err
+	}
+
+	// Upload kubernetes-node-linux-amd64.tar.gz to Azure Storage
+	if _, err := os.Stat(k8sPackageTarball); os.IsNotExist(err) {
+		return fmt.Errorf("%s does not exist", k8sPackageTarball)
+	}
+
+	var err error
+	if c.customKubeBinaryURL, err = c.uploadToAzureStorage(k8sPackageTarball); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Cluster) uploadToAzureStorage(filePath string) (string, error) {
 
 	credential, err := azblob.NewSharedKeyCredential(c.credentials.StorageAccountName, c.credentials.StorageAccountKey)
 	if err != nil {
-		return fmt.Errorf("new shared key credential: %v", err)
+		return "", fmt.Errorf("new shared key credential: %v", err)
 	}
 	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 
@@ -802,20 +895,19 @@ func (c *Cluster) uploadZip(zipPath string) error {
 		fmt.Sprintf("https://%s.blob.core.windows.net/%s", c.credentials.StorageAccountName, containerName))
 
 	containerURL := azblob.NewContainerURL(*URL, p)
-	file, err := os.Open(zipPath)
+	file, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("failed to open file %v . Error %v", zipPath, err)
+		return "", fmt.Errorf("failed to open file %v . Error %v", filePath, err)
 	}
 	blobURL := containerURL.NewBlockBlobURL(filepath.Base(file.Name()))
 	_, err1 := azblob.UploadFileToBlockBlob(context.Background(), file, blobURL, azblob.UploadToBlockBlobOptions{})
 	file.Close()
 	if err1 != nil {
-		return err1
+		return "", err1
 	}
 	blobURLString := blobURL.URL()
-	c.aksCustomWinBinariesURL = blobURLString.String()
-	log.Printf("Custom win binaries url: %v", c.aksCustomWinBinariesURL)
-	return nil
+	log.Printf("Uploaded %s to %s", filePath, blobURLString.String())
+	return blobURLString.String(), nil
 }
 
 func getApiModelTemplate(url string, downloadPath string, retry int) (string, error) {
@@ -884,7 +976,7 @@ func (c *Cluster) buildWinZip() error {
 		return err
 	}
 	log.Printf("Uploading %s", zipPath)
-	if err := c.uploadZip(zipPath); err != nil {
+	if c.aksCustomWinBinariesURL, err = c.uploadToAzureStorage(zipPath); err != nil {
 		return err
 	}
 	return nil
@@ -913,6 +1005,12 @@ func (c Cluster) Up() error {
 		err = c.buildHyperKube()
 		if err != nil {
 			return fmt.Errorf("error building hyperkube %v", err)
+		}
+	}
+	if *aksCustomK8sComponents == true {
+		err = c.buildK8sComponents()
+		if err != nil {
+			return fmt.Errorf("error building custom k8s components %v", err)
 		}
 	}
 	if *aksWinBinaries == true {
