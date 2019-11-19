@@ -60,7 +60,7 @@ periodics:
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
