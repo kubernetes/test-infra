@@ -85,7 +85,7 @@ func mergeConfigs(o options, kubeconfig []byte) ([]byte, error) {
 	}
 
 	loadingRules := clientcmd.ClientConfigLoadingRules{
-		Precedence: []string{tmpFile.Name(), o.output},
+		Precedence: []string{o.output, tmpFile.Name()},
 	}
 
 	mergedConfig, err := loadingRules.Load()

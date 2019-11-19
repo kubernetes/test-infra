@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Deprecated:  The `mkbuild-cluster` command-line utility and `build-cluster`
+// format is deprecated and will be removed in May 2020. Use `gencred` and the
+// `kubeconfig` format as an alternative.
 package main
 
 import (

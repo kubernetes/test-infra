@@ -1,4 +1,5 @@
 # MkBuild-Cluster
+> ### **Deprecated**: use [`gencred`](../../../gencred) instead. `mkbuild-cluster` will be removed May 2020. 
 
 The `mkbuild-cluster` program helps create `cluster.yaml` files that [plank] accepts via the `--build-cluster` flag.
 

@@ -86,6 +86,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
  
+ - *November 18, 2019*  The `mkbuild-cluster` command-line utility and `build-cluster`
+   format is deprecated and will be removed in May 2020. Use `gencred` and the `kubeconfig` 
+   format as an alternative.
  - *November 14, 2019* The `slack_reporter` config field has been deprecated in
    favor of the new `slack_reporter_configs` field which allows configuration on a global,
    organization or repo level. `slack_reporter` will be removed in May 2020.
