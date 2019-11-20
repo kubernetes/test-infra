@@ -390,6 +390,9 @@ func (d *DecorationConfig) Validate() error {
 	if err := d.GCSConfiguration.Validate(); err != nil {
 		return fmt.Errorf("GCS configuration is invalid: %v", err)
 	}
+	if d.OauthTokenSecret != nil && len(d.SSHKeySecrets) > 0 {
+		return errors.New("both OAuth token and SSH key secrets are specified")
+	}
 	return nil
 }
 
