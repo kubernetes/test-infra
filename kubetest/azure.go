@@ -529,12 +529,6 @@ func (c *Cluster) populateApiModelTemplate() error {
 	v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
 	v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
 
-	if c.customHyperkubeImage != "" {
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.customHyperkubeImage
-		if strings.Contains(imageRegistry, "azurecr") {
-			v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = imageRegistry
-		}
-	}
 	if c.aksCustomWinBinariesURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.aksCustomWinBinariesURL
 	}
@@ -569,20 +563,26 @@ func (c *Cluster) populateApiModelTemplate() error {
 			v.Properties.OrchestratorProfile.KubernetesConfig.Addons = append(v.Properties.OrchestratorProfile.KubernetesConfig.Addons, cnmAddon)
 		}
 	}
-	if c.customKubeAPIServerImage != "" {
+
+	// Populate PrivateAzureRegistryServer field if we are using ACR and custom-built k8s components
+	if strings.Contains(imageRegistry, "azurecr") && (*aksCustomK8sComponents || *aksHyperKube) {
+		v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = imageRegistry
+	}
+
+	if *aksCustomK8sComponents { // k8s 1.17+
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeAPIServerImage = c.customKubeAPIServerImage
-	}
-	if c.customKubeControllerManagerImage != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeControllerManagerImage = c.customKubeControllerManagerImage
-	}
-	if c.customKubeProxyImage != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeProxyImage = c.customKubeProxyImage
-	}
-	if c.customKubeSchedulerImage != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeSchedulerImage = c.customKubeSchedulerImage
-	}
-	if c.customKubeBinaryURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeBinaryURL = c.customKubeBinaryURL
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = ""
+	} else if *aksHyperKube { // k8s 1.16 or earlier
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeAPIServerImage = ""
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeControllerManagerImage = ""
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeProxyImage = ""
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeSchedulerImage = ""
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeBinaryURL = ""
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.customHyperkubeImage
 	}
 
 	if c.isAzureStackCloud() {
