@@ -310,3 +310,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 func stringPointer(s string) *string {
 	return &s
 }
+
+func boolPointer(b bool) *bool {
+	return &b
+}
