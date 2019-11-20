@@ -101,6 +101,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
 	}
+	cfg.BranchProtectionWarnings(logrus.NewEntry(logrus.StandardLogger()))
 
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
