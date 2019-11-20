@@ -4,7 +4,6 @@ dashboard_groups:
   - kyma-all
   - kyma-release
   - kyma-cleaners
-  - kyma-presubmit
   - kyma-postsubmit
   - kyma-nightly
   - kyma-weekly
@@ -126,21 +125,37 @@ dashboards:
     open_bug_template:
       url: https://github.com/kyma-project/test-infra/issues/
 
-  #presubmit
-  - name: pre-master-kyma-gke-upgrade
-    description: Tracks presubmit master gke upgrade jobs
-    test_group_name: pre-master-kyma-gke-upgrade
+  #postsubmit
+  - name: post-master-kyma-gke-upgrade
+    description: Tracks post-submit master gke upgrade jobs
+    test_group_name: post-master-kyma-gke-upgrade
     # alert_options:
     #   alert_mail_to_addresses: email-here@sap.com
     code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
-
-  #postsubmit
-  - name: post-master-kyma-gke-upgrade
-    description: Tracks posubmit master gke upgrade jobs
-    test_group_name: post-master-kyma-gke-upgrade
+  - name: post-master-kyma-gke-integration
+    description: Tracks post-submit master gke integration jobs
+    test_group_name: post-master-kyma-gke-integration
+    # alert_options:
+    #   alert_mail_to_addresses: email-here@sap.com
+    code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+  - name: post-master-kyma-gke-central-connector
+    description: Tracks post-submit master gke central connector jobs
+    test_group_name: post-master-kyma-gke-central-connector
+    # alert_options:
+    #   alert_mail_to_addresses: email-here@sap.com
+    code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+  - name: post-master-kyma-gke-compass-integration
+    description: Tracks post-submit master gke compass integration jobs
+    test_group_name: post-master-kyma-gke-compass-integration
     # alert_options:
     #   alert_mail_to_addresses: email-here@sap.com
     code_search_url_template:
@@ -474,14 +489,18 @@ test_groups:
   gcs_prefix: kyma-prow-logs/logs/orphaned-assetstore-gcp-bucket-cleaner
   num_failures_to_alert: 1
 
-#presubmit
-- name: pre-master-kyma-gke-upgrade
-  gcs_prefix: kyma-prow-logs/pr-logs/pull/kyma-project_kyma
-  num_failures_to_alert: 3
-
 #postsubmit
 - name: post-master-kyma-gke-upgrade
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-upgrade
+  num_failures_to_alert: 3
+- name: post-master-kyma-gke-integration
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-integration
+  num_failures_to_alert: 3
+- name: post-master-kyma-gke-central-connector
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-central-connector
+  num_failures_to_alert: 3
+- name: post-master-kyma-gke-compass-integration
+  gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-compass-integration
   num_failures_to_alert: 3
 
 #nightly
