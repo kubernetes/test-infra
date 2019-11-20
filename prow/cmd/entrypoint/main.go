@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	logrusutil.ComponentInit("entrypoint")
+	logrusutil.ComponentInit()
 
 	o := entrypoint.NewOptions()
 	if err := options.Load(o); err != nil {

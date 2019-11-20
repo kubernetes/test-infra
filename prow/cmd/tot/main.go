@@ -270,7 +270,7 @@ func (f fallbackHandler) getURL(jobName string) string {
 }
 
 func main() {
-	logrusutil.ComponentInit("tot")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

@@ -64,7 +64,7 @@ var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*10,
 var promMetrics *prometheusMetrics
 
 func init() {
-	logrusutil.ComponentInit("greenhouse")
+	logrusutil.ComponentInit()
 
 	logrus.SetOutput(os.Stdout)
 	promMetrics = initMetrics()

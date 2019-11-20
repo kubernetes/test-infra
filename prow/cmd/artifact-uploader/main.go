@@ -151,7 +151,7 @@ func (o *Options) Run() error {
 }
 
 func main() {
-	logrusutil.ComponentInit("artifact-uploader")
+	logrusutil.ComponentInit()
 
 	o := newOptions()
 	if err := options.Load(o); err != nil {

@@ -102,7 +102,7 @@ func parseOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit("storeship")
+	logrusutil.ComponentInit()
 
 	opt := parseOptions()
 	for {

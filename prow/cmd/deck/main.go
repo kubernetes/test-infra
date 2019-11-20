@@ -305,7 +305,7 @@ func v(fragment string, children ...simplifypath.Node) simplifypath.Node {
 }
 
 func main() {
-	logrusutil.ComponentInit("deck")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {

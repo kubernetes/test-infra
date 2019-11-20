@@ -87,7 +87,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit("status-reconciler")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

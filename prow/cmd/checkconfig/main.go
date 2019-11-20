@@ -159,7 +159,7 @@ func gatherOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit("checkconfig")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
