@@ -54,7 +54,7 @@ presubmits:
         - "--up=true"
         - "--down=true"
         - "--deployment=acsengine"
-        - "--build=host-go" # build kubectl binary
+        - "--build=quick" # build kubectl binary
         - "--provider=skeleton" # noop
         - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-aks-engine-azure"
         - "--ginkgo-parallel=30"
@@ -96,6 +96,7 @@ presubmits:
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
         - "--repo=sigs.k8s.io/azuredisk-csi-driver"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=460"
@@ -106,7 +107,7 @@ presubmits:
         - "--up=true"
         - "--down=true"
         - "--deployment=acsengine"
-        - "--build=host-go"
+        - "--build=quick"
         - "--provider=skeleton"
         - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-azure-disk"
         - "--ginkgo-parallel=1"
@@ -148,6 +149,7 @@ presubmits:
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
         - "--repo=sigs.k8s.io/azuredisk-csi-driver"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=460"
@@ -158,7 +160,7 @@ presubmits:
         - "--up=true"
         - "--down=true"
         - "--deployment=acsengine"
-        - "--build=host-go"
+        - "--build=quick"
         - "--provider=skeleton"
         - "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-azure-disk-vmss"
         - "--ginkgo-parallel=1"
