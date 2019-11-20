@@ -60,6 +60,7 @@ var (
 		"sig",
 		"wg",
 		"provider",
+		"kubernetes-clients",
 	}
 	dashboardPrefixes = [][]string{orgs, companies}
 

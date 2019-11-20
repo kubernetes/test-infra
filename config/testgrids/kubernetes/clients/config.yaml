@@ -1,0 +1,12 @@
+dashboard_groups:
+- name: kubernetes-clients
+  dashboard_names:
+    - kubernetes-clients-haskell-presubmits
+
+dashboards:
+- name: kubernetes-clients-haskell-presubmits
+  dashboard_tab:
+    - name: kubernetes-clients-haskell-presubmits-unit-tests
+      test_group_name: kubernetes-clients-haskell-unit-tests
+      base_options: include-filter-by-regex=clients
+      description: presubmits for haskell client
