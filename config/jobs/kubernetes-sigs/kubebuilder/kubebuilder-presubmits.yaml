@@ -18,7 +18,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
-  - name: pull-kubebuilder-e2e
+  - name: pull-kubebuilder-e2e-v1
     decorate: true
     always_run: true
     optional: true
@@ -31,7 +31,7 @@ presubmits:
         command:
         # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
         - runner.sh
-        - test_e2e.sh
+        - test_e2e_v1.sh
         resources:
           requests:
             cpu: 4000m
