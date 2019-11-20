@@ -1,0 +1,20 @@
+presubmits:
+  kubernetes-client/haskell:
+  - name: client-haskell-unit-tests
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: ubuntu:bionic
+        env:
+        command:
+        - bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+
+          apt-get update
+          apt-get install -y curl build-essential
+          curl -sSL https://get.haskellstack.org/ | sh
+          stack test
