@@ -958,7 +958,6 @@ func TestUtilityConfigValidation(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			id: "ssh_keys specified but clone_uri is empty, error",
 			uc: UtilityConfig{
@@ -1032,6 +1031,13 @@ func TestUtilityConfigValidation(t *testing.T) {
 					SSHKeySecrets: []string{"ssh-secret"},
 				},
 			},
+		},
+		{
+			id: "clone_uri contains a user and decoration config is nil, no error",
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+			},
+			valid: true,
 		},
 	}
 
