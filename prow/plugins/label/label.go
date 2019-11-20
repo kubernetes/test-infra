@@ -106,7 +106,7 @@ func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string, 
 		labelFilter.Insert(strings.ToLower(l))
 	}
 	for _, match := range matches {
-		parts := strings.Split(match[0], " ")
+		parts := strings.Split(strings.TrimSpace(match[0]), " ")
 		if ((parts[0] != "/label") && (parts[0] != "/remove-label")) || len(parts) != 2 {
 			continue
 		}
