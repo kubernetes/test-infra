@@ -325,25 +325,30 @@ dashboards:
     open_bug_template:
       url: https://github.com/kyma-project/test-infra/issues/
 
-  # Kyma presubmit dashboard
-- name: kyma-presubmit
+  # Kyma postsubmit dashboard
+- name: kyma-postsubmit
   dashboard_tab:
-  - name: pre-master-kyma-gke-upgrade
-    description: Tracks presubmit master gke upgrade jobs
-    test_group_name: pre-master-kyma-gke-upgrade
+  - name: post-master-kyma-gke-upgrade
+    description: Tracks post-submit master gke upgrade jobs
+    test_group_name: post-master-kyma-gke-upgrade
     # alert_options:
     #   alert_mail_to_addresses: email-here@sap.com
     code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
-
-  # Kyma postsubmit dashboard
-- name: kyma-postsubmit
-  dashboard_tab:
-  - name: post-master-kyma-gke-upgrade
-    description: Tracks posubmit master gke upgrade jobs
-    test_group_name: post-master-kyma-gke-upgrade
+  - name: post-master-kyma-gke-integration
+    description: Tracks post-submit master gke integration jobs
+    test_group_name: post-master-kyma-gke-integration
+    # alert_options:
+    #   alert_mail_to_addresses: email-here@sap.com
+    code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+  - name: post-master-kyma-gke-central-connector
+    description: Tracks post-submit master gke central connector jobs
+    test_group_name: post-master-kyma-gke-central-connector
     # alert_options:
     #   alert_mail_to_addresses: email-here@sap.com
     code_search_url_template:
