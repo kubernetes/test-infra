@@ -299,6 +299,14 @@ presubmits:
       description: Presubmits for kubeflow/kfctl.
       testgrid-num-columns-recent: '30'
   kubeflow/pipelines:
+  - name: kubeflow-pipeline-frontend-test
+    always_run: false
+    decorate: true
+    spec:
+      containers:
+      - image: node:12
+        command:
+        - cd ./frontend && npm ci && npm run test:ci
   - name: kubeflow-pipeline-e2e-test
     always_run: true
     decorate: true
