@@ -355,6 +355,15 @@ dashboards:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     open_bug_template:
       url: https://github.com/kyma-project/kyma/issues/
+  - name: post-master-kyma-gke-compass-integration
+    description: Tracks post-submit master gke compass integration jobs
+    test_group_name: post-master-kyma-gke-compass-integration
+    # alert_options:
+    #   alert_mail_to_addresses: email-here@sap.com
+    code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
 
   # Kyma nightly dashboard
 - name: kyma-nightly
