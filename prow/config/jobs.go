@@ -444,9 +444,9 @@ func (u *UtilityConfig) Validate() error {
 				return errors.New("SSH key secrets provided but no clone_uri has been found")
 			}
 
-			// Trim user from uri if exists.
-			cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
 		}
+		// Trim user from uri if exists.
+		cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
 
 		if _, err := url.Parse(cloneURI); err != nil {
 			return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)

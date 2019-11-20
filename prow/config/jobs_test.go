@@ -1011,6 +1011,27 @@ func TestUtilityConfigValidation(t *testing.T) {
 			},
 		},
 		{
+			id:    "all of clone_uri are valid, no error",
+			valid: true,
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubermatic/grpc-connector.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "github.com:org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "git@github.com:org2/repo2.git",
+					},
+				},
+			},
+		},
+		{
 			id: "ssh_keys specified and one of the clone_uri is invalid, error",
 			uc: UtilityConfig{
 				CloneURI: "git@github.com:kubernetes/test-infra.git",
