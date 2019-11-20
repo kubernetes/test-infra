@@ -95,16 +95,16 @@ var (
 	aksAzureEnv            = flag.String("aksengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
-	aksCustomK8sComponents = flag.Bool("aksengine-custom-k8s-comopnents", false, "Set to True if you want to build k8s from source and deploy it via aks-engine")
+	aksCustomK8sComponents = flag.Bool("aksengine-custom-k8s-comopnents", false, "Set to True if you want to build individual components from a k8s branch and deploy them via aks-engine")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	// Azure File CSI Driver flag
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 	// Azure Disk CSI Driver flag
 	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
 	// Commonly used environment variables
-	imageRegistry     = os.Getenv("REGISTRY")
-	imageTag          = fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
-	k8sPackageTarball = util.K8s("kubernetes", "kubernetes-node-linux-amd64.tar.gz")
+	imageRegistry  = os.Getenv("REGISTRY")
+	imageTag       = fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
+	k8sNodeTarball = util.K8s("kubernetes", "_output", "release-tars", "kubernetes-node-linux-amd64.tar.gz")
 )
 
 const (
@@ -445,6 +445,10 @@ func newAksEngine() (*Cluster, error) {
 		return nil, err
 	}
 
+	if err := c.dockerLogin(); err != nil {
+		return nil, err
+	}
+
 	return &c, nil
 }
 
@@ -639,7 +643,7 @@ func (c *Cluster) getAksEngine(retry int) error {
 
 }
 
-func (c Cluster) generateARMTemplates() error {
+func (c *Cluster) generateARMTemplates() error {
 	if err := control.FinishRunning(exec.Command(c.aksEngineBinaryPath, "generate", c.apiModelPath, "--output-directory", c.outputDir)); err != nil {
 		return fmt.Errorf("failed to generate ARM templates: %v.", err)
 	}
@@ -766,8 +770,8 @@ func dockerLogout() error {
 }
 
 func dockerPush(image string) error {
-	log.Printf("Pushing %s.", image)
-	cmd := exec.Command("docker", "logout")
+	log.Printf("Pushing docker image %s", image)
+	cmd := exec.Command("docker", "push", image)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to push %s: %v", image, err)
 	}
@@ -834,50 +838,6 @@ func (c *Cluster) buildHyperKube() error {
 
 	c.customHyperkubeImage = getDockerImage(hyperkubeImageName)
 	log.Printf("Custom hyperkube URL: %v .", c.customHyperkubeImage)
-	return nil
-}
-
-func (c *Cluster) buildK8sComponents() error {
-	// Set environment variables for building individual k8s component
-	if err := os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
-		return err
-	}
-	if err := os.Setenv("KUBE_DOCKER_IMAGE_TAG", imageTag); err != nil {
-		return err
-	}
-
-	// Build and push k8s components to registry
-	cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "quick-release-images")
-	if err := control.FinishRunning(cmd); err != nil {
-		return err
-	}
-	c.customKubeAPIServerImage = getDockerImage(kubeAPIServerImageName)
-	if err := dockerPush(c.customKubeAPIServerImage); err != nil {
-		return err
-	}
-	c.customKubeControllerManagerImage = getDockerImage(kubeControllerManagerImageName)
-	if err := dockerPush(c.customKubeControllerManagerImage); err != nil {
-		return err
-	}
-	c.customKubeProxyImage = getDockerImage(kubeProxyImageName)
-	if err := dockerPush(c.customKubeProxyImage); err != nil {
-		return err
-	}
-	c.customKubeSchedulerImage = getDockerImage(kubeSchedulerImageName)
-	if err := dockerPush(c.customKubeSchedulerImage); err != nil {
-		return err
-	}
-
-	// Upload kubernetes-node-linux-amd64.tar.gz to Azure Storage
-	if _, err := os.Stat(k8sPackageTarball); os.IsNotExist(err) {
-		return fmt.Errorf("%s does not exist", k8sPackageTarball)
-	}
-
-	var err error
-	if c.customKubeBinaryURL, err = c.uploadToAzureStorage(k8sPackageTarball); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -982,19 +942,8 @@ func (c *Cluster) buildWinZip() error {
 	return nil
 }
 
-func (c Cluster) Up() error {
+func (c *Cluster) Up() error {
 	var err error
-	err = c.dockerLogin()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = dockerLogout()
-		if err != nil {
-			log.Println("Docker logout failed.")
-		}
-	}()
-
 	if *aksCcm == true {
 		err = c.buildAzureCloudComponents()
 		if err != nil {
@@ -1005,12 +954,6 @@ func (c Cluster) Up() error {
 		err = c.buildHyperKube()
 		if err != nil {
 			return fmt.Errorf("error building hyperkube %v", err)
-		}
-	}
-	if *aksCustomK8sComponents == true {
-		err = c.buildK8sComponents()
-		if err != nil {
-			return fmt.Errorf("error building custom k8s components %v", err)
 		}
 	}
 	if *aksWinBinaries == true {
@@ -1053,12 +996,67 @@ func (c Cluster) Up() error {
 	return err
 }
 
-func (c Cluster) Down() error {
-	log.Printf("Deleting resource group: %v.", c.resourceGroup)
-	return c.azureClient.DeleteResourceGroup(c.ctx, c.resourceGroup)
+func (c *Cluster) Build(b buildStrategy) error {
+	if !*aksCustomK8sComponents {
+		return b.Build()
+	}
+
+	// Environment variables for building custom k8s images
+	if err := os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
+		return err
+	}
+	if err := os.Setenv("KUBE_DOCKER_IMAGE_TAG", imageTag); err != nil {
+		return err
+	}
+
+	// Build k8s images and node tarball
+	if err := b.Build(); err != nil {
+		return err
+	}
+
+	c.customKubeAPIServerImage = getDockerImage(kubeAPIServerImageName)
+	if err := dockerPush(c.customKubeAPIServerImage); err != nil {
+		return err
+	}
+	c.customKubeControllerManagerImage = getDockerImage(kubeControllerManagerImageName)
+	if err := dockerPush(c.customKubeControllerManagerImage); err != nil {
+		return err
+	}
+	c.customKubeProxyImage = getDockerImage(kubeProxyImageName)
+	if err := dockerPush(c.customKubeProxyImage); err != nil {
+		return err
+	}
+	c.customKubeSchedulerImage = getDockerImage(kubeSchedulerImageName)
+	if err := dockerPush(c.customKubeSchedulerImage); err != nil {
+		return err
+	}
+
+	// Upload kubernetes-node-linux-amd64.tar.gz to Azure Storage
+	if _, err := os.Stat(k8sNodeTarball); os.IsNotExist(err) {
+		return fmt.Errorf("%s does not exist", k8sNodeTarball)
+	}
+
+	var err error
+	if c.customKubeBinaryURL, err = c.uploadToAzureStorage(k8sNodeTarball); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (c Cluster) DumpClusterLogs(localPath, gcsPath string) error {
+func (c *Cluster) Down() error {
+	log.Printf("Deleting resource group: %v.", c.resourceGroup)
+	if err := c.azureClient.DeleteResourceGroup(c.ctx, c.resourceGroup); err != nil {
+		return err
+	}
+	if err := dockerLogout(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {
 	if *aksCcm == false {
 		log.Println("Skippng DumpClusterLogs due to CCM not being enabled.")
 		return nil
@@ -1081,11 +1079,11 @@ func (c Cluster) DumpClusterLogs(localPath, gcsPath string) error {
 	return err
 }
 
-func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
+func (c *Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 	return time.Time{}, errors.New("not implemented")
 }
 
-func (c Cluster) TestSetup() error {
+func (c *Cluster) TestSetup() error {
 	// set env vars required by the ccm e2e tests
 	if *testCcm == true {
 		if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
@@ -1142,11 +1140,11 @@ func (c Cluster) TestSetup() error {
 	return nil
 }
 
-func (c Cluster) IsUp() error {
+func (c *Cluster) IsUp() error {
 	return isUp(c)
 }
 
-func (c Cluster) KubectlCommand() (*exec.Cmd, error) {
+func (c *Cluster) KubectlCommand() (*exec.Cmd, error) {
 	return exec.Command("kubectl"), nil
 }
 
