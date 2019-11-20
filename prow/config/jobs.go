@@ -439,13 +439,13 @@ type UtilityConfig struct {
 
 func (u *UtilityConfig) Validate() error {
 	cloneURIValidate := func(cloneURI string) error {
+		// Trim user from uri if exists.
+		cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
+
 		if u.DecorationConfig != nil && len(u.DecorationConfig.SSHKeySecrets) > 0 {
 			if len(u.CloneURI) == 0 {
 				return errors.New("SSH key secrets provided but no clone_uri has been found")
 			}
-
-			// Trim user from uri if exists.
-			cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
 		}
 
 		if _, err := url.Parse(cloneURI); err != nil {
