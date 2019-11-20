@@ -6,6 +6,16 @@ load("//def:configmap.bzl", "k8s_configmap")
 #   bazel run //prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply
 
 k8s_configmap(
+    name = "grafana-dashboard-boskos",
+    cluster = "{STABLE_PROW_CLUSTER}",
+    data = {
+        "boskos.json": "//prow/cluster/monitoring/mixins/grafana_dashboards:boskos",
+    },
+    namespace = "prow-monitoring",
+    visibility = ["//visibility:public"],
+)
+
+k8s_configmap(
     name = "grafana-dashboard-deck",
     cluster = "{STABLE_PROW_CLUSTER}",
     data = {
