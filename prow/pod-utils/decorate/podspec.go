@@ -56,6 +56,7 @@ const (
 	gcsCredentialsMountPath = "/secrets/gcs"
 	outputMountName         = "output"
 	outputMountPath         = "/output"
+	oauthTokenFilename      = "oauth-token"
 )
 
 // Labels returns a string slice with label consts from kube.
@@ -241,6 +242,26 @@ func tmpVolume(name string) (coreapi.Volume, coreapi.VolumeMount) {
 	return v, vm
 }
 
+func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
+	name := strings.Join([]string{"oauth-secret", secret}, "-")
+	return coreapi.Volume{
+			Name: name,
+			VolumeSource: coreapi.VolumeSource{
+				Secret: &coreapi.SecretVolumeSource{
+					SecretName: secret,
+					Items: []coreapi.KeyToPath{{
+						Key:  key,
+						Path: fmt.Sprintf("./%s", oauthTokenFilename),
+					}},
+				},
+			},
+		}, coreapi.VolumeMount{
+			Name:      name,
+			MountPath: "/secrets/oauth",
+			ReadOnly:  true,
+		}
+}
+
 // sshVolume converts a secret holding ssh keys into the corresponding volume and mount.
 //
 // This is used by CloneRefs to attach the mount to the clonerefs container.
@@ -343,6 +364,15 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		sshKeyPaths = append(sshKeyPaths, mount.MountPath)
 		cloneVolumes = append(cloneVolumes, volume)
 	}
+
+	var oauthMountPath string
+	if pj.Spec.DecorationConfig.OauthTokenSecret != nil {
+		oauthVolume, oauthMount := oauthVolume(pj.Spec.DecorationConfig.OauthTokenSecret.Name, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
+		cloneMounts = append(cloneMounts, oauthMount)
+		oauthMountPath = filepath.Join(oauthMount.MountPath, oauthTokenFilename)
+		cloneVolumes = append(cloneVolumes, oauthVolume)
+	}
+
 	volume, mount := tmpVolume("clonerefs-tmp")
 	cloneMounts = append(cloneMounts, mount)
 	cloneVolumes = append(cloneVolumes, volume)
@@ -367,6 +397,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		KeyFiles:         sshKeyPaths,
 		Log:              CloneLogPath(logMount),
 		SrcRoot:          codeMount.MountPath,
+		OauthTokenFile:   oauthMountPath,
 	})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("clone env: %v", err)
