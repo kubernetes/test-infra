@@ -302,10 +302,15 @@ presubmits:
   - name: kubeflow-pipeline-frontend-test
     always_run: false
     decorate: true
+    labels:
+      preset-service-account: "true"
     spec:
       containers:
       - image: node:12
         command:
+        - /bin/sh
+        args:
+        - -c
         - cd ./frontend && npm ci && npm run test:ci
   - name: kubeflow-pipeline-e2e-test
     always_run: true
