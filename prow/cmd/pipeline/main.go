@@ -108,7 +108,7 @@ func newPipelineConfig(cfg rest.Config, stop <-chan struct{}) (*pipelineConfig, 
 }
 
 func main() {
-	logrusutil.ComponentInit("pipeline")
+	logrusutil.ComponentInit()
 
 	o := parseOptions()
 

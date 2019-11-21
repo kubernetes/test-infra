@@ -91,7 +91,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func main() {
-	logrusutil.ComponentInit("hook")
+	logrusutil.ComponentInit()
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
