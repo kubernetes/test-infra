@@ -86,6 +86,10 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
  
+ - *November 21, 2019* The boskos metrics component replaced the existing prometheus
+   metrics with a single, label-qualified metric. Metrics are now served at `/metrics`
+   on port 9090. This actually happened August 5th, but is being documented now. 
+   Details: https://github.com/kubernetes/test-infra/pull/13767
  - *November 18, 2019*  The `mkbuild-cluster` command-line utility and `build-cluster`
    format is deprecated and will be removed in May 2020. Use `gencred` and the `kubeconfig` 
    format as an alternative.
