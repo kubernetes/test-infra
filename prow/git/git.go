@@ -213,16 +213,6 @@ type Repo struct {
 	logger *logrus.Entry
 }
 
-// SetLogger sets logger: Do not use except in unit tests
-func (r *Repo) SetLogger(logger *logrus.Entry) {
-	r.logger = logger
-}
-
-// SetGit sets git: Do not use except in unit tests
-func (r *Repo) SetGit(git string) {
-	r.git = git
-}
-
 // Clean deletes the repo. It is unusable after calling.
 func (r *Repo) Clean() error {
 	return os.RemoveAll(r.Dir)
