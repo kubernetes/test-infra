@@ -24,7 +24,7 @@ spec:
   - name: default
     protocol: TCP
     port: 80
-    targetPort: 8080
+    targetPort: 9090
   loadBalancerIP: 104.197.27.114
   type: LoadBalancer
 ---
