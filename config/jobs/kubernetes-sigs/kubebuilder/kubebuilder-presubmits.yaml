@@ -46,6 +46,7 @@ presubmits:
       testgrid-tab-name: kubebuilder-e2e-1-16-2
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-15-3
     decorate: true
     always_run: true
@@ -74,6 +75,7 @@ presubmits:
       testgrid-tab-name: kubebuilder-e2e-1-15-3
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-14-1
     decorate: true
     always_run: true
@@ -102,3 +104,4 @@ presubmits:
       testgrid-tab-name: kubebuilder-e2e-1-14-2
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
