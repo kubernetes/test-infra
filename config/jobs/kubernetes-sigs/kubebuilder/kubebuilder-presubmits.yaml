@@ -102,4 +102,3 @@ presubmits:
       testgrid-tab-name: kubebuilder-e2e
     labels:
       preset-dind-enabled: "true"
-    
