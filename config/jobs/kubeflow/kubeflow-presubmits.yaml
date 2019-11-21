@@ -306,7 +306,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: node:12
+      - image: node:12-slim
         command:
         - /bin/sh
         args:
