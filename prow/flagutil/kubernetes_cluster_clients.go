@@ -26,6 +26,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	prow "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
@@ -45,6 +47,7 @@ type KubernetesOptions struct {
 	resolved                    bool
 	dryRun                      bool
 	prowJobClientset            prow.Interface
+	clusterConfigs              map[string]rest.Config
 	kubernetesClientsByContext  map[string]kubernetes.Interface
 	infrastructureClusterConfig *rest.Config
 }
@@ -96,6 +99,8 @@ func (o *KubernetesOptions) resolve(dryRun bool) (err error) {
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q --build-cluster=%q configs: %v", o.kubeconfig, o.buildCluster, err)
 	}
+	o.clusterConfigs = clusterConfigs
+
 	clients := map[string]kubernetes.Interface{}
 	for context, config := range clusterConfigs {
 		client, err := kubernetes.NewForConfig(&config)
@@ -198,5 +203,28 @@ func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients ma
 	for context, client := range o.kubernetesClientsByContext {
 		clients[context] = client.CoreV1()
 	}
+	return clients, nil
+}
+
+// BuildClusterUncachedRuntimeClients returns ctrlruntimeclients for the build cluster in a non-caching implementation.
+func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map[string]ctrlruntimeclient.Client, error) {
+	if err := o.resolve(dryRun); err != nil {
+		return nil, err
+	}
+
+	if o.dryRun {
+		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
+	}
+
+	clients := map[string]ctrlruntimeclient.Client{}
+	for name := range o.clusterConfigs {
+		cfg := o.clusterConfigs[name]
+		client, err := ctrlruntimeclient.New(&cfg, ctrlruntimeclient.Options{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to construct client for cluster %q: %v", name, err)
+		}
+		clients[name] = client
+	}
+
 	return clients, nil
 }
