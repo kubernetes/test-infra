@@ -17,6 +17,7 @@ limitations under the License.
 package pjutil
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -24,11 +25,18 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime"
 	ktypes "k8s.io/apimachinery/pkg/types"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github/reporter"
 )
+
+// patchClient a minimalistic prow client required by the aborter
+type patchClient interface {
+	Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error
+}
 
 // prowClient a minimalistic prow client required by the aborter
 type prowClient interface {
@@ -55,7 +63,7 @@ func digestRefs(ref prowapi.Refs) string {
 
 // TerminateOlderJobs aborts all presubmit jobs from the given list that have a newer version. It calls
 // the cleanup callback for each job before updating its status as aborted.
-func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob,
+func TerminateOlderJobs(pjc patchClient, log *logrus.Entry, pjs []prowapi.ProwJob,
 	cleanup ProwJobResourcesCleanup) error {
 	dupes := map[string]int{}
 	for i, pj := range pjs {
@@ -96,7 +104,7 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 			dupes[ji] = i
 		}
 		toCancel := pjs[cancelIndex]
-		prevPJ := *toCancel.DeepCopy()
+		prevPJ := toCancel.DeepCopy()
 
 		// TODO cancel the prow job before cleaning up its resources and make this system
 		// independent.
@@ -116,11 +124,9 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 			WithField("from", prevPJ.Status.State).
 			WithField("to", toCancel.Status.State).Info("Transitioning states")
 
-		newPJ, err := PatchProwjob(pjc, log, prevPJ, toCancel)
-		if err != nil {
+		if err := pjc.Patch(context.Background(), &toCancel, ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
 			return err
 		}
-		pjs[cancelIndex] = *newPJ
 	}
 
 	return nil

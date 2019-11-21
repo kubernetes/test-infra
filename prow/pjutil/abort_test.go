@@ -17,6 +17,8 @@ limitations under the License.
 package pjutil
 
 import (
+	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -24,10 +26,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clienttesting "k8s.io/client-go/testing"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 )
 
 func TestTerminateOlderJobs(t *testing.T) {
@@ -436,11 +438,10 @@ func TestTerminateOlderJobs(t *testing.T) {
 			for i := range tc.pjs {
 				prowJobs = append(prowJobs, &tc.pjs[i])
 			}
-			fakeProwJobClient := prowfake.NewSimpleClientset(prowJobs...)
-			pjc := fakeProwJobClient.ProwV1().ProwJobs(fakePJNS)
+			fakeProwJobClient := &patchTrackingFakeClient{Client: fakectrlruntimeclient.NewFakeClient(prowJobs...)}
 			log := logrus.NewEntry(logrus.StandardLogger())
 			cleanedupPJs := sets.NewString()
-			err := TerminateOlderJobs(pjc, log, tc.pjs, func(pj prowjobv1.ProwJob) error {
+			err := TerminateOlderJobs(fakeProwJobClient, log, tc.pjs, func(pj prowjobv1.ProwJob) error {
 				cleanedupPJs.Insert(pj.GetName())
 				return nil
 			})
@@ -455,13 +456,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				t.Errorf("%s: found unexpectedly cleaned up jobs: %v", tc.name, extra.List())
 			}
 
-			replacedJobs := sets.NewString()
-			for _, action := range fakeProwJobClient.Fake.Actions() {
-				switch action := action.(type) {
-				case clienttesting.PatchActionImpl:
-					replacedJobs.Insert(action.Name)
-				}
-			}
+			replacedJobs := fakeProwJobClient.patched
 			if missing := tc.terminateddPJs.Difference(replacedJobs); missing.Len() > 0 {
 				t.Errorf("%s: did not replace the expected jobs: %v", tc.name, missing.Len())
 			}
@@ -470,4 +465,21 @@ func TestTerminateOlderJobs(t *testing.T) {
 			}
 		})
 	}
+}
+
+type patchTrackingFakeClient struct {
+	ctrlruntimeclient.Client
+	patched sets.String
+}
+
+func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+	if c.patched == nil {
+		c.patched = sets.NewString()
+	}
+	metaObject, ok := obj.(metav1.Object)
+	if !ok {
+		return errors.New("Object is no metav1.Object")
+	}
+	c.patched.Insert(metaObject.GetName())
+	return c.Client.Patch(ctx, obj, patch, opts...)
 }

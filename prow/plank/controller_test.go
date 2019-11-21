@@ -17,6 +17,7 @@ limitations under the License.
 package plank
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -28,21 +29,19 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/kubernetes/fake"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	clienttesting "k8s.io/client-go/testing"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/reporter"
 	"k8s.io/test-infra/prow/pjutil"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 type fca struct {
@@ -288,13 +287,17 @@ func TestTerminateDupes(t *testing.T) {
 		for i := range tc.pjs {
 			prowJobs = append(prowJobs, &tc.pjs[i])
 		}
-		fakeProwJobClient := prowfake.NewSimpleClientset(prowJobs...)
+		fakeProwJobClient := &patchTrackingFakeClient{
+			Client: fakectrlruntimeclient.NewFakeClient(prowJobs...),
+		}
 		var pods []runtime.Object
 		for name := range tc.pm {
 			pod := tc.pm[name]
 			pods = append(pods, &pod)
 		}
-		fakePodClient := fake.NewSimpleClientset(pods...)
+		fakePodClient := &deleteTrackingFakeClient{
+			Client: fakectrlruntimeclient.NewFakeClient(pods...),
+		}
 		fca := &fca{
 			c: &config.Config{
 				ProwConfig: config.ProwConfig{
@@ -310,8 +313,8 @@ func TestTerminateDupes(t *testing.T) {
 		}
 		log := logrus.NewEntry(logrus.StandardLogger())
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-			buildClients:  map[string]corev1.PodInterface{prowapi.DefaultClusterAlias: fakePodClient.CoreV1().Pods("pods")},
+			prowJobClient: fakeProwJobClient,
+			buildClients:  map[string]ctrlruntimeclient.Client{prowapi.DefaultClusterAlias: fakePodClient},
 			log:           log,
 			config:        fca.Config,
 			clock:         clock.RealClock{},
@@ -321,13 +324,7 @@ func TestTerminateDupes(t *testing.T) {
 			t.Fatalf("Error terminating dupes: %v", err)
 		}
 
-		observedCompletedProwJobs := sets.NewString()
-		for _, action := range fakeProwJobClient.Fake.Actions() {
-			switch action := action.(type) {
-			case clienttesting.PatchActionImpl:
-				observedCompletedProwJobs.Insert(action.Name)
-			}
-		}
+		observedCompletedProwJobs := fakeProwJobClient.patched
 		if missing := tc.terminatedPJs.Difference(observedCompletedProwJobs); missing.Len() > 0 {
 			t.Errorf("%s: did not delete expected prowJobs: %v", tc.name, missing.List())
 		}
@@ -335,13 +332,7 @@ func TestTerminateDupes(t *testing.T) {
 			t.Errorf("%s: found unexpectedly deleted prowJobs: %v", tc.name, extra.List())
 		}
 
-		observedTerminatedPods := sets.NewString()
-		for _, action := range fakePodClient.Fake.Actions() {
-			switch action := action.(type) {
-			case clienttesting.DeleteActionImpl:
-				observedTerminatedPods.Insert(action.Name)
-			}
-		}
+		observedTerminatedPods := fakePodClient.deleted
 		if missing := tc.terminatedPods.Difference(observedTerminatedPods); missing.Len() > 0 {
 			t.Errorf("%s: did not delete expected pods: %v", tc.name, missing.List())
 		}
@@ -704,24 +695,22 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				pm[pods[i].ObjectMeta.Name] = pods[i]
 			}
 		}
-		fakeProwJobClient := prowfake.NewSimpleClientset(&tc.pj)
-		buildClients := map[string]corev1.PodInterface{}
+		fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.pj)
+		buildClients := map[string]ctrlruntimeclient.Client{}
 		for alias, pods := range tc.pods {
 			var data []runtime.Object
 			for i := range pods {
 				pod := pods[i]
 				data = append(data, &pod)
 			}
-			fakeClient := fake.NewSimpleClientset(data...)
-			if tc.podErr != nil {
-				fakeClient.PrependReactor("create", "pods", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-					return true, nil, tc.podErr
-				})
+			fakeClient := &createErroringClient{
+				Client: fakectrlruntimeclient.NewFakeClient(data...),
+				err:    tc.podErr,
 			}
-			buildClients[alias] = fakeClient.CoreV1().Pods("pods")
+			buildClients[alias] = fakeClient
 		}
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			prowJobClient: fakeProwJobClient,
 			buildClients:  buildClients,
 			log:           logrus.NewEntry(logrus.StandardLogger()),
 			config:        newFakeConfigAgent(t, tc.maxConcurrency).Config,
@@ -752,8 +741,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			}
 		}
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-		if err != nil {
+		actualProwJobs := &prowapi.ProwJobList{}
+		if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
 			t.Errorf("for case %q could not list prowJobs from the client: %v", tc.name, err)
 		}
 		if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
@@ -770,8 +759,8 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			t.Errorf("for case %q got no pod name, expected one", tc.name)
 		}
 		for alias, expected := range tc.expectedNumPods {
-			actualPods, err := buildClients[alias].List(metav1.ListOptions{})
-			if err != nil {
+			actualPods := &v1.PodList{}
+			if err := buildClients[alias].List(context.Background(), actualPods); err != nil {
 				t.Errorf("for case %q could not list pods from the client: %v", tc.name, err)
 			}
 			if got := len(actualPods.Items); got != expected {
@@ -1168,23 +1157,21 @@ func TestSyncPendingJob(t *testing.T) {
 		for i := range tc.pods {
 			pm[tc.pods[i].ObjectMeta.Name] = tc.pods[i]
 		}
-		fakeProwJobClient := prowfake.NewSimpleClientset(&tc.pj)
+		fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&tc.pj)
 		var data []runtime.Object
 		for i := range tc.pods {
 			pod := tc.pods[i]
 			data = append(data, &pod)
 		}
-		fakeClient := fake.NewSimpleClientset(data...)
-		if tc.err != nil {
-			fakeClient.PrependReactor("create", "pods", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-				return true, nil, tc.err
-			})
+		fakeClient := &createErroringClient{
+			Client: fakectrlruntimeclient.NewFakeClient(data...),
+			err:    tc.err,
 		}
-		buildClients := map[string]corev1.PodInterface{
-			prowapi.DefaultClusterAlias: fakeClient.CoreV1().Pods("pods"),
+		buildClients := map[string]ctrlruntimeclient.Client{
+			prowapi.DefaultClusterAlias: fakeClient,
 		}
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			prowJobClient: fakeProwJobClient,
 			buildClients:  buildClients,
 			log:           logrus.NewEntry(logrus.StandardLogger()),
 			config:        newFakeConfigAgent(t, 0).Config,
@@ -1200,8 +1187,8 @@ func TestSyncPendingJob(t *testing.T) {
 		}
 		close(reports)
 
-		actualProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-		if err != nil {
+		actualProwJobs := &prowapi.ProwJobList{}
+		if err := fakeProwJobClient.List(context.Background(), actualProwJobs); err != nil {
 			t.Errorf("for case %q could not list prowJobs from the client: %v", tc.name, err)
 		}
 		if len(actualProwJobs.Items) != tc.expectedCreatedPJs+1 {
@@ -1211,8 +1198,8 @@ func TestSyncPendingJob(t *testing.T) {
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
 		}
-		actualPods, err := buildClients[prowapi.DefaultClusterAlias].List(metav1.ListOptions{})
-		if err != nil {
+		actualPods := &v1.PodList{}
+		if err := buildClients[prowapi.DefaultClusterAlias].List(context.Background(), actualPods); err != nil {
 			t.Errorf("for case %q could not list pods from the client: %v", tc.name, err)
 		}
 		if got := len(actualPods.Items); got != tc.expectedNumPods {
@@ -1253,7 +1240,7 @@ func TestOrderedJobs(t *testing.T) {
 			},
 		}), nil, nil)
 		job.ObjectMeta.CreationTimestamp = metav1.Time{
-			Time: time.Now(),
+			Time: time.Now().Add(time.Duration(i) * time.Hour),
 		}
 		job.Namespace = "prowjobs"
 		pjs = append(pjs, job)
@@ -1269,13 +1256,13 @@ func TestOrderedJobs(t *testing.T) {
 		for i := 0; i < len(pjs); i++ {
 			newPjs[i] = &pjs[orders[i]]
 		}
-		fakeProwJobClient := prowfake.NewSimpleClientset(newPjs...)
-		buildClients := map[string]corev1.PodInterface{
-			"trusted": fake.NewSimpleClientset().CoreV1().Pods("pods"),
+		fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(newPjs...)
+		buildClients := map[string]ctrlruntimeclient.Client{
+			"trusted": fakectrlruntimeclient.NewFakeClient(),
 		}
 		log := logrus.NewEntry(logrus.StandardLogger())
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			prowJobClient: fakeProwJobClient,
 			ghc:           &fghc{},
 			buildClients:  buildClients,
 			log:           log,
@@ -1290,7 +1277,7 @@ func TestOrderedJobs(t *testing.T) {
 		}
 		for i, name := range expOut {
 			if c.pjs[i].Spec.Job != name {
-				t.Fatalf("Error in keeping order, want: '%s', got '%s'", name, c.pjs[i].Spec.Job)
+				t.Errorf("Error in keeping order, want: '%s', got '%s'", name, c.pjs[i].Spec.Job)
 			}
 		}
 	}
@@ -1311,14 +1298,14 @@ func TestPeriodic(t *testing.T) {
 	defer totServ.Close()
 	pj := pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil, nil)
 	pj.Namespace = "prowjobs"
-	fakeProwJobClient := prowfake.NewSimpleClientset(&pj)
-	buildClients := map[string]corev1.PodInterface{
-		prowapi.DefaultClusterAlias: fake.NewSimpleClientset().CoreV1().Pods("pods"),
-		"trusted":                   fake.NewSimpleClientset().CoreV1().Pods("pods"),
+	fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(&pj)
+	buildClients := map[string]ctrlruntimeclient.Client{
+		prowapi.DefaultClusterAlias: fakectrlruntimeclient.NewFakeClient(),
+		"trusted":                   fakectrlruntimeclient.NewFakeClient(),
 	}
 	log := logrus.NewEntry(logrus.StandardLogger())
 	c := Controller{
-		prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+		prowJobClient: fakeProwJobClient,
 		ghc:           &fghc{},
 		buildClients:  buildClients,
 		log:           log,
@@ -1331,8 +1318,9 @@ func TestPeriodic(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
-	afterFirstSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-	if err != nil {
+
+	afterFirstSync := &prowapi.ProwJobList{}
+	if err := fakeProwJobClient.List(context.Background(), afterFirstSync); err != nil {
 		t.Fatalf("could not list prowJobs from the client: %v", err)
 	}
 	if len(afterFirstSync.Items) != 1 {
@@ -1341,8 +1329,8 @@ func TestPeriodic(t *testing.T) {
 	if len(afterFirstSync.Items[0].Spec.PodSpec.Containers) != 1 || afterFirstSync.Items[0].Spec.PodSpec.Containers[0].Name != "test-name" {
 		t.Fatalf("Sync step updated the pod spec: %#v", afterFirstSync.Items[0].Spec.PodSpec)
 	}
-	podsAfterSync, err := buildClients["trusted"].List(metav1.ListOptions{})
-	if err != nil {
+	podsAfterSync := &v1.PodList{}
+	if err := buildClients["trusted"].List(context.Background(), podsAfterSync); err != nil {
 		t.Fatalf("could not list pods from the client: %v", err)
 	}
 	if len(podsAfterSync.Items) != 1 {
@@ -1356,8 +1344,8 @@ func TestPeriodic(t *testing.T) {
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
-	podsAfterSecondSync, err := buildClients["trusted"].List(metav1.ListOptions{})
-	if err != nil {
+	podsAfterSecondSync := &v1.PodList{}
+	if err := buildClients["trusted"].List(context.Background(), podsAfterSecondSync); err != nil {
 		t.Fatalf("could not list pods from the client: %v", err)
 	}
 	if len(podsAfterSecondSync.Items) != 1 {
@@ -1365,14 +1353,14 @@ func TestPeriodic(t *testing.T) {
 	}
 	update := podsAfterSecondSync.Items[0].DeepCopy()
 	update.Status.Phase = v1.PodSucceeded
-	if _, err := buildClients["trusted"].Update(update); err != nil {
+	if err := buildClients["trusted"].Update(context.Background(), update); err != nil {
 		t.Fatalf("could not update pod to be succeeded: %v", err)
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on third sync: %v", err)
 	}
-	afterThirdSync, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
-	if err != nil {
+	afterThirdSync := &prowapi.ProwJobList{}
+	if err := fakeProwJobClient.List(context.Background(), afterThirdSync); err != nil {
 		t.Fatalf("could not list prowJobs from the client: %v", err)
 	}
 	if len(afterThirdSync.Items) != 1 {
@@ -1521,12 +1509,12 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		for i := range test.pjs {
 			prowJobs = append(prowJobs, &test.pjs[i])
 		}
-		fakeProwJobClient := prowfake.NewSimpleClientset(prowJobs...)
-		buildClients := map[string]corev1.PodInterface{
-			prowapi.DefaultClusterAlias: fake.NewSimpleClientset().CoreV1().Pods("pods"),
+		fakeProwJobClient := fakectrlruntimeclient.NewFakeClient(prowJobs...)
+		buildClients := map[string]ctrlruntimeclient.Client{
+			prowapi.DefaultClusterAlias: fakectrlruntimeclient.NewFakeClient(),
 		}
 		c := Controller{
-			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			prowJobClient: fakeProwJobClient,
 			buildClients:  buildClients,
 			log:           logrus.NewEntry(logrus.StandardLogger()),
 			config:        newFakeConfigAgent(t, 0).Config,
@@ -1539,8 +1527,8 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		pm := make(map[string]v1.Pod)
 
 		syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, reports, errors, pm)
-		podsAfterSync, err := buildClients[prowapi.DefaultClusterAlias].List(metav1.ListOptions{})
-		if err != nil {
+		podsAfterSync := &v1.PodList{}
+		if err := buildClients[prowapi.DefaultClusterAlias].List(context.Background(), podsAfterSync); err != nil {
 			t.Fatalf("could not list pods from the client: %v", err)
 		}
 		if len(podsAfterSync.Items) != test.expectedPods {
@@ -1662,7 +1650,7 @@ func TestMaxConcurency(t *testing.T) {
 			for i := range tc.existingProwJobs {
 				prowJobs = append(prowJobs, &tc.existingProwJobs[i])
 			}
-			buildClients := map[string]corev1.PodInterface{}
+			buildClients := map[string]ctrlruntimeclient.Client{}
 			c := Controller{
 				pjs:          tc.existingProwJobs,
 				buildClients: buildClients,
@@ -1681,4 +1669,50 @@ func TestMaxConcurency(t *testing.T) {
 		})
 	}
 
+}
+
+type patchTrackingFakeClient struct {
+	ctrlruntimeclient.Client
+	patched sets.String
+}
+
+func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj runtime.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
+	if c.patched == nil {
+		c.patched = sets.NewString()
+	}
+	metaObject, ok := obj.(metav1.Object)
+	if !ok {
+		return errors.New("Object is no metav1.Object")
+	}
+	c.patched.Insert(metaObject.GetName())
+	return c.Client.Patch(ctx, obj, patch, opts...)
+}
+
+type deleteTrackingFakeClient struct {
+	ctrlruntimeclient.Client
+	deleted sets.String
+}
+
+func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.DeleteOption) error {
+	if c.deleted == nil {
+		c.deleted = sets.String{}
+	}
+	metaObject, ok := obj.(metav1.Object)
+	if !ok {
+		return errors.New("object is not a metav1.Object")
+	}
+	c.deleted.Insert(metaObject.GetName())
+	return c.Client.Delete(ctx, obj, opts...)
+}
+
+type createErroringClient struct {
+	ctrlruntimeclient.Client
+	err error
+}
+
+func (c *createErroringClient) Create(ctx context.Context, obj runtime.Object, opts ...ctrlruntimeclient.CreateOption) error {
+	if c.err != nil {
+		return c.err
+	}
+	return c.Client.Create(ctx, obj, opts...)
 }
