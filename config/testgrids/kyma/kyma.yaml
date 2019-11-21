@@ -493,15 +493,19 @@ test_groups:
 - name: post-master-kyma-gke-upgrade
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-upgrade
   num_failures_to_alert: 3
+  days_of_results: 60
 - name: post-master-kyma-gke-integration
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-integration
   num_failures_to_alert: 3
+  days_of_results: 60
 - name: post-master-kyma-gke-central-connector
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-central-connector
   num_failures_to_alert: 3
+  days_of_results: 60
 - name: post-master-kyma-gke-compass-integration
   gcs_prefix: kyma-prow-logs/logs/post-master-kyma-gke-compass-integration
   num_failures_to_alert: 3
+  days_of_results: 60
 
 #nightly
 - name: kyma-gke-nightly
