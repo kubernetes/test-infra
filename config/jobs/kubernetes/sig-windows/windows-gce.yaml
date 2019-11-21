@@ -153,7 +153,7 @@ periodics:
     repo: gce-k8s-windows-testing
     base_ref: master
     path_alias: k8s.io/gce-k8s-windows-testing
-  interval: 24h
+  interval: 12h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -175,7 +175,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=240m
+      - --timeout=600m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
   annotations:
     testgrid-dashboards: google-windows
