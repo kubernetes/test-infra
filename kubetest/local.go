@@ -219,6 +219,7 @@ func (n localCluster) Down() error {
 		"kube-controller-manager",
 		"kube-proxy",
 		"kube-scheduler",
+		"kube-apiserver",
 		"kubelet",
 	}
 	// create docker client
@@ -228,9 +229,14 @@ func (n localCluster) Down() error {
 	}
 	// make sure all containers are removed
 	removeAllContainers(cli)
-	err = control.FinishRunning(exec.Command("pkill", processes...))
-	if err != nil {
-		log.Printf("unable to kill kubernetes processes: %v", err)
+	for _, p := range processes {
+		// -f is required to match against the complete command line
+		// (/proc/pid/cmdline), otherwise process name longer than 15
+		// characters cannot be matched, see https://linux.die.net/man/1/pkill.
+		err = control.FinishRunning(exec.Command("pkill", "-f", p))
+		if err != nil {
+			log.Printf("unable to kill kubernetes process %q: %v", p, err)
+		}
 	}
 	err = control.FinishRunning(exec.Command("pkill", "etcd"))
 	if err != nil {

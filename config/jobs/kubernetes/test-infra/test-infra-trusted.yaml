@@ -6,7 +6,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.28.1
+      - image: launcher.gcr.io/google/bazel:0.29.1
         imagePullPolicy: Always
         command:
         - bazel
@@ -41,12 +41,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/alpine-bash/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -69,12 +70,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/boskosctl-base/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -93,8 +95,8 @@ postsubmits:
     branches:
     - master
     spec:
-      containers: # https://github.com/bazelbuild/rules_k8s make -C images/gcloud-bazel push PROJECT=k8s-testimages
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - prow/deploy.sh
         args:
@@ -118,11 +120,11 @@ postsubmits:
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
-    run_if_changed: '^(prow|ghproxy|label_sync|robots/commenter|robots/issue-creator)/'
+    run_if_changed: '^(prow|ghproxy|label_sync|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd/transfigure)/'
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1 # whatever image you use here must have bash 4.4+
         command:
         - prow/push.sh
         env:
@@ -155,12 +157,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - velodrome/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -174,7 +177,7 @@ postsubmits:
           secretName: deployer-service-account
   - name: post-test-infra-push-boskos
     cluster: test-infra-trusted
-    run_if_changed: '^boskos/'
+    run_if_changed: '^(boskos\/|maintenance\/aws-janitor)'
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "boskos"
@@ -186,7 +189,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0 # whatever image you use here must have bash 4.4+
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1 # whatever image you use here must have bash 4.4+
         command:
         - boskos/push.sh
         env:
@@ -213,12 +216,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - kettle/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -244,12 +248,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - planter/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -275,12 +280,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - triage/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -306,12 +312,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bazelbuild/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -337,12 +344,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bazel-krte/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -368,12 +376,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bigquery/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -399,12 +408,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/bootstrap/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -430,13 +440,46 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/cluster-api/
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+      volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  - name: post-test-infra-push-gcb-docker-gcloud
+    cluster: test-infra-trusted
+    run_if_changed: '^images/gcb-docker-gcloud/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "gcb-docker-gcloud"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the gcb-docker-gcloud image
+    decorate: true
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - images/gcb-docker-gcloud/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
@@ -461,12 +504,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/gcloud/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -492,13 +536,46 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/kubekins-e2e/
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+      volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+  - name: post-test-infra-push-krte
+    cluster: test-infra-trusted
+    run_if_changed: '^images/krte/'
+    annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "krte"
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: builds and pushes the krte image
+    decorate: true
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
+        command:
+        - images/builder/ci-runner.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - images/krte/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
@@ -523,12 +600,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/kubekins-test/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -554,12 +632,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/kubemci/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -585,12 +664,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/pull-test-infra-gubernator/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -616,12 +696,13 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20190823-v0.1-129-gb799dd0
+      - image: gcr.io/k8s-testimages/gcloud-bazel:v20191004-v0.1-140-g5a84471
         command:
         - images/builder/ci-runner.sh
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
+        - --build-dir=.
         - images/builder/
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -633,11 +714,68 @@ postsubmits:
       - name: creds
         secret:
           secretName: deployer-service-account
-  kubernetes/k8s.io:
-  - name: post-k8sio-cip
+  - name: post-test-infra-upload-testgrid-config
+    cluster: test-infra-trusted
+    branches:
+    - master
+    labels:
+      preset-bazel-scratch-dir: "true"
+    run_if_changed: '^config/(jobs|testgrids)/.*$'
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+        command:
+        - ./testgrid/config-upload.sh
+        volumeMounts:
+        - name: testgrid-service-account
+          mountPath: /etc/service-account
+          readOnly: true
+        resources:
+          requests:
+            memory: "1Gi"
+      volumes:
+      - name: testgrid-service-account
+        secret:
+          secretName: testgrid-config-updater-service-account
+    annotations:
+      testgrid-dashboards: sig-testing-maintenance
+      testgrid-tab-name: testgrid-config-upload
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: Compiles and uploads testgrid config on test-infra pushes
+  - name: post-test-infra-upload-boskos-config
+    cluster: test-infra-trusted
+    branches:
+    - master
+    run_if_changed: '^boskos/.*$'
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
+        command:
+        - ./boskos/update_prow_config.sh
+        env:
+        - name: PROW_SERVICE_ACCOUNT
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+          readOnly: true
+      volumes:
+      - name: creds
+        secret:
+          secretName: deployer-service-account
+    annotations:
+      testgrid-dashboards: sig-testing-maintenance
+      testgrid-tab-name: boskos-config-upload
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: Update boskos configmap on test-infra pushes
+  - name: post-test-infra-cip-prow
     cluster: test-infra-trusted
     decorate: true
-    run_if_changed: "k8s.gcr.io/.*/manifest.yaml"
+    run_if_changed: "^prow/cip-manifest.yaml$"
     # Never run more than 1 job at a time. This is because we don't want to run
     # into a case where an older manifest PR merge gets run last (after a newer
     # one).
@@ -646,11 +784,45 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
         command:
         - cip
         args:
-        - -manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - -manifest=prow/cip-manifest.yaml
+        - -key-files=/etc/service-account/service-account.json
+        - -dry-run=false
+        volumeMounts:
+        - name: service-account
+          mountPath: /etc/service-account
+      volumes:
+      - name: service-account
+        secret:
+          secretName: pusher-service-account
+    annotations:
+      testgrid-dashboards: sig-testing-prow
+      testgrid-tab-name: cip-prow
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
+      description: Uses the Container Image Promoter to promote images from gcr.io/k8s-prow-edge to gcr.io/k8s-prow.
+
+  kubernetes/k8s.io:
+  - name: post-k8sio-cip
+    cluster: test-infra-trusted
+    decorate: true
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+        command:
+        - cip
+        args:
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
         - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
         - -dry-run=false
         volumeMounts:
@@ -705,7 +877,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20190619-47630b6
+      - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
         command:
         - /run.sh
         args:
@@ -741,7 +913,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.28.1
+    - image: launcher.gcr.io/google/bazel:0.29.1
       imagePullPolicy: Always
       command:
       - bazel
@@ -761,7 +933,7 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
-- cron: "05 15 1-7 * 1"  # Run at 7:05 PST (15:05 UTC) on first monthly monday.
+- cron: "05 15 * * 1"  # Run at 7:05 PST (15:05 UTC) every monday.
   name: ci-test-infra-autoupdate-minor
   cluster: test-infra-trusted
   decorate: true
@@ -771,7 +943,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
       command:
       - hack/autodeps.sh
       args:
@@ -798,7 +970,7 @@ periodics:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: autoupdate-minor
     description: Monthly module update to latest minor versions
-- cron: "05 15 * * 1"  # Run at 7:05 PST (15:05 UTC) every Monday
+- cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
   name: ci-test-infra-autoupdate-patch
   cluster: test-infra-trusted
   decorate: true
@@ -808,7 +980,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
       command:
       - hack/autodeps.sh
       args:
@@ -845,7 +1017,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1
       command:
       - bazel
       - run
@@ -884,7 +1056,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.28.1
+    - image: launcher.gcr.io/google/bazel:0.29.1
       command:
       - bazel
       args:
@@ -948,11 +1120,11 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20190827-484b36c51
+      image: gcr.io/k8s-prow/branchprotector:v20191120-b1692ff83
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
-      - --config-path=prow/config.yaml
+      - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --github-token-path=/etc/github/oauth
       - --confirm
@@ -982,7 +1154,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20190827-484b36c51
+      image: gcr.io/k8s-prow/label_sync:v20191120-b1692ff83
       command:
       - /app/label_sync/app.binary
       args:
@@ -1041,11 +1213,11 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: gcr.io/k8s-staging-artifact-promoter/cip:20190821-v2.2.1-2-gc29e4fc
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
       command:
       - cip
       args:
-      - -manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
       - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
       - -dry-run=false
       volumeMounts:
@@ -1058,3 +1230,41 @@ periodics:
         secretName: k8s-artifacts-prod-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
+  # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
+- interval: 1h
+  cluster: test-infra-trusted
+  max_concurrency: 1
+  name: ci-k8sio-backup
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-1.17
+      command:
+      - infra/gcp/backup_tools/backup.sh
+      env:
+      # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+      # here anyway in case the underlying image changes (the backup.sh script
+      # needs it to be defined).
+      - name: GOPATH
+        value: /go
+      - name: GCRANE_REF
+        value: f8574ec722f4dd4e2703689ea2ffe10c2021adc9 # Known-good commit from 2019-11-15
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/k8s-artifacts-prod-bak-service-account/service-account.json
+      volumeMounts:
+      - name: k8s-artifacts-prod-bak-service-account-creds
+        mountPath: /etc/k8s-artifacts-prod-bak-service-account
+        readOnly: true
+    volumes:
+    - name: k8s-artifacts-prod-bak-service-account-creds
+      secret:
+        secretName: k8s-artifacts-prod-bak-service-account
+  annotations:
+    testgrid-dashboards: sig-release-misc
+    # TODO: enable alerting once the job has stabilized
+    # testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    # testgrid-num-failures-to-alert: '1'

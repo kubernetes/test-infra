@@ -152,6 +152,9 @@ type RepositoryClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) error
+	ListRepoTeams(org, repo string) ([]Team, error)
+	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*Repo, error)
+	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*Repo, error)
 }
 
 // TeamClient interface for team related API actions
@@ -174,6 +177,7 @@ type TeamClient interface {
 // UserClient interface for user related API actions
 type UserClient interface {
 	BotName() (string, error)
+	BotUser() (*User, error)
 	Email() (string, error)
 }
 
@@ -183,6 +187,7 @@ type ProjectClient interface {
 	GetOrgProjects(org string) ([]Project, error)
 	GetProjectColumns(projectID int) ([]ProjectColumn, error)
 	CreateProjectCard(columnID int, projectCard ProjectCard) (*ProjectCard, error)
+	GetColumnProjectCards(columnID int) ([]ProjectCard, error)
 	GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error)
 	MoveProjectCard(projectCardID int, newColumnID int) error
 	DeleteProjectCard(projectCardID int) error
@@ -251,9 +256,8 @@ type delegate struct {
 	getToken func() []byte
 	censor   func([]byte) []byte
 
-	mut     sync.Mutex // protects botName and email
-	botName string
-	email   string
+	mut      sync.Mutex // protects botName and email
+	userData *User
 }
 
 // WithFields clones the client, keeping the underlying delegate the same but adding
@@ -753,11 +757,10 @@ func (c *client) getUserData() error {
 	if err != nil {
 		return err
 	}
-	c.botName = u.Login
+	c.userData = &u
 	// email needs to be publicly accessible via the profile
 	// of the current account. Read below for more info
 	// https://developer.github.com/v3/users/#get-a-single-user
-	c.email = u.Email
 	return nil
 }
 
@@ -767,12 +770,26 @@ func (c *client) getUserData() error {
 func (c *client) BotName() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
-	if c.botName == "" {
+	if c.userData == nil {
 		if err := c.getUserData(); err != nil {
 			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
 		}
 	}
-	return c.botName, nil
+	return c.userData.Login, nil
+}
+
+// BotUser returns the user data of the authenticated identity.
+//
+// See https://developer.github.com/v3/users/#get-the-authenticated-user
+func (c *client) BotUser() (*User, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.userData == nil {
+		if err := c.getUserData(); err != nil {
+			return nil, fmt.Errorf("fetching bot name from GitHub: %v", err)
+		}
+	}
+	return c.userData, nil
 }
 
 // Email returns the user-configured email for the authenticated identity.
@@ -781,12 +798,12 @@ func (c *client) BotName() (string, error) {
 func (c *client) Email() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
-	if c.email == "" {
+	if c.userData == nil {
 		if err := c.getUserData(); err != nil {
 			return "", fmt.Errorf("fetching e-mail from GitHub: %v", err)
 		}
 	}
-	return c.email, nil
+	return c.userData.Email, nil
 }
 
 // IsMember returns whether or not the user is a member of the org.
@@ -1507,7 +1524,7 @@ func (c *client) UpdatePullRequest(org, repo string, number int, title, body *st
 		op := "open"
 		data.State = &op
 	} else if open != nil {
-		cl := "clossed"
+		cl := "closed"
 		data.State = &cl
 	}
 	_, err := c.request(&request{
@@ -1652,6 +1669,56 @@ func (c *client) GetRepo(owner, name string) (Repo, error) {
 		exitCodes: []int{200},
 	}, &repo)
 	return repo, err
+}
+
+// CreateRepo creates a new repository
+// See https://developer.github.com/v3/repos/#create
+func (c *client) CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*Repo, error) {
+	c.log("CreateRepo", owner, isUser, repo)
+
+	if repo.Name == nil || *repo.Name == "" {
+		return nil, errors.New("repo.Name must be non-empty")
+	}
+	if c.fake {
+		return nil, nil
+	} else if c.dry {
+		return repo.ToRepo(), nil
+	}
+
+	path := "/user/repos"
+	if !isUser {
+		path = fmt.Sprintf("/orgs/%s/repos", owner)
+	}
+	var retRepo Repo
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        path,
+		requestBody: &repo,
+		exitCodes:   []int{201},
+	}, &retRepo)
+	return &retRepo, err
+}
+
+// UpdateRepo edits an existing repository
+// See https://developer.github.com/v3/repos/#edit
+func (c *client) UpdateRepo(owner, name string, repo RepoUpdateRequest) (*Repo, error) {
+	c.log("UpdateRepo", owner, name, repo)
+
+	if c.fake {
+		return nil, nil
+	} else if c.dry {
+		return repo.ToRepo(), nil
+	}
+
+	path := fmt.Sprintf("/repos/%s/%s", owner, name)
+	var retRepo Repo
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        path,
+		requestBody: &repo,
+		exitCodes:   []int{200},
+	}, &retRepo)
+	return &retRepo, err
 }
 
 // GetRepos returns all repos in an org.
@@ -2827,6 +2894,31 @@ func (c *client) CreateFork(owner, repo string) error {
 	return err
 }
 
+// ListRepoTeams gets a list of all the teams with access to a repository
+// See https://developer.github.com/v3/repos/#list-teams
+func (c *client) ListRepoTeams(org, repo string) ([]Team, error) {
+	c.log("ListRepoTeams", org, repo)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/teams", org, repo)
+	var teams []Team
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]Team{}
+		},
+		func(obj interface{}) {
+			teams = append(teams, *(obj.(*[]Team))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teams, nil
+}
+
 // ListIssueEvents gets a list events from GitHub's events API that pertain to the specified issue.
 // The events that are returned have a different format than webhook events and certain event types
 // are excluded.
@@ -3079,11 +3171,10 @@ func (c *client) CreateProjectCard(columnID int, projectCard ProjectCard) (*Proj
 	return &retProjectCard, err
 }
 
-// GetColumnProjectCard of a specific issue or PR for a specific column in a board/project
-// This method requires the URL of the issue/pr to compare the issue with the content_url
-// field of the card.  See https://developer.github.com/v3/projects/cards/#list-project-cards
-func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error) {
-	c.log("GetColumnProjectCard", columnID, issueURL)
+// GetProjectColumnCards get all project cards in a column. This helps in iterating all
+// issues and PRs that are under a column
+func (c *client) GetColumnProjectCards(columnID int) ([]ProjectCard, error) {
+	c.log("GetColumnProjectCards", columnID)
 	if c.fake {
 		return nil, nil
 	}
@@ -3100,6 +3191,14 @@ func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCa
 			cards = append(cards, *(obj.(*[]ProjectCard))...)
 		},
 	)
+	return cards, err
+}
+
+// GetColumnProjectCard of a specific issue or PR for a specific column in a board/project
+// This method requires the URL of the issue/pr to compare the issue with the content_url
+// field of the card.  See https://developer.github.com/v3/projects/cards/#list-project-cards
+func (c *client) GetColumnProjectCard(columnID int, issueURL string) (*ProjectCard, error) {
+	cards, err := c.GetColumnProjectCards(columnID)
 	if err != nil {
 		return nil, err
 	}

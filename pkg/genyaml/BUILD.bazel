@@ -6,7 +6,11 @@ go_library(
     data = ["//prow/plugins:config-src"],
     importpath = "k8s.io/test-infra/pkg/genyaml",
     visibility = ["//visibility:public"],
-    deps = ["@in_gopkg_yaml_v3//:go_default_library"],
+    deps = [
+        "@com_github_clarketm_json//:go_default_library",
+        "@in_gopkg_yaml_v3//:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
+    ],
 )
 
 go_test(
@@ -15,8 +19,10 @@ go_test(
     data = [":test-data"],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/genyaml/testdata/alias_simple_types:go_default_library",
         "//pkg/genyaml/testdata/alias_types:go_default_library",
         "//pkg/genyaml/testdata/embedded_structs:go_default_library",
+        "//pkg/genyaml/testdata/inline_structs:go_default_library",
         "//pkg/genyaml/testdata/interface_types:go_default_library",
         "//pkg/genyaml/testdata/multiline_comments:go_default_library",
         "//pkg/genyaml/testdata/nested_structs:go_default_library",
@@ -32,9 +38,11 @@ go_test(
 filegroup(
     name = "test-data",
     srcs = [
+        "//pkg/genyaml/testdata/alias_simple_types:test-data",
         "//pkg/genyaml/testdata/alias_types:test-data",
         "//pkg/genyaml/testdata/embedded_structs:test-data",
         "//pkg/genyaml/testdata/inject_comments:test-data",
+        "//pkg/genyaml/testdata/inline_structs:test-data",
         "//pkg/genyaml/testdata/interface_types:test-data",
         "//pkg/genyaml/testdata/multiline_comments:test-data",
         "//pkg/genyaml/testdata/multiple_paths:test-data",
@@ -60,9 +68,11 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//pkg/genyaml/testdata/alias_simple_types:all-srcs",
         "//pkg/genyaml/testdata/alias_types:all-srcs",
         "//pkg/genyaml/testdata/embedded_structs:all-srcs",
         "//pkg/genyaml/testdata/inject_comments:all-srcs",
+        "//pkg/genyaml/testdata/inline_structs:all-srcs",
         "//pkg/genyaml/testdata/interface_types:all-srcs",
         "//pkg/genyaml/testdata/multiline_comments:all-srcs",
         "//pkg/genyaml/testdata/multiple_paths:all-srcs",

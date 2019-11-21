@@ -42,10 +42,9 @@ func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest 
 func makeAdmins(val *bool) *bool {
 	if val != nil {
 		return val
-	} else {
-		no := false
-		return &no
 	}
+	no := false
+	return &no
 }
 
 // makeBool returns true iff *val == true

@@ -1,16 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- chases2 # oncall
-- cjwagner # oncall
 - fejta # lead
-- Katharine # oncall
-- michelle192837 # oncall
 - spiffxp # lead
 - stevekuznetsov # lead
+- test-infra-oncall # oncall
 emeritus_approvers:
 - amwat
-- BenTheElder
 - ixdy
 - krzyzacy
 

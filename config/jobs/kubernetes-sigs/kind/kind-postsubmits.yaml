@@ -6,12 +6,13 @@ postsubmits:
     path_alias: sigs.k8s.io/kind
     labels:
       preset-dind-enabled: "true"
+      preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - runner.sh
-        - ./hack/ci/build-all.sh
+        - ./hack/ci/push-latest-cli.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -20,3 +21,24 @@ postsubmits:
       testgrid-tab-name: ci build
       testgrid-alert-email: bentheelder@google.com
       description: kind CI build
+  - name: ci-kind-unit
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
+        command:
+        - runner.sh
+        - make
+        - unit
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      testgrid-tab-name: ci unit test
+      testgrid-alert-email: bentheelder@google.com
+      description: kind CI unit test

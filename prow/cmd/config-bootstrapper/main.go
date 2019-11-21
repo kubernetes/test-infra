@@ -19,16 +19,16 @@ package main
 import (
 	"errors"
 	"flag"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
+
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
-	_ "k8s.io/test-infra/prow/hook"
+	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/updateconfig"
@@ -89,13 +89,18 @@ func main() {
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig, true); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 
 	client, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+	}
+
+	buildClusterCoreV1Clients, err := o.kubernetes.BuildClusterCoreV1Clients(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes clients for build cluster.")
 	}
 
 	// act like the whole repo just got committed
@@ -124,8 +129,13 @@ func main() {
 		if cm.Namespace == "" {
 			cm.Namespace = configAgent.Config().ProwJobNamespace
 		}
-		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace}})
-		if err := updateconfig.Update(&osFileGetter{root: o.sourcePath}, client.CoreV1().ConfigMaps(cm.Namespace), cm.Name, cm.Namespace, data, nil, logger); err != nil {
+		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
+		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
+		if err != nil {
+			logrus.WithError(err).Errorf("Failed to find configMap client")
+			continue
+		}
+		if err := updateconfig.Update(&updateconfig.OSFileGetter{Root: o.sourcePath}, configMapClient, cm.Name, cm.Namespace, data, nil, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 			errors++
 		} else {
@@ -136,12 +146,4 @@ func main() {
 	if errors > 0 {
 		logrus.WithField("fail-count", errors).Fatalf("errors occurred during update")
 	}
-}
-
-type osFileGetter struct {
-	root string
-}
-
-func (g *osFileGetter) GetFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filepath.Join(g.root, filename))
 }

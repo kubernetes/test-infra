@@ -87,6 +87,7 @@ var (
 	aksWinBinaries         = flag.Bool("aksengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for aks-engine")
 	aksHyperKube           = flag.Bool("aksengine-hyperkube", false, "Set to True if you want kubetest to build a custom hyperkube for aks-engine")
 	aksCcm                 = flag.Bool("aksengine-ccm", false, "Set to True if you want kubetest to build a custom cloud controller manager for aks-engine")
+	aksCnm                 = flag.Bool("aksengine-cnm", false, "Set to True if you want kubetest to build a custom cloud node manager for aks-engine. Require --aksengine-ccm to be true")
 	aksCredentialsFile     = flag.String("aksengine-creds", "", "Path to credential file for Azure")
 	aksOrchestratorRelease = flag.String("aksengine-orchestratorRelease", "", "Orchestrator Profile for aks-engine")
 	aksWinZipBuildScript   = flag.String("aksengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/aks-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for aks-engine")
@@ -95,6 +96,13 @@ var (
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
+	// Azure File CSI Driver flag
+	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
+	// Azure Disk CSI Driver flag
+	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
+	// Commonly used environment variables
+	imageRegistry = os.Getenv("REGISTRY")
+	imageTag      = fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
 )
 
 const (
@@ -102,6 +110,11 @@ const (
 	AzureStackCloud = "AzureStackCloud"
 	// ADFSIdentitySystem is a const for ADFS identifier on Azure Stack cloud
 	ADFSIdentitySystem = "adfs"
+
+	ccmImageName       = "azure-cloud-controller-manager"
+	cnmImageName       = "azure-cloud-node-manager"
+	cnmAddonName       = "cloud-node-manager"
+	hyperkubeImageName = "hyperkube-amd64"
 )
 
 type Creds struct {
@@ -133,10 +146,11 @@ type Cluster struct {
 	adminPassword           string
 	masterVMSize            string
 	agentVMSize             string
-	aksCustomHyperKubeURL   string
+	customHyperkubeImage    string
 	aksCustomWinBinariesURL string
 	aksEngineBinaryPath     string
-	aksCustomCcmURL         string
+	customCcmImage          string // custom cloud controller manager (ccm) image
+	customCnmImage          string // custom cloud node manager (cnm) image
 	azureEnvironment        string
 	azureIdentitySystem     string
 	azureCustomCloudURL     string
@@ -352,6 +366,9 @@ func checkParams() error {
 	if *aksTemplateURL == "" {
 		return fmt.Errorf("no ApiModel URL specified.")
 	}
+	if *aksCnm && !*aksCcm {
+		return fmt.Errorf("--aksengine-cnm cannot be true without --aksengine-ccm also being true")
+	}
 
 	return nil
 }
@@ -386,9 +403,10 @@ func newAksEngine() (*Cluster, error) {
 		azureEnvironment:        *acsAzureEnv,
 		azureIdentitySystem:     *acsIdentitySystem,
 		azureCustomCloudURL:     *acsCustomCloudURL,
-		aksCustomHyperKubeURL:   "",
+		customHyperkubeImage:    "",
 		aksCustomWinBinariesURL: "",
-		aksCustomCcmURL:         "",
+		customCcmImage:          "",
+		customCnmImage:          "",
 		aksEngineBinaryPath:     "aks-engine", // use the one in path by default
 	}
 	c.getAzCredentials()
@@ -486,19 +504,45 @@ func (c *Cluster) populateApiModelTemplate() error {
 	v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
 	v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
 
-	if c.aksCustomHyperKubeURL != "" {
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.aksCustomHyperKubeURL
-		if strings.Contains(os.Getenv("REGISTRY"), "azurecr") {
-			v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = os.Getenv("REGISTRY")
+	if c.customHyperkubeImage != "" {
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.customHyperkubeImage
+		if strings.Contains(imageRegistry, "azurecr") {
+			v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = imageRegistry
 		}
 	}
 	if c.aksCustomWinBinariesURL != "" {
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomWindowsPackageURL = c.aksCustomWinBinariesURL
 	}
-	if c.aksCustomCcmURL != "" {
+	if c.customCcmImage != "" {
 		useCloudControllerManager := true
 		v.Properties.OrchestratorProfile.KubernetesConfig.UseCloudControllerManager = &useCloudControllerManager
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage = c.aksCustomCcmURL
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomCcmImage = c.customCcmImage
+	}
+	if c.customCnmImage != "" {
+		cnmAddon := KubernetesAddon{
+			Name:    cnmAddonName,
+			Enabled: boolPointer(true),
+			Containers: []KubernetesContainerSpec{
+				{
+					Name:  cnmAddonName,
+					Image: c.customCnmImage,
+				},
+			},
+		}
+
+		found := false
+		for i := range v.Properties.OrchestratorProfile.KubernetesConfig.Addons {
+			addon := &v.Properties.OrchestratorProfile.KubernetesConfig.Addons[i]
+			if addon.Name == cnmAddonName {
+				found = true
+				addon = &cnmAddon
+				break
+			}
+		}
+
+		if !found {
+			v.Properties.OrchestratorProfile.KubernetesConfig.Addons = append(v.Properties.OrchestratorProfile.KubernetesConfig.Addons, cnmAddon)
+		}
 	}
 
 	if c.isAzureStackCloud() {
@@ -654,7 +698,7 @@ func (c *Cluster) dockerLogin() error {
 	server := ""
 	var err error
 
-	if !strings.Contains(os.Getenv("REGISTRY"), "azurecr.io") {
+	if !strings.Contains(imageRegistry, "azurecr.io") {
 		// if REGISTRY is not ACR, then use docker cred
 		log.Println("Attempting Docker login with docker cred.")
 		username = os.Getenv("DOCKER_USERNAME")
@@ -669,7 +713,7 @@ func (c *Cluster) dockerLogin() error {
 		log.Println("Attempting Docker login with azure cred.")
 		username = c.credentials.ClientID
 		pwd = c.credentials.ClientSecret
-		server = os.Getenv("REGISTRY")
+		server = imageRegistry
 	}
 	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
 	if err = cmd.Run(); err != nil {
@@ -678,61 +722,69 @@ func (c *Cluster) dockerLogin() error {
 	log.Println("Docker login success.")
 	return nil
 }
+
 func dockerLogout() error {
 	log.Println("Docker logout.")
 	cmd := exec.Command("docker", "logout")
 	return cmd.Run()
 }
 
-func (c *Cluster) buildCcm() error {
+func (c *Cluster) buildAzureCloudComponents() error {
+	log.Println("Building cloud controller manager and cloud node manager.")
 
-	image := fmt.Sprintf("%v/azure-cloud-controller-manager:%v-%v", os.Getenv("REGISTRY"), os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
-	if err := c.dockerLogin(); err != nil {
+	// Set environment variables for building cloud comopnents' images
+	if err := os.Setenv("IMAGE_REGISTRY", imageRegistry); err != nil {
 		return err
 	}
-	log.Println("Building ccm.")
-	projectPath := util.K8s("cloud-provider-azure")
-	log.Printf("projectPath %v", projectPath)
-	cmd := exec.Command("docker", "build", "-t", image, ".")
-	cmd.Dir = projectPath
+	if err := os.Setenv("IMAGE_TAG", imageTag); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("make", "-C", util.K8sSigs("cloud-provider-azure"), "image", "push")
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
 
-	cmd = exec.Command("docker", "push", image)
-	cmd.Stdout = ioutil.Discard
-	if err := control.FinishRunning(cmd); err != nil {
-		return err
+	c.customCcmImage = fmt.Sprintf("%s/%s:%s", imageRegistry, ccmImageName, imageTag)
+	log.Printf("Custom cloud controller manager image: %s", c.customCcmImage)
+
+	if *aksCnm {
+		c.customCnmImage = fmt.Sprintf("%s/%s:%s", imageRegistry, cnmImageName, imageTag)
+		log.Printf("Custom cloud node manager image: %s", c.customCnmImage)
 	}
-	c.aksCustomCcmURL = image
-	if err := dockerLogout(); err != nil {
-		log.Println("Docker logout failed.")
-		return err
-	}
-	log.Printf("Custom cloud controller manager URL: %v .", c.aksCustomCcmURL)
+
 	return nil
 }
 
 func (c *Cluster) buildHyperKube() error {
 
-	os.Setenv("VERSION", fmt.Sprintf("azure-e2e-%v-%v", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8]))
-	if err := c.dockerLogin(); err != nil {
+	var push_cmd *exec.Cmd
+	os.Setenv("VERSION", imageTag)
+	log.Println("Building hyperkube.")
+	hyperkube_cmd_path := util.K8s("kubernetes/cmd/hyperkube")
+	_, err := os.Stat(hyperkube_cmd_path)
+	if err == nil {
+		// cmd/hyperkube binary still exists in repo
+		cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "WHAT=cmd/hyperkube")
+		// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
+		cmd.Stdout = ioutil.Discard
+		if err := control.FinishRunning(cmd); err != nil {
+			return err
+		}
+		hyperkubeBin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
+		push_cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkubeBin))
+
+	} else if os.IsNotExist(err) {
+		push_cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push")
+
+	}
+	log.Println("Pushing hyperkube.")
+	if err := control.FinishRunning(push_cmd); err != nil {
 		return err
 	}
-	log.Println("Building and pushing hyperkube.")
-	pushHyperkube := util.K8s("kubernetes", "hack", "dev-push-hyperkube.sh")
-	cmd := exec.Command(pushHyperkube)
-	// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
-	cmd.Stdout = ioutil.Discard
-	if err := control.FinishRunning(cmd); err != nil {
-		return err
-	}
-	c.aksCustomHyperKubeURL = fmt.Sprintf("%s/hyperkube-amd64:%s", os.Getenv("REGISTRY"), os.Getenv("VERSION"))
-	if err := dockerLogout(); err != nil {
-		log.Println("Docker logout failed.")
-		return err
-	}
-	log.Printf("Custom hyperkube URL: %v .", c.aksCustomHyperKubeURL)
+
+	c.customHyperkubeImage = fmt.Sprintf("%s/%s:%s", imageRegistry, hyperkubeImageName, imageTag)
+	log.Printf("Custom hyperkube URL: %v .", c.customHyperkubeImage)
 	return nil
 }
 
@@ -839,10 +891,20 @@ func (c *Cluster) buildWinZip() error {
 }
 
 func (c Cluster) Up() error {
-
 	var err error
+	err = c.dockerLogin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = dockerLogout()
+		if err != nil {
+			log.Println("Docker logout failed.")
+		}
+	}()
+
 	if *aksCcm == true {
-		err = c.buildCcm()
+		err = c.buildAzureCloudComponents()
 		if err != nil {
 			return fmt.Errorf("error building cloud controller manager %v", err)
 		}
@@ -890,7 +952,7 @@ func (c Cluster) Up() error {
 	if err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
 	}
-	return nil
+	return err
 }
 
 func (c Cluster) Down() error {
@@ -899,7 +961,26 @@ func (c Cluster) Down() error {
 }
 
 func (c Cluster) DumpClusterLogs(localPath, gcsPath string) error {
-	return nil
+	if *aksCcm == false {
+		log.Println("Skippng DumpClusterLogs due to CCM not being enabled.")
+		return nil
+	}
+	if err := os.Setenv("ARTIFACTS", localPath); err != nil {
+		return err
+	}
+
+	logDumpDir := util.K8sSigs("cloud-provider-azure", "hack", "log-dump")
+	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump.sh")); os.IsNotExist(err) {
+		return fmt.Errorf("log-dump.sh not found in cloud-provider-azure repo")
+	}
+	if _, err := os.Stat(filepath.Join(logDumpDir, "log-dump-daemonset.yaml")); os.IsNotExist(err) {
+		return fmt.Errorf("log-dump-daemonset.yaml not found in cloud-provider-azure repo")
+	}
+
+	cmd := exec.Command("bash", "-c", "./log-dump.sh")
+	cmd.Dir = logDumpDir
+	err := control.FinishRunning(cmd)
+	return err
 }
 
 func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
@@ -907,7 +988,6 @@ func (c Cluster) GetClusterCreated(clusterName string) (time.Time, error) {
 }
 
 func (c Cluster) TestSetup() error {
-
 	// set env vars required by the ccm e2e tests
 	if *testCcm == true {
 		if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
@@ -925,10 +1005,18 @@ func (c Cluster) TestSetup() error {
 		if err := os.Setenv("K8S_AZURE_LOCATION", c.location); err != nil {
 			return err
 		}
+	} else if *testAzureFileCSIDriver == true || *testAzureDiskCSIDriver == true {
+		// Set env vars required by Azure File CSI driver tests.
+		// tenantId, subscriptionId, aadClientId, and aadClientSecret will be obtained from AZURE_CREDENTIAL
+		if err := os.Setenv("RESOURCE_GROUP", c.resourceGroup); err != nil {
+			return err
+		}
+		if err := os.Setenv("LOCATION", c.location); err != nil {
+			return err
+		}
 	}
 
 	// Download repo-list that defines repositories for Windows test images.
-
 	downloadUrl, ok := os.LookupEnv("KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION")
 	if !ok {
 		// Env value for downloadUrl is not set, nothing to do
@@ -960,23 +1048,29 @@ func (c Cluster) IsUp() error {
 	return isUp(c)
 }
 
-func (_ Cluster) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (c Cluster) KubectlCommand() (*exec.Cmd, error) {
+	return exec.Command("kubectl"), nil
+}
 
 // BuildTester returns a standard ginkgo-script tester or a custom one if testCcm is enabled
 func (c *Cluster) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
-	if *testCcm != true {
-		return &GinkgoScriptTester{}, nil
+	if *testCcm == true {
+		return &GinkgoCCMTester{}, nil
+	} else if *testAzureFileCSIDriver == true {
+		return &GinkgoAzureFileCSIDriverTester{}, nil
+	} else if *testAzureDiskCSIDriver == true {
+		return &GinkgoAzureDiskCSIDriverTester{}, nil
 	}
-	log.Printf("running go tests directly")
-	return &GinkgoCustomTester{}, nil
+
+	return &GinkgoScriptTester{}, nil
 }
 
-// GinkgoCustomTester implements Tester by calling a custom ginkgo script
-type GinkgoCustomTester struct {
+// GinkgoCCMTester implements Tester by running E2E tests for Azure CCM
+type GinkgoCCMTester struct {
 }
 
 // Run executes custom ginkgo script
-func (t *GinkgoCustomTester) Run(control *process.Control, testArgs []string) error {
+func (t *GinkgoCCMTester) Run(control *process.Control, testArgs []string) error {
 	artifactsDir, ok := os.LookupEnv("ARTIFACTS")
 	if !ok {
 		artifactsDir = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
@@ -987,7 +1081,33 @@ func (t *GinkgoCustomTester) Run(control *process.Control, testArgs []string) er
 		return err
 	}
 	cmd := exec.Command("make", "test-ccm-e2e")
-	projectPath := util.K8s("cloud-provider-azure")
+	projectPath := util.K8sSigs("cloud-provider-azure")
+	cmd.Dir = projectPath
+	testErr := control.FinishRunning(cmd)
+	return testErr
+}
+
+// GinkgoAzureFileCSIDriverTester implements Tester by running E2E tests for Azure File CSI Driver
+type GinkgoAzureFileCSIDriverTester struct {
+}
+
+// Run executes custom ginkgo script
+func (t *GinkgoAzureFileCSIDriverTester) Run(control *process.Control, testArgs []string) error {
+	cmd := exec.Command("make", "e2e-test")
+	projectPath := util.K8sSigs("azurefile-csi-driver")
+	cmd.Dir = projectPath
+	testErr := control.FinishRunning(cmd)
+	return testErr
+}
+
+// GinkgoAzureDiskCSIDriverTester implements Tester by running E2E tests for Azure Disk CSI Driver
+type GinkgoAzureDiskCSIDriverTester struct {
+}
+
+// Run executes custom ginkgo script
+func (t *GinkgoAzureDiskCSIDriverTester) Run(control *process.Control, testArgs []string) error {
+	cmd := exec.Command("make", "e2e-test")
+	projectPath := util.K8sSigs("azuredisk-csi-driver")
 	cmd.Dir = projectPath
 	testErr := control.FinishRunning(cmd)
 	return testErr

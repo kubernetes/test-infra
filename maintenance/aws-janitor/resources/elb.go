@@ -39,7 +39,7 @@ func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region 
 		for _, lb := range page.LoadBalancerDescriptions {
 			a := &loadBalancer{region: region, account: account, name: *lb.LoadBalancerName}
 			if set.Mark(a) {
-				klog.Warningf("%s: deleting %T: %v", a.ARN(), lb, lb)
+				klog.Warningf("%s: deleting %T: %s", a.ARN(), a, a.name)
 				toDelete = append(toDelete, a)
 			}
 		}
@@ -56,7 +56,7 @@ func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region 
 		}
 
 		if _, err := svc.DeleteLoadBalancer(deleteInput); err != nil {
-			klog.Warningf("%v: delete failed: %v", lb.ARN(), err)
+			klog.Warningf("%s: delete failed: %v", lb.ARN(), err)
 		}
 	}
 

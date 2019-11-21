@@ -32,6 +32,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
 
@@ -141,7 +142,11 @@ func (o Options) ExecuteProcess() (int, error) {
 	command.Stderr = output
 	command.Stdout = output
 	if err := command.Start(); err != nil {
-		return InternalErrorCode, fmt.Errorf("could not start the process: %v", err)
+		errs := []error{fmt.Errorf("could not start the process: %v", err)}
+		if _, err := processLogFile.Write([]byte(errs[0].Error())); err != nil {
+			errs = append(errs, err)
+		}
+		return InternalErrorCode, utilerrors.NewAggregate(errs)
 	}
 
 	timeout := optionOrDefault(o.Timeout, DefaultTimeout)

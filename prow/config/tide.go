@@ -27,6 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -38,7 +39,7 @@ type TideContextPolicy struct {
 	// whether to consider unknown contexts optional (skip) or required.
 	SkipUnknownContexts       *bool    `json:"skip-unknown-contexts,omitempty"`
 	RequiredContexts          []string `json:"required-contexts,omitempty"`
-	RequiredIfPresentContexts []string `json:"required-if-present-contexts"`
+	RequiredIfPresentContexts []string `json:"required-if-present-contexts,omitempty"`
 	OptionalContexts          []string `json:"optional-contexts,omitempty"`
 	// Infer required and optional jobs from Branch Protection configuration
 	FromBranchProtection *bool `json:"from-branch-protection,omitempty"`
@@ -132,6 +133,24 @@ type Tide struct {
 	// combined status; otherwise it may apply the branch protection setting or let user
 	// define their own options in case branch protection is not used.
 	ContextOptions TideContextPolicyOptions `json:"context_options,omitempty"`
+
+	// BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
+	// integer batch size limit as the value. The empty string key can be used as
+	// a global default.
+	// Special values:
+	//  0 => unlimited batch size
+	// -1 => batch merging disabled :(
+	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
+}
+
+func (t *Tide) BatchSizeLimit(org, repo string) int {
+	if limit, ok := t.BatchSizeLimitMap[fmt.Sprintf("%s/%s", org, repo)]; ok {
+		return limit
+	}
+	if limit, ok := t.BatchSizeLimitMap[org]; ok {
+		return limit
+	}
+	return t.BatchSizeLimitMap["*"]
 }
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is
@@ -470,22 +489,30 @@ func parseTideContextPolicyOptions(org, repo, branch string, options TideContext
 // GetTideContextPolicy parses the prow config to find context merge options.
 // If none are set, it will use the prow jobs configured and use the default github combined status.
 // Otherwise if set it will use the branch protection setting, or the listed jobs.
-func (c Config) GetTideContextPolicy(org, repo, branch string) (*TideContextPolicy, error) {
+func (c Config) GetTideContextPolicy(gitClient *git.Client, org, repo, branch string, baseSHAGetter RefGetter, headSHA string) (*TideContextPolicy, error) {
 	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.NewString(options.RequiredContexts...)
 	requiredIfPresent := sets.NewString(options.RequiredIfPresentContexts...)
 	optional := sets.NewString(options.OptionalContexts...)
 
+	headSHAGetter := func() (string, error) {
+		return headSHA, nil
+	}
+	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get presubmits: %v", err)
+	}
+
 	// automatically generate required and optional entries for Prow Jobs
-	prowRequired, prowRequiredIfPresent, prowOptional := BranchRequirements(org, repo, branch, c.Presubmits)
+	prowRequired, prowRequiredIfPresent, prowOptional := BranchRequirements(branch, presubmits)
 	required.Insert(prowRequired...)
 	requiredIfPresent.Insert(prowRequiredIfPresent...)
 	optional.Insert(prowOptional...)
 
 	// Using Branch protection configuration
 	if options.FromBranchProtection != nil && *options.FromBranchProtection {
-		bp, err := c.GetBranchProtection(org, repo, branch)
+		bp, err := c.GetBranchProtection(org, repo, branch, presubmits)
 		if err != nil {
 			logrus.WithError(err).Warningf("Error getting branch protection for %s/%s+%s", org, repo, branch)
 		} else if bp != nil && bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {

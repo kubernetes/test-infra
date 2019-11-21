@@ -21,7 +21,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
@@ -48,11 +48,11 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
-    testgrid-dashboards: google-aws, sig-release-1.14-all, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.14
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-beta
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-channelalpha
   labels:
@@ -100,7 +100,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha --image kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+      - --kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha --image kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --kops-zones=us-west-2a
       - --provider=aws
@@ -191,7 +191,7 @@ periodics:
       - --env=KUBE_SSH_USER=ubuntu
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180122
+      - --kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20190816
       - --kops-ssh-user=ubuntu
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
       - --provider=aws
@@ -282,11 +282,11 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.13
+    testgrid-tab-name: kops-aws-stable1
 - interval: 4h
   name: ci-kubernetes-e2e-kops-aws-stable2
   labels:
@@ -309,11 +309,11 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
-    testgrid-dashboards: google-aws, sig-release-1.13-all, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.12
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-stable2
 - interval: 6h
   name: ci-kubernetes-e2e-kops-aws-stable3
   labels:
@@ -336,11 +336,11 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-1.11
+    testgrid-tab-name: kops-aws-stable3
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-updown
   labels:
@@ -364,7 +364,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
       - --timeout=30m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
@@ -392,11 +392,40 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-weave
+
+- interval: 24h
+  name: ci-kubernetes-e2e-kops-aws-vpc-cni
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-kops-aws-vpc-cni.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --extract=ci/latest
+      - --ginkgo-parallel
+      - --kops-args=--networking=amazon-vpc-routed-eni
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
+      - --provider=aws
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-vpc-cni
+
 - interval: 30m
   name: ci-kubernetes-e2e-kops-gce
   labels:
@@ -419,7 +448,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
@@ -446,7 +475,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
 
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
@@ -473,7 +502,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
   annotations:
     testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-gce-ha

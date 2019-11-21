@@ -12,7 +12,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       args:
@@ -39,7 +39,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       args:
@@ -75,7 +75,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       args:
@@ -113,7 +113,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       args:
@@ -150,7 +150,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       args:
@@ -187,7 +187,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       args:
@@ -224,7 +224,7 @@ periodics:
     path_alias: k8s.io/node-problem-detector
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       args:
@@ -245,6 +245,43 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
     testgrid-alert-email: zhenw@google.com,lantaol@google.com
+    testgrid-num-failures-to-alert: '12'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '30'
+- name: ci-npd-e2e-test
+  interval: 30m
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: node-problem-detector
+    base_ref: master
+    path_alias: k8s.io/node-problem-detector
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
+      env:
+      - name: ZONE
+        value: us-central1-a
+      - name: IMAGE_FAMILY
+        value: cos-73-lts
+      - name: IMAGE_PROJECT
+        value: cos-cloud
+      - name: BOSKOS_PROJECT_TYPE
+        value: gce-project
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - >-
+        ./test/build.sh install-lib &&
+        SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
+  annotations:
+    testgrid-dashboards: sig-node-node-problem-detector
+    testgrid-alert-email: xueweiz@google.com,zhenw@google.com,lantaol@google.com
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'

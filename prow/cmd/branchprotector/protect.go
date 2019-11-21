@@ -28,18 +28,21 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
 type options struct {
-	config    string
-	jobConfig string
-	confirm   bool
-	github    flagutil.GitHubOptions
+	config             string
+	jobConfig          string
+	confirm            bool
+	verifyRestrictions bool
+	github             flagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
@@ -60,6 +63,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
 	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
+	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
@@ -97,6 +101,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
 	}
+	cfg.BranchProtectionWarnings(logrus.NewEntry(logrus.StandardLogger()))
 
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
@@ -110,12 +115,13 @@ func main() {
 	githubClient.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 
 	p := protector{
-		client:         githubClient,
-		cfg:            cfg,
-		updates:        make(chan requirements),
-		errors:         Errors{},
-		completedRepos: make(map[string]bool),
-		done:           make(chan []error),
+		client:             githubClient,
+		cfg:                cfg,
+		updates:            make(chan requirements),
+		errors:             Errors{},
+		completedRepos:     make(map[string]bool),
+		done:               make(chan []error),
+		verifyRestrictions: o.verifyRestrictions,
 	}
 
 	go p.configureBranches()
@@ -137,15 +143,18 @@ type client interface {
 	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
 	GetRepo(owner, name string) (github.Repo, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
+	ListCollaborators(org, repo string) ([]github.User, error)
+	ListRepoTeams(org, repo string) ([]github.Team, error)
 }
 
 type protector struct {
-	client         client
-	cfg            *config.Config
-	updates        chan requirements
-	errors         Errors
-	completedRepos map[string]bool
-	done           chan []error
+	client             client
+	cfg                *config.Config
+	updates            chan requirements
+	errors             Errors
+	completedRepos     map[string]bool
+	done               chan []error
+	verifyRestrictions bool
 }
 
 func (p *protector) configureBranches() {
@@ -182,7 +191,10 @@ func (p *protector) protect() {
 	}
 
 	// Some repos with presubmits might not be listed in the branch-protection
-	for repo := range p.cfg.Presubmits {
+	// Using PresubmitsStatic here is safe because this is only about getting to
+	// know which repos exist. Repos that use in-repo config will appear here,
+	// because we generate a verification job for them
+	for repo := range p.cfg.PresubmitsStatic {
 		if p.completedRepos[repo] == true {
 			continue
 		}
@@ -210,9 +222,15 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 			return fmt.Errorf("list repos: %v", err)
 		}
 		for _, r := range rs {
-			if !r.Archived {
-				repos = append(repos, r.Name)
+			// Skip Archived repos as they can't be modified in this way
+			if r.Archived {
+				continue
 			}
+			// Skip private security forks as they can't be modified in this way
+			if r.Private && github.SecurityForkNameRE.MatchString(r.Name) {
+				continue
+			}
+			repos = append(repos, r.Name)
 		}
 	} else {
 		// Unopinionated org, just set explicitly defined repos
@@ -221,13 +239,15 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 		}
 	}
 
+	var errs []error
 	for _, repoName := range repos {
 		repo := org.GetRepo(repoName)
 		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
-			return fmt.Errorf("update %s: %v", repoName, err)
+			errs = append(errs, fmt.Errorf("update %s: %v", repoName, err))
 		}
 	}
-	return nil
+
+	return errorutil.NewAggregate(errs...)
 }
 
 // UpdateRepo updates all branches in the repo with the specified defaults
@@ -238,8 +258,12 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 	if err != nil {
 		return fmt.Errorf("could not get repo to check for archival: %v", err)
 	}
+	// Skip Archived repos as they can't be modified in this way
 	if githubRepo.Archived {
-		// nothing to do
+		return nil
+	}
+	// Skip private security forks as they can't be modified in this way
+	if githubRepo.Private && github.SecurityForkNameRE.MatchString(githubRepo.Name) {
 		return nil
 	}
 
@@ -267,19 +291,87 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		}
 	}
 
-	for bn, githubBranch := range branches {
-		if branch, err := repo.GetBranch(bn); err != nil {
-			return fmt.Errorf("get %s: %v", bn, err)
-		} else if err = p.UpdateBranch(orgName, repoName, bn, *branch, githubBranch.Protected); err != nil {
-			return fmt.Errorf("update %s from protected=%t: %v", bn, githubBranch.Protected, err)
+	var collaborators, teams []string
+	if p.verifyRestrictions {
+		collaborators, err = p.authorizedCollaborators(orgName, repoName)
+		if err != nil {
+			logrus.Infof("%s/%s: error getting list of collaborators: %v", orgName, repoName, err)
+			return err
+		}
+
+		teams, err = p.authorizedTeams(orgName, repoName)
+		if err != nil {
+			logrus.Infof("%s/%s: error getting list of teams: %v", orgName, repoName, err)
+			return err
 		}
 	}
-	return nil
+
+	var errs []error
+	for bn, githubBranch := range branches {
+		if branch, err := repo.GetBranch(bn); err != nil {
+			errs = append(errs, fmt.Errorf("get %s: %v", bn, err))
+		} else if err = p.UpdateBranch(orgName, repoName, bn, *branch, githubBranch.Protected, collaborators, teams); err != nil {
+			errs = append(errs, fmt.Errorf("update %s from protected=%t: %v", bn, githubBranch.Protected, err))
+		}
+	}
+
+	return errorutil.NewAggregate(errs...)
+}
+
+// authorizedCollaborators returns the list of Logins for users that are
+// authorized to write to a repository.
+func (p *protector) authorizedCollaborators(org, repo string) ([]string, error) {
+	collaborators, err := p.client.ListCollaborators(org, repo)
+	if err != nil {
+		return nil, err
+	}
+	var authorized []string
+	for _, c := range collaborators {
+		if c.Permissions.Admin || c.Permissions.Push {
+			authorized = append(authorized, github.NormLogin(c.Login))
+		}
+	}
+	return authorized, nil
+}
+
+// authorizedTeams returns the list of slugs for teams that are authorized to
+// write to a repository.
+func (p *protector) authorizedTeams(org, repo string) ([]string, error) {
+	teams, err := p.client.ListRepoTeams(org, repo)
+	if err != nil {
+		return nil, err
+	}
+	var authorized []string
+	for _, t := range teams {
+		if t.Permission == github.RepoPush || t.Permission == github.RepoAdmin {
+			authorized = append(authorized, t.Slug)
+		}
+	}
+	return authorized, nil
+}
+
+func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, authorizedCollaborators, authorizedTeams []string) []error {
+	if bp == nil || bp.Restrictions == nil {
+		return nil
+	}
+
+	var errs []error
+	if bp.Restrictions.Users != nil {
+		if unauthorized := sets.NewString(*bp.Restrictions.Users...).Difference(sets.NewString(authorizedCollaborators...)); unauthorized.Len() > 0 {
+			errs = append(errs, fmt.Errorf("the following collaborators are not authorized for %s/%s: %s", org, repo, unauthorized.List()))
+		}
+	}
+	if bp.Restrictions.Teams != nil {
+		if unauthorized := sets.NewString(*bp.Restrictions.Teams...).Difference(sets.NewString(authorizedTeams...)); unauthorized.Len() > 0 {
+			errs = append(errs, fmt.Errorf("the following teams are not authorized for %s/%s: %s", org, repo, unauthorized.List()))
+		}
+	}
+	return errs
 }
 
 // UpdateBranch updates the branch with the specified configuration
-func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch config.Branch, protected bool) error {
-	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch)
+func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch config.Branch, protected bool, authorizedCollaborators, authorizedTeams []string) error {
+	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch, p.cfg.PresubmitsStatic[orgName+"/"+repo])
 	if err != nil {
 		return fmt.Errorf("get policy: %v", err)
 	}
@@ -291,17 +383,29 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		return nil
 	}
 
+	var req *github.BranchProtectionRequest
+	if *bp.Protect {
+		r := makeRequest(*bp)
+		req = &r
+	}
+
+	if p.verifyRestrictions {
+		if validationErrors := validateRestrictions(orgName, repo, req, authorizedCollaborators, authorizedTeams); len(validationErrors) != 0 {
+			logrus.Warnf("invalid branch protection request: %s/%s=%s: %v", orgName, repo, branchName, validationErrors)
+			errs := make([]string, 0, len(validationErrors))
+			for _, e := range validationErrors {
+				errs = append(errs, e.Error())
+			}
+			return fmt.Errorf("invalid branch protection request: %s/%s=%s: %s", orgName, repo, branchName, strings.Join(errs, "\n"))
+		}
+	}
+
 	// The github API currently does not support listing protections for all
 	// branches of a repository. We therefore have to make individual requests
 	// for each branch.
 	currentBP, err := p.client.GetBranchProtection(orgName, repo, branchName)
 	if err != nil {
 		return fmt.Errorf("get current branch protection: %v", err)
-	}
-	var req *github.BranchProtectionRequest
-	if *bp.Protect {
-		r := makeRequest(*bp)
-		req = &r
 	}
 
 	if equalBranchProtections(currentBP, req) {

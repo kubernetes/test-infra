@@ -68,6 +68,7 @@ type heartbeatOptions struct {
 	resourceJSON string
 	period       time.Duration
 	timeout      time.Duration
+	retries      int
 }
 
 // for test mocking
@@ -284,15 +285,22 @@ Examples:
 			}()
 
 			tick := time.Tick(options.heartbeat.period)
+			// transient network issues should not cause us to stop trying
+			var failures int
 			work := func() bool {
 				select {
 				case <-tick:
 					if err := options.c.Update(resource.Name, resource.State, resource.UserData); err != nil {
 						fmt.Fprintf(cmd.ErrOrStderr(), "failed to send heartbeat for resource %q: %v\n", resource.Name, err)
-						exit(1)
-						return true
+						failures++
+						if failures > options.heartbeat.retries {
+							exit(1)
+							return true
+						}
+					} else {
+						failures = 0
+						fmt.Fprintf(cmd.OutOrStdout(), "heartbeat sent for resource %q\n", resource.Name)
 					}
-					fmt.Fprintf(cmd.OutOrStdout(), "heartbeat sent for resource %q\n", resource.Name)
 				case <-sig:
 					fmt.Fprintf(cmd.OutOrStdout(), "received interrupt, stopping heartbeats for resource %q\n", resource.Name)
 					return true
@@ -321,6 +329,7 @@ Examples:
 	}
 	heartbeat.Flags().DurationVar(&options.heartbeat.period, "period", 30*time.Second, "Period to send heartbeats on")
 	heartbeat.Flags().DurationVar(&options.heartbeat.timeout, "timeout", 5*time.Hour, "How long to send heartbeats for")
+	heartbeat.Flags().IntVar(&options.heartbeat.retries, "retries", 10, "How many failed heartbeats to tolerate")
 	root.AddCommand(heartbeat)
 
 	return root

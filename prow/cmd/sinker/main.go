@@ -33,11 +33,11 @@ import (
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -95,6 +95,8 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	pjutil.ServePProf()
 
 	if !o.dryRun.Explicit {
@@ -130,9 +132,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
-	if err := prowapi.AddToScheme(mgr.GetScheme()); err != nil {
-		logrus.WithError(err).Fatal("Error adding prow api to scheme")
-	}
 
 	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun.Value)
 	if err != nil {
@@ -156,7 +155,7 @@ func main() {
 	if err := mgr.Add(&c); err != nil {
 		logrus.WithError(err).Fatal("failed to add controller to manager")
 	}
-	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(interrupts.Context().Done()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
 }
@@ -374,12 +373,21 @@ func (c *controller) clean() {
 		for _, pod := range pods.Items {
 			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
 			reason := reasonPodAged
-			if !isFinished.Has(pod.ObjectMeta.Name) {
+
+			// by default, use the pod name as the key to match the associated prow job
+			// this is to support legacy plank in case the kube.ProwJobIDLabel label is not set
+			podJobName := pod.ObjectMeta.Name
+			// if the pod has the kube.ProwJobIDLabel label, use this instead of the pod name
+			if value, ok := pod.ObjectMeta.Labels[kube.ProwJobIDLabel]; ok {
+				podJobName = value
+			}
+
+			if !isFinished.Has(podJobName) {
 				// prowjob exists and is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
 				clean = false
 			}
-			if !isExist.Has(pod.ObjectMeta.Name) {
+			if !isExist.Has(podJobName) {
 				// prowjob has gone, we want to clean orphan pods regardless of the state
 				reason = reasonPodOrphaned
 				clean = true

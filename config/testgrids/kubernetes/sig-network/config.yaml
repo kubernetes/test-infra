@@ -87,6 +87,12 @@ dashboards:
       description: network gci-gce with kube-dns serial e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    - name: gci-gce-serial-kube-dns-nodecache
+      test_group_name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
+      base_options: include-filter-by-regex=\[sig-network\]
+      description: network gci-gce with kube-dns and nodelocaldns cache serial e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-alpha-features
       test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
       base_options: include-filter-by-regex=\[sig-network\]

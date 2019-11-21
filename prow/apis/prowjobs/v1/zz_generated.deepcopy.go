@@ -21,8 +21,7 @@ limitations under the License.
 package v1
 
 import (
-	v1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -181,7 +180,7 @@ func (in *ProwJob) DeepCopyObject() runtime.Object {
 func (in *ProwJobList) DeepCopyInto(out *ProwJobList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]ProwJob, len(*in))
@@ -230,11 +229,6 @@ func (in *ProwJobSpec) DeepCopyInto(out *ProwJobSpec) {
 		*out = new(corev1.PodSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.BuildSpec != nil {
-		in, out := &in.BuildSpec, &out.BuildSpec
-		*out = new(v1alpha1.BuildSpec)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.JenkinsSpec != nil {
 		in, out := &in.JenkinsSpec, &out.JenkinsSpec
 		*out = new(JenkinsSpec)
@@ -242,7 +236,7 @@ func (in *ProwJobSpec) DeepCopyInto(out *ProwJobSpec) {
 	}
 	if in.PipelineRunSpec != nil {
 		in, out := &in.PipelineRunSpec, &out.PipelineRunSpec
-		*out = new(pipelinev1alpha1.PipelineRunSpec)
+		*out = new(v1alpha1.PipelineRunSpec)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.DecorationConfig != nil {
@@ -273,6 +267,10 @@ func (in *ProwJobSpec) DeepCopy() *ProwJobSpec {
 func (in *ProwJobStatus) DeepCopyInto(out *ProwJobStatus) {
 	*out = *in
 	in.StartTime.DeepCopyInto(&out.StartTime)
+	if in.PendingTime != nil {
+		in, out := &in.PendingTime, &out.PendingTime
+		*out = (*in).DeepCopy()
+	}
 	if in.CompletionTime != nil {
 		in, out := &in.CompletionTime, &out.CompletionTime
 		*out = (*in).DeepCopy()

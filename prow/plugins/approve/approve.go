@@ -27,7 +27,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
@@ -117,20 +116,40 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		var opts *plugins.Approve
 		switch len(parts) {
 		case 1:
-			opts = optionsForRepo(config, repo, "")
+			opts = config.ApproveFor(repo, "")
 		case 2:
-			opts = optionsForRepo(config, parts[0], parts[1])
+			opts = config.ApproveFor(parts[0], parts[1])
 		default:
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
 		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.HasSelfApproval()), willNot(opts.LgtmActsAsApprove), willNot(opts.ConsiderReviewState()))
 	}
+
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Approve: []plugins.Approve{
+			{
+				Repos: []string{
+					"ORGANIZATION",
+					"ORGANIZATION/REPOSITORY",
+				},
+				DeprecatedImplicitSelfApprove: new(bool),
+				RequireSelfApproval:           new(bool),
+				DeprecatedReviewActsAsApprove: new(bool),
+				IgnoreReviewState:             new(bool),
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warn("cannot generate comments for approve plugin")
+	}
+
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The approve plugin implements a pull request approval process that manages the '` + labels.Approved + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
 <br>
 <br>Per-repo configuration may be used to require that PRs link to an associated issue before approval is granted. It may also be used to specify that the PR authors implicitly approve their own PRs.
 <br>For more information see <a href="https://git.k8s.io/test-infra/prow/plugins/approve/approvers/README.md">here</a>.`,
-		Config: approveConfig,
+		Config:  approveConfig,
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/approve [no-issue|cancel]",
@@ -163,7 +182,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 		return err
 	}
 
-	opts := optionsForRepo(config, ce.Repo.Owner.Login, ce.Repo.Name)
+	opts := config.ApproveFor(ce.Repo.Owner.Login, ce.Repo.Name)
 	if !isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		return nil
 	}
@@ -220,7 +239,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 		return err
 	}
 
-	opts := optionsForRepo(config, re.Repo.Owner.Login, re.Repo.Name)
+	opts := config.ApproveFor(re.Repo.Owner.Login, re.Repo.Name)
 
 	// Check for an approval command is in the body. If one exists, let the
 	// genericCommentEventHandler handle this event. Approval commands override
@@ -245,7 +264,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 		ghc,
 		repo,
 		githubConfig,
-		optionsForRepo(config, re.Repo.Owner.Login, re.Repo.Name),
+		config.ApproveFor(re.Repo.Owner.Login, re.Repo.Name),
 		&state{
 			org:       re.Repo.Owner.Login,
 			repo:      re.Repo.Name,
@@ -297,7 +316,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, git
 		ghc,
 		repo,
 		githubConfig,
-		optionsForRepo(config, pre.Repo.Owner.Login, pre.Repo.Name),
+		config.ApproveFor(pre.Repo.Owner.Login, pre.Repo.Name),
 		&state{
 			org:       pre.Repo.Owner.Login,
 			repo:      pre.Repo.Name,
@@ -602,41 +621,6 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 
 		}
 	}
-}
-
-// optionsForRepo gets the plugins.Approve struct that is applicable to the indicated repo.
-func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Approve {
-	fullName := fmt.Sprintf("%s/%s", org, repo)
-
-	a := func() *plugins.Approve {
-		// First search for repo config
-		for _, c := range config.Approve {
-			if !sets.NewString(c.Repos...).Has(fullName) {
-				continue
-			}
-			return &c
-		}
-
-		// If you don't find anything, loop again looking for an org config
-		for _, c := range config.Approve {
-			if !sets.NewString(c.Repos...).Has(org) {
-				continue
-			}
-			return &c
-		}
-
-		// Return an empty config, and use plugin defaults
-		return &plugins.Approve{}
-	}()
-	if a.DeprecatedImplicitSelfApprove == nil && a.RequireSelfApproval == nil && config.UseDeprecatedSelfApprove {
-		no := false
-		a.DeprecatedImplicitSelfApprove = &no
-	}
-	if a.DeprecatedReviewActsAsApprove == nil && a.IgnoreReviewState == nil && config.UseDeprecatedReviewApprove {
-		no := false
-		a.DeprecatedReviewActsAsApprove = &no
-	}
-	return a
 }
 
 type comment struct {

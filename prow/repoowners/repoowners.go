@@ -149,6 +149,7 @@ type RepoOwner interface {
 	RequiredReviewers(path string) sets.String
 	ParseSimpleConfig(path string) (SimpleConfig, error)
 	ParseFullConfig(path string) (FullConfig, error)
+	TopLevelApprovers() sets.String
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -311,7 +312,7 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 	// Make logins a copy of the original set to avoid modifying the original.
 	logins = logins.Union(nil)
 	for _, login := range logins.List() {
-		if expanded := a.ExpandAlias(login); len(expanded) > 0 {
+		if expanded, ok := a[github.NormLogin(login)]; ok {
 			logins.Delete(login)
 			logins = logins.Union(expanded)
 		}
@@ -343,17 +344,9 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 		log.WithError(err).Warnf("Failed to read alias file %q. Using empty alias map.", path)
 		return nil
 	}
-	config := &struct {
-		Data map[string][]string `json:"aliases,omitempty"`
-	}{}
-	if err := yaml.Unmarshal(b, config); err != nil {
+	result, err := ParseAliasesConfig(b)
+	if err != nil {
 		log.WithError(err).Errorf("Failed to unmarshal aliases from %q. Using empty alias map.", path)
-		return nil
-	}
-
-	result := make(RepoAliases)
-	for alias, expanded := range config.Data {
-		result[github.NormLogin(alias)] = normLogins(expanded)
 	}
 	log.Infof("Loaded %d aliases from %q.", len(result), path)
 	return result
@@ -419,7 +412,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		simple := &SimpleConfig{}
 		if err := decodeOwnersMdConfig(path, simple); err != nil {
-			log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
+			log.WithError(err).Info("Error decoding OWNERS config from '*.md' file.")
 			return nil
 		}
 
@@ -482,9 +475,7 @@ func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
 	if err != nil {
 		return FullConfig{}, err
 	}
-	full := new(FullConfig)
-	err = yaml.Unmarshal(b, full)
-	return *full, err
+	return LoadFullConfig(b)
 }
 
 // ParseSimpleConfig will unmarshal the content of the OWNERS file at the path into a SimpleConfig.
@@ -503,9 +494,39 @@ func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
 	if err != nil {
 		return SimpleConfig{}, err
 	}
+	return LoadSimpleConfig(b)
+}
+
+// LoadSimpleConfig loads SimpleConfig from bytes `b`
+func LoadSimpleConfig(b []byte) (SimpleConfig, error) {
 	simple := new(SimpleConfig)
-	err = yaml.Unmarshal(b, simple)
+	err := yaml.Unmarshal(b, simple)
 	return *simple, err
+}
+
+// SaveSimpleConfig writes SimpleConfig to `path`
+func SaveSimpleConfig(simple SimpleConfig, path string) error {
+	b, err := yaml.Marshal(simple)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(path, b, 0644)
+}
+
+// LoadFullConfig loads FullConfig from bytes `b`
+func LoadFullConfig(b []byte) (FullConfig, error) {
+	full := new(FullConfig)
+	err := yaml.Unmarshal(b, full)
+	return *full, err
+}
+
+// SaveFullConfig writes FullConfig to `path`
+func SaveFullConfig(full FullConfig, path string) error {
+	b, err := yaml.Marshal(full)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(path, b, 0644)
 }
 
 // ParseAliasesConfig will unmarshal an OWNERS_ALIASES file's content into RepoAliases.
@@ -521,7 +542,7 @@ func ParseAliasesConfig(b []byte) (RepoAliases, error) {
 	}
 
 	for alias, expanded := range config.Data {
-		result[github.NormLogin(alias)] = normLogins(expanded)
+		result[github.NormLogin(alias)] = NormLogins(expanded)
 	}
 	return result, nil
 }
@@ -543,7 +564,8 @@ func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
 	return yaml.Unmarshal([]byte(meta), &config)
 }
 
-func normLogins(logins []string) sets.String {
+// NormLogins normalizes logins
+func NormLogins(logins []string) sets.String {
 	normed := sets.NewString()
 	for _, login := range logins {
 		normed.Insert(github.NormLogin(login))
@@ -558,19 +580,19 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 		if o.approvers[path] == nil {
 			o.approvers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.approvers[path][re] = o.ExpandAliases(normLogins(config.Approvers))
+		o.approvers[path][re] = o.ExpandAliases(NormLogins(config.Approvers))
 	}
 	if len(config.Reviewers) > 0 {
 		if o.reviewers[path] == nil {
 			o.reviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.reviewers[path][re] = o.ExpandAliases(normLogins(config.Reviewers))
+		o.reviewers[path][re] = o.ExpandAliases(NormLogins(config.Reviewers))
 	}
 	if len(config.RequiredReviewers) > 0 {
 		if o.requiredReviewers[path] == nil {
 			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.requiredReviewers[path][re] = o.ExpandAliases(normLogins(config.RequiredReviewers))
+		o.requiredReviewers[path][re] = o.ExpandAliases(NormLogins(config.RequiredReviewers))
 	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {
@@ -731,4 +753,8 @@ func (o *RepoOwners) Reviewers(path string) sets.String {
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 	return o.entriesForFile(path, o.requiredReviewers, false)
+}
+
+func (o *RepoOwners) TopLevelApprovers() sets.String {
+	return o.entriesForFile(".", o.approvers, false)
 }

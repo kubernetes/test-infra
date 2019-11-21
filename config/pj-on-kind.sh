@@ -19,9 +19,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export CONFIG_PATH="$(readlink -f $(dirname "${BASH_SOURCE[0]}")/../prow/config.yaml)"
-export JOB_CONFIG_PATH="$(readlink -f $(dirname "${BASH_SOURCE[0]}")/jobs)"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+export CONFIG_PATH="${root}/config/prow/config.yaml"
+export JOB_CONFIG_PATH="${root}/config/jobs"
 
-../prow/pj-on-kind.sh "$@"
+"${root}/prow/pj-on-kind.sh" "$@"
 # Swap the above command for the following one for use outside kubernetes/test-infra.
 # bash <(curl -s https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/pj-on-kind.sh) "$@"

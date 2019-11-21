@@ -23,6 +23,7 @@ dashboard, add annotations to that Prow job.
 
 If it's a Prow job in [the k8s.io instance](/config/jobs), you don't need to do anything else.
 
+If it's a Prow job in another instance of Prow, use [`transfigure`](cmd/transfigure).
 
 Add this to your Prow job:
 
@@ -43,7 +44,7 @@ annotations:
 ```
 
 This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a _different_
-instance of Prow, you may want to invoke Configurator [differently](cmd/configurator#deserialization-options).
+instance of Prow, you may want to use [Transfigure](cmd/transfigure) instead.
 
 If you need to create a new dashboard, or do anything more advanced, read on.
 

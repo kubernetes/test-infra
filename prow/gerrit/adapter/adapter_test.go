@@ -23,11 +23,13 @@ import (
 
 	"github.com/andygrunwald/go-gerrit"
 
+	clienttesting "k8s.io/client-go/testing"
 	"k8s.io/test-infra/prow/gerrit/client"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 )
 
@@ -51,21 +53,9 @@ func (f *fca) Config() *config.Config {
 	return f.c
 }
 
-type fkc struct {
-	sync.Mutex
-	prowjobs []prowapi.ProwJob
-}
-
-func (f *fkc) CreateProwJob(pj prowapi.ProwJob) (prowapi.ProwJob, error) {
-	f.Lock()
-	defer f.Unlock()
-	f.prowjobs = append(f.prowjobs, pj)
-	return pj, nil
-}
-
 type fgc struct{}
 
-func (f *fgc) QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]client.ChangeInfo {
+func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
 	return nil
 }
 
@@ -133,17 +123,17 @@ func TestMakeCloneURI(t *testing.T) {
 }
 
 type fakeSync struct {
-	val  time.Time
+	val  client.LastSyncState
 	lock sync.Mutex
 }
 
-func (s *fakeSync) Current() time.Time {
+func (s *fakeSync) Current() client.LastSyncState {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	return s.val
 }
 
-func (s *fakeSync) Update(t time.Time) error {
+func (s *fakeSync) Update(t client.LastSyncState) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.val = t
@@ -573,6 +563,41 @@ func TestProcessChange(t *testing.T) {
 			},
 			numPJ: 0,
 		},
+		{
+			name: "retest uses the latest report",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "retest-branch",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-3 * time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/retest",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 1 out of 2 passed\n✔️ foo-job SUCCESS - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						Date:           makeStamp(timeNow.Add(-2 * time.Hour)),
+					},
+					{
+						Message:        "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+						RevisionNumber: 1,
+						Author:         gerrit.AccountInfo{AccountID: 42},
+						Date:           makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+			},
+			numPJ: 2,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -655,7 +680,7 @@ func TestProcessChange(t *testing.T) {
 		fca := &fca{
 			c: &config.Config{
 				JobConfig: config.JobConfig{
-					Presubmits: map[string][]config.Presubmit{
+					PresubmitsStatic: map[string][]config.Presubmit{
 						"gerrit/test-infra": testInfraPresubmits,
 						"https://gerrit/other-repo": {
 							{
@@ -679,16 +704,22 @@ func TestProcessChange(t *testing.T) {
 			},
 		}
 
-		fkc := &fkc{}
+		testInstance := "https://gerrit"
+		fakeProwJobClient := prowfake.NewSimpleClientset()
+		fakeLastSync := client.LastSyncState{testInstance: map[string]time.Time{}}
 
-		c := &Controller{
-			config:  fca.Config,
-			kc:      fkc,
-			gc:      &fgc{},
-			tracker: &fakeSync{val: timeNow.Add(-time.Minute)},
+		for _, tc := range testcases {
+			fakeLastSync[testInstance][tc.change.Project] = timeNow.Add(-time.Minute)
 		}
 
-		err := c.ProcessChange("https://gerrit", tc.change)
+		c := &Controller{
+			config:        fca.Config,
+			prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+			gc:            &fgc{},
+			tracker:       &fakeSync{val: fakeLastSync},
+		}
+
+		err := c.ProcessChange(testInstance, tc.change)
 		if err != nil && !tc.shouldError {
 			t.Errorf("tc %s, expect no error, but got %v", tc.name, err)
 			continue
@@ -697,23 +728,33 @@ func TestProcessChange(t *testing.T) {
 			continue
 		}
 
-		if len(fkc.prowjobs) != tc.numPJ {
-			t.Errorf("tc %s - should make %d prowjob, got %d", tc.name, tc.numPJ, len(fkc.prowjobs))
+		var prowjobs []*prowapi.ProwJob
+		for _, action := range fakeProwJobClient.Fake.Actions() {
+			switch action := action.(type) {
+			case clienttesting.CreateActionImpl:
+				if prowjob, ok := action.Object.(*prowapi.ProwJob); ok {
+					prowjobs = append(prowjobs, prowjob)
+				}
+			}
 		}
 
-		if len(fkc.prowjobs) > 0 {
-			refs := fkc.prowjobs[0].Spec.Refs
+		if len(prowjobs) != tc.numPJ {
+			t.Errorf("tc %s - should make %d prowjob, got %d", tc.name, tc.numPJ, len(prowjobs))
+		}
+
+		if len(prowjobs) > 0 {
+			refs := prowjobs[0].Spec.Refs
 			if refs.Org != "gerrit" {
 				t.Errorf("%s: org %s != gerrit", tc.name, refs.Org)
 			}
 			if refs.Repo != tc.change.Project {
 				t.Errorf("%s: repo %s != expected %s", tc.name, refs.Repo, tc.change.Project)
 			}
-			if fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
-				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref)
+			if prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
+				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, prowjobs[0].Spec.Refs.Pulls[0].Ref)
 			}
-			if fkc.prowjobs[0].Spec.Refs.BaseSHA != "abc" {
-				t.Errorf("tc %s - BaseSHA should be abc, got %s", tc.name, fkc.prowjobs[0].Spec.Refs.BaseSHA)
+			if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
+				t.Errorf("tc %s - BaseSHA should be abc, got %s", tc.name, prowjobs[0].Spec.Refs.BaseSHA)
 			}
 		}
 	}

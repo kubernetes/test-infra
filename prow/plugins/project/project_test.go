@@ -314,6 +314,7 @@ func TestProjectCommand(t *testing.T) {
 	for _, tc := range testcases {
 		fakeClient.Project = tc.previousProject
 		fakeClient.Column = tc.previousColumn
+		fakeClient.ColumnCardsMap = map[int][]github.ProjectCard{}
 
 		e := &github.GenericCommentEvent{
 			Action:       tc.action,

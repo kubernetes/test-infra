@@ -1,27 +1,4 @@
 periodics:
-- name: ci-test-infra-build-smoke
-  interval: 2h
-  agent: knative-build
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  build_spec:
-    steps:
-    - name: first
-      image: busybox
-      args: ["echo", "hello"]
-    - name: second
-      image: busybox
-      args: ["echo", "world"]
-    - name: third
-      image: busybox
-      args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-periodics.yaml"]
-  annotations:
-    testgrid-dashboards: sig-testing-prow
-    testgrid-tab-name: build-smoke
-    description: basic job to ensure build controller works correctly
 - name: ci-test-infra-bazel
   decorate: true
   extra_refs:
@@ -34,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.28.1
+    - image: launcher.gcr.io/google/bazel:0.29.1
       command:
       - hack/bazel.sh
       args:
@@ -82,7 +59,7 @@ periodics:
   interval: 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20190826-3f7039d
+    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
       args:
       - --scenario=execute
       - --
@@ -119,7 +96,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20190826-3f7039d
+    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
       args:
       - --scenario=execute
       - --

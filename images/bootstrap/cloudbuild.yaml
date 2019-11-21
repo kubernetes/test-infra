@@ -28,7 +28,7 @@ steps:
     - gcr.io/$PROJECT_ID/bootstrap:latest
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: '1.12.9'
+  _GO_VERSION: '1.12.12'
 images:
   - 'gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/bootstrap:latest'

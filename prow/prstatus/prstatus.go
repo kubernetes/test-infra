@@ -30,8 +30,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/githuboauth"
 )
 
 const (
@@ -69,8 +70,9 @@ type PullRequestWithContexts struct {
 // DashboardAgent is responsible for handling request to /pr-status endpoint.
 // It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
-	repos []string
-	goac  *config.GitHubOAuthConfig
+	repos  []string
+	goac   *githuboauth.Config
+	github *flagutil.GitHubOptions
 
 	log *logrus.Entry
 }
@@ -143,11 +145,12 @@ type searchQuery struct {
 }
 
 // NewDashboardAgent creates a new user dashboard agent .
-func NewDashboardAgent(repos []string, config *config.GitHubOAuthConfig, log *logrus.Entry) *DashboardAgent {
+func NewDashboardAgent(repos []string, config *githuboauth.Config, github *flagutil.GitHubOptions, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
-		repos: repos,
-		goac:  config,
-		log:   log,
+		repos:  repos,
+		goac:   config,
+		github: github,
+		log:    log,
 	}
 }
 
@@ -193,9 +196,6 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 		}
 
-		noopCensor := func(content []byte) []byte {
-			return content
-		}
 		// If access token exists, get user login using the access token. This is a
 		// chance to validate whether the access token is consumable or not. If
 		// not, we invalidate the sessions and continue as if not logged in.
@@ -203,7 +203,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 		var user *github.User
 		var botName string
 		if ok && token.Valid() {
-			githubClient := github.NewClient(func() []byte { return []byte(token.AccessToken) }, noopCensor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+			githubClient := da.github.GitHubClientWithAccessToken(token.AccessToken)
 			var err error
 			botName, err = githubClient.BotName()
 			user = &github.User{Login: botName}
@@ -240,7 +240,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 
 			// Construct query
-			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, noopCensor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+			ghc := da.github.GitHubClientWithAccessToken(token.AccessToken)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {

@@ -243,6 +243,10 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 	return *full, err
 }
 
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
+	return sets.String{}
+}
+
 func makeFakeRepoOwnersClient() fakeRepoownersClient {
 	return fakeRepoownersClient{
 		foc: &fakeOwnersClient{},

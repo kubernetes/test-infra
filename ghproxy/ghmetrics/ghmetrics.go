@@ -54,7 +54,17 @@ var ghRequestDurationHistVec = prometheus.NewHistogramVec(
 		Help:    "GitHub request duration by API path.",
 		Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
 	},
-	[]string{"token_hash", "path", "status"},
+	[]string{"token_hash", "path", "status", "user_agent"},
+)
+
+// cacheCounter provides the 'ghcache_responses' counter vec that is indexed
+// by the cache response mode.
+var cacheCounter = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "ghcache_responses",
+		Help: "How many cache responses of each cache response mode there are.",
+	},
+	[]string{"mode", "path"},
 )
 
 var muxTokenUsage, muxRequestMetrics sync.Mutex
@@ -64,6 +74,7 @@ func init() {
 	prometheus.MustRegister(ghTokenUntilResetGaugeVec)
 	prometheus.MustRegister(ghTokenUsageGaugeVec)
 	prometheus.MustRegister(ghRequestDurationHistVec)
+	prometheus.MustRegister(cacheCounter)
 }
 
 // CollectGitHubTokenMetrics publishes the rate limits of the github api to
@@ -94,8 +105,8 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 
 // CollectGitHubRequestMetrics publishes the number of requests by API path to
 // `github_requests` on prometheus.
-func CollectGitHubRequestMetrics(tokenHash, path, statusCode string, roundTripTime float64) {
-	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": GetSimplifiedPath(path), "status": statusCode}).Observe(roundTripTime)
+func CollectGitHubRequestMetrics(tokenHash, path, statusCode, userAgent string, roundTripTime float64) {
+	ghRequestDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "status": statusCode, "user_agent": userAgent}).Observe(roundTripTime)
 }
 
 // timestampStringToTime takes a unix timestamp and returns a `time.Time`
@@ -106,4 +117,9 @@ func timestampStringToTime(tstamp string) time.Time {
 		logrus.WithField("timestamp", tstamp).Info("Couldn't convert unix timestamp")
 	}
 	return time.Unix(timestamp, 0)
+}
+
+// CollectCacheRequestMetrics records a cache outcome for a specific path
+func CollectCacheRequestMetrics(mode, path string) {
+	cacheCounter.With(prometheus.Labels{"mode": mode, "path": simplifier.Simplify(path)}).Inc()
 }

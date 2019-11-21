@@ -11,6 +11,18 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit kubeflow/examples.
+  kubeflow/internal-acls:
+  - name: kubeflow-internal-acls-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/internal-acls.
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     labels:
@@ -23,6 +35,9 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for Kubeflow.
+      # TODO: use a public email group
+      testgrid-alert-email: kubeflow-engineering@google.com
+      testgrid-num-failures-to-alert: "3"
   kubeflow/kfctl:
   - name: kubeflow-kfctl-postsubmit
     labels:
@@ -35,6 +50,18 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/kfctl.
+  kubeflow/manifests:
+  - name: kubeflow-manifests-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/manifests.
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-postsubmit
     labels:
@@ -217,12 +244,14 @@ postsubmits:
       description: Postsubmit tests for kubeflow/arena.
   kubeflow/pipelines:
   - name: kubeflow-pipeline-postsubmit
+    branches:
+    - ^master$
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - ./test/postsubmit-tests-with-pipeline-deployment.sh
         args:
@@ -235,3 +264,15 @@ postsubmits:
     annotations:
       testgrid-dashboards: sig-big-data
       description: Postsubmit tests for kubeflow/pipeline.
+  kubeflow/xgboost-operator:
+  - name: kubeflow-xgboost-operator-postsubmit
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+    annotations:
+      testgrid-dashboards: sig-big-data
+      description: Postsubmit tests for kubeflow/xgboost-operator.

@@ -28,9 +28,7 @@ import ruamel.yaml as yaml
 
 TEST_CONFIG_YAML = "experiment/test_config.yaml"
 JOB_CONFIG = "config/jobs"
-PROW_CONFIG = "prow/config.yaml"
 BRANCH_JOB_DIR = "config/jobs/kubernetes/sig-release/release-branch-jobs"
-SECURITY_JOBS = "config/jobs/kubernetes-security/generated-security-jobs.yaml"
 
 
 class ToolError(Exception):
@@ -97,15 +95,9 @@ def update_generated_config(path, latest_version):
         yaml.round_trip_dump(config, f)
 
 
-def regenerate_files(generate_tests_bin, generate_security_bin, test_config,
-                     prow_config, job_dir, security_config):
+def regenerate_files(generate_tests_bin, test_config):
     sh.Command(generate_tests_bin)(
         yaml_config_path=test_config,
-        _fg=True)
-    sh.Command(generate_security_bin)(
-        config=prow_config,
-        jobs=job_dir,
-        output=security_config,
         _fg=True)
 
 
@@ -117,7 +109,6 @@ def main():
     rotator_bin = sys.argv[1]
     forker_bin = sys.argv[2]
     generate_tests_bin = sys.argv[3]
-    generate_security_bin = sys.argv[4]
     d = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
     version = check_version(os.path.join(d, BRANCH_JOB_DIR))
     print("Current version: %d.%d" % (version[0], version[1]))
@@ -131,11 +122,7 @@ def main():
     print("Updating test_config.yaml...")
     update_generated_config(os.path.join(d, TEST_CONFIG_YAML), version)
     print("Regenerating files...")
-    regenerate_files(generate_tests_bin, generate_security_bin,
-                     os.path.join(d, TEST_CONFIG_YAML),
-                     os.path.join(d, PROW_CONFIG),
-                     os.path.join(d, JOB_CONFIG),
-                     os.path.join(d, SECURITY_JOBS))
+    regenerate_files(generate_tests_bin, os.path.join(d, TEST_CONFIG_YAML))
 
 
 if __name__ == "__main__":

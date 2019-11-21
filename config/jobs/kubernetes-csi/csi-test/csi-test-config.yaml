@@ -6,19 +6,19 @@ presubmits:
     always_run: true
     decorate: true
     skip_report: false
-    skip_branches: ["^(release-0.3|release-1.0|saad-ali-patch-1|saad-ali-patch-2|v0.1.0|v0.2.0)$"]
+    skip_branches: ["^(release-0.3|release-1.0|v0.1.0|v0.2.0)$"]
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
-      testgrid-dashboards: sig-storage-csi
+      testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-kubernetes-csi-csi-test
-      description: Kubernetes-CSI pull job on csi-test
+      description: Kubernetes-CSI pull job in repo csi-test
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - runner.sh
         args:

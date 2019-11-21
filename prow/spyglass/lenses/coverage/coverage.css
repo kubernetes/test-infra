@@ -22,3 +22,7 @@ body {
   border: 0.5px solid #303030;
   box-sizing: border-box;
 }
+
+#treemap.interactive {
+  cursor: pointer;
+}

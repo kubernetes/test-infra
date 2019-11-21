@@ -17,8 +17,8 @@ limitations under the License.
 package yuks
 
 import (
+	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -101,6 +101,23 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handle(pc.GitHubClient, pc.Logger, &e, jokeURL)
 }
 
+// escapeMarkdown takes a string and returns a serialized version of it such that all the symbols
+// are treated as text instead of Markdown syntax. It escapes the symbols using numeric character
+// references with the decimal notation. See https://www.w3.org/TR/html401/charset.html#h-5.3.1
+func escapeMarkdown(s string) string {
+	var b bytes.Buffer
+	for _, r := range []rune(s) {
+		// Check for simple characters as they are considered safe, otherwise we escape the rune.
+		c := string(r)
+		if simple.MatchString(c) {
+			b.WriteString(c)
+		} else {
+			b.WriteString(fmt.Sprintf("&#%d;", r))
+		}
+	}
+	return b.String()
+}
+
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, j joker) error {
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
@@ -115,18 +132,22 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, j
 	repo := e.Repo.Name
 	number := e.Number
 
-	for i := 0; i < 10; i++ {
+	errorBudget := 5
+	for i := 1; i <= errorBudget; i++ {
 		resp, err := j.readJoke()
 		if err != nil {
-			return err
+			log.WithError(err).Infof("failed to get joke. Retrying (attempt %d/%d)", i, errorBudget)
+			continue
 		}
-		if simple.MatchString(resp) {
-			log.Infof("Commenting with \"%s\".", resp)
-			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		if resp == "" {
+			log.Infof("joke is empty. Retrying (attempt %d/%d)", i, errorBudget)
+			continue
 		}
 
-		log.Errorf("joke contains invalid characters: %v", resp)
+		sanitizedJoke := escapeMarkdown(resp)
+		log.Infof("commenting with \"%s\".", sanitizedJoke)
+		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, sanitizedJoke))
 	}
 
-	return errors.New("all 10 jokes contain invalid character... such an unlucky day")
+	return fmt.Errorf("failed to get joke after %d attempts", errorBudget)
 }

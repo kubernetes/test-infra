@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"html/template"
 	"path/filepath"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -78,7 +79,24 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		return "Why am I here? There is no coverage file."
 	}
 
-	content, err := artifacts[0].ReadAll()
+	profileArtifact := artifacts[0]
+	var htmlArtifact lenses.Artifact
+	if len(artifacts) > 1 {
+		if len(artifacts) > 2 {
+			return "Too many files - expected one coverage file and one optional HTML file"
+		}
+		if strings.HasSuffix(artifacts[0].JobPath(), ".html") {
+			htmlArtifact = artifacts[0]
+			profileArtifact = artifacts[1]
+		} else if strings.HasSuffix(artifacts[1].JobPath(), ".html") {
+			htmlArtifact = artifacts[1]
+			profileArtifact = artifacts[0]
+		} else {
+			return "Multiple input files, but none had a .html extension."
+		}
+	}
+
+	content, err := profileArtifact.ReadAll()
 	if err != nil {
 		logrus.WithError(err).Warn("Couldn't read a coverage file that should exist.")
 		return fmt.Sprintf("Faiiled to read the coverage file: %v", err)
@@ -103,10 +121,16 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 	}
 	result := base64.StdEncoding.EncodeToString(w.Bytes())
 
+	renderedCoverageURL := ""
+	if htmlArtifact != nil {
+		renderedCoverageURL = htmlArtifact.CanonicalLink()
+	}
 	t := struct {
-		CoverageContent string
+		CoverageContent  string
+		RenderedCoverage string
 	}{
-		CoverageContent: result,
+		CoverageContent:  result,
+		RenderedCoverage: renderedCoverageURL,
 	}
 	var buf bytes.Buffer
 	if err := coverageTemplate.ExecuteTemplate(&buf, "body", t); err != nil {

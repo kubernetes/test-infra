@@ -17,6 +17,7 @@ rules:
     verbs:
       - get
       - list
+      - watch
       # Required when deck runs with `--rerun-creates-job=true`
       - create
 ---

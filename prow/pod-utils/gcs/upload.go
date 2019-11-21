@@ -89,13 +89,6 @@ func FileUpload(file string) UploadFunc {
 	return FileUploadWithAttributes(file, nil)
 }
 
-// FileUploadWithMetadata returns an UploadFunc which copies all
-// data from the file on disk into GCS object and also sets the provided
-// metadata fields on the object.
-func FileUploadWithMetadata(file string, metadata map[string]string) UploadFunc {
-	return FileUploadWithAttributes(file, &storage.ObjectAttrs{Metadata: metadata})
-}
-
 // FileUploadWithAttributes returns an UploadFunc which copies all data
 // from the file on disk into GCS object and also sets the provided
 // attributes on the object.
@@ -174,6 +167,10 @@ type localFileWriter struct {
 
 func (w *localFileWriter) Write(b []byte) (int, error) {
 	if w.file == nil {
+		dir := path.Dir(w.filePath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return 0, fmt.Errorf("error creating directory %q: %v", dir, err)
+		}
 		var err error
 		w.file, err = os.OpenFile(w.filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
 		if err != nil {

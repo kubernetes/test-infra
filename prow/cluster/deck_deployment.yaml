@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190827-484b36c51
+        image: gcr.io/k8s-prow/deck:v20191120-b1692ff83
         imagePullPolicy: Always
         ports:
           - name: http
@@ -57,6 +57,8 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --github-oauth-config-file=/etc/githuboauth/secret
+        - --cookie-secret=/etc/cookie/secret
+        - --plugin-config=/etc/plugins/plugins.yaml
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/githuboauth
@@ -75,6 +77,9 @@ spec:
           readOnly: true
         - name: oauth-token
           mountPath: /etc/github
+          readOnly: true
+        - name: plugins
+          mountPath: /etc/plugins
           readOnly: true
         livenessProbe:
           httpGet:
@@ -109,3 +114,6 @@ spec:
       - name: job-config
         configMap:
           name: job-config
+      - name: plugins
+        configMap:
+          name: plugins

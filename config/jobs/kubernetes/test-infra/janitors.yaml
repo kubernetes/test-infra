@@ -1,4 +1,39 @@
 periodics:
+- interval: 1h
+  name: maintenance-ci-aws-janitor
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=60
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=execute
+      - --
+      - /aws-janitor
+      - --
+      - --ttl=2h30m
+      - --path=s3://k8s-kops-prow/objs.json
+      env:
+      - name: AWS_SHARED_CREDENTIALS_FILE
+        value: /workspace/.aws/credentials
+      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20190114-57d0fe238
+      volumeMounts:
+      - mountPath: /workspace/.aws
+        name: aws-cred
+        readOnly: true
+    volumes:
+    - name: aws-cred
+      secret:
+        defaultMode: 256
+        secretName: aws-cred-new
+  annotations:
+    testgrid-dashboards: sig-testing-maintenance
+    testgrid-tab-name: ci-aws-janitor
+    description: Deletes old AWS resources
+
 - interval: 24h
   name: maintenance-ci-janitor
   labels:
@@ -17,10 +52,10 @@ periodics:
       - go
       - run
       - experiment/ci-janitor/main.go
-      - --config-path=prow/config.yaml
+      - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/janitor/gcp_janitor.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       resources:
         requests:
           cpu: 5
@@ -45,7 +80,7 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
       resources:
         requests:
           cpu: 5
@@ -71,7 +106,7 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
       resources:
         requests:
           cpu: 5

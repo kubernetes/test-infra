@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Deprecated:  The `mkbuild-cluster` command-line utility and `build-cluster`
+// format is deprecated and will be removed in May 2020. Use `gencred` and the
+// `kubeconfig` format as an alternative.
 package main
 
 import (
@@ -25,7 +28,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"k8s.io/test-infra/pkg/gencert"
+	"k8s.io/test-infra/gencred/pkg/certificate"
 	"k8s.io/test-infra/prow/kube"
 
 	"github.com/sirupsen/logrus"
@@ -234,7 +237,7 @@ func describeCluster(o options, kubeContext string) (*describe, error) {
 		if err != nil {
 			return nil, fmt.Errorf("create client: %v", err)
 		}
-		certPEM, keyPEM, caPEM, err := gencert.CreateClusterAuthCredentials(clientset)
+		certPEM, keyPEM, caPEM, err := certificate.CreateClusterCertificateCredentials(clientset)
 		if err != nil {
 			return nil, fmt.Errorf("create cert and key: %v", err)
 		}

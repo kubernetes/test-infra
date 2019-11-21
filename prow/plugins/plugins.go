@@ -19,17 +19,19 @@ package plugins
 import (
 	"errors"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
 	"io/ioutil"
+	"k8s.io/test-infra/pkg/genyaml"
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/test-infra/prow/bugzilla"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"
 
+	"k8s.io/test-infra/prow/bugzilla"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
@@ -49,6 +51,7 @@ var (
 	reviewEventHandlers        = map[string]ReviewEventHandler{}
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
+	CommentMap                 = genyaml.NewCommentMap("prow/plugins/config.go")
 )
 
 // HelpProvider defines the function type that construct a pluginhelp.PluginHelp for enabled
@@ -134,12 +137,13 @@ func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help H
 
 // Agent may be used concurrently, so each entry must be thread-safe.
 type Agent struct {
-	GitHubClient     github.Client
-	ProwJobClient    prowv1.ProwJobInterface
-	KubernetesClient kubernetes.Interface
-	GitClient        *git.Client
-	SlackClient      *slack.Client
-	BugzillaClient   bugzilla.Client
+	GitHubClient              github.Client
+	ProwJobClient             prowv1.ProwJobInterface
+	KubernetesClient          kubernetes.Interface
+	BuildClusterCoreV1Clients map[string]corev1.CoreV1Interface
+	GitClient                 *git.Client
+	SlackClient               *slack.Client
+	BugzillaClient            bugzilla.Client
 
 	OwnersClient *repoowners.Client
 
@@ -163,17 +167,18 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
 	return Agent{
-		GitHubClient:     clientAgent.GitHubClient.WithFields(logger.Data),
-		KubernetesClient: clientAgent.KubernetesClient,
-		ProwJobClient:    clientAgent.ProwJobClient,
-		GitClient:        clientAgent.GitClient,
-		SlackClient:      clientAgent.SlackClient,
-		OwnersClient:     clientAgent.OwnersClient,
-		BugzillaClient:   clientAgent.BugzillaClient,
-		Metrics:          metrics,
-		Config:           prowConfig,
-		PluginConfig:     pluginConfig,
-		Logger:           logger,
+		GitHubClient:              clientAgent.GitHubClient.WithFields(logger.Data),
+		KubernetesClient:          clientAgent.KubernetesClient,
+		BuildClusterCoreV1Clients: clientAgent.BuildClusterCoreV1Clients,
+		ProwJobClient:             clientAgent.ProwJobClient,
+		GitClient:                 clientAgent.GitClient,
+		SlackClient:               clientAgent.SlackClient,
+		OwnersClient:              clientAgent.OwnersClient,
+		BugzillaClient:            clientAgent.BugzillaClient,
+		Metrics:                   metrics,
+		Config:                    prowConfig,
+		PluginConfig:              pluginConfig,
+		Logger:                    logger,
 	}
 }
 
@@ -197,13 +202,14 @@ func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
 
 // ClientAgent contains the various clients that are attached to the Agent.
 type ClientAgent struct {
-	GitHubClient     github.Client
-	ProwJobClient    prowv1.ProwJobInterface
-	KubernetesClient kubernetes.Interface
-	GitClient        *git.Client
-	SlackClient      *slack.Client
-	OwnersClient     *repoowners.Client
-	BugzillaClient   bugzilla.Client
+	GitHubClient              github.Client
+	ProwJobClient             prowv1.ProwJobInterface
+	KubernetesClient          kubernetes.Interface
+	BuildClusterCoreV1Clients map[string]corev1.CoreV1Interface
+	GitClient                 *git.Client
+	SlackClient               *slack.Client
+	OwnersClient              *repoowners.Client
+	BugzillaClient            bugzilla.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.
@@ -218,7 +224,9 @@ func NewFakeConfigAgent() ConfigAgent {
 
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or the configuration is invalid.
-func (pa *ConfigAgent) Load(path string) error {
+// If checkUnknownPlugins is true, unrecognized plugin names will make config
+// loading fail.
+func (pa *ConfigAgent) Load(path string, checkUnknownPlugins bool) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -229,6 +237,11 @@ func (pa *ConfigAgent) Load(path string) error {
 	}
 	if err := np.Validate(); err != nil {
 		return err
+	}
+	if checkUnknownPlugins {
+		if err := np.ValidatePluginsUnknown(); err != nil {
+			return err
+		}
 	}
 
 	pa.Set(np)
@@ -254,14 +267,16 @@ func (pa *ConfigAgent) Set(pc *Configuration) {
 
 // Start starts polling path for plugin config. If the first attempt fails,
 // then start returns the error. Future errors will halt updates but not stop.
-func (pa *ConfigAgent) Start(path string) error {
-	if err := pa.Load(path); err != nil {
+// If checkUnknownPlugins is true, unrecognized plugin names will make config
+// loading fail.
+func (pa *ConfigAgent) Start(path string, checkUnknownPlugins bool) error {
+	if err := pa.Load(path, checkUnknownPlugins); err != nil {
 		return err
 	}
 	ticker := time.Tick(1 * time.Minute)
 	go func() {
 		for range ticker {
-			if err := pa.Load(path); err != nil {
+			if err := pa.Load(path, checkUnknownPlugins); err != nil {
 				logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
 			}
 		}

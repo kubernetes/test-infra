@@ -1,5 +1,5 @@
 load("@py_deps//:requirements.bzl", "requirement")
-load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_test")
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary", "nodejs_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -11,14 +11,6 @@ py_test(
         "coalesce_test.py",
     ],
     python_version = "PY3",
-)
-
-py_test(
-    name = "verify_boilerplate",
-    srcs = ["verify_boilerplate.py"],
-    data = ["//:all-srcs"],
-    python_version = "PY3",
-    tags = ["lint"],
 )
 
 sh_test(
@@ -45,6 +37,21 @@ nodejs_test(
     ],
 )
 
+nodejs_binary(
+    name = "update-tslint",
+    data = [
+        "//:all-srcs",
+        "@npm//tslint",
+    ],
+    entry_point = "@npm//:node_modules/tslint/bin/tslint",
+    tags = ["lint"],
+    templated_args = [
+        "-p",
+        ".",
+        "--fix",
+    ],
+)
+
 MISSPELL = "@com_github_client9_misspell//cmd/misspell"
 
 sh_test(
@@ -58,7 +65,7 @@ sh_test(
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         ":update-codegen",
         "//:go.mod",
         "//:go.sum",
@@ -82,7 +89,7 @@ sh_binary(
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         "//:go.mod",
         "//:go.sum",
         "@go_sdk//:files",
@@ -142,12 +149,12 @@ sh_binary(
     args = [
         "$(location %s)" % protoc,
         "$(location %s)" % protoc_gen_go,
-        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         protoc_grpc,
         proto_importmap,
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         "//:all-srcs",
         protoc,
         protoc_gen_go,
@@ -162,12 +169,12 @@ sh_test(
         "$(location %s)" % ":update-protos",
         "$(location %s)" % protoc,
         "$(location %s)" % protoc_gen_go,
-        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",
+        "$(location %s)" % ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         protoc_grpc,
         proto_importmap,
     ],
     data = [
-        ":boilerplate/boilerplate.generated.go.txt",
+        ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
         ":update-protos",
         protoc,
         protoc_gen_go,
@@ -201,79 +208,19 @@ sh_test(
 
 test_suite(
     name = "verify-all",
+    tests = [
+        ":verify-linters",
+        # "@io_k8s_repo_infra//hack:verify-all", # TODO(fejta): golangci-lint
+        "@io_k8s_repo_infra//hack:verify-bazel",
+        "@io_k8s_repo_infra//hack:verify-boilerplate",
+        "@io_k8s_repo_infra//hack:verify-deps",
+        "@io_k8s_repo_infra//hack:verify-gofmt",
+    ],
+)
+
+test_suite(
+    name = "verify-linters",
     tags = ["lint"],  # picks up all non-manual targets with this tag
-)
-
-GAZELLE = "@bazel_gazelle//cmd/gazelle"
-
-KAZEL = "@io_k8s_repo_infra//kazel"
-
-GO = "@go_sdk//:bin/go"
-
-sh_binary(
-    name = "update-deps",
-    srcs = ["update-deps.sh"],
-    args = [
-        "$(location %s)" % GO,
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-        "$(location :update-bazel)",
-    ],
-    data = [
-        GAZELLE,
-        GO,
-        KAZEL,
-        ":update-bazel",
-    ],
-)
-
-sh_test(
-    name = "verify-deps",
-    srcs = ["verify-deps.sh"],
-    args = [
-        "$(location :update-deps)",
-        "$(location %s)" % GO,
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-        "$(location :update-bazel)",
-    ],
-    data = [
-        GAZELLE,
-        GO,
-        KAZEL,
-        ":update-bazel",
-        ":update-deps",
-        "@//:all-srcs",
-    ],
-    tags = ["lint"],
-)
-
-sh_binary(
-    name = "update-bazel",
-    srcs = ["update-bazel.sh"],
-    args = [
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-    ],
-    data = [
-        GAZELLE,
-        KAZEL,
-    ],
-)
-
-sh_test(
-    name = "verify-bazel",
-    srcs = ["verify-bazel.sh"],
-    args = [
-        "$(location %s)" % GAZELLE,
-        "$(location %s)" % KAZEL,
-    ],
-    data = [
-        "@//:all-srcs",
-        GAZELLE,
-        KAZEL,
-    ],
-    tags = ["lint"],
 )
 
 py_binary(
@@ -303,59 +250,19 @@ py_binary(
     ],
 )
 
-sh_binary(
-    name = "update-gofmt",
-    srcs = ["update-gofmt.sh"],
-    args = ["$(location @go_sdk//:bin/gofmt)"],
-    data = ["@go_sdk//:bin/gofmt"],
-)
-
-sh_test(
-    name = "verify-gofmt",
-    srcs = ["verify-gofmt.sh"],
-    args = ["$(location @go_sdk//:bin/gofmt)"],
-    data = [
-        "@//:all-srcs",
-        "@go_sdk//:bin/gofmt",
-    ],
-    tags = ["lint"],
-)
-
-genrule(
-    name = "generate-security-jobs",
-    srcs = [
-        "//config:all-srcs",
-        "//prow:config.yaml",
-    ],
-    outs = ["zz.security-jobs.yaml"],
-    # $@ == expected location for zz.security-jobs.yaml
-    cmd = "./$(location //config/jobs/kubernetes-security:genjobs) --config=prow/config.yaml --jobs=config/jobs --output=\"$@\"",
-    tools = ["//config/jobs/kubernetes-security:genjobs"],
-)
-
-sh_binary(
-    name = "update-config",
-    srcs = ["update-config.sh"],
-    data = [
-        ":zz.security-jobs.yaml",
-    ],
-)
-
 sh_test(
     name = "verify-config",
     srcs = ["verify-config.sh"],
     args = [
         "$(location //prow/cmd/checkconfig)",
-        "--config-path=prow/config.yaml",
+        "--config-path=config/prow/config.yaml",
         "--job-config-path=config/jobs",
-        "--plugin-config=prow/plugins.yaml",
+        "--plugin-config=config/prow/plugins.yaml",
     ],
     data = [
-        ":zz.security-jobs.yaml",
         "//config:all-srcs",
-        "//config/jobs/kubernetes-security:all-srcs",
-        "//prow:config.yaml",
-        "//prow:plugins.yaml",
+        "//config/prow:config.yaml",
+        "//config/prow:plugins.yaml",
         "//prow/cmd/checkconfig",
     ],
     tags = ["lint"],

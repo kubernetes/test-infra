@@ -9,7 +9,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - runner.sh
         args:
@@ -41,7 +41,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - sh
         - -c
@@ -85,7 +85,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - sh
         - -c
@@ -129,7 +129,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - sh
         - -c
@@ -173,7 +173,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - sh
         - -c
@@ -217,11 +217,12 @@ presubmits:
     always_run: true
     branches:
     - master
+    - release/1.3
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -229,3 +230,26 @@ presubmits:
         - --scenario=execute
         - --
         - ./test/verify.sh
+
+  - name: pull-cri-containerd-windows-cri
+    always_run: true
+    max_concurrency: 8
+    decorate: true
+    skip_branches:
+    - v0.1
+    - release/1.0
+    - release/1.2
+    - release/1.3
+    decoration_config:
+      timeout: 100m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - name: pull-cri-containerd-windows-cri
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
+        command:
+        - runner.sh
+        args:
+        - ./test/windows/runner.sh

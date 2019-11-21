@@ -83,7 +83,7 @@ dashboard.new(
     h: 9,
     w: 24,
     x: 0,
-    y: 27,
+    y: 18,
   })
 .addPanel(
     //TODO: Merge Event + Recent merges: might be related the protmetheus setting
@@ -104,6 +104,24 @@ dashboard.new(
     )).addTarget(prometheus.target(
         'sum(rate(merges_sum{org=\"kubernetes\",repo=\"kubernetes\",branch=\"master\"}[1d])) * 86400',
         legendFormat='Daily merge rate',
+    )), gridPos={
+    h: 9,
+    w: 24,
+    x: 0,
+    y: 27,
+  })
+.addPanel(
+    (graphPanel.new(
+        'Tide Pool Sync Errors',
+        description="Rate of sync errors over a 10m window for each Tide pool.",
+        datasource='prometheus',
+        legend_alignAsTable=true,
+        legend_rightSide=true,
+        nullPointMode='null as zero',
+    ) + legendConfig)
+    .addTarget(prometheus.target(
+        'sum(increase(tidepoolerrors[10m])) by (org, repo, branch)',
+        legendFormat='{{org}}/{{repo}}:{{branch}}',
     )), gridPos={
     h: 9,
     w: 24,

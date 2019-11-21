@@ -72,16 +72,26 @@
         constructor(filename, fileNumber) {
             this.filename = filename;
             this.fileNumber = fileNumber;
-            this.blocks = [];
+            this.blocks = new Map();
         }
         addBlock(block) {
-            this.blocks.push(block);
+            const k = this.keyForBlock(block);
+            const oldBlock = this.blocks.get(k);
+            if (oldBlock) {
+                oldBlock.hits += block.hits;
+            }
+            else {
+                this.blocks.set(k, block);
+            }
         }
         get totalStatements() {
-            return this.blocks.reduce((acc, b) => acc + b.statements, 0);
+            return reduce(this.blocks.values(), (acc, b) => acc + b.statements, 0);
         }
         get coveredStatements() {
-            return this.blocks.reduce((acc, b) => acc + (b.hits > 0 ? b.statements : 0), 0);
+            return reduce(this.blocks.values(), (acc, b) => acc + (b.hits > 0 ? b.statements : 0), 0);
+        }
+        keyForBlock(block) {
+            return `${block.start.line}.${block.start.col},${block.end.line}.${block.end.col}`;
         }
     }
     class Coverage {
@@ -149,6 +159,22 @@
         if (modeLabel !== 'mode') {
             throw new Error('Expected to start with mode line.');
         }
+        // Well-formed coverage files are already sorted alphabetically, but Kubernetes'
+        // `make test` produces ill-formed coverage files. This does actually matter, so
+        // sort it ourselves.
+        lines.sort((a, b) => {
+            a = a.split(':', 2)[0];
+            b = b.split(':', 2)[0];
+            if (a < b) {
+                return -1;
+            }
+            else if (a > b) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        });
         const coverage = new Coverage(mode);
         let fileCounter = 0;
         for (const line of lines) {

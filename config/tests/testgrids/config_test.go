@@ -29,8 +29,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"github.com/GoogleCloudPlatform/testgrid/config"
+	config_pb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prow_config "k8s.io/test-infra/prow/config"
-	config_pb "k8s.io/test-infra/testgrid/config"
 )
 
 type SQConfig struct {
@@ -48,12 +49,15 @@ var (
 		"redhat",
 		"vmware",
 		"gardener",
+		"jetstack",
+		"kyma",
 	}
 	orgs = []string{
 		"conformance",
 		"presubmits",
 		"sig",
 		"wg",
+		"provider",
 	}
 	dashboardPrefixes = [][]string{orgs, companies}
 
@@ -64,7 +68,7 @@ var (
 	}
 )
 
-var prowPath = flag.String("prow-config", "../../../prow/config.yaml", "Path to prow config")
+var prowPath = flag.String("prow-config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var protoPath = flag.String("config", "", "Path to TestGrid config proto")
 
@@ -79,7 +83,7 @@ func TestMain(m *testing.M) {
 	}
 
 	var err error
-	cfg, err = config_pb.Read(*protoPath, context.Background(), nil)
+	cfg, err = config.Read(*protoPath, context.Background(), nil)
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
@@ -157,7 +161,7 @@ func TestConfig(t *testing.T) {
 		found := false
 		for _, kind := range dashboardPrefixes {
 			for _, prefix := range kind {
-				if strings.HasPrefix(dashboard.Name, prefix+"-") || dashboard.Name == prefix {
+				if strings.HasPrefix(dashboard.Name, prefix) || dashboard.Name == prefix {
 					found = true
 					break
 				}
@@ -262,7 +266,7 @@ func TestConfig(t *testing.T) {
 		found := false
 		for _, kind := range dashboardPrefixes {
 			for _, prefix := range kind {
-				if strings.HasPrefix(dashboardGroup.Name, prefix+"-") || prefix == dashboardGroup.Name {
+				if strings.HasPrefix(dashboardGroup.Name, prefix) || prefix == dashboardGroup.Name {
 					found = true
 					break
 				}
@@ -298,7 +302,7 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Dashboard %v needs to be defined before adding to a dashboard group!", dashboard)
 			}
 
-			if !strings.HasPrefix(dashboard, dashboardGroup.Name+"-") {
+			if !strings.HasPrefix(dashboard, dashboardGroup.Name) {
 				t.Errorf("Dashboard %v in group %v must have the group name as a prefix", dashboard, dashboardGroup.Name)
 			}
 		}
@@ -337,10 +341,6 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"containerd/cri",
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
 	"kubeflow/pipelines",
-	"kubernetes-csi/csi-driver-host-path",
-	"kubernetes-csi/external-attacher",
-	"kubernetes-csi/external-provisioner",
-	"kubernetes-csi/node-driver-registrar",
 	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
@@ -379,7 +379,7 @@ func TestKubernetesProwInstanceJobsMustHaveMatchingTestgridEntries(t *testing.T)
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}
 
-	for repo, presubmits := range prowConfig.Presubmits {
+	for repo, presubmits := range prowConfig.PresubmitsStatic {
 		if hasAnyPrefix(repo, noPresubmitsInTestgridPrefixes) {
 			continue
 		}

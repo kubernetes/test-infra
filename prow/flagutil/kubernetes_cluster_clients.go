@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	rest "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 	prow "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/kube"
@@ -52,7 +52,7 @@ type KubernetesOptions struct {
 // AddFlags injects Kubernetes options into the given FlagSet.
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster. All clusters are used as build clusters. Cannot be combined with --kubeconfig.")
-	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default or whichever is passed to --context are used as build clusters. . Cannot be combined with --build-cluster.")
+	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters. . Cannot be combined with --build-cluster.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 }
 
@@ -182,4 +182,21 @@ func (o *KubernetesOptions) BuildClusterClients(namespace string, dryRun bool) (
 		buildClients[context] = client.CoreV1().Pods(namespace)
 	}
 	return buildClients, nil
+}
+
+// BuildClusterCoreV1Clients returns core v1 clients for build clusters.
+func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients map[string]corev1.CoreV1Interface, err error) {
+	if err := o.resolve(dryRun); err != nil {
+		return nil, err
+	}
+
+	if o.dryRun {
+		return nil, errors.New("no dry-run pod client is supported for build clusters in dry-run mode")
+	}
+
+	clients := map[string]corev1.CoreV1Interface{}
+	for context, client := range o.kubernetesClientsByContext {
+		clients[context] = client.CoreV1()
+	}
+	return clients, nil
 }

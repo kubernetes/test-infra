@@ -69,6 +69,7 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 	}
 	if bug, exists := c.Bugs[id]; exists {
 		bug.Status = update.Status
+		bug.Resolution = update.Resolution
 		c.Bugs[id] = bug
 		return nil
 	}

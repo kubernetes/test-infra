@@ -1,24 +1,5 @@
 postsubmits:
   kubernetes/test-infra:
-  - name: post-test-infra-build-smoke
-    agent: knative-build
-    decorate: true
-    build_spec:
-      steps:
-      - name: first
-        image: busybox
-        args: ["echo", "hello"]
-      - name: second
-        image: busybox
-        args: ["echo", "world"]
-      - name: third
-        image: busybox
-        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-postsubmits.yaml"]
-    annotations:
-      testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: post-build-smoke
-      description: basic postsubmit to ensure build controller works correctly
-
   - name: post-test-infra-bazel
     branches:
     - master
@@ -28,7 +9,7 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.28.1
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - hack/bazel.sh
         args:
@@ -40,56 +21,3 @@ postsubmits:
       testgrid-dashboards: sig-testing-misc
       testgrid-tab-name: post-bazel
       description: Runs bazel test //... on the test-infra repo on each commit
-
-  - name: maintenance-boskos-config-upload
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-    run_if_changed: '^boskos/.*$'
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
-        command:
-        - ./boskos/update_prow_config.sh
-        env:
-        - name: PROW_SERVICE_ACCOUNT
-          value: /etc/prow-build-service/prow-build-service.json
-        volumeMounts:
-        - name: prow-build-service
-          mountPath: /etc/prow-build-service
-          readOnly: true
-      volumes:
-      - name: prow-build-service
-        secret:
-          secretName: prow-build-service
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: boskos-config-upload
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Update boskos configmap on test-infra pushes
-
-  - name: maintenance-ci-testgrid-config-upload
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    run_if_changed: '^config/(jobs|testgrids)/.*$'
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20190628-265d81f-0.27.0
-        command:
-        - ./testgrid/config-upload.sh
-        resources:
-          requests:
-            memory: "1Gi"
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: testgrid-config-upload
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Compiles and uploads testgrid config on test-infra pushes

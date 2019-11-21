@@ -28,19 +28,19 @@ import (
 	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/gerrit/reporter"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-type kubeClient interface {
-	CreateProwJob(prowapi.ProwJob) (prowapi.ProwJob, error)
+type prowJobClient interface {
+	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
 
 type gerritClient interface {
-	QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]client.ChangeInfo
+	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	Account(instance string) *gerrit.AccountInfo
@@ -52,19 +52,19 @@ type configAgent interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config  config.Getter
-	kc      kubeClient
-	gc      gerritClient
-	tracker LastSyncTracker
+	config        config.Getter
+	prowJobClient prowJobClient
+	gc            gerritClient
+	tracker       LastSyncTracker
 }
 
 type LastSyncTracker interface {
-	Current() time.Time
-	Update(time.Time) error
+	Current() client.LastSyncState
+	Update(client.LastSyncState) error
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, projects map[string][]string, kc *kube.Client, cfg config.Getter) (*Controller, error) {
+func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, projects map[string][]string, prowJobClient prowv1.ProwJobInterface, cfg config.Getter) (*Controller, error) {
 	if lastSyncTracker == nil {
 		return nil, errors.New("lastSyncTracker required")
 	}
@@ -76,10 +76,10 @@ func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, proje
 	c.Start(cookiefilePath)
 
 	return &Controller{
-		kc:      kc,
-		config:  cfg,
-		gc:      c,
-		tracker: lastSyncTracker,
+		prowJobClient: prowJobClient,
+		config:        cfg,
+		gc:            c,
+		tracker:       lastSyncTracker,
 	}, nil
 }
 
@@ -87,15 +87,17 @@ func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, proje
 // and creates prowjobs according to specs
 func (c *Controller) Sync() error {
 	syncTime := c.tracker.Current()
-	latest := syncTime
+	latest := syncTime.DeepCopy()
 
 	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
 		for _, change := range changes {
 			if err := c.ProcessChange(instance, change); err != nil {
 				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
 			}
-			if latest.Before(change.Updated.Time) {
-				latest = change.Updated.Time
+			lastTime, ok := latest[instance][change.Project]
+			if !ok || lastTime.Before(change.Updated.Time) {
+				lastTime = change.Updated.Time
+				latest[instance][change.Project] = lastTime
 			}
 		}
 
@@ -211,11 +213,13 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			}
 		}
 	case client.New:
-		presubmits := c.config().Presubmits[cloneURI.String()]
-		presubmits = append(presubmits, c.config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
+		// TODO: Do we want to add support for dynamic presubmits?
+		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
+		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
 		var filters []pjutil.Filter
 		var latestReport *reporter.JobReport
+		var latestReportTime time.Time
 		account := c.gc.Account(instance)
 		// Should not happen, since this means auth failed
 		if account == nil {
@@ -227,17 +231,25 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			if message.Author.AccountID != account.AccountID {
 				continue
 			}
+			if message.Date.Before(latestReportTime) {
+				continue
+			}
 			report := reporter.ParseReport(message.Message)
 			if report != nil {
-				logger.Infof("Found latest report: %s", message.Message)
 				latestReport = report
-				break
+				latestReportTime = message.Date.Time
 			}
 		}
-		if latestReport == nil {
-			logger.Warnf("Found nil latest report")
+		if latestReport != nil {
+			logger.Infof("Found latest report: %s", latestReport)
 		}
-		lastUpdate := c.tracker.Current()
+
+		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
+		if !ok {
+			logrus.Warnf("could not find lastTime for project %q, probably something went wrong with initTracker?", change.Project)
+			lastUpdate = time.Now()
+		}
+
 		filter, err := messageFilter(lastUpdate, change, presubmits, latestReport, logger)
 		if err != nil {
 			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
@@ -276,7 +288,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		}
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
-		if _, err := c.kc.CreateProwJob(pj); err != nil {
+		if _, err := c.prowJobClient.Create(&pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
 			logger.Infof("Triggered Prowjob %s", jSpec.spec.Job)

@@ -50,9 +50,9 @@ func (Subnets) MarkAndSweep(sess *session.Session, acct string, region string, s
 	for _, sub := range resp.Subnets {
 		s := &subnet{Account: acct, Region: region, ID: *sub.SubnetId}
 		if set.Mark(s) {
-			klog.Warningf("%s: deleting %T: %v", s.ARN(), sub, sub)
+			klog.Warningf("%s: deleting %T: %s", s.ARN(), sub, s.ID)
 			if _, err := svc.DeleteSubnet(&ec2.DeleteSubnetInput{SubnetId: sub.SubnetId}); err != nil {
-				klog.Warningf("%v: delete failed: %v", s.ARN(), err)
+				klog.Warningf("%s: delete failed: %v", s.ARN(), err)
 			}
 		}
 	}

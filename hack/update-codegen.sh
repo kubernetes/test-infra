@@ -53,6 +53,21 @@ ensure-in-gopath() {
   cd "$fake_repopath"
 }
 
+# copyfiles will copy all files in 'path' in the fake gopath over to the
+# workspace directory as the code generators output directly into GOPATH,
+# meaning without this function the generated files are left in /tmp
+copyfiles() {
+  path=$1
+  name=$2
+  if [[ ! -d "$path" ]]; then
+    return 0
+  fi
+  (
+    cd "$GOPATH/src/k8s.io/test-infra/$path"
+    find "." -name "$name" -exec cp {} "$BUILD_WORKSPACE_DIRECTORY/$path/{}" \;
+  )
+}
+
 # clean will delete files matching name in path.
 #
 # When inside bazel test the files are read-only.
@@ -65,6 +80,7 @@ clean() {
     return 0
   fi
   find "$path" -name "$name" -delete
+  find "$BUILD_WORKSPACE_DIRECTORY"/"$path" -name "$name" -delete
 }
 
 gen-deepcopy() {
@@ -75,6 +91,7 @@ gen-deepcopy() {
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-file-base zz_generated.deepcopy \
     --bounding-dirs k8s.io/test-infra/prow/apis
+  copyfiles "prow/apis" "zz_generated.deepcopy.go"
 }
 
 gen-client() {
@@ -86,6 +103,7 @@ gen-client() {
     --input-base "" \
     --input k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-package k8s.io/test-infra/prow/client/clientset
+  copyfiles "./prow/client/clientset" "*.go"
 }
 
 gen-lister() {
@@ -95,6 +113,7 @@ gen-lister() {
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs k8s.io/test-infra/prow/apis/prowjobs/v1 \
     --output-package k8s.io/test-infra/prow/client/listers
+  copyfiles "./prow/client/listers" "*.go"
 }
 
 gen-informer() {
@@ -106,6 +125,7 @@ gen-informer() {
     --versioned-clientset-package k8s.io/test-infra/prow/client/clientset/versioned \
     --listers-package k8s.io/test-infra/prow/client/listers \
     --output-package k8s.io/test-infra/prow/client/informers
+  copyfiles "./prow/client/informers" "*.go"
 }
 
 export GO111MODULE=off

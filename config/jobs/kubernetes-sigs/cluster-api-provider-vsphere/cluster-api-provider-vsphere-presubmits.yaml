@@ -74,12 +74,12 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: pull-cluster-api-provider-vsphere-verify-fmt
     always_run: false
-    run_if_changed: '^((cmd|pkg|(vendor/github.com/mbenkmann/goformat/goformat)|(vendor/golang.org/x/tools/cmd/goimports))/)|hack/check-format\.sh'
+    run_if_changed: '^((api|cmd|controllers|pkg|(vendor/github.com/mbenkmann/goformat/goformat)|(vendor/golang.org/x/tools/cmd/goimports))/)|hack/check-format\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - hack/check-format.sh
     annotations:
@@ -90,12 +90,12 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-lint
     always_run: false
-    run_if_changed: '^((cmd|pkg|(vendor/golang.org/x/lint/golint))/)|hack/check-lint\.sh'
+    run_if_changed: '^((api|cmd|controllers|pkg|(vendor/golang.org/x/lint/golint))/)|hack/check-lint\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - hack/check-lint.sh
     annotations:
@@ -106,12 +106,12 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-vet
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    run_if_changed: '^((api|cmd|controllers|pkg)/)|hack/check-vet\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - hack/check-vet.sh
     annotations:
@@ -159,12 +159,12 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-crds
     always_run: false
-    run_if_changed: '^((config|pkg|vendor)/)|hack/verify-crds\.sh'
+    run_if_changed: '^((api|config|controllers|pkg|vendor)/)|Makefile|hack/verify-crds\.sh'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - hack/verify-crds.sh
     annotations:
@@ -175,14 +175,14 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-test
     always_run: false
-    run_if_changed: '^((cmd|config|hack|pkg|vendor)/)|Makefile|(scripts/(ci-test|fetch_ext_bins)\.sh)'
+    run_if_changed: '^((api|cmd|config|controllers|hack|pkg|vendor)/)|Makefile|(scripts/(ci-test|fetch_ext_bins)\.sh)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             cpu: "500m"
@@ -202,16 +202,14 @@ presubmits:
       preset-service-account: "true"
       preset-cluster-api-provider-vsphere-e2e-creds: "true"
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
-    branches:
-    - ^release-0.4$
     always_run: false
-    run_if_changed: '^((cmd|config|pkg|(scripts/e2e)|vendor)/)|Dockerfile'
+    run_if_changed: '^((api|cmd|config|controllers|pkg|(scripts/e2e)|vendor)/)|Dockerfile'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             cpu: "1000m"
@@ -239,13 +237,13 @@ postsubmits:
     branches:
     - ^master$
     always_run: false
-    run_if_changed: '^(cmd|config|pkg|vendor)/|Dockerfile'
+    run_if_changed: '^(api|cmd|config|controllers|examples|pkg|vendor)/|Dockerfile'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             cpu: "1000m"
@@ -276,7 +274,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             cpu: "1000m"

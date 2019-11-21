@@ -23,7 +23,7 @@ periodics:
     timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       - bash
@@ -46,7 +46,7 @@ periodics:
         ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
         ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
-        ./gopherage filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
         ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/conformance.html"
         ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
@@ -58,7 +58,7 @@ periodics:
         value: "n"
       securityContext:
         privileged: true
-# coverage for same tests that run in ci-kubernetes-e2e-gci-gce
+  # coverage for same tests that run in ci-kubernetes-e2e-gci-gce
   annotations:
     testgrid-dashboards: sig-testing-canaries
     description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
@@ -86,7 +86,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - runner.sh
       - bash
@@ -114,7 +114,7 @@ periodics:
         ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
         ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
-        ./gopherage filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/ "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
         ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/e2e.html"
         ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
@@ -129,3 +129,30 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
+- interval: 1h
+  name: ci-kubernetes-coverage-unit
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -c
+      - |
+        local result=0
+        go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+        make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" || result=$?
+        grep -v -E 'zz_generated|generated\.pb\.go' "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+        go tool cover -html="${ARTIFACTS}/filtered.cov" -o "${ARTIFACTS}/filtered.html" || result=$?
+        exit $result
+      securityContext:
+        privileged: true

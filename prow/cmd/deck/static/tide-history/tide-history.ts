@@ -1,5 +1,5 @@
 import moment from "moment";
-import {JobState} from "../api/prow";
+import {ProwJobState} from "../api/prow";
 import {HistoryData, Record} from "../api/tide-history";
 import {cell} from "../common/common";
 import {getParameterByName} from "../common/urls";
@@ -63,7 +63,7 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
   return opts;
 }
 
-function errorState(err?: string): JobState {
+function errorState(err?: string): ProwJobState {
   return err ? "failure" : "success";
 }
 
@@ -85,7 +85,7 @@ function redrawOptions(opts: Options) {
 
 window.onload = (): void => {
   const topNavigator = document.getElementById("top-navigator")!;
-  let navigatorTimeOut: number | undefined;
+  let navigatorTimeOut: any;
   const main = document.querySelector("main")! as HTMLElement;
   main.onscroll = () => {
     topNavigator.classList.add("hidden");

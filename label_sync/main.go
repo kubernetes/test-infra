@@ -328,7 +328,12 @@ func loadRepos(org string, gc client) ([]string, error) {
 	}
 	var rl []string
 	for _, r := range repos {
+		// Skip Archived repos as they can't be modified in this way
 		if r.Archived {
+			continue
+		}
+		// Skip private security forks as they can't be modified in this way
+		if r.Private && github.SecurityForkNameRE.MatchString(r.Name) {
 			continue
 		}
 		rl = append(rl, r.Name)
@@ -900,9 +905,8 @@ func getTextColor(backgroundColor string) (string, error) {
 
 	if (L+0.05)/(0.0+0.05) > (1.0+0.05)/(L+0.05) {
 		return "000000", nil
-	} else {
-		return "ffffff", nil
 	}
+	return "ffffff", nil
 }
 
 func writeCSS(tmplPath string, outPath string, config Configuration) error {

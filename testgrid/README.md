@@ -1,5 +1,9 @@
 # Testgrid
 
+NOTE: Most TestGrid code is moving to its new home in
+https://github.com/GoogleCloudPlatform/testgrid. See
+[#10409](https://github.com/kubernetes/test-infra/issues/10409) for more.
+
 The Kubernetes Testgrid instance is available at https://testgrid.k8s.io
 
 We have a short [video] from the testgrid session at the 2018 contributor summit.
@@ -11,7 +15,6 @@ The video demos power features of testgrid, including:
 * Grouping
 * Dashboard groups
 * Summaries
-* Clustered Failures
 
 Please have a look!
 

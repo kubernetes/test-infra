@@ -1,0 +1,29 @@
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "image",
+    base = "@gcloud-go//image",  # Needs linux and git, not gcloud or go
+    directory = "/",
+    entrypoint = ["/transfigure.sh"],
+    files = [
+        "transfigure.sh",
+        "//robots/pr-creator",
+        "//testgrid/cmd/configurator",
+    ],
+    stamp = True,
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

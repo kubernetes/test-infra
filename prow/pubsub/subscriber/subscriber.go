@@ -185,6 +185,7 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
+
 	prowJobSpec := pjutil.PeriodicSpec(*periodicJob)
 	// Adds / Updates Labels from prow job event
 	for k, v := range pe.Labels {
@@ -195,10 +196,11 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 	prowJob = pjutil.NewProwJob(prowJobSpec, periodicJob.Labels, pe.Annotations)
 	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
-		for _, c := range prowJob.Spec.PodSpec.Containers {
+		for i, c := range prowJob.Spec.PodSpec.Containers {
 			for k, v := range pe.Envs {
 				c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: v})
 			}
+			prowJob.Spec.PodSpec.Containers[i].Env = c.Env
 		}
 	}
 

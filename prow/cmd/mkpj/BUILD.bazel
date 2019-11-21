@@ -10,6 +10,8 @@ load("//prow:def.bzl", "prow_image")
 
 prow_image(
     name = "image",
+    directory = "/",
+    files = [":mkpj"],
     visibility = ["//visibility:public"],
 )
 

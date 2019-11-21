@@ -144,7 +144,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 25m
+      timeout: 40m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -152,7 +152,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -167,7 +167,7 @@ presubmits:
         - name: E2E_NODES
           value: "15"
         - name: K8S_VERSION
-          value: v1.12.9
+          value: v1.12.10
         resources:
           requests:
             cpu: 2
@@ -179,7 +179,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 25m
+      timeout: 40m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -187,7 +187,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -202,7 +202,7 @@ presubmits:
         - name: E2E_NODES
           value: "15"
         - name: K8S_VERSION
-          value: v1.13.7
+          value: v1.13.10
         resources:
           requests:
             cpu: 2
@@ -214,7 +214,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 25m
+      timeout: 40m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -222,7 +222,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -237,7 +237,7 @@ presubmits:
         - name: E2E_NODES
           value: "15"
         - name: K8S_VERSION
-          value: v1.14.3
+          value: v1.14.6
         resources:
           requests:
             cpu: 2
@@ -249,7 +249,7 @@ presubmits:
     always_run: true
     decorate: true
     decoration_config:
-      timeout: 25m
+      timeout: 40m
     max_concurrency: 5
     path_alias: k8s.io/ingress-nginx
     labels:
@@ -257,7 +257,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -272,7 +272,7 @@ presubmits:
         - name: E2E_NODES
           value: "15"
         - name: K8S_VERSION
-          value: v1.15.0
+          value: v1.15.3
         resources:
           requests:
             cpu: 2
@@ -288,7 +288,7 @@ periodics:
   path_alias: k8s.io/ingress-nginx
   decorate: true
   decoration_config:
-    timeout: 25m
+    timeout: 40m
   extra_refs:
   - org: kubernetes
     repo: ingress-nginx
@@ -300,7 +300,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v06292019-7c6ffeaea
+    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
       command:
       - /usr/local/bin/runner.sh
       args:

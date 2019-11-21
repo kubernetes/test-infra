@@ -1,4 +1,8 @@
 variants:
+  0.29.1:
+    BAZEL_VERSION: 0.29.1
+  0.28.1:
+    BAZEL_VERSION: 0.28.1
   0.27.0:
     BAZEL_VERSION: 0.27.0
   0.26.0:

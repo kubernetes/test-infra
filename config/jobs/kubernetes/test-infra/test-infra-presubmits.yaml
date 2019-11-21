@@ -1,45 +1,5 @@
 presubmits:
   kubernetes/test-infra:
-  - name: pull-test-infra-build-smoke
-    agent: knative-build
-    decorate: true
-    build_spec:
-      steps:
-      - name: first
-        image: busybox
-        args: ["echo", "hello"]
-      - name: second
-        image: busybox
-        args: ["echo", "world"]
-      - name: third
-        image: busybox
-        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
-    annotations:
-      testgrid-num-columns-recent: '20'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: pull-build-smoke
-      description: basic presubmit to ensure build controller works correctly
-  - name: pull-test-infra-build-smoke-fail
-    agent: knative-build
-    decorate: true
-    build_spec:
-      steps:
-      - name: first
-        image: busybox
-        args: ["echo", "hello"]
-      - name: second
-        image: busybox
-        args: ["sleep", "60"]
-      - name: third
-        image: busybox
-        args: ["exit", "1"]
-    annotations:
-      testgrid-num-columns-recent: '20'
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: pull-build-smoke-fail
-      description: basic presubmit to ensure build controller fails correctly (Will remove once we assert the behavior)
   - name: pull-test-infra-bazel
     branches:
     - master
@@ -50,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.28.1
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - hack/bazel.sh
         args:
@@ -63,7 +23,7 @@ presubmits:
   - name: pull-test-infra-gubernator
     branches:
     - master
-    run_if_changed: 'gubernator|prow/config.yaml'
+    run_if_changed: 'gubernator|config/prow/config.yaml'
     decorate: true
     labels:
       preset-service-account: "true"
@@ -86,7 +46,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:

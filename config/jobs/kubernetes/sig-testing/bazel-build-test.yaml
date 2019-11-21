@@ -7,6 +7,9 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -30,6 +33,9 @@ presubmits:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -67,7 +73,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -97,7 +103,7 @@ postsubmits:
       repo: test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - bash
         args:
@@ -109,7 +115,7 @@ postsubmits:
               --config=ci \
               "--build=//... -//vendor/..." \
               --release=//build/release-tars \
-              --gcs=gs://kubernetes-release-dev/ci \
+              --gcs=gs://kubernetes-release-dev/ci-rbe \
               --version-suffix=-bazel-rbe \
               --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
 
@@ -204,7 +210,7 @@ periodics:
     repo: test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       command:
       - bash
       args:
@@ -216,9 +222,9 @@ periodics:
             --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci \
+            --gcs=gs://kubernetes-release-dev/ci-periodic \
             --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-periodic.txt
 
 - name: periodic-kubernetes-bazel-build-canary
   annotations:
@@ -253,9 +259,9 @@ periodics:
             --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci \
+            --gcs=gs://kubernetes-release-dev/ci-canary \
             --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt
+            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-canary.txt
 
 # periodic bazel test jobs
 - name: periodic-kubernetes-bazel-test-master

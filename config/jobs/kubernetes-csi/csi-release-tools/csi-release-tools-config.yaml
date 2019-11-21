@@ -12,13 +12,13 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
-      testgrid-dashboards: sig-storage-csi
+      testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-kubernetes-csi-csi-release-tools
-      description: Kubernetes-CSI pull job on csi-release-tools
+      description: Kubernetes-CSI pull job in repo csi-release-tools
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - runner.sh
         args:

@@ -82,6 +82,7 @@ func (f *fakeRepoOwners) Approvers(path string) sets.String             { return
 func (f *fakeRepoOwners) LeafReviewers(path string) sets.String         { return nil }
 func (f *fakeRepoOwners) Reviewers(path string) sets.String             { return f.reviewers[path] }
 func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String     { return nil }
+func (f *fakeRepoOwners) TopLevelApprovers() sets.String                { return nil }
 
 func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)

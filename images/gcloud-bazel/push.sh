@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-cd "$(dirname "$0")"
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit
 rm -rf rules_k8s
 git clone https://github.com/bazelbuild/rules_k8s.git
 make -C rules_k8s/images/gcloud-bazel push PROJECT=k8s-testimages

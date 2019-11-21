@@ -5,6 +5,9 @@ presubmits:
     - release-\d+\.\d+
     annotations:
       fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     max_concurrency: 12
     always_run: false
     optional: true
@@ -17,7 +20,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

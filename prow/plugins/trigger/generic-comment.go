@@ -126,7 +126,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if err != nil {
 		return err
 	}
-	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, gc.GUID, trigger.ElideSkippedContexts)
+	return RunAndSkipJobs(c, pr, baseSHA, toTest, toSkip, gc.GUID, *trigger.ElideSkippedContexts)
 }
 
 func HonorOkToTest(trigger plugins.Trigger) bool {

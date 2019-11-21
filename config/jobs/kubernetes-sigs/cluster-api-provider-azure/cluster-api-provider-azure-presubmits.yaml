@@ -1,62 +1,149 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-azure:
-  - name: pull-cluster-api-provider-azure-bazel-verify
+  - name: pull-cluster-api-provider-azure-test
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
+        command:
+        - "./scripts/ci-test.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pr-test
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-build
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
+        command:
+        - "./scripts/ci-build.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pr-build
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-integration
+    always_run: true
+    optional: true
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
+        command:
+        - "runner.sh"
+        - "./scripts/ci-integration.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pr-integration
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-verify
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
+        command:
+        - "runner.sh"
+        - "make"
+        - "verify"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: verify
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-bazel-verify
+    always_run: true
+    optional: false
+    decorate: true
+    branches:
+      - ^release-0.2$
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: bazel-pr-verify
-      testgrid-alert-email: foo+k8s-azure@agst.us
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-bazel-test
     always_run: true
     optional: false
     decorate: true
+    branches:
+      - ^release-0.2$
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: bazel-pr-test
-      testgrid-alert-email: foo+k8s-azure@agst.us
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-bazel-build
     always_run: true
     optional: false
     decorate: true
+    branches:
+      - ^release-0.2$
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: bazel-pr-build
-      testgrid-alert-email: foo+k8s-azure@agst.us
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-verify-boilerplate
     always_run: true
     optional: false
     decorate: true
+    branches:
+      - ^release-0.2$
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: verify-boilerplate
-      testgrid-alert-email: foo+k8s-azure@agst.us
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io

@@ -6,11 +6,6 @@ run --workspace_status_command=./hack/print-workspace-status.sh
 build --incompatible_disable_deprecated_attr_params=false
 query --incompatible_disable_deprecated_attr_params=false
 
-# https://github.com/kubernetes/test-infra/issues/13239
-# https://github.com/bazelbuild/rules_docker/issues/842
-# https://github.com/bazelbuild/bazel/issues/7899
-build --host_force_python=PY2
-
 # enable data race detection
 test --features=race --test_output=errors
 

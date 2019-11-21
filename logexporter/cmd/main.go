@@ -187,15 +187,14 @@ func prepareLogfiles(logDir string) {
 
 func uploadLogfilesToGCS(logDir string) error {
 	cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf("ls %v/*", logDir))
-	if output, err := cmd.Output(); err != nil {
+	output, err := cmd.Output()
+	if err != nil {
 		return fmt.Errorf("Could not list any logfiles: %v", err)
-	} else {
-		glog.Infof("List of logfiles available: %v", string(output))
 	}
+	glog.Infof("List of logfiles available: %v", string(output))
 
 	gcsLogPath := *gcsPath + "/" + *nodeName
 	glog.Infof("Uploading logfiles to GCS at path '%v'", gcsLogPath)
-	var err error
 	for uploadAttempt := 0; uploadAttempt < 3; uploadAttempt++ {
 		// Upload the files with compression (-z) and parallelism (-m) for speeding
 		// up, and set their ACL to make them publicly readable.

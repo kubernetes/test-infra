@@ -21,28 +21,34 @@
 base="$(dirname $0)"
 
 # The latest stable Kubernetes version for testing alpha repos
-latest_stable_k8s_version="1.15.0"
-latest_stable_k8s_minor_version="1.15"
+latest_stable_k8s_version="1.16.2"
+latest_stable_k8s_minor_version="1.16"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20190819-0b0980f-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
-# For these repos we generate the full test matrix.
+# For these repos we generate the full test matrix. For each entry here
+# we need a "sig-storage-<repo>" dashboard in
+# config/testgrids/kubernetes/sig-storage/config.yaml.
 hostpath_example_repos="
 csi-driver-host-path
 external-attacher
 external-provisioner
+external-resizer
+external-snapshotter
+livenessprobe
 node-driver-registrar
 "
 
-# kubernetes-csi repos which only need to be tested against a single
-# Kubernetes version. We generate unit, stable and alpha jobs for these,
-# without specifying a Kubernetes version.
+# kubernetes-csi repos which only need to be tested against at most a
+# single Kubernetes version. We generate unit, stable and alpha jobs
+# for these, without specifying a Kubernetes version. What the repo
+# then tests in those jobs is entirely up to the repo.
+#
+# This list is currently empty, but such a job might be useful again
+# in the future, so the code generator code below is kept.
 single_kubernetes_repos="
-livenessprobe
-external-snapshotter
-external-resizer
 "
 
 # kubernetes-csi repos which only need unit testing.
@@ -61,7 +67,6 @@ csi-proxy
 # csi-driver-nfs
 # csi-lib-fc
 # csi-lib-iscsi
-# external-resizer
 
 # All branches that do *not* support Prow testing. All new branches
 # are expected to have that support, therefore these list should be
@@ -69,11 +74,11 @@ csi-proxy
 # changes each time a new branch gets created.
 skip_branches_cluster_driver_registrar='^(release-1.0)$'
 skip_branches_csi_lib_utils='^(release-0.1|release-0.2)$'
-skip_branches_csi_test='^(release-0.3|release-1.0|saad-ali-patch-1|saad-ali-patch-2|v0.1.0|v0.2.0)$'
-skip_branches_external_attacher='^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|v0.1.0)$'
-skip_branches_external_provisioner='^(lpabon-patch-1|release-0.2.0|release-0.3.0|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|v0.1.0)$'
-skip_branches_external_snapshotter='^(errorhandling|k8s_1.12.0-beta.1|release-0.4|release-1.0|revert-72-pvclister|saad-ali-patch-1|saad-ali-patch-2|test-yang|updateSize)$'
-skip_branches_livenessprobe='^(re|release-0.4|release-1.0|saad-ali-patch-1|saad-ali-patch-2|saad-ali-patch-3|saad-ali-patch-4)$'
+skip_branches_csi_test='^(release-0.3|release-1.0|v0.1.0|v0.2.0)$'
+skip_branches_external_attacher='^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$'
+skip_branches_external_provisioner='^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$'
+skip_branches_external_snapshotter='^(k8s_1.12.0-beta.1|release-0.4|release-1.0)$'
+skip_branches_livenessprobe='^(release-0.4|release-1.0)$'
 skip_branches_node_driver_registrar='^(release-1.0)$'
 
 skip_branches () {
@@ -128,7 +133,82 @@ job_name () {
     if [ "$repo" ]; then
         name+="-$repo"
     fi
-    if [ "$tests" != "non-alpha" ]; then
+    name+=$(test_name "$tests" "$deployment" "$kubernetes")
+    echo "$name"
+}
+
+# Given a X.Y.Z version string, returns the minor version.
+get_minor_version() {
+    local ver="$1"
+    local minor="$ver"
+
+    if [ "$ver" != "master" ]; then
+      ver="$(echo "${ver}" | sed -e 's/\([0-9]*\)\.\([0-9]*\).*/\1\.\2/')"
+    fi
+    echo "$ver"
+}
+
+# Generates the testgrid annotations. "ci" jobs all land in the same
+# "sig-storage-csi-ci" and send alert emails, "pull" jobs land in "sig-storage-csi-<repo>"
+# and don't alert. Some repos only have a single pull job. Those
+# land in "sig-storage-csi-other".
+annotations () {
+    local indent="$1"
+    shift
+    local type="$1"
+    local repo="$2"
+    local tests="$3"
+    local deployment="$4"
+    local kubernetes="$5"
+    local description
+
+    kubernetes="$(get_minor_version "$kubernetes")"
+
+    echo "annotations:"
+    case "$type" in
+        ci)
+            echo "${indent}testgrid-dashboards: sig-storage-csi-ci"
+            local alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
+            echo "${indent}testgrid-tab-name: ${alpha_testgrid_prefix}${deployment}-on-${kubernetes}"
+            echo "${indent}testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com"
+            description="periodic Kubernetes-CSI job"
+            ;;
+        pull)
+            local testgrid
+            local name=$(test_name "$tests" "$deployment" "$kubernetes" | sed -e 's/^-//')
+            if [ "$name" ]; then
+                testgrid="sig-storage-csi-$repo"
+            else
+                testgrid="sig-storage-csi-other"
+                name=$(job_name "$@")
+            fi
+            echo "${indent}testgrid-dashboards: $testgrid"
+            echo "${indent}testgrid-tab-name: $name"
+            description="Kubernetes-CSI pull job"
+            ;;
+    esac
+
+    if [ "$repo" ]; then
+        description+=" in repo $repo"
+    fi
+    if [ "$tests" ]; then
+        description+=" for $tests tests"
+    fi
+    if [ "$deployment" ] || [ "$kubernetes" ]; then
+        description+=", using deployment $deployment on Kubernetes $kubernetes"
+    fi
+    echo "${indent}description: $description"
+}
+
+# Common suffix for job names which contains informatiopn about the test and cluster.
+# Empty or starts with a hyphen.
+test_name() {
+    local tests="$1"
+    local deployment="$2"
+    local kubernetes="$3"
+    local name
+
+    if [ "$tests" ] && [ "$tests" != "non-alpha" ]; then
         name+="-$tests"
     fi
     if [ "$deployment" ] || [ "$kubernetes" ]; then
@@ -152,7 +232,15 @@ expand_tests () {
 # "alpha" features can be breaking across releases and
 # therefore cannot be a required job
 pull_optional() {
-    if [ "$1" == "alpha" ]; then
+    local tests="$1"
+    local kubernetes="$2"
+
+    if [ "$tests" == "alpha" ]; then
+        echo "true"
+    elif [ "$kubernetes" == "1.16.2" ]; then
+        # Testing 1.16 requires release-tools to be updated in all
+        # kubernetes-csi repos. Once that is done, and tests
+        # are passing, this can be removed.
         echo "true"
     else
         echo "false"
@@ -177,8 +265,8 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.13 1.14 1.15; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-            for kubernetes in 1.13.3 1.14.0 1.15.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+        for deployment in 1.14 1.15 1.16 1.17; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+            for kubernetes in 1.14.6 1.15.3 1.16.2; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
                 # Once we have more than two supported Kubernetes releases we should limit this to the most
@@ -193,7 +281,7 @@ EOF
                         cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment" "$kubernetes")
     always_run: $(pull_alwaysrun "$tests")
-    optional: $(pull_optional "$tests")
+    optional: $(pull_optional "$tests" "$kubernetes")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
@@ -201,6 +289,7 @@ EOF
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    $(annotations "      " "pull" "$repo" "$tests" "$deployment" "$kubernetes")
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -214,7 +303,7 @@ EOF
         # Update only when the newer version is known to not cause issues,
         # otherwise presubmit jobs may start to fail for reasons that are
         # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi#Summary).
+        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$kubernetes"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
@@ -248,6 +337,7 @@ EOF
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    $(annotations "      " "pull" "$repo" "$tests" "$deployment" master)
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -281,6 +371,7 @@ EOF
       preset-dind-enabled: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
+    $(annotations "      " "pull" "$repo" "unit")
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -319,10 +410,7 @@ EOF
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: $(job_name "pull" "$repo" "$tests")
-      description: Kubernetes-CSI pull $tests job in $repo
+    $(annotations "      " "pull" "$repo" "$tests")
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -332,8 +420,6 @@ EOF
         args:
         - ./.prow.sh
         env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "${latest_stable_k8s_version}"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -364,10 +450,7 @@ EOF
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi
-      testgrid-tab-name: pull-kubernetes-csi-$repo
-      description: Kubernetes-CSI pull job on $repo
+    $(annotations "      " "pull" "$repo")
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -402,8 +485,8 @@ periodics:
 EOF
 
 for tests in non-alpha alpha; do
-    for deployment in 1.13 1.14 1.15; do
-        for kubernetes in 1.13 1.14 1.15 master; do
+    for deployment in 1.14 1.15 1.16; do
+        for kubernetes in 1.14 1.15 1.16 master; do
             if [ "$tests" = "alpha" ]; then
                 # No version skew testing of alpha features, deployment has to match Kubernetes.
                 if ! echo "$kubernetes" | grep -q "^$deployment"; then
@@ -416,7 +499,6 @@ for tests in non-alpha alpha; do
                 fi
             fi
             actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
-            alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
             cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
   name: $(job_name "ci" "" "$tests" "$deployment" "$kubernetes")
@@ -430,11 +512,7 @@ for tests in non-alpha alpha; do
     preset-dind-enabled: "true"
     preset-bazel-remote-cache-enabled: "$(if [ "$kubernetes" = "master" ]; then echo true; else echo false; fi)"
     preset-kind-volume-mounts: "true"
-  annotations:
-    testgrid-dashboards: sig-storage-csi
-    testgrid-tab-name: ${alpha_testgrid_prefix}${deployment}-on-${kubernetes}
-    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI ${tests} tests with Kubernetes ${kubernetes} and ${deployment} sidecars
+  $(annotations "    " "ci" "" "$tests" "$deployment" "$kubernetes")
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
@@ -444,6 +522,9 @@ for tests in non-alpha alpha; do
       args:
       - ./.prow.sh
       env:
+      # TODO: https://github.com/kubernetes-csi/csi-release-tools/issues/39
+      - name: CSI_PROW_KIND_VERSION
+        value: "86bc23d84ac12dcb56a0528890736e2c347c2dc3"
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
       - name: CSI_PROW_BUILD_JOB
@@ -464,12 +545,8 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in 1.13.3 1.14.0 1.15 master; do
+for kubernetes in 1.14.6 1.15.3 1.16.2 master; do
     actual="${kubernetes/master/latest}"
-    k8s_minor="${kubernetes}"
-    if [ "$k8s_minor" != "master" ]; then
-      k8s_minor="$(echo "${k8s_minor}" | sed -e 's/\([0-9]*\)\.\([0-9]*\).*/\1\.\2/')"
-    fi
 
     for tests in non-alpha alpha; do
         # Alpha with latest sidecars only on master.
@@ -479,7 +556,7 @@ for kubernetes in 1.13.3 1.14.0 1.15 master; do
         alpha_testgrid_prefix="$(if [ "$tests" = "alpha" ]; then echo alpha-; fi)"
         cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
 - interval: 6h
-  name: $(job_name "ci" "" "$tests" "canary" "$kubernetes")
+  name: $(job_name "ci" "" "$tests" "canary" "$(get_minor_version "$kubernetes")")
   decorate: true
   extra_refs:
   - org: kubernetes-csi
@@ -490,11 +567,7 @@ for kubernetes in 1.13.3 1.14.0 1.15 master; do
     preset-dind-enabled: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
-  annotations:
-    testgrid-dashboards: sig-storage-csi
-    testgrid-tab-name: ${alpha_testgrid_prefix}canary-on-${k8s_minor}
-    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: Kubernetes-CSI $tests tests with Kubernetes ${k8s_minor} and canary sidecars
+  $(annotations "    " "ci" "" "$tests" "canary" "$kubernetes")
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
@@ -504,6 +577,9 @@ for kubernetes in 1.13.3 1.14.0 1.15 master; do
       args:
       - ./.prow.sh
       env:
+      # TODO: https://github.com/kubernetes-csi/csi-release-tools/issues/39
+      - name: CSI_PROW_KIND_VERSION
+        value: "86bc23d84ac12dcb56a0528890736e2c347c2dc3"
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
       - name: CSI_PROW_BUILD_JOB

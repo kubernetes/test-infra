@@ -24,14 +24,13 @@ import (
 	"regexp"
 	"testing"
 
-	buildapi "github.com/knative/build/pkg/apis/build/v1alpha1"
-	"k8s.io/apimachinery/pkg/util/sets"
-
 	coreapi "k8s.io/api/core/v1"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 var c *Config
-var configPath = flag.String("config", "../config.yaml", "Path to prow config")
+var configPath = flag.String("config", "../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../config/jobs", "Path to prow job config")
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
@@ -74,11 +73,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestPresubmits(t *testing.T) {
-	if len(c.Presubmits) == 0 {
+	if len(c.PresubmitsStatic) == 0 {
 		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
 
-	for _, rootJobs := range c.Presubmits {
+	for _, rootJobs := range c.PresubmitsStatic {
 		for i, job := range rootJobs {
 			if job.Name == "" {
 				t.Errorf("Job %v needs a name.", job)
@@ -159,107 +158,8 @@ func TestPostsubmits(t *testing.T) {
 	}
 }
 
-func TestRetestPresubmits(t *testing.T) {
-	var testcases = []struct {
-		skipContexts     sets.String
-		runContexts      sets.String
-		expectedContexts []string
-	}{
-		{
-			skipContexts:     sets.NewString(),
-			runContexts:      sets.NewString(),
-			expectedContexts: []string{"gce", "unit"},
-		},
-		{
-			skipContexts:     sets.NewString("gce"),
-			runContexts:      sets.NewString(),
-			expectedContexts: []string{"unit"},
-		},
-		{
-			skipContexts:     sets.NewString(),
-			runContexts:      sets.NewString("federation", "nonexistent"),
-			expectedContexts: []string{"gce", "unit", "federation"},
-		},
-		{
-			skipContexts:     sets.NewString(),
-			runContexts:      sets.NewString("gke"),
-			expectedContexts: []string{"gce", "unit", "gke"},
-		},
-		{
-			skipContexts:     sets.NewString("gce"),
-			runContexts:      sets.NewString("gce"), // should never happ)n
-			expectedContexts: []string{"unit"},
-		},
-	}
-	c := &Config{
-		JobConfig: JobConfig{
-			Presubmits: map[string][]Presubmit{
-				"org/repo": {
-					{
-						Reporter: Reporter{
-							Context: "gce",
-						},
-						AlwaysRun: true,
-					},
-					{
-						Reporter: Reporter{
-							Context: "unit",
-						},
-						AlwaysRun: true,
-					},
-					{
-						Reporter: Reporter{
-							Context: "gke",
-						},
-						AlwaysRun: false,
-					},
-					{
-						Reporter: Reporter{
-							Context: "federation",
-						},
-						AlwaysRun: false,
-					},
-				},
-				"org/repo2": {
-					{
-						Reporter: Reporter{
-							Context: "shouldneverrun",
-						},
-						AlwaysRun: true,
-					},
-				},
-			},
-		},
-	}
-	for _, tc := range testcases {
-		actualContexts := c.RetestPresubmits("org/repo", tc.skipContexts, tc.runContexts)
-		match := true
-		if len(actualContexts) != len(tc.expectedContexts) {
-			match = false
-		} else {
-			for _, actualJob := range actualContexts {
-				found := false
-				for _, expectedContext := range tc.expectedContexts {
-					if expectedContext == actualJob.Context {
-						found = true
-						break
-					}
-				}
-				if !found {
-					match = false
-					break
-				}
-			}
-		}
-		if !match {
-			t.Errorf("Wrong contexts for skip %v run %v. Got %v, expected %v.", tc.runContexts, tc.skipContexts, actualContexts, tc.expectedContexts)
-		}
-	}
-
-}
-
 func TestConditionalPresubmits(t *testing.T) {
-	presubmits := []Presubmit{
+	PresubmitsStatic := []Presubmit{
 		{
 			JobBase: JobBase{
 				Name: "cross build",
@@ -269,8 +169,8 @@ func TestConditionalPresubmits(t *testing.T) {
 			},
 		},
 	}
-	SetPresubmitRegexes(presubmits)
-	ps := presubmits[0]
+	SetPresubmitRegexes(PresubmitsStatic)
+	ps := PresubmitsStatic[0]
 	var testcases = []struct {
 		changes  []string
 		expected bool
@@ -293,7 +193,7 @@ func TestConditionalPresubmits(t *testing.T) {
 func TestListPresubmit(t *testing.T) {
 	c := &Config{
 		JobConfig: JobConfig{
-			Presubmits: map[string][]Presubmit{
+			PresubmitsStatic: map[string][]Presubmit{
 				"r1": {
 					{
 						JobBase: JobBase{
@@ -338,7 +238,7 @@ func TestListPresubmit(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		actual := c.AllPresubmits(tc.repos)
+		actual := c.AllStaticPresubmits(tc.repos)
 		if len(actual) != len(tc.expected) {
 			t.Fatalf("test %s - Wrong number of jobs. Got %v, expected %v", tc.name, actual, tc.expected)
 		}
@@ -360,7 +260,7 @@ func TestListPresubmit(t *testing.T) {
 func TestListPostsubmit(t *testing.T) {
 	c := &Config{
 		JobConfig: JobConfig{
-			Presubmits: map[string][]Presubmit{
+			PresubmitsStatic: map[string][]Presubmit{
 				"r1": {{JobBase: JobBase{Name: "a"}}},
 			},
 			Postsubmits: map[string][]Postsubmit{
@@ -420,7 +320,7 @@ func TestListPostsubmit(t *testing.T) {
 func TestListPeriodic(t *testing.T) {
 	c := &Config{
 		JobConfig: JobConfig{
-			Presubmits: map[string][]Presubmit{
+			PresubmitsStatic: map[string][]Presubmit{
 				"r1": {{JobBase: JobBase{Name: "a"}}},
 			},
 			Postsubmits: map[string][]Postsubmit{
@@ -515,7 +415,7 @@ func TestRunAgainstBranch(t *testing.T) {
 }
 
 func TestValidPodNames(t *testing.T) {
-	for _, j := range c.AllPresubmits([]string{}) {
+	for _, j := range c.AllStaticPresubmits([]string{}) {
 		if !podRe.MatchString(j.Name) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
@@ -557,7 +457,6 @@ func TestMergePreset(t *testing.T) {
 		name      string
 		jobLabels map[string]string
 		pod       *coreapi.PodSpec
-		buildSpec *buildapi.BuildSpec
 		presets   []Preset
 
 		shouldError  bool
@@ -569,7 +468,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "one volume",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
@@ -582,7 +480,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "wrong label",
 			jobLabels: map[string]string{"foo": "nope"},
 			pod:       &coreapi.PodSpec{},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
@@ -603,22 +500,9 @@ func TestMergePreset(t *testing.T) {
 			shouldError: true,
 		},
 		{
-			name:      "conflicting volume name for buildspec",
-			jobLabels: map[string]string{"foo": "bar"},
-			buildSpec: &buildapi.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
-			presets: []Preset{
-				{
-					Labels:  map[string]string{"foo": "bar"},
-					Volumes: []coreapi.Volume{{Name: "baz"}},
-				},
-			},
-			shouldError: true,
-		},
-		{
 			name:      "non conflicting volume name",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
-			buildSpec: &buildapi.BuildSpec{Volumes: []coreapi.Volume{{Name: "baz"}}},
 			presets: []Preset{
 				{
 					Labels:  map[string]string{"foo": "bar"},
@@ -631,7 +515,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "one env",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels: map[string]string{"foo": "bar"},
@@ -644,7 +527,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "conflicting env",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{Env: []coreapi.EnvVar{{Name: "baz"}}}}},
-			buildSpec: &buildapi.BuildSpec{Template: &buildapi.TemplateInstantiationSpec{Env: []coreapi.EnvVar{{Name: "baz"}}}},
 			presets: []Preset{
 				{
 					Labels: map[string]string{"foo": "bar"},
@@ -657,7 +539,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "one vm",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
@@ -670,7 +551,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "one of each",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
@@ -687,7 +567,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "two vm",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Labels:       map[string]string{"foo": "bar"},
@@ -700,7 +579,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "default preset only",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Env: []coreapi.EnvVar{{Name: "baz"}},
@@ -712,7 +590,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "default and matching presets",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Env: []coreapi.EnvVar{{Name: "baz"}},
@@ -729,7 +606,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "default and non-matching presets",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Env: []coreapi.EnvVar{{Name: "baz"}},
@@ -745,7 +621,6 @@ func TestMergePreset(t *testing.T) {
 			name:      "multiple default presets",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &coreapi.PodSpec{Containers: []coreapi.Container{{}}},
-			buildSpec: &buildapi.BuildSpec{},
 			presets: []Preset{
 				{
 					Env: []coreapi.EnvVar{{Name: "baz"}},
@@ -774,7 +649,7 @@ func TestMergePreset(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			if err := resolvePresets("foo", tc.jobLabels, tc.pod, tc.buildSpec, tc.presets); err == nil && tc.shouldError {
+			if err := resolvePresets("foo", tc.jobLabels, tc.pod, tc.presets); err == nil && tc.shouldError {
 				t.Errorf("expected error but got none.")
 			} else if err != nil && !tc.shouldError {
 				t.Errorf("expected no error but got %v.", err)
@@ -785,23 +660,12 @@ func TestMergePreset(t *testing.T) {
 			if len(tc.pod.Volumes) != tc.numVol {
 				t.Errorf("wrong number of volumes for podspec. Got %d, expected %d.", len(tc.pod.Volumes), tc.numVol)
 			}
-			if len(tc.buildSpec.Volumes) != tc.numVol {
-				t.Errorf("wrong number of volumes for buildspec. Got %d, expected %d.", len(tc.pod.Volumes), tc.numVol)
-			}
 			for _, c := range tc.pod.Containers {
 				if len(c.VolumeMounts) != tc.numVolMounts {
 					t.Errorf("wrong number of volume mounts for podspec. Got %d, expected %d.", len(c.VolumeMounts), tc.numVolMounts)
 				}
 				if len(c.Env) != tc.numEnv {
 					t.Errorf("wrong number of env vars for podspec. Got %d, expected %d.", len(c.Env), tc.numEnv)
-				}
-			}
-			for _, c := range tc.buildSpec.Steps {
-				if len(c.VolumeMounts) != tc.numVolMounts {
-					t.Errorf("wrong number of volume mounts for buildspec. Got %d, expected %d.", len(c.VolumeMounts), tc.numVolMounts)
-				}
-				if len(c.Env) != tc.numEnv {
-					t.Errorf("wrong number of env vars  for buildspec. Got %d, expected %d.", len(c.Env), tc.numEnv)
 				}
 			}
 		})
@@ -1054,6 +918,136 @@ func TestPostsubmitShouldRun(t *testing.T) {
 			}
 			if jobShouldRun != testCase.expectedRun {
 				t.Errorf("%s: did not determine if job should run correctly, expected %v but got %v", testCase.name, testCase.expectedRun, jobShouldRun)
+			}
+		})
+	}
+}
+
+func TestUtilityConfigValidation(t *testing.T) {
+	testCases := []struct {
+		id    string
+		valid bool
+		uc    UtilityConfig
+	}{
+		{
+			id:    "empty UtilityConfig, no error",
+			valid: true,
+			uc:    UtilityConfig{},
+		},
+		{
+			id: "clone_uri is a not valid, error",
+			uc: UtilityConfig{CloneURI: "://notvalidURI"},
+		},
+		{
+			id: "one of the clone_uri is not valid, error",
+			uc: UtilityConfig{
+				CloneURI: "://notvalidURI",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "https://github.com/kubernetes/test-infra.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "://notvalidURI",
+					},
+				},
+			},
+		},
+		{
+			id: "ssh_keys specified but clone_uri is empty, error",
+			uc: UtilityConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id: "ssh_keys specified but clone_uri is invalid, error",
+			uc: UtilityConfig{
+				CloneURI: "://notvalidURI",
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id:    "ssh_keys specified and clone_uri is valid, no error",
+			valid: true,
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id:    "ssh_keys specified and all of clone_uri are valid, no error",
+			valid: true,
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "github.com:org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "git@github.com:org2/repo2.git",
+					},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id: "ssh_keys specified and one of the clone_uri is invalid, error",
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "git@github.com:org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "://notvalidURI",
+					},
+				},
+				DecorationConfig: &prowapi.DecorationConfig{
+					SSHKeySecrets: []string{"ssh-secret"},
+				},
+			},
+		},
+		{
+			id: "clone_uri contains a user and decoration config is nil, no error",
+			uc: UtilityConfig{
+				CloneURI: "git@github.com:kubernetes/test-infra.git",
+			},
+			valid: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.id, func(t *testing.T) {
+			if err := tc.uc.Validate(); err != nil && tc.valid {
+				t.Fatalf("No validation error expected: %v", err)
+			}
+			if err := tc.uc.Validate(); err == nil && !tc.valid {
+				t.Fatalf("Validation error expected: %v", err)
 			}
 		})
 	}

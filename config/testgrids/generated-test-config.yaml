@@ -176,13 +176,6 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
   column_header:
@@ -234,13 +227,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
@@ -302,13 +288,6 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
   column_header:
@@ -360,13 +339,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
@@ -428,13 +400,6 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default
   column_header:
@@ -486,13 +451,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
@@ -554,13 +512,6 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default
   column_header:
@@ -612,13 +563,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image

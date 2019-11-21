@@ -20,25 +20,26 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"os"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	tgconf "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	tgconf "k8s.io/test-infra/testgrid/config"
 )
 
 var (
@@ -836,12 +837,14 @@ func TestRunToPR(t *testing.T) {
 		fca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					DefaultDecorationConfig: &prowapi.DecorationConfig{
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "kubernetes-jenkins",
-							DefaultOrg:   "kubernetes",
-							DefaultRepo:  "kubernetes",
-							PathStrategy: "legacy",
+					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+						"*": {
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "kubernetes-jenkins",
+								DefaultOrg:   "kubernetes",
+								DefaultRepo:  "kubernetes",
+								PathStrategy: "legacy",
+							},
 						},
 					},
 				},
@@ -1052,10 +1055,12 @@ func TestGCSPathRoundTrip(t *testing.T) {
 			c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfig: &prowapi.DecorationConfig{
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								DefaultOrg:  tc.defaultOrg,
-								DefaultRepo: tc.defaultRepo,
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									DefaultOrg:  tc.defaultOrg,
+									DefaultRepo: tc.defaultRepo,
+								},
 							},
 						},
 					},

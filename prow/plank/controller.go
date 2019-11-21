@@ -27,6 +27,8 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	ktypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/clock"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -51,6 +53,7 @@ type prowJobClient interface {
 	Update(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 	Get(name string, options metav1.GetOptions) (*prowapi.ProwJob, error)
 	List(opts metav1.ListOptions) (*prowapi.ProwJobList, error)
+	Patch(name string, pt ktypes.PatchType, data []byte, subresources ...string) (result *prowapi.ProwJob, err error)
 }
 
 // GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/github.Client
@@ -94,6 +97,8 @@ type Controller struct {
 
 	// if skip report job results to github
 	skipReport bool
+
+	clock clock.Clock
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -111,6 +116,7 @@ func NewController(prowJobClient prowv1.ProwJobInterface, buildClients map[strin
 		totURL:        totURL,
 		selector:      selector,
 		skipReport:    skipReport,
+		clock:         clock.RealClock{},
 	}, nil
 }
 
@@ -182,6 +188,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	// fetch latest before replace
 	latestPJ, err := c.prowJobClient.Get(pj.ObjectMeta.Name, metav1.GetOptions{})
+	c.log.WithFields(pjutil.ProwJobFields(latestPJ)).Debug("Get ProwJob.")
 	if err != nil {
 		return err
 	}
@@ -191,12 +198,16 @@ func (c *Controller) setPreviousReportState(pj prowapi.ProwJob) error {
 	}
 	latestPJ.Status.PrevReportStates[reporter.GitHubReporterName] = latestPJ.Status.State
 	_, err = c.prowJobClient.Update(latestPJ)
+	c.log.WithFields(pjutil.ProwJobFields(latestPJ)).Debug("Update ProwJob.")
 	return err
 }
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
+	var syncErrs []error
+
 	pjs, err := c.prowJobClient.List(metav1.ListOptions{LabelSelector: c.selector})
+	c.log.WithField("selector", c.selector).Debug("List ProwJobs.")
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
@@ -208,8 +219,10 @@ func (c *Controller) Sync() error {
 	pm := map[string]v1.Pod{}
 	for alias, client := range c.buildClients {
 		pods, err := client.List(metav1.ListOptions{LabelSelector: selector})
+		c.log.WithField("selector", selector).Debug("List Pods.")
 		if err != nil {
-			return fmt.Errorf("error listing pods in cluster %q: %v", alias, err)
+			syncErrs = append(syncErrs, fmt.Errorf("error listing pods in cluster %q: %v", alias, err))
+			continue
 		}
 		for _, pod := range pods.Items {
 			pm[pod.ObjectMeta.Name] = pod
@@ -228,7 +241,6 @@ func (c *Controller) Sync() error {
 		return k8sJobs[i].CreationTimestamp.Before(&k8sJobs[j].CreationTimestamp)
 	})
 
-	var syncErrs []error
 	if err := c.terminateDupes(k8sJobs, pm); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
@@ -300,6 +312,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi
 		// newer commits in GitHub pull requests.
 		if c.config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
+				c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
 				if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {
 					return fmt.Errorf("unknown cluster alias %q", toCancel.ClusterAlias())
 				} else if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err != nil {
@@ -344,6 +357,7 @@ func syncProwJobs(
 func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
+	prevPJ := *pj.DeepCopy()
 
 	pod, podExists := pm[pj.ObjectMeta.Name]
 	if !podExists {
@@ -365,6 +379,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
 		}
 	} else {
+
 		switch pod.Status.Phase {
 		case coreapi.PodUnknown:
 			c.incrementNumPendingJobs(pj.Spec.Job)
@@ -375,6 +390,8 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			if !ok {
 				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
+
+			c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{})
 
 		case coreapi.PodSucceeded:
@@ -400,6 +417,7 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 				if !ok {
 					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 				}
+				c.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 				return client.Delete(pj.ObjectMeta.Name, &metav1.DeleteOptions{})
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
@@ -466,13 +484,15 @@ func (c *Controller) syncPendingJob(pj prowapi.ProwJob, pm map[string]coreapi.Po
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.Update(&pj)
+
+	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, prevPJ, pj)
 	return err
 }
 
 func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.Pod, reports chan<- prowapi.ProwJob) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
+	prevPJ := pj
 
 	var id, pn string
 	pod, podExists := pm[pj.ObjectMeta.Name]
@@ -505,6 +525,8 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 	if pj.Status.State == prowapi.TriggeredState {
 		// BuildID needs to be set before we execute the job url template.
 		pj.Status.BuildID = id
+		now := metav1.NewTime(c.clock.Now())
+		pj.Status.PendingTime = &now
 		pj.Status.State = prowapi.PendingState
 		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
@@ -516,7 +538,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, pm map[string]coreapi.
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.prowJobClient.Update(&pj)
+	_, err := pjutil.PatchProwjob(c.prowJobClient, c.log, prevPJ, pj)
 	return err
 }
 
@@ -538,6 +560,7 @@ func (c *Controller) startPod(pj prowapi.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias())
 	}
 	actual, err := client.Create(pod)
+	c.log.WithFields(pjutil.ProwJobFields(&pj)).Debug("Create Pod.")
 	if err != nil {
 		return "", "", err
 	}

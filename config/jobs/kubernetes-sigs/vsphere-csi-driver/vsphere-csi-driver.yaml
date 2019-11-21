@@ -3,12 +3,12 @@ presubmits:
 
   - name: pull-vsphere-csi-driver-verify-fmt
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-format\.sh'
+    run_if_changed: '\.go$|hack\/check-format\.sh'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - make
         args:
@@ -21,12 +21,12 @@ presubmits:
 
   - name: pull-vsphere-csi-driver-verify-lint
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-lint\.sh'
+    run_if_changed: '\.go$|hack\/check-lint\.sh'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - make
         args:
@@ -39,12 +39,12 @@ presubmits:
 
   - name: pull-vsphere-csi-driver-verify-vet
     always_run: false
-    run_if_changed: '^((cmd|pkg)/)|hack/check-vet\.sh'
+    run_if_changed: '\.go$|hack\/check-vet\.sh'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - make
         args:
@@ -92,6 +92,25 @@ presubmits:
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       description: Verifies the markdown has been linted
 
+  # Runs 'staticcheck' on appropriate sources
+  - name: pull-vsphere-csi-driver-verify-staticcheck
+    always_run: false
+    run_if_changed: '\.go$|hack\/check-staticcheck\.sh'
+    decorate: true
+    path_alias: sigs.k8s.io/vsphere-csi-driver
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
+        command:
+        - make
+        args:
+        - staticcheck
+    annotations:
+      testgrid-dashboards: vmware-presubmits-vsphere-csi-driver
+      testgrid-tab-name: pr-verify-staticcheck
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies Go sources pass a static source checker
+
   # Builds the CSI binary
   - name: pull-vsphere-csi-driver-build
     always_run: false
@@ -102,7 +121,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - "make"
         args:
@@ -114,14 +133,14 @@ presubmits:
   # Executes the unit tests.
   - name: pull-vsphere-csi-driver-unit-test
     always_run: false
-    run_if_changed: '^(cmd|pkg|go.mod)'
+    run_if_changed: '\.go$|go\.mod'
     decorate: true
     path_alias: sigs.k8s.io/vsphere-csi-driver
     skip_submodules: true
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - "make"
         args:
@@ -147,7 +166,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - "make"
         args:
@@ -172,13 +191,16 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/cloud-provider-vsphere/csi-ci:b23178d9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - "make"
         args:
         - "push-images"
         securityContext:
           privileged: true
+    rerun_auth_config:
+      github_users:
+      - codenrhoden
     annotations:
       testgrid-dashboards: vmware-postsubmits-vsphere-csi-driver
       testgrid-num-columns-recent: '20'

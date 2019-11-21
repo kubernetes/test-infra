@@ -135,13 +135,12 @@ func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error),
 		pr.Title = newTitle
 		_, err = gc.EditPullRequest(org, repo, number, pr)
 		return err
-	} else {
-		issue, err := gc.GetIssue(org, repo, number)
-		if err != nil {
-			return err
-		}
-		issue.Title = newTitle
-		_, err = gc.EditIssue(org, repo, number, issue)
+	}
+	issue, err := gc.GetIssue(org, repo, number)
+	if err != nil {
 		return err
 	}
+	issue.Title = newTitle
+	_, err = gc.EditIssue(org, repo, number, issue)
+	return err
 }

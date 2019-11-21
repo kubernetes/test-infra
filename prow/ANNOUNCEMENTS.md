@@ -1,7 +1,21 @@
 # Announcements
 
 New features added to each component:
- - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`. 
+ - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
+    by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
+    The fields _namespace_ and _additional_namespaces_ are deprecated.
+ - *October 27, 2019* The `trusted_org` functionality in trigger is being
+   deprecated in favour of being more explicit in the fact that org members or
+   repo collaborators are the trusted users. This option will be removed
+   completely in January 2020.
+ - *October 07, 2019* Added a `default_decoration_configs` option to the Plank config
+   that allows to specify different plank's default configuration for each organization
+   or a specific repository. `default_decoration_config` will be deprecated in April 2020
+   and it will be replaced with the `*` value in `default_decoration_configs`.
+ - *August 29, 2019* Added a `batch_size_limit` option to the Tide config that
+   allows the batch size limit to be specified globally, per org, or per repo.
+   Values default to 0 indicating no size limit. A value of -1 disables batches.
+ - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`.
  - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
    If you set `--oauth-url` but not `--cookie-secret-file`, add
    `--cookie-secret-file=/etc/cookie-secret` to your deck instance. The default value
@@ -71,7 +85,20 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
-
+ 
+ - *November 18, 2019*  The `mkbuild-cluster` command-line utility and `build-cluster`
+   format is deprecated and will be removed in May 2020. Use `gencred` and the `kubeconfig` 
+   format as an alternative.
+ - *November 14, 2019* The `slack_reporter` config field has been deprecated in
+   favor of the new `slack_reporter_configs` field which allows configuration on a global,
+   organization or repo level. `slack_reporter` will be removed in May 2020.
+ - *November 7, 2019*  The `plank.allow_cancellations` and `jenkins_operators.allow_cancellations`
+    settings are deprecated and will be removed and set to always `true` in March 2020.
+ - *October 7, 2019* Prow will drop support for the deprecated knative-builds in
+   November 2019.
+ - *September 24, 2019* Sending an http `GET` request to the `/hook` endpoint now returns a `405`
+   (Method Not Allowed) instead of a `200` (OK).
+ - *September 8, 2019* The deprecated `job_url_prefix` option has been removed from Plank.
  - *May 2, 2019* All components exposing Prometheus metrics will now either push them
    to the Prometheus PushGateway, if configured, or serve them locally on port 9090 at
    `/metrics`, if not configured (the default).

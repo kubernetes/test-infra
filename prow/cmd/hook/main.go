@@ -17,17 +17,15 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/bugzilla"
+	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -126,7 +124,7 @@ func main() {
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig, true); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
@@ -138,7 +136,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	defer gitClient.Clean()
 
 	var bugzillaClient bugzilla.Client
 	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
@@ -152,6 +149,11 @@ func main() {
 	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client for infrastructure cluster.")
+	}
+
+	buildClusterCoreV1Clients, err := o.kubernetes.BuildClusterCoreV1Clients(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes clients for build cluster.")
 	}
 
 	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
@@ -181,16 +183,19 @@ func main() {
 	ownersClient := repoowners.NewClient(gitClient, githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
 
 	clientAgent := &plugins.ClientAgent{
-		GitHubClient:     githubClient,
-		ProwJobClient:    prowJobClient,
-		KubernetesClient: infrastructureClient,
-		GitClient:        gitClient,
-		SlackClient:      slackClient,
-		OwnersClient:     ownersClient,
-		BugzillaClient:   bugzillaClient,
+		GitHubClient:              githubClient,
+		ProwJobClient:             prowJobClient,
+		KubernetesClient:          infrastructureClient,
+		BuildClusterCoreV1Clients: buildClusterCoreV1Clients,
+		GitClient:                 gitClient,
+		SlackClient:               slackClient,
+		OwnersClient:              ownersClient,
+		BugzillaClient:            bugzillaClient,
 	}
 
 	promMetrics := hook.NewMetrics()
+
+	defer interrupts.WaitForGracefulShutdown()
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway)
@@ -203,7 +208,12 @@ func main() {
 		Metrics:        promMetrics,
 		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 	}
-	defer server.GracefulShutdown()
+	interrupts.OnInterrupt(func() {
+		server.GracefulShutdown()
+		if err := gitClient.Clean(); err != nil {
+			logrus.WithError(err).Error("Could not clean up git client cache.")
+		}
+	})
 
 	health := pjutil.NewHealth()
 
@@ -220,16 +230,5 @@ func main() {
 
 	health.ServeReady()
 
-	// Shutdown gracefully on SIGTERM or SIGINT
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-sig
-		logrus.Info("Hook is shutting down...")
-		ctx, cancel := context.WithTimeout(context.Background(), o.gracePeriod)
-		defer cancel()
-		httpServer.Shutdown(ctx)
-	}()
-
-	logrus.WithError(httpServer.ListenAndServe()).Warn("Server exited.")
+	interrupts.ListenAndServe(httpServer, o.gracePeriod)
 }

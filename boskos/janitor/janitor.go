@@ -30,16 +30,18 @@ import (
 )
 
 var (
-	bufferSize  = 1 // Maximum holding resources
-	rTypes      common.CommaSeparatedStrings
-	poolSize    int
-	janitorPath = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
-	boskosURL   = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	bufferSize      = 1 // Maximum holding resources
+	rTypes          common.CommaSeparatedStrings
+	poolSize        int
+	updateFrequency time.Duration
+	janitorPath     = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
+	boskosURL       = flag.String("boskos-url", "http://boskos", "Boskos URL")
 )
 
 func init() {
 	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
 	flag.IntVar(&poolSize, "pool-size", 20, "number of concurrent janitor goroutine")
+	flag.DurationVar(&updateFrequency, "update-freqency", 5*time.Minute, "How often to heartbeat owning resources.")
 }
 
 func main() {
@@ -54,6 +56,14 @@ func main() {
 	if len(rTypes) == 0 {
 		logrus.Fatal("--resource-type must not be empty!")
 	}
+
+	go func(boskos boskosClient) {
+		for range time.Tick(updateFrequency) {
+			if err := boskos.SyncAll(); err != nil {
+				logrus.WithError(err).Warn("SyncAll failed")
+			}
+		}
+	}(boskos)
 
 	buffer := setup(boskos, poolSize, bufferSize, janitorClean, extraJanitorFlags)
 
@@ -79,7 +89,7 @@ func janitorClean(resource *common.Resource, flags []string) error {
 	cmd := exec.Command(*janitorPath, args...)
 	b, err := cmd.CombinedOutput()
 	if err != nil {
-		logrus.WithError(err).Errorf("failed to clean up project %s, error info: %s", resource.Name, string(b))
+		logrus.WithError(err).Debugf("failed to clean up project %s, error info: %s", resource.Name, string(b))
 	} else {
 		logrus.Tracef("output from janitor: %s", string(b))
 		logrus.Infof("successfully cleaned up resource %s", resource.Name)
@@ -90,6 +100,7 @@ func janitorClean(resource *common.Resource, flags []string) error {
 type boskosClient interface {
 	Acquire(rtype string, state string, dest string) (*common.Resource, error)
 	ReleaseOne(name string, dest string) error
+	SyncAll() error
 }
 
 func setup(c boskosClient, janitorCount int, bufferSize int, cleanFunc clean, flags []string) chan *common.Resource {
@@ -110,7 +121,7 @@ func run(c boskosClient, buffer chan<- *common.Resource, rtypes []string) int {
 	for {
 		for r := range res {
 			if resource, err := c.Acquire(r, common.Dirty, common.Cleaning); err != nil {
-				logrus.WithError(err).Error("boskos acquire failed!")
+				logrus.WithError(err).Infof("no available resource %s", r)
 				totalAcquire += res[r]
 				delete(res, r)
 			} else if resource == nil {
@@ -140,7 +151,7 @@ func janitor(c boskosClient, buffer <-chan *common.Resource, fn clean, flags []s
 
 		dest := common.Free
 		if err := fn(resource, flags); err != nil {
-			logrus.WithError(err).Errorf("%s failed!", *janitorPath)
+			logrus.WithError(err).Debugf("%s failed!", *janitorPath)
 			dest = common.Dirty
 		}
 

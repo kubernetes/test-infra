@@ -45,7 +45,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             memory: "6Gi"
@@ -86,7 +86,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         command:
         - ../test-infra/scenarios/kubernetes_e2e.py
         args:
@@ -145,7 +145,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             memory: "6Gi"
@@ -186,7 +186,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi
         - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             memory: "6Gi"
@@ -226,11 +226,47 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi-serial
         - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
         resources:
           requests:
             memory: "6Gi"
 
+    annotations:
+      testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-e2e-gce-storage-disruptive
+    always_run: false
+    optional: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=300
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --extract=local
+        - --gcp-master-image=gci
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-disruptive
+        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --timeout=240m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191024-4a89182-master
+        resources:
+          requests:
+            memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
 periodics:
@@ -265,7 +301,7 @@ periodics:
       - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-iscsi
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       resources:
         requests:
           memory: "6Gi"
@@ -301,7 +337,7 @@ periodics:
       - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-iscsi-serial
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191120-b56f01e-master
       resources:
         requests:
           memory: "6Gi"

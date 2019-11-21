@@ -48,7 +48,7 @@ type ResourceNotFound struct {
 }
 
 func (r ResourceNotFound) Error() string {
-	return fmt.Sprintf("Resource %s not exist", r.name)
+	return fmt.Sprintf("no available resource %s, try again later.", r.name)
 }
 
 // ResourceTypeNotFound will be returned if requested resource type does not exist.
@@ -57,7 +57,7 @@ type ResourceTypeNotFound struct {
 }
 
 func (r ResourceTypeNotFound) Error() string {
-	return fmt.Sprintf("Resource Type %s not exist", r.rType)
+	return fmt.Sprintf("resource type %s does not exist", r.rType)
 }
 
 // OwnerNotMatch will be returned if request owner does not match current owner for target resource.
@@ -67,7 +67,7 @@ type OwnerNotMatch struct {
 }
 
 func (o OwnerNotMatch) Error() string {
-	return fmt.Sprintf("OwnerNotMatch - request by %s, currently owned by %s", o.request, o.owner)
+	return fmt.Sprintf("owner mismatch request by %s, currently owned by %s", o.request, o.owner)
 }
 
 // StateNotMatch will be returned if requested state does not match current state for target resource.
@@ -77,7 +77,7 @@ type StateNotMatch struct {
 }
 
 func (s StateNotMatch) Error() string {
-	return fmt.Sprintf("StateNotMatch - expected %v, current %v", s.expect, s.current)
+	return fmt.Sprintf("state mismatch - expected %v, current %v", s.expect, s.current)
 }
 
 // NewRanch creates a new Ranch object.

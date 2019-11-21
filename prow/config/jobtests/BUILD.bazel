@@ -5,8 +5,8 @@ go_test(
     srcs = ["job_config_test.go"],
     data = [
         "//config:prowjobs",
+        "//config/prow:configs",
         "//jobs",
-        "//prow:configs",
     ],
     deps = [
         "//prow/config:go_default_library",

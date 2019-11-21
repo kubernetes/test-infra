@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/testgrid/resultstore"
-	"k8s.io/test-infra/testgrid/util/gcs"
+	"github.com/GoogleCloudPlatform/testgrid/resultstore"
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 )
 
 func dur(seconds float64) time.Duration {

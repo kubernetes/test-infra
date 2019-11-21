@@ -7,7 +7,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190817-7b62498
+      - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -37,7 +37,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190817-7b62498
+    - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -49,7 +49,7 @@ periodics:
       - --extra-publish-file=k8s-master
       - --hyperkube
       - --registry=gcr.io/kubernetes-ci-images
-        # docker-in-docker needs privileged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
@@ -71,7 +71,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190817-7b62498
+    - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -94,29 +94,21 @@ periodics:
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
     description: 'Ends up running: make quick-release'
 
-- interval: 30m
+- interval: 4h
   name: ci-release-build-packages-debs
   decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-staging-release-test/deb-builder:latest
       imagePullPolicy: Always
       command:
-      - runner.sh
+      - ./debs
       args:
-      - make
-      - build-debs
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
+      # We explicitly don't build the cri-tools package as the tooling will attempt to
+      # fetch a release version of cri-tools from GitHub before it exists.
+      #
+      # ref: https://github.com/kubernetes/kubernetes/issues/84548
+      - -packages=kubelet,kubectl,kubeadm,kubernetes-cni
       resources:
         requests:
           cpu: 4
@@ -126,29 +118,15 @@ periodics:
     testgrid-dashboards: sig-release-master-informing
     testgrid-tab-name: build-packages-debs
 
-- interval: 30m
+- interval: 4h
   name: ci-release-build-packages-rpms
   decorate: true
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: "k8s.io/release"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190823-86180dd-master
+    - image: gcr.io/k8s-staging-release-test/rpm-builder:latest
       imagePullPolicy: Always
       command:
-      - runner.sh
-      args:
-      - make
-      - build-rpms
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
+      - ./build.sh
       resources:
         requests:
           cpu: 4

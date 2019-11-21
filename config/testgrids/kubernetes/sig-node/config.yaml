@@ -90,3 +90,12 @@ dashboards:
       description: k8s1.14.x node conformance test results for ee-19.03 on ubuntu16.04
 
 - name: sig-node-node-problem-detector
+
+test_groups:
+- name: ci-kubernetes-node-kubelet-serial-alpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-alpha
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'

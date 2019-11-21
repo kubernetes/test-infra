@@ -17,11 +17,13 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
+	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 
 	v1 "k8s.io/api/core/v1"
@@ -103,8 +105,6 @@ type JobBase struct {
 	SourcePath string `json:"-"`
 	// Spec is the Kubernetes pod spec used if Agent is kubernetes.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
-	// BuildSpec is the Knative build spec used if Agent is knative-build.
-	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
 	// PipelineRunSpec is the tekton pipeline spec used if Agent is tekton-pipeline.
 	PipelineRunSpec *pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
 	// Annotations are unused by prow itself, but provide a space to configure other automation.
@@ -437,36 +437,37 @@ type UtilityConfig struct {
 	DecorationConfig *prowapi.DecorationConfig `json:"decoration_config,omitempty"`
 }
 
-// RetestPresubmits returns all presubmits that should be run given a /retest command.
-// This is the set of all presubmits intersected with ((alwaysRun + runContexts) - skipContexts)
-func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runContexts sets.String) []Presubmit {
-	var result []Presubmit
-	if jobs, ok := c.Presubmits[fullRepoName]; ok {
-		for _, job := range jobs {
-			if skipContexts.Has(job.Context) {
-				continue
-			}
-			if job.AlwaysRun || job.RunIfChanged != "" || runContexts.Has(job.Context) {
-				result = append(result, job)
-			}
-		}
-	}
-	return result
-}
+func (u *UtilityConfig) Validate() error {
+	cloneURIValidate := func(cloneURI string) error {
+		// Trim user from uri if exists.
+		cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
 
-// GetPresubmit returns the presubmit job for the provided repo and job name.
-func (c *JobConfig) GetPresubmit(repo, jobName string) *Presubmit {
-	presubmits := c.AllPresubmits([]string{repo})
-	for i := range presubmits {
-		ps := presubmits[i]
-		if ps.Name == jobName {
-			return &ps
+		if u.DecorationConfig != nil && len(u.DecorationConfig.SSHKeySecrets) > 0 {
+			if len(u.CloneURI) == 0 {
+				return errors.New("SSH key secrets provided but no clone_uri has been found")
+			}
+		}
+
+		if _, err := url.Parse(cloneURI); err != nil {
+			return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
+		}
+		return nil
+	}
+
+	if err := cloneURIValidate(u.CloneURI); err != nil {
+		return err
+	}
+
+	for i, ref := range u.ExtraRefs {
+		if err := cloneURIValidate(ref.CloneURI); err != nil {
+			return fmt.Errorf("extra_ref[%d]: %v", i, err)
 		}
 	}
+
 	return nil
 }
 
-// SetPresubmits updates c.Presubmits to jobs, after compiling and validating their regexes.
+// SetPresubmits updates c.PresubmitStatic to jobs, after compiling and validating their regexes.
 func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {
@@ -476,7 +477,7 @@ func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 			return err
 		}
 	}
-	c.Presubmits = nj
+	c.PresubmitsStatic = nj
 	return nil
 }
 
@@ -494,12 +495,15 @@ func (c *JobConfig) SetPostsubmits(jobs map[string][]Postsubmit) error {
 	return nil
 }
 
-// AllPresubmits returns all prow presubmit jobs in repos.
+// AllStaticPresubmits returns all static prow presubmit jobs in repos.
 // if repos is empty, return all presubmits.
-func (c *JobConfig) AllPresubmits(repos []string) []Presubmit {
+// Be aware that this does not return Presubmits that are versioned inside
+// the repo via the `inrepoconfig` feature and hence this list may be
+// incomplete.
+func (c *JobConfig) AllStaticPresubmits(repos []string) []Presubmit {
 	var res []Presubmit
 
-	for repo, v := range c.Presubmits {
+	for repo, v := range c.PresubmitsStatic {
 		if len(repos) == 0 {
 			res = append(res, v...)
 		} else {

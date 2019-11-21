@@ -45,7 +45,7 @@ To install prow run the following from the `test-infra` directory and follow the
 bazel run //prow/cmd/tackle
 ```
 
-The will help you through the following steps:
+This will help you through the following steps:
 
 * Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
 * Deploying prow into that cluster
@@ -403,33 +403,79 @@ For more information on the job environment, see [`jobs.md`](/prow/jobs.md)
 ### Run test pods in different clusters
 
 You may choose to run test pods in a separate cluster entirely. This is a good practice to keep testing isolated from Prow's service components and secrets. It can also be used to furcate job execution to different clusters.
-Create a secret containing a `{"cluster-name": {cluster-details}}` map like this:
+One can use a Kubernetes [`kubeconfig`](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) file (i.e. `Config` object) to instruct Prow components to use the *build* cluster(s).
+All contexts in `kubeconfig` are used as *build* clusters and the [`InClusterConfig`](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod) (or `current-context`) is the *default*.
+
+Create a secret containing a `kubeconfig` like this:
 
 ```yaml
-default:
-  endpoint: https://<master-ip>
-  clientCertificate: <base64-encoded cert>
-  clientKey: <base64-encoded key>
-  clusterCaCertificate: <base64-encoded cert>
-other:
-  endpoint: https://<master-ip>
-  clientCertificate: <base64-encoded cert>
-  clientKey: <base64-encoded key>
-  clusterCaCertificate: <base64-encoded cert>
+apiVersion: v1
+clusters:
+- name: default
+  cluster:
+    certificate-authority-data: fake-ca-data-default
+    server: https://1.2.3.4
+- name: other
+  cluster:
+    certificate-authority-data: fake-ca-data-other
+    server: https://5.6.7.8
+contexts:
+- name: default
+  context:
+    cluster: default
+    user: default
+- name: other
+  context:
+    cluster: other
+    user: other
+current-context: default
+kind: Config
+preferences: {}
+users:
+- name: default
+  user:
+    token: fake-token-default
+- name: other
+  user:
+    token: fake-token-other
 ```
 
-Use [mkbuild-cluster][5] to determine these values:
+Use [gencred][5] to create the `kubeconfig` file (and credentials) for accessing the cluster(s):
+
+> **NOTE:** `gencred` will merge new entries to the specified `output` file on successive invocations by *default* .
+
+Create a *default* cluster context (if one does not already exist):
+
+> **NOTE:** If executing `gencred` with `bazel` like below, ensure `--output` is an *absolute* path. 
 
 ```sh
-bazel run //prow/cmd/mkbuild-cluster -- \
-  --project=P --zone=Z --cluster=C \
-  --alias=A \
-  --print-entry | tee cluster.yaml
-kubectl create secret generic build-cluster --from-file=cluster.yaml
+bazel run //gencred -- \
+  --context=<kube-context> \
+  --name=default \
+  --output=/tmp/kubeconfig.yaml \
+  --serviceaccount
+```
+
+Create one or more *build* cluster contexts:
+
+> **NOTE:** the `current-context` of the *existing* `kubeconfig` will be preserved.
+
+```sh
+bazel run //gencred -- \
+  --context=<kube-context> \
+  --name=other \
+  --output=/tmp/kubeconfig.yaml \
+  --serviceaccount
+```
+
+Create a secret containing the `kubeconfig.yaml` in the cluster:
+
+```sh
+kubectl --context=<kube-context> create secret generic kubeconfig --from-file=config=/tmp/kubeconfig.yaml
 ```
 
 Mount this secret into the prow components that need it (at minimum: `plank`,
-`sinker` and `deck`) and set the `--build-cluster` flag to the location you mount it at. For
+`sinker` and `deck`) and set the `--kubeconfig` flag to the location you mount it at. For
 instance, you will need to merge the following into the plank deployment:
 
 ```yaml
@@ -437,20 +483,20 @@ spec:
   containers:
   - name: plank
     args:
-    - --build-cluster=/etc/foo/cluster.yaml # basename matches --from-file key
+    - --kubeconfig=/etc/kubeconfig/config # basename matches --from-file key
     volumeMounts:
-    - mountPath: /etc/foo
-      name: cluster
+    - name: kubeconfig
+      mountPath: /etc/kubeconfig
       readOnly: true
   volumes:
-  - name: cluster
+  - name: kubeconfig
     secret:
-      defaultMode: 420
-      secretName: build-cluster # example above contains a cluster.yaml key
+      defaultMode: 0644
+      secretName: kubeconfig # example above contains a `config` key
 ```
 
 Configure jobs to use the non-default cluster with the `cluster:` field.
-The above example `cluster.yaml` defines two clusters: `default` and `other` to schedule jobs, which we can use as follows:
+The above example `kubeconfig.yaml` defines two clusters: `default` and `other` to schedule jobs, which we can use as follows:
 
 ```yaml
 periodics:
@@ -485,7 +531,7 @@ This results in:
 * The `cluster-unspecified` and `default-cluster` jobs run in the `default` cluster.
 * The `cluster-other` job runs in the `other` cluster.
 
-See [mkbuild-cluster][5] for more details about how to create/update `cluster.yaml`.
+See [gencred][5] for more details about how to create/update `kubeconfig.yaml`.
 
 ### Enable merge automation using Tide
 
@@ -499,7 +545,7 @@ See [how to configure tide][7] for more details.
 GitHub Oauth is required for [PR Status](https://prow.k8s.io/pr)
 and for the rerun button on [Prow Status](https://prow.k8s.io). 
 To enable these features, follow the
-instructions in [`github_oauth_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/pr_status_setup.md).
+instructions in [`github_oauth_setup.md`](https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/github_oauth_setup.md).
 
 ### Configure SSL
 
@@ -526,7 +572,7 @@ a separate namespace.
 [2]: /prow/jobs.md#How-to-configure-new-jobs
 [3]: https://github.com/jetstack/cert-manager
 [4]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
-[5]: /prow/cmd/mkbuild-cluster/
+[5]: /gencred/
 [6]: /prow/cmd/tide/README.md
 [7]: /prow/cmd/tide/config.md
 [8]: https://github.com/kubernetes/test-infra/blob/master/prow/scaling.md#working-around-githubs-limited-acls

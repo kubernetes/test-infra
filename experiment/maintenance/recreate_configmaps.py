@@ -95,13 +95,13 @@ def main():
     parser.add_argument("--prow-configmap", default="config",
                         help="name of prow primary configmap")
     parser.add_argument(
-        "--prow-config-path", default="prow/config.yaml",
+        "--prow-config-path", default="config/prow/config.yaml",
         help="path to the primary prow config")
     # plugins config
     parser.add_argument("--plugins-configmap", default="plugins",
                         help="name of prow plugins configmap")
     parser.add_argument(
-        "--plugins-config-path", default="prow/plugins.yaml",
+        "--plugins-config-path", default="config/prow/plugins.yaml",
         help="path to the prow plugins config")
     # wet or dry?
     parser.add_argument("--wet", action="store_true")
