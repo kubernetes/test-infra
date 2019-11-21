@@ -66,6 +66,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/prow
           name: grafana-dashboard-prow
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/boskos
+          name: grafana-dashboard-boskos
+          readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/deck
           name: grafana-dashboard-deck
           readOnly: false
@@ -102,6 +105,9 @@ spec:
       - name: grafana-dashboard-prow
         configMap:
           name: grafana-dashboard-prow
+      - name: grafana-dashboard-boskos
+        configMap:
+          name: grafana-dashboard-boskos
       - name: grafana-dashboard-deck
         configMap:
           name: grafana-dashboard-deck

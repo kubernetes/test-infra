@@ -72,6 +72,7 @@ k8s_objects(
         ":prometheusrule_crd",
         ":servicemonitor_crd",
         "//prow/cluster/monitoring/mixins/prometheus_out:prow_prometheusrule",
+        "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-boskos",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-deck",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-ghproxy",
         "//prow/cluster/monitoring/mixins/dashboards_out:grafana-dashboard-hook",
