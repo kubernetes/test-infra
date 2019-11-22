@@ -221,7 +221,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 	}
 
 	// Clone the repo, checkout the PR.
-	r, err := gc.Clone(info.repoFullName)
+	r, err := gc.Clone(org, repo)
 	if err != nil {
 		return err
 	}

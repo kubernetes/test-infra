@@ -83,7 +83,7 @@ func handle(ghc githubClient, gc *git.Client, cp pruneClient, log *logrus.Entry,
 	)
 
 	// Clone the repo, checkout the PR.
-	r, err := gc.Clone(fmt.Sprintf("%s/%s", org, repo))
+	r, err := gc.Clone(org, repo)
 	if err != nil {
 		return err
 	}

@@ -189,7 +189,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha {
 		// entry is non-existent or stale.
-		gitRepo, err := c.git.Clone(cloneRef)
+		gitRepo, err := c.git.Clone(org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
@@ -223,7 +223,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	defer c.lock.Unlock()
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
-		gitRepo, err := c.git.Clone(cloneRef)
+		gitRepo, err := c.git.Clone(org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}

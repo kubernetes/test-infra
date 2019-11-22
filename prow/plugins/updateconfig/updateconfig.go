@@ -241,7 +241,7 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 }
 
 type gitClient interface {
-	Clone(repo string) (*git.Repo, error)
+	Clone(org, repo string) (*git.Repo, error)
 	Clean() error
 }
 
