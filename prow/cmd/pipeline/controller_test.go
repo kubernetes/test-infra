@@ -49,6 +49,7 @@ const (
 	errorCreatePipelineRun = "error-create-pipeline"
 	errorUpdateProwJob     = "error-update-prowjob"
 	pipelineID             = "123"
+	jobURL                 = "http://example.com/job/123"
 )
 
 type fakeReconciler struct {
@@ -135,8 +136,12 @@ func (r *fakeReconciler) createPipelineRun(context, namespace string, p *pipelin
 	return p, nil
 }
 
-func (r *fakeReconciler) pipelineID(pj prowjobv1.ProwJob) (string, string, error) {
-	return pipelineID, "", nil
+func (r *fakeReconciler) pipelineID(pj prowjobv1.ProwJob) (string, error) {
+	return pipelineID, nil
+}
+
+func (r *fakeReconciler) jobURL(pj *prowjobv1.ProwJob) string {
+	return jobURL
 }
 
 func (r *fakeReconciler) createPipelineResource(context, namespace string, pr *pipelinev1alpha1.PipelineResource) (*pipelinev1alpha1.PipelineResource, error) {

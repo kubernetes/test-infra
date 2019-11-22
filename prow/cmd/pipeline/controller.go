@@ -273,7 +273,8 @@ type reconciler interface {
 	deletePipelineRun(context, namespace, name string) error
 	createPipelineRun(context, namespace string, b *pipelinev1alpha1.PipelineRun) (*pipelinev1alpha1.PipelineRun, error)
 	createPipelineResource(context, namespace string, b *pipelinev1alpha1.PipelineResource) (*pipelinev1alpha1.PipelineResource, error)
-	pipelineID(prowjobv1.ProwJob) (string, string, error)
+	pipelineID(prowjobv1.ProwJob) (string, error)
+	jobURL(pj *prowjobv1.ProwJob) string
 	now() metav1.Time
 }
 
@@ -346,14 +347,17 @@ func (c *controller) now() metav1.Time {
 	return metav1.Now()
 }
 
-func (c *controller) pipelineID(pj prowjobv1.ProwJob) (string, string, error) {
+func (c *controller) pipelineID(pj prowjobv1.ProwJob) (string, error) {
 	id, err := pjutil.GetBuildID(pj.Spec.Job, c.totURL)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	pj.Status.BuildID = id
-	url := pjutil.JobURL(c.config().Plank, pj, logrus.NewEntry(logrus.StandardLogger()))
-	return id, url, nil
+	return id, nil
+}
+
+func (c *controller) jobURL(pj *prowjobv1.ProwJob) string {
+	return pjutil.JobURL(c.config().Plank, *pj, logrus.NewEntry(logrus.StandardLogger()))
 }
 
 // reconcile ensures a tekton prowjob has a corresponding pipeline, updating the prowjob's status as the pipeline progresses.
@@ -419,16 +423,15 @@ func reconcile(c reconciler, key string) error {
 		return nil
 	case finalState(pj.Status.State):
 		logrus.Infof("Observed finished: %s", key)
-		return nil
+		return updateProwJobState(c, key, newPipelineRun, pj, newpj, newpj.Status.State, newpj.Status.Description, c.jobURL(newpj))
 	case wantPipelineRun && pj.Spec.PipelineRunSpec == nil:
 		return fmt.Errorf("nil PipelineRunSpec in ProwJob/%s", key)
 	case wantPipelineRun && !havePipelineRun:
-		id, url, err := c.pipelineID(*newpj)
+		id, err := c.pipelineID(*newpj)
 		if err != nil {
 			return fmt.Errorf("failed to get pipeline id: %v", err)
 		}
 		newpj.Status.BuildID = id
-		newpj.Status.URL = url
 		newPipelineRun = true
 		pipelineRun, resources, err := makeResources(*newpj)
 		if err != nil {
@@ -453,7 +456,7 @@ func reconcile(c reconciler, key string) error {
 			jerr := fmt.Errorf("start pipeline: %v", err)
 			// Set the prow job in error state to avoid an endless loop when
 			// the pipeline cannot be executed (e.g. referenced pipeline does not exist)
-			return updateProwJobState(c, key, newPipelineRun, pj, newpj, prowjobv1.ErrorState, jerr.Error())
+			return updateProwJobState(c, key, newPipelineRun, pj, newpj, prowjobv1.ErrorState, jerr.Error(), c.jobURL(newpj))
 		}
 	}
 
@@ -461,13 +464,14 @@ func reconcile(c reconciler, key string) error {
 		return fmt.Errorf("no pipelinerun found or created for %q, wantPipelineRun was %v", key, wantPipelineRun)
 	}
 	wantState, wantMsg := prowJobStatus(p.Status)
-	return updateProwJobState(c, key, newPipelineRun, pj, newpj, wantState, wantMsg)
+	return updateProwJobState(c, key, newPipelineRun, pj, newpj, wantState, wantMsg, c.jobURL(newpj))
 }
 
-func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob, state prowjobv1.ProwJobState, msg string) error {
+func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob, state prowjobv1.ProwJobState, msg string, url string) error {
 	haveState := newpj.Status.State
 	haveMsg := newpj.Status.Description
-	if newPipelineRun || haveState != state || haveMsg != msg {
+	haveURL := pj.Status.URL
+	if newPipelineRun || haveState != state || haveMsg != msg || haveURL != url {
 		if haveState != state && state == prowjobv1.PendingState {
 			now := c.now()
 			newpj.Status.PendingTime = &now
@@ -481,6 +485,7 @@ func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowj
 		}
 		newpj.Status.State = state
 		newpj.Status.Description = msg
+		newpj.Status.URL = url
 		logrus.Infof("Update ProwJob/%s: %s -> %s: %s", key, haveState, state, msg)
 
 		if _, err := c.patchProwJob(pj, newpj); err != nil {
