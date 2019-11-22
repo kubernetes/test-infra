@@ -101,10 +101,11 @@ var (
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 	// Azure Disk CSI Driver flag
 	testAzureDiskCSIDriver = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
-	// Commonly used environment variables
-	imageRegistry  = os.Getenv("REGISTRY")
-	imageTag       = fmt.Sprintf("azure-e2e-%s-%s", os.Getenv("BUILD_ID"), uuid.NewV1().String()[:8])
-	k8sNodeTarball = util.K8s("kubernetes", "_output", "release-tars", "kubernetes-node-linux-amd64.tar.gz")
+	// Commonly used variables
+	buildID           = os.Getenv("BUILD_ID")
+	imageRegistry     = os.Getenv("REGISTRY")
+	imageTag          = fmt.Sprintf("azure-e2e-%s", buildID)
+	k8sNodeTarballDir = util.K8s("kubernetes", "_output", "release-tars") // contains custom-built kubelet and kubectl
 )
 
 const (
@@ -763,12 +764,6 @@ func (c *Cluster) dockerLogin() error {
 	return nil
 }
 
-func dockerLogout() error {
-	log.Println("Docker logout.")
-	cmd := exec.Command("docker", "logout")
-	return cmd.Run()
-}
-
 func dockerPush(image string) error {
 	log.Printf("Pushing docker image %s", image)
 	cmd := exec.Command("docker", "push", image)
@@ -794,6 +789,7 @@ func (c *Cluster) buildAzureCloudComponents() error {
 	}
 
 	cmd := exec.Command("make", "-C", util.K8sSigs("cloud-provider-azure"), "image", "push")
+	cmd.Stdout = ioutil.Discard
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -810,39 +806,36 @@ func (c *Cluster) buildAzureCloudComponents() error {
 }
 
 func (c *Cluster) buildHyperKube() error {
-
-	var push_cmd *exec.Cmd
+	var pushCmd *exec.Cmd
 	os.Setenv("VERSION", imageTag)
 	log.Println("Building hyperkube.")
-	hyperkube_cmd_path := util.K8s("kubernetes/cmd/hyperkube")
-	_, err := os.Stat(hyperkube_cmd_path)
-	if err == nil {
+
+	if _, err := os.Stat(util.K8s("kubernetes", "cmd", "hyperkube")); err == nil {
 		// cmd/hyperkube binary still exists in repo
 		cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "WHAT=cmd/hyperkube")
-		// dev-push-hyperkube will produce a lot of output to stdout. We should capture the output here.
 		cmd.Stdout = ioutil.Discard
 		if err := control.FinishRunning(cmd); err != nil {
 			return err
 		}
 		hyperkubeBin := util.K8s("kubernetes", "_output", "bin", "hyperkube")
-		push_cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkubeBin))
+		pushCmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push", fmt.Sprintf("HYPERKUBE_BIN=%s", hyperkubeBin))
 
 	} else if os.IsNotExist(err) {
-		push_cmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push")
-
+		pushCmd = exec.Command("make", "-C", util.K8s("kubernetes", "cluster", "images", "hyperkube"), "push")
 	}
+
 	log.Println("Pushing hyperkube.")
-	if err := control.FinishRunning(push_cmd); err != nil {
+	pushCmd.Stdout = ioutil.Discard
+	if err := control.FinishRunning(pushCmd); err != nil {
 		return err
 	}
 
 	c.customHyperkubeImage = getDockerImage(hyperkubeImageName)
-	log.Printf("Custom hyperkube URL: %v .", c.customHyperkubeImage)
+	log.Printf("Custom hyperkube image: %s", c.customHyperkubeImage)
 	return nil
 }
 
 func (c *Cluster) uploadToAzureStorage(filePath string) (string, error) {
-
 	credential, err := azblob.NewSharedKeyCredential(c.credentials.StorageAccountName, c.credentials.StorageAccountKey)
 	if err != nil {
 		return "", fmt.Errorf("new shared key credential: %v", err)
@@ -947,7 +940,7 @@ func (c *Cluster) Up() error {
 	if *aksCcm == true {
 		err = c.buildAzureCloudComponents()
 		if err != nil {
-			return fmt.Errorf("error building cloud controller manager %v", err)
+			return fmt.Errorf("error building Azure cloud components: %v", err)
 		}
 	}
 	if *aksHyperKube == true {
@@ -996,48 +989,54 @@ func (c *Cluster) Up() error {
 	return err
 }
 
-func (c *Cluster) Build(b buildStrategy) error {
+func (c *Cluster) BuildK8s(b buildStrategy) error {
 	if !*aksCustomK8sComponents {
 		return b.Build()
 	}
 
-	// Environment variables for building custom k8s images
-	if err := os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
+	var err error
+	// Environment variables for creating custom images
+	if err = os.Setenv("KUBE_DOCKER_REGISTRY", imageRegistry); err != nil {
 		return err
 	}
-	if err := os.Setenv("KUBE_DOCKER_IMAGE_TAG", imageTag); err != nil {
+	if err = os.Setenv("KUBE_DOCKER_IMAGE_TAG", imageTag); err != nil {
 		return err
 	}
 
-	// Build k8s images and node tarball
-	if err := b.Build(); err != nil {
+	// --build=quick generates images of k8s components and k8s tarballs
+	if err = b.Build(); err != nil {
 		return err
 	}
 
 	c.customKubeAPIServerImage = getDockerImage(kubeAPIServerImageName)
-	if err := dockerPush(c.customKubeAPIServerImage); err != nil {
+	if err = dockerPush(c.customKubeAPIServerImage); err != nil {
 		return err
 	}
 	c.customKubeControllerManagerImage = getDockerImage(kubeControllerManagerImageName)
-	if err := dockerPush(c.customKubeControllerManagerImage); err != nil {
+	if err = dockerPush(c.customKubeControllerManagerImage); err != nil {
 		return err
 	}
 	c.customKubeProxyImage = getDockerImage(kubeProxyImageName)
-	if err := dockerPush(c.customKubeProxyImage); err != nil {
+	if err = dockerPush(c.customKubeProxyImage); err != nil {
 		return err
 	}
 	c.customKubeSchedulerImage = getDockerImage(kubeSchedulerImageName)
-	if err := dockerPush(c.customKubeSchedulerImage); err != nil {
+	if err = dockerPush(c.customKubeSchedulerImage); err != nil {
 		return err
 	}
 
-	// Upload kubernetes-node-linux-amd64.tar.gz to Azure Storage
-	if _, err := os.Stat(k8sNodeTarball); os.IsNotExist(err) {
-		return fmt.Errorf("%s does not exist", k8sNodeTarball)
+	oldK8sNodeTarball := filepath.Join(k8sNodeTarballDir, "kubernetes-node-linux-amd64.tar.gz")
+	if _, err = os.Stat(oldK8sNodeTarball); os.IsNotExist(err) {
+		return fmt.Errorf("%s does not exist", oldK8sNodeTarball)
 	}
 
-	var err error
-	if c.customKubeBinaryURL, err = c.uploadToAzureStorage(k8sNodeTarball); err != nil {
+	// Rename the tarball so that uploaded tarball won't get overwritten by other jobs
+	newK8sNodeTarball := filepath.Join(k8sNodeTarballDir, fmt.Sprintf("kubernetes-node-linux-amd64-%s.tar.gz", buildID))
+	log.Printf("Renaming %s to %s", oldK8sNodeTarball, newK8sNodeTarball)
+	if err = os.Rename(oldK8sNodeTarball, newK8sNodeTarball); err != nil {
+		return fmt.Errorf("error renaming %s to %s: %v", oldK8sNodeTarball, newK8sNodeTarball, err)
+	}
+	if c.customKubeBinaryURL, err = c.uploadToAzureStorage(newK8sNodeTarball); err != nil {
 		return err
 	}
 
@@ -1046,14 +1045,7 @@ func (c *Cluster) Build(b buildStrategy) error {
 
 func (c *Cluster) Down() error {
 	log.Printf("Deleting resource group: %v.", c.resourceGroup)
-	if err := c.azureClient.DeleteResourceGroup(c.ctx, c.resourceGroup); err != nil {
-		return err
-	}
-	if err := dockerLogout(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.azureClient.DeleteResourceGroup(c.ctx, c.resourceGroup)
 }
 
 func (c *Cluster) DumpClusterLogs(localPath, gcsPath string) error {

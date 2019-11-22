@@ -420,7 +420,7 @@ func acquireKubernetes(o *options, d deployer) error {
 			err = control.XMLWrap(&suite, "Build", k.Build)
 		} else if c, ok := d.(*Cluster); ok { // Azure deployer
 			err = control.XMLWrap(&suite, "Build", func() error {
-				return c.Build(o.build)
+				return c.BuildK8s(o.build)
 			})
 		} else {
 			err = control.XMLWrap(&suite, "Build", o.build.Build)
