@@ -81,7 +81,7 @@ type Server struct {
 
 	gc *git.Client
 	// Used for unit testing
-	push func(repo, newBranch string) error
+	push func(newBranch string) error
 	ghc  githubClient
 	log  *logrus.Entry
 

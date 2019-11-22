@@ -365,12 +365,12 @@ func (r *Repo) Am(path string) error {
 
 // Push pushes over https to the provided owner/repo#branch using a password
 // for basic auth.
-func (r *Repo) Push(repo, branch string) error {
+func (r *Repo) Push(branch string) error {
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
-	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, repo)
+	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, r.repo)
 	co := r.gitCommand("push", remote, branch)
 	out, err := co.CombinedOutput()
 	if err != nil {
