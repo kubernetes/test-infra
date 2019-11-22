@@ -183,7 +183,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		return nil, fmt.Errorf("git repo clone error: %v. output: %s", err, string(b))
 	}
 	return &Repo{
-		Dir:    t,
+		dir:    t,
 		logger: c.logger,
 		git:    c.git,
 		base:   base,
@@ -196,8 +196,8 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 // Repo is a clone of a git repository. Create with Client.Clone, and don't
 // forget to clean it up after.
 type Repo struct {
-	// Dir is the location of the git repo.
-	Dir string
+	// dir is the location of the git repo.
+	dir string
 
 	// git is the path to the git binary.
 	git string
@@ -213,14 +213,29 @@ type Repo struct {
 	logger *logrus.Entry
 }
 
+// Directory exposes the location of the git repo
+func (r *Repo) Directory() string {
+	return r.dir
+}
+
+// SetLogger sets logger: Do not use except in unit tests
+func (r *Repo) SetLogger(logger *logrus.Entry) {
+	r.logger = logger
+}
+
+// SetGit sets git: Do not use except in unit tests
+func (r *Repo) SetGit(git string) {
+	r.git = git
+}
+
 // Clean deletes the repo. It is unusable after calling.
 func (r *Repo) Clean() error {
-	return os.RemoveAll(r.Dir)
+	return os.RemoveAll(r.dir)
 }
 
 func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 	cmd := exec.Command(r.git, arg...)
-	cmd.Dir = r.Dir
+	cmd.Dir = r.dir
 	r.logger.WithField("args", cmd.Args).WithField("dir", cmd.Dir).Debug("Constructed git command")
 	return cmd
 }
@@ -367,7 +382,7 @@ func (r *Repo) Push(repo, branch string) error {
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
 	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
-	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
+	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))

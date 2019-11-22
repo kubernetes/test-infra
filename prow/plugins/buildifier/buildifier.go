@@ -127,7 +127,7 @@ func uniqProblems(problems []string) []string {
 func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string, error) {
 	problems := make(map[string][]string)
 	for f := range files {
-		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
+		src, err := ioutil.ReadFile(filepath.Join(r.Directory(), f))
 		if err != nil {
 			return nil, err
 		}
