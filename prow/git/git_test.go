@@ -51,7 +51,7 @@ func TestClone(t *testing.T) {
 	}
 
 	// Fresh clone, will be a cache miss.
-	r1, err := c.Clone("foo/bar")
+	r1, err := c.Clone("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning the first time: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestClone(t *testing.T) {
 	}()
 
 	// Clone from the same org.
-	r2, err := c.Clone("foo/baz")
+	r2, err := c.Clone("foo", "baz")
 	if err != nil {
 		t.Fatalf("Cloning another repo in the same org: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestClone(t *testing.T) {
 	if err := lg.AddCommit("foo", "bar", map[string][]byte{"second": {}}); err != nil {
 		t.Fatalf("Adding second commit: %v", err)
 	}
-	r3, err := c.Clone("foo/bar")
+	r3, err := c.Clone("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning a second time: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestCheckoutPR(t *testing.T) {
 	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	r, err := c.Clone("foo/bar")
+	r, err := c.Clone("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning: %v", err)
 	}
@@ -154,7 +154,7 @@ func TestMergeCommitsExistBetween(t *testing.T) {
 	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	r, err := c.Clone("foo/bar")
+	r, err := c.Clone("foo", "bar")
 	if err != nil {
 		t.Fatalf("Cloning: %v", err)
 	}
@@ -367,7 +367,7 @@ func TestMergeAndCheckout(t *testing.T) {
 				}
 			}
 
-			clonedRepo, err := c.Clone(org + "/" + repo)
+			clonedRepo, err := c.Clone(org, repo)
 			if err != nil {
 				t.Fatalf("Cloning failed: %v", err)
 			}

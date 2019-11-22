@@ -241,7 +241,7 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 }
 
 type gitClient interface {
-	Clone(repo string) (*git.Repo, error)
+	Clone(org, repo string) (*git.Repo, error)
 	Clean() error
 }
 
@@ -294,7 +294,7 @@ func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, bu
 		indent = "   " // three spaces for sub bullets
 	}
 
-	gitRepo, err := gitClient.Clone(fmt.Sprintf("%s/%s", org, repo))
+	gitRepo, err := gitClient.Clone(org, repo)
 	if err != nil {
 		return err
 	}

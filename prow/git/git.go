@@ -146,7 +146,8 @@ func (c *Client) unlockRepo(repo string) {
 // In that case, it must do a full git mirror clone. For large repos, this can
 // take a while. Once that is done, it will do a git fetch instead of a clone,
 // which will usually take at most a few seconds.
-func (c *Client) Clone(repo string) (*Repo, error) {
+func (c *Client) Clone(organization, repository string) (*Repo, error) {
+	repo := organization + "/" + repository
 	c.lockRepo(repo)
 	defer c.unlockRepo(repo)
 

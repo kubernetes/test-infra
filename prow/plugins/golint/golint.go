@@ -225,7 +225,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *lo
 
 	// Clone the repo, checkout the PR.
 	startClone := time.Now()
-	r, err := gc.Clone(e.Repo.FullName)
+	r, err := gc.Clone(org, repo)
 	if err != nil {
 		return err
 	}

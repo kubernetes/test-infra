@@ -863,7 +863,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker) ([]PullReq
 	}
 	sp.log.Debugf("of %d possible PRs, %d are passing tests", len(sp.prs), len(candidates))
 
-	r, err := c.gc.Clone(sp.org + "/" + sp.repo)
+	r, err := c.gc.Clone(sp.org, sp.repo)
 	if err != nil {
 		return nil, nil, err
 	}
