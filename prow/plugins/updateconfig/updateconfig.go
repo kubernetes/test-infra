@@ -317,7 +317,7 @@ func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, bu
 			log.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
-		if err := Update(&OSFileGetter{Root: gitRepo.Dir}, configMapClient, cm.Name, cm.Namespace, data, metrics, logger); err != nil {
+		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, metrics, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Cluster, cm.Namespace, data, indent))

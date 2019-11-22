@@ -147,7 +147,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 	l := new(lint.Linter)
 	for f, patch := range files {
 		problems[f] = make(map[int]lint.Problem)
-		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
+		src, err := ioutil.ReadFile(filepath.Join(r.Directory(), f))
 		if err != nil {
 			lintErrorComments = append(lintErrorComments, github.DraftReviewComment{
 				Path: f,
