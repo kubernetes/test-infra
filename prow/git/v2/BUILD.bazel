@@ -8,11 +8,16 @@ load(
 go_library(
     name = "go_default_library",
     srcs = [
+        "adapter.go",
         "client_factory.go",
         "interactor.go",
         "publisher.go",
     ],
     importpath = "k8s.io/test-infra/prow/git/v2",
+    deps = [
+        "//prow/git:go_default_library",
+        "//prow/github:go_default_library",
+    ],
 )
 
 filegroup(
