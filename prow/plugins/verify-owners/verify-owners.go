@@ -242,7 +242,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 
 	// If OWNERS_ALIASES file exists, get all aliases.
 	// If the file was modified, check for non trusted users in the newly added owners.
-	nonTrustedUsers, repoAliases, err := nonTrustedUsersInOwnersAliases(ghc, log, triggerConfig, org, repo, r.Dir, modifiedOwnerAliasesFile.Patch, ownerAliasesModified, skipTrustedUserCheck)
+	nonTrustedUsers, repoAliases, err := nonTrustedUsersInOwnersAliases(ghc, log, triggerConfig, org, repo, r.Directory(), modifiedOwnerAliasesFile.Patch, ownerAliasesModified, skipTrustedUserCheck)
 	if err != nil {
 		return err
 	}
@@ -255,7 +255,7 @@ func handle(ghc githubClient, gc *git.Client, roc repoownersClient, log *logrus.
 	}
 
 	for _, c := range modifiedOwnersFiles {
-		path := filepath.Join(r.Dir, c.Filename)
+		path := filepath.Join(r.Directory(), c.Filename)
 		msg, owners := parseOwnersFile(oc, path, c, log, labelsBlackList)
 		if msg != nil {
 			wrongOwnersFiles[c.Filename] = *msg

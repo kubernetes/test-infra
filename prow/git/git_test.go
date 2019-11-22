@@ -86,7 +86,7 @@ func TestClone(t *testing.T) {
 		}
 	}()
 	log := exec.Command("git", "log", "--oneline")
-	log.Dir = r3.Dir
+	log.Dir = r3.Directory()
 	if b, err := log.CombinedOutput(); err != nil {
 		t.Fatalf("git log: %v, %s", err, string(b))
 	} else {
@@ -133,7 +133,7 @@ func TestCheckoutPR(t *testing.T) {
 	if err := r.CheckoutPullRequest(123); err != nil {
 		t.Fatalf("Checking out PR: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(r.Dir, "wow")); err != nil {
+	if _, err := os.Stat(filepath.Join(r.Directory(), "wow")); err != nil {
 		t.Errorf("Didn't find file in PR after checking out: %v", err)
 	}
 }
@@ -242,7 +242,7 @@ func TestMergeCommitsExistBetween(t *testing.T) {
 			t.Fatalf("Checking out PR: %v", err)
 		}
 		// verify the content is up to dated
-		ouchPath := filepath.Join(r.Dir, "ouch")
+		ouchPath := filepath.Join(r.Directory(), "ouch")
 		if _, err := os.Stat(ouchPath); err != nil {
 			t.Fatalf("Didn't find file 'ouch' in PR %d after merging: %v", tt.prNum, err)
 		}

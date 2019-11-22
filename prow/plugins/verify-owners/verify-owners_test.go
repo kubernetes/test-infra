@@ -559,7 +559,7 @@ func TestParseOwnersFile(t *testing.T) {
 				}
 			}()
 
-			path := filepath.Join(r.Dir, "OWNERS")
+			path := filepath.Join(r.Directory(), "OWNERS")
 			message, _ := parseOwnersFile(&fakeOwnersClient{}, path, change, &logrus.Entry{}, []string{})
 			if message != nil {
 				if test.errLine == 0 {
