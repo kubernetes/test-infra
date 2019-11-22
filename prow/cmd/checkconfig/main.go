@@ -90,6 +90,7 @@ const (
 	tideStrictBranchWarning      = "tide-strict-branch"
 	nonDecoratedJobsWarning      = "non-decorated-jobs"
 	jobNameLengthWarning         = "long-job-names"
+	jobRefsDuplicationWarning    = "duplicate-job-refs"
 	needsOkToTestWarning         = "needs-ok-to-test"
 	validateOwnersWarning        = "validate-owners"
 	missingTriggerWarning        = "missing-trigger"
@@ -104,6 +105,7 @@ var defaultWarnings = []string{
 	mismatchedTideLenientWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
+	jobRefsDuplicationWarning,
 	needsOkToTestWarning,
 	validateOwnersWarning,
 	missingTriggerWarning,
@@ -246,6 +248,11 @@ func main() {
 	}
 	if o.warningEnabled(jobNameLengthWarning) {
 		if err := validateJobRequirements(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(jobRefsDuplicationWarning) {
+		if err := validateJobExtraRefs(cfg.JobConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -519,6 +526,18 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
+	}
+	return errorutil.NewAggregate(validationErrs...)
+}
+
+func validateJobExtraRefs(cfg config.JobConfig) error {
+	var validationErrs []error
+	for repo, presubmits := range cfg.PresubmitsStatic {
+		for _, presubmit := range presubmits {
+			if err := config.ValidateRefs(repo, presubmit.JobBase); err != nil {
+				validationErrs = append(validationErrs, err)
+			}
+		}
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
