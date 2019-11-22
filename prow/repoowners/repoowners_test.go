@@ -149,12 +149,13 @@ func getTestClient(
 	ownersDirBlacklistByRepo map[string][]string,
 	extraBranchesAndFiles map[string]map[string][]byte,
 	cacheOptions *cacheOptions,
+	clients localgit.Clients,
 ) (*Client, func(), error) {
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
 	}
 
-	localGit, git, err := localgit.New()
+	localGit, git, err := clients()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -283,8 +284,16 @@ labels:
 }
 
 func TestOwnersDirBlacklist(t *testing.T) {
+	testOwnersDirBlacklist(localgit.New, t)
+}
+
+func TestOwnersDirBlacklistV2(t *testing.T) {
+	testOwnersDirBlacklist(localgit.NewV2, t)
+}
+
+func testOwnersDirBlacklist(clients localgit.Clients, t *testing.T) {
 	getRepoOwnersWithBlacklist := func(t *testing.T, defaults []string, byRepo map[string][]string, ignorePreconfiguredDefaults bool) *RepoOwners {
-		client, cleanup, err := getTestClient(testFiles, true, false, true, ignorePreconfiguredDefaults, defaults, byRepo, nil, nil)
+		client, cleanup, err := getTestClient(testFiles, true, false, true, ignorePreconfiguredDefaults, defaults, byRepo, nil, nil, clients)
 		if err != nil {
 			t.Fatalf("Error creating test client: %v.", err)
 		}
@@ -397,6 +406,14 @@ func TestOwnersDirBlacklist(t *testing.T) {
 }
 
 func TestOwnersRegexpFiltering(t *testing.T) {
+	testOwnersRegexpFiltering(localgit.New, t)
+}
+
+func TestOwnersRegexpFilteringV2(t *testing.T) {
+	testOwnersRegexpFiltering(localgit.NewV2, t)
+}
+
+func testOwnersRegexpFiltering(clients localgit.Clients, t *testing.T) {
 	tests := map[string]sets.String{
 		"re/a/go.go":   sets.NewString("re/all", "re/go", "re/go-in-a"),
 		"re/a/md.md":   sets.NewString("re/all", "re/md-in-a"),
@@ -406,7 +423,7 @@ func TestOwnersRegexpFiltering(t *testing.T) {
 		"re/b/md.md":   sets.NewString("re/all"),
 	}
 
-	client, cleanup, err := getTestClient(testFilesRe, true, false, true, false, nil, nil, nil, nil)
+	client, cleanup, err := getTestClient(testFilesRe, true, false, true, false, nil, nil, nil, nil, clients)
 	if err != nil {
 		t.Fatalf("Error creating test client: %v.", err)
 	}
@@ -430,6 +447,14 @@ func strP(str string) *string {
 }
 
 func TestLoadRepoOwners(t *testing.T) {
+	testLoadRepoOwners(localgit.New, t)
+}
+
+func TestLoadRepoOwnersV2(t *testing.T) {
+	testLoadRepoOwners(localgit.NewV2, t)
+}
+
+func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 	tests := []struct {
 		name              string
 		mdEnabled         bool
@@ -844,7 +869,7 @@ func TestLoadRepoOwners(t *testing.T) {
 
 	for _, test := range tests {
 		t.Logf("Running scenario %q", test.name)
-		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.skipCollaborators, test.aliasesFileExists, false, nil, nil, test.extraBranchesAndFiles, test.cacheOptions)
+		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.skipCollaborators, test.aliasesFileExists, false, nil, nil, test.extraBranchesAndFiles, test.cacheOptions, clients)
 		if err != nil {
 			t.Errorf("Error creating test client: %v.", err)
 			continue
@@ -912,6 +937,14 @@ func TestLoadRepoOwners(t *testing.T) {
 }
 
 func TestLoadRepoAliases(t *testing.T) {
+	testLoadRepoAliases(localgit.New, t)
+}
+
+func TestLoadRepoAliasesV2(t *testing.T) {
+	testLoadRepoAliases(localgit.NewV2, t)
+}
+
+func testLoadRepoAliases(clients localgit.Clients, t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -952,7 +985,7 @@ func TestLoadRepoAliases(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, false, false, test.aliasFileExists, false, nil, nil, test.extraBranchesAndFiles, nil)
+		client, cleanup, err := getTestClient(testFiles, false, false, test.aliasFileExists, false, nil, nil, test.extraBranchesAndFiles, nil, clients)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue

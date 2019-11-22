@@ -39,7 +39,15 @@ var (
 )
 
 func TestRun(t *testing.T) {
-	lg, c, err := localgit.New()
+	testRun(localgit.New, t)
+}
+
+func TestRunV2(t *testing.T) {
+	testRun(localgit.NewV2, t)
+}
+
+func testRun(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
 	}

@@ -769,7 +769,15 @@ func TestDividePool(t *testing.T) {
 }
 
 func TestPickBatch(t *testing.T) {
-	lg, gc, err := localgit.New()
+	testPickBatch(localgit.New, t)
+}
+
+func TestPickBatchV2(t *testing.T) {
+	testPickBatch(localgit.NewV2, t)
+}
+
+func testPickBatch(clients localgit.Clients, t *testing.T) {
+	lg, gc, err := clients()
 	if err != nil {
 		t.Fatalf("Error making local git: %v", err)
 	}
@@ -1003,6 +1011,14 @@ func TestCheckMergeLabels(t *testing.T) {
 }
 
 func TestTakeAction(t *testing.T) {
+	testTakeAction(localgit.New, t)
+}
+
+func TestTakeActionV2(t *testing.T) {
+	testTakeAction(localgit.NewV2, t)
+}
+
+func testTakeAction(clients localgit.Clients, t *testing.T) {
 	sleep = func(time.Duration) {}
 	defer func() { sleep = time.Sleep }()
 
@@ -1334,7 +1350,7 @@ func TestTakeAction(t *testing.T) {
 				tc.presubmits[i] = []config.Presubmit{{Reporter: config.Reporter{Context: "foo"}}}
 			}
 		}
-		lg, gc, err := localgit.New()
+		lg, gc, err := clients()
 		if err != nil {
 			t.Fatalf("Error making local git: %v", err)
 		}
