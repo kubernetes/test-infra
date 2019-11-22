@@ -1124,6 +1124,29 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 	return nil
 }
 
+// ValidateRefs validates the extra refs on a presubmit for one repo
+func ValidateRefs(repo string, jobBase JobBase) error {
+	gitRefs := map[string]int{
+		repo: 1,
+	}
+	for _, ref := range jobBase.UtilityConfig.ExtraRefs {
+		gitRefs[fmt.Sprintf("%s/%s", ref.Org, ref.Repo)]++
+	}
+
+	dupes := sets.NewString()
+	for gitRef, count := range gitRefs {
+		if count > 1 {
+			dupes.Insert(gitRef)
+		}
+	}
+
+	if dupes.Len() > 0 {
+		return fmt.Errorf("Invalid job %s on repo %s: the following refs specified more than once: %s",
+			jobBase.Name, repo, strings.Join(dupes.List(), ","))
+	}
+	return nil
+}
+
 // validatePostsubmits validates the postsubmits for one repo
 func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 	validPostsubmits := map[string][]Postsubmit{}

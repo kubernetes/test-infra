@@ -1053,6 +1053,72 @@ func TestValidateJobBase(t *testing.T) {
 	}
 }
 
+func TestValidateRefs(t *testing.T) {
+	cases := []struct {
+		name      string
+		extraRefs []prowapi.Refs
+		expected  error
+	}{
+		{
+			name: "validation error for extra ref specifying the same repo for which the job is configured",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "repo",
+				},
+			},
+			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+				"org/repo"),
+		},
+		{
+			name: "validation error lists all duplications",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "repo",
+				},
+				{
+					Org:  "org",
+					Repo: "foo",
+				},
+				{
+					Org:  "org",
+					Repo: "bar",
+				},
+				{
+					Org:  "org",
+					Repo: "foo",
+				},
+			},
+			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+				"org/foo,org/repo"),
+		},
+		{
+			name: "no errors if there are no duplications",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "foo",
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			job := JobBase{
+				Name: "test",
+				UtilityConfig: UtilityConfig{
+					ExtraRefs: tc.extraRefs,
+				},
+			}
+			if err := ValidateRefs("org/repo", job); !reflect.DeepEqual(err, tc.expected) {
+				t.Errorf("expected %#v\n!=\nactual %#v", tc.expected, err)
+			}
+		})
+	}
+}
+
 // integration test for fake config loading
 func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
