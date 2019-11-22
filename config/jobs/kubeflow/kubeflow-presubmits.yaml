@@ -306,12 +306,12 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: node:12-slim
+      - image: node:12
         command:
         - /bin/sh
         args:
         - -c
-        - cd ./frontend && npm ci && npm run test:ci
+        - cd ./frontend && npm run test:ci:prow
   - name: kubeflow-pipeline-e2e-test
     always_run: true
     decorate: true
