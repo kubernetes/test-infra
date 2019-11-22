@@ -137,7 +137,15 @@ func TestMinConfidence(t *testing.T) {
 }
 
 func TestLint(t *testing.T) {
-	lg, c, err := localgit.New()
+	testLint(localgit.New, t)
+}
+
+func TestLintV2(t *testing.T) {
+	testLint(localgit.NewV2, t)
+}
+
+func testLint(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -218,7 +226,14 @@ func TestLint(t *testing.T) {
 }
 
 func TestLintCodeSuggestion(t *testing.T) {
+	testLintCodeSuggestion(localgit.New, t)
+}
 
+func TestLintCodeSuggestionV2(t *testing.T) {
+	testLintCodeSuggestion(localgit.NewV2, t)
+}
+
+func testLintCodeSuggestion(clients localgit.Clients, t *testing.T) {
 	var testcases = []struct {
 		name       string
 		codeChange string
@@ -371,7 +386,7 @@ func TestLintCodeSuggestion(t *testing.T) {
 		},
 	}
 
-	lg, c, err := localgit.New()
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -426,6 +441,15 @@ func TestLintCodeSuggestion(t *testing.T) {
 }
 
 func TestLintError(t *testing.T) {
+	testLintError(localgit.New, t)
+}
+
+func TestLintErrorV2(t *testing.T) {
+	testLintError(localgit.NewV2, t)
+}
+
+func testLintError(clients localgit.Clients, t *testing.T) {
+
 	var testcases = []struct {
 		name       string
 		codeChange string
@@ -515,7 +539,7 @@ func TestLintError(t *testing.T) {
 		},
 	}
 
-	lg, c, err := localgit.New()
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
@@ -643,7 +667,15 @@ func TestAddedLines(t *testing.T) {
 }
 
 func TestModifiedGoFiles(t *testing.T) {
-	lg, c, err := localgit.New()
+	testModifiedGoFiles(localgit.New, t)
+}
+
+func TestModifiedGoFilesV2(t *testing.T) {
+	testModifiedGoFiles(localgit.NewV2, t)
+}
+
+func testModifiedGoFiles(clients localgit.Clients, t *testing.T) {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}

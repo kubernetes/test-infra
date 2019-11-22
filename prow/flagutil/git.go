@@ -86,5 +86,5 @@ func (o *GitOptions) GitClient(userClient github.UserClient, token func() []byte
 		}
 		return user.Login, nil
 	}
-	return git.NewClientFactory(o.host, o.useSSH, username, token, gitUser, censor), nil
+	return git.NewClientFactory(o.host, o.useSSH, username, token, gitUser, censor)
 }

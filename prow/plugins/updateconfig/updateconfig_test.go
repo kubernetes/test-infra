@@ -93,8 +93,8 @@ var remoteFiles = map[string]map[string]string{
 	},
 }
 
-func setupLocalGitRepo(t *testing.T, org, repo string) git.ClientFactory {
-	lg, c, err := localgit.New()
+func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string) git.ClientFactory {
+	lg, c, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
 	}
@@ -129,6 +129,14 @@ func setupLocalGitRepo(t *testing.T, org, repo string) git.ClientFactory {
 }
 
 func TestUpdateConfig(t *testing.T) {
+	testUpdateConfig(localgit.New, t)
+}
+
+func TestUpdateConfigV2(t *testing.T) {
+	testUpdateConfig(localgit.NewV2, t)
+}
+
+func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 	basicPR := github.PullRequest{
 		Number: 1,
 		Base: github.PullRequestBranch{
@@ -1132,7 +1140,7 @@ func TestUpdateConfig(t *testing.T) {
 
 		org := event.PullRequest.Base.Repo.Owner.Login
 		repo := event.PullRequest.Base.Repo.Name
-		c := setupLocalGitRepo(t, org, repo)
+		c := setupLocalGitRepo(clients, t, org, repo)
 
 		if err := handle(fgc, c, fkc.CoreV1(), nil, defaultNamespace, log, event, *m, nil); err != nil {
 			t.Errorf("%s: unexpected error handling: %s", tc.name, err)
