@@ -27,7 +27,7 @@ presets:
 
 periodics:
 - interval: 6h
-  name: ci-dualstack-azure-e2e-1.16
+  name: ci-dualstack-azure-e2e-1-16
   labels:
     preset-service-account: "true"
     preset-cloudprovider-azure-creds: "true"
@@ -59,7 +59,7 @@ periodics:
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.42.0/aks-engine-v0.42.0-linux-amd64.tar.gz
@@ -69,7 +69,7 @@ periodics:
          privileged: true
   annotations:
     testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-on-call
-    testgrid-tab-name: dualstack-azure-e2e
+    testgrid-tab-name: dualstack-azure-e2e-1-16
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.16 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 6h
@@ -105,7 +105,7 @@ periodics:
       - --acsengine-mastervmsize=Standard_DS2_v2
       - --acsengine-agentvmsize=Standard_D4s_v3
       - --acsengine-hyperkube=True
-      - --acsengine-location=eastus2
+      - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
       - --acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -115,6 +115,6 @@ periodics:
          privileged: true
   annotations:
     testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-on-call
-    testgrid-tab-name: dualstack-azure-e2e
+    testgrid-tab-name: dualstack-azure-e2e-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
