@@ -159,7 +159,7 @@ func ListenAndServe(server *http.Server, gracePeriod time.Duration) {
 	go wait(shutdown(server, gracePeriod))
 }
 
-// ListenAndServe runs the HTTP server and handles shutting it down
+// ListenAndServeTLS runs the HTTP server and handles shutting it down
 // gracefully on interrupts. This function is not blocking. Callers
 // are expected to exit only after WaitForGracefulShutdown returns to
 // ensure all servers have had time to shut down.
