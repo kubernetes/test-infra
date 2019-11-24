@@ -1088,13 +1088,13 @@ func validateProjectManager(pm ProjectManager) error {
 				if len(managedColumn.Org) == 0 {
 					return fmt.Errorf("Org/repo: %s, project %s, column %s, has no org configured", orgRepoName, projectName, managedColumn.Name)
 				}
-				s_set := sets.NewString(managedColumn.Labels...)
+				sSet := sets.NewString(managedColumn.Labels...)
 				for _, labels := range labelSets {
-					if s_set.Equal(labels) {
+					if sSet.Equal(labels) {
 						return fmt.Errorf("Org/repo: %s, project %s, column %s has same labels configured as another column", orgRepoName, projectName, managedColumn.Name)
 					}
 				}
-				labelSets = append(labelSets, s_set)
+				labelSets = append(labelSets, sSet)
 			}
 		}
 	}

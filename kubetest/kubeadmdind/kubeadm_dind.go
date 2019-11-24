@@ -312,7 +312,7 @@ func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, errors.New("not implemented")
 }
 
-func (_ *Deployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (d *Deployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
 
 // findPath looks for the existence of a file or directory based on a
 // a github organization, github repo, and a relative path.  It looks

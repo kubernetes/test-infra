@@ -135,7 +135,7 @@ func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("cannot get cluster create time for conformance cluster")
 }
 
-func (_ *Deployer) KubectlCommand() (*exec.Cmd, error) {
+func (d *Deployer) KubectlCommand() (*exec.Cmd, error) {
 	log.Print("Noop - Conformance KubectlCommand()")
 	return nil, nil
 }
