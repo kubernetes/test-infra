@@ -508,23 +508,6 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 		}
 	}
 
-	if len(dependents) == 0 {
-		switch {
-		case options.DependentBugStates != nil && options.DependentBugTargetRelease != nil:
-			valid = false
-			expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
-			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting the %q release and in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease, expected))
-		case options.DependentBugStates != nil:
-			valid = false
-			expected := strings.Join(prettyStates(*options.DependentBugStates), ", ")
-			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug in one of the following states: %s, but no dependents were found", bug.ID, endpoint, bug.ID, expected))
-		case options.DependentBugTargetRelease != nil:
-			valid = false
-			errors = append(errors, fmt.Sprintf("expected "+bugLink+" to depend on a bug targeting the %q release, but no dependents were found", bug.ID, endpoint, bug.ID, *options.DependentBugTargetRelease))
-		default:
-		}
-	}
-
 	return valid, errors
 }
 
