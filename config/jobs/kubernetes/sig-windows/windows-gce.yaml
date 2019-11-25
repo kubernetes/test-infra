@@ -147,13 +147,13 @@ periodics:
 - name: ci-kubernetes-e2e-windows-gce-serial
   decorate: true
   decoration_config:
-    timeout: 24h
+    timeout: 6h
   extra_refs:
   - org: yujuhong
     repo: gce-k8s-windows-testing
     base_ref: master
     path_alias: k8s.io/gce-k8s-windows-testing
-  interval: 12h
+  interval: 6h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -175,7 +175,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=600m
+      - --timeout=350m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
   annotations:
     testgrid-dashboards: google-windows
