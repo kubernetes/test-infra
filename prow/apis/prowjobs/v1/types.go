@@ -185,6 +185,8 @@ type RerunAuthConfig struct {
 	GitHubTeamSlugs []GitHubTeamSlug `json:"github_team_slugs,omitempty"`
 	// GitHubUsers contains names of individual users who can rerun the job
 	GitHubUsers []string `json:"github_users,omitempty"`
+	// GitHubOrgs contains names of GitHub organizations whose members can rerun the job
+	GitHubOrgs []string `json:"github_orgs,omitempty"`
 }
 
 // IsSpecifiedUser returns true if AllowAnyone is set to true or if the given user is
@@ -201,6 +203,15 @@ func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient
 	// if there is no client, no token was provided, so we cannot access the teams
 	if cli == nil {
 		return false, nil
+	}
+	for _, gho := range rac.GitHubOrgs {
+		isOrgMember, err := cli.IsMember(gho, user)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %v", gho, err)
+		}
+		if isOrgMember {
+			return true, nil
+		}
 	}
 	for _, ght := range rac.GitHubTeamIDs {
 		member, err := cli.TeamHasMember(ght, user)

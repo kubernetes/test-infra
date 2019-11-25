@@ -371,6 +371,11 @@ func (in *RerunAuthConfig) DeepCopyInto(out *RerunAuthConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.GitHubOrgs != nil {
+		in, out := &in.GitHubOrgs, &out.GitHubOrgs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
