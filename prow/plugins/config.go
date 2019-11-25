@@ -1315,6 +1315,9 @@ func (s *BugzillaBugState) Matches(bug *bugzilla.Bug) bool {
 // the `ResolveBugzillaOptions` method to handle existing config, and is also
 // able to sufficiently resolve the presence of both types of fields.
 type BugzillaBranchOptions struct {
+	// ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
+	ExcludeDefaults *bool `json:"exclude_defaults,omitempty"`
+
 	// ValidateByDefault determines whether a validation check is run for all pull
 	// requests by default
 	ValidateByDefault *bool `json:"validate_by_default,omitempty"`
@@ -1457,46 +1460,48 @@ func mergeStatusesIntoStates(states *[]BugzillaBugState, statuses *[]string) *[]
 func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchOptions {
 	output := BugzillaBranchOptions{}
 
-	// populate with the parent
-	if parent.ValidateByDefault != nil {
-		output.ValidateByDefault = parent.ValidateByDefault
-	}
-	if parent.IsOpen != nil {
-		output.IsOpen = parent.IsOpen
-	}
-	if parent.TargetRelease != nil {
-		output.TargetRelease = parent.TargetRelease
-	}
-	if parent.ValidStates != nil {
-		output.ValidStates = parent.ValidStates
-	}
-	if parent.Statuses != nil {
-		output.Statuses = parent.Statuses
-		output.ValidStates = mergeStatusesIntoStates(output.ValidStates, parent.Statuses)
-	}
-	if parent.DependentBugStates != nil {
-		output.DependentBugStates = parent.DependentBugStates
-	}
-	if parent.DependentBugStatuses != nil {
-		output.DependentBugStatuses = parent.DependentBugStatuses
-		output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, parent.DependentBugStatuses)
-	}
-	if parent.StatusAfterValidation != nil {
-		output.StatusAfterValidation = parent.StatusAfterValidation
-		output.StateAfterValidation = &BugzillaBugState{Status: *output.StatusAfterValidation}
-	}
-	if parent.StateAfterValidation != nil {
-		output.StateAfterValidation = parent.StateAfterValidation
-	}
-	if parent.AddExternalLink != nil {
-		output.AddExternalLink = parent.AddExternalLink
-	}
-	if parent.StatusAfterMerge != nil {
-		output.StatusAfterMerge = parent.StatusAfterMerge
-		output.StateAfterMerge = &BugzillaBugState{Status: *output.StatusAfterMerge}
-	}
-	if parent.StateAfterMerge != nil {
-		output.StateAfterMerge = parent.StateAfterMerge
+	if child.ExcludeDefaults == nil || !*child.ExcludeDefaults {
+		// populate with the parent
+		if parent.ValidateByDefault != nil {
+			output.ValidateByDefault = parent.ValidateByDefault
+		}
+		if parent.IsOpen != nil {
+			output.IsOpen = parent.IsOpen
+		}
+		if parent.TargetRelease != nil {
+			output.TargetRelease = parent.TargetRelease
+		}
+		if parent.ValidStates != nil {
+			output.ValidStates = parent.ValidStates
+		}
+		if parent.Statuses != nil {
+			output.Statuses = parent.Statuses
+			output.ValidStates = mergeStatusesIntoStates(output.ValidStates, parent.Statuses)
+		}
+		if parent.DependentBugStates != nil {
+			output.DependentBugStates = parent.DependentBugStates
+		}
+		if parent.DependentBugStatuses != nil {
+			output.DependentBugStatuses = parent.DependentBugStatuses
+			output.DependentBugStates = mergeStatusesIntoStates(output.DependentBugStates, parent.DependentBugStatuses)
+		}
+		if parent.StatusAfterValidation != nil {
+			output.StatusAfterValidation = parent.StatusAfterValidation
+			output.StateAfterValidation = &BugzillaBugState{Status: *output.StatusAfterValidation}
+		}
+		if parent.StateAfterValidation != nil {
+			output.StateAfterValidation = parent.StateAfterValidation
+		}
+		if parent.AddExternalLink != nil {
+			output.AddExternalLink = parent.AddExternalLink
+		}
+		if parent.StatusAfterMerge != nil {
+			output.StatusAfterMerge = parent.StatusAfterMerge
+			output.StateAfterMerge = &BugzillaBugState{Status: *output.StatusAfterMerge}
+		}
+		if parent.StateAfterMerge != nil {
+			output.StateAfterMerge = parent.StateAfterMerge
+		}
 	}
 
 	// override with the child
