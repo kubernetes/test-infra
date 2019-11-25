@@ -562,6 +562,7 @@ plugins:
   - stage
 
   kubernetes/kops:
+  - docs-no-retest
   - milestone
 
   kubernetes/kubernetes:
