@@ -503,6 +503,7 @@ func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Bl
 		duration := time.Since(sc.lastSyncStart)
 		sc.logger.WithField("duration", duration.String()).Info("Statuses synced.")
 		tideMetrics.statusUpdateDuration.Set(duration.Seconds())
+		tideMetrics.syncHeartbeat.WithLabelValues("status-update").Inc()
 	}()
 
 	sc.setStatuses(sc.search(), pool, blocks, baseSHAs, requiredContexts)

@@ -147,6 +147,9 @@ var (
 		// Singleton
 		syncDuration         prometheus.Gauge
 		statusUpdateDuration prometheus.Gauge
+
+		// Per controller
+		syncHeartbeat *prometheus.CounterVec
 	}{
 		pooledPRs: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "pooledprs",
@@ -184,6 +187,9 @@ var (
 			"branch",
 		}),
 
+		// Don't use the sync period gauges, they are deprecated. Use the sync
+		// heartbeat counter instead.
+		// Remove these gauges after March 2020
 		syncDuration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "syncdur",
 			Help: "The duration of the last loop of the sync controller.",
@@ -191,6 +197,13 @@ var (
 		statusUpdateDuration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "statusupdatedur",
 			Help: "The duration of the last loop of the status update controller.",
+		}),
+
+		syncHeartbeat: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "tidesyncheartbeat",
+			Help: "Count of Tide syncs per controller.",
+		}, []string{
+			"controller",
 		}),
 	}
 )
@@ -201,6 +214,7 @@ func init() {
 	prometheus.MustRegister(tideMetrics.merges)
 	prometheus.MustRegister(tideMetrics.syncDuration)
 	prometheus.MustRegister(tideMetrics.statusUpdateDuration)
+	prometheus.MustRegister(tideMetrics.syncHeartbeat)
 	prometheus.MustRegister(tideMetrics.poolErrors)
 }
 
@@ -324,6 +338,7 @@ func (c *Controller) Sync() error {
 		duration := time.Since(start)
 		c.logger.WithField("duration", duration.String()).Info("Synced")
 		tideMetrics.syncDuration.Set(duration.Seconds())
+		tideMetrics.syncHeartbeat.WithLabelValues("sync").Inc()
 	}()
 	defer c.changedFiles.prune()
 	c.config().BranchProtectionWarnings(c.logger)
