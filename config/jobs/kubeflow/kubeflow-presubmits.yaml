@@ -300,7 +300,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubeflow/pipelines:
   - name: kubeflow-pipeline-frontend-test
-    always_run: false
+    always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
