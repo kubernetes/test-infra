@@ -3,19 +3,32 @@ presubmits:
   - name: pull-org-test-all
     always_run: true
     decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - bazel
         args:
         - test
+        - --config=ci
         - //...
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
   - name: pull-org-verify-all
     always_run: true
     decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - ./hack/verify-all.sh
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'

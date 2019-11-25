@@ -18,34 +18,48 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
-
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-canaries
+      testgrid-tab-name: test-infra-bazel
 # Testing to make sure things still update.
 periodics:
-  - interval: 10m
-    name: ci-test-infra-canary-echo-test
-    decorate: true
-    spec:
-      containers:
-        - image: alpine
-          command: ["/bin/date"]
-
-  - name: ci-test-infra-benchmark-demo
-    interval: 20m
-    decorate: true
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    spec:
-      containers:
-      - image: golang:latest
-        command:
-        - go
-        args:
-        - run
-        - ./pkg/benchmarkjunit
-        - --log-file=$(ARTIFACTS)/benchmark-log.txt
-        - --output=$(ARTIFACTS)/junit_benchmarks.xml
-        - --pass-on-error
-        - ./experiment/dummybenchmarks/...
+- interval: 10m
+  name: ci-test-infra-canary-echo-test
+  decorate: true
+  spec:
+    containers:
+    - image: alpine
+      command: ["/bin/date"]
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: echo-test
+    description: temporarily echoing things.
+- name: ci-test-infra-benchmark-demo
+  interval: 20m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: golang:latest
+      command:
+      - go
+      args:
+      - run
+      - ./pkg/benchmarkjunit
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - --pass-on-error
+      - ./experiment/dummybenchmarks/...
+      env:
+      - name: GO111MODULE
+        value: "on"
+  annotations:
+    testgrid-alert-email: colew@google.com
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: benchmark-demo
+    description: Demoing JUnit golang benchmark results.

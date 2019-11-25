@@ -49,7 +49,7 @@ func (VPCs) MarkAndSweep(sess *session.Session, acct string, region string, set 
 	for _, vp := range resp.Vpcs {
 		v := &vpc{Account: acct, Region: region, ID: *vp.VpcId}
 		if set.Mark(v) {
-			klog.Warningf("%s: deleting %T: %v", v.ARN(), vp, vp)
+			klog.Warningf("%s: deleting %T: %s", v.ARN(), vp, v.ID)
 
 			if vp.DhcpOptionsId != nil && *vp.DhcpOptionsId != "default" {
 				disReq := &ec2.AssociateDhcpOptionsInput{
@@ -58,12 +58,12 @@ func (VPCs) MarkAndSweep(sess *session.Session, acct string, region string, set 
 				}
 
 				if _, err := svc.AssociateDhcpOptions(disReq); err != nil {
-					klog.Warningf("%v: disassociating DHCP option set %v failed: %v", v.ARN(), vp.DhcpOptionsId, err)
+					klog.Warningf("%s: disassociating DHCP option set %s failed: %v", v.ARN(), *vp.DhcpOptionsId, err)
 				}
 			}
 
 			if _, err := svc.DeleteVpc(&ec2.DeleteVpcInput{VpcId: vp.VpcId}); err != nil {
-				klog.Warningf("%v: delete failed: %v", v.ARN(), err)
+				klog.Warningf("%s: delete failed: %v", v.ARN(), err)
 			}
 		}
 	}

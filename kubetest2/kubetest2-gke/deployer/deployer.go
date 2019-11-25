@@ -19,6 +19,7 @@ package deployer
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	realexec "os/exec" // Only for ExitError; Use kubetest2/pkg/exec to actually exec stuff
@@ -30,9 +31,9 @@ import (
 
 	"github.com/spf13/pflag"
 
+	"k8s.io/test-infra/kubetest2/pkg/build"
 	"k8s.io/test-infra/kubetest2/pkg/exec"
 	"k8s.io/test-infra/kubetest2/pkg/metadata"
-
 	"k8s.io/test-infra/kubetest2/pkg/types"
 )
 
@@ -86,10 +87,12 @@ type deployer struct {
 	createCommandFlag string
 	gcpServiceAccount string
 
-	kubecfg        string //TODO(RonWeber): Set this
+	kubecfgPath    string
 	gcpPrepared    bool
 	testPrepared   bool
 	instanceGroups []*ig
+
+	stageLocation string
 
 	localLogsDir string
 	gcsLogsDir   string
@@ -108,7 +111,7 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 }
 
 // verifyFlags validates that required flags are set, as well as
-// ensuring that location(), shape(), and endpoint() will not return errors.
+// ensuring that location() will not return errors.
 func (d *deployer) verifyFlags() error {
 	if d.cluster == "" {
 		return fmt.Errorf("--cluster-name must be set for GKE deployment")
@@ -152,14 +155,28 @@ func bindFlags(d *deployer) *pflag.FlagSet {
 	flags.StringVar(&d.project, "project", "", "Project to deploy to.")
 	flags.StringVar(&d.region, "region", "", "For use with gcloud commands")
 	flags.StringVar(&d.zone, "zone", "", "For use with gcloud commands")
+	flags.StringVar(&d.stageLocation, "stage", "", "Upload binaries to gs://bucket/ci/job-suffix if set")
 	return flags
 }
 
 // assert that deployer implements types.Deployer
 var _ types.Deployer = &deployer{}
 
+func (d *deployer) Provider() string {
+	return "gke"
+}
+
 func (d *deployer) Build() error {
-	return fmt.Errorf("build is not implemented for GKE deployer")
+	if err := build.Build(); err != nil {
+		return err
+	}
+
+	if d.stageLocation != "" {
+		if err := build.Stage(d.stageLocation); err != nil {
+			return fmt.Errorf("error staging build: %v", err)
+		}
+	}
+	return nil
 }
 
 // Deployer implementation methods below
@@ -282,7 +299,7 @@ func (d *deployer) TestSetup() error {
 		// Ensure setup is a singleton.
 		return nil
 	}
-	if err := d.getKubeConfig(); err != nil {
+	if _, err := d.Kubeconfig(); err != nil {
 		return err
 	}
 	if err := d.getInstanceGroups(); err != nil {
@@ -295,28 +312,38 @@ func (d *deployer) TestSetup() error {
 	return nil
 }
 
-func (d *deployer) getKubeConfig() error {
-	info, err := os.Stat(d.kubecfg)
+// Kubeconfig returns a path to a kubeconfig file for the cluster in
+// a temp directory, creating one if one does not exist.
+// It also sets the KUBECONFIG environment variable appropriately.
+func (d *deployer) Kubeconfig() (string, error) {
+	if err := d.prepareGcpIfNeeded(); err != nil {
+		return "", err
+	}
+
+	if d.kubecfgPath != "" {
+		return d.kubecfgPath, nil
+	}
+
+	tmpdir, err := ioutil.TempDir("", "kubetest2-gke")
 	if err != nil {
-		return err
+		return "", err
 	}
-	if info.Size() > 0 {
-		// Assume that if we already have it, it's good.
-		return nil
-	}
-	if err := os.Setenv("KUBECONFIG", d.kubecfg); err != nil {
-		return err
-	}
+
+	// Get gcloud to create the file.
 	loc, err := d.location()
 	if err != nil {
-		return err
+		return "", err
 	}
-	if err := runWithOutput(exec.Command("gcloud", d.containerArgs("clusters", "get-credentials", d.cluster,
-		"--project="+d.project,
-		loc)...)); err != nil {
-		return fmt.Errorf("error executing get-credentials: %v", err)
+
+	filename := filepath.Join(tmpdir, "kubecfg")
+	if err := os.Setenv("KUBECONFIG", filename); err != nil {
+		return "", err
 	}
-	return nil
+	if err := runWithOutput(exec.Command("gcloud", d.containerArgs("clusters", "get-credentials", d.cluster, "--project="+d.project, loc)...)); err != nil {
+		return "", fmt.Errorf("error executing get-credentials: %v", err)
+	}
+	d.kubecfgPath = filename
+	return d.kubecfgPath, nil
 }
 
 func (d *deployer) ensureFirewall() error {

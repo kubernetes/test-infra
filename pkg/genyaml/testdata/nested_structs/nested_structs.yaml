@@ -1,0 +1,20 @@
+# Age of parent
+Age: 35
+
+
+# Children of parent
+Children:
+  - # Age of child
+    Age: 4
+
+    # Name of child
+    Name: Jimbo
+  - # Age of child
+    Age: 5
+
+    # Name of child
+    Name: Jenny
+
+
+# Name of parent
+Name: Mildred

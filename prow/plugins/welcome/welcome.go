@@ -25,9 +25,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/trigger"
 )
 
 const (
@@ -74,6 +76,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	IsCollaborator(org, repo, user string) (bool, error)
+	IsMember(org, user string) (bool, error)
 }
 
 type client struct {
@@ -89,19 +93,34 @@ func getClient(pc plugins.Agent) client {
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
+	t := pc.PluginConfig.TriggerFor(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name)
+	return handlePR(getClient(pc), t, pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
 }
 
-func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) error {
+func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeTemplate string) error {
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
 		return nil
 	}
 
-	// search for PRs from the author in this repo
+	// ignore bots, we can't query their PRs
+	if pre.PullRequest.User.Type != github.UserTypeUser {
+		return nil
+	}
+
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
 	user := pre.PullRequest.User.Login
+
+	trusted, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
+	if err != nil {
+		return fmt.Errorf("check if user %s is trusted: %v", user, err)
+	}
+	if trusted {
+		return nil
+	}
+
+	// search for PRs from the author in this repo
 	query := fmt.Sprintf("is:pr repo:%s/%s author:%s", org, repo, user)
 	issues, err := c.GitHubClient.FindIssues(query, "", false)
 	if err != nil {
@@ -147,7 +166,7 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.We
 
 	// First search for repo config
 	for _, c := range config.Welcome {
-		if !strInSlice(fullName, c.Repos) {
+		if !sets.NewString(c.Repos...).Has(fullName) {
 			continue
 		}
 		return &c
@@ -155,7 +174,7 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.We
 
 	// If you don't find anything, loop again looking for an org config
 	for _, c := range config.Welcome {
-		if !strInSlice(org, c.Repos) {
+		if !sets.NewString(c.Repos...).Has(org) {
 			continue
 		}
 		return &c
@@ -163,13 +182,4 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.We
 
 	// Return an empty config, and default to defaultWelcomeMessage
 	return &plugins.Welcome{}
-}
-
-func strInSlice(str string, slice []string) bool {
-	for _, elem := range slice {
-		if elem == str {
-			return true
-		}
-	}
-	return false
 }

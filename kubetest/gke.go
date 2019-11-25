@@ -39,7 +39,7 @@ import (
 
 const (
 	defaultPool   = "default"
-	e2eAllow      = "tcp:22,tcp:80,tcp:8080,tcp:30000-32767,udp:30000-32767"
+	e2eAllow      = "tcp:22,tcp:80,tcp:8080,tcp:9090,tcp:30000-32767,udp:30000-32767"
 	defaultCreate = "container clusters create --quiet"
 )
 
@@ -52,6 +52,7 @@ var (
 	gkeCommandGroup                = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
 	gkeCreateCommand               = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
 	gkeCustomSubnet                = flag.String("gke-custom-subnet", "", "(gke only) if specified, we create a custom subnet with the specified options and use it for the gke cluster. The format should be '<subnet-name> --region=<subnet-gcp-region> --range=<subnet-cidr> <any other optional params>'.")
+	gkeReleaseChannel              = flag.String("gke-release-channel", "", "(gke only) if specified, bring up GKE clusters from that release channel.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
@@ -330,11 +331,20 @@ func (g *gkeDeployer) Up() error {
 			}
 		}
 	}
-	// TODO(zmerlynn): The version should be plumbed through Extract
-	// or a separate flag rather than magic env variables.
-	if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
-		args = append(args, "--cluster-version="+v)
+
+	if *gkeReleaseChannel != "" {
+		args = append(args, "--release-channel="+*gkeReleaseChannel)
+		if strings.EqualFold(*gkeReleaseChannel, "rapid") {
+			args = append(args, "--enable-autorepair")
+		}
+	} else {
+		// TODO(zmerlynn): The version should be plumbed through Extract
+		// or a separate flag rather than magic env variables.
+		if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
+			args = append(args, "--cluster-version="+v)
+		}
 	}
+
 	args = append(args, g.cluster)
 	if err := control.FinishRunning(exec.Command("gcloud", args...)); err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
@@ -672,4 +682,4 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return created, nil
 }
 
-func (_ *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+func (g *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }

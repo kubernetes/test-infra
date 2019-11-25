@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -16,7 +16,6 @@
 
 # pylint: disable=invalid-name,missing-docstring
 
-from __future__ import unicode_literals
 
 import json
 import os
@@ -120,7 +119,7 @@ class ClusterTest(unittest.TestCase):
                     'cols': {'started': [now]}
                 },
                 'clustered': [
-                    {'tests': [{'name': test, 'jobs': [{'name': 'somejob', 'builds': ['123']}]}]}
+                    {'tests': [{'name': test, 'jobs': [{'name': 'somejob', 'builds': ['123', '125']}]}]}
                 ],
             }
             summarize.annotate_owners(
@@ -151,88 +150,96 @@ class IntegrationTest(unittest.TestCase):
                 cur.update(delta)
                 out.append(dict(cur))
             return out
-        json.dump(smear([
-            {'started': 1234, 'number': 1, 'tests_failed': 1, 'tests_run': 2,
-             'elapsed': 4, 'path': 'gs://logs/some-job/1', 'job': 'some-job', 'result': 'SUCCESS'},
-            {'number': 2, 'path': 'gs://logs/some-job/2'},
-            {'number': 3, 'path': 'gs://logs/some-job/3'},
-            {'number': 4, 'path': 'gs://logs/some-job/4'},
-            {'number': 5, 'path': 'gs://logs/other-job/5', 'job': 'other-job', 'elapsed': 8},
-            {'number': 7, 'path': 'gs://logs/other-job/7', 'result': 'FAILURE'},
-        ]), open('builds.json', 'w'))
-        tests = smear([
-            {'name': 'example test', 'build': 'gs://logs/some-job/1',
-             'failure_text': 'some awful stack trace exit 1'},
-            {'build': 'gs://logs/some-job/2'},
-            {'build': 'gs://logs/some-job/3'},
-            {'build': 'gs://logs/some-job/4'},
-            {'name': 'another test', 'failure_text': 'some other error message'},
-            {'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
-            {},  # intentional dupe
-            {'build': 'gs://logs/other-job/7'},
-        ])
+
+        with open('builds.json', 'w') as f:
+            json.dump(smear([
+                {'started': 1234, 'number': 1, 'tests_failed': 1, 'tests_run': 2, 'elapsed': 4,
+                 'path': 'gs://logs/some-job/1', 'job': 'some-job', 'result': 'SUCCESS'},
+                {'number': 2, 'path': 'gs://logs/some-job/2'},
+                {'number': 3, 'path': 'gs://logs/some-job/3'},
+                {'number': 4, 'path': 'gs://logs/some-job/4'},
+                {'number': 5, 'path': 'gs://logs/other-job/5', 'job': 'other-job', 'elapsed': 8},
+                {'number': 7, 'path': 'gs://logs/other-job/7', 'result': 'FAILURE'},
+            ]), f)
+
         with open('tests.json', 'w') as f:
-            for t in tests:
-                f.write(json.dumps(t) + '\n')
-        json.dump({
-            'node': ['example']
-        }, open('owners.json', 'w'))
+            tests = smear([
+                {'name': 'example test', 'build': 'gs://logs/some-job/1',
+                 'failure_text': 'some awful stack trace exit 1'},
+                {'build': 'gs://logs/some-job/2'},
+                {'build': 'gs://logs/some-job/3'},
+                {'build': 'gs://logs/some-job/4'},
+                {'name': 'another test', 'failure_text': 'some other error message'},
+                {'name': 'unrelated test', 'build': 'gs://logs/other-job/5'},
+                {},  # intentional dupe
+                {'build': 'gs://logs/other-job/7'},
+            ])
+            f.writelines("%s\n" % json.dumps(t) for t in tests)
+
+        with open('owners.json', 'w') as f:
+            json.dump({
+                'node': ['example']
+            }, f)
+
         summarize.main(summarize.parse_args(
             ['builds.json', 'tests.json',
              '--output_slices=failure_data_PREFIX.json',
              '--owners=owners.json']))
-        output = json.load(open('failure_data.json'))
 
-        # uncomment when output changes
-        # import pprint; pprint.pprint(output)
+        with open('failure_data.json') as f:
+            output = json.load(f)
 
-        self.assertEqual(
-            output['builds'],
-            {'cols': {'elapsed': [8, 8, 4, 4, 4, 4],
-                      'executor': [None, None, None, None, None, None],
-                      'pr': [None, None, None, None, None, None],
-                      'result': ['SUCCESS',
-                                 'FAILURE',
-                                 'SUCCESS',
-                                 'SUCCESS',
-                                 'SUCCESS',
-                                 'SUCCESS'],
-                      'started': [1234, 1234, 1234, 1234, 1234, 1234],
-                      'tests_failed': [1, 1, 1, 1, 1, 1],
-                      'tests_run': [2, 2, 2, 2, 2, 2]},
-             'job_paths': {'other-job': 'gs://logs/other-job',
-                           'some-job': 'gs://logs/some-job'},
-             'jobs': {'other-job': {'5': 0, '7': 1}, 'some-job': [1, 4, 2]}})
+            # uncomment when output changes
+            # import pprint; pprint.pprint(output)
 
-        random_hash_1 = output['clustered'][0]['id']
-        random_hash_2 = output['clustered'][1]['id']
+            self.assertEqual(
+                output['builds'],
+                {'cols': {'elapsed': [8, 8, 4, 4, 4, 4],
+                          'executor': [None, None, None, None, None, None],
+                          'pr': [None, None, None, None, None, None],
+                          'result': ['SUCCESS',
+                                     'FAILURE',
+                                     'SUCCESS',
+                                     'SUCCESS',
+                                     'SUCCESS',
+                                     'SUCCESS'],
+                          'started': [1234, 1234, 1234, 1234, 1234, 1234],
+                          'tests_failed': [1, 1, 1, 1, 1, 1],
+                          'tests_run': [2, 2, 2, 2, 2, 2]},
+                 'job_paths': {'other-job': 'gs://logs/other-job',
+                               'some-job': 'gs://logs/some-job'},
+                 'jobs': {'other-job': {'5': 0, '7': 1}, 'some-job': [1, 4, 2]}})
 
-        self.assertEqual(
-            output['clustered'],
-            [{'id': random_hash_1,
-              'key': 'some awful stack trace exit 1',
-              'tests': [{'jobs': [{'builds': ['4', '3', '2', '1'],
-                                   'name': 'some-job'}],
-                         'name': 'example test'}],
-              'spans': [29],
-              'owner': 'node',
-              'text': 'some awful stack trace exit 1'},
-             {'id': random_hash_2,
-              'key': 'some other error message',
-              'tests': [{'jobs': [{'builds': ['7', '5'],
-                                   'name': 'other-job'}],
-                         'name': 'unrelated test'},
-                        {'jobs': [{'builds': ['4'], 'name': 'some-job'}],
-                         'name': 'another test'}],
-              'spans': [24],
-              'owner': 'testing',
-              'text': 'some other error message'}]
-        )
+            random_hash_1 = output['clustered'][0]['id']
+            random_hash_2 = output['clustered'][1]['id']
 
-        slice_output = json.load(open('failure_data_%s.json' % random_hash_1[:2]))
+            self.assertEqual(
+                output['clustered'],
+                [{'id': random_hash_1,
+                  'key': 'some awful stack trace exit 1',
+                  'tests': [{'jobs': [{'builds': ['4', '3', '2', '1'],
+                                       'name': 'some-job'}],
+                             'name': 'example test'}],
+                  'spans': [29],
+                  'owner': 'node',
+                  'text': 'some awful stack trace exit 1'},
+                 {'id': random_hash_2,
+                  'key': 'some other error message',
+                  'tests': [{'jobs': [{'builds': ['7', '5'],
+                                       'name': 'other-job'}],
+                             'name': 'unrelated test'},
+                            {'jobs': [{'builds': ['4'], 'name': 'some-job'}],
+                             'name': 'another test'}],
+                  'spans': [24],
+                  'owner': 'testing',
+                  'text': 'some other error message'}]
+            )
 
-        self.assertEqual(slice_output['clustered'], [output['clustered'][0]])
-        self.assertEqual(slice_output['builds']['cols']['started'], [1234, 1234, 1234, 1234])
+        with open('failure_data_%s.json' % random_hash_1[:2]) as f:
+            slice_output = json.load(f)
+
+            self.assertEqual(slice_output['clustered'], [output['clustered'][0]])
+            self.assertEqual(slice_output['builds']['cols']['started'], [1234, 1234, 1234, 1234])
 
 
 if __name__ == '__main__':

@@ -28,15 +28,15 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/test-infra/traiana/storage"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/traiana/storage"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"k8s.io/test-infra/testgrid/metadata"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles
@@ -65,6 +65,7 @@ type Spyglass struct {
 // LensRequest holds data sent by a view
 type LensRequest struct {
 	Source    string   `json:"src"`
+	Index     int      `json:"index"`
 	Artifacts []string `json:"artifacts"`
 }
 
@@ -84,7 +85,7 @@ func New(ja *jobs.JobAgent, cfg config.Getter, c *storage.Client, gcsCredsFile s
 		GCSArtifactFetcher:    NewGCSArtifactFetcher(c, gcsCredsFile),
 		testgrid: &TestGrid{
 			conf:   cfg,
-			client: c,
+			client: nil,
 			ctx:    ctx,
 		},
 	}
@@ -95,23 +96,25 @@ func (sg *Spyglass) Start() {
 }
 
 // Lenses gets all views of all artifact files matching each regexp with a registered lens
-func (s *Spyglass) Lenses(matchCache map[string][]string) []lenses.Lens {
-	ls := []lenses.Lens{}
-	for lensName, matches := range matchCache {
-		if len(matches) == 0 {
-			continue
-		}
-		lens, err := lenses.GetLens(lensName)
+func (sg *Spyglass) Lenses(lensConfigIndexes []int) (orderedIndexes []int, lensMap map[int]lenses.Lens) {
+	type ld struct {
+		lens  lenses.Lens
+		index int
+	}
+	var ls []ld
+	for _, lensIndex := range lensConfigIndexes {
+		lfc := sg.config().Deck.Spyglass.Lenses[lensIndex]
+		lens, err := lenses.GetLens(lfc.Lens.Name)
 		if err != nil {
 			logrus.WithField("lensName", lens).WithError(err).Error("Could not find artifact lens")
 		} else {
-			ls = append(ls, lens)
+			ls = append(ls, ld{lens, lensIndex})
 		}
 	}
 	// Make sure lenses are rendered in order by ascending priority
 	sort.Slice(ls, func(i, j int) bool {
-		iconf := ls[i].Config()
-		jconf := ls[j].Config()
+		iconf := ls[i].lens.Config()
+		jconf := ls[j].lens.Config()
 		iname := iconf.Name
 		jname := jconf.Name
 		pi := iconf.Priority
@@ -121,10 +124,17 @@ func (s *Spyglass) Lenses(matchCache map[string][]string) []lenses.Lens {
 		}
 		return pi < pj
 	})
-	return ls
+
+	lensMap = map[int]lenses.Lens{}
+	for _, l := range ls {
+		orderedIndexes = append(orderedIndexes, l.index)
+		lensMap[l.index] = l.lens
+	}
+
+	return orderedIndexes, lensMap
 }
 
-func (s *Spyglass) ResolveSymlink(src string) (string, error) {
+func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
@@ -140,7 +150,7 @@ func (s *Spyglass) ResolveSymlink(src string) (string, error) {
 		}
 		bucketName := parts[0]
 		prefix := parts[1]
-		bkt := s.client.Bucket(bucketName)
+		bkt := sg.client.Bucket(bucketName)
 		obj := bkt.Object(prefix + ".txt")
 		reader, err := obj.NewReader(context.Background())
 		if err != nil {
@@ -169,7 +179,7 @@ func (s *Spyglass) ResolveSymlink(src string) (string, error) {
 }
 
 // JobPath returns a link to the GCS directory for the job specified in src
-func (s *Spyglass) JobPath(src string) (string, error) {
+func (sg *Spyglass) JobPath(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
@@ -197,7 +207,7 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 		}
 		jobName := split[0]
 		buildID := split[1]
-		job, err := s.jobAgent.GetProwJob(jobName, buildID)
+		job, err := sg.jobAgent.GetProwJob(jobName, buildID)
 		if err != nil {
 			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
 		}
@@ -217,8 +227,45 @@ func (s *Spyglass) JobPath(src string) (string, error) {
 	}
 }
 
+// ProwJobName returns a link to the YAML for the job specified in src.
+// If no job is found, it returns an empty string and nil error.
+func (sg *Spyglass) ProwJobName(src string) (string, error) {
+	src = strings.TrimSuffix(src, "/")
+	keyType, key, err := splitSrc(src)
+	if err != nil {
+		return "", fmt.Errorf("error parsing src: %v", src)
+	}
+	split := strings.Split(key, "/")
+	var jobName string
+	var buildID string
+	switch keyType {
+	case gcsKeyType:
+		if len(split) < 4 {
+			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
+		}
+		jobName = split[len(split)-2]
+		buildID = split[len(split)-1]
+	case prowKeyType:
+		if len(split) < 2 {
+			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+		}
+		jobName = split[0]
+		buildID = split[1]
+	default:
+		return "", fmt.Errorf("unrecognized key type for src: %v", src)
+	}
+	job, err := sg.jobAgent.GetProwJob(jobName, buildID)
+	if err != nil {
+		if jobs.IsErrProwJobNotFound(err) {
+			return "", nil
+		}
+		return "", err
+	}
+	return job.Name, nil
+}
+
 // RunPath returns the path to the GCS directory for the job run specified in src.
-func (s *Spyglass) RunPath(src string) (string, error) {
+func (sg *Spyglass) RunPath(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
@@ -228,7 +275,7 @@ func (s *Spyglass) RunPath(src string) (string, error) {
 	case gcsKeyType:
 		return key, nil
 	case prowKeyType:
-		return s.prowToGCS(key)
+		return sg.prowToGCS(key)
 	default:
 		return "", fmt.Errorf("unrecognized key type for src: %v", src)
 	}
@@ -236,7 +283,7 @@ func (s *Spyglass) RunPath(src string) (string, error) {
 
 // RunToPR returns the (org, repo, pr#) tuple referenced by the provided src.
 // Returns an error if src does not reference a job with an associated PR.
-func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
+func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
@@ -269,10 +316,11 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 			// In practice, this shouldn't matter: we only want to read DefaultOrg and DefaultRepo, and overriding those
 			// per job would probably be a bad idea (indeed, not even the tests try to do this).
 			// This decision should probably be revisited if we ever want other information from it.
-			if s.config().Plank.DefaultDecorationConfig == nil || s.config().Plank.DefaultDecorationConfig.GCSConfiguration == nil {
+			// TODO (droslean): we should get the default decoration config depending on the org/repo.
+			if sg.config().Plank.DefaultDecorationConfigs["*"] == nil || sg.config().Plank.DefaultDecorationConfigs["*"].GCSConfiguration == nil {
 				return "", "", 0, fmt.Errorf("couldn't look up a GCS configuration")
 			}
-			c := s.config().Plank.DefaultDecorationConfig.GCSConfiguration
+			c := sg.config().Plank.DefaultDecorationConfigs["*"].GCSConfiguration
 			// Assumption: we can derive the type of URL from how many components it has, without worrying much about
 			// what the actual path configuration is.
 			switch len(split) {
@@ -300,7 +348,7 @@ func (s *Spyglass) RunToPR(src string) (string, string, int, error) {
 		}
 		jobName := split[0]
 		buildID := split[1]
-		job, err := s.jobAgent.GetProwJob(jobName, buildID)
+		job, err := sg.jobAgent.GetProwJob(jobName, buildID)
 		if err != nil {
 			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %v", key, err)
 		}

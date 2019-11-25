@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: crier
@@ -20,6 +20,9 @@ metadata:
     app: crier
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: crier
   template:
     metadata:
       labels:
@@ -29,10 +32,9 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/crier:v20191121-1ff2207db
         args:
         - --github-workers=1
-        - --report-agent=knative-build
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --github-endpoint=http://ghproxy

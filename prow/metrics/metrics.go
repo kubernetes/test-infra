@@ -19,53 +19,56 @@ package metrics
 
 import (
 	"net/http"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
 )
 
 const metricsPort = 9090
 
-// ExposeMetrics chooses whether to serve or push metrics for the service
-func ExposeMetrics(component string, endpoint string, interval time.Duration) {
-	if endpoint != "" {
-		go pushMetrics(component, endpoint, interval)
+// ExposeMetricsWithRegistry chooses whether to serve or push metrics for the service with the registry
+func ExposeMetricsWithRegistry(component string, pushGateway config.PushGateway, reg *prometheus.Registry) {
+	if pushGateway.Endpoint != "" {
+		pushMetrics(component, pushGateway.Endpoint, pushGateway.Interval.Duration)
+		if pushGateway.ServeMetrics {
+			serveMetrics(reg)
+		}
 	} else {
-		serveMetrics()
+		serveMetrics(reg)
 	}
 }
 
+// ExposeMetrics chooses whether to serve or push metrics for the service
+func ExposeMetrics(component string, pushGateway config.PushGateway) {
+	ExposeMetricsWithRegistry(component, pushGateway, nil)
+}
+
 // serveMetrics serves prometheus metrics for the service
-func serveMetrics() {
+func serveMetrics(reg *prometheus.Registry) {
+	var handler http.Handler
+	if reg == nil {
+		handler = promhttp.Handler()
+	} else {
+		handler = promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+	}
 	metricsMux := http.NewServeMux()
-	metricsMux.Handle("/metrics", promhttp.Handler())
-	go func() {
-		logrus.WithError(http.ListenAndServe(":"+strconv.Itoa(metricsPort), metricsMux)).Fatal("ListenAndServe returned while serving metrics.")
-	}()
+	metricsMux.Handle("/metrics", handler)
+	server := &http.Server{Addr: ":" + strconv.Itoa(metricsPort), Handler: metricsMux}
+	interrupts.ListenAndServe(server, 5*time.Second)
 }
 
 // pushMetrics is meant to run in a goroutine and continuously push
 // metrics to the provided endpoint.
 func pushMetrics(component, endpoint string, interval time.Duration) {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-time.Tick(interval):
-			if err := push.FromGatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
-				logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
-			}
-		case <-sig:
-			logrus.WithField("component", component).Infof("Metrics pusher shutting down...")
-			return
+	interrupts.TickLiteral(func() {
+		if err := fromGatherer(component, hostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
+			logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
 		}
-	}
+	}, interval)
 }

@@ -49,3 +49,9 @@ gs://pivotal-e2e-results:
 gs://k8s-conformance-docker:
   contact: "jeffqwb2017"
   prefix: "docker:"
+gs://cel-conformance:
+  contact: "JimLarson"
+  prefix: "cel:"
+gs://k8s-conformance-kind-arm64-openlab/:
+  contact: "ZhengZhenyu"
+  prefix: "kind-arm64-openlab:"

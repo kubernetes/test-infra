@@ -2,6 +2,10 @@
 build --workspace_status_command=./hack/print-workspace-status.sh
 run --workspace_status_command=./hack/print-workspace-status.sh
 
+# https://github.com/kubernetes/test-infra/issues/13140
+build --incompatible_disable_deprecated_attr_params=false
+query --incompatible_disable_deprecated_attr_params=false
+
 # enable data race detection
 test --features=race --test_output=errors
 
@@ -16,19 +20,9 @@ test:lint --test_tag_filters=lint
 # bazel test //... --config=unit
 test:unit --test_tag_filters=-lint
 
-# --config=remote-cache enables a remote bazel cache
-# Note needs an instance name
-# See --config=remote-fejta-cache for a concrete example
-build:remote-cache --remote_cache=remotebuildexecution.googleapis.com
-build:remote-cache --tls_enabled=true
-build:remote-cache --remote_timeout=3600
-build:remote-cache --auth_enabled=true
-
-# --config=remote adds remote execution to the --config=remote-cache
 # Note needs an instance name
 # See --config=remote-fejta for a concrete example
-build:remote --config=remote-cache
-build:remote --remote_executor=remotebuildexecution.googleapis.com
+# https://github.com/bazelbuild/bazel-toolchains/blob/master/bazelrc/bazel-0.27.0.bazelrc
 build:remote --jobs=500
 build:remote --host_javabase=@rbe_default//java:jdk
 build:remote --javabase=@rbe_default//java:jdk
@@ -36,15 +30,32 @@ build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --crosstool_top=@rbe_default//cc:toolchain
 build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+
 build:remote --extra_toolchains=@rbe_default//config:cc-toolchain
 build:remote --extra_execution_platforms=:rbe_with_network
 build:remote --host_platform=:rbe_with_network
 build:remote --platforms=:rbe_with_network
-build:remote --spawn_strategy=remote
-build:remote --strategy=Javac=remote
-build:remote --strategy=Closure=remote
-build:remote --strategy=Genrule=remote
+
 build:remote --define=EXECUTOR=remote
+build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
+build:remote --remote_timeout=3600
+
+# Minimize what is downloaded
+build:inmemory --experimental_inmemory_jdeps_files
+build:inmemory --experimental_inmemory_dotd_files
+
+# Minimize what is downloaded
+build:toplevel --config=inmemory
+build:toplevel --experimental_remote_download_outputs=toplevel
+
+build:minimal --config=inmemory
+build:minimal --experimental_remote_download_outputs=minimal
+
+# --google_credentials=some_file.json
+build:remote --google_default_credentials=true
+build:remote --config=toplevel
+
+run:remote --experimental_remote_download_outputs=all --noexperimental_inmemory_jdeps_files --noexperimental_inmemory_dotd_files
 
 # Compose the remote configs with an instance name
 # A couple examples below:
@@ -54,3 +65,6 @@ build:ci-instance --remote_instance_name=projects/k8s-prow-builds/instances/defa
 
 # Config we want to use in ci
 build:ci --config=remote --config=ci-instance
+
+# https://github.com/bazelbuild/rules_go/pull/2110#issuecomment-508713878
+build --stamp=true

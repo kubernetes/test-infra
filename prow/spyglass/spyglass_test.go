@@ -18,25 +18,28 @@ package spyglass
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"os"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
-	"k8s.io/test-infra/traiana/fakestorage"
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+
+	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	tgconf "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	tgconf "k8s.io/test-infra/testgrid/config"
 )
 
 var (
@@ -181,11 +184,11 @@ func (dumpLens) Config() lenses.LensConfig {
 	}
 }
 
-func (dumpLens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+func (dumpLens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
 	return ""
 }
 
-func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir, data string) string {
+func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var view []byte
 	for _, a := range artifacts {
 		data, err := a.ReadAll()
@@ -198,7 +201,7 @@ func (dumpLens) Body(artifacts []lenses.Artifact, resourceDir, data string) stri
 	return string(view)
 }
 
-func (dumpLens) Callback(artifacts []lenses.Artifact, resourceDir, data string) string {
+func (dumpLens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 
@@ -207,23 +210,14 @@ func TestViews(t *testing.T) {
 	testCases := []struct {
 		name               string
 		registeredViewers  []lenses.Lens
-		matchCache         map[string][]string
+		lenses             []int
 		expectedLensTitles []string
 	}{
 		{
-			name:              "Spyglass basic test",
-			registeredViewers: []lenses.Lens{dumpLens{}},
-			matchCache: map[string][]string{
-				"dump": {"started.json"},
-			},
+			name:               "Spyglass basic test",
+			registeredViewers:  []lenses.Lens{dumpLens{}},
+			lenses:             []int{0},
 			expectedLensTitles: []string{"Dump View"},
-		},
-		{
-			name:              "Spyglass no matches",
-			registeredViewers: []lenses.Lens{dumpLens{}},
-			matchCache: map[string][]string{
-				"dump": {},
-			},
 		},
 	}
 
@@ -232,10 +226,26 @@ func TestViews(t *testing.T) {
 			for _, l := range tc.registeredViewers {
 				lenses.RegisterLens(l)
 			}
-			fca := config.Agent{}
-			sg := New(fakeJa, fca.Config, fakeGCSClient, "", context.Background())
-			lenses := sg.Lenses(tc.matchCache)
-			for _, l := range lenses {
+			c := fca{
+				c: config.Config{
+					ProwConfig: config.ProwConfig{
+						Deck: config.Deck{
+							Spyglass: config.Spyglass{
+								Lenses: []config.LensFileConfig{
+									{
+										Lens: config.LensConfig{
+											Name: "dump",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			sg := New(fakeJa, c.Config, fakeGCSClient, "", context.Background())
+			_, ls := sg.Lenses(tc.lenses)
+			for _, l := range ls {
 				var found bool
 				for _, title := range tc.expectedLensTitles {
 					if title == l.Config().Title {
@@ -248,7 +258,7 @@ func TestViews(t *testing.T) {
 			}
 			for _, title := range tc.expectedLensTitles {
 				var found bool
-				for _, l := range lenses {
+				for _, l := range ls {
 					if title == l.Config().Title {
 						found = true
 					}
@@ -431,6 +441,132 @@ func TestJobPath(t *testing.T) {
 		fca := config.Agent{}
 		sg := New(fakeJa, fca.Config, fakeGCSClient, "", context.Background())
 		jobPath, err := sg.JobPath(tc.src)
+		if tc.expError && err == nil {
+			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
+			continue
+		}
+		if !tc.expError && err != nil {
+			t.Errorf("test %q: JobPath(%q) returned unexpected error %v", tc.name, tc.src, err)
+			continue
+		}
+		if jobPath != tc.expJobPath {
+			t.Errorf("test %q: JobPath(%q) expected %q, got %q", tc.name, tc.src, tc.expJobPath, jobPath)
+		}
+	}
+}
+
+func TestProwJobName(t *testing.T) {
+	kc := fkc{
+		prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Name: "flying-whales-1"},
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PeriodicJob,
+				Job:  "example-periodic-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1111",
+			},
+		},
+		prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Name: "flying-whales-2"},
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "example-presubmit-job",
+				DecorationConfig: &prowapi.DecorationConfig{
+					GCSConfiguration: &prowapi.GCSConfiguration{
+						Bucket: "chum-bucket",
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "2222",
+			},
+		},
+		prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Name: "flying-whales-3"},
+			Spec: prowapi.ProwJobSpec{
+				Type: prowapi.PresubmitJob,
+				Job:  "undecorated-job",
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1",
+			},
+		},
+		prowapi.ProwJob{
+			Spec: prowapi.ProwJobSpec{
+				Type:             prowapi.PresubmitJob,
+				Job:              "missing-name-job",
+				DecorationConfig: &prowapi.DecorationConfig{},
+			},
+			Status: prowapi.ProwJobStatus{
+				PodName: "flying-whales",
+				BuildID: "1",
+			},
+		},
+	}
+	fca := config.Agent{}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca.Config)
+	fakeJa.Start()
+	testCases := []struct {
+		name       string
+		src        string
+		expJobPath string
+		expError   bool
+	}{
+		{
+			name:       "non-presubmit job in GCS without trailing /",
+			src:        "gcs/kubernetes-jenkins/logs/example-periodic-job/1111/",
+			expJobPath: "flying-whales-1",
+		},
+		{
+			name:       "presubmit job in GCS with trailing /",
+			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-presubmit-job/2222/",
+			expJobPath: "flying-whales-2",
+		},
+		{
+			name:       "non-presubmit Prow job",
+			src:        "prowjob/example-periodic-job/1111",
+			expJobPath: "flying-whales-1",
+		},
+		{
+			name:       "Prow presubmit job",
+			src:        "prowjob/example-presubmit-job/2222",
+			expJobPath: "flying-whales-2",
+		},
+		{
+			name:       "nonexistent job",
+			src:        "prowjob/example-periodic-job/0000",
+			expJobPath: "",
+		},
+		{
+			name:       "job missing name",
+			src:        "prowjob/missing-name-job/1",
+			expJobPath: "",
+		},
+		{
+			name:     "invalid key type",
+			src:      "oh/my/glob/drama/bomb",
+			expError: true,
+		},
+		{
+			name:     "invalid GCS path",
+			src:      "gcs/kubernetes-jenkins/bad-path",
+			expError: true,
+		},
+	}
+	for _, tc := range testCases {
+		fakeGCSClient := fakeGCSServer.Client()
+		fca := config.Agent{}
+		sg := New(fakeJa, fca.Config, fakeGCSClient, "", context.Background())
+		jobPath, err := sg.ProwJobName(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
 			continue
@@ -701,12 +837,14 @@ func TestRunToPR(t *testing.T) {
 		fca.Set(&config.Config{
 			ProwConfig: config.ProwConfig{
 				Plank: config.Plank{
-					DefaultDecorationConfig: &prowapi.DecorationConfig{
-						GCSConfiguration: &prowapi.GCSConfiguration{
-							Bucket:       "kubernetes-jenkins",
-							DefaultOrg:   "kubernetes",
-							DefaultRepo:  "kubernetes",
-							PathStrategy: "legacy",
+					DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+						"*": {
+							GCSConfiguration: &prowapi.GCSConfiguration{
+								Bucket:       "kubernetes-jenkins",
+								DefaultOrg:   "kubernetes",
+								DefaultRepo:  "kubernetes",
+								PathStrategy: "legacy",
+							},
 						},
 					},
 				},
@@ -917,10 +1055,12 @@ func TestGCSPathRoundTrip(t *testing.T) {
 			c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfig: &prowapi.DecorationConfig{
-							GCSConfiguration: &prowapi.GCSConfiguration{
-								DefaultOrg:  tc.defaultOrg,
-								DefaultRepo: tc.defaultRepo,
+						DefaultDecorationConfigs: map[string]*prowapi.DecorationConfig{
+							"*": {
+								GCSConfiguration: &prowapi.GCSConfiguration{
+									DefaultOrg:  tc.defaultOrg,
+									DefaultRepo: tc.defaultRepo,
+								},
 							},
 						},
 					},

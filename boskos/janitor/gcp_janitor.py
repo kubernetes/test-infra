@@ -23,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 
 # A resource that need to be cleared.
 Resource = collections.namedtuple(
@@ -35,26 +36,38 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'instances', None, 'zone', None, False, True),
     Resource('', 'compute', 'addresses', None, 'region', None, False, True),
     Resource('', 'compute', 'disks', None, 'zone', None, False, True),
+    Resource('', 'compute', 'disks', None, 'region', None, False, True),
     Resource('', 'compute', 'firewall-rules', None, None, None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
-    Resource('', 'compute', 'forwarding-rules', None, 'region', None, False, True),
-    Resource('', 'compute', 'ssl-certificates', None, None, None, False, True),
+    Resource('', 'compute', 'forwarding-rules', None, None, None, False, True),
+    Resource('beta', 'compute', 'forwarding-rules', None, 'region', None, False, True),
     Resource('', 'compute', 'target-http-proxies', None, None, None, False, True),
+    Resource('beta', 'compute', 'target-http-proxies', None, 'region', None, False, True),
     Resource('', 'compute', 'target-https-proxies', None, None, None, False, True),
+    Resource('beta', 'compute', 'target-https-proxies', None, 'region', None, False, True),
+    Resource('', 'compute', 'target-tcp-proxies', None, None, None, False, True),
+    Resource('beta', 'compute', 'target-tcp-proxies', None, 'region', None, False, True),
+    Resource('', 'compute', 'target-tcp-proxies', None, None, None, False, True),
+    Resource('beta', 'compute', 'target-tcp-proxies', None, 'region', None, False, True),
+    Resource('', 'compute', 'ssl-certificates', None, None, None, False, True),
+    Resource('beta', 'compute', 'ssl-certificates', None, 'region', None, False, True),
     Resource('', 'compute', 'url-maps', None, None, None, False, True),
+    Resource('beta', 'compute', 'url-maps', None, 'region', None, False, True),
     Resource('', 'compute', 'backend-services', None, 'region', None, False, True),
     Resource('', 'compute', 'target-pools', None, 'region', None, False, True),
     Resource('', 'compute', 'health-checks', None, None, None, False, True),
+    Resource('beta', 'compute', 'health-checks', None, 'region', None, False, True),
     Resource('', 'compute', 'http-health-checks', None, None, None, False, True),
     Resource('', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True),
     Resource('', 'compute', 'instance-groups', None, 'zone', 'No', False, True),
     Resource('', 'compute', 'instance-templates', None, None, None, False, True),
     Resource('', 'compute', 'sole-tenancy', 'node-groups', 'zone', None, False, True),
     Resource('', 'compute', 'sole-tenancy', 'node-templates', 'region', None, False, True),
-    Resource('beta', 'compute', 'network-endpoint-groups', None, None, None, True, False),
+    Resource('beta', 'compute', 'network-endpoint-groups', None, 'zone', None, False, False),
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
     Resource('', 'compute', 'networks', None, '', None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
+    Resource('', 'compute', 'routers', None, 'region', None, False, True),
 
     # logging resources
     Resource('', 'logging', 'sinks', None, None, None, False, False),
@@ -64,7 +77,8 @@ DEMOLISH_ORDER = [
 def log(message):
     """ print a message if --verbose is set. """
     if ARGS.verbose:
-        print message
+        tss = "[" + str(datetime.datetime.now()) + "] "
+        print tss + message + '\n'
 
 
 def base_command(resource):
@@ -178,6 +192,19 @@ def collect(project, age, resource, filt, clear_all):
             col[colname].append(item['name'])
     return col
 
+def asyncCall(cmd, tolerate, name, errs, lock, hide_output):
+    log('Call %r' % cmd)
+    try:
+        if hide_output:
+            FNULL = open(os.devnull, 'w')
+            subprocess.check_call(cmd, stdout=FNULL)
+        else:
+            subprocess.check_call(cmd)
+    except subprocess.CalledProcessError as exc:
+        if not tolerate:
+            with lock:
+                errs.append(exc)
+        print >> sys.stderr, 'Error try to delete resources %s: %r' % (name, exc)
 
 def clear_resources(project, cols, resource, rate_limit):
     """Clear a collection of resource, from collect func above.
@@ -189,9 +216,11 @@ def clear_resources(project, cols, resource, rate_limit):
         rate_limit: how many resources to delete per gcloud delete call
     Returns:
         0 if no error
-        1 if deletion command fails
+        > 0 if deletion command fails
     """
-    err = 0
+    errs = []
+    threads = list()
+    lock = threading.Lock()
 
     # delete one resource at a time, if there's no api support
     # aka, logging sinks for example
@@ -220,11 +249,6 @@ def clear_resources(project, cols, resource, rate_limit):
             else:
                 condition = '--global'
 
-        # hard code asia-southeast1-a for NEG
-        # TODO(freehan): remove this once limitation is dropped
-        if resource.name == 'network-endpoint-groups':
-            condition = '--zone=asia-southeast1-a'
-
         log('going to delete %d %s' % (len(items), resource.name))
         # try to delete at most $rate_limit items at a time
         for idx in xrange(0, len(items), rate_limit):
@@ -232,14 +256,16 @@ def clear_resources(project, cols, resource, rate_limit):
             cmd = base + list(clean)
             if condition:
                 cmd.append(condition)
-            log('Call %r' % cmd)
-            try:
-                subprocess.check_call(cmd)
-            except subprocess.CalledProcessError as exc:
-                if not resource.tolerate:
-                    err = 1
-                print >> sys.stderr, 'Error try to delete resources: %r' % exc
-    return err
+            thread = threading.Thread(
+                target=asyncCall, args=(cmd, resource.tolerate, resource.name, errs, lock, False))
+            threads.append(thread)
+            log('start a new thread, total %d' % len(threads))
+            thread.start()
+
+    log('Waiting for all %d thread to finish' % len(threads))
+    for thread in threads:
+        thread.join()
+    return len(errs)
 
 
 def clean_gke_cluster(project, age, filt):
@@ -252,8 +278,12 @@ def clean_gke_cluster(project, age, filt):
         'https://container.googleapis.com/',  # prod
     ]
 
-    err = 0
+    errs = []
+
     for endpoint in endpoints:
+        threads = list()
+        lock = threading.Lock()
+
         os.environ['CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER'] = endpoint
         log("checking endpoint %s" % endpoint)
         cmd = [
@@ -293,14 +323,17 @@ def clean_gke_cluster(project, age, filt):
                     '--project=%s' % project,
                     '--zone=%s' % item['zone'],
                 ]
-                try:
-                    log('running %s' % delete)
-                    subprocess.check_call(delete)
-                except subprocess.CalledProcessError as exc:
-                    err = 1
-                    print >> sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
+                thread = threading.Thread(
+                    target=asyncCall, args=(delete, False, item['name'], errs, lock, True))
+                threads.append(thread)
+                log('start a new thread, total %d' % len(threads))
+                thread.start()
 
-    return err
+        log('Waiting for all %d thread to finish in %s' % (len(threads), endpoint))
+        for thread in threads:
+            thread.join()
+
+    return len(errs) > 0
 
 
 def activate_service_account(service_account):

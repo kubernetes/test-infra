@@ -26,6 +26,12 @@ import re
 import subprocess
 import sys
 
+try:
+    from junit_xml import TestSuite, TestCase
+    HAS_JUNIT = True
+except ImportError:
+    HAS_JUNIT = False
+
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 def test_infra(*paths):
@@ -50,7 +56,7 @@ def parse_project(path):
     return None
 
 
-def clean_project(project, hours=24, dryrun=False, ratelimit=None):
+def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
     """Execute janitor for target GCP project """
     # Multiple jobs can share the same project, woooo
     if project in CHECKED:
@@ -65,6 +71,8 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None):
         cmd.append('--ratelimit=%d' % ratelimit)
     if VERBOSE:
         cmd.append('--verbose')
+    if filt:
+        cmd.append('--filter=%s' % filt)
 
     try:
         check(*cmd)
@@ -138,7 +146,7 @@ def check_ci_jobs():
     clean_project('k8s-jkns-ci-node-e2e')
 
 
-def main(mode, ratelimit, projects, age):
+def main(mode, ratelimit, projects, age, artifacts, filt):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
@@ -147,12 +155,30 @@ def main(mode, ratelimit, projects, age):
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
-            clean_project(proj.strip(), hours=age, ratelimit=ratelimit)
+            clean_project(proj.strip(), hours=age, ratelimit=ratelimit, filt=filt)
     else:
         check_ci_jobs()
 
     # Summary
     print 'Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED))
+    print HAS_JUNIT
+    if artifacts:
+        output = os.path.join(artifacts, 'junit_janitor.xml')
+        if not HAS_JUNIT:
+            print 'Please install junit-xml (https://pypi.org/project/junit-xml/)'
+        else:
+            print 'Generating junit output:'
+            tcs = []
+            for project in CHECKED:
+                tc = TestCase(project, 'kubernetes_janitor')
+                if project in FAILED:
+                    # TODO(krzyzacy): pipe down stdout here as well
+                    tc.add_failure_info('failed to clean up gcp project')
+                tcs.append(tc)
+
+            ts = TestSuite('janitor', tcs)
+            with open(output, 'w') as f:
+                TestSuite.to_file(f, [ts])
     if FAILED:
         print >>sys.stderr, 'Failed projects: %r' % FAILED
         exit(1)
@@ -180,6 +206,14 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--verbose', action='store_true',
         help='If want more detailed logs from the janitor script.')
+    PARSER.add_argument(
+        '--artifacts',
+        help='generate junit style xml to target path',
+        default=os.environ.get('ARTIFACTS', None))
+    PARSER.add_argument(
+        '--filter',
+        default=None,
+        help='Filter down to these instances(passed into gcp_janitor.py)')
     ARGS = PARSER.parse_args()
     VERBOSE = ARGS.verbose
-    main(ARGS.mode, ARGS.ratelimit, ARGS.projects, ARGS.age)
+    main(ARGS.mode, ARGS.ratelimit, ARGS.projects, ARGS.age, ARGS.artifacts, ARGS.filter)

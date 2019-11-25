@@ -33,12 +33,13 @@ import (
 	"k8s.io/test-infra/traiana/storage"
 	"sigs.k8s.io/yaml"
 
+	"github.com/GoogleCloudPlatform/testgrid/config"
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
+	configpb "github.com/GoogleCloudPlatform/testgrid/pb/config"
+	"github.com/GoogleCloudPlatform/testgrid/resultstore"
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/testgrid/config"
-	"k8s.io/test-infra/testgrid/metadata"
-	"k8s.io/test-infra/testgrid/resultstore"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 var re = regexp.MustCompile(`( ?|^)\[[^]]+\]( |$)`)
@@ -101,7 +102,8 @@ func parseOptions() options {
 }
 
 func main() {
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "storeship"})
+	logrusutil.ComponentInit()
+
 	opt := parseOptions()
 	for {
 		err := run(opt)
@@ -287,10 +289,10 @@ func (bc *bucketChecker) writable(ctx context.Context, path gcs.Path) bool {
 	return bc.buckets[name]
 }
 
-func findGroups(cfg *config.Configuration, jobs ...string) ([]config.TestGroup, error) {
-	var groups []config.TestGroup
+func findGroups(cfg *configpb.Configuration, jobs ...string) ([]configpb.TestGroup, error) {
+	var groups []configpb.TestGroup
 	for _, job := range jobs {
-		tg := cfg.FindTestGroup(job)
+		tg := config.FindTestGroup(job, cfg)
 		if tg == nil {
 			return nil, fmt.Errorf("job %s not found in test groups", job)
 		}
@@ -310,7 +312,7 @@ type buildsInfo struct {
 	builds []gcs.Build
 }
 
-func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *bucketChecker, group config.TestGroup, buildsChan chan<- buildsInfo, errChan chan<- error) {
+func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *bucketChecker, group configpb.TestGroup, buildsChan chan<- buildsInfo, errChan chan<- error) {
 	log := logrus.WithFields(logrus.Fields{
 		"testgroup":  group.Name,
 		"gcs_prefix": "gs://" + group.GcsPrefix,
@@ -352,7 +354,7 @@ func findGroupBuilds(ctx context.Context, storageClient *storage.Client, bc *buc
 	}
 }
 
-func findBuilds(ctx context.Context, storageClient *storage.Client, groups []config.TestGroup) (<-chan buildsInfo, <-chan error) {
+func findBuilds(ctx context.Context, storageClient *storage.Client, groups []configpb.TestGroup) (<-chan buildsInfo, <-chan error) {
 	buildsChan := make(chan buildsInfo)
 	errChan := make(chan error)
 	bc := bucketChecker{
@@ -369,7 +371,7 @@ func findBuilds(ctx context.Context, storageClient *storage.Client, groups []con
 		var wg sync.WaitGroup
 		for _, testGroup := range groups {
 			wg.Add(1)
-			go func(testGroup config.TestGroup) {
+			go func(testGroup configpb.TestGroup) {
 				defer wg.Done()
 				findGroupBuilds(ctx, storageClient, &bc, testGroup, buildsChan, innerErrChan)
 			}(testGroup)

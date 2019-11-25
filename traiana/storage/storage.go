@@ -156,12 +156,10 @@ func SignedURL(bucket, name string, opts *SignedURLOptions) (string, error) {
 }
 
 type Query = storage.Query
-
+type Writer = StorageWriter
 type ObjectAttrs = storage.ObjectAttrs
-
 type ACLRule = storage.ACLRule
 type ACLRole = storage.ACLRole
-
 type SignedURLOptions = storage.SignedURLOptions
 
 var ErrObjectNotExist = storage.ErrObjectNotExist

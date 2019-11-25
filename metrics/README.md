@@ -57,6 +57,9 @@ jqmeasurements: |
 * flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results for display in Velodrome.
     - [Config](configs/flakes-daily-config.yaml)
     - [flakes-daily-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-daily-latest.json)
+* job-health - compute daily health metrics for jobs (runs, tests, failure rate for each, duration percentiles)
+    - [Config](configs/job-health.yaml)
+    - [job-health-latest.json](http://storage.googleapis.com/k8s-metrics/job-health-latest.json)
 * job-flakes - compute consistency of all jobs
     - [Config](configs/job-flakes-config.yaml)
     - [job-flakes-latest.json](http://storage.googleapis.com/k8s-metrics/job-flakes-latest.json)

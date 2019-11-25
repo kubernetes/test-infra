@@ -32,6 +32,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -45,6 +46,62 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // for gcp auth provider
 )
+
+// printArray prints items in collection (up to a non-zero limit) and return a bool indicating if results were truncated.
+func printArray(collection []string, limit int) bool {
+	for idx, item := range collection {
+		if limit > 0 && idx == limit {
+			break
+		}
+		fmt.Println("  *", item)
+	}
+
+	if limit > 0 && len(collection) > limit {
+		return true
+	}
+
+	return false
+}
+
+// validateNotEmpty handles validation that a collection is non-empty.
+func validateNotEmpty(collection []string) bool {
+	if len(collection) > 0 {
+		return true
+	}
+
+	return false
+}
+
+// validateContainment handles validation for containment of target in collection.
+func validateContainment(collection []string, target string) bool {
+	for _, val := range collection {
+		if val == target {
+			return true
+		}
+	}
+
+	return false
+}
+
+// prompt prompts user with a message (and optional default value); return the selection as string.
+func prompt(promptMsg string, defaultVal string) string {
+	var choice string
+
+	if defaultVal != "" {
+		fmt.Printf("%s [%s]: ", promptMsg, defaultVal)
+	} else {
+		fmt.Printf("%s: ", promptMsg)
+	}
+
+	fmt.Scanln(&choice)
+
+	// If no `choice` and a `default`, then use `default`
+	if choice == "" {
+		return defaultVal
+	}
+
+	return choice
+}
 
 // ensure will ensure binary is on path or return an error with install message.
 func ensure(binary, install string) error {
@@ -83,6 +140,11 @@ func currentProject() (string, error) {
 	return output("gcloud", "config", "get-value", "core/project")
 }
 
+// currentZone returns the configured zone for gcloud
+func currentZone() (string, error) {
+	return output("gcloud", "config", "get-value", "compute/zone")
+}
+
 // project holds info about a project
 type project struct {
 	name string
@@ -92,6 +154,15 @@ type project struct {
 // projects returns the list of accessible gcp projects
 func projects(max int) ([]string, error) {
 	out, err := output("gcloud", "projects", "list", fmt.Sprintf("--limit=%d", max), "--format=value(project_id)")
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(out, "\n"), nil
+}
+
+// zones returns the list of accessible gcp zones
+func zones() ([]string, error) {
+	out, err := output("gcloud", "compute", "zones", "list", "--format=value(name)")
 	if err != nil {
 		return nil, err
 	}
@@ -134,8 +205,8 @@ func selectProject(choice string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("get current project: %v", err)
 		}
-		fmt.Printf("Select project [%s]: ", def)
-		fmt.Scanln(&choice)
+
+		choice = prompt("Select project", def)
 
 		// use default project
 		if choice == "" {
@@ -156,6 +227,48 @@ func selectProject(choice string) (string, error) {
 	// no, make sure user has access to it
 	if err = exec.Command("gcloud", "projects", "describe", choice).Run(); err != nil {
 		return "", fmt.Errorf("%s cannot describe project: %v", who, err)
+	}
+
+	return choice, nil
+}
+
+// selectZone returns the user-selected zone, defaulting to the current gcloud one.
+func selectZone() (string, error) {
+	const MaxZones = 20
+
+	def, err := currentZone()
+	if err != nil {
+		return "", fmt.Errorf("get current zone: %v", err)
+	}
+
+	fmt.Printf("Available zones:\n")
+
+	zoneList, err := zones()
+	if err != nil {
+		return "", fmt.Errorf("list zones: %v", err)
+	}
+
+	isNonEmpty := validateNotEmpty(zoneList)
+	if !isNonEmpty {
+		return "", errors.New("no available zones")
+	}
+
+	if def == "" {
+		// Arbitrarily select the first zone as the `default` if unset
+		def = zoneList[0]
+	}
+
+	isTruncated := printArray(zoneList, MaxZones)
+	if isTruncated {
+		fmt.Println("  ...")
+		fmt.Println("Type the name of any zone, including ones not in this truncated list")
+	}
+
+	choice := prompt("Select zone", def)
+
+	isContained := validateContainment(zoneList, choice)
+	if !isContained {
+		return "", fmt.Errorf("invalid zone selection: %v", choice)
 	}
 
 	return choice, nil
@@ -197,14 +310,15 @@ func currentClusters(proj string) (map[string]cluster, error) {
 func createCluster(proj, choice string) (*cluster, error) {
 	const def = "prow"
 	if choice == "" {
-		fmt.Printf("Cluster name [%s]: ", def)
-		fmt.Scanln(&choice)
-		if choice == "" {
-			choice = def
-		}
+		choice = prompt("Cluster name", def)
 	}
 
-	cmd := exec.Command("gcloud", "container", "clusters", "create", choice)
+	zone, err := selectZone()
+	if err != nil {
+		return nil, fmt.Errorf("select current zone for cluster: %v", err)
+	}
+
+	cmd := exec.Command("gcloud", "container", "clusters", "create", choice, "--zone="+zone, "--enable-legacy-authorization", "--issue-client-certificate")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -212,7 +326,7 @@ func createCluster(proj, choice string) (*cluster, error) {
 		return nil, fmt.Errorf("create cluster: %v", err)
 	}
 
-	out, err := output("gcloud", "container", "clusters", "describe", choice, "--format=value(name,zone)")
+	out, err := output("gcloud", "container", "clusters", "describe", choice, "--zone="+zone, "--format=value(name,zone)")
 	if err != nil {
 		return nil, fmt.Errorf("describe cluster: %v", err)
 	}
@@ -257,11 +371,10 @@ func createContext(co contextOptions) (string, error) {
 		fmt.Println("Reusing existing " + reuse + " cluster...")
 		choice = reuse
 	default:
-		fmt.Print("Get credentials for existing cluster or [create new]: ")
-		fmt.Scanln(&choice)
+		choice = prompt("Get credentials for existing cluster or", "create new")
 	}
 
-	if choice == "" || choice == "new" {
+	if choice == "" || choice == "new" || choice == "create new" {
 		cluster, err := createCluster(proj, create)
 		if err != nil {
 			return "", fmt.Errorf("create cluster in %s: %v", proj, err)
@@ -334,8 +447,7 @@ func selectContext(co contextOptions) (string, error) {
 		choice = "create"
 		fmt.Println("Create new context...")
 	default:
-		fmt.Print("Choose context or [create new]: ")
-		fmt.Scanln(&choice)
+		choice = prompt("Choose context or", "create new")
 	}
 
 	if choice == "create" || choice == "" || choice == "create new" || choice == "new" {
@@ -436,8 +548,7 @@ func addFlags(fs *flag.FlagSet) *options {
 func githubToken(choice string) (string, error) {
 	if choice == "" {
 		fmt.Print("Store your GitHub token in a file e.g. echo $TOKEN > /path/to/github/token\n")
-		fmt.Print("Input /path/to/github/token to upload into cluster: ")
-		fmt.Scanln(&choice)
+		choice = prompt("Input /path/to/github/token to upload into cluster", "")
 	}
 	path := os.ExpandEnv(choice)
 	if _, err := os.Stat(path); err != nil {
@@ -453,10 +564,11 @@ func githubClient(tokenPath string, dry bool) (github.Client, error) {
 	}
 
 	gen := secretAgent.GetTokenGenerator(tokenPath)
+	censor := secretAgent.Censor
 	if dry {
-		return github.NewDryRunClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
+		return github.NewDryRunClient(gen, censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 	}
-	return github.NewClient(gen, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
+	return github.NewClient(gen, censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 }
 
 func applySecret(ctx, ns, name, key, path string) error {
@@ -464,17 +576,13 @@ func applySecret(ctx, ns, name, key, path string) error {
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
-	if !strings.HasPrefix(ctx, "gke_") {
-		// TODO(fejta): maybe do this for us
-		fmt.Printf("Warning: if %s is not on GKE, you may need to change\n", ctx)
-		fmt.Println("the Ingress path to deck from /* to /")
-	}
+	const defaultStarter = "https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/cluster/starter.yaml"
+
 	if choice == "" {
-		fmt.Print("Apply starter.yaml from [github upstream]: ")
-		fmt.Scanln(&choice)
+		choice = prompt("Apply starter.yaml from", "github upstream")
 	}
 	if choice == "" || choice == "github" || choice == "upstream" || choice == "github upstream" {
-		choice = "https://raw.githubusercontent.com/kubernetes/test-infra/master/prow/cluster/starter.yaml"
+		choice = defaultStarter
 		fmt.Println("Loading from", choice)
 	}
 	_, err := kc.AppsV1().Deployments(ns).Get("plank", metav1.GetOptions{})
@@ -484,10 +592,8 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 	case err != nil: // unexpected error
 		return fmt.Errorf("get plank: %v", err)
 	case !overwrite: // already a plank, confirm overwrite
-		fmt.Printf("Prow is already deployed to %s in %s, overwrite? [no]: ", ns, ctx)
-		var choice string
-		fmt.Scanln(&choice)
-		switch choice {
+		overwriteChoice := prompt(fmt.Sprintf("Prow is already deployed to %s in %s, overwrite?", ns, ctx), "no")
+		switch overwriteChoice {
 		case "y", "Y", "yes":
 			// carry on, then
 		default:
@@ -520,14 +626,26 @@ func clientConfig(context string) (*rest.Config, error) {
 
 func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 	for {
-		ings, err := kc.Extensions().Ingresses(ns).List(metav1.ListOptions{})
-		if err != nil {
-			logrus.WithError(err).Fatal("Could not get ingresses")
-			time.Sleep(5 * time.Second)
+		var ing *networking.IngressList
+		var err error
+
+		// Detect ingress API to use based on Kubernetes version
+		if hasResource(kc.Discovery(), networking.SchemeGroupVersion.WithResource("ingresses")) {
+			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+		} else {
+			oldIng, err := kc.ExtensionsV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+			if err == nil {
+				ing, err = toNewIngress(oldIng)
+			}
 		}
+
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not get ingresses for service: %s", service)
+		}
+
 		var best url.URL
 		points := 0
-		for _, ing := range ings.Items {
+		for _, ing := range ing.Items {
 			// does this ingress route to the hook service?
 			cur := -1
 			var maybe url.URL
@@ -676,8 +794,7 @@ func enableHooks(client github.Client, loc url.URL, secret string, repos ...stri
 			if len(enabled) > 0 {
 				fmt.Println("Enabled so far:", strings.Join(enabled, ", "))
 			}
-			fmt.Print("Enable which org or org/repo [quit]: ")
-			fmt.Scanln(&choice)
+			choice = prompt("Enable which org or org/repo", "quit")
 		case len(repos) > 0:
 			choice = repos[0]
 			repos = repos[1:]

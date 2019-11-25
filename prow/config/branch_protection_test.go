@@ -36,6 +36,7 @@ func normalize(policy *Policy) {
 		return
 	}
 	sort.Strings(policy.RequiredStatusChecks.Contexts)
+	sort.Strings(policy.Exclude)
 }
 
 func TestSelectBool(t *testing.T) {
@@ -269,6 +270,18 @@ func TestApply(test *testing.T) {
 				Protect: &t,
 			},
 		},
+		{
+			name: "merge exclusion strings",
+			child: Policy{
+				Exclude: []string{"foo*"},
+			},
+			parent: Policy{
+				Exclude: []string{"bar*"},
+			},
+			expected: Policy{
+				Exclude: []string{"bar*", "foo*"},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -358,7 +371,7 @@ func TestBranchRequirements(t *testing.T) {
 		presubmits := map[string][]Presubmit{
 			"o/r": tc.config,
 		}
-		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("o", "r", "master", presubmits)
+		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("master", presubmits["o/r"])
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("%s: identified incorrect required contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActual, tc.masterExpected))
 		}
@@ -368,7 +381,7 @@ func TestBranchRequirements(t *testing.T) {
 		if !reflect.DeepEqual(masterActualIfPresent, tc.masterIfPresent) {
 			t.Errorf("%s: identified incorrect if-present contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActualIfPresent, tc.masterIfPresent))
 		}
-		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("o", "r", "other", presubmits)
+		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("other", presubmits["o/r"])
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("%s: identified incorrect required contexts on branch other: : %s", tc.name, diff.ObjectReflectDiff(otherActual, tc.otherExpected))
 		}
@@ -383,11 +396,10 @@ func TestBranchRequirements(t *testing.T) {
 
 func TestConfig_GetBranchProtection(t *testing.T) {
 	testCases := []struct {
-		name              string
-		config            Config
-		org, repo, branch string
-		err               bool
-		expected          *Policy
+		name     string
+		config   Config
+		err      bool
+		expected *Policy
 	}{
 		{
 			name: "unprotected by default",
@@ -588,6 +600,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			},
 			expected: &Policy{
 				Protect: no,
+				Restrictions: &Restrictions{
+					Teams: []string{"oncall"},
+				},
 			},
 		},
 		{
@@ -607,7 +622,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -641,7 +656,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -677,7 +692,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -706,7 +721,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -739,7 +754,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 				JobConfig: JobConfig{
-					Presubmits: map[string][]Presubmit{
+					PresubmitsStatic: map[string][]Presubmit{
 						"org/repo": {
 							{
 								JobBase: JobBase{
@@ -757,11 +772,49 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			},
 			expected: &Policy{Protect: yes},
 		},
+		{
+			name: "Explicit non-configuration takes precedence over ProtectTested",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						AllowDisabledJobPolicies: true,
+						ProtectTested:            true,
+						Orgs: map[string]Org{
+							"org": {
+								Repos: map[string]Repo{
+									"repo": {
+										Policy: Policy{
+											Protect: no,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				JobConfig: JobConfig{
+					PresubmitsStatic: map[string][]Presubmit{
+						"org/repo": {
+							{
+								JobBase: JobBase{
+									Name: "required presubmit",
+								},
+								Reporter: Reporter{
+									Context: "required presubmit",
+								},
+								AlwaysRun: true,
+							},
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := tc.config.GetBranchProtection("org", "repo", "branch")
+			actual, err := tc.config.GetBranchProtection("org", "repo", "branch", tc.config.PresubmitsStatic["org/repo"])
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -775,6 +828,272 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 				if !reflect.DeepEqual(actual, tc.expected) {
 					t.Errorf("actual %+v != expected %+v", actual, tc.expected)
 				}
+			}
+		})
+	}
+}
+
+func TestReposWithDisabledPolicy(t *testing.T) {
+	testCases := []struct {
+		name              string
+		config            Config
+		expectedRepoWarns []string
+	}{
+		{
+			name: "Warning is generated for repos with disabled policies",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Policy: Policy{
+							Protect: no,
+							RequiredStatusChecks: &ContextPolicy{
+								Contexts: []string{"hello", "world"},
+							},
+						},
+						AllowDisabledPolicies: true,
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {},
+									"repo2": {},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedRepoWarns: []string{"org1/repo1", "org1/repo2"},
+		},
+		{
+			name: "No warnings if disabled policies are not allowed",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Policy: Policy{
+							Protect: no,
+							RequiredStatusChecks: &ContextPolicy{
+								Contexts: []string{"hello", "world"},
+							},
+						},
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedRepoWarns: []string{},
+		},
+		{
+			name: "No warnings if repo has no policies",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedRepoWarns: []string{},
+		},
+		{
+			name: "No warnings if repo's defined policy is protected",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {
+										Policy: Policy{
+											Protect: yes,
+											RequiredStatusChecks: &ContextPolicy{
+												Contexts: []string{"hello", "world"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedRepoWarns: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			repoWarns := tc.config.reposWithDisabledPolicy()
+			if !reflect.DeepEqual(repoWarns, tc.expectedRepoWarns) {
+				t.Errorf("actual repo warnings %+v != expected %+v", repoWarns, tc.expectedRepoWarns)
+			}
+		})
+	}
+}
+
+func TestUnprotectedBranches(t *testing.T) {
+	testCases := []struct {
+		name                string
+		config              Config
+		expectedBranchWarns []string
+	}{
+		{
+			name: "Repos with unprotected branches are added to the warning list",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Policy: Policy{
+							RequiredStatusChecks: &ContextPolicy{
+								Contexts: []string{"hello", "world"},
+							},
+						},
+						AllowDisabledPolicies: true,
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {
+										Branches: map[string]Branch{
+											"branch1": {
+												Policy{
+													Protect: no,
+												},
+											},
+										},
+									},
+									"repo2": {
+										Branches: map[string]Branch{
+											"branch1": {
+												Policy{
+													Protect: no,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedBranchWarns: []string{"org1/repo1=branch1", "org1/repo2=branch1"},
+		},
+		{
+			name: "Warn only once about repos with multiple unprotected branches",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Policy: Policy{
+							RequiredStatusChecks: &ContextPolicy{
+								Contexts: []string{"hello", "world"},
+							},
+						},
+						AllowDisabledPolicies: true,
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {
+										Branches: map[string]Branch{
+											"branch1": {
+												Policy{
+													Protect: no,
+												},
+											},
+											"branch2": {
+												Policy{
+													Protect: no,
+												},
+											},
+										},
+									},
+									"repo2": {
+										Branches: map[string]Branch{
+											"branch1": {
+												Policy{
+													Protect: no,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedBranchWarns: []string{"org1/repo1=branch1,branch2", "org1/repo2=branch1"},
+		},
+		{
+			name: "No warnings if repo has no policies",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {
+										Branches: map[string]Branch{
+											"branch1": {
+												Policy{
+													Protect: no,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedBranchWarns: []string{},
+		},
+		{
+			name: "No warnings if repo's defined policy is protected",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Orgs: map[string]Org{
+							"org1": {
+								Repos: map[string]Repo{
+									"repo1": {
+										Policy: Policy{
+											Protect: yes,
+											RequiredStatusChecks: &ContextPolicy{
+												Contexts: []string{"hello", "world"},
+											},
+										},
+										Branches: map[string]Branch{
+											"branch1": {
+												Policy{
+													Protect: no,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedBranchWarns: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			branchWarns := tc.config.unprotectedBranches()
+			if !reflect.DeepEqual(branchWarns, tc.expectedBranchWarns) {
+				t.Errorf("actual branch warnings %+v != expected %+v", branchWarns, tc.expectedBranchWarns)
 			}
 		})
 	}

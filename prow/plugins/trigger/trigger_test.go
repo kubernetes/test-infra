@@ -31,6 +31,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -320,9 +321,10 @@ func TestRunAndSkipJobs(t *testing.T) {
 			GitHubClient:  &fakeGitHubClient,
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 			Logger:        logrus.WithField("testcase", testCase.name),
+			GitClient:     &git.Client{},
 		}
 
-		err := RunAndSkipJobs(client, pr, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
+		err := RunAndSkipJobs(client, pr, fakegithub.TestRef, testCase.requestedJobs, testCase.skippedJobs, "event-guid", testCase.elideSkippedContexts)
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
@@ -437,7 +439,7 @@ func TestRunRequested(t *testing.T) {
 			Logger:        logrus.WithField("testcase", testCase.name),
 		}
 
-		err := runRequested(client, pr, testCase.requestedJobs, "event-guid")
+		err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid")
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
@@ -513,5 +515,89 @@ func TestValidateContextOverlap(t *testing.T) {
 		if validateErr != nil && !testCase.expectedErr {
 			t.Errorf("%s: expected no error but got one: %v", testCase.name, validateErr)
 		}
+	}
+}
+
+func TestTrustedUser(t *testing.T) {
+	var testcases = []struct {
+		name string
+
+		onlyOrgMembers bool
+		trustedOrg     string
+
+		user string
+		org  string
+		repo string
+
+		expectedTrusted bool
+	}{
+		{
+			name:            "user is member of trusted org",
+			onlyOrgMembers:  false,
+			user:            "test",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is member of trusted org (only org members enabled)",
+			onlyOrgMembers:  true,
+			user:            "test",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is collaborator",
+			onlyOrgMembers:  false,
+			user:            "test-collaborator",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is collaborator (only org members enabled)",
+			onlyOrgMembers:  true,
+			user:            "test-collaborator",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+		},
+		{
+			name:            "user is trusted org member",
+			onlyOrgMembers:  false,
+			trustedOrg:      "kubernetes",
+			user:            "test",
+			org:             "kubernetes-sigs",
+			repo:            "test",
+			expectedTrusted: true,
+		},
+		{
+			name:            "user is not org member",
+			onlyOrgMembers:  false,
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakegithub.FakeClient{
+				OrgMembers: map[string][]string{
+					"kubernetes": {"test"},
+				},
+				Collaborators: []string{"test-collaborator"},
+			}
+
+			trusted, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			if err != nil {
+				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
+			}
+			if trusted != tc.expectedTrusted {
+				t.Errorf("For case %s, expect result: %v, but got: %v", tc.name, tc.expectedTrusted, trusted)
+			}
+		})
 	}
 }

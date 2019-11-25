@@ -135,7 +135,7 @@ else
 fi
 
 # Determine what deployment images we need to update.
-imagedirs="//prow/... + //label_sync/... + //ghproxy/... + //robots/commenter/..."
+imagedirs="//prow/... + //label_sync/... + //ghproxy/... + //robots/commenter/... + //robots/issue-creator/..."
 images=("$@")
 if [[ "${#images[@]}" == 0 ]]; then
   echo -e "querying bazel for $(color-target :image) targets under $(color-target ${imagedirs}) ..." >&2

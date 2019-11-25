@@ -24,10 +24,10 @@ import (
 	"strings"
 	"time"
 
-	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	prowgithub "k8s.io/test-infra/prow/github"
 )
 
 // ProwJobType specifies how the job is triggered.
@@ -72,8 +72,6 @@ const (
 	KubernetesAgent ProwJobAgent = "kubernetes"
 	// JenkinsAgent means prow will schedule the job on jenkins.
 	JenkinsAgent ProwJobAgent = "jenkins"
-	// KnativeBuildAgent means prow will schedule the job via a build-crd resource.
-	KnativeBuildAgent ProwJobAgent = "knative-build"
 	// TektonAgent means prow will schedule the job via a tekton PipelineRun CRD resource.
 	TektonAgent = "tekton-pipeline"
 )
@@ -142,11 +140,6 @@ type ProwJobSpec struct {
 	// a Kubernetes agent
 	PodSpec *corev1.PodSpec `json:"pod_spec,omitempty"`
 
-	// BuildSpec provides the basis for running the test as
-	// a build-crd resource
-	// https://github.com/knative/build
-	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
-
 	// JenkinsSpec holds configuration specific to Jenkins jobs
 	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 
@@ -158,6 +151,88 @@ type ProwJobSpec struct {
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
 	DecorationConfig *DecorationConfig `json:"decoration_config,omitempty"`
+
+	// ReporterConfig holds reporter-specific configuration
+	ReporterConfig *ReporterConfig `json:"reporter_config,omitempty"`
+
+	// RerunAuthConfig holds information about which users can rerun the job
+	RerunAuthConfig RerunAuthConfig `json:"rerun_auth_config,omitempty"`
+
+	// Hidden specifies if the Job is considered hidden.
+	// Hidden jobs are only shown by deck instances that have the
+	// `--hiddenOnly=true` or `--show-hidden=true` flag set.
+	// Presubmits and Postsubmits can also be set to hidden by
+	// adding their repository in Decks `hidden_repo` setting.
+	Hidden bool `json:"hidden,omitempty"`
+}
+
+type GitHubTeamSlug struct {
+	Slug string `json:"slug"`
+	Org  string `json:"org"`
+}
+
+type RerunAuthConfig struct {
+	// If AllowAnyone is set to true, any user can rerun the job
+	AllowAnyone bool `json:"allow_anyone,omitempty"`
+	// GitHubTeams contains IDs of GitHub teams of users who can rerun the job
+	// If you know the name of a team and the org it belongs to,
+	// you can look up its ID using this command, where the team slug is the hyphenated name:
+	// curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams/<team slug>"
+	// or, to list all teams in a given org, use
+	// curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams"
+	GitHubTeamIDs []int `json:"github_team_ids,omitempty"`
+	// GitHubTeamSlugs contains slugs and orgs of teams of users who can rerun the job
+	GitHubTeamSlugs []GitHubTeamSlug `json:"github_team_slugs,omitempty"`
+	// GitHubUsers contains names of individual users who can rerun the job
+	GitHubUsers []string `json:"github_users,omitempty"`
+}
+
+// IsSpecifiedUser returns true if AllowAnyone is set to true or if the given user is
+// specified as a permitted GitHubUser
+func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient) (bool, error) {
+	if rac.AllowAnyone {
+		return true, nil
+	}
+	for _, u := range rac.GitHubUsers {
+		if prowgithub.NormLogin(u) == prowgithub.NormLogin(user) {
+			return true, nil
+		}
+	}
+	// if there is no client, no token was provided, so we cannot access the teams
+	if cli == nil {
+		return false, nil
+	}
+	for _, ght := range rac.GitHubTeamIDs {
+		member, err := cli.TeamHasMember(ght, user)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %v", ght, err)
+		}
+		if member {
+			return true, nil
+		}
+	}
+	for _, ghts := range rac.GitHubTeamSlugs {
+		team, err := cli.GetTeamBySlug(ghts.Slug, ghts.Org)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %v", ghts.Slug, ghts.Org, err)
+		}
+		member, err := cli.TeamHasMember(team.ID, user)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %v", team, err)
+		}
+		if member {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+type ReporterConfig struct {
+	Slack *SlackReporterConfig `json:"slack,omitempty"`
+}
+
+type SlackReporterConfig struct {
+	Channel string `json:"channel"`
 }
 
 // Duration is a wrapper around time.Duration that parses times in either
@@ -380,6 +455,10 @@ type GCSConfiguration struct {
 	// builtin's and the local system's defaults.  This maps extensions
 	// to media types, for example: MediaTypes["log"] = "text/plain"
 	MediaTypes map[string]string `json:"mediaTypes,omitempty"`
+
+	// LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to GCS.
+	// This option is useful for testing jobs that use the pod-utilities without actually uploading.
+	LocalOutputDir string `json:"local_output_dir,omitempty"`
 }
 
 // ApplyDefault applies the defaults for GCSConfiguration decorations. If a field has a zero value,
@@ -421,6 +500,9 @@ func (g *GCSConfiguration) ApplyDefault(def *GCSConfiguration) *GCSConfiguration
 		merged.MediaTypes[extension] = mediaType
 	}
 
+	if merged.LocalOutputDir == "" {
+		merged.LocalOutputDir = def.LocalOutputDir
+	}
 	return &merged
 }
 
@@ -442,7 +524,11 @@ func (g *GCSConfiguration) Validate() error {
 
 // ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.
 type ProwJobStatus struct {
-	StartTime      metav1.Time  `json:"startTime,omitempty"`
+	// StartTime is equal to the creation time of the ProwJob
+	StartTime metav1.Time `json:"startTime,omitempty"`
+	// PendingTime is the timestamp for when the job moved from triggered to pending
+	PendingTime *metav1.Time `json:"pendingTime,omitempty"`
+	// CompletionTime is the timestamp for when the job goes to a final state
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
 	State          ProwJobState `json:"state,omitempty"`
 	Description    string       `json:"description,omitempty"`
@@ -535,6 +621,12 @@ type Refs struct {
 	// set, <root-dir>/src/github.com/org/repo will be
 	// used as the default.
 	PathAlias string `json:"path_alias,omitempty"`
+
+	// WorkDir defines if the location of the cloned
+	// repository will be used as the default working
+	// directory.
+	WorkDir bool `json:"workdir,omitempty"`
+
 	// CloneURI is the URI that is used to clone the
 	// repository. If unset, will default to
 	// `https://github.com/org/repo.git`.

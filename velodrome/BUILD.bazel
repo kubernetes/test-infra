@@ -1,3 +1,5 @@
+load("@py_deps//:requirements.bzl", "requirement")
+
 package(default_visibility = ["//visibility:public"])
 
 py_test(
@@ -7,9 +9,8 @@ py_test(
         ":configs",
     ],
     main = "config.py",
-    deps = [
-        "@yaml",
-    ],
+    python_version = "PY3",
+    deps = [requirement("ruamel.yaml")],
 )
 
 filegroup(

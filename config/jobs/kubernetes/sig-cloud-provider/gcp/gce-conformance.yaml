@@ -1,0 +1,31 @@
+periodics:
+- interval: 3h
+  name: ci-kubernetes-gce-conformance-latest
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
+    testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
+    testgrid-tab-name: Conformance - GCE - master
+    description: Runs conformance tests using kubetest against kubernetes master on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
+    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master

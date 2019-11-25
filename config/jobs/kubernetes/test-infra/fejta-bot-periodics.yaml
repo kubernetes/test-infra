@@ -3,9 +3,13 @@ periodics:
 - name: periodic-api-review-help
   interval: 1h
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Adds API review process description to kind/api-change PRs
+    testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190528-0d7c4b53a
+    - image: gcr.io/k8s-prow/commenter:v20191121-1ff2207db
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -45,9 +49,13 @@ periodics:
 - name: periodic-test-infra-cla
   interval: 1h
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Re-checks CLA context when CLA labels are missing
+    testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190528-0d7c4b53a
+    - image: gcr.io/k8s-prow/commenter:v20191121-1ff2207db
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -81,9 +89,13 @@ periodics:
 - name: periodic-test-infra-close
   interval: 1h
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Closes rotten issues after 30d of inactivity
+    testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190528-0d7c4b53a
+    - image: gcr.io/k8s-prow/commenter:v20191121-1ff2207db
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -118,9 +130,13 @@ periodics:
 - name: periodic-test-infra-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    testgrid-tab-name: retester
+    description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190528-0d7c4b53a
+    - image: gcr.io/k8s-prow/commenter:v20191121-1ff2207db
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -140,6 +156,7 @@ periodics:
         -label:needs-ok-to-test
         -label:"cncf-cla: no"
         repo:kubernetes/kubernetes
+        repo:kubernetes/test-infra
       - --token=/etc/token/bot-github-token
       - |-
         --comment=/retest
@@ -163,9 +180,13 @@ periodics:
 - name: periodic-test-infra-rotten
   interval: 1h
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Adds lifecycle/rotten to stale issues after 30d of inactivity
+    testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190528-0d7c4b53a
+    - image: gcr.io/k8s-prow/commenter:v20191121-1ff2207db
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -203,9 +224,13 @@ periodics:
 - name: periodic-test-infra-stale
   interval: 1h
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Adds lifecycle/stale to issues after 30d of inactivity
+    testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190528-0d7c4b53a
+    - image: gcr.io/k8s-prow/commenter:v20191121-1ff2207db
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -245,6 +270,9 @@ periodics:
   labels:
     preset-service-account: "true"
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
     - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5
@@ -256,7 +284,6 @@ periodics:
       - --org=kubernetes
       - --project=kubernetes
       - --token-file=/etc/token/bot-github-token
-      - --test-owners-csv=/test_owners.csv
       - --triage-window=1
       - --triage-count=10
       - --flakyjob-count=3
@@ -271,9 +298,13 @@ periodics:
 - name: periodic-enhancements-unfreeze
   interval: 30m
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: Prevents issues in `k/enhancements` from being marked as `lifecycle/frozen`y
+    testgrid-tab-name: enhancements-unfreeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20190528-0d7c4b53a
+    - image: gcr.io/k8s-prow/commenter:v20191121-1ff2207db
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -301,6 +332,10 @@ periodics:
 - name: periodic-secping
   interval: 24h
   decorate: true
+  annotations:
+    testgrid-dashboards: sig-testing-fejtabot
+    description: files bugs for SECURITY_CONTACTS
+    testgrid-tab-name: periodic-secping
   extra_refs:
   - base_ref: master
     org: jessfraz

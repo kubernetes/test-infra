@@ -43,21 +43,21 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The assign plugin assigns or requests reviews from users. Specific users can be assigned with the command '/assign @user1' or have reviews requested of them with the command '/cc @user1'. If no user is specified the commands default to targeting the user who created the command. Assignments and requested reviews can be removed in the same way that they are added by prefixing the commands with 'un'.",
+		Description: "The assign plugin assigns or requests reviews from users. Specific users can be assigned with the command '/assign @user1' or have reviews requested of them with the command '/cc @user1'. If no users are specified, the commands default to targeting the user who created the command. Assignments and requested reviews can be removed in the same way that they are added by prefixing the commands with 'un'.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[un]assign [[@]<username>...]",
-		Description: "Assigns an assignee to the PR",
+		Description: "Assigns assignee(s) to the PR",
 		Featured:    true,
-		WhoCanUse:   "Anyone can use the command, but the target user must be a member of the org that owns the repository.",
-		Examples:    []string{"/assign", "/unassign", "/assign @k8s-ci-robot"},
+		WhoCanUse:   "Anyone can use the command, but the target user(s) must be an org member, a repo collaborator, or should have previously commented on the issue or PR.",
+		Examples:    []string{"/assign", "/unassign", "/assign @spongebob", "/assign spongebob patrick"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[un]cc [[@]<username>...]",
 		Description: "Requests a review from the user(s).",
 		Featured:    true,
-		WhoCanUse:   "Anyone can use the command, but the target user must be a member of the org that owns the repository.",
-		Examples:    []string{"/cc", "/uncc", "/cc @k8s-ci-robot"},
+		WhoCanUse:   "Anyone can use the command, but the target user(s) must be a member of the org that owns the repository.",
+		Examples:    []string{"/cc", "/uncc", "/cc @spongebob", "/cc spongebob patrick"},
 	})
 	return pluginHelp, nil
 }
@@ -188,7 +188,7 @@ type handler struct {
 func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
 	org := e.Repo.Owner.Login
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can be assigned and that issues/PRs can only have 10 assignees at the same time.\nFor more information please see [the contributor guide](https://git.k8s.io/community/contributors/guide/#issue-assignment-in-github)", strings.Join(mu.Users, ", "), org, org)
+		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people), repo collaborators and people who have commented on this issue/PR can be assigned. Additionally, issues/PRs can only have 10 assignees at the same time.\nFor more information please see [the contributor guide](https://git.k8s.io/community/contributors/guide/#issue-assignment-in-github)", strings.Join(mu.Users, ", "), org, org)
 	}
 
 	return &handler{

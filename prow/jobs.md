@@ -2,13 +2,30 @@
 
 For a brief overview of how Prow runs jobs take a look at ["Life of a Prow Job"](/prow/life_of_a_prow_job.md).
 
+For a brief cookbook for jobs intended for [prow.k8s.io], please refer to
+[`config/jobs/README.md`](/config/jobs/README.md)
+
+Make sure prow has been [deployed] correctly:
+
+* The `horologium` component schedules periodic jobs.
+* The `hook` component schedules presubmit and postsubmit jobs, ensuring the repo:
+  - enabled `trigger` in [`plugins.yaml`]
+  - sends GitHub webhooks to prow.
+* The `plank` component schedules the pod requested by a prowjob.
+* The `crier` component reports status back to github.
+
 ## How to configure new jobs
 
-To configure a new job you'll need to add an entry into [config.yaml](/prow/config.yaml).
+To configure a new job you'll need to add an entry into [config.yaml](/config/prow/config.yaml).
 If you have [update-config](/prow/plugins/updateconfig) plugin deployed then the
 config will be automatically updated once the PR is merged, else you will need
 to run `make update-config`. This does not require redeploying any binaries,
-and will take effect within a minute.
+and will take effect within a few minutes.
+
+Prow requires you to have a basic understanding of kubernetes, such
+that you can define pods in yaml.  Please see kubernetes documentation
+for help here, for example the [Pod overview] and [PodSpec api
+reference].
 
 Periodic config looks like so:
 
@@ -17,6 +34,8 @@ periodics:
 - name: foo-job         # Names need not be unique, but must match the regex ^[A-Za-z0-9-._]+$
   decorate: true        # Enable Pod Utility decoration. (see below)
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
+  # Alternatively use a cron instead of an interval, for example:
+  # cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
   spec: {}              # Valid Kubernetes PodSpec.
 ```
 
@@ -70,6 +89,41 @@ that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs. If unspecified, the default configuration makes
 `/test <job-name>` trigger the job.
 
+## Presets
+
+[`Presets`] can be used to define commonly reused values for a subset of fields
+for PodSpecs and BuildSpecs. The subset of fields chosen was inspired by
+[PodPresets] which at time of writing are still in alpha. A preset config looks
+like:
+
+```yaml
+presets:
+- labels:                  # a job with these labels/values will have the preset applied
+    preset-foo-bar: "true" #   key:value pair must be unique among presets
+  env:                     # list of valid Kubernetes EnvVars
+  - name: FOO
+    value: BAR
+  volumes:                 # list of valid Kubernetes Volumes
+  - name: foo
+    emptyDir: {}
+  - name: bar
+    secret:
+      secretName: bar
+  volumeMounts:            # list of valid Kubernetes VolumeMounts
+  - name: foo
+    mountPath: /etc/foo
+  - name: bar
+    mountPath: /etc/bar
+    readOnly: true
+- env:                     # a preset with no labels is applied to all jobs
+  - name: BAZ
+    value: qux
+  volumes:
+    # etc...
+  volumeMounts:
+    # etc...
+```
+
 ## Standard Triggering and Execution Behavior for Jobs
 
 When configuring jobs, it is necessary to keep in mind the set of rules Prow has
@@ -85,7 +139,7 @@ rules for protecting those contexts on branches.
  1. jobs that run unconditionally and automatically. All jobs that set
      `always_run: true` fall into this set.
  2. jobs that run conditionally, but automatically. All jobs that set
-    `run_if_changed` to some value fall into this set. 
+    `run_if_changed` to some value fall into this set.
  3. jobs that run conditionally, but not automatically. All jobs that set
     `always_run: false` and do not set `run_if_changed` to any value fall
     into this set and require a human to trigger them with a command.
@@ -106,11 +160,11 @@ contains one or more of the following phrases:
    will be triggered unconditionally.
  - `/retest` : When posting `/retest`, two types of jobs will be triggered:
    - all jobs that have run and failed will run unconditionally
-   - any not-yet-executed automatically run jobs will run conditionally 
+   - any not-yet-executed automatically run jobs will run conditionally
  - `/test all` : When posting `/test all`, all automatically run jobs will run
    conditionally.
-   
-Note: is is possible to configure a job's `trigger` to match any of the above keywords
+
+Note: It is possible to configure a job's `trigger` to match any of the above keywords
 (`/retest` and/or `/test all`) but this behavior is not suggested as it will confuse
 developers that expect consistent behavior from these commands. More generally, it is
 possible to configure a job's `trigger` to match any command that is otherwise known
@@ -118,17 +172,21 @@ to Prow in some other context, like `/close`. It is similarly not suggested to d
 
 #### Posting GitHub Status Contexts
 
-Presubmit and postsubmit jobs that always run will always post a status context on GitHub to the commit under test, unless the job is configured with `skip_report: true`.
-Jobs that run conditionally but do not match the content of the pull request will _not_ post "Skipped" status contexts to the pull request.
-<!--- TODO(skuznets|fejta): remove mention of negative behavior by July --->
+Presubmit and postsubmit jobs post a status context to the GitHub
+commit under test once they start, unless the job is configured
+with `skip_report: true`.
 
-If a conditional job matched a pull request at some point in the past, ran and failed
-it will post a failed status context to the pull request. If the conditional job still
-matches the pull request, a `/retest` or `/test job-name` will re-trigger it and
-potentially update the failed context to passing. If the job no longer matches the pull
-request, you may still re-trigger it with `/test job-name`, but if it is no longer
-relevant to the pull request, use the `/skip` command to dismiss the status context on
-GitHub.
+Use a `/retest` or `/test job-name` to re-trigger the test and
+hopefully update the failed context to passing.
+
+If a job should no longer trigger on the pull request, use the
+`/skip` command to dismiss a failing status context (depends on
+`skip` plugin).
+
+Repo administrators can also `/override job-name` in case of emergency
+(depends on the `override` plugin).
+
+
 
 ### Requiring Job Statuses
 #### Requiring Jobs for Auto-Merge Through Tide
@@ -140,13 +198,13 @@ Tide will treat jobs in the following manner for merging:
  - conditionally run jobs with required status contexts are required to have passed on
    a pull request to merge if the job currently matches the pull request.
  - jobs with optional status contexts are ignored when merging
- 
+
 In order to set a job's context to be optional, set `optional: true` on the job. If it
 is required to not post the results of the job to GitHub whatsoever, the job may be set
-to be optional and silent by setting `skip_report: true`. It is valid to set both of 
+to be optional and silent by setting `skip_report: true`. It is valid to set both of
 these options at the same time.
 
-#### Protecting Status Contexts 
+#### Protecting Status Contexts
 
 The branch protection rules will only enforce the presence of jobs that run unconditionally
 and have required status contexts. As conditionally-run jobs may or may not post a status
@@ -205,3 +263,19 @@ Batch Job:
 ## Testing a new job
 
 See ["How to test a ProwJob"](/prow/build_test_update.md#How-to-test-a-ProwJob).
+
+## Badges
+
+Prow can display badges that signal whether jobs are passing ([example](https://prow.k8s.io/badge.svg?jobs=post-test-infra-bazel)).
+
+The format to send your `deck` URL is `/badge.svg?jobs=single-job-name` or `/badge.svg?jobs=common-job-prefix-*`.
+
+<!-- links -->
+
+[Pod overview]: https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/#pod-templates
+[PodPresets]: https://kubernetes.io/docs/concepts/workloads/pods/podpreset/
+[PodSpec api reference]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.16/#podspec-v1-core
+[`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
+[`plugins.yaml`]: /config/prow/plugins.yaml
+[deployed]: https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md
+

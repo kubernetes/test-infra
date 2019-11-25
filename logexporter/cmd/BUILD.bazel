@@ -16,7 +16,7 @@ go_library(
     name = "go_default_library",
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/logexporter/cmd",
-    deps = ["//vendor/github.com/golang/glog:go_default_library"],
+    deps = ["@com_github_golang_glog//:go_default_library"],
 )
 
 filegroup(

@@ -17,8 +17,8 @@ limitations under the License.
 package statusreconciler
 
 import (
+	"context"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -95,6 +95,10 @@ type kubeProwJobTriggerer struct {
 
 func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs, skippedJobs []config.Presubmit) error {
 	org, repo := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name
+	baseSHA, err := t.githubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+	if err != nil {
+		return fmt.Errorf("failed to get baseSHA: %v", err)
+	}
 	return trigger.RunAndSkipJobs(
 		trigger.Client{
 			GitHubClient:  t.githubClient,
@@ -102,7 +106,7 @@ func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs,
 			Config:        t.configAgent.Config(),
 			Logger:        logrus.WithField("client", "trigger"),
 		},
-		pr, requestedJobs, skippedJobs, "none", t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
+		pr, baseSHA, requestedJobs, skippedJobs, "none", *t.pluginAgent.Config().TriggerFor(org, repo).ElideSkippedContexts,
 	)
 }
 
@@ -141,7 +145,7 @@ type Controller struct {
 
 // Run monitors the incoming configuration changes to determine when statuses need to be
 // reconciled on PRs in flight when blocking presubmits change
-func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.Delta) {
+func (c *Controller) Run(ctx context.Context, changes <-chan config.Delta) {
 	for {
 		select {
 		case change := <-changes:
@@ -150,7 +154,7 @@ func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.Delta) {
 				logrus.WithError(err).Error("Error reconciling statuses.")
 			}
 			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Statuses reconciled")
-		case <-stop:
+		case <-ctx.Done():
 			logrus.Info("status-reconciler is shutting down...")
 			return
 		}
@@ -159,21 +163,21 @@ func (c *Controller) Run(stop <-chan os.Signal, changes <-chan config.Delta) {
 
 func (c *Controller) reconcile(delta config.Delta) error {
 	var errors []error
-	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.Presubmits, delta.After.Presubmits)); err != nil {
+	if err := c.triggerNewPresubmits(addedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)
 		}
 	}
 
-	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.Presubmits, delta.After.Presubmits)); err != nil {
+	if err := c.retireRemovedContexts(removedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)
 		}
 	}
 
-	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.Presubmits, delta.After.Presubmits)); err != nil {
+	if err := c.updateMigratedContexts(migratedBlockingPresubmits(delta.Before.PresubmitsStatic, delta.After.PresubmitsStatic)); err != nil {
 		errors = append(errors, err)
 		if !c.continueOnError {
 			return errorutil.NewAggregate(errors...)

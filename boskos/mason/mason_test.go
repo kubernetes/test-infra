@@ -18,8 +18,6 @@ package mason
 
 import (
 	"fmt"
-	"reflect"
-	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -33,6 +31,7 @@ import (
 
 var (
 	errConstruct = fmt.Errorf("failed to construct")
+	testTTL      = time.Millisecond
 )
 
 const (
@@ -96,12 +95,11 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 }
 
 // Create a fake client
-func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.ResourcesConfig, chan releasedResource) {
+func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, chan releasedResource) {
 	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
-	var configs []common.ResourcesConfig
-	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), "")
-	r, _ := ranch.NewRanch("", s)
+	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), storage.NewMemoryStorage(), "")
+	r, _ := ranch.NewRanch("", s, testTTL)
 
 	for rtype, c := range tc {
 		for i := 0; i < c.count; i++ {
@@ -115,12 +113,12 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.Resource
 				res.State = common.Dirty
 				if _, ok := configNames[rtype]; !ok {
 					configNames[rtype] = true
-					configs = append(configs, common.ResourcesConfig{
+					s.AddDynamicResourceLifeCycle(common.DynamicResourceLifeCycle{
 						Config: common.ConfigType{
 							Type:    fakeConfigType,
 							Content: emptyContent,
 						},
-						Name:  rtype,
+						Type:  rtype,
 						Needs: *c.resourceNeeds,
 					})
 				}
@@ -128,11 +126,11 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.Resource
 			s.AddResource(res)
 		}
 	}
-	return s, NewClient(&fakeBoskos{ranch: r, releasedResources: names}), configs, names
+	return s, NewClient(&fakeBoskos{ranch: r, releasedResources: names}), names
 }
 
 func (fb *fakeBoskos) Acquire(rtype, state, dest string) (*common.Resource, error) {
-	return fb.ranch.Acquire(rtype, state, dest, owner)
+	return fb.ranch.Acquire(rtype, state, dest, owner, "")
 }
 
 func (fb *fakeBoskos) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {
@@ -176,15 +174,14 @@ func TestRecycleLeasedResources(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs, _ := createFakeBoskos(tc)
+	rStorage, mClient, _ := createFakeBoskos(tc)
 	res1, _ := rStorage.GetResource("type1_0")
 	res1.State = "type2_0"
 	rStorage.UpdateResource(res1)
 	res2, _ := rStorage.GetResource("type2_0")
 	res2.UserData.Set(LeasedResources, &[]string{"type1_0"})
 	rStorage.UpdateResource(res2)
-	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
-	m.storage.SyncConfigs(configs)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	ctx, cancel := context.WithCancel(context.Background())
 	m.cancel = cancel
@@ -219,9 +216,8 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs, _ := createFakeBoskos(tc)
-	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
-	m.storage.SyncConfigs(configs)
+	rStorage, mClient, _ := createFakeBoskos(tc)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	ctx, cancel := context.WithCancel(context.Background())
 	m.cancel = cancel
@@ -281,9 +277,8 @@ func TestCleanOne(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(tt *testing.T) {
-			rStorage, mClient, configs, _ := createFakeBoskos(config)
-			m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
-			m.storage.SyncConfigs(configs)
+			rStorage, mClient, _ := createFakeBoskos(config)
+			m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 			m.RegisterConfigConverter(fakeConfigType, tc.configConvert)
 			masonRes, err := m.client.Acquire("type2", common.Dirty, common.Cleaning)
 			if err != nil {
@@ -339,11 +334,10 @@ func TestFulfillOne(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs, _ := createFakeBoskos(tc)
-	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
-	m.storage.SyncConfigs(configs)
+	rStorage, mClient, _ := createFakeBoskos(tc)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	res, _ := mClient.basic.Acquire("type2", common.Dirty, common.Cleaning)
-	conf, err := m.storage.GetConfig("type2")
+	conf, err := m.storage.GetDynamicResourceLifeCycle("type2")
 	if err != nil {
 		t.Error("failed to get config")
 	}
@@ -397,9 +391,8 @@ func TestMason(t *testing.T) {
 			count: count,
 		},
 	}
-	rStorage, mClient, configs, releasedResources := createFakeBoskos(tc)
-	m := NewMason(10, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
-	m.storage.SyncConfigs(configs)
+	rStorage, mClient, releasedResources := createFakeBoskos(tc)
+	m := NewMason(10, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	m.Start()
 	timeout := time.NewTicker(5 * time.Second).C
@@ -486,9 +479,8 @@ func TestMasonStartStop(t *testing.T) {
 			count: 10,
 		},
 	}
-	_, mClient, configs, _ := createFakeBoskos(tc)
-	m := NewMason(5, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
-	m.storage.SyncConfigs(configs)
+	rStorage, mClient, _ := createFakeBoskos(tc)
+	m := NewMason(5, mClient.basic, defaultWaitPeriod, defaultWaitPeriod, rStorage)
 	m.RegisterConfigConverter(fakeConfigType, failingConfigConverter)
 	m.Start()
 	done := make(chan bool)
@@ -504,222 +496,11 @@ func TestMasonStartStop(t *testing.T) {
 }
 
 func TestConfig(t *testing.T) {
-	resources, err := ranch.ParseConfig("test-resources.yaml")
+	boskosConfig, err := common.ParseConfig("test-resources.yaml")
 	if err != nil {
 		t.Error(err)
 	}
-	configs, err := ParseConfig("test-configs.yaml")
-	if err != nil {
-		t.Error(err)
-	}
-	if err := ValidateConfig(configs, resources); err == nil {
-		t.Error(err)
-	}
-}
-
-func makeFakeConfig(name, cType, content string, needs int) common.ResourcesConfig {
-	c := common.ResourcesConfig{
-		Name:  name,
-		Needs: common.ResourceNeeds{},
-		Config: common.ConfigType{
-			Type:    cType,
-			Content: content,
-		},
-	}
-	for i := 0; i < needs; i++ {
-		c.Needs[fmt.Sprintf("type_%d", i)] = i
-	}
-	return c
-}
-
-func TestSyncConfig(t *testing.T) {
-	var testcases = []struct {
-		name      string
-		oldConfig []common.ResourcesConfig
-		newConfig []common.ResourcesConfig
-		expect    []common.ResourcesConfig
-	}{
-		{
-			name: "empty",
-		},
-		{
-			name: "deleteAll",
-			oldConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-		},
-		{
-			name: "new",
-			newConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-			expect: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-		},
-		{
-			name: "noChange",
-			oldConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-			newConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-			expect: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-		},
-		{
-			name: "update",
-			oldConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-			newConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType2", "", 2),
-				makeFakeConfig("config2", "fakeType", "something", 3),
-				makeFakeConfig("config3", "fakeType", "", 5),
-			},
-			expect: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType2", "", 2),
-				makeFakeConfig("config2", "fakeType", "something", 3),
-				makeFakeConfig("config3", "fakeType", "", 5),
-			},
-		},
-		{
-			name: "delete",
-			oldConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType", "", 2),
-				makeFakeConfig("config2", "fakeType", "", 3),
-				makeFakeConfig("config3", "fakeType", "", 4),
-			},
-			newConfig: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType2", "", 2),
-				makeFakeConfig("config3", "fakeType", "", 5),
-			},
-			expect: []common.ResourcesConfig{
-				makeFakeConfig("config1", "fakeType2", "", 2),
-				makeFakeConfig("config3", "fakeType", "", 5),
-			},
-		},
-	}
-
-	for _, tc := range testcases {
-		s := newStorage(storage.NewMemoryStorage())
-		s.SyncConfigs(tc.newConfig)
-		configs, err := s.GetConfigs()
-		if err != nil {
-			t.Errorf("failed to get resources")
-			continue
-		}
-		sort.Stable(common.ResourcesConfigByName(configs))
-		sort.Stable(common.ResourcesConfigByName(tc.expect))
-		if !reflect.DeepEqual(configs, tc.expect) {
-			t.Errorf("Test %v: got %v, expect %v", tc.name, configs, tc.expect)
-		}
-	}
-}
-
-func TestGetConfig(t *testing.T) {
-	var testcases = []struct {
-		name, configName string
-		exists           bool
-		configs          []common.ResourcesConfig
-	}{
-		{
-			name:       "exists",
-			exists:     true,
-			configName: "test",
-			configs: []common.ResourcesConfig{
-				{
-					Needs: common.ResourceNeeds{"type1": 1, "type2": 2},
-					Config: common.ConfigType{
-						Type:    "type3",
-						Content: "content",
-					},
-					Name: "test",
-				},
-			},
-		},
-		{
-			name:       "noConfig",
-			exists:     false,
-			configName: "test",
-		},
-		{
-			name:       "existsMultipleConfigs",
-			exists:     true,
-			configName: "test1",
-			configs: []common.ResourcesConfig{
-				{
-					Needs: common.ResourceNeeds{"type1": 1, "type2": 2},
-					Config: common.ConfigType{
-						Type:    "type3",
-						Content: "content",
-					},
-					Name: "test",
-				},
-				{
-					Needs: common.ResourceNeeds{"type1": 1, "type2": 2},
-					Config: common.ConfigType{
-						Type:    "type3",
-						Content: "content",
-					},
-					Name: "test1",
-				},
-			},
-		},
-		{
-			name:       "noExistMultipleConfigs",
-			exists:     false,
-			configName: "test2",
-			configs: []common.ResourcesConfig{
-				{
-					Needs: common.ResourceNeeds{"type1": 1, "type2": 2},
-					Config: common.ConfigType{
-						Type:    "type3",
-						Content: "content",
-					},
-					Name: "test",
-				},
-				{
-					Needs: common.ResourceNeeds{"type1": 1, "type2": 2},
-					Config: common.ConfigType{
-						Type:    "type3",
-						Content: "content",
-					},
-					Name: "test1",
-				},
-			},
-		},
-	}
-	for _, tc := range testcases {
-		s := newStorage(storage.NewMemoryStorage())
-		for _, config := range tc.configs {
-			s.AddConfig(config)
-		}
-		config, err := s.GetConfig(tc.configName)
-		if !tc.exists {
-			if err == nil {
-				t.Error("client should return an error")
-			}
-		} else {
-			if config.Name != tc.configName {
-				t.Error("config name should match")
-			}
-		}
+	if err := common.ValidateConfig(boskosConfig); err == nil {
+		t.Error(fmt.Errorf("should have failed since there is more type2 than type1 resources"))
 	}
 }

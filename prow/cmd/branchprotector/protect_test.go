@@ -75,10 +75,13 @@ func TestOptions_Validate(t *testing.T) {
 }
 
 type fakeClient struct {
-	repos    map[string][]github.Repo
-	branches map[string][]github.Branch
-	deleted  map[string]bool
-	updated  map[string]github.BranchProtectionRequest
+	repos             map[string][]github.Repo
+	branches          map[string][]github.Branch
+	deleted           map[string]bool
+	updated           map[string]github.BranchProtectionRequest
+	branchProtections map[string]github.BranchProtection
+	collaborators     []github.User
+	teams             []github.Team
 }
 
 func (c fakeClient) GetRepo(org string, repo string) (github.Repo, error) {
@@ -126,6 +129,14 @@ func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.
 	return b, nil
 }
 
+func (c *fakeClient) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
+	ctx := org + "/" + repo + "=" + branch
+	if bp, ok := c.branchProtections[ctx]; ok {
+		return &bp, nil
+	}
+	return nil, nil
+}
+
 func (c *fakeClient) UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error {
 	if branch == "error" {
 		return errors.New("failed to update branch protection")
@@ -148,6 +159,14 @@ func (c *fakeClient) RemoveBranchProtection(org, repo, branch string) error {
 	ctx := org + "/" + repo + "=" + branch
 	c.deleted[ctx] = true
 	return nil
+}
+
+func (c *fakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
+	return c.collaborators, nil
+}
+
+func (c *fakeClient) ListRepoTeams(org, repo string) ([]github.Team, error) {
+	return c.teams, nil
 }
 
 func TestConfigureBranches(t *testing.T) {
@@ -259,15 +278,20 @@ func split(branch string) (string, string, string) {
 
 func TestProtect(t *testing.T) {
 	yes := true
+	no := false
 
 	cases := []struct {
-		name             string
-		branches         []string
-		startUnprotected bool
-		config           string
-		archived         string
-		expected         []requirements
-		errors           int
+		name                   string
+		branches               []string
+		startUnprotected       bool
+		config                 string
+		archived               string
+		expected               []requirements
+		branchProtections      map[string]github.BranchProtection
+		collaborators          []github.User
+		teams                  []github.Team
+		skipVerifyRestrictions bool
+		errors                 int
 	}{
 		{
 			name: "nothing",
@@ -293,22 +317,28 @@ branch-protection:
 `,
 			expected: []requirements{
 				{
-					Org:     "cfgdef",
-					Repo:    "repo1",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "cfgdef",
-					Repo:    "repo1",
-					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "cfgdef",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "cfgdef",
-					Repo:    "repo2",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "cfgdef",
+					Repo:   "repo2",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 			},
 		},
@@ -325,10 +355,12 @@ branch-protection:
 `,
 			expected: []requirements{
 				{
-					Org:     "this",
-					Repo:    "yes",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "this",
+					Repo:   "yes",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
 					Org:     "that",
@@ -337,6 +369,7 @@ branch-protection:
 					Request: nil,
 				},
 			},
+			branchProtections: map[string]github.BranchProtection{"that/no=master": {}},
 		},
 		{
 			name:     "protect all repos when protection configured at org level",
@@ -358,16 +391,19 @@ branch-protection:
 					Repo:   "test-infra",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
 						RequiredStatusChecks: &github.RequiredStatusChecks{
 							Contexts: []string{"hello-world"},
 						},
 					},
 				},
 				{
-					Org:     "kubernetes",
-					Repo:    "publishing-bot",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "kubernetes",
+					Repo:   "publishing-bot",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 			},
 		},
@@ -428,16 +464,20 @@ branch-protection:
 `,
 			expected: []requirements{
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
 					Org:     "org",
@@ -446,6 +486,7 @@ branch-protection:
 					Request: nil,
 				},
 			},
+			branchProtections: map[string]github.BranchProtection{"org/skip=master": {}},
 		},
 		{
 			name:     "protect org but skip a repo due to archival",
@@ -460,16 +501,20 @@ branch-protection:
 			archived: "skip",
 			expected: []requirements{
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 				{
-					Org:     "org",
-					Repo:    "repo1",
-					Branch:  "branch",
-					Request: &github.BranchProtectionRequest{},
+					Org:    "org",
+					Repo:   "repo1",
+					Branch: "branch",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
 				},
 			},
 		},
@@ -494,6 +539,7 @@ branch-protection:
 					Repo:   "repo",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
 						RequiredStatusChecks: &github.RequiredStatusChecks{
 							Contexts: []string{"duplicate-context", "hello-world"},
 						},
@@ -532,6 +578,7 @@ branch-protection:
 					Repo:   "repo",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
 						RequiredStatusChecks: &github.RequiredStatusChecks{
 							Contexts: []string{"config-presubmit", "org-presubmit", "repo-presubmit", "branch-presubmit"},
 						},
@@ -542,6 +589,24 @@ branch-protection:
 		{
 			name:     "append pushers",
 			branches: []string{"org/repo=master"},
+			teams: []github.Team{
+				{
+					Slug:       "config-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "org-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "repo-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "branch-team",
+					Permission: github.RepoPush,
+				},
+			},
 			config: `
 branch-protection:
   protect: true
@@ -570,7 +635,8 @@ branch-protection:
 					Repo:   "repo",
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
-						Restrictions: &github.Restrictions{
+						EnforceAdmins: &no,
+						Restrictions: &github.RestrictionsRequest{
 							Users: &[]string{},
 							Teams: &[]string{"config-team", "org-team", "repo-team", "branch-team"},
 						},
@@ -581,6 +647,22 @@ branch-protection:
 		{
 			name:     "all modern fields",
 			branches: []string{"all/modern=master"},
+			collaborators: []github.User{
+				{
+					Login:       "cindy",
+					Permissions: github.RepoPermissions{Push: true},
+				},
+			},
+			teams: []github.Team{
+				{
+					Slug:       "config-team",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "org-team",
+					Permission: github.RepoPush,
+				},
+			},
 			config: `
 branch-protection:
   protect: true
@@ -625,16 +707,16 @@ branch-protection:
 							Strict:   true,
 							Contexts: []string{"config-presubmit", "org-presubmit"},
 						},
-						RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+						RequiredPullRequestReviews: &github.RequiredPullRequestReviewsRequest{
 							DismissStaleReviews:          false,
 							RequireCodeOwnerReviews:      true,
 							RequiredApprovingReviewCount: 3,
-							DismissalRestrictions: github.Restrictions{
+							DismissalRestrictions: github.RestrictionsRequest{
 								Users: &[]string{"bob", "jane"},
 								Teams: &[]string{"oncall", "sres"},
 							},
 						},
-						Restrictions: &github.Restrictions{
+						Restrictions: &github.RestrictionsRequest{
 							Users: &[]string{"cindy"},
 							Teams: &[]string{"config-team", "org-team"},
 						},
@@ -674,6 +756,7 @@ branch-protection:
 					Branch: "unprotected",
 				},
 			},
+			branchProtections: map[string]github.BranchProtection{"parent/child=unprotected": {}},
 		},
 		{
 			name:     "do not unprotect unprotected",
@@ -690,10 +773,240 @@ branch-protection:
 			startUnprotected: true,
 			expected: []requirements{
 				{
-					Org:     "protect",
-					Repo:    "update",
+					Org:    "protect",
+					Repo:   "update",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+					},
+				},
+			},
+		},
+		{
+			name:     "do not make update request if the branch is already up-to-date",
+			branches: []string{"kubernetes/test-infra=master"},
+			collaborators: []github.User{
+				{
+					Login:       "cindy",
+					Permissions: github.RepoPermissions{Push: true},
+				},
+			},
+			teams: []github.Team{
+				{
+					Slug:       "config-team",
+					Permission: github.RepoPush,
+				},
+			},
+			config: `
+branch-protection:
+  enforce_admins: true
+  required_status_checks:
+    contexts:
+    - config-presubmit
+    strict: true
+  required_pull_request_reviews:
+    required_approving_review_count: 3
+    dismiss_stale: false
+    require_code_owner_reviews: true
+    dismissal_restrictions:
+      users:
+      - bob
+      - jane
+      teams:
+      - oncall
+      - sres
+  restrictions:
+    teams:
+    - config-team
+    users:
+    - cindy
+  protect: true
+  orgs:
+    kubernetes:
+      repos:
+        test-infra:
+`,
+			branchProtections: map[string]github.BranchProtection{
+				"kubernetes/test-infra=master": {
+					EnforceAdmins: github.EnforceAdmins{Enabled: true},
+					RequiredStatusChecks: &github.RequiredStatusChecks{
+						Strict:   true,
+						Contexts: []string{"config-presubmit"},
+					},
+					RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+						DismissStaleReviews:          false,
+						RequireCodeOwnerReviews:      true,
+						RequiredApprovingReviewCount: 3,
+						DismissalRestrictions: &github.Restrictions{
+							Users: []github.User{{Login: "bob"}, {Login: "jane"}},
+							Teams: []github.Team{{Slug: "oncall"}, {Slug: "sres"}},
+						},
+					},
+					Restrictions: &github.Restrictions{
+						Users: []github.User{{Login: "cindy"}},
+						Teams: []github.Team{{Slug: "config-team"}},
+					},
+				},
+			},
+		},
+		{
+			name:     "make request if branch protection is present, but out of date",
+			branches: []string{"kubernetes/test-infra=master"},
+			config: `
+branch-protection:
+  enforce_admins: true
+  required_pull_request_reviews:
+    required_approving_review_count: 3
+  protect: true
+  orgs:
+    kubernetes:
+      repos:
+        test-infra:
+`,
+			branchProtections: map[string]github.BranchProtection{
+				"kubernetes/test-infra=master": {
+					EnforceAdmins: github.EnforceAdmins{Enabled: true},
+					RequiredStatusChecks: &github.RequiredStatusChecks{
+						Strict:   true,
+						Contexts: []string{"config-presubmit"},
+					},
+				},
+			},
+			expected: []requirements{
+				{
+					Org:    "kubernetes",
+					Repo:   "test-infra",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &yes,
+						RequiredPullRequestReviews: &github.RequiredPullRequestReviewsRequest{
+							RequiredApprovingReviewCount: 3,
+						},
+					},
+				},
+			},
+		},
+		{
+			name:     "excluded branches are not protected",
+			branches: []string{"kubernetes/test-infra=master", "kubernetes/test-infra=skip"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    kubernetes:
+      repos:
+        test-infra:
+          exclude:
+          - sk.*
+`,
+
+			expected: []requirements{
+				{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
 					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
+					Request: &github.BranchProtectionRequest{EnforceAdmins: &no},
+				},
+			},
+		},
+		{
+			name:     "org and repo level branch exclusions are combined",
+			branches: []string{"kubernetes/test-infra=master", "kubernetes/test-infra=skip", "kubernetes/test-infra=foobar1"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    kubernetes:
+      exclude:
+      - foo.*
+      repos:
+        test-infra:
+          exclude:
+          - sk.*
+`,
+			expected: []requirements{
+				{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{EnforceAdmins: &no},
+				},
+			},
+		},
+		{
+			name:     "explicitly specified branches are not affected by Exclude",
+			branches: []string{"kubernetes/test-infra=master"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    kubernetes:
+      exclude:
+      - master.*
+      repos:
+        test-infra:
+          branches:
+            master:
+`,
+			expected: []requirements{
+				{
+					Org:     "kubernetes",
+					Repo:    "test-infra",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{EnforceAdmins: &no},
+				},
+			},
+		},
+		{
+			name:     "do not make update request if the team or collaborator is not authorized",
+			branches: []string{"org/unauthorized-collaborator=master", "org/unauthorized-team=master"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    org:
+      repos:
+        unauthorized-collaborator:
+          restrictions:
+            users:
+            - cindy
+        unauthorized-team:
+          restrictions:
+            teams:
+            - config-team
+`,
+			errors: 1,
+		},
+		{
+			name:     "make request for unauthorized collaborators/teams if the verify-restrictions feature flag is not set",
+			branches: []string{"org/unauthorized=master"},
+			config: `
+branch-protection:
+  restrictions:
+    teams:
+    - config-team
+    users:
+    - cindy
+  protect: true
+  orgs:
+    org:
+      repos:
+        unauthorized:
+          protect: true
+`,
+			skipVerifyRestrictions: true,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "unauthorized",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+						Restrictions: &github.RestrictionsRequest{
+							Users: &[]string{"cindy"},
+							Teams: &[]string{"config-team"},
+						},
+					},
 				},
 			},
 		},
@@ -717,8 +1030,11 @@ branch-protection:
 				repos[org][repo] = true
 			}
 			fc := fakeClient{
-				branches: branches,
-				repos:    map[string][]github.Repo{},
+				branches:          branches,
+				repos:             map[string][]github.Repo{},
+				branchProtections: tc.branchProtections,
+				collaborators:     tc.collaborators,
+				teams:             tc.teams,
 			}
 			for org, r := range repos {
 				for rname := range r {
@@ -731,12 +1047,13 @@ branch-protection:
 				t.Fatalf("failed to parse config: %v", err)
 			}
 			p := protector{
-				client:         &fc,
-				cfg:            &cfg,
-				errors:         Errors{},
-				updates:        make(chan requirements),
-				done:           make(chan []error),
-				completedRepos: make(map[string]bool),
+				client:             &fc,
+				cfg:                &cfg,
+				errors:             Errors{},
+				updates:            make(chan requirements),
+				done:               make(chan []error),
+				completedRepos:     make(map[string]bool),
+				verifyRestrictions: !tc.skipVerifyRestrictions,
 			}
 			go func() {
 				p.protect()
@@ -793,32 +1110,35 @@ func fixup(r *requirements) {
 }
 
 func TestIgnoreArchivedRepos(t *testing.T) {
+	testBranches := []string{"organization/repository=branch", "organization/archived=branch"}
 	repos := map[string]map[string]bool{}
 	branches := map[string][]github.Branch{}
-	org, repo, branch := "organization", "repository", "branch"
-	k := org + "/" + repo
-	branches[k] = append(branches[k], github.Branch{
-		Name: branch,
-	})
-	r := repos[org]
-	if r == nil {
-		repos[org] = make(map[string]bool)
+	for _, b := range testBranches {
+		org, repo, branch := split(b)
+		k := org + "/" + repo
+		branches[k] = append(branches[k], github.Branch{
+			Name: branch,
+		})
+		r := repos[org]
+		if r == nil {
+			repos[org] = make(map[string]bool)
+		}
+		repos[org][repo] = true
 	}
-	repos[org][repo] = true
 	fc := fakeClient{
 		branches: branches,
 		repos:    map[string][]github.Repo{},
 	}
 	for org, r := range repos {
 		for rname := range r {
-			fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: true})
+			fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Archived: rname == "archived"})
 		}
 	}
 
 	var cfg config.Config
 	if err := yaml.Unmarshal([]byte(`
 branch-protection:
-  protect-by-default: true
+  protect: true
   orgs:
     organization:
 `), &cfg); err != nil {
@@ -845,7 +1165,662 @@ branch-protection:
 	for r := range p.updates {
 		actual = append(actual, r)
 	}
-	if len(actual) != 0 {
-		t.Errorf("expected no updates, got: %v", actual)
+	if len(actual) != 1 {
+		t.Errorf("expected one update, got: %v", actual)
+	}
+}
+
+func TestIgnorePrivateSecurityRepos(t *testing.T) {
+	testBranches := []string{"organization/repository=branch", "organization/repo-ghsa-1234abcd=branch"}
+	repos := map[string]map[string]bool{}
+	branches := map[string][]github.Branch{}
+	for _, b := range testBranches {
+		org, repo, branch := split(b)
+		k := org + "/" + repo
+		branches[k] = append(branches[k], github.Branch{
+			Name: branch,
+		})
+		r := repos[org]
+		if r == nil {
+			repos[org] = make(map[string]bool)
+		}
+		repos[org][repo] = true
+	}
+	fc := fakeClient{
+		branches: branches,
+		repos:    map[string][]github.Repo{},
+	}
+	for org, r := range repos {
+		for rname := range r {
+			fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname, Private: true})
+		}
+	}
+
+	var cfg config.Config
+	if err := yaml.Unmarshal([]byte(`
+branch-protection:
+  protect: true
+  orgs:
+    organization:
+`), &cfg); err != nil {
+		t.Fatalf("failed to parse config: %v", err)
+	}
+	p := protector{
+		client:         &fc,
+		cfg:            &cfg,
+		errors:         Errors{},
+		updates:        make(chan requirements),
+		done:           make(chan []error),
+		completedRepos: make(map[string]bool),
+	}
+	go func() {
+		p.protect()
+		close(p.updates)
+	}()
+
+	protectionErrors := p.errors.errs
+	if len(protectionErrors) != 0 {
+		t.Errorf("expected no errors, got %d errors: %v", len(protectionErrors), protectionErrors)
+	}
+	var actual []requirements
+	for r := range p.updates {
+		actual = append(actual, r)
+	}
+	if len(actual) != 1 {
+		t.Errorf("expected one update, got: %v", actual)
+	}
+}
+
+func TestEqualBranchProtection(t *testing.T) {
+	yes := true
+	var testCases = []struct {
+		name     string
+		state    *github.BranchProtection
+		request  *github.BranchProtectionRequest
+		expected bool
+	}{
+		{
+			name:     "neither set matches",
+			expected: true,
+		},
+		{
+			name:     "request unset doesn't match",
+			state:    &github.BranchProtection{},
+			expected: false,
+		},
+		{
+			name:     "state unset doesn't match",
+			request:  &github.BranchProtectionRequest{},
+			expected: false,
+		},
+		{
+			name: "matching requests work",
+			state: &github.BranchProtection{
+				RequiredStatusChecks: &github.RequiredStatusChecks{
+					Strict:   true,
+					Contexts: []string{"a", "b", "c"},
+				},
+				EnforceAdmins: github.EnforceAdmins{
+					Enabled: true,
+				},
+				RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+					DismissStaleReviews:          true,
+					RequireCodeOwnerReviews:      true,
+					RequiredApprovingReviewCount: 1,
+					DismissalRestrictions: &github.Restrictions{
+						Users: []github.User{{Login: "user"}},
+						Teams: []github.Team{{Slug: "team"}},
+					},
+				},
+				Restrictions: &github.Restrictions{
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
+			},
+			request: &github.BranchProtectionRequest{
+				RequiredStatusChecks: &github.RequiredStatusChecks{
+					Strict:   true,
+					Contexts: []string{"a", "b", "c"},
+				},
+				EnforceAdmins: &yes,
+				RequiredPullRequestReviews: &github.RequiredPullRequestReviewsRequest{
+					DismissStaleReviews:          true,
+					RequireCodeOwnerReviews:      true,
+					RequiredApprovingReviewCount: 1,
+					DismissalRestrictions: github.RestrictionsRequest{
+						Users: &[]string{"user"},
+						Teams: &[]string{"team"},
+					},
+				},
+				Restrictions: &github.RestrictionsRequest{
+					Users: &[]string{"user"},
+					Teams: &[]string{"team"},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalBranchProtections(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualStatusChecks(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		state    *github.RequiredStatusChecks
+		request  *github.RequiredStatusChecks
+		expected bool
+	}{
+		{
+			name:     "neither set matches",
+			expected: true,
+		},
+		{
+			name:     "request unset doesn't match",
+			state:    &github.RequiredStatusChecks{},
+			expected: false,
+		},
+		{
+			name:     "state unset doesn't match",
+			request:  &github.RequiredStatusChecks{},
+			expected: false,
+		},
+		{
+			name: "matching requests work",
+			state: &github.RequiredStatusChecks{
+				Strict:   true,
+				Contexts: []string{"a", "b", "c"},
+			},
+
+			request: &github.RequiredStatusChecks{
+				Strict:   true,
+				Contexts: []string{"a", "b", "c"},
+			},
+			expected: true,
+		},
+		{
+			name: "not matching on strict",
+			state: &github.RequiredStatusChecks{
+				Strict:   true,
+				Contexts: []string{"a", "b", "c"},
+			},
+
+			request: &github.RequiredStatusChecks{
+				Strict:   false,
+				Contexts: []string{"a", "b", "c"},
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on contexts",
+			state: &github.RequiredStatusChecks{
+				Strict:   true,
+				Contexts: []string{"a", "b", "d"},
+			},
+
+			request: &github.RequiredStatusChecks{
+				Strict:   true,
+				Contexts: []string{"a", "b", "c"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalRequiredStatusChecks(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualStringSlices(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		state    *[]string
+		request  *[]string
+		expected bool
+	}{
+		{
+			name:     "no slices",
+			expected: true,
+		},
+		{
+			name:     "a unset doesn't match",
+			state:    &[]string{},
+			expected: false,
+		},
+		{
+			name:     "b unset doesn't match",
+			request:  &[]string{},
+			expected: false,
+		},
+		{
+			name:     "matching slices work",
+			state:    &[]string{"a", "b", "c"},
+			request:  &[]string{"a", "b", "c"},
+			expected: true,
+		},
+		{
+			name:     "ordering doesn't matter",
+			state:    &[]string{"a", "c", "b"},
+			request:  &[]string{"a", "b", "c"},
+			expected: true,
+		},
+		{
+			name:     "unequal slices don't match",
+			state:    &[]string{"a", "b"},
+			request:  &[]string{"a", "b", "c"},
+			expected: false,
+		},
+		{
+			name:     "disoint slices don't match",
+			state:    &[]string{"e", "f", "g"},
+			request:  &[]string{"a", "b", "c"},
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalStringSlices(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualAdminEnforcement(t *testing.T) {
+	yes, no := true, false
+	var testCases = []struct {
+		name     string
+		state    github.EnforceAdmins
+		request  *bool
+		expected bool
+	}{
+		{
+			name:     "unset request matches no enforcement",
+			state:    github.EnforceAdmins{Enabled: false},
+			expected: true,
+		},
+		{
+			name:     "set request matches enforcement",
+			state:    github.EnforceAdmins{Enabled: false},
+			request:  &no,
+			expected: true,
+		},
+		{
+			name:     "set request doesn't match enforcement",
+			state:    github.EnforceAdmins{Enabled: false},
+			request:  &yes,
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalAdminEnforcement(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualRequiredPullRequestReviews(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		state    *github.RequiredPullRequestReviews
+		request  *github.RequiredPullRequestReviewsRequest
+		expected bool
+	}{
+		{
+			name:     "neither set matches",
+			expected: true,
+		},
+		{
+			name:     "request unset doesn't match",
+			state:    &github.RequiredPullRequestReviews{},
+			expected: false,
+		},
+		{
+			name:     "state unset doesn't match",
+			request:  &github.RequiredPullRequestReviewsRequest{},
+			expected: false,
+		},
+		{
+			name: "matching requests work",
+			state: &github.RequiredPullRequestReviews{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+				DismissalRestrictions: &github.Restrictions{
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
+			},
+			request: &github.RequiredPullRequestReviewsRequest{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+				DismissalRestrictions: github.RestrictionsRequest{
+					Users: &[]string{"user"},
+					Teams: &[]string{"team"},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "not matching on dismissal",
+			state: &github.RequiredPullRequestReviews{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+			},
+			request: &github.RequiredPullRequestReviewsRequest{
+				DismissStaleReviews:          false,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on reviews",
+			state: &github.RequiredPullRequestReviews{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+			},
+			request: &github.RequiredPullRequestReviewsRequest{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      false,
+				RequiredApprovingReviewCount: 1,
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on count",
+			state: &github.RequiredPullRequestReviews{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+			},
+			request: &github.RequiredPullRequestReviewsRequest{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 2,
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on restrictions",
+			state: &github.RequiredPullRequestReviews{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+				DismissalRestrictions: &github.Restrictions{
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
+			},
+			request: &github.RequiredPullRequestReviewsRequest{
+				DismissStaleReviews:          true,
+				RequireCodeOwnerReviews:      true,
+				RequiredApprovingReviewCount: 1,
+				DismissalRestrictions: github.RestrictionsRequest{
+					Users: &[]string{"other"},
+					Teams: &[]string{"team"},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalRequiredPullRequestReviews(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualRestrictions(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		state    *github.Restrictions
+		request  *github.RestrictionsRequest
+		expected bool
+	}{
+		{
+			name:     "neither set matches",
+			expected: true,
+		},
+		{
+			name:     "request unset doesn't match",
+			state:    &github.Restrictions{},
+			expected: false,
+		},
+		{
+			name: "matching requests work",
+			state: &github.Restrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.RestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "user login casing is ignored",
+			state: &github.Restrictions{
+				Users: []github.User{{Login: "User"}, {Login: "OTHer"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.RestrictionsRequest{
+				Users: &[]string{"uSer", "oThER"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "not matching on users",
+			state: &github.Restrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.RestrictionsRequest{
+				Users: &[]string{"other"},
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on team",
+			state: &github.Restrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.RestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"other"},
+			},
+			expected: false,
+		},
+		{
+			name:     "both unset",
+			request:  &github.RestrictionsRequest{},
+			expected: true,
+		},
+		{
+			name: "partially unset",
+			request: &github.RestrictionsRequest{
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalRestrictions(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestValidateRequest(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		request       *github.BranchProtectionRequest
+		collaborators []string
+		teams         []string
+		errs          []error
+	}{
+		{
+			name: "restrict to unathorized collaborator results in error",
+			request: &github.BranchProtectionRequest{
+				Restrictions: &github.RestrictionsRequest{
+					Users: &[]string{"foo"},
+				},
+			},
+			errs: []error{fmt.Errorf("the following collaborators are not authorized for %s/%s: [%s]", "org", "repo", "foo")},
+		},
+		{
+			name: "restrict to unauthorized team results in error",
+			request: &github.BranchProtectionRequest{
+				Restrictions: &github.RestrictionsRequest{
+					Teams: &[]string{"bar"},
+				},
+			},
+			errs: []error{fmt.Errorf("the following teams are not authorized for %s/%s: [%s]", "org", "repo", "bar")},
+		},
+		{
+			name: "authorized user and team result in no errors",
+			request: &github.BranchProtectionRequest{
+				Restrictions: &github.RestrictionsRequest{
+					Users: &[]string{"foo"},
+					Teams: &[]string{"bar"},
+				},
+			},
+			collaborators: []string{"foo"},
+			teams:         []string{"bar"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			errs := validateRestrictions("org", "repo", tc.request, tc.collaborators, tc.teams)
+			if !reflect.DeepEqual(errs, tc.errs) {
+				t.Errorf("%s: errors %v != expected %v", tc.name, errs, tc.errs)
+			}
+		})
+	}
+}
+
+func TestAuthorizedCollaborators(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		collaborators []github.User
+		expected      []string
+	}{
+		{
+			name: "Collaborator with pull permission is not included",
+			collaborators: []github.User{
+				{
+					Login: "foo",
+					Permissions: github.RepoPermissions{
+						Pull: true,
+					},
+				},
+			},
+		},
+		{
+			name: "Collaborators with Push or Admin permission are included",
+			collaborators: []github.User{
+				{
+					Login: "foo",
+					Permissions: github.RepoPermissions{
+						Push: true,
+					},
+				},
+				{
+					Login: "bar",
+					Permissions: github.RepoPermissions{
+						Admin: true,
+					},
+				},
+			},
+			expected: []string{"foo", "bar"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := fakeClient{collaborators: tc.collaborators}
+			p := protector{
+				client: &fc,
+				errors: Errors{},
+			}
+
+			collaborators, err := p.authorizedCollaborators("org", "repo")
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			sort.Strings(tc.expected)
+			sort.Strings(collaborators)
+			if !reflect.DeepEqual(tc.expected, collaborators) {
+				t.Errorf("expected: %v, got: %v", tc.expected, collaborators)
+			}
+		})
+	}
+}
+
+func TestAuthorizedTeams(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		teams    []github.Team
+		expected []string
+	}{
+		{
+			name: "Team with pull permission is not included",
+			teams: []github.Team{
+				{
+					Slug:       "foo",
+					Permission: github.RepoPull,
+				},
+			},
+		},
+		{
+			name: "Teams with Push or Admin permission are included",
+			teams: []github.Team{
+				{
+					Slug:       "foo",
+					Permission: github.RepoPush,
+				},
+				{
+					Slug:       "bar",
+					Permission: github.RepoAdmin,
+				},
+			},
+			expected: []string{"foo", "bar"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := fakeClient{teams: tc.teams}
+			p := protector{
+				client: &fc,
+				errors: Errors{},
+			}
+
+			teams, err := p.authorizedTeams("org", "repo")
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			sort.Strings(tc.expected)
+			sort.Strings(teams)
+			if !reflect.DeepEqual(tc.expected, teams) {
+				t.Errorf("expected: %v, got: %v", tc.expected, teams)
+			}
+		})
 	}
 }

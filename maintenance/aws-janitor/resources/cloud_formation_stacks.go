@@ -48,7 +48,7 @@ func (CloudFormationStacks) MarkAndSweep(sess *session.Session, acct string, reg
 				name: aws.StringValue(stack.StackName),
 			}
 			if set.Mark(o) {
-				klog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
+				klog.Warningf("%s: deleting %T: %s", o.ARN(), o, o.name)
 				toDelete = append(toDelete, o)
 			}
 		}
@@ -61,7 +61,7 @@ func (CloudFormationStacks) MarkAndSweep(sess *session.Session, acct string, reg
 
 	for _, o := range toDelete {
 		if err := o.delete(svc); err != nil {
-			klog.Warningf("%v: delete failed: %v", o.ARN(), err)
+			klog.Warningf("%s: delete failed: %v", o.ARN(), err)
 		}
 	}
 	return nil

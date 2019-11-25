@@ -29,6 +29,7 @@ const (
 	Help            = "help wanted"
 	Hold            = "do-not-merge/hold"
 	InvalidOwners   = "do-not-merge/invalid-owners-file"
+	InvalidBug      = "bugzilla/invalid-bug"
 	LGTM            = "lgtm"
 	LifecycleActive = "lifecycle/active"
 	LifecycleFrozen = "lifecycle/frozen"
@@ -41,4 +42,5 @@ const (
 	OkToTest        = "ok-to-test"
 	Shrug           = "¯\\_(ツ)_/¯"
 	WorkInProgress  = "do-not-merge/work-in-progress"
+	ValidBug        = "bugzilla/valid-bug"
 )

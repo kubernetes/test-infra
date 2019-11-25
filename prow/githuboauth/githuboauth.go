@@ -18,19 +18,19 @@ package githuboauth
 
 import (
 	"crypto/subtle"
+	"encoding/gob"
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/google/go-github/github"
+	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/net/xsrftoken"
 	"golang.org/x/oauth2"
-
-	"k8s.io/test-infra/pkg/ghclient"
-	"k8s.io/test-infra/prow/config"
 )
 
 const (
@@ -40,6 +40,29 @@ const (
 	oauthSessionCookie = "oauth-session"
 	stateKey           = "state"
 )
+
+// Config is a config for requesting users access tokens from GitHub API. It also has
+// a Cookie Store that retains user credentials deriving from GitHub API.
+type Config struct {
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	RedirectURL  string   `json:"redirect_url"`
+	Scopes       []string `json:"scopes,omitempty"`
+
+	CookieStore *sessions.CookieStore `json:"-"`
+}
+
+// InitGitHubOAuthConfig creates an OAuthClient using GitHubOAuth config and a Cookie Store
+// to retain user credentials.
+func (c *Config) InitGitHubOAuthConfig(cookie *sessions.CookieStore) {
+	// The `oauth2.Token` needs to be stored in the CookieStore with a specific encoder.
+	// Since we are using `gorilla/sessions` which uses `gorilla/securecookie`,
+	// it has to be registered to `encoding/gob`.
+	//
+	// See https://github.com/gorilla/securecookie/blob/master/doc.go#L56-L59
+	gob.Register(&oauth2.Token{})
+	c.CookieStore = cookie
+}
 
 // GitHubClientWrapper is an interface for github clients which implements GetUser method
 // that returns github.User.
@@ -54,6 +77,7 @@ type GitHubClientGetter interface {
 
 // OAuthClient is an interface for a GitHub OAuth client.
 type OAuthClient interface {
+	WithFinalRedirectURL(url string) (OAuthClient, error)
 	// Exchanges code from GitHub OAuth redirect for user access token.
 	Exchange(ctx context.Context, code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error)
 	// Returns a URL to GitHub's OAuth 2.0 consent page. The state is a token to protect the user
@@ -61,27 +85,44 @@ type OAuthClient interface {
 	AuthCodeURL(state string, opts ...oauth2.AuthCodeOption) string
 }
 
-type githubClientGetter struct{}
-
-func (gci *githubClientGetter) GetGitHubClient(accessToken string, dryRun bool) GitHubClientWrapper {
-	return ghclient.NewClient(accessToken, dryRun)
+type client struct {
+	*oauth2.Config
 }
 
-// NewGitHubClientGetter returns a new instance of GitHubClientGetter. It uses the
-// githubClientGetter implementation.
-func NewGitHubClientGetter() GitHubClientGetter {
-	return &githubClientGetter{}
+func NewClient(config *oauth2.Config) client {
+	return client{
+		config,
+	}
+}
+
+func (cli client) WithFinalRedirectURL(path string) (OAuthClient, error) {
+	parsedURL, err := url.Parse(cli.RedirectURL)
+	if err != nil {
+		return nil, err
+	}
+	q := parsedURL.Query()
+	q.Set("dest", path)
+	parsedURL.RawQuery = q.Encode()
+	return NewClient(
+		&oauth2.Config{
+			ClientID:     cli.ClientID,
+			ClientSecret: cli.ClientSecret,
+			RedirectURL:  parsedURL.String(),
+			Scopes:       cli.Scopes,
+			Endpoint:     cli.Endpoint,
+		},
+	), nil
 }
 
 // Agent represents an agent that takes care GitHub authentication process such as handles
 // login request from users or handles redirection from GitHub OAuth server.
 type Agent struct {
-	gc     *config.GitHubOAuthConfig
+	gc     *Config
 	logger *logrus.Entry
 }
 
 // NewAgent returns a new GitHub OAuth Agent.
-func NewAgent(config *config.GitHubOAuthConfig, logger *logrus.Entry) *Agent {
+func NewAgent(config *Config, logger *logrus.Entry) *Agent {
 	return &Agent{
 		gc:     config,
 		logger: logger,
@@ -90,12 +131,13 @@ func NewAgent(config *config.GitHubOAuthConfig, logger *logrus.Entry) *Agent {
 
 // HandleLogin handles GitHub login request from front-end. It starts a new git oauth session and
 // redirect user to GitHub OAuth end-point for authentication.
-func (ga *Agent) HandleLogin(client OAuthClient) http.HandlerFunc {
+func (ga *Agent) HandleLogin(client OAuthClient, secure bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		destPage := r.URL.Query().Get("dest")
 		stateToken := xsrftoken.Generate(ga.gc.ClientSecret, "", "")
 		state := hex.EncodeToString([]byte(stateToken))
 		oauthSession, err := ga.gc.CookieStore.New(r, oauthSessionCookie)
-		oauthSession.Options.Secure = true
+		oauthSession.Options.Secure = secure
 		oauthSession.Options.HttpOnly = true
 		if err != nil {
 			ga.serverError(w, "Creating new OAuth session", err)
@@ -108,10 +150,31 @@ func (ga *Agent) HandleLogin(client OAuthClient) http.HandlerFunc {
 			ga.serverError(w, "Save oauth session", err)
 			return
 		}
-
-		redirectURL := client.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
+		newClient, err := client.WithFinalRedirectURL(destPage)
+		if err != nil {
+			ga.serverError(w, "Failed to parse redirect URL", err)
+		}
+		redirectURL := newClient.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
+}
+
+// GetLogin returns the username of the already authenticated GitHub user.
+func (ga *Agent) GetLogin(r *http.Request, getter GitHubClientGetter) (string, error) {
+	session, err := ga.gc.CookieStore.Get(r, tokenSession)
+	if err != nil {
+		return "", err
+	}
+	token, ok := session.Values[tokenKey].(*oauth2.Token)
+	if !ok || !token.Valid() {
+		return "", fmt.Errorf("Could not find GitHub token")
+	}
+	ghc := getter.GetGitHubClient(token.AccessToken, false)
+	userInfo, err := ghc.GetUser("")
+	if err != nil {
+		return "", err
+	}
+	return *userInfo.Login, nil
 }
 
 // HandleLogout handles GitHub logout request from front-end. It invalidates cookie sessions and
@@ -135,15 +198,22 @@ func (ga *Agent) HandleLogout(client OAuthClient) http.HandlerFunc {
 			loginCookie.Expires = time.Now().Add(-time.Hour * 24)
 			http.SetCookie(w, loginCookie)
 		}
-		http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
+		http.Redirect(w, r, r.URL.Host, http.StatusFound)
 	}
 }
 
 // HandleRedirect handles the redirection from GitHub. It exchanges the code from redirect URL for
 // user access token. The access token is then saved to the cookie and the page is redirected to
 // the final destination in the config, which should be the front-end.
-func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) http.HandlerFunc {
+func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter, secure bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// This is string manipulation for clarity, and to avoid surprising parse mismatches.
+		scheme := "http"
+		if secure {
+			scheme = "https"
+		}
+		finalRedirectURL := scheme + "://" + r.Host + "/" + r.URL.Query().Get("dest")
+
 		state := r.FormValue("state")
 		stateTokenRaw, err := hex.DecodeString(state)
 		if err != nil {
@@ -163,7 +233,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) h
 		}
 		secretState, ok := oauthSession.Values[stateKey].(string)
 		if !ok {
-			ga.serverError(w, "Get secret state", fmt.Errorf("empty string or cannot convert to string"))
+			ga.serverError(w, "Get secret state", fmt.Errorf("empty string or cannot convert to string. this probably means the options passed to GitHub don't match what was expected"))
 			return
 		}
 		// Validate the state parameter to prevent cross-site attack.
@@ -194,7 +264,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) h
 
 		// New session that stores the token.
 		session, err := ga.gc.CookieStore.New(r, tokenSession)
-		session.Options.Secure = true
+		session.Options.Secure = secure
 		session.Options.HttpOnly = true
 		if err != nil {
 			ga.serverError(w, "Create new session", err)
@@ -217,9 +287,9 @@ func (ga *Agent) HandleRedirect(client OAuthClient, getter GitHubClientGetter) h
 			Value:   *user.Login,
 			Path:    "/",
 			Expires: time.Now().Add(time.Hour * 24 * 30),
-			Secure:  true,
+			Secure:  secure,
 		})
-		http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
+		http.Redirect(w, r, finalRedirectURL, http.StatusFound)
 	}
 }
 

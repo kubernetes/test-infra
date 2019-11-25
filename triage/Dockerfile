@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM jamiehewland/alpine-pypy:2
+FROM jamiehewland/alpine-pypy:3
 
-RUN apk add --no-cache jq curl bash python
+# Google Cloud SDK requires python 2.7.9+ (https://cloud.google.com/python/setup#installing_the_cloud_sdk)
+RUN apk add --no-cache jq curl bash python2
 RUN curl -o installer https://sdk.cloud.google.com && bash installer --disable-prompts --install-dir=/ && rm installer && ln -s /google-cloud-sdk/bin/* /bin/
-ADD requirements.txt /
-RUN pip install --requirement requirements.txt
 
 ADD *.py update_summaries.sh /
 

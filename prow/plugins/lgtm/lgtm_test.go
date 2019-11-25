@@ -18,11 +18,16 @@ package lgtm
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -48,8 +53,9 @@ func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.Re
 }
 
 type fakeRepoOwners struct {
-	approvers map[string]sets.String
-	reviewers map[string]sets.String
+	approvers    map[string]sets.String
+	reviewers    map[string]sets.String
+	dirBlacklist []*regexp.Regexp
 }
 
 type fakePruner struct {
@@ -76,6 +82,41 @@ func (f *fakeRepoOwners) Approvers(path string) sets.String             { return
 func (f *fakeRepoOwners) LeafReviewers(path string) sets.String         { return nil }
 func (f *fakeRepoOwners) Reviewers(path string) sets.String             { return f.reviewers[path] }
 func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String     { return nil }
+func (f *fakeRepoOwners) TopLevelApprovers() sets.String                { return nil }
+
+func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range f.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.SimpleConfig{}, err
+	}
+	full := new(repoowners.SimpleConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
+}
+
+func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, error) {
+	dir := filepath.Dir(path)
+	for _, re := range f.dirBlacklist {
+		if re.MatchString(dir) {
+			return repoowners.FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return repoowners.FullConfig{}, err
+	}
+	full := new(repoowners.FullConfig)
+	err = yaml.Unmarshal(b, full)
+	return *full, err
+}
 
 var approvers = map[string]sets.String{
 	"doc/README.md": {
@@ -108,14 +149,14 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:         "non-lgtm comment",
 			body:         "uh oh",
-			commenter:    "o",
+			commenter:    "collab2",
 			hasLGTM:      false,
 			shouldToggle: false,
 		},
 		{
 			name:          "lgtm comment by reviewer, no lgtm on pr",
 			body:          "/lgtm",
-			commenter:     "reviewer1",
+			commenter:     "collab1",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -123,7 +164,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:          "LGTM comment by reviewer, no lgtm on pr",
 			body:          "/LGTM",
-			commenter:     "reviewer1",
+			commenter:     "collab1",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -131,7 +172,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:         "lgtm comment by reviewer, lgtm on pr",
 			body:         "/lgtm",
-			commenter:    "reviewer1",
+			commenter:    "collab1",
 			hasLGTM:      true,
 			shouldToggle: false,
 		},
@@ -155,7 +196,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:          "lgtm comment by non-reviewer",
 			body:          "/lgtm",
-			commenter:     "o",
+			commenter:     "collab2",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -164,7 +205,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:          "lgtm comment by non-reviewer, with trailing space",
 			body:          "/lgtm ",
-			commenter:     "o",
+			commenter:     "collab2",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -173,7 +214,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:          "lgtm comment by non-reviewer, with no-issue",
 			body:          "/lgtm no-issue",
-			commenter:     "o",
+			commenter:     "collab2",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -182,7 +223,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:          "lgtm comment by non-reviewer, with no-issue and trailing space",
 			body:          "/lgtm no-issue \r",
-			commenter:     "o",
+			commenter:     "collab2",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -200,7 +241,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:          "lgtm cancel by non-reviewer",
 			body:          "/lgtm cancel",
-			commenter:     "o",
+			commenter:     "collab2",
 			hasLGTM:       true,
 			shouldToggle:  true,
 			shouldComment: false,
@@ -218,21 +259,21 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:         "lgtm cancel comment by reviewer",
 			body:         "/lgtm cancel",
-			commenter:    "reviewer1",
+			commenter:    "collab1",
 			hasLGTM:      true,
 			shouldToggle: true,
 		},
 		{
 			name:         "lgtm cancel comment by reviewer, with trailing space",
 			body:         "/lgtm cancel \r",
-			commenter:    "reviewer1",
+			commenter:    "collab1",
 			hasLGTM:      true,
 			shouldToggle: true,
 		},
 		{
 			name:         "lgtm cancel comment by reviewer, no lgtm",
 			body:         "/lgtm cancel",
-			commenter:    "reviewer1",
+			commenter:    "collab1",
 			hasLGTM:      false,
 			shouldToggle: false,
 		},
@@ -244,6 +285,15 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle:  true,
 			shouldComment: true,
 			skipCollab:    true,
+		},
+		{
+			name:          "lgtm comment by assignee, but not collab",
+			body:          "/lgtm",
+			commenter:     "assignee1",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldComment: true,
+			shouldAssign:  false,
 		},
 	}
 	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
@@ -266,6 +316,7 @@ func TestLGTMComment(t *testing.T) {
 					{Filename: "doc/README.md"},
 				},
 			},
+			Collaborators: []string{"collab1", "collab2"},
 		}
 		e := &github.GenericCommentEvent{
 			Action:      github.GenericCommentActionCreated,
@@ -275,7 +326,7 @@ func TestLGTMComment(t *testing.T) {
 			User:        github.User{Login: tc.commenter},
 			IssueAuthor: github.User{Login: "author"},
 			Number:      5,
-			Assignees:   []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}},
+			Assignees:   []github.User{{Login: "collab1"}, {Login: "assignee1"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
@@ -350,19 +401,19 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		{
 			name:         "non-lgtm comment",
 			body:         "uh oh",
-			commenter:    "o",
+			commenter:    "collab2",
 			shouldDelete: false,
 		},
 		{
 			name:         "lgtm comment by reviewer, no lgtm on pr",
 			body:         "/lgtm",
-			commenter:    "reviewer1",
+			commenter:    "collab1",
 			shouldDelete: true,
 		},
 		{
 			name:         "LGTM comment by reviewer, no lgtm on pr",
 			body:         "/LGTM",
-			commenter:    "reviewer1",
+			commenter:    "collab1",
 			shouldDelete: true,
 		},
 		{
@@ -374,25 +425,25 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		{
 			name:         "lgtm comment by non-reviewer",
 			body:         "/lgtm",
-			commenter:    "o",
+			commenter:    "collab2",
 			shouldDelete: true,
 		},
 		{
 			name:         "lgtm comment by non-reviewer, with trailing space",
 			body:         "/lgtm ",
-			commenter:    "o",
+			commenter:    "collab2",
 			shouldDelete: true,
 		},
 		{
 			name:         "lgtm comment by non-reviewer, with no-issue",
 			body:         "/lgtm no-issue",
-			commenter:    "o",
+			commenter:    "collab2",
 			shouldDelete: true,
 		},
 		{
 			name:         "lgtm comment by non-reviewer, with no-issue and trailing space",
 			body:         "/lgtm no-issue \r",
-			commenter:    "o",
+			commenter:    "collab2",
 			shouldDelete: true,
 		},
 		{
@@ -404,7 +455,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		{
 			name:         "lgtm cancel comment by reviewer, no lgtm",
 			body:         "/lgtm cancel",
-			commenter:    "reviewer1",
+			commenter:    "collab1",
 			shouldDelete: false,
 		},
 	}
@@ -419,6 +470,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 					},
 				},
 			},
+			Collaborators: []string{"collab1", "collab2"},
 		}
 		e := &github.GenericCommentEvent{
 			Action:      github.GenericCommentActionCreated,
@@ -428,7 +480,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			User:        github.User{Login: tc.commenter},
 			IssueAuthor: github.User{Login: "author"},
 			Number:      5,
-			Assignees:   []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}},
+			Assignees:   []github.User{{Login: "collab1"}, {Login: "assignee1"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
@@ -489,7 +541,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Edit approve review by reviewer, no lgtm on pr",
 			state:         github.ReviewStateApproved,
 			action:        github.ReviewActionEdited,
-			reviewer:      "reviewer1",
+			reviewer:      "collab1",
 			hasLGTM:       false,
 			shouldToggle:  false,
 			storeTreeHash: true,
@@ -498,7 +550,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Dismiss approve review by reviewer, no lgtm on pr",
 			state:         github.ReviewStateApproved,
 			action:        github.ReviewActionDismissed,
-			reviewer:      "reviewer1",
+			reviewer:      "collab1",
 			hasLGTM:       false,
 			shouldToggle:  false,
 			storeTreeHash: true,
@@ -507,7 +559,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Request changes review by reviewer, no lgtm on pr",
 			state:         github.ReviewStateChangesRequested,
 			action:        github.ReviewActionSubmitted,
-			reviewer:      "reviewer1",
+			reviewer:      "collab1",
 			hasLGTM:       false,
 			shouldToggle:  false,
 			shouldAssign:  false,
@@ -517,7 +569,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:         "Request changes review by reviewer, lgtm on pr",
 			state:        github.ReviewStateChangesRequested,
 			action:       github.ReviewActionSubmitted,
-			reviewer:     "reviewer1",
+			reviewer:     "collab1",
 			hasLGTM:      true,
 			shouldToggle: true,
 			shouldAssign: false,
@@ -526,7 +578,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Approve review by reviewer, no lgtm on pr",
 			state:         github.ReviewStateApproved,
 			action:        github.ReviewActionSubmitted,
-			reviewer:      "reviewer1",
+			reviewer:      "collab1",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -536,7 +588,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Approve review by reviewer, no lgtm on pr, do not store tree_hash",
 			state:         github.ReviewStateApproved,
 			action:        github.ReviewActionSubmitted,
-			reviewer:      "reviewer1",
+			reviewer:      "collab1",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: false,
@@ -545,7 +597,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:         "Approve review by reviewer, lgtm on pr",
 			state:        github.ReviewStateApproved,
 			action:       github.ReviewActionSubmitted,
-			reviewer:     "reviewer1",
+			reviewer:     "collab1",
 			hasLGTM:      true,
 			shouldToggle: false,
 			shouldAssign: false,
@@ -554,7 +606,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Approve review by non-reviewer, no lgtm on pr",
 			state:         github.ReviewStateApproved,
 			action:        github.ReviewActionSubmitted,
-			reviewer:      "o",
+			reviewer:      "collab2",
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
@@ -565,7 +617,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Request changes review by non-reviewer, no lgtm on pr",
 			state:         github.ReviewStateChangesRequested,
 			action:        github.ReviewActionSubmitted,
-			reviewer:      "o",
+			reviewer:      "collab2",
 			hasLGTM:       false,
 			shouldToggle:  false,
 			shouldComment: false,
@@ -595,7 +647,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Comment body has /lgtm on Comment Review ",
 			state:         github.ReviewStateCommented,
 			action:        github.ReviewActionSubmitted,
-			reviewer:      "reviewer1",
+			reviewer:      "collab1",
 			body:          "/lgtm",
 			hasLGTM:       false,
 			shouldToggle:  false,
@@ -606,7 +658,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			name:          "Comment body has /lgtm cancel on Approve Review",
 			state:         github.ReviewStateApproved,
 			action:        github.ReviewActionSubmitted,
-			reviewer:      "reviewer1",
+			reviewer:      "collab1",
 			body:          "/lgtm cancel",
 			hasLGTM:       false,
 			shouldToggle:  false,
@@ -626,11 +678,12 @@ func TestLGTMFromApproveReview(t *testing.T) {
 					},
 				},
 			},
+			Collaborators: []string{"collab1", "collab2"},
 		}
 		e := &github.ReviewEvent{
 			Action:      tc.action,
 			Review:      github.Review{Body: tc.body, State: tc.state, HTMLURL: "<url>", User: github.User{Login: tc.reviewer}},
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}, Assignees: []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}}, Number: 5},
+			PullRequest: github.PullRequest{User: github.User{Login: "author"}, Assignees: []github.User{{Login: "collab1"}, {Login: "assignee1"}}, Number: 5},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasLGTM {
@@ -1028,7 +1081,7 @@ func TestAddTreeHashComment(t *testing.T) {
 				StickyLgtmTeam: c.trustedTeam,
 			})
 			rc := reviewCtx{
-				author:      "alice",
+				author:      "collab1",
 				issueAuthor: c.author,
 				repo: github.Repo{
 					Owner: github.User{
@@ -1052,6 +1105,7 @@ func TestAddTreeHashComment(t *testing.T) {
 						},
 					},
 				},
+				Collaborators: []string{"collab1", "collab2"},
 			}
 			commit := github.SingleCommit{}
 			commit.Commit.Tree.SHA = treeSHA
@@ -1085,7 +1139,7 @@ func TestRemoveTreeHashComment(t *testing.T) {
 		StoreTreeHash: true,
 	})
 	rc := reviewCtx{
-		author:      "alice",
+		author:      "collab1",
 		issueAuthor: "bob",
 		repo: github.Repo{
 			Owner: github.User{
@@ -1106,6 +1160,7 @@ func TestRemoveTreeHashComment(t *testing.T) {
 				},
 			},
 		},
+		Collaborators: []string{"collab1", "collab2"},
 	}
 	fc.IssueLabelsAdded = []string{"kubernetes/kubernetes#101:" + LGTMLabel}
 	fp := &fakePruner{

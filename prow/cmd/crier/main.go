@@ -17,18 +17,18 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pjutil"
 
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
@@ -49,7 +49,7 @@ const (
 )
 
 type options struct {
-	client         prowflagutil.ExperimentalKubernetesOptions
+	client         prowflagutil.KubernetesOptions
 	cookiefilePath string
 	gerritProjects gerritclient.ProjectsFlag
 	github         prowflagutil.GitHubOptions
@@ -73,10 +73,16 @@ func (o *options) validate() error {
 		return errors.New("required flag --config-path was unset")
 	}
 
+	// TODO(krzyzacy): gerrit && github report are actually stateful..
+	// Need a better design to re-enable parallel reporting
 	if o.gerritWorkers > 1 {
-		// TODO(krzyzacy): try to see how to handle racy better for gerrit aggregate report.
 		logrus.Warn("gerrit reporter only supports one worker")
 		o.gerritWorkers = 1
+	}
+
+	if o.githubWorkers > 1 {
+		logrus.Warn("github reporter only supports one worker (https://github.com/kubernetes/test-infra/issues/13306)")
+		o.githubWorkers = 1
 	}
 
 	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers <= 0 {
@@ -150,11 +156,11 @@ func parseOptions() options {
 }
 
 func main() {
+	logrusutil.ComponentInit()
+
 	o := parseOptions()
 
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "crier"}),
-	)
+	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf()
 
@@ -173,15 +179,12 @@ func main() {
 
 	var controllers []*crier.Controller
 
-	// track all worker status before shutdown
-	wg := &sync.WaitGroup{}
-
 	if o.slackWorkers > 0 {
-		if cfg().SlackReporter == nil {
+		if cfg().SlackReporter == nil && cfg().SlackReporterConfigs == nil {
 			logrus.Fatal("slackreporter is enabled but has no config")
 		}
-		slackConfig := func() *config.SlackReporter {
-			return cfg().SlackReporter
+		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
+			return cfg().SlackReporterConfigs.GetSlackReporter(refs)
 		}
 		slackReporter, err := slackreporter.New(slackConfig, o.dryrun, o.slackTokenFile)
 		if err != nil {
@@ -194,8 +197,7 @@ func main() {
 				kube.RateLimiter(slackReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				slackReporter,
-				o.slackWorkers,
-				wg))
+				o.slackWorkers))
 	}
 
 	if o.gerritWorkers > 0 {
@@ -212,8 +214,7 @@ func main() {
 				kube.RateLimiter(gerritReporter.GetName()),
 				informer,
 				gerritReporter,
-				o.gerritWorkers,
-				wg))
+				o.gerritWorkers))
 	}
 
 	if o.pubsubWorkers > 0 {
@@ -225,8 +226,7 @@ func main() {
 				kube.RateLimiter(pubsubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				pubsubReporter,
-				o.pubsubWorkers,
-				wg))
+				o.pubsubWorkers))
 	}
 
 	if o.githubWorkers > 0 {
@@ -250,43 +250,19 @@ func main() {
 				kube.RateLimiter(githubReporter.GetName()),
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				githubReporter,
-				o.githubWorkers,
-				wg))
+				o.githubWorkers))
 	}
 
 	if len(controllers) == 0 {
 		logrus.Fatalf("should have at least one controller to start crier.")
 	}
 
-	stopCh := make(chan struct{})
-	defer close(stopCh)
-
 	// run the controller loop to process items
-	prowjobInformerFactory.Start(stopCh)
-	for _, controller := range controllers {
-		go controller.Run(stopCh)
-	}
-
-	sigTerm := make(chan os.Signal, 1)
-	signal.Notify(sigTerm, syscall.SIGTERM)
-	signal.Notify(sigTerm, syscall.SIGINT)
-
-	<-sigTerm
-	logrus.Info("Crier received a termination signal and is shutting down...")
-	for range controllers {
-		stopCh <- struct{}{}
-	}
-
-	// waiting for all crier worker to finish
-	c := make(chan struct{})
-	go func() {
-		defer close(c)
-		wg.Wait()
-	}()
-	select {
-	case <-c:
-		logrus.Info("All worker finished, exiting crier")
-	case <-time.After(10 * time.Second):
-		logrus.Info("timed out waiting for all worker to finish")
+	prowjobInformerFactory.Start(interrupts.Context().Done())
+	for i := range controllers {
+		controller := controllers[i]
+		interrupts.Run(func(ctx context.Context) {
+			controller.Run(ctx)
+		})
 	}
 }

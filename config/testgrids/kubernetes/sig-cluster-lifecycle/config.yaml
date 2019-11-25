@@ -1,0 +1,59 @@
+dashboard_groups:
+- name: sig-cluster-lifecycle
+  dashboard_names:
+    - sig-cluster-lifecycle-all
+    - sig-cluster-lifecycle-kubeadm
+    - sig-cluster-lifecycle-multi-platform
+    - sig-cluster-lifecycle-cluster-api
+    - sig-cluster-lifecycle-cluster-api-provider-aws
+    - sig-cluster-lifecycle-cluster-api-provider-azure
+    - sig-cluster-lifecycle-cluster-api-provider-digitalocean
+    - sig-cluster-lifecycle-cluster-api-provider-vsphere
+    - sig-cluster-lifecycle-cluster-api-provider-gcp
+    - sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+    - sig-cluster-lifecycle-cluster-api-provider-openstack
+    - sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
+    - sig-cluster-lifecycle-cluster-api-provider-docker
+    - sig-cluster-lifecycle-kops
+    - sig-cluster-lifecycle-etcdadm
+    - sig-cluster-lifecycle-image-pushes
+    - sig-cluster-lifecycle-system-validators
+
+dashboards:
+- name: sig-cluster-lifecycle-all
+- name: sig-cluster-lifecycle-kubeadm
+- name: sig-cluster-lifecycle-multi-platform
+  dashboard_tab:
+    - name: periodic-kubeadm-gce-amd64
+      test_group_name: periodic-multi-platform-kubeadm-gce-amd64
+    - name: periodic-kubeadm-scaleway-arm
+      test_group_name: periodic-multi-platform-kubeadm-scaleway-arm
+    - name: periodic-kubeadm-scaleway-arm64
+      test_group_name: periodic-multi-platform-kubeadm-scaleway-arm64
+    - name: periodic-kubeadm-packet-arm64
+      test_group_name: periodic-multi-platform-kubeadm-packet-arm64
+- name: sig-cluster-lifecycle-cluster-api
+- name: sig-cluster-lifecycle-cluster-api-provider-aws
+- name: sig-cluster-lifecycle-cluster-api-provider-azure
+- name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+- name: sig-cluster-lifecycle-cluster-api-provider-gcp
+- name: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+- name: sig-cluster-lifecycle-cluster-api-provider-vsphere
+- name: sig-cluster-lifecycle-cluster-api-provider-openstack
+- name: sig-cluster-lifecycle-cluster-api-bootstrap-provider-kubeadm
+- name: sig-cluster-lifecycle-cluster-api-provider-docker
+- name: sig-cluster-lifecycle-kops
+- name: sig-cluster-lifecycle-etcdadm
+- name: sig-cluster-lifecycle-image-pushes
+- name: sig-cluster-lifecycle-system-validators
+
+test_groups:
+# @luxas' multiarch e2e results
+- name: periodic-multi-platform-kubeadm-gce-amd64
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-gce-amd64
+- name: periodic-multi-platform-kubeadm-scaleway-arm
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm
+- name: periodic-multi-platform-kubeadm-scaleway-arm64
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm64
+- name: periodic-multi-platform-kubeadm-packet-arm64
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64

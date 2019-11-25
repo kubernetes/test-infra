@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -56,7 +56,7 @@ words = [
     "fortressing", "inadequately", "prank", "authored",
     "fortresing", "inadeqautely", "prang", "awthered",
     "cruller's", "fanatic", "Laplace", "recollections",
-    "Kevlar", "underpays", u"jalape\u00f1o", u"ch\u00e2telaine",
+    "Kevlar", "underpays", "jalape\u00f1o", "ch\u00e2telaine",
     "kevlar", "overpaid", "jalapeno", "chatelaine",
     "A survey of algorithms for running text search by Navarro appeared",
     "in ACM Computing Surveys 33#1: http://portal.acm.org/citation.cfm?...",
@@ -73,14 +73,14 @@ wordDistances = {}
 # dynamic programming technique.  This is here purely to verify
 # the results of better algorithms.
 def dynamicProgrammingLevenshtein(s1, s2):
-    lastRow = range(len(s1) + 1)
-    for j in range(0, len(s2)):
+    lastRow = list(range(len(s1) + 1))
+    for j, s2_item in enumerate(s2):
         thisRow = [0] * len(lastRow)
         thisRow[0] = j + 1
         for i in range(1, len(thisRow)):
             thisRow[i] = min(lastRow[i] + 1,
                              thisRow[i - 1] + 1,
-                             lastRow[i - 1] + int(s2[j] != s1[i-1]))
+                             lastRow[i - 1] + int(s2_item != s1[i-1]))
         lastRow = thisRow
     return lastRow[-1]
 
@@ -89,7 +89,7 @@ for wordA in words:
         wordDistances[wordA, wordB] = dynamicProgrammingLevenshtein(wordA, wordB)
 
 
-class AbstractLevenshteinTestCase(object):
+class AbstractLevenshteinTestCase:
     # pylint: disable=no-member
 
     # Tests a Levenshtein engine against the DP-based computation

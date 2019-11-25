@@ -25,6 +25,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -108,6 +109,12 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
+type trustedPullRequestClient interface {
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	IsMember(org, user string) (bool, error)
+	IsCollaborator(org, repo, user string) (bool, error)
+}
+
 type prowJobClient interface {
 	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
 }
@@ -120,8 +127,10 @@ type Client struct {
 	ProwJobClient prowJobClient
 	Config        *config.Config
 	Logger        *logrus.Entry
+	GitClient     *git.Client
 }
 
+// trustedUserClient is used to check is user member and repo collaborator
 type trustedUserClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
@@ -133,6 +142,7 @@ func getClient(pc plugins.Agent) Client {
 		Config:        pc.Config,
 		ProwJobClient: pc.ProwJobClient,
 		Logger:        pc.Logger,
+		GitClient:     pc.GitClient,
 	}
 }
 
@@ -150,12 +160,10 @@ func handlePush(pc plugins.Agent, pe github.PushEvent) error {
 }
 
 // TrustedUser returns true if user is trusted in repo.
-//
 // Trusted users are either repo collaborators, org members or trusted org members.
-// Whether repo collaborators and/or a second org is trusted is configured by trigger.
-func TrustedUser(ghc trustedUserClient, trigger plugins.Trigger, user, org, repo string) (bool, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (bool, error) {
 	// First check if user is a collaborator, assuming this is allowed
-	if !trigger.OnlyOrgMembers {
+	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
 			return false, fmt.Errorf("error in IsCollaborator: %v", err)
 		} else if ok {
@@ -173,14 +181,14 @@ func TrustedUser(ghc trustedUserClient, trigger plugins.Trigger, user, org, repo
 	}
 
 	// Determine if there is a second org to check
-	if trigger.TrustedOrg == "" || trigger.TrustedOrg == org {
+	if trustedOrg == "" || trustedOrg == org {
 		return false, nil // No trusted org and/or it is the same
 	}
 
 	// Check the second trusted org.
-	member, err := ghc.IsMember(trigger.TrustedOrg, user)
+	member, err := ghc.IsMember(trustedOrg, user)
 	if err != nil {
-		return false, fmt.Errorf("error in IsMember(%s): %v", trigger.TrustedOrg, err)
+		return false, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
 	}
 	return member, nil
 }
@@ -195,12 +203,12 @@ func skippedStatusFor(context string) github.Status {
 
 // RunAndSkipJobs executes the config.Presubmits that are requested and posts skipped statuses
 // for the reporting jobs that are skipped
-func RunAndSkipJobs(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
+func RunAndSkipJobs(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, skippedJobs []config.Presubmit, eventGUID string, elideSkippedContexts bool) error {
 	if err := validateContextOverlap(requestedJobs, skippedJobs); err != nil {
 		c.Logger.WithError(err).Warn("Could not run or skip requested jobs, overlapping contexts.")
 		return err
 	}
-	runErr := runRequested(c, pr, requestedJobs, eventGUID)
+	runErr := runRequested(c, pr, baseSHA, requestedJobs, eventGUID)
 	var skipErr error
 	if !elideSkippedContexts {
 		skipErr = skipRequested(c, pr, skippedJobs)
@@ -227,12 +235,7 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 }
 
 // runRequested executes the config.Presubmits that are requested
-func runRequested(c Client, pr *github.PullRequest, requestedJobs []config.Presubmit, eventGUID string) error {
-	baseSHA, err := c.GitHubClient.GetRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, "heads/"+pr.Base.Ref)
-	if err != nil {
-		return err
-	}
-
+func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
 	var errors []error
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)

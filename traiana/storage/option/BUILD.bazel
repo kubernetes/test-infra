@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//traiana:go_default_library",
         "//traiana/awsapi:go_default_library",
-        "//vendor/google.golang.org/api/option:go_default_library",
+        "@org_golang_google_api//option:go_default_library",
     ],
 )
 

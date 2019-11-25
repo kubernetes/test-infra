@@ -15,3 +15,6 @@ periodics:
       - ./tests/e2e/manifests/verify_manifest_lists.sh
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-all
+    testgrid-tab-name: periodic-manifest-lists

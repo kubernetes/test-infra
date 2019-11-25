@@ -57,6 +57,7 @@ func TestLabel(t *testing.T) {
 		expectedBotComment    bool
 		repoLabels            []string
 		issueLabels           []string
+		expectedCommentText   string
 	}
 	testcases := []testCase{
 		{
@@ -407,6 +408,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `/label orchestrator/foo` cannot be applied. These labels are supported: `orchestrator/jar, orchestrator/bar`",
 		},
 		{
 			name:                  "Remove custom label",
@@ -427,6 +430,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `/remove-label orchestrator/jar` cannot be applied. These labels are supported: `orchestrator/foo, orchestrator/bar`",
 		},
 	}
 
@@ -434,7 +439,7 @@ func TestLabel(t *testing.T) {
 		t.Logf("Running scenario %q", tc.name)
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
-			Issues:             make([]github.Issue, 1),
+			Issues:             make(map[int]*github.Issue),
 			IssueComments:      make(map[int][]github.IssueComment),
 			RepoLabelsExisting: tc.repoLabels,
 			OrgMembers:         map[string][]string{"org": {orgMember}},
@@ -479,6 +484,14 @@ func TestLabel(t *testing.T) {
 		}
 		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
 			t.Error("expected a bot comment but got none")
+		}
+		if tc.expectedBotComment && len(tc.expectedCommentText) > 0 {
+			if len(fakeClient.IssueComments) < 1 {
+				t.Errorf("expected actual: %v", fakeClient.IssueComments)
+			}
+			if len(fakeClient.IssueComments[1]) != 1 || strings.Index(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) == -1 {
+				t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
+			}
 		}
 	}
 }

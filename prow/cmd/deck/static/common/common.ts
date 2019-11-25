@@ -1,5 +1,5 @@
 import moment from "moment";
-import {JobState, Pull} from "../api/prow";
+import {ProwJobState, Pull} from "../api/prow";
 
 // This file likes namespaces, so stick with it for now.
 /* tslint:disable:no-namespace */
@@ -41,7 +41,7 @@ export namespace cell {
     return c;
   }
 
-  export function state(s: JobState): HTMLTableDataCellElement {
+  export function state(s: ProwJobState): HTMLTableDataCellElement {
     const c = document.createElement("td");
     if (!s) {
       c.appendChild(document.createTextNode(""));
@@ -81,7 +81,7 @@ export namespace cell {
     return c;
   }
 
-  function stateToAdj(s: JobState): string {
+  function stateToAdj(s: ProwJobState): string {
     switch (s) {
       case "success":
         return "succeeded";
@@ -169,12 +169,15 @@ export namespace tooltip {
 }
 
 export namespace icon {
-  export function create(iconString: string, tip: string = ""): HTMLAnchorElement {
+  export function create(iconString: string, tip: string = "", onClick?: (this: HTMLElement, ev: MouseEvent) => any): HTMLAnchorElement {
     const i = document.createElement("i");
     i.classList.add("icon-button", "material-icons");
     i.innerHTML = iconString;
     if (tip !== "") {
        i.title = tip;
+    }
+    if (onClick) {
+      i.addEventListener("click", onClick);
     }
 
     const container = document.createElement("a");
@@ -200,4 +203,19 @@ export namespace tidehistory {
     link.href = `/tide-history?author=${encodedAuthor}`;
     return link;
   }
+}
+
+export function getCookieByName(name: string): string {
+  if (!document.cookie) {
+    return "";
+  }
+  const docCookies = decodeURIComponent(document.cookie).split(";");
+  for (const cookie of docCookies) {
+    const c = cookie.trim();
+    const pref = name + "=";
+    if (c.indexOf(pref) === 0) {
+      return c.slice(pref.length);
+    }
+  }
+  return "";
 }

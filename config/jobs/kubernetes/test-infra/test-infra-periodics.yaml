@@ -1,23 +1,4 @@
 periodics:
-- name: ci-test-infra-build-smoke
-  interval: 2h
-  agent: knative-build
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  build_spec:
-    steps:
-    - name: first
-      image: busybox
-      args: ["echo", "hello"]
-    - name: second
-      image: busybox
-      args: ["echo", "world"]
-    - name: third
-      image: busybox
-      args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-periodics.yaml"]
 - name: ci-test-infra-bazel
   decorate: true
   extra_refs:
@@ -30,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.24.1
+    - image: launcher.gcr.io/google/bazel:0.29.1
       command:
       - hack/bazel.sh
       args:
@@ -38,6 +19,10 @@ periodics:
       - --config=ci
       - --nobuild_tests_only
       - //...
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: ci-bazel
+    description: Runs bazel test //... on the test-infra repo every hour
 
 - name: ci-test-infra-triage
   decorate: true
@@ -50,11 +35,11 @@ periodics:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       command:
-        - "timeout"
+      - "timeout"
       args:
-        - "-t"
-        - "10800"
-        - "/update_summaries.sh"
+      - "-t"
+      - "10800"
+      - "/update_summaries.sh"
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -63,12 +48,18 @@ periodics:
     - name: service
       secret:
         secretName: triage-service-account
-
+  annotations:
+    testgrid-num-failures-to-alert: '18'
+    testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: triage
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
 - name: metrics-bigquery
   interval: 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
+    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
       args:
       - --scenario=execute
       - --
@@ -95,12 +86,17 @@ periodics:
     - name: influxdb
       secret:
         secretName: velodrome-influxdb
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '2'
+    description: Runs BigQuery queries to generate data for metrics.
 
 - name: metrics-kettle
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
+    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
       args:
       - --scenario=execute
       - --
@@ -130,3 +126,9 @@ periodics:
     - name: influxdb
       secret:
         secretName: velodrome-influxdb
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Monitors Kettle's BigQuery database freshness.

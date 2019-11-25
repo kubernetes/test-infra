@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- test-infra-oncall # oncall
+- fejta # lead
+- spiffxp # lead
+- stevekuznetsov # lead
+
+labels:
+- sig/testing

@@ -26,16 +26,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
 
+const (
+	defaultRequestTTL      = 30 * time.Second
+	defaultRequestGCPeriod = time.Minute
+)
+
 var (
 	configPath        = flag.String("config", "config.yaml", "Path to init resource file")
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
+	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
 )
 
@@ -48,16 +56,21 @@ func main() {
 
 	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
-		logrus.WithError(err).Fatal("unable to create a CRD client")
+		logrus.WithError(err).Fatal("unable to create a Resource CRD client")
+	}
+	dc, err := kubeClientOptions.Client(crds.DRLCType)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a DynamicResourceLifeCycle CRD client")
 	}
 
 	resourceStorage := crds.NewCRDStorage(rc)
-	storage, err := ranch.NewStorage(resourceStorage, *storagePath)
+	dRLCStorage := crds.NewCRDStorage(dc)
+	storage, err := ranch.NewStorage(resourceStorage, dRLCStorage, *storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create storage")
 	}
 
-	r, err := ranch.NewRanch(*configPath, storage)
+	r, err := ranch.NewRanch(*configPath, storage, *requestTTL)
 	if err != nil {
 		logrus.WithError(err).Fatalf("failed to create ranch! Config: %v", *configPath)
 	}
@@ -67,18 +80,20 @@ func main() {
 		Addr:    ":8080",
 	}
 
-	go func() {
-		logTick := time.NewTicker(time.Minute).C
-		configTick := time.NewTicker(time.Minute * 10).C
-		for {
-			select {
-			case <-logTick:
-				r.LogStatus()
-			case <-configTick:
-				r.SyncConfig(*configPath)
-			}
+	v := viper.New()
+	v.SetConfigFile(*configPath)
+	v.SetConfigType("yaml")
+	v.WatchConfig()
+	v.OnConfigChange(func(in fsnotify.Event) {
+		logrus.Infof("Updating Boskos Config")
+		if err := r.SyncConfig(*configPath); err != nil {
+			logrus.WithError(err).Errorf("Failed to update config")
+		} else {
+			logrus.Infof("Updated Boskos Config successfully")
 		}
-	}()
+	})
+
+	r.StartRequestGC(defaultRequestGCPeriod)
 
 	logrus.Info("Start Service")
 	logrus.WithError(boskos.ListenAndServe()).Fatal("ListenAndServe returned.")
@@ -143,6 +158,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		state := req.URL.Query().Get("state")
 		dest := req.URL.Query().Get("dest")
 		owner := req.URL.Query().Get("owner")
+		requestID := req.URL.Query().Get("request_id")
 		if rtype == "" || state == "" || dest == "" || owner == "" {
 			msg := fmt.Sprintf("Type: %v, state: %v, dest: %v, owner: %v, all of them must be set in the request.", rtype, state, dest, owner)
 			logrus.Warning(msg)
@@ -152,7 +168,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 
 		logrus.Infof("Request for a %v %v from %v, dest %v", state, rtype, owner, dest)
 
-		resource, err := r.Acquire(rtype, state, dest, owner)
+		resource, err := r.Acquire(rtype, state, dest, owner, requestID)
 
 		if err != nil {
 			logrus.WithError(err).Errorf("No available resource")

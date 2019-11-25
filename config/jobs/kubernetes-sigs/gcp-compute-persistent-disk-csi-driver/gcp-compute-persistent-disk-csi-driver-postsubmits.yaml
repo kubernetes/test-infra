@@ -1,14 +1,14 @@
 periodics:
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-stable-master
+- name: ci-gcp-compute-persistent-disk-csi-driver-release-0-5-k8s-master-integration
   interval: 4h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.5.0"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
@@ -24,14 +24,18 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-- name: ci-gcp-compute-persistent-disk-csi-driver-0-4-0-k8s-integration-stable-1-13-5
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: Kubernetes Master Driver Release 0.5
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver Release 0.5
+- name: ci-gcp-compute-persistent-disk-csi-driver-release-0-4-k8s-1-13-5-integration
   interval: 4h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver=release-0.4.0"
       - "--root=/go/src"
@@ -51,14 +55,47 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-- name: ci-gcp-compute-persistent-disk-csi-driver-k8s-integration-migration-stable-master
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: Kubernetes v1.13.5 Driver Release 0.4
+    description: Kubernetes Integration tests for Kubernetes 1.13.5 and Driver Release 0.4
+- name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-integration
   interval: 4h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      args:
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=90" # Minutes
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-k8s-integration.sh"
+      env:
+      - name: GCE_PD_OVERLAY_NAME
+        value: "dev"
+      - name: GCE_PD_DO_DRIVER_BUILD
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: Kubernetes Master Driver Latest
+    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest build
+- name: ci-gcp-compute-persistent-disk-csi-driver-stable-k8s-master-migration
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -77,9 +114,49 @@ periodics:
       securityContext:
         privileged: true
     resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: Migration Kubernetes Master Driver Stable
+    description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver Stable
+- name: ci-gcp-compute-persistent-disk-csi-driver-latest-k8s-master-migration
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      args:
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=180" # Minutes
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-k8s-integration-migration.sh"
+      env:
+      - name: GCE_PD_OVERLAY_NAME
+        value: "dev"
+      - name: GCE_PD_DO_DRIVER_BUILD
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+    resources:
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
+  annotations:
+    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: Migration Kubernetes Master Driver Latest
+    description: Kubernetes in-tree E2E tests with CSIMigration on for Kubernetes Master branch and Driver latest build

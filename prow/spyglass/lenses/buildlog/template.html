@@ -11,7 +11,7 @@
     <div class="loglines" id="{{$log.ArtifactName}}-content" style="font-family: monospace; margin-top: 15px;">
       {{range $g := $log.LineGroups}}
         {{if $g.Skip}}
-          <div class="show-skipped" data-artifact="{{$log.ArtifactName}}" data-offset="{{$g.ByteOffset}}" data-length="{{$g.ByteLength}}" data-start-line="{{$g.Start}}">
+          <div class="show-skipped" data-artifact="{{$log.ArtifactName}}" data-offset="{{$g.ByteOffset}}" data-length="{{$g.ByteLength}}" data-start-line="{{$g.Start}}" data-end-line="{{$g.End}}">
             <div>
               <div class="linenum"></div>
               <div class="linetext"><button> skipped {{$g.LinesSkipped}} lines <i class="material-icons" style="font-size: 1em; vertical-align: middle;">unfold_more</i></button></div>
@@ -31,8 +31,8 @@
 
 {{define "line group"}}
   {{range .}}
-    <div>
-      <div class="linenum">{{.Number}}</div>
+    <div id="{{.ArtifactName}}:{{.Number}}">
+      <div class="linenum"><a href="#{{.ArtifactName}}:{{.Number}}" data-artifact="{{.ArtifactName}}" data-line-number="{{.Number}}">{{.Number}}</a></div>
       <div class="linetext">
         <span {{if .Highlighted}}class="line-highlighted"{{end}}>
           {{- range .SubLines -}}<span {{if .Highlighted}}class="match-highlighted"{{end}}>{{.Text}}</span>{{- end -}}

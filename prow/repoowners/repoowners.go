@@ -42,8 +42,6 @@ const (
 	baseDirConvention = ""
 )
 
-var commonDirBlacklist = []string{"^\\.git$", "^_output$"}
-
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
 }
@@ -149,6 +147,9 @@ type RepoOwner interface {
 	LeafReviewers(path string) sets.String
 	Reviewers(path string) sets.String
 	RequiredReviewers(path string) sets.String
+	ParseSimpleConfig(path string) (SimpleConfig, error)
+	ParseFullConfig(path string) (FullConfig, error)
+	TopLevelApprovers() sets.String
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -197,7 +198,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 			return nil, err
 		}
 
-		entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+		entry.aliases = loadAliasesFrom(gitRepo.Directory(), log)
 		entry.sha = sha
 		c.cache[fullName] = entry
 	}
@@ -254,10 +255,10 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 
 			if entry.aliases == nil || entry.sha != sha {
 				// aliases must be loaded
-				entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+				entry.aliases = loadAliasesFrom(gitRepo.Directory(), log)
 			}
 
-			dirBlacklistPatterns := append(c.ownersDirBlacklist().DirBlacklist(org, repo), commonDirBlacklist...)
+			dirBlacklistPatterns := c.ownersDirBlacklist().DirBlacklist(org, repo)
 			var dirBlacklist []*regexp.Regexp
 			for _, pattern := range dirBlacklistPatterns {
 				re, err := regexp.Compile(pattern)
@@ -268,7 +269,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 				dirBlacklist = append(dirBlacklist, re)
 			}
 
-			entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
+			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirBlacklist, log)
 			if err != nil {
 				return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 			}
@@ -311,12 +312,26 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 	// Make logins a copy of the original set to avoid modifying the original.
 	logins = logins.Union(nil)
 	for _, login := range logins.List() {
-		if expanded := a.ExpandAlias(login); len(expanded) > 0 {
+		if expanded, ok := a[github.NormLogin(login)]; ok {
 			logins.Delete(login)
 			logins = logins.Union(expanded)
 		}
 	}
 	return logins
+}
+
+// ExpandAllAliases returns members of all aliases mentioned, duplicates are pruned
+func (a RepoAliases) ExpandAllAliases() sets.String {
+	if a == nil {
+		return nil
+	}
+
+	var result, users sets.String
+	for alias := range a {
+		users = a.ExpandAlias(alias)
+		result = result.Union(users)
+	}
+	return result
 }
 
 func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
@@ -329,17 +344,9 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 		log.WithError(err).Warnf("Failed to read alias file %q. Using empty alias map.", path)
 		return nil
 	}
-	config := &struct {
-		Data map[string][]string `json:"aliases,omitempty"`
-	}{}
-	if err := yaml.Unmarshal(b, config); err != nil {
+	result, err := ParseAliasesConfig(b)
+	if err != nil {
 		log.WithError(err).Errorf("Failed to unmarshal aliases from %q. Using empty alias map.", path)
-		return nil
-	}
-
-	result := make(RepoAliases)
-	for alias, expanded := range config.Data {
-		result[github.NormLogin(alias)] = normLogins(expanded)
 	}
 	log.Infof("Loaded %d aliases from %q.", len(result), path)
 	return result
@@ -405,7 +412,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		simple := &SimpleConfig{}
 		if err := decodeOwnersMdConfig(path, simple); err != nil {
-			log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
+			log.WithError(err).Info("Error decoding OWNERS config from '*.md' file.")
 			return nil
 		}
 
@@ -419,15 +426,15 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.WithError(err).Errorf("Failed to read the OWNERS file.")
-		return nil
+	simple, err := o.ParseSimpleConfig(path)
+	if err == filepath.SkipDir {
+		return err
 	}
-
-	simple, err := ParseSimpleConfig(b)
 	if err != nil || simple.Empty() {
-		c, err := ParseFullConfig(b)
+		c, err := o.ParseFullConfig(path)
+		if err == filepath.SkipDir {
+			return err
+		}
 		if err != nil {
 			log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
 		} else {
@@ -452,20 +459,92 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	return nil
 }
 
-// ParseFullConfig will unmarshal OWNERS file's content into a FullConfig
-// Returns an error if the content cannot be unmarshalled
-func ParseFullConfig(b []byte) (FullConfig, error) {
+// ParseFullConfig will unmarshal the content of the OWNERS file at the path into a FullConfig.
+// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// Returns an error if the content cannot be unmarshalled.
+func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
+	// if path is in a blacklisted directory, ignore it
+	dir := filepath.Dir(path)
+	for _, re := range o.dirBlacklist {
+		if re.MatchString(dir) {
+			return FullConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return FullConfig{}, err
+	}
+	return LoadFullConfig(b)
+}
+
+// ParseSimpleConfig will unmarshal the content of the OWNERS file at the path into a SimpleConfig.
+// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// Returns an error if the content cannot be unmarshalled.
+func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
+	// if path is in a blacklisted directory, ignore it
+	dir := filepath.Dir(path)
+	for _, re := range o.dirBlacklist {
+		if re.MatchString(dir) {
+			return SimpleConfig{}, filepath.SkipDir
+		}
+	}
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return SimpleConfig{}, err
+	}
+	return LoadSimpleConfig(b)
+}
+
+// LoadSimpleConfig loads SimpleConfig from bytes `b`
+func LoadSimpleConfig(b []byte) (SimpleConfig, error) {
+	simple := new(SimpleConfig)
+	err := yaml.Unmarshal(b, simple)
+	return *simple, err
+}
+
+// SaveSimpleConfig writes SimpleConfig to `path`
+func SaveSimpleConfig(simple SimpleConfig, path string) error {
+	b, err := yaml.Marshal(simple)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(path, b, 0644)
+}
+
+// LoadFullConfig loads FullConfig from bytes `b`
+func LoadFullConfig(b []byte) (FullConfig, error) {
 	full := new(FullConfig)
 	err := yaml.Unmarshal(b, full)
 	return *full, err
 }
 
-// ParseSimpleConfig will unmarshal an OWNERS file's content into a SimpleConfig
-// Returns an error if the content cannot be unmarshalled
-func ParseSimpleConfig(b []byte) (SimpleConfig, error) {
-	simple := new(SimpleConfig)
-	err := yaml.Unmarshal(b, simple)
-	return *simple, err
+// SaveFullConfig writes FullConfig to `path`
+func SaveFullConfig(full FullConfig, path string) error {
+	b, err := yaml.Marshal(full)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(path, b, 0644)
+}
+
+// ParseAliasesConfig will unmarshal an OWNERS_ALIASES file's content into RepoAliases.
+// Returns an error if the content cannot be unmarshalled.
+func ParseAliasesConfig(b []byte) (RepoAliases, error) {
+	result := make(RepoAliases)
+
+	config := &struct {
+		Data map[string][]string `json:"aliases,omitempty"`
+	}{}
+	if err := yaml.Unmarshal(b, config); err != nil {
+		return result, err
+	}
+
+	for alias, expanded := range config.Data {
+		result[github.NormLogin(alias)] = NormLogins(expanded)
+	}
+	return result, nil
 }
 
 var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
@@ -485,7 +564,8 @@ func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
 	return yaml.Unmarshal([]byte(meta), &config)
 }
 
-func normLogins(logins []string) sets.String {
+// NormLogins normalizes logins
+func NormLogins(logins []string) sets.String {
 	normed := sets.NewString()
 	for _, login := range logins {
 		normed.Insert(github.NormLogin(login))
@@ -500,19 +580,19 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 		if o.approvers[path] == nil {
 			o.approvers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.approvers[path][re] = o.ExpandAliases(normLogins(config.Approvers))
+		o.approvers[path][re] = o.ExpandAliases(NormLogins(config.Approvers))
 	}
 	if len(config.Reviewers) > 0 {
 		if o.reviewers[path] == nil {
 			o.reviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.reviewers[path][re] = o.ExpandAliases(normLogins(config.Reviewers))
+		o.reviewers[path][re] = o.ExpandAliases(NormLogins(config.Reviewers))
 	}
 	if len(config.RequiredReviewers) > 0 {
 		if o.requiredReviewers[path] == nil {
 			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
-		o.requiredReviewers[path][re] = o.ExpandAliases(normLogins(config.RequiredReviewers))
+		o.requiredReviewers[path][re] = o.ExpandAliases(NormLogins(config.RequiredReviewers))
 	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {
@@ -673,4 +753,8 @@ func (o *RepoOwners) Reviewers(path string) sets.String {
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 	return o.entriesForFile(path, o.requiredReviewers, false)
+}
+
+func (o *RepoOwners) TopLevelApprovers() sets.String {
+	return o.entriesForFile(".", o.approvers, false)
 }

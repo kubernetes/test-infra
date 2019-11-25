@@ -49,14 +49,17 @@ func (cs *inClusterStorage) Delete(name string) error {
 	return cs.client.Delete(name, v1.NewDeleteOptions(deleteGracePeriodSeconds))
 }
 
-func (cs *inClusterStorage) Update(i common.Item) error {
+func (cs *inClusterStorage) Update(i common.Item) (common.Item, error) {
 	o, err := cs.client.Get(i.GetName())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	o.FromItem(i)
-	_, err = cs.client.Update(o)
-	return err
+	updated, err := cs.client.Update(o)
+	if err != nil {
+		return nil, err
+	}
+	return updated.ToItem(), nil
 }
 
 func (cs *inClusterStorage) Get(name string) (common.Item, error) {
@@ -65,7 +68,6 @@ func (cs *inClusterStorage) Get(name string) (common.Item, error) {
 		return nil, err
 	}
 	return o.ToItem(), nil
-
 }
 
 func (cs *inClusterStorage) List() ([]common.Item, error) {

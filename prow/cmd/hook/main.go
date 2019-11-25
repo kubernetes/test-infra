@@ -17,16 +17,15 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/bugzilla"
+	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
@@ -38,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
+	bzplugin "k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
@@ -51,15 +51,16 @@ type options struct {
 
 	dryRun      bool
 	gracePeriod time.Duration
-	kubernetes  prowflagutil.ExperimentalKubernetesOptions
+	kubernetes  prowflagutil.KubernetesOptions
 	github      prowflagutil.GitHubOptions
+	bugzilla    prowflagutil.BugzillaOptions
 
 	webhookSecretFile string
 	slackTokenFile    string
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -78,7 +79,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla} {
 		group.AddFlags(fs)
 	}
 
@@ -90,11 +91,12 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func main() {
+	logrusutil.ComponentInit()
+
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
-	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -112,9 +114,18 @@ func main() {
 		tokens = append(tokens, o.slackTokenFile)
 	}
 
+	if o.bugzilla.ApiKeyPath != "" {
+		tokens = append(tokens, o.bugzilla.ApiKeyPath)
+	}
+
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start(tokens); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	pluginAgent := &plugins.ConfigAgent{}
+	if err := pluginAgent.Start(o.pluginConfig, true); err != nil {
+		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
 	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
@@ -125,11 +136,24 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	defer gitClient.Clean()
+
+	var bugzillaClient bugzilla.Client
+	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
+		client, err := o.bugzilla.BugzillaClient(secretAgent)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
+		}
+		bugzillaClient = client
+	}
 
 	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Kubernetes client for infrastructure cluster.")
+	}
+
+	buildClusterCoreV1Clients, err := o.kubernetes.BuildClusterCoreV1Clients(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes clients for build cluster.")
 	}
 
 	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
@@ -147,11 +171,6 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
-	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
-		logrus.WithError(err).Fatal("Error starting plugins.")
-	}
-
 	mdYAMLEnabled := func(org, repo string) bool {
 		return pluginAgent.Config().MDYAMLEnabled(org, repo)
 	}
@@ -164,19 +183,23 @@ func main() {
 	ownersClient := repoowners.NewClient(gitClient, githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist)
 
 	clientAgent := &plugins.ClientAgent{
-		GitHubClient:     githubClient,
-		ProwJobClient:    prowJobClient,
-		KubernetesClient: infrastructureClient,
-		GitClient:        gitClient,
-		SlackClient:      slackClient,
-		OwnersClient:     ownersClient,
+		GitHubClient:              githubClient,
+		ProwJobClient:             prowJobClient,
+		KubernetesClient:          infrastructureClient,
+		BuildClusterCoreV1Clients: buildClusterCoreV1Clients,
+		GitClient:                 gitClient,
+		SlackClient:               slackClient,
+		OwnersClient:              ownersClient,
+		BugzillaClient:            bugzillaClient,
 	}
 
 	promMetrics := hook.NewMetrics()
 
+	defer interrupts.WaitForGracefulShutdown()
+
 	// Expose prometheus metrics
-	pushGateway := configAgent.Config().PushGateway
-	metrics.ExposeMetrics("hook", pushGateway.Endpoint, pushGateway.Interval.Duration)
+	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway)
+	pjutil.ServePProf()
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,
@@ -185,7 +208,12 @@ func main() {
 		Metrics:        promMetrics,
 		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 	}
-	defer server.GracefulShutdown()
+	interrupts.OnInterrupt(func() {
+		server.GracefulShutdown()
+		if err := gitClient.Clean(); err != nil {
+			logrus.WithError(err).Error("Could not clean up git client cache.")
+		}
+	})
 
 	health := pjutil.NewHealth()
 
@@ -202,16 +230,5 @@ func main() {
 
 	health.ServeReady()
 
-	// Shutdown gracefully on SIGTERM or SIGINT
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-sig
-		logrus.Info("Hook is shutting down...")
-		ctx, cancel := context.WithTimeout(context.Background(), o.gracePeriod)
-		defer cancel()
-		httpServer.Shutdown(ctx)
-	}()
-
-	logrus.WithError(httpServer.ListenAndServe()).Warn("Server exited.")
+	interrupts.ListenAndServe(httpServer, o.gracePeriod)
 }

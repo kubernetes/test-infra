@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -24,10 +25,12 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
-	"sigs.k8s.io/yaml"
 )
 
 func TestEnsureValidConfiguration(t *testing.T) {
@@ -497,6 +500,19 @@ size:
 			expectedErr: fmt.Errorf("unknown fields present in embedded.yaml: " +
 				"presubmits.kube/kube[0].never_run, size, tide.not-a-property"),
 		},
+		{
+			name:     "pointer to a slice",
+			filename: "pointer.yaml",
+			cfg:      &plugins.Configuration{},
+			configBytes: []byte(`bugzilla:
+  default:
+    '*':
+      statuses:
+      - foobar
+      extra: oops`),
+			expectedErr: fmt.Errorf("unknown fields present in pointer.yaml: " +
+				"bugzilla.default.*.extra"),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -902,5 +918,211 @@ func TestWarningEnabled(t *testing.T) {
 		if actual, expected := opt.warningEnabled(testCase.candidate), testCase.expected; actual != expected {
 			t.Errorf("%s: expected warning %s enablement to be %v but got %v", testCase.name, testCase.candidate, expected, actual)
 		}
+	}
+}
+
+type fakeGHContent map[string]map[string]map[string]bool // org[repo][path] -> exist/does not exist
+
+type fakeGH struct {
+	files    fakeGHContent
+	archived map[string]bool // org/repo -> true/false
+}
+
+func (f fakeGH) GetFile(org, repo, filepath, _ string) ([]byte, error) {
+	if _, hasOrg := f.files[org]; !hasOrg {
+		return nil, &github.FileNotFound{}
+	}
+	if _, hasRepo := f.files[org][repo]; !hasRepo {
+		return nil, &github.FileNotFound{}
+	}
+	if _, hasPath := f.files[org][repo][filepath]; !hasPath {
+		return nil, &github.FileNotFound{}
+	}
+
+	return []byte("CONTENT"), nil
+}
+
+func (f fakeGH) GetRepos(org string, isUser bool) ([]github.Repo, error) {
+	if _, hasOrg := f.files[org]; !hasOrg {
+		return nil, fmt.Errorf("no such org")
+	}
+	var repos []github.Repo
+	for repo := range f.files[org] {
+		fullname := fmt.Sprintf("%s/%s", org, repo)
+		_, archived := f.archived[fullname]
+		repos = append(
+			repos,
+			github.Repo{
+				Owner:    github.User{Login: org},
+				Name:     repo,
+				FullName: fullname,
+				Archived: archived,
+			})
+	}
+	return repos, nil
+}
+
+func TestVerifyOwnersPresence(t *testing.T) {
+	testCases := []struct {
+		description string
+		cfg         *plugins.Configuration
+		gh          fakeGH
+
+		expected string
+	}{
+		{
+			description: "org with blunderbuss enabled contains a repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"blunderbuss"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with approve enable contains a repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"approve"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains a repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains an *archived* repo without OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			gh: fakeGH{
+				files:    fakeGHContent{"org": {"repo": {"NOOWNERS": true}}},
+				archived: map[string]bool{"org/repo": true},
+			},
+			expected: "",
+		}, {
+			description: "repo with owners-label enabled does not contain OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected: "the following orgs or repos enable at least one" +
+				" plugin that uses OWNERS files (approve, blunderbuss, owners-label), but" +
+				" its master branch does not contain a root level OWNERS file: [org/repo]",
+		}, {
+			description: "org with owners-label enabled contains only repos with OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
+			expected:    "",
+		}, {
+			description: "repo with owners-label enabled contains OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"owners-label"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"OWNERS": true}}}},
+			expected:    "",
+		}, {
+			description: "repo with unrelated plugin enabled does not contain OWNERS",
+			cfg:         &plugins.Configuration{Plugins: map[string][]string{"org/repo": {"cat"}}},
+			gh:          fakeGH{files: fakeGHContent{"org": {"repo": {"NOOWNERS": true}}}},
+			expected:    "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			var errMessage string
+			if err := verifyOwnersPresence(tc.cfg, tc.gh); err != nil {
+				errMessage = err.Error()
+			}
+			if errMessage != tc.expected {
+				t.Errorf("result differs:\n%s", diff.StringDiff(tc.expected, errMessage))
+			}
+		})
+	}
+}
+
+func TestOptions(t *testing.T) {
+
+	var defaultGitHubOptions flagutil.GitHubOptions
+	defaultGitHubOptions.AddFlagsWithoutDefaultGitHubTokenPath(flag.NewFlagSet("", flag.ContinueOnError))
+
+	StringsFlag := func(vals []string) flagutil.Strings {
+		var flag flagutil.Strings
+		for _, val := range vals {
+			flag.Set(val)
+		}
+		return flag
+	}
+
+	testCases := []struct {
+		name            string
+		args            []string
+		expectedOptions *options
+		expectedError   bool
+	}{
+		{
+			name: "cannot parse argument, reject",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--strict=non-boolean-string",
+			},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name:            "forgot config-path, reject",
+			args:            []string{"--job-config-path=config/jobs/org/job.yaml"},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name: "config-path with two warnings but one unknown, reject",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--warnings=mismatched-tide",
+				"--warnings=unknown-warning",
+			},
+			expectedOptions: nil,
+			expectedError:   true,
+		},
+		{
+			name: "config-path with many valid options",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--plugin-config=prow/plugins/plugin.yaml",
+				"--job-config-path=config/jobs/org/job.yaml",
+				"--warnings=mismatched-tide",
+				"--warnings=mismatched-tide-lenient",
+				"--exclude-warning=tide-strict-branch",
+				"--exclude-warning=mismatched-tide",
+				"--exclude-warning=ok-if-unknown-warning",
+				"--strict=true",
+				"--expensive-checks=false",
+			},
+			expectedOptions: &options{
+				configPath:      "prow/config.yaml",
+				pluginConfig:    "prow/plugins/plugin.yaml",
+				jobConfigPath:   "config/jobs/org/job.yaml",
+				warnings:        StringsFlag([]string{"mismatched-tide", "mismatched-tide-lenient"}),
+				excludeWarnings: StringsFlag([]string{"tide-strict-branch", "mismatched-tide", "ok-if-unknown-warning"}),
+				strict:          true,
+				expensive:       false,
+				github:          defaultGitHubOptions,
+			},
+			expectedError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			flags := flag.NewFlagSet(tc.name, flag.ContinueOnError)
+			var actualOptions options
+			switch actualErr := actualOptions.gatherOptions(flags, tc.args); {
+			case tc.expectedError:
+				if actualErr == nil {
+					t.Error("failed to receive an error")
+				}
+			case actualErr != nil:
+				t.Errorf("unexpected error: %v", actualErr)
+			case !reflect.DeepEqual(&actualOptions, tc.expectedOptions):
+				t.Errorf("actual %#v != expected %#v", actualOptions, *tc.expectedOptions)
+			}
+		})
 	}
 }

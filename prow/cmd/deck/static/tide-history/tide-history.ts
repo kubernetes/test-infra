@@ -1,7 +1,8 @@
 import moment from "moment";
-import {JobState} from "../api/prow";
+import {ProwJobState} from "../api/prow";
 import {HistoryData, Record} from "../api/tide-history";
 import {cell} from "../common/common";
+import {getParameterByName} from "../common/urls";
 
 declare const tideHistory: HistoryData;
 
@@ -11,13 +12,6 @@ interface FilteredRecord extends Record {
   // The following are not initially present and are instead populated based on the 'History' map key while filtering.
   repo: string;
   branch: string;
-}
-
-// http://stackoverflow.com/a/5158301/3694
-function getParameterByName(name: string): string | null {
-  const match = RegExp(`[?&]${name}=([^&/]*)`).exec(
-    window.location.search);
-  return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
 interface Options {
@@ -69,7 +63,7 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
   return opts;
 }
 
-function errorState(err?: string): JobState {
+function errorState(err?: string): ProwJobState {
   return err ? "failure" : "success";
 }
 
@@ -91,7 +85,7 @@ function redrawOptions(opts: Options) {
 
 window.onload = (): void => {
   const topNavigator = document.getElementById("top-navigator")!;
-  let navigatorTimeOut: number | undefined;
+  let navigatorTimeOut: any;
   const main = document.querySelector("main")! as HTMLElement;
   main.onscroll = () => {
     topNavigator.classList.add("hidden");
@@ -124,7 +118,7 @@ window.onload = (): void => {
   redraw();
 };
 
-function addOptions(options: string[], selectID: string): string | null {
+function addOptions(options: string[], selectID: string): string | undefined {
   const sel = document.getElementById(selectID)! as HTMLSelectElement;
   while (sel.length > 1) {
     sel.removeChild(sel.lastChild!);
@@ -230,7 +224,7 @@ function redraw(): void {
     }
   }
   // Sort by descending time.
-  filteredRecs = filteredRecs.sort((a, b) => moment(b.time).unix() - moment(a.time).unix());
+  filteredRecs = filteredRecs.sort((a, b) => a.time > b.time ? -1 : (a.time < b.time ? 1 : 0));
   redrawRecords(filteredRecs);
 }
 

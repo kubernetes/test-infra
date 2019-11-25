@@ -1,20 +1,12 @@
 # Kubernetes Project Configs
 
-This is a central place for Kubernetes-project specific configs for other tools in this repo.
+This is a central place for Kubernetes-project specific configs for some of
+the tools housed within this repo.
 
-## Directory structure:
+### Directory Structure
 
-[jobs/](./jobs) : job configs for Kubernetes Prow deployment, potentially testgrid configs as well  
-[tests](./tests) : validation tests for the configs
+- [`jobs/`](./jobs): Prow job configs for [prow.k8s.io](https://prow.k8s.io)
+- [`testgrids/`](./testgrids): Testgrid configuration for [testgrid.k8s.io](https://testgrid.k8s.io)
+- [`tests/`](./tests): validation tests for the configs
+- [`clusters/`](./clusters): GCP cluster infrastructure for [prow.k8s.io](https://prow.k8s.io)
 
-## Adding new jobs to Prow:
-
-1. Find or create an org/repo directory under config/jobs, eg: config/jobs/kubernetes-sigs/kustomize for jobs related to https://github.com/kubernetes-sigs/kustomize.
-
-1. Create an OWNERS file and add appropriate approver/reviewer for your job.
-
-1. Add a *.yaml file (the base name has to be unique), and follow [how-to-configure-new-jobs](/prow/jobs.md#how-to-configure-new-jobs) for adding new prowjobs.
-
-Also please read [`create-a-new-job`]
-
-[`create-a-new-job`]: /README.md#create-a-new-job

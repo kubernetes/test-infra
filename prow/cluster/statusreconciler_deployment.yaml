@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -21,6 +21,9 @@ metadata:
     app: statusreconciler
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: statusreconciler
   template:
     metadata:
       labels:
@@ -30,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/status-reconciler:v20191121-1ff2207db
         imagePullPolicy: Always
         args:
         - --dry-run=false

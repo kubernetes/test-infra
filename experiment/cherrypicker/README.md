@@ -1,1 +1,0 @@
-This project has moved to [https://github.com/kubernetes/test-infra/tree/master/prow/external-plugins/cherrypicker](https://github.com/kubernetes/test-infra/tree/master/prow/external-plugins/cherrypicker)

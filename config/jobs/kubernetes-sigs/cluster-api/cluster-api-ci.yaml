@@ -1,29 +1,89 @@
 periodics:
 - name: ci-cluster-api-build
   interval: 1h
+  decorate: true
   labels:
     preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.16
+      command:
       - "./scripts/ci-build.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: build
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-test
   interval: 1h
+  decorate: true
   labels:
     preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20190114-652973a54
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--scenario=execute"
-      - "--"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.16
+      command:
       - "./scripts/ci-test.sh"
+      resources:
+        requests:
+          cpu: 3
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: unit tests
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+- name: ci-cluster-api-build-release-0-2
+  interval: 1h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: release-0.2
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.16
+      command:
+      - "./scripts/ci-build.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: build-release-0-2
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
+- name: ci-cluster-api-test-release-0-2
+  interval: 1h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: release-0.2
+    path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.16
+      command:
+      - "./scripts/ci-test.sh"
+      resources:
+        requests:
+          cpu: 3
+          memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: unit tests-release-0-2
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"

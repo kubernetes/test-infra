@@ -59,7 +59,7 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 
 		if set.Mark(i) {
 			isDefault := false
-			klog.Warningf("%s: deleting %T: %v", i.ARN(), ig, ig)
+			klog.Warningf("%s: deleting %T: %s", i.ARN(), ig, i.ID)
 
 			for _, att := range ig.Attachments {
 				if att.VpcId == defaultVpc.VpcId {
@@ -73,12 +73,12 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 				}
 
 				if _, err := svc.DetachInternetGateway(detachReq); err != nil {
-					klog.Warningf("%v: detach from %v failed: %v", i.ARN(), *att.VpcId, err)
+					klog.Warningf("%s: detach from %s failed: %v", i.ARN(), *att.VpcId, err)
 				}
 			}
 
 			if isDefault {
-				klog.Infof("%s: skipping delete as IGW is the default for the VPC %T: %v", i.ARN(), ig, ig)
+				klog.Infof("%s: skipping delete as IGW is the default for the VPC %T: %s", i.ARN(), ig, i.ID)
 				continue
 			}
 
@@ -87,7 +87,7 @@ func (InternetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 			}
 
 			if _, err := svc.DeleteInternetGateway(deleteReq); err != nil {
-				klog.Warningf("%v: delete failed: %v", i.ARN(), err)
+				klog.Warningf("%s: delete failed: %v", i.ARN(), err)
 			}
 		}
 	}

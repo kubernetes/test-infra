@@ -127,6 +127,76 @@ func getLatestGKEVersion(project, zone, region, releasePrefix string) (string, e
 	return "v" + latestValid, nil
 }
 
+// (only works on gke)
+// getChannelGKEVersion will return master version from a GKE release channel.
+func getChannelGKEVersion(project, zone, region, gkeChannel string) (string, error) {
+	cmd := []string{
+		"container",
+		"get-server-config",
+		fmt.Sprintf("--project=%v", project),
+		"--format=json(channels)",
+	}
+
+	/*
+		sample output:
+		{
+		  "channels": [
+		    {
+		      "channel": "RAPID",
+		      "defaultVersion": "1.14.3-gke.9"
+		    },
+		    {
+		      "channel": "REGULAR",
+		      "defaultVersion": "1.12.8-gke.10"
+		    },
+		    {
+		      "channel": "STABLE",
+		      "defaultVersion": "1.12.8-gke.10"
+		    }
+		  ]
+		}
+	*/
+
+	type channel struct {
+		Channel        string `json:"channel"`
+		DefaultVersion string `json:"defaultVersion"`
+	}
+
+	type channels struct {
+		Channels []channel `json:"channels"`
+	}
+
+	// --gkeCommandGroup is from gke.go
+	if *gkeCommandGroup != "" {
+		cmd = append([]string{*gkeCommandGroup}, cmd...)
+	}
+
+	// zone can be empty for regional cluster
+	if zone != "" {
+		cmd = append(cmd, fmt.Sprintf("--zone=%v", zone))
+	} else if region != "" {
+		cmd = append(cmd, fmt.Sprintf("--region=%v", region))
+	}
+
+	res, err := control.Output(exec.Command("gcloud", cmd...))
+	if err != nil {
+		return "", err
+	}
+
+	var c channels
+	if err := json.Unmarshal(res, &c); err != nil {
+		return "", err
+	}
+
+	for _, channel := range c.Channels {
+		if strings.EqualFold(channel.Channel, gkeChannel) {
+			return "v" + channel.DefaultVersion, nil
+		}
+	}
+
+	return "", fmt.Errorf("cannot find a valid version for channel %s", gkeChannel)
+}
+
 // gcsWrite uploads contents to the dest location in GCS.
 // It currently shells out to gsutil, but this could change in future.
 func gcsWrite(dest string, contents []byte) error {

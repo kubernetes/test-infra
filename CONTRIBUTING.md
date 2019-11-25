@@ -1,15 +1,152 @@
 # Contributing to kubernetes/test-infra
 
-Make a [pull request](https://help.github.com/articles/about-pull-requests/) (hereafter PR). 
-In the PR body, feel free to add an area label if appropriate by saying `/area <AREA>`. 
-The list of labels is [here](https://github.com/kubernetes/test-infra/labels). 
-Also feel free to suggest a reviewer with `/assign @theirname`.
+Welcome! If you haven't seen them already, the Kubernetes project has:
 
-Once your reviewer is happy, they will say `/lgtm` which will apply the 
-`lgtm` label, and will apply the `approved` label if they are an 
-[owner](/OWNERS).
-The `approved` label will also automatically be applied to PRs opened by an 
-OWNER. If neither you nor your reviewer is an owner, please `/assign` someone
- who is.
-Your PR will be automatically merged once it has the `lgtm` and `approved` 
-labels, does not have any `do-not-merge/*` labels, and all tests are passing.
+- A [Contributor Guide][contrib-guide] - some [kubernetes/kubernetes]-specific content, but lots of info for the entire project
+- A [Contributor Cheat Sheet][contrib-cheatsheet] - lots of resources and handy links
+
+## Contact
+
+This repo is owned by [SIG Testing][sig-testing], and the people most directly
+involved are listed in [/OWNERS]. We are most responsive on our slack channel
+
+- Community Site: [kubernetes/community/sig-testing][sig-testing]
+- Slack: [#sig-testing]
+- Mailing List: [kubernetes-sig-testing@]
+
+We also have two other slack channels:
+
+- [#testing-ops]: for [prow.k8s.io] and other test-infra ops. Ping `@test-infra-oncall` or check [go.k8s.io/oncall]
+- [#prow]: for discussions related to the use or development of [`prow`](/prow)
+
+## Workflow
+
+In general we use the same pull request (PR) and review workflow used by the
+rest of the Kubernetes project. This means the [use of the CNCF CLA][cla],
+[code review by reviewers and approvers listed in OWNERS files][owners], and
+tests that automatically exercise code or enforce conventions. Many PRs will
+result in changes automatically being deployed.
+
+Some conventions that are specific to this repo:
+
+- For large code changes, please write a design doc or [KEP] and get signoff
+  from SIG Testing before trying to land code. If you're not sure what a KEP
+  should look like, [kuberenetes/enhancements/keps/sig-testing] has some
+  examples. If you're not sure what "large" means, [come ask us](#contact)
+- We find it polite to apply the `do-not-merge/hold` label via the `/hold`
+  command when in doubt about whether/when a PR should merge. If we don't
+  explain why we're adding a `/hold`, this is usually because the PR will
+  cause changes to be deployed on merge, and we want the person responsible
+  for deploying and monitoring the changes to decide when to `/hold cancel`.
+  In some cases this is the PR author, in other cases this may be whomever
+  is on-call for prow.k8.io.  If you are unsure which, please ask.
+- Many of us use [gubernator.k8s.io/pr] to keep track of which PRs require
+  our attention. Use of the [`/cc @person`][command-cc] or
+  [`/assign @person`][command-assign] commands is the most effective way to
+  put PRs on our radar. You can also [contact us](#contact) on slack.
+
+## Issue Triage
+
+Issues are ideally labeled with:
+
+- milestone: during which release cycle do we plan on working on this issue
+- `sig/foo`: which SIG owns this work
+- `area/foo`: which subproject or code is this issue related to
+- `kind/foo`: which kind of work is this issue describing
+- `priority/foo`: how important is this issue
+
+For example, an issue related to cleaning up and consolidating (`kind/cleanup`)
+release-related (`sig/release`) jobs and dashboards (`area/config`) for the
+v1.16 cycle (`milestone: v1.16`) that may not get completed by the end of the
+cycle if more important or more urgent arises (`priority/important-longterm`).
+
+We try to have a non-stale pool of issues that are available for new
+contributors who want to help out but aren't sure what to work on or where to
+get started:
+
+- [`label:"good first issue"`][good-first-issue] - triaged per [Good First Issue docs][good-first-issue-docs]
+- [`label:"help wanted"`][help-wanted] - triaged per [Help Wanted docs][help-wanted-docs]
+
+## Guides
+
+If you're not sure where to contribute or what any of these mean, please see
+[/README.md] for a brief description of the various codebases in this repo.
+
+### Build and Test
+
+We use [`bazel`][bazel] to build, test and deploy code in this repo. In most
+cases you can get by just fine with:
+
+```
+bazel build //path/to/thing/in/repo/...
+bazel test //path/to/thing/in/repo/...
+```
+
+If you modify Go code, run `./hack/update-bazel.sh` to keep `BUILD.bazel` files
+up to date
+
+### Dependency Management
+
+Please see [/docs/deps.md]
+
+### Prow Jobs
+
+The majority of the Kubernetes project is tested via prowjobs that run on
+[prow.k8s.io]. See [/config/jobs/README.md] for more information.
+
+### TestGrid Config
+
+Test results generated by our prow jobs are available at [testgrid.k8s.io].
+To learn more about how to configure which test results display where, see
+[/testgrid/README.md]
+
+### GitHub Labels
+
+[go.k8s.io/github-labels] describes GitHub labels that are synced across all
+Kubernetes orgs and repos. To update these, please see [/label_sync/README.md]
+
+### External Test Results
+
+We welcome contribution of e2e test results for [kubernetes/kubernetes]
+generated by other CI systems on other platforms to ensure that Kubernetes
+has test coverage in a variety of environments. For more info please see
+[/docs/contributing-test-results.md]
+
+[contrib-guide]: http://git.k8s.io/community/contributors/guide
+[contrib-cheatsheet]: https://git.k8s.io/community/contributors/guide/contributor-cheatsheet
+[cla]: https://github.com/kubernetes/community/blob/master/CLA.md
+[owners]: https://go.k8s.io/owners
+[KEP]: https://github.com/kubernetes/enhancements/blob/master/keps/YYYYMMDD-kep-template.md
+
+[sig-testing]: https://github.com/kubernetes/community/tree/master/sig-testing
+[#sig-testing]: https://kubernetes.slack.com/messages/sig-testing
+[kubernetes-sig-testing@]: https://groups.google.com/forum/#!forum/kubernetes-sig-testing
+
+[good-first-issue]: https://github.com/issues?q=repo%3Akubernetes%2Ftest-infra+is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+
+[good-first-issue-docs]: https://git.k8s.io/community/contributors/guide/help-wanted.md#good-first-issue
+[help-wanted]: https://github.com/issues?q=repo%3Akubernetes%2Ftest-infra+is%3Aissue+is%3Aopen+label%3A"help+wanted"
+[help-wanted-docs]: https://git.k8s.io/community/contributors/guide/help-wanted.md#help-wanted
+
+[#prow]: https://kubernetes.slack.com/messages/prow
+[#testing-ops]: https://kubernetes.slack.com/messages/testing-ops
+
+[/OWNERS]: /OWNERS
+[/README.md]: /README.md
+[/config/jobs/README.md]: /config/jobs/README.md
+[/docs/contributing-test-results.md]: /docs/contributing-test-results.md
+[/docs/deps.md]: /docs/deps.md
+[/label_sync/README.md]: /label_sync/README.md
+[/testgrid/README.md]: /testgrid/README.md
+
+[gubernator.k8s.io/pr]: https://gubernator.k8s.io/pr
+[prow.k8s.io]: https://prow.k8s.io
+[testgrid.k8s.io]: https://testgrid.k8s.io
+[go.k8s.io/github-labels]: https://go.k8s.io/github-labels
+[go.k8s.io/oncall]: https://go.k8s.io/oncall
+[command-cc]: https://prow.k8s.io/command-help#cc
+[command-assign]: https://prow.k8s.io/command-help#assign
+
+[kubernetes/kubernetes]: https://github.com/kubernetes/kubernetes
+[kuberenetes/enhancements/keps/sig-testing]: https://github.com/kubernetes/enhancements/tree/master/keps/sig-testing
+
+[bazel]: https://www.bazel.io/

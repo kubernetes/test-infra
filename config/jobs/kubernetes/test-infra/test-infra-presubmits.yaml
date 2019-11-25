@@ -1,35 +1,5 @@
 presubmits:
   kubernetes/test-infra:
-  - name: pull-test-infra-build-smoke
-    agent: knative-build
-    decorate: true
-    build_spec:
-      steps:
-      - name: first
-        image: busybox
-        args: ["echo", "hello"]
-      - name: second
-        image: busybox
-        args: ["echo", "world"]
-      - name: third
-        image: busybox
-        args: ["cat", "config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml"]
-
-  - name: pull-test-infra-build-smoke-fail
-    agent: knative-build
-    decorate: true
-    build_spec:
-      steps:
-      - name: first
-        image: busybox
-        args: ["echo", "hello"]
-      - name: second
-        image: busybox
-        args: ["sleep", "60"]
-      - name: third
-        image: busybox
-        args: ["exit", "1"]
-
   - name: pull-test-infra-bazel
     branches:
     - master
@@ -40,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: launcher.gcr.io/google/bazel:0.25.2
+      - image: launcher.gcr.io/google/bazel:0.29.1
         command:
         - hack/bazel.sh
         args:
@@ -48,11 +18,12 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
-
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-gubernator
     branches:
     - master
-    run_if_changed: 'gubernator|prow/config.yaml'
+    run_if_changed: 'gubernator|config/prow/config.yaml'
     decorate: true
     labels:
       preset-service-account: "true"
@@ -64,7 +35,8 @@ presubmits:
         env:
         - name: WORKSPACE
           value: "/workspace"
-
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-verify-file-perms
     branches:
     - master
@@ -74,10 +46,11 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-experimental
         command:
         - ./hack/verify-file-perms.sh
-
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-test-infra-yamllint
     always_run: true
     decorate: true
@@ -89,3 +62,6 @@ presubmits:
         - -c
         - config/jobs/.yamllint.conf
         - config/jobs
+        - prow/cluster
+    annotations:
+      testgrid-create-test-group: 'true'

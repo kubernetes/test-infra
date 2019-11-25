@@ -36,7 +36,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 func getClient(url string) *Client {
@@ -250,7 +250,7 @@ func TestCreateConfigMap(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.CreateConfigMap(ConfigMap{}); err != nil {
+	if _, err := c.CreateConfigMap(v1.ConfigMap{}); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
@@ -267,7 +267,7 @@ func TestReplaceConfigMap(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.ReplaceConfigMap("config", ConfigMap{}); err != nil {
+	if _, err := c.ReplaceConfigMap("config", v1.ConfigMap{}); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }

@@ -90,16 +90,7 @@ func RealMain(opts types.Options, d types.Deployer, tester types.Tester) (result
 		}
 	}
 
-	// up a cluster
-	if opts.ShouldUp() {
-		// TODO(bentheelder): this should write out to JUnit
-		if err := writer.WrapStep("Up", d.Up); err != nil {
-			// we do not continue to test if build fails
-			return err
-		}
-	}
-
-	// ensure tearing down the cluster happens last
+	// ensure tearing down the cluster happens last, even if up or test fails.
 	defer func() {
 		if opts.ShouldDown() {
 			// TODO(bentheelder): instead of keeping the first error, consider
@@ -109,6 +100,15 @@ func RealMain(opts types.Options, d types.Deployer, tester types.Tester) (result
 			}
 		}
 	}()
+
+	// up a cluster
+	if opts.ShouldUp() {
+		// TODO(bentheelder): this should write out to JUnit
+		if err := writer.WrapStep("Up", d.Up); err != nil {
+			// we do not continue to test if build fails
+			return err
+		}
+	}
 
 	// and finally test, if a test was specified
 	if opts.ShouldTest() {

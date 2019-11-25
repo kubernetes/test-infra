@@ -59,7 +59,7 @@ func TestMakeReviews(t *testing.T) {
 	cases := []struct {
 		name     string
 		input    *branchprotection.ReviewPolicy
-		expected *github.RequiredPullRequestReviews
+		expected *github.RequiredPullRequestReviewsRequest
 	}{
 		{
 			name: "nil returns nil",
@@ -81,7 +81,7 @@ func TestMakeReviews(t *testing.T) {
 			input: &branchprotection.ReviewPolicy{
 				Approvals: &three,
 			},
-			expected: &github.RequiredPullRequestReviews{
+			expected: &github.RequiredPullRequestReviewsRequest{
 				RequiredApprovingReviewCount: 3,
 			},
 		},
@@ -96,11 +96,11 @@ func TestMakeReviews(t *testing.T) {
 					Teams: []string{"megacorp", "startup"},
 				},
 			},
-			expected: &github.RequiredPullRequestReviews{
+			expected: &github.RequiredPullRequestReviewsRequest{
 				RequiredApprovingReviewCount: 1,
 				RequireCodeOwnerReviews:      true,
 				DismissStaleReviews:          true,
-				DismissalRestrictions: github.Restrictions{
+				DismissalRestrictions: github.RestrictionsRequest{
 					Teams: &[]string{"megacorp", "startup"},
 					Users: &[]string{"fred", "jane"},
 				},
@@ -118,6 +118,7 @@ func TestMakeReviews(t *testing.T) {
 
 func TestMakeRequest(t *testing.T) {
 	yes := true
+	no := false
 	cases := []struct {
 		name     string
 		policy   branchprotection.Policy
@@ -125,6 +126,9 @@ func TestMakeRequest(t *testing.T) {
 	}{
 		{
 			name: "Empty works",
+			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
+			},
 		},
 		{
 			name: "teams != nil => users != nil",
@@ -134,7 +138,8 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
-				Restrictions: &github.Restrictions{
+				EnforceAdmins: &no,
+				Restrictions: &github.RestrictionsRequest{
 					Teams: &[]string{"hello"},
 					Users: &[]string{},
 				},
@@ -148,7 +153,8 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
-				Restrictions: &github.Restrictions{
+				EnforceAdmins: &no,
+				Restrictions: &github.RestrictionsRequest{
 					Users: &[]string{"there"},
 					Teams: &[]string{},
 				},
@@ -162,6 +168,7 @@ func TestMakeRequest(t *testing.T) {
 				},
 			},
 			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
 				RequiredStatusChecks: &github.RequiredStatusChecks{
 					Strict:   true,
 					Contexts: []string{},

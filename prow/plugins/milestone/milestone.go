@@ -86,7 +86,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 
-func buildMilestoneMap(milestones []github.Milestone) map[string]int {
+func BuildMilestoneMap(milestones []github.Milestone) map[string]int {
 	m := make(map[string]int)
 	for _, ms := range milestones {
 		m[ms.Title] = ms.Number
@@ -145,7 +145,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		return nil
 	}
 
-	milestoneMap := buildMilestoneMap(milestones)
+	milestoneMap := BuildMilestoneMap(milestones)
 	milestoneNumber, ok := milestoneMap[proposedMilestone]
 	if !ok {
 		slice := make([]string, 0, len(milestoneMap))

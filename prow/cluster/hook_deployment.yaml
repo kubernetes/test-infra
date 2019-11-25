@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -26,6 +26,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: hook
   template:
     metadata:
       labels:
@@ -35,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/hook:v20191121-1ff2207db
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -67,6 +70,9 @@ spec:
           readOnly: true
         - name: cat-api
           mountPath: /etc/cat-api
+          readOnly: true
+        - name: unsplash-api
+          mountPath: /etc/unsplash-api
           readOnly: true
         livenessProbe:
           httpGet:
@@ -103,3 +109,6 @@ spec:
       - name: cat-api
         configMap:
           name: cat-api-key
+      - name: unsplash-api
+        secret:
+          secretName: unsplash-api-key

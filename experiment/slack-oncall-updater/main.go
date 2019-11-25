@@ -61,10 +61,13 @@ func mapGitHubToSlack(github string) (string, error) {
 	// and clicking "Copy user ID".
 	mapping := map[string]string{
 		"amwat":          "U9B1P2UGP",
+		"chases2":        "UJ9R0FWD6",
 		"cjwagner":       "U4QFZFMCM",
+		"bentheelder":    "U1P7T516X",
 		"fejta":          "U0E2KHQ13",
 		"katharine":      "UBTBNJ6GL",
 		"krzyzacy":       "U22Q65CTG",
+		"mirandachrist":  "UJR3XHHNF",
 		"michelle192837": "U3TRY5WV7",
 		"tony-yang":      "UK3MVSP3J",
 	}

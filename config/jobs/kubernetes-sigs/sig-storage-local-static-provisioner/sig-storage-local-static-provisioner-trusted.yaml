@@ -12,7 +12,7 @@ postsubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         command:
         - runner.sh
         args:
@@ -37,7 +37,12 @@ postsubmits:
       - name: pusher-docker-config
         secret:
           secretName: sig-storage-local-static-provisioner-pusher
-  # A postsubmit job to build release image on release tags.
+    # A postsubmit job to build release image on release tags.
+    annotations:
+      testgrid-dashboards: sig-storage-local-static-provisioner
+      testgrid-tab-name: master-canary-build
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Canary image build against latest master
   - name: post-sig-storage-local-static-provisioner-build-release
     branches:
     - ^v\d+\.\d+\.\d+$ # stable
@@ -51,7 +56,7 @@ postsubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         command:
         - runner.sh
         args:
@@ -74,3 +79,7 @@ postsubmits:
       - name: pusher-docker-config
         secret:
           secretName: sig-storage-local-static-provisioner-pusher
+    annotations:
+      testgrid-dashboards: sig-storage-local-static-provisioner
+      testgrid-tab-name: release-build
+      description: Release image build against tagged releases

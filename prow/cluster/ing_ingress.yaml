@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: default
+  name: ing
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: prow-managed-certs
+    kubernetes.io/ingress.class: "gce"
+    networking.gke.io/managed-certificates: prow-canary-k8s-io
+spec:
+  rules:
+  - host: prow-canary.k8s.io
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: deck
+          servicePort: 80
+      - path: /hook
+        backend:
+          serviceName: hook
+          servicePort: 8888
+      - path: /metrics
+        backend:
+          serviceName: pushgateway-external
+          servicePort: 80

@@ -119,7 +119,7 @@ func TestExtractStrategies(t *testing.T) {
 		},
 		{
 			"v1.8.0-gke.0",
-			"https://storage.googleapis.com/kubernetes-release-gke/release",
+			"https://storage.googleapis.com/gke-release-staging/kubernetes/release",
 			"v1.8.0-gke.0",
 		},
 		{
@@ -129,7 +129,17 @@ func TestExtractStrategies(t *testing.T) {
 		},
 		{
 			"ci/gke-staging-latest",
-			"https://storage.googleapis.com/kubernetes-release-gke/release",
+			"https://storage.googleapis.com/gke-release-staging/kubernetes/release",
+			"v1.2.3+abcde",
+		},
+		{
+			"ci/gke-latest-1.13",
+			"https://storage.googleapis.com/gke-release-staging/kubernetes/release",
+			"v1.2.3+abcde",
+		},
+		{
+			"ci/gke-channel-rapid",
+			"https://storage.googleapis.com/gke-release-staging/kubernetes/release",
 			"v1.2.3+abcde",
 		},
 		{

@@ -1,0 +1,69 @@
+# Dashboard Group
+
+dashboard_groups:
+- name: sig-release
+  dashboard_names:
+  - sig-release-master-blocking
+  - sig-release-master-informing
+  - sig-release-1.17-blocking
+  - sig-release-1.17-informing
+  - sig-release-1.16-blocking
+  - sig-release-1.16-informing
+  - sig-release-1.15-blocking
+  - sig-release-1.15-informing
+  - sig-release-1.14-blocking
+  - sig-release-1.14-informing
+  - sig-release-image-pushes
+  - sig-release-misc
+  - sig-release-publishing-bot
+  - sig-release-release-notes-presubmits
+  - sig-release-prototype-master-blocking
+  - sig-release-generated
+  - sig-release-job-config-errors
+
+# Dashboards
+
+dashboards:
+- name: sig-release-master-blocking
+- name: sig-release-master-informing
+- name: sig-release-1.17-blocking
+- name: sig-release-1.17-informing
+- name: sig-release-1.16-blocking
+- name: sig-release-1.16-informing
+- name: sig-release-1.15-blocking
+- name: sig-release-1.15-informing
+- name: sig-release-1.14-blocking
+- name: sig-release-1.14-informing
+  dashboard_tab:
+  - name: Conformance - OpenStack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+    description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
+- name: sig-release-image-pushes
+- name: sig-release-misc
+- name: sig-release-publishing-bot
+- name: sig-release-release-notes-presubmits
+  dashboard_tab:
+  - name: build-dev
+    test_group_name: pull-release-notes-build-dev
+    base_options: width=10
+  - name: build-prod
+    test_group_name: pull-release-notes-build-prod
+    base_options: width=10
+  - name: check-prettier
+    test_group_name: pull-release-notes-check-prettier
+    base_options: width=10
+  - name: doc
+    test_group_name: pull-release-notes-doc
+    base_options: width=10
+  - name: e2e
+    test_group_name: pull-release-notes-e2e
+    base_options: width=10
+  - name: lint
+    test_group_name: pull-release-notes-lint
+    base_options: width=10
+  - name: test
+    test_group_name: pull-release-notes-test
+    base_options: width=10
+- name: sig-release-prototype-master-blocking
+- name: sig-release-generated
+- name: sig-release-job-config-errors

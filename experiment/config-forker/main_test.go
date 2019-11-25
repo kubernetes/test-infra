@@ -346,28 +346,16 @@ func TestFixTestgridAnnotations(t *testing.T) {
 		isPresubmit bool
 	}{
 		{
-			name:        "update master-blocking to point at 1.15-blocking",
+			name:        "remove presubmit additions to dashboards",
+			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking, google-unit"},
+			expected:    map[string]string{},
+			isPresubmit: true,
+		},
+		{
+			name:        "periodic updates master-blocking to point at 1.15-blocking",
 			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking"},
 			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking"},
-			isPresubmit: true,
-		},
-		{
-			name:        "update master-informing to point at 1.15-informing",
-			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-informing"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-informing"},
-			isPresubmit: true,
-		},
-		{
-			name:        "periodic updates master-blocking to point at 1.15-blocking and adds 1.15-all",
-			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking, sig-release-1.15-all"},
 			isPresubmit: false,
-		},
-		{
-			name:        "update master-blocking to point at 1.15-blocking and leave other entries alone",
-			annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-master-blocking, google-unit"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit"},
-			isPresubmit: true,
 		},
 		{
 			name:        "drop 'description'",
@@ -378,8 +366,8 @@ func TestFixTestgridAnnotations(t *testing.T) {
 		{
 			name:        "update tab names",
 			annotations: map[string]string{testgridTabNameAnnotation: "foo master"},
-			expected:    map[string]string{testgridTabNameAnnotation: "foo 1.15"},
-			isPresubmit: true,
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all", testgridTabNameAnnotation: "foo 1.15"},
+			isPresubmit: false,
 		},
 	}
 
@@ -449,9 +437,10 @@ func TestGeneratePresubmits(t *testing.T) {
 				JobBase: config.JobBase{
 					Name: "pull-replace-some-things",
 					Annotations: map[string]string{
-						forkAnnotation:        "true",
-						replacementAnnotation: "foo -> {{.Version}}",
-						"some-annotation":     "yup",
+						forkAnnotation:                 "true",
+						replacementAnnotation:          "foo -> {{.Version}}",
+						"testgrid-generate-test-group": "true",
+						"some-annotation":              "yup",
 					},
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
@@ -510,7 +499,7 @@ func TestGeneratePresubmits(t *testing.T) {
 		},
 	}
 
-	result, err := generatePresubmits(config.JobConfig{Presubmits: presubmits}, "1.15")
+	result, err := generatePresubmits(config.JobConfig{PresubmitsStatic: presubmits}, "1.15")
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -534,6 +523,13 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-master",
 				Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true"},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "some-generic-periodic-will-end-up-in-all-master",
+				Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true", testgridDashboardsAnnotation: "google-unit"},
 			},
 		},
 		{
@@ -589,6 +585,13 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-beta",
 				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-1.15-all"},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "some-generic-periodic-will-end-up-in-all-beta",
+				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "google-unit, sig-release-1.15-all"},
 			},
 		},
 		{
@@ -660,6 +663,19 @@ func TestGeneratePostsubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
+					Name: "post-kubernetes-generic-will-end-up-in-all",
+					Annotations: map[string]string{
+						forkAnnotation:               "true",
+						suffixAnnotation:             "true",
+						testgridDashboardsAnnotation: "google-unit",
+					},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+			},
+			{
+				JobBase: config.JobBase{
 					Name: "post-replace-some-things-master",
 					Annotations: map[string]string{
 						forkAnnotation:        "true",
@@ -705,7 +721,19 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Name: "post-kubernetes-generic-beta",
 					Annotations: map[string]string{
 						suffixAnnotation:             "true",
-						testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit, sig-release-1.15-all",
+						testgridDashboardsAnnotation: "sig-release-1.15-blocking, google-unit",
+					},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "post-kubernetes-generic-will-end-up-in-all-beta",
+					Annotations: map[string]string{
+						suffixAnnotation:             "true",
+						testgridDashboardsAnnotation: "google-unit, sig-release-1.15-all",
 					},
 				},
 				Brancher: config.Brancher{

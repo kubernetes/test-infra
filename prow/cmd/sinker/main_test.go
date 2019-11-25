@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"reflect"
 	"testing"
@@ -30,9 +31,9 @@ import (
 	corev1fake "k8s.io/client-go/kubernetes/fake"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	clienttesting "k8s.io/client-go/testing"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	pjfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
@@ -80,6 +81,118 @@ func startTime(s time.Time) *metav1.Time {
 func TestClean(t *testing.T) {
 
 	pods := []runtime.Object{
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-running-pod-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-running",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-running-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-running",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete-pod-pending",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-complete",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-unknown-pod-pending",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-unknown",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-unknown-pod-failed",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-unknown",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-unknown-pod-succeeded",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw:  "true",
+					kube.ProwJobIDLabel: "job-unknown",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodSucceeded,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
 		&corev1api.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed",
@@ -209,6 +322,12 @@ func TestClean(t *testing.T) {
 		},
 	}
 	deletedPods := sets.NewString(
+		"job-complete-pod-failed",
+		"job-complete-pod-pending",
+		"job-complete-pod-succeeded",
+		"job-unknown-pod-failed",
+		"job-unknown-pod-pending",
+		"job-unknown-pod-succeeded",
 		"new-running-no-pj",
 		"old-failed",
 		"old-succeeded",
@@ -220,6 +339,25 @@ func TestClean(t *testing.T) {
 		return &completed
 	}
 	prowJobs := []runtime.Object{
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-complete",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+				CompletionTime: setComplete(-time.Second),
+			},
+		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "job-running",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+		},
 		&prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "old-failed",
@@ -359,6 +497,7 @@ func TestClean(t *testing.T) {
 		},
 	}
 	deletedProwJobs := sets.NewString(
+		"job-complete",
 		"old-failed",
 		"old-succeeded",
 		"old-complete",
@@ -384,7 +523,7 @@ func TestClean(t *testing.T) {
 	}
 	deletedPodsTrusted := sets.NewString("old-failed-trusted")
 
-	fpjc := pjfake.NewSimpleClientset(prowJobs...)
+	fpjc := fakectrlruntimeclient.NewFakeClient(prowJobs...)
 	fkc := []*corev1fake.Clientset{corev1fake.NewSimpleClientset(pods...), corev1fake.NewSimpleClientset(podsTrusted...)}
 	var fpc []corev1.PodInterface
 	for _, fakeClient := range fkc {
@@ -393,14 +532,26 @@ func TestClean(t *testing.T) {
 	// Run
 	c := controller{
 		logger:        logrus.WithField("component", "sinker"),
-		prowJobClient: fpjc.ProwV1().ProwJobs("ns"),
+		prowJobClient: fpjc,
 		podClients:    fpc,
 		config:        newFakeConfigAgent().Config,
 	}
 	c.clean()
 	assertSetsEqual(deletedPods, getDeletedObjectNames(fkc[0].Fake.Actions()), t, "did not delete correct Pods")
 	assertSetsEqual(deletedPodsTrusted, getDeletedObjectNames(fkc[1].Fake.Actions()), t, "did not delete correct trusted Pods")
-	assertSetsEqual(deletedProwJobs, getDeletedObjectNames(fpjc.Fake.Actions()), t, "did not delete correct ProwJobs")
+
+	remainingProwJobs := &prowv1.ProwJobList{}
+	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
+		t.Fatalf("failed to get remaining prowjobs: %v", err)
+	}
+	actuallyDeletedProwJobs := sets.String{}
+	for _, initalProwJob := range prowJobs {
+		actuallyDeletedProwJobs.Insert(initalProwJob.(metav1.Object).GetName())
+	}
+	for _, remainingProwJob := range remainingProwJobs.Items {
+		actuallyDeletedProwJobs.Delete(remainingProwJob.Name)
+	}
+	assertSetsEqual(deletedProwJobs, actuallyDeletedProwJobs, t, "did not delete correct ProwJobs")
 }
 
 func getDeletedObjectNames(actions []clienttesting.Action) sets.String {

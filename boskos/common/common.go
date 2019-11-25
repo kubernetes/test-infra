@@ -38,6 +38,10 @@ const (
 	Cleaning = "cleaning"
 	// Leased state defines a resource being leased in order to make a new resource
 	Leased = "leased"
+	// ToBeDeleted is used for resources about to be deleted, they will be verified by a cleaner which mark them as tombstone
+	ToBeDeleted = "toBeDeleted"
+	// Tombstone is the state in which a resource can safely be deleted
+	Tombstone = "tombstone"
 	// Other is used to agglomerate unspecified states for metrics reporting
 	Other = "other"
 )
@@ -58,6 +62,35 @@ type Item interface {
 	GetName() string
 }
 
+// Duration is a wrapper around time.Duration that parses times in either
+// 'integer number of nanoseconds' or 'duration string' formats and serializes
+// to 'duration string' format.
+type Duration struct {
+	*time.Duration
+}
+
+// UnmarshalJSON implement the JSON Unmarshaler interface in order to be able parse string to time.Duration.
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &d.Duration); err == nil {
+		// b was an integer number of nanoseconds.
+		return nil
+	}
+	// b was not an integer. Assume that it is a duration string.
+
+	var str string
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+
+	pd, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+	d.Duration = &pd
+	return nil
+}
+
 // Resource abstracts any resource type that can be tracked by boskos
 type Resource struct {
 	Type       string    `json:"type"`
@@ -67,13 +100,24 @@ type Resource struct {
 	LastUpdate time.Time `json:"lastupdate"`
 	// Customized UserData
 	UserData *UserData `json:"userdata"`
+	// Used to clean up dynamic resources
+	ExpirationDate *time.Time `json:"expiration-date,omitempty"`
 }
 
 // ResourceEntry is resource config format defined from config.yaml
 type ResourceEntry struct {
-	Type  string   `json:"type"`
-	State string   `json:"state"`
-	Names []string `json:"names,flow"`
+	Type     string        `json:"type"`
+	State    string        `json:"state"`
+	Names    []string      `json:"names,flow"`
+	MaxCount int           `json:"max-count,omitempty"`
+	MinCount int           `json:"min-count,omitempty"`
+	LifeSpan *Duration     `json:"lifespan,omitempty"`
+	Config   ConfigType    `json:"config,omitempty"`
+	Needs    ResourceNeeds `json:"needs,omitempty"`
+}
+
+func (re *ResourceEntry) IsDRLC() bool {
+	return len(re.Names) == 0
 }
 
 // BoskosConfig defines config used by boskos server
@@ -89,8 +133,17 @@ type Metric struct {
 	// TODO: implements state transition metrics
 }
 
+// IsInUse reports if the resource is owned by anything else than Boskos.
+func (res *Resource) IsInUse() bool {
+	return res.Owner != ""
+}
+
 // NewResource creates a new Boskos Resource.
 func NewResource(name, rtype, state, owner string, t time.Time) Resource {
+	// If no state defined, mark as Free
+	if state == "" {
+		state = Free
+	}
 	return Resource{
 		Name:       name,
 		Type:       rtype,
@@ -141,6 +194,29 @@ type ResourceByName []Resource
 func (ut ResourceByName) Len() int           { return len(ut) }
 func (ut ResourceByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
 func (ut ResourceByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
+
+// ResourceByDeleteState helps sorting resources by state, putting Tombstone first, then ToBeDeleted,
+// and sorting alphabetacally by resource name
+type ResourceByDeleteState []Resource
+
+func (ut ResourceByDeleteState) Len() int      { return len(ut) }
+func (ut ResourceByDeleteState) Swap(i, j int) { ut[i], ut[j] = ut[j], ut[i] }
+func (ut ResourceByDeleteState) Less(i, j int) bool {
+	order := map[string]int{Tombstone: 0, ToBeDeleted: 1}
+	stateIndex := func(s string) int {
+		i, ok := order[s]
+		if ok {
+			return i
+		}
+		return 2
+	}
+	indexI := stateIndex(ut[i].State)
+	indexJ := stateIndex(ut[i].State)
+	if indexI == indexJ {
+		return ut[i].GetName() < ut[j].GetName()
+	}
+	return indexI < indexJ
+}
 
 // CommaSeparatedStrings is used to parse comma separated string flag into a list of strings
 type CommaSeparatedStrings []string

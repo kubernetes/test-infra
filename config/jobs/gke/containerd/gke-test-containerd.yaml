@@ -32,8 +32,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-containerd-gke-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   labels:
@@ -60,8 +63,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-containerd-gke-1.14-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
   labels:
@@ -87,8 +93,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-containerd-gke-1.14-alpha-cluster-features
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
   labels:
@@ -115,8 +124,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-containerd-gke-1.14
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
   labels:
@@ -143,8 +155,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-containerd-gke-1.13
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
   labels:
@@ -171,8 +186,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-containerd-gke-1.13-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
   labels:
@@ -199,8 +217,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-containerd-gke-1.13-alpha-cluster-features
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
   labels:
@@ -226,8 +247,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-gke-1.14-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
   labels:
@@ -252,8 +276,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-gke-1.14-alpha-cluster-features
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
   labels:
@@ -279,8 +306,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-gke-1.13-alpha-cluster
 - interval: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
   labels:
@@ -306,8 +336,11 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
+  annotations:
+    testgrid-dashboards: google-gke
+    testgrid-tab-name: cos-gke-1.13-alpha-cluster-features
 - interval: 12h
   name: ci-kubernetes-soak-gke-cos-containerd
   labels:
@@ -338,4 +371,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+  annotations:
+    testgrid-dashboards: google-soak
+    testgrid-tab-name: gke-cos-containerd

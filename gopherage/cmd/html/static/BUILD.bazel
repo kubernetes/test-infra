@@ -47,8 +47,9 @@ ts_library(
 )
 
 rollup_bundle(
-    name = "browser_bundle",
-    entry_point = "gopherage/cmd/html/static/browser",
+    name = "zz.browser_bundle",
+    enable_code_splitting = False,
+    entry_point = ":browser.ts",
     deps = [
         ":browser",
     ],

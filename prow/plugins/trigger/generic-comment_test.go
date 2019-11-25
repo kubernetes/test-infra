@@ -22,7 +22,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	clienttesting "k8s.io/client-go/testing"
@@ -30,9 +29,11 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -61,10 +62,12 @@ type testcase struct {
 	Presubmits           map[string][]config.Presubmit
 	IssueLabels          []string
 	IgnoreOkToTest       bool
-	ElideSkippedContexts bool
+	ElideSkippedContexts *bool
 }
 
 func TestHandleGenericComment(t *testing.T) {
+	truth := true
+	var lies bool
 	var testcases = []testcase{
 		{
 			name: "Not a PR.",
@@ -199,7 +202,7 @@ func TestHandleGenericComment(t *testing.T) {
 			ShouldBuild: true,
 		},
 		{
-			name: "Wrong branch.",
+			name: "Wrong branch. Skipped statuses elided (by default).",
 
 			Author:       "trusted-member",
 			Body:         "/test all",
@@ -207,7 +210,19 @@ func TestHandleGenericComment(t *testing.T) {
 			IsPR:         true,
 			Branch:       "other",
 			ShouldBuild:  false,
-			ShouldReport: true,
+			ShouldReport: false,
+		},
+		{
+			name: "Wrong branch. Skipped statuses not elided.",
+
+			Author:               "trusted-member",
+			Body:                 "/test all",
+			State:                "open",
+			IsPR:                 true,
+			Branch:               "other",
+			ShouldBuild:          false,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name: "Wrong branch. Skipped statuses elided.",
@@ -218,7 +233,7 @@ func TestHandleGenericComment(t *testing.T) {
 			IsPR:                 true,
 			Branch:               "other",
 			ShouldBuild:          false,
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -430,8 +445,9 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldBuild:  false,
-			ShouldReport: true,
+			ShouldBuild:          false,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name:   "Retest of run_if_changed job that failed. Changes do not require the job. Skipped statuses elided.",
@@ -457,7 +473,7 @@ func TestHandleGenericComment(t *testing.T) {
 				},
 			},
 			ShouldBuild:          false,
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -557,7 +573,8 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: true,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name:   "branch-sharded job. no shard matches base branch. Skipped statuses elided.",
@@ -592,7 +609,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -619,7 +636,8 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: true,
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run. Skipped statuses elided.",
@@ -645,7 +663,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -701,7 +719,7 @@ func TestHandleGenericComment(t *testing.T) {
 			StartsExactly: "pull-jub",
 		},
 		{
-			name:   "/test all of run_if_changed job that has passed and doesn't need to run",
+			name:   "/test all of run_if_changed job that has passed and doesn't need to run. Skipped statuses elided (by default)",
 			Author: "trusted-member",
 			Body:   "/test all",
 			State:  "open",
@@ -723,7 +741,33 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: true,
+			ShouldReport: false,
+		},
+		{
+			name:   "/test all of run_if_changed job that has passed and doesn't need to run. Skipped statuses not elided",
+			Author: "trusted-member",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							RunIfChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+			ElideSkippedContexts: &lies,
+			ShouldReport:         true,
 		},
 		{
 			name:   "/test all of run_if_changed job that has passed and doesn't need to run. Skipped statuses elided.",
@@ -748,7 +792,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ElideSkippedContexts: true,
+			ElideSkippedContexts: &truth,
 			ShouldReport:         false,
 		},
 		{
@@ -814,6 +858,7 @@ func TestHandleGenericComment(t *testing.T) {
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(fakeConfig.ProwJobNamespace),
 			Config:        fakeConfig,
 			Logger:        logrus.WithField("plugin", PluginName),
+			GitClient:     &git.Client{},
 		}
 		presubmits := tc.Presubmits
 		if presubmits == nil {
@@ -867,6 +912,7 @@ func TestHandleGenericComment(t *testing.T) {
 			IgnoreOkToTest:       tc.IgnoreOkToTest,
 			ElideSkippedContexts: tc.ElideSkippedContexts,
 		}
+		trigger.SetDefaults()
 
 		log.Printf("running case %s", tc.name)
 		// In some cases handleGenericComment can be called twice for the same event.
@@ -911,458 +957,6 @@ func validate(name string, actions []clienttesting.Action, g *fakegithub.FakeCli
 	}
 	if !reflect.DeepEqual(g.IssueLabelsRemoved, tc.RemovedLabels) {
 		t.Errorf("%s: expected %q to be removed, got %q", name, tc.RemovedLabels, g.IssueLabelsRemoved)
-	}
-}
-
-type orgRepoRef struct {
-	org, repo, ref string
-}
-
-type fakeStatusGetter struct {
-	status map[orgRepoRef]*github.CombinedStatus
-	errors map[orgRepoRef]error
-}
-
-func (f *fakeStatusGetter) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
-	key := orgRepoRef{org: org, repo: repo, ref: ref}
-	if err, exists := f.errors[key]; exists {
-		return nil, err
-	}
-	status, exists := f.status[key]
-	if !exists {
-		return nil, fmt.Errorf("failed to find status for %s/%s@%s", org, repo, ref)
-	}
-	return status, nil
-}
-
-func TestPresubmitFilter(t *testing.T) {
-	statuses := &github.CombinedStatus{Statuses: []github.Status{
-		{
-			Context: "existing-successful",
-			State:   github.StatusSuccess,
-		},
-		{
-			Context: "existing-pending",
-			State:   github.StatusPending,
-		},
-		{
-			Context: "existing-error",
-			State:   github.StatusError,
-		},
-		{
-			Context: "existing-failure",
-			State:   github.StatusFailure,
-		},
-	}}
-	var testCases = []struct {
-		name                 string
-		honorOkToTest        bool
-		body, org, repo, ref string
-		presubmits           []config.Presubmit
-		expected             [][]bool
-		statusErr, expectErr bool
-	}{
-		{
-			name: "test all comment selects all tests that don't need an explicit trigger",
-			body: "/test all",
-			org:  "org",
-			repo: "repo",
-			ref:  "ref",
-			presubmits: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "always-runs",
-					},
-					AlwaysRun: true,
-					Reporter: config.Reporter{
-						Context: "always-runs",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-changed",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-changed",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "sometimes",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-triggered",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-triggered",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
-					RerunCommand: "/test trigger",
-				},
-			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {false, false, false}},
-		},
-		{
-			name:          "honored ok-to-test comment selects all tests that don't need an explicit trigger",
-			body:          "/ok-to-test",
-			honorOkToTest: true,
-			org:           "org",
-			repo:          "repo",
-			ref:           "ref",
-			presubmits: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "always-runs",
-					},
-					AlwaysRun: true,
-					Reporter: config.Reporter{
-						Context: "always-runs",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-changed",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-changed",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "sometimes",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-triggered",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-triggered",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
-					RerunCommand: "/test trigger",
-				},
-			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {false, false, false}},
-		},
-		{
-			name:          "not honored ok-to-test comment selects no tests",
-			body:          "/ok-to-test",
-			honorOkToTest: false,
-			org:           "org",
-			repo:          "repo",
-			ref:           "ref",
-			presubmits: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "always-runs",
-					},
-					AlwaysRun: true,
-					Reporter: config.Reporter{
-						Context: "always-runs",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-changed",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-changed",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "sometimes",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-triggered",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-triggered",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
-					RerunCommand: "/test trigger",
-				},
-			},
-			expected: [][]bool{{false, false, false}, {false, false, false}, {false, false, false}},
-		},
-		{
-			name:       "statuses are not gathered unless retest is specified (will error but we should not see it)",
-			body:       "not a command",
-			org:        "org",
-			repo:       "repo",
-			ref:        "ref",
-			presubmits: []config.Presubmit{},
-			expected:   [][]bool{},
-			statusErr:  true,
-			expectErr:  false,
-		},
-		{
-			name:       "statuses are gathered when retest is specified and gather error is propagated",
-			body:       "/retest",
-			org:        "org",
-			repo:       "repo",
-			ref:        "ref",
-			presubmits: []config.Presubmit{},
-			expected:   [][]bool{},
-			statusErr:  true,
-			expectErr:  true,
-		},
-		{
-			name: "retest command selects for errored or failed contexts and required but missing contexts",
-			body: "/retest",
-			org:  "org",
-			repo: "repo",
-			ref:  "ref",
-			presubmits: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "successful-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-successful",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "pending-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-pending",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "failure-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-failure",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "error-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-error",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "missing-always-runs",
-					},
-					Reporter: config.Reporter{
-						Context: "missing-always-runs",
-					},
-					AlwaysRun: true,
-				},
-			},
-			expected: [][]bool{{false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, true}},
-		},
-		{
-			name: "explicit test command filters for jobs that match",
-			body: "/test trigger",
-			org:  "org",
-			repo: "repo",
-			ref:  "ref",
-			presubmits: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "always-runs",
-					},
-					AlwaysRun: true,
-					Reporter: config.Reporter{
-						Context: "always-runs",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
-					RerunCommand: "/test trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-changed",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-changed",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "sometimes",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
-					RerunCommand: "/test trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-triggered",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-triggered",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
-					RerunCommand: "/test trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "always-runs",
-					},
-					AlwaysRun: true,
-					Reporter: config.Reporter{
-						Context: "always-runs",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
-					RerunCommand: "/test other-trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-changed",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-changed",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "sometimes",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
-					RerunCommand: "/test other-trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-triggered",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-triggered",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
-					RerunCommand: "/test other-trigger",
-				},
-			},
-			expected: [][]bool{{true, true, true}, {true, true, true}, {true, true, true}, {false, false, false}, {false, false, false}, {false, false, false}},
-		},
-		{
-			name: "comments matching more than one case will select the union of presubmits",
-			body: `/test trigger
-/test all
-/retest`,
-			org:  "org",
-			repo: "repo",
-			ref:  "ref",
-			presubmits: []config.Presubmit{
-				{
-					JobBase: config.JobBase{
-						Name: "always-runs",
-					},
-					AlwaysRun: true,
-					Reporter: config.Reporter{
-						Context: "existing-successful",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
-					RerunCommand: "/test other-trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-changed",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-successful",
-					},
-					RegexpChangeMatcher: config.RegexpChangeMatcher{
-						RunIfChanged: "sometimes",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?other-trigger(?: .*?)?$`,
-					RerunCommand: "/test other-trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "runs-if-triggered",
-					},
-					Reporter: config.Reporter{
-						Context: "runs-if-triggered",
-					},
-					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
-					RerunCommand: "/test trigger",
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "successful-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-successful",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "pending-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-pending",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "failure-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-failure",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "error-job",
-					},
-					Reporter: config.Reporter{
-						Context: "existing-error",
-					},
-				},
-				{
-					JobBase: config.JobBase{
-						Name: "missing-always-runs",
-					},
-					AlwaysRun: true,
-					Reporter: config.Reporter{
-						Context: "missing-always-runs",
-					},
-				},
-			},
-			expected: [][]bool{{true, false, false}, {true, false, false}, {true, true, true}, {false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, true}},
-		},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			if len(testCase.presubmits) != len(testCase.expected) {
-				t.Fatalf("%s: have %d presubmits but only %d expected filter outputs", testCase.name, len(testCase.presubmits), len(testCase.expected))
-			}
-			if err := config.SetPresubmitRegexes(testCase.presubmits); err != nil {
-				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
-			}
-			fsg := &fakeStatusGetter{
-				errors: map[orgRepoRef]error{},
-				status: map[orgRepoRef]*github.CombinedStatus{},
-			}
-			key := orgRepoRef{org: testCase.org, repo: testCase.repo, ref: testCase.ref}
-			if testCase.statusErr {
-				fsg.errors[key] = errors.New("failure")
-			} else {
-				fsg.status[key] = statuses
-			}
-			filter, err := presubmitFilter(testCase.honorOkToTest, fsg, testCase.body, testCase.org, testCase.repo, testCase.ref, logrus.WithField("test-case", testCase.name))
-			if testCase.expectErr && err == nil {
-				t.Errorf("%s: expected an error creating the filter, but got none", testCase.name)
-			}
-			if !testCase.expectErr && err != nil {
-				t.Errorf("%s: expected no error creating the filter, but got one: %v", testCase.name, err)
-			}
-			for i, presubmit := range testCase.presubmits {
-				actualFiltered, actualForced, actualDefault := filter(presubmit)
-				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]
-				if actualFiltered != expectedFiltered {
-					t.Errorf("%s: filter did not evaluate correctly, expected %v but got %v for %v", testCase.name, expectedFiltered, actualFiltered, presubmit.Name)
-				}
-				if actualForced != expectedForced {
-					t.Errorf("%s: filter did not determine forced correctly, expected %v but got %v for %v", testCase.name, expectedForced, actualForced, presubmit.Name)
-				}
-				if actualDefault != expectedDefault {
-					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)
-				}
-			}
-		})
 	}
 }
 
@@ -1433,7 +1027,7 @@ func TestRetestFilter(t *testing.T) {
 			if err := config.SetPresubmitRegexes(testCase.presubmits); err != nil {
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
 			}
-			filter := retestFilter(testCase.failedContexts, testCase.allContexts)
+			filter := pjutil.RetestFilter(testCase.failedContexts, testCase.allContexts)
 			for i, presubmit := range testCase.presubmits {
 				actualFiltered, actualForced, actualDefault := filter(presubmit)
 				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]

@@ -59,6 +59,16 @@ func TestCloneRefs(t *testing.T) {
 		Name:      "code",
 		MountPath: "/code-mount",
 	}
+	tmpMount := coreapi.VolumeMount{
+		Name:      "clonerefs-tmp",
+		MountPath: "/tmp",
+	}
+	tmpVolume := coreapi.Volume{
+		Name: "clonerefs-tmp",
+		VolumeSource: coreapi.VolumeSource{
+			EmptyDir: &coreapi.EmptyDirVolumeSource{},
+		},
+	}
 	envOrDie := func(opt clonerefs.Options) []coreapi.EnvVar {
 		e, err := cloneEnv(opt)
 		if err != nil {
@@ -187,8 +197,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "create clonerefs containers when extrarefs are set",
@@ -210,8 +221,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "append extrarefs after refs",
@@ -234,8 +246,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "append ssh secrets when set",
@@ -264,9 +277,10 @@ func TestCloneRefs(t *testing.T) {
 					codeMount,
 					sshMountOnly("super"),
 					sshMountOnly("secret"),
+					tmpMount,
 				},
 			},
-			volumes: []coreapi.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret")},
+			volumes: []coreapi.Volume{sshVolumeOnly("super"), sshVolumeOnly("secret"), tmpVolume},
 		},
 		{
 			name: "include ssh host fingerprints when set",
@@ -290,8 +304,9 @@ func TestCloneRefs(t *testing.T) {
 					HostFingerprints: []string{"thumb", "pinky"},
 					Log:              CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
+			volumes: []coreapi.Volume{tmpVolume},
 		},
 		{
 			name: "include cookiefile secrets when set",
@@ -316,9 +331,9 @@ func TestCloneRefs(t *testing.T) {
 					SrcRoot:      codeMount.MountPath,
 					Log:          CloneLogPath(logMount),
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, cookieMountOnly("oatmeal")},
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount, cookieMountOnly("oatmeal")},
 			},
-			volumes: []coreapi.Volume{cookieVolumeOnly("oatmeal")},
+			volumes: []coreapi.Volume{tmpVolume, cookieVolumeOnly("oatmeal")},
 		},
 	}
 
@@ -365,10 +380,11 @@ func TestProwJobToPod(t *testing.T) {
 	falseth := false
 	var sshKeyMode int32 = 0400
 	tests := []struct {
-		podName string
-		buildID string
-		labels  map[string]string
-		pjSpec  prowapi.ProwJobSpec
+		podName  string
+		buildID  string
+		labels   map[string]string
+		pjSpec   prowapi.ProwJobSpec
+		pjStatus prowapi.ProwJobStatus
 
 		expected *coreapi.Pod
 	}{
@@ -402,6 +418,9 @@ func TestProwJobToPod(t *testing.T) {
 					},
 				},
 			},
+			pjStatus: prowapi.ProwJobStatus{
+				BuildID: "blabla",
+			},
 
 			expected: &coreapi.Pod{
 				ObjectMeta: metav1.ObjectMeta{
@@ -415,6 +434,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "blabla",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -515,6 +535,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -540,6 +561,10 @@ func TestProwJobToPod(t *testing.T) {
 								{
 									Name:      "code",
 									MountPath: "/home/prow/go",
+								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
 								},
 								cookieMountOnly("yummy/.gitcookies"),
 							},
@@ -663,6 +688,12 @@ func TestProwJobToPod(t *testing.T) {
 								},
 							},
 						},
+						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							},
+						},
 						cookieVolumeOnly("yummy/.gitcookies"),
 						{
 							Name: "code",
@@ -738,6 +769,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -763,6 +795,10 @@ func TestProwJobToPod(t *testing.T) {
 								{
 									Name:      "code",
 									MountPath: "/home/prow/go",
+								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
 								},
 								cookieMountOnly("yummy"),
 							},
@@ -886,6 +922,12 @@ func TestProwJobToPod(t *testing.T) {
 								},
 							},
 						},
+						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							},
+						},
 						cookieVolumeOnly("yummy"),
 						{
 							Name: "code",
@@ -962,6 +1004,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -996,6 +1039,10 @@ func TestProwJobToPod(t *testing.T) {
 									Name:      "ssh-keys-ssh-2",
 									MountPath: "/secrets/ssh/ssh-2",
 									ReadOnly:  true,
+								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
 								},
 							},
 						},
@@ -1134,6 +1181,12 @@ func TestProwJobToPod(t *testing.T) {
 									SecretName:  "ssh-2",
 									DefaultMode: &sshKeyMode,
 								},
+							},
+						},
+						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
 							},
 						},
 						{
@@ -1210,6 +1263,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1244,6 +1298,10 @@ func TestProwJobToPod(t *testing.T) {
 									Name:      "ssh-keys-ssh-2",
 									MountPath: "/secrets/ssh/ssh-2",
 									ReadOnly:  true,
+								},
+								{
+									Name:      "clonerefs-tmp",
+									MountPath: "/tmp",
 								},
 							},
 						},
@@ -1385,6 +1443,12 @@ func TestProwJobToPod(t *testing.T) {
 							},
 						},
 						{
+							Name: "clonerefs-tmp",
+							VolumeSource: coreapi.VolumeSource{
+								EmptyDir: &coreapi.EmptyDirVolumeSource{},
+							},
+						},
+						{
 							Name: "code",
 							VolumeSource: coreapi.VolumeSource{
 								EmptyDir: &coreapi.EmptyDirVolumeSource{},
@@ -1442,6 +1506,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobIDLabel:    "pod",
 						"needstobe":            "inherited",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1627,6 +1692,7 @@ func TestProwJobToPod(t *testing.T) {
 						kube.RepoLabel:         "repo-name",
 						kube.PullLabel:         "1",
 						kube.ProwJobAnnotation: "job-name",
+						kube.ProwBuildIDLabel:  "",
 					},
 					Annotations: map[string]string{
 						kube.ProwJobAnnotation: "job-name",
@@ -1799,7 +1865,7 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			pj := prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
+			pj := prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec, Status: test.pjStatus}
 			got, err := ProwJobToPod(pj, test.buildID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)

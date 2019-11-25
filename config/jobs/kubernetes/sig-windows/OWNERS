@@ -1,0 +1,10 @@
+approvers:
+- pjh
+- PatrickLang
+- michmike
+- benmoss
+- ddebroy
+- yliaog
+
+labels:
+- sig/windows

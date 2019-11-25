@@ -21,25 +21,24 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 )
 
-type prometheusMetrics struct {
-	BoskosState map[string]map[string]prometheus.Gauge
-}
-
 var (
-	promMetrics = prometheusMetrics{
-		BoskosState: map[string]map[string]prometheus.Gauge{},
-	}
+	resourceMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "boskos_resources",
+		Help: "Number of resources recorded in Boskos",
+	}, []string{"type", "state"})
 	resources, states common.CommaSeparatedStrings
 	defaultStates     = []string{
 		common.Busy,
@@ -47,39 +46,19 @@ var (
 		common.Dirty,
 		common.Free,
 		common.Leased,
+		common.ToBeDeleted,
+		common.Tombstone,
 	}
 )
 
 func init() {
-	flag.Var(&resources, "resource-type", "comma-separated list of resources need to have metrics collected")
-	flag.Var(&states, "resource-state", "comma-separated list of states need to have metrics collected")
-}
-
-func initMetrics() {
-	for _, resource := range resources {
-		promMetrics.BoskosState[resource] = map[string]prometheus.Gauge{}
-		for _, state := range states {
-			promMetrics.BoskosState[resource][state] = prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), state),
-				Help: fmt.Sprintf("Number of %s %s", state, resource),
-			})
-		}
-		// Adding other state for metrics that are not captured with existing state
-		promMetrics.BoskosState[resource][common.Other] = prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Other),
-			Help: fmt.Sprintf("Number of %s %s", common.Other, resource),
-		})
-	}
-
-	for _, gauges := range promMetrics.BoskosState {
-		for _, gauge := range gauges {
-			prometheus.MustRegister(gauge)
-		}
-	}
+	flag.Var(&resources, "resource-type", "comma-separated list of resources need to have metrics collected.")
+	flag.Var(&states, "resource-state", "comma-separated list of states need to have metrics collected.")
+	prometheus.MustRegister(resourceMetric)
 }
 
 func main() {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrusutil.ComponentInit()
 	boskos := client.NewClient("Metrics", "http://boskos")
 	logrus.Infof("Initialzied boskos client!")
 
@@ -88,51 +67,53 @@ func main() {
 		states = defaultStates
 	}
 
-	initMetrics()
-
-	http.Handle("/prometheus", promhttp.Handler())
-	http.Handle("/", handleMetric(boskos))
+	metrics.ExposeMetrics("boskos", config.PushGateway{})
 
 	go func() {
-		logTick := time.NewTicker(time.Minute).C
+		logTick := time.NewTicker(30 * time.Second).C
 		for range logTick {
 			if err := update(boskos); err != nil {
-				logrus.WithError(err).Warning("[Boskos Metrics]Update failed!")
+				logrus.WithError(err).Warning("Update failed!")
 			}
 		}
 	}()
 
 	logrus.Info("Start Service")
-	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
-}
-
-func filterMetrics(src map[string]int) map[string]int {
-	metricStates := sets.NewString(states...)
-	dest := map[string]int{}
-	// Making sure all metrics are created
-	for state := range metricStates {
-		dest[state] = 0
-	}
-	dest[common.Other] = 0
-	for state, value := range src {
-		if state != common.Other && metricStates.Has(state) {
-			dest[state] = value
-		} else {
-			dest[common.Other] += value
-		}
-	}
-	return dest
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("/", handleMetric(boskos))
+	logrus.WithError(http.ListenAndServe(":8080", metricsMux)).Fatal("ListenAndServe returned.")
 }
 
 func update(boskos *client.Client) error {
+	// initialize resources counted by type, then state
+	resourcesByState := map[string]map[string]float64{}
+	for _, resource := range resources {
+		resourcesByState[resource] = map[string]float64{}
+		for _, state := range states {
+			resourcesByState[resource][state] = 0
+		}
+	}
+
+	// record current states
+	knownStates := sets.NewString(states...)
 	for _, resource := range resources {
 		metric, err := boskos.Metric(resource)
 		if err != nil {
 			return fmt.Errorf("fail to get metric for %s : %v", resource, err)
 		}
 		// Filtering metrics states
-		for state, value := range filterMetrics(metric.Current) {
-			promMetrics.BoskosState[resource][state].Set(float64(value))
+		for state, value := range metric.Current {
+			if !knownStates.Has(state) {
+				state = common.Other
+			}
+			resourcesByState[resource][state] = float64(value)
+		}
+	}
+
+	// expose current states
+	for resource, states := range resourcesByState {
+		for state, amount := range states {
+			resourceMetric.WithLabelValues(resource, state).Set(amount)
 		}
 	}
 	return nil

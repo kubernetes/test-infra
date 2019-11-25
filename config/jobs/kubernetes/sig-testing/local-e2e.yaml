@@ -14,7 +14,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -40,6 +40,10 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-misc
+      description: Runs conformance tests using kubetest with local-up-cluster
 
 periodics:
 - name: ci-kubernetes-local-e2e
@@ -50,7 +54,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - "--timeout=140"
       - "--bare"
@@ -73,3 +77,9 @@ periodics:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster, sig-testing-misc
+    testgrid-tab-name: local-up-cluster, master (dev)
+    description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'

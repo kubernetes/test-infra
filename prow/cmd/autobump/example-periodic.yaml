@@ -1,0 +1,55 @@
+periodics:
+  # Change the cron string to the update frequency/schedule you prefer.
+  # Note that updates to the bump PR do NOT trigger notifications so long as the repo's presubmits are not flaky.
+  # Updating the PR more frequently then the actual bump frequency is not a problem and can be convenient.
+- cron: "05 15-23 * * 1-5"  # Run at 7:05-15:05 PST (15:05 UTC) Mon-Fri
+  name: ci-prow-autobump
+  # Only run this in a build cluster where you feel comfortable storing your GH bot token.
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  # Check out the repo containing the config and deployment files for your Prow instance.
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/autobump # TODO: add a tag once we've push this the first time.
+      command:
+      - /autobump.sh
+      args:
+      - /etc/github-token/token
+      # Make the bot name and email match the user data of the provided token's user.
+      - "Bot Name"
+      - bot.email@gmail.com
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      env:
+    # autobump.sh args
+      # GitHub org containing the repo where the Prow config and component files live.
+      - name: GH_ORG
+        value: kubernetes
+      # GitHub repo where the Prow config and component deployment files live.
+      - name: GH_REPO
+        value: test-infra
+      # Repo relative path of the `plank` component k8s deployment file.
+      - name: PLANK_DEPLOYMENT_FILE
+        value: prow/cluster/plank_deployment.yaml
+    # bump.sh args
+      # Directory containing k8s deployment YAMLs for Prow components.
+      - name: COMPONENT_FILE_DIR
+        value: prow/cluster
+      # Repo relative path of the core Prow config file (config.yaml).
+      - name: CONFIG_PATH
+        value: config/prow/config.yaml
+      # Repo relative path of the ProwJob config file or directory.
+      # Omit this if ProwJobs are only defined in config.yaml (or are not configured at all).
+      - name: JOB_CONFIG_PATH
+        value: config/jobs
+    volumes:
+    - name: github
+      secret:
+        # Secret containing a GitHub user access token with `repo` scope for creating PRs.
+        secretName: oauth-token

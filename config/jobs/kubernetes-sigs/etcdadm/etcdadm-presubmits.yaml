@@ -1,0 +1,33 @@
+# sigs.k8s.io/etcdadm presubmits
+presubmits:
+  kubernetes-sigs/etcdadm:
+  - name: pull-etcdadm-verify
+    path_alias: "sigs.k8s.io/etcdadm"
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+        command:
+        - "./hack/verify-all.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-etcdadm
+      testgrid-tab-name: pr-verify
+  - name: pull-etcdadm-test-init
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: "sigs.k8s.io/etcdadm"
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - "runner.sh"
+        - "./test/e2e/init.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-etcdadm
+      testgrid-tab-name: pr-test-init

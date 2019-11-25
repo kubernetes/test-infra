@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/interrupts"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -40,7 +41,7 @@ type options struct {
 	configPath    string
 	jobConfigPath string
 
-	kubernetes flagutil.ExperimentalKubernetesOptions
+	kubernetes flagutil.KubernetesOptions
 	dryRun     flagutil.Bool
 }
 
@@ -71,14 +72,14 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	logrusutil.ComponentInit()
+
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "horologium"}),
-	)
+	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf()
 
@@ -100,14 +101,13 @@ func main() {
 	// start a cron
 	cr := cron.New()
 	cr.Start()
-
-	for now := range time.Tick(1 * time.Minute) {
+	interrupts.TickLiteral(func() {
 		start := time.Now()
-		if err := sync(prowJobClient, configAgent.Config(), cr, now); err != nil {
+		if err := sync(prowJobClient, configAgent.Config(), cr, start); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")
 		}
-		logrus.Infof("Sync time: %v", time.Since(start))
-	}
+		logrus.WithField("duration", time.Since(start)).Info("Synced periodic jobs")
+	}, 1*time.Minute)
 }
 
 type prowJobClient interface {
@@ -148,7 +148,7 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 			shouldTrigger := j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()
 			logger = logger.WithField("should-trigger", shouldTrigger)
 			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJobWithAnnotation(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
+				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
 				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of interval periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)
@@ -158,7 +158,7 @@ func sync(prowJobClient prowJobClient, cfg *config.Config, cr cronClient, now ti
 			shouldTrigger := j.Complete()
 			logger = logger.WithField("should-trigger", shouldTrigger)
 			if !previousFound || shouldTrigger {
-				prowJob := pjutil.NewProwJobWithAnnotation(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
+				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)
 				logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Triggering new run of cron periodic.")
 				if _, err := prowJobClient.Create(&prowJob); err != nil {
 					errs = append(errs, err)

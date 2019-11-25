@@ -23,36 +23,39 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
+	"sigs.k8s.io/yaml"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/errorutil"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/github"
+	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/blunderbuss"
+	"k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	"k8s.io/test-infra/prow/plugins/lgtm"
 	ownerslabel "k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
 	"k8s.io/test-infra/prow/plugins/trigger"
 	verifyowners "k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
-
-	"k8s.io/test-infra/prow/config"
-	_ "k8s.io/test-infra/prow/hook"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/plugins"
-	"k8s.io/test-infra/prow/plugins/lgtm"
 )
 
 type options struct {
@@ -63,6 +66,9 @@ type options struct {
 	warnings        flagutil.Strings
 	excludeWarnings flagutil.Strings
 	strict          bool
+	expensive       bool
+
+	github flagutil.GitHubOptions
 }
 
 func reportWarning(strict bool, errs errorutil.Aggregate) {
@@ -89,9 +95,10 @@ const (
 	missingTriggerWarning        = "missing-trigger"
 	validateURLsWarning          = "validate-urls"
 	unknownFieldsWarning         = "unknown-fields"
+	verifyOwnersFilePresence     = "verify-owners-presence"
 )
 
-var allWarnings = []string{
+var defaultWarnings = []string{
 	mismatchedTideWarning,
 	tideStrictBranchWarning,
 	mismatchedTideLenientWarning,
@@ -104,7 +111,20 @@ var allWarnings = []string{
 	unknownFieldsWarning,
 }
 
+var expensiveWarnings = []string{
+	verifyOwnersFilePresence,
+}
+
+func getAllWarnings() []string {
+	var all []string
+	all = append(all, defaultWarnings...)
+	all = append(all, expensiveWarnings...)
+
+	return all
+}
+
 func (o *options) Validate() error {
+	allWarnings := getAllWarnings()
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
@@ -123,32 +143,49 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func gatherOptions() options {
+func parseOptions() (options, error) {
 	o := options{}
+
+	if err := o.gatherOptions(flag.CommandLine, os.Args[1:]); err != nil {
+		return options{}, err
+	}
+	return o, nil
+}
+
+func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
+	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	flag.Parse()
-	return o
+	o.github.AddFlagsWithoutDefaultGitHubTokenPath(flag)
+	if err := flag.Parse(args); err != nil {
+		return fmt.Errorf("parse flags: %v", err)
+	}
+	if err := o.Validate(); err != nil {
+		return fmt.Errorf("Invalid options: %v", err)
+	}
+	return nil
 }
 
 func main() {
-	o := gatherOptions()
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
+	logrusutil.ComponentInit()
+
+	o, err := parseOptions()
+	if err != nil {
+		logrus.Fatalf("Error parsing options - %v", err)
 	}
 
 	// use all warnings by default
 	if len(o.warnings.Strings()) == 0 {
-		o.warnings = flagutil.NewStrings(allWarnings...)
+		if o.expensive {
+			o.warnings = flagutil.NewStrings(getAllWarnings()...)
+		} else {
+			o.warnings = flagutil.NewStrings(defaultWarnings...)
+		}
 	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(&logrus.TextFormatter{}, logrus.Fields{"component": "checkconfig"}),
-	)
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
@@ -159,7 +196,7 @@ func main() {
 	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
 	if o.pluginConfig != "" {
-		if err := pluginAgent.Load(o.pluginConfig); err != nil {
+		if err := pluginAgent.Load(o.pluginConfig, true); err != nil {
 			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 		}
 		pcfg = pluginAgent.Config()
@@ -170,6 +207,29 @@ func main() {
 	// detect them here but don't necessarily want to stop config re-load
 	// in all components on their failure.
 	var errs []error
+	if pcfg != nil && o.warningEnabled(verifyOwnersFilePresence) {
+		if o.github.TokenPath == "" {
+			logrus.Fatal("Cannot verify OWNERS file presence without a GitHub token")
+		}
+		secretAgent := &secret.Agent{}
+		if o.github.TokenPath != "" {
+			if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
+				logrus.WithError(err).Fatal("Error starting secrets agent.")
+			}
+		}
+
+		githubClient, err := o.github.GitHubClient(secretAgent, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client.")
+		}
+		githubClient.Throttle(3000, 100) // 300 hourly tokens, bursts of 100
+		// 404s are expected to happen, no point in retrying
+		githubClient.SetMax404Retries(0)
+
+		if err := verifyOwnersPresence(pcfg, githubClient); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if pcfg != nil && o.warningEnabled(mismatchedTideWarning) {
 		if err := validateTideRequirements(cfg, pcfg, true); err != nil {
 			errs = append(errs, err)
@@ -370,7 +430,12 @@ func checkUnknownFields(keyPref string, obj interface{}, cfg reflect.Value) []st
 	case []interface{}:
 		for i, val := range concreteVal {
 			fullKey := fmt.Sprintf("%s[%v]", keyPref, i)
-			subCfg := cfg.Index(i)
+			var subCfg reflect.Value
+			if cfg.Kind() == reflect.Ptr {
+				subCfg = cfg.Elem().Index(i)
+			} else {
+				subCfg = cfg.Index(i)
+			}
 			uf = append(uf, checkUnknownFields(fullKey, val, subCfg)...)
 		}
 	}
@@ -400,7 +465,7 @@ func getSubCfg(key string, cfg reflect.Value) reflect.Value {
 					return subStruct
 				}
 			} else {
-				field := getJSONTagName(structField, i)
+				field := getJSONTagName(structField)
 				if field == key {
 					return cfgElem.Field(i)
 				}
@@ -410,7 +475,7 @@ func getSubCfg(key string, cfg reflect.Value) reflect.Value {
 	return reflect.Value{}
 }
 
-func getJSONTagName(field reflect.StructField, i int) string {
+func getJSONTagName(field reflect.StructField) string {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag != "" && jsonTag != "-" {
 		if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
@@ -423,7 +488,7 @@ func getJSONTagName(field reflect.StructField, i int) string {
 
 func validateJobRequirements(c config.JobConfig) error {
 	var validationErrs []error
-	for repo, jobs := range c.Presubmits {
+	for repo, jobs := range c.PresubmitsStatic {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
 		}
@@ -511,6 +576,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 		configs = append(configs,
 			plugin{name: hold.PluginName, label: labels.Hold, matcher: forbids},
 			plugin{name: wip.PluginName, label: labels.WorkInProgress, matcher: forbids},
+			plugin{name: bugzilla.PluginName, label: labels.InvalidBug, matcher: forbids},
 			plugin{name: verifyowners.PluginName, label: labels.InvalidOwners, matcher: forbids},
 			plugin{name: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
 			plugin{name: cherrypickunapproved.PluginName, label: labels.CpUnapproved, matcher: forbids},
@@ -741,7 +807,7 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 
 func validateDecoratedJobs(cfg *config.Config) error {
 	var nonDecoratedJobs []string
-	for _, presubmit := range cfg.AllPresubmits([]string{}) {
+	for _, presubmit := range cfg.AllStaticPresubmits([]string{}) {
 		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, presubmit.Name)
 		}
@@ -788,7 +854,11 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 	return errorutil.NewAggregate(queryErrors...)
 }
 
-func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+func pluginsWithOwnersFile() string {
+	return strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", ")
+}
+
+func orgReposUsingOwnersFile(cfg *plugins.Configuration) *orgRepoConfig {
 	// we do not know the set of repos that use OWNERS, but we
 	// can get a reasonable proxy for this by looking at where
 	// the `approve', `blunderbuss' and `owners-label' plugins
@@ -796,7 +866,62 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 	approveConfig := enabledOrgReposForPlugin(cfg, approve.PluginName, false)
 	blunderbussConfig := enabledOrgReposForPlugin(cfg, blunderbuss.PluginName, false)
 	ownersLabelConfig := enabledOrgReposForPlugin(cfg, ownerslabel.PluginName, false)
-	ownersConfig := approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+	return approveConfig.union(blunderbussConfig).union(ownersLabelConfig)
+}
+
+type FileInRepoExistsChecker interface {
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
+	GetFile(org, repo, filepath, commit string) ([]byte, error)
+}
+
+func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker) error {
+	ownersConfig := orgReposUsingOwnersFile(cfg)
+
+	var missing []string
+	for org, excluded := range ownersConfig.orgExceptions {
+		repos, err := rc.GetRepos(org, false)
+		if err != nil {
+			return err
+		}
+
+		for _, repo := range repos {
+			if excluded.Has(repo.FullName) || repo.Archived {
+				continue
+			}
+			if _, err := rc.GetFile(repo.Owner.Login, repo.Name, "OWNERS", ""); err != nil {
+				if _, nf := err.(*github.FileNotFound); nf {
+					missing = append(missing, repo.FullName)
+				} else {
+					return fmt.Errorf("got error: %v", err)
+				}
+			}
+		}
+	}
+
+	for repo := range ownersConfig.repos {
+		items := strings.Split(repo, "/")
+		if len(items) != 2 {
+			return fmt.Errorf("bad repository '%s', expected org/repo format", repo)
+		}
+		if _, err := rc.GetFile(items[0], items[1], "OWNERS", ""); err != nil {
+			if _, nf := err.(*github.FileNotFound); nf {
+				missing = append(missing, repo)
+			} else {
+				return fmt.Errorf("got error: %v", err)
+			}
+		}
+	}
+
+	if len(missing) > 0 {
+		return fmt.Errorf("the following orgs or repos enable at least one"+
+			" plugin that uses OWNERS files (%s), but its master branch does not contain"+
+			" a root level OWNERS file: %v", pluginsWithOwnersFile(), missing)
+	}
+	return nil
+}
+
+func verifyOwnersPlugin(cfg *plugins.Configuration) error {
+	ownersConfig := orgReposUsingOwnersFile(cfg)
 	validateOwnersConfig := enabledOrgReposForPlugin(cfg, verifyowners.PluginName, false)
 
 	invalid := ownersConfig.difference(validateOwnersConfig).items()
@@ -804,8 +929,7 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 		return fmt.Errorf("the following orgs or repos "+
 			"enable at least one plugin that uses OWNERS files (%s) "+
 			"but do not enable the %s plugin to ensure validity of OWNERS files: %v",
-			strings.Join([]string{approve.PluginName, blunderbuss.PluginName, ownerslabel.PluginName}, ", "),
-			verifyowners.PluginName, invalid,
+			pluginsWithOwnersFile(), verifyowners.PluginName, invalid,
 		)
 	}
 	return nil
@@ -813,7 +937,7 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	configuredRepos := sets.NewString()
-	for orgRepo := range cfg.JobConfig.Presubmits {
+	for orgRepo := range cfg.JobConfig.PresubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
 	for orgRepo := range cfg.JobConfig.Postsubmits {

@@ -1,16 +1,11 @@
-import "dialog-polyfill";
+import "code-prettify";
+import dialogPolyfill from "dialog-polyfill";
 import {Command, Help, PluginHelp} from "../api/help";
-
-declare const dialogPolyfill: {
-  registerDialog(element: HTMLDialogElement): void;
-};
+import {getParameterByName} from '../common/urls';
+import {Language, Prettify} from "./prettify";
 
 declare const allHelp: Help;
-
-function getParameterByName(name: string): string | null {  // http://stackoverflow.com/a/5158301/3694
-    const match = new RegExp(`[?&]${name}=([^&/]*)`).exec(window.location.search);
-    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-}
+declare const PR: Prettify;
 
 function redrawOptions(): void {
     const rs = allHelp.AllRepos.sort();
@@ -72,6 +67,15 @@ function addDialogSection(title: string, body: string | HTMLElement[]): HTMLElem
     container.appendChild(sectionBody);
 
     return container;
+}
+
+function genCodeSnippetSummary(snippet: string, language: Language = "yaml"): string {
+    return `
+        <details>
+            <summary>Example <b>plugins.yaml</b> configuration:</summary>
+            <pre class="prettyprint"><code class="language-${language}">${snippet}</code></pre>
+        </details>
+    `;
 }
 
 /**
@@ -149,6 +153,10 @@ function createPlugin(repo: string, name: string, pluginObj: {isExternal: boolea
         if (plugin.Commands) {
             const sectionContent = getLinkableCommands(plugin.Commands);
             contentElement.appendChild(addDialogSection("Commands", sectionContent));
+        }
+        if (plugin.Snippet) {
+            contentElement.appendChild(addDialogSection("Snippet", genCodeSnippetSummary(plugin.Snippet)));
+            PR.prettyPrint();
         }
         dialogElement.showModal();
     });

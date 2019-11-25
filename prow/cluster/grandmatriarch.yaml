@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name:  grandmatriarch
+  name: grandmatriarch
   namespace: test-pods
 ---
 kind: Role
@@ -53,7 +53,7 @@ spec:
       serviceAccountName: grandmatriarch
       containers:
       - name: bakery
-        image: gcr.io/k8s-prow/grandmatriarch:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/grandmatriarch:v20191121-1ff2207db
         args:
         - /etc/robot/service-account.json
         - http-cookiefile

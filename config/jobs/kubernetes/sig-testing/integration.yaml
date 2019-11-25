@@ -2,12 +2,17 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-integration
     always_run: true
+    branches:
+    # we migrated to podutils for v1.17+
+    - release-1.16
+    - release-1.15
+    - release-1.14
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20190529-b281789
+      - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -24,43 +29,65 @@ presubmits:
         resources:
           requests:
             cpu: 4
-
-  # TODO(krzyzacy): add branches once this works
-  # TODO(krzyzacy): Consider combine kubekins-e2e and kubekins-test
-  - name: pull-kubernetes-integration-podutil
-    always_run: false
+  # this replaces the bootstrap / scenario based job going forward
+  - name: pull-kubernetes-integration
+    always_run: true
     decorate: true
-    branches:
-    - master
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         command:
         - runner.sh
         args:
         - ./hack/jenkins/test-dockerized.sh
-        env:
-        - name: KUBE_FORCE_VERIFY_CHECKS
-          value: "n"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: master
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 4
-
+  - name: pull-kubernetes-integration
+    always_run: true
+    decorate: true
+    branches:
+    - release-1.17 # per-release job
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.17
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
 periodics:
 - interval: 1h
   name: ci-kubernetes-integration-master
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -74,15 +101,11 @@ periodics:
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190529-b281789
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      command:
+      - runner.sh
       args:
-      - --repo=k8s.io/kubernetes
-      - --timeout=100
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=master
-      - --force
-      - --prow
+      - ./hack/jenkins/test-dockerized.sh
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true

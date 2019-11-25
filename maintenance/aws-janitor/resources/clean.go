@@ -17,8 +17,13 @@ limitations under the License.
 package resources
 
 import (
+	"net/http"
+	"strings"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/pkg/errors"
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog"
 	"k8s.io/test-infra/maintenance/aws-janitor/account"
 	"k8s.io/test-infra/maintenance/aws-janitor/regions"
@@ -42,16 +47,26 @@ func CleanAll(sess *session.Session, region string) error {
 	} else {
 		regionList = []string{region}
 	}
-	klog.Infof("Regions: %+v", regionList)
+	klog.Infof("Regions: %s", strings.Join(regionList, ", "))
+
+	var errs []error
 
 	for _, r := range regionList {
 		for _, typ := range RegionalTypeList {
 			set, err := typ.ListAll(sess, acct, r)
 			if err != nil {
-				return errors.Wrapf(err, "Failed to list resources of type %T", typ)
+				// ignore errors for resources we do not have permissions to list
+				if reqerr, ok := errors.Cause(err).(awserr.RequestFailure); ok {
+					if reqerr.StatusCode() == http.StatusForbidden {
+						klog.V(1).Infof("Skipping resources of type %T, account does not have permission to list", typ)
+						continue
+					}
+				}
+				errs = append(errs, errors.Wrapf(err, "Failed to list resources of type %T", typ))
+				continue
 			}
 			if err := typ.MarkAndSweep(sess, acct, r, set); err != nil {
-				return errors.Wrapf(err, "Couldn't sweep resources of type %T", typ)
+				errs = append(errs, errors.Wrapf(err, "Failed to list resources of type %T", typ))
 			}
 		}
 	}
@@ -59,12 +74,16 @@ func CleanAll(sess *session.Session, region string) error {
 	for _, typ := range GlobalTypeList {
 		set, err := typ.ListAll(sess, acct, regions.Default)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to list resources of type %T", typ)
+			errs = append(errs, errors.Wrapf(err, "Failed to list resources of type %T", typ))
+			continue
 		}
 		if err := typ.MarkAndSweep(sess, acct, regions.Default, set); err != nil {
-			return errors.Wrapf(err, "Couldn't sweep resources of type %T", typ)
+			errs = append(errs, errors.Wrapf(err, "Failed to list resources of type %T", typ))
 		}
 	}
 
+	if len(errs) > 0 {
+		return kerrors.NewAggregate(errs)
+	}
 	return nil
 }

@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:244.0.0-alpine
+FROM google/cloud-sdk:258.0.0-alpine
 COPY builder run.sh /
 CMD ["/run.sh"]

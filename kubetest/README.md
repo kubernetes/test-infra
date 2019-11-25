@@ -119,6 +119,9 @@ This makes it easier for developers to add and remove jobs. With boskos they no
 longer need to worry about creating, provisioning, naming, etc a project for
 this new job.
 
+The `--boskos-wait-duration` flag defines how long Kubetest waits on an Boskos resource
+becomes available before quitting the job, default value is 5 minutes.
+
 See the boskos docs for more details.
 
 ### Dump logs
@@ -217,7 +220,7 @@ right path, the command below does the same as above:
 
 [bootstrap.py]: /jenkins/bootstrap.py
 [boskos]: /boskos
-[e2e testing]: https://git.k8s.io/community/contributors/devel/e2e-tests.md
+[e2e testing]: https://git.k8s.io/community/contributors/devel/sig-testing/e2e-tests.md
 [extract_k8s.go]: /kubetest/extract_k8s.go
 [ginkgo]: https://github.com/onsi/ginkgo
 [kubekins-e2e]: /images/kubekins-e2e

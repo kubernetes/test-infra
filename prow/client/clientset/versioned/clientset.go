@@ -28,8 +28,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	ProwV1() prowv1.ProwV1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Prow() prowv1.ProwV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -41,12 +39,6 @@ type Clientset struct {
 
 // ProwV1 retrieves the ProwV1Client
 func (c *Clientset) ProwV1() prowv1.ProwV1Interface {
-	return c.prowV1
-}
-
-// Deprecated: Prow retrieves the default version of ProwClient.
-// Please explicitly pick a version.
-func (c *Clientset) Prow() prowv1.ProwV1Interface {
 	return c.prowV1
 }
 

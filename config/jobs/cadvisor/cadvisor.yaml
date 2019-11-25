@@ -25,7 +25,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/kubernetes"
@@ -45,6 +45,9 @@ presubmits:
         - --test_args=--nodes=1--flakeAttempts=2
         - --timeout=10m
 
+    annotations:
+      testgrid-dashboards: presubmits-misc
+      testgrid-tab-name: cadvisor
 periodics:
 - interval: 24h
   name: ci-cadvisor-canarypush
@@ -54,7 +57,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20190529-b281789
+    - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
       args:
       - --repo=github.com/google/cadvisor
       - --root=/go/src
@@ -68,6 +71,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-node-cadvisor
+    testgrid-tab-name: cadvisor-push
 - name: ci-cadvisor-e2e
   interval: 8h
   labels:
@@ -75,7 +81,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --job=$(JOB_NAME)
       - --root=/go/src
@@ -97,3 +103,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+  annotations:
+    testgrid-dashboards: sig-node-cadvisor
+    testgrid-tab-name: cadvisor-e2e

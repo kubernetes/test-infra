@@ -36,17 +36,8 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
-// NewProwJobWithAnnotation initializes a ProwJob out of a ProwJobSpec with annotations.
-func NewProwJobWithAnnotation(spec prowapi.ProwJobSpec, labels, annotations map[string]string) prowapi.ProwJob {
-	return newProwJob(spec, labels, annotations)
-}
-
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
-func NewProwJob(spec prowapi.ProwJobSpec, labels map[string]string) prowapi.ProwJob {
-	return newProwJob(spec, labels, nil)
-}
-
-func newProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) prowapi.ProwJob {
+func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) prowapi.ProwJob {
 	labels, annotations := decorate.LabelsAndAnnotationsForSpec(spec, extraLabels, extraAnnotations)
 
 	return prowapi.ProwJob{
@@ -59,7 +50,7 @@ func newProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Spec: spec,
+		Spec: *spec.DeepCopy(),
 		Status: prowapi.ProwJobStatus{
 			StartTime: metav1.Now(),
 			State:     prowapi.TriggeredState,
@@ -101,8 +92,12 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
+	annotations := make(map[string]string)
+	for k, v := range job.Annotations {
+		annotations[k] = v
+	}
 	labels[github.EventGUID] = eventGUID
-	return NewProwJobWithAnnotation(PresubmitSpec(job, refs), labels, job.Annotations)
+	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
 }
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
@@ -117,7 +112,7 @@ func PresubmitSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
 		}
 	}
-	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	pjs.Refs = CompletePrimaryRefs(refs, p.JobBase)
 
 	return pjs
 }
@@ -128,7 +123,7 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 	pjs.Type = prowapi.PostsubmitJob
 	pjs.Context = p.Context
 	pjs.Report = !p.SkipReport
-	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	pjs.Refs = CompletePrimaryRefs(refs, p.JobBase)
 	if p.JenkinsSpec != nil {
 		pjs.JenkinsSpec = &prowapi.JenkinsSpec{
 			GitHubBranchSourceJob: p.JenkinsSpec.GitHubBranchSourceJob,
@@ -151,7 +146,7 @@ func BatchSpec(p config.Presubmit, refs prowapi.Refs) prowapi.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
 	pjs.Type = prowapi.BatchJob
 	pjs.Context = p.Context
-	pjs.Refs = completePrimaryRefs(refs, p.JobBase)
+	pjs.Refs = CompletePrimaryRefs(refs, p.JobBase)
 
 	return pjs
 }
@@ -160,6 +155,10 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 	var namespace string
 	if jb.Namespace != nil {
 		namespace = *jb.Namespace
+	}
+	var rerunAuthConfig prowapi.RerunAuthConfig
+	if jb.RerunAuthConfig != nil {
+		rerunAuthConfig = *jb.RerunAuthConfig
 	}
 	return prowapi.ProwJobSpec{
 		Job:             jb.Name,
@@ -173,12 +172,15 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		DecorationConfig: jb.DecorationConfig,
 
 		PodSpec:         jb.Spec,
-		BuildSpec:       jb.BuildSpec,
 		PipelineRunSpec: jb.PipelineRunSpec,
+
+		ReporterConfig:  jb.ReporterConfig,
+		RerunAuthConfig: rerunAuthConfig,
+		Hidden:          jb.Hidden,
 	}
 }
 
-func completePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
+func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 	if jb.PathAlias != "" {
 		refs.PathAlias = jb.PathAlias
 	}

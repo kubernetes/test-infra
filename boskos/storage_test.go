@@ -95,7 +95,7 @@ func TestUpdateGet(t *testing.T) {
 		}
 		uRes := oRes
 		uRes.Type = "typeUpdated"
-		if err := s.Update(uRes); err != nil {
+		if _, err := s.Update(uRes); err != nil {
 			t.Errorf("unable to update resource %v", err)
 		}
 		i, err := s.Get(oRes.Name)
@@ -125,7 +125,7 @@ func TestNegativeDeleteGet(t *testing.T) {
 			Name: "notExist",
 			Type: "type",
 		}
-		if err := s.Update(uRes); err == nil {
+		if _, err := s.Update(uRes); err == nil {
 			t.Errorf("should not be able to update resource, %v", err)
 		}
 		if err := s.Delete(uRes.Name); err == nil {

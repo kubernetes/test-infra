@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -318,7 +319,13 @@ func TestSkipStatus(t *testing.T) {
 		}
 		l := logrus.WithField("plugin", pluginName)
 
-		if err := handle(fghc, l, test.event, test.presubmits, true); err != nil {
+		c := &config.Config{
+			JobConfig: config.JobConfig{
+				PresubmitsStatic: map[string][]config.Presubmit{"org/repo": test.presubmits},
+			},
+		}
+
+		if err := handle(fghc, l, test.event, c, &git.Client{}, true); err != nil {
 			t.Errorf("%s: unexpected error: %v", test.name, err)
 			continue
 		}

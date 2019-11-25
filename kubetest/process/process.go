@@ -196,11 +196,11 @@ func (c *Control) FinishRunning(cmd *exec.Cmd) error {
 			c.intLock.Lock()
 			c.interrupted = true
 			c.intLock.Unlock()
-			log.Printf("Abort after %s timeout during %s. Will terminate in another 15m", c.Timeout, stepName)
+			log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", c.Timeout, stepName)
 			c.Terminate.Reset(15 * time.Minute)
 			pgid := getGroupPid(cmd.Process.Pid)
-			if err := syscall.Kill(-pgid, syscall.SIGABRT); err != nil {
-				log.Printf("Failed to abort %s. Will terminate immediately: %v", stepName, err)
+			if err := syscall.Kill(-pgid, syscall.SIGINT); err != nil {
+				log.Printf("Failed to interrupt %s. Will terminate immediately: %v", stepName, err)
 				syscall.Kill(-pgid, syscall.SIGTERM)
 				cmd.Process.Kill()
 			}

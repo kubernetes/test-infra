@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate 
+    type: Recreate
   selector:
     matchLabels:
       app: prow-pipeline
@@ -18,7 +18,7 @@ spec:
       # serviceAccountName: prow-pipeline
       containers:
       - name: pipeline
-        image: gcr.io/k8s-prow/pipeline:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/pipeline:v20191121-1ff2207db
         args:
         - --all-contexts
         - --config=/etc/prow-config/config.yaml

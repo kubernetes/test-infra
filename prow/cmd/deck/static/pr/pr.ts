@@ -1,18 +1,17 @@
-import "dialog-polyfill";
+import dialogPolyfill from "dialog-polyfill";
 
 import {Context} from '../api/github';
 import {Label, PullRequest, UserData} from '../api/pr';
-import {Job, JobState} from '../api/prow';
+import {ProwJob, ProwJobList, ProwJobState} from '../api/prow';
 import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
-import {tidehistory} from '../common/common';
+import {getCookieByName, tidehistory} from '../common/common';
+import {relativeURL} from "../common/urls";
 
 declare const tideData: TideData;
-declare const allBuilds: Job[];
-declare const dialogPolyfill: {
-  registerDialog(element: HTMLDialogElement): void;
-};
+declare const allBuilds: ProwJobList;
+declare const csrfToken: string;
 
-type UnifiedState = JobState | "expected" | "error" | "failure" | "pending" | "success";
+type UnifiedState = ProwJobState | "expected";
 
 interface UnifiedContext {
   context: string;
@@ -118,6 +117,7 @@ function createXMLHTTPRequest(fulfillFn: (request: XMLHttpRequest) => any, error
     request.withCredentials = true;
     request.open("POST", url, true);
     request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    request.setRequestHeader("X-CSRF-Token", csrfToken);
 
     return request;
 }
@@ -178,24 +178,6 @@ function onLoadQuery(): string {
     const val = params[0].slice("query=".length);
     if (val && val !== "") {
         return decodeURIComponent(val.replace(/\+/g, ' '));
-    }
-    return "";
-}
-
-/**
- * Gets cookie by its name.
- */
-function getCookieByName(name: string): string {
-    if (!document.cookie) {
-        return "";
-    }
-    const cookies = decodeURIComponent(document.cookie).split(";");
-    for (const cookie of cookies) {
-        const c = cookie.trim();
-        const pref = name + "=";
-        if (c.indexOf(pref) === 0) {
-            return c.slice(pref.length);
-        }
     }
     return "";
 }
@@ -343,7 +325,7 @@ function createSearchCard(): HTMLElement {
  * all pr contexts and only replaces contexts that have existing Prow Jobs. Tide
  * context will be omitted from the list.
  */
-function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] {
+function getFullPRContext(builds: ProwJob[], contexts: Context[]): UnifiedContext[] {
     const contextMap: Map<string, UnifiedContext> = new Map();
     if (contexts) {
         for (const context of contexts) {
@@ -358,27 +340,36 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
             });
         }
     }
-    if (builds) {
-        for (const build of builds) {
-            let discrepancy = null;
-            // If GitHub context exits, check if mismatch or not.
-            if (contextMap.has(build.context)) {
-                const githubContext = contextMap.get(build.context)!;
-                // TODO (qhuynh96): ProwJob's states and GitHub contexts states
-                // are not equivalent in some states.
-                if (githubContext.state !== build.state) {
-                    discrepancy = "GitHub context and Prow Job states mismatch";
-                }
+
+    for (const build of builds) {
+        const {
+            spec: {
+                context = "",
+            },
+            status: {
+                url = "", description = "", state = "",
+            },
+        } = build;
+
+        let discrepancy = null;
+        // If GitHub context exits, check if mismatch or not.
+        if (contextMap.has(context)) {
+            const githubContext = contextMap.get(context)!;
+            // TODO (qhuynh96): ProwJob's states and GitHub contexts states
+            // are not equivalent in some states.
+            if (githubContext.state !== state) {
+                discrepancy = "GitHub context and Prow Job states mismatch";
             }
-            contextMap.set(build.context, {
-                context: build.context,
-                description: build.description,
-                discrepancy,
-                state: build.state,
-                url: build.url,
-            });
         }
+        contextMap.set(context, {
+            context,
+            description,
+            discrepancy,
+            state,
+            url,
+        });
     }
+
     return Array.from(contextMap.values());
 }
 
@@ -387,8 +378,10 @@ function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] 
  */
 function loadPrStatus(prData: UserData): void {
     const tideQueries: TideQuery[] = [];
-    for (const query of tideData.TideQueries) {
-        tideQueries.push(new TideQuery(query));
+    if (tideData.TideQueries) {
+        for (const query of tideData.TideQueries) {
+            tideQueries.push(new TideQuery(query));
+        }
     }
 
     const container = document.querySelector("#pr-container")!;
@@ -404,17 +397,24 @@ function loadPrStatus(prData: UserData): void {
         // we only need to keep the first build for each job name.
         const pr = prWithContext.PullRequest;
         const seenJobs: {[key: string]: boolean} = {};
-        const builds: Job[] = [];
-        for (const build of allBuilds) {
-            if (build.type === 'presubmit' &&
-                build.refs.repo === pr.Repository.NameWithOwner &&
-                build.refs.base_ref === pr.BaseRef.Name &&
-                build.refs.pulls &&
-                build.refs.pulls.length > 0 &&
-                build.refs.pulls[0].number === pr.Number &&
-                build.refs.pulls[0].sha === pr.HeadRefOID) {
-                if (!seenJobs[build.job]) {  // First (latest) build for job.
-                    seenJobs[build.job] = true;
+        const builds: ProwJob[] = [];
+        for (const build of allBuilds.items) {
+            const {
+                spec: {
+                    type = "",
+                    job = "",
+                    refs: {repo = "", pulls = [], base_ref = ""} = {},
+                },
+            } = build;
+
+            if (type === 'presubmit' &&
+                repo === pr.Repository.NameWithOwner &&
+                base_ref === pr.BaseRef.Name &&
+                pulls.length &&
+                pulls[0].number === pr.Number &&
+                pulls[0].sha === pr.HeadRefOID) {
+                if (!seenJobs[job]) {  // First (latest) build for job.
+                    seenJobs[job] = true;
                     builds.push(build);
                 }
             }
@@ -1157,7 +1157,7 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
  * Redirect to initiate github login flow.
  */
 function forceGitHubLogin(): void {
-    window.location.href = window.location.origin + "/github-login";
+    window.location.href = window.location.origin + `/github-login?dest=${relativeURL()}`;
 }
 
 type VagueState = "succeeded" | "failed" | "pending" | "unknown";

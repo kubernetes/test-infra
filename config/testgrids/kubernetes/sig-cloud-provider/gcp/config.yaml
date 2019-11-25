@@ -1,0 +1,7 @@
+dashboard_groups:
+- name: provider-gcp
+  dashboard_names:
+    - provider-gcp-compute-persistent-disk-csi-driver
+
+dashboards:
+- name: provider-gcp-compute-persistent-disk-csi-driver

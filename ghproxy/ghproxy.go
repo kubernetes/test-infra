@@ -29,10 +29,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/greenhouse/diskutil"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 var (
@@ -82,6 +87,8 @@ type options struct {
 	pushGatewayInterval time.Duration
 
 	logLevel string
+
+	serveMetrics bool
 }
 
 func (o *options) validate() error {
@@ -113,13 +120,12 @@ func flagOptions() *options {
 	flag.StringVar(&o.pushGateway, "push-gateway", "", "If specified, push prometheus metrics to this endpoint.")
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
+	flag.BoolVar(&o.serveMetrics, "serve-metrics", false, "If true, it serves prometheus metrics")
 	return o
 }
 
 func main() {
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "ghproxy"}),
-	)
+	logrusutil.ComponentInit()
 
 	o := flagOptions()
 	flag.Parse()
@@ -137,10 +143,14 @@ func main() {
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
 
-	metrics.ExposeMetrics("ghproxy", o.pushGateway, o.pushGatewayInterval)
+	pjutil.ServePProf()
+	defer interrupts.WaitForGracefulShutdown()
+	metrics.ExposeMetrics("ghproxy", config.PushGateway{
+		Endpoint: o.pushGateway, Interval: &metav1.Duration{Duration: o.pushGatewayInterval}, ServeMetrics: o.serveMetrics})
 
 	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), proxy))
+	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: proxy}
+	interrupts.ListenAndServe(server, 30*time.Second)
 }
 
 func newReverseProxy(upstreamURL *url.URL, transport http.RoundTripper, timeout time.Duration) http.Handler {

@@ -35,8 +35,7 @@ const (
 )
 
 var (
-	blockedBody = fmt.Sprintf("Adding label: `%s` because PR contains merge commits.", labels.MergeCommits)
-	fixmeBody   = "Your pull request contains merge commits, which are not allowed in this repository. Use `git rebase` to reapply your commits on top of the target branch."
+	commentBody = fmt.Sprintf("Adding label `%s` because PR contains merge commits, which are not allowed in this repository.\nUse `git rebase` to reapply your commits on top of the target branch. Detailed instructions for doing so can be found [here](https://git.k8s.io/community/contributors/guide/github-workflow.md#4-keep-your-branch-in-sync).", labels.MergeCommits)
 )
 
 // init registers out plugin as a pull request handler
@@ -113,14 +112,14 @@ func handle(ghc githubClient, gc *git.Client, cp pruneClient, log *logrus.Entry,
 			return err
 		}
 		cp.PruneComments(func(ic github.IssueComment) bool {
-			return strings.Contains(ic.Body, blockedBody)
+			return strings.Contains(ic.Body, commentBody)
 		})
 	} else if !hasLabel && existMergeCommits {
 		log.Infof("Adding %q Label for %s/%s#%d", labels.MergeCommits, org, repo, num)
 		if err := ghc.AddLabel(org, repo, num, labels.MergeCommits); err != nil {
 			return err
 		}
-		msg := plugins.FormatResponse(pre.PullRequest.User.Login, blockedBody, fixmeBody)
+		msg := plugins.FormatSimpleResponse(pre.PullRequest.User.Login, commentBody)
 		return ghc.CreateComment(org, repo, num, msg)
 	}
 	return nil

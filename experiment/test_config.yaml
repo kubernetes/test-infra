@@ -32,456 +32,6 @@
 # The envs and args defined in "jobs" override the ones defined in each
 # dimension.
 jobs:
-  # COS image validation.
-  #
-  # +------+--------+----------+------------+------------+------------+
-  # |      | k8sdev |  k8sbeta | k8sstable1 | k8sstable2 | k8sstable3 |
-  # +------+--------+----------+------------+------------+------------+
-  # | cos1 |    n/a | every 2h |   every 4h |   every 4h |   every 6h |
-  # +------+--------+----------+------------+------------+------------+
-  # | cos2 |    n/a | every 2h |   every 4h |   every 4h |   every 6h |
-  # +------+--------+----------+------------+------------+------------+
-  #
-  # Each cell contains 2 node e2e tests, 3 GCE e2e tests, and 9 GKE e2e tests.
-
-  # Node e2e tests
-
-  # ci-kubernetes-e2enode-cos1-k8sbeta-*
-  ci-kubernetes-e2enode-cos1-k8sbeta-gkespec:
-    interval: 2h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos1-k8sbeta-serial:
-    interval: 2h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2enode-cos1-k8sstable1-*
-  ci-kubernetes-e2enode-cos1-k8sstable1-gkespec:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos1-k8sstable1-serial:
-    interval: 4h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2enode-cos1-k8sstable2-*
-  ci-kubernetes-e2enode-cos1-k8sstable2-gkespec:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos1-k8sstable2-serial:
-    interval: 4h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2enode-cos1-k8sstable3-*
-  ci-kubernetes-e2enode-cos1-k8sstable3-gkespec:
-    interval: 6h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos1-k8sstable3-serial:
-    interval: 6h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2enode-cos2-k8sbeta-*
-  ci-kubernetes-e2enode-cos2-k8sbeta-gkespec:
-    interval: 2h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos2-k8sbeta-serial:
-    interval: 2h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2enode-cos2-k8sstable1-*
-  ci-kubernetes-e2enode-cos2-k8sstable1-gkespec:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos2-k8sstable1-serial:
-    interval: 4h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2enode-cos2-k8sstable2-*
-  ci-kubernetes-e2enode-cos2-k8sstable2-gkespec:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos2-k8sstable2-serial:
-    interval: 4h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2enode-cos2-k8sstable3-*
-  ci-kubernetes-e2enode-cos2-k8sstable3-gkespec:
-    interval: 6h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2enode-cos2-k8sstable3-serial:
-    interval: 6h
-    args:
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: [sig-node]
-
-  # GCE e2e tests
-
-  # ci-kubernetes-e2e-gce-cos1-k8sbeta-*
-  ci-kubernetes-e2e-gce-cos1-k8sbeta-default:
-    interval: 2h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sbeta-slow:
-    interval: 2h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sbeta-serial:
-    interval: 2h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2e-gce-cos1-k8sstable1-*
-  ci-kubernetes-e2e-gce-cos1-k8sstable1-default:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sstable1-slow:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sstable1-serial:
-    interval: 4h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2e-gce-cos1-k8sstable2-*
-  ci-kubernetes-e2e-gce-cos1-k8sstable2-default:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sstable2-slow:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sstable2-serial:
-    interval: 4h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2e-gce-cos1-k8sstable3-*
-  ci-kubernetes-e2e-gce-cos1-k8sstable3-default:
-    interval: 6h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sstable3-slow:
-    interval: 6h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos1-k8sstable3-serial:
-    interval: 6h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2e-gce-cos2-k8sbeta-*
-  ci-kubernetes-e2e-gce-cos2-k8sbeta-default:
-    interval: 2h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sbeta-slow:
-    interval: 2h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sbeta-serial:
-    interval: 2h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2e-gce-cos2-k8sstable1-*
-  ci-kubernetes-e2e-gce-cos2-k8sstable1-default:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sstable1-slow:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sstable1-serial:
-    interval: 4h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2e-gce-cos2-k8sstable2-*
-  ci-kubernetes-e2e-gce-cos2-k8sstable2-default:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sstable2-slow:
-    interval: 4h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sstable2-serial:
-    interval: 4h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-e2e-gce-cos2-k8sstable3-*
-  ci-kubernetes-e2e-gce-cos2-k8sstable3-default:
-    interval: 6h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sstable3-slow:
-    interval: 6h
-    sigOwners: [sig-node]
-  ci-kubernetes-e2e-gce-cos2-k8sstable3-serial:
-    interval: 6h
-    sigOwners: [sig-node]
-
-  # ci-kubernetes-gke-cos1-k8sbeta-*
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-alphafeatures:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-autoscaling:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-default:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-flaky:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-reboot:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-serial:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-slow:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-updown:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sbeta-gpu:
-    cron: 0 0-23/2 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
-  # ci-kubernetes-gke-cos1-k8sstable1-*
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-alphafeatures:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-autoscaling:
-    interval: 4h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-default:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-flaky:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-reboot:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-serial:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-slow:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-updown:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable1-gpu:
-    cron: 0 0-23/4 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
-  # ci-kubernetes-gke-cos1-k8sstable2-*
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-alphafeatures:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-autoscaling:
-    interval: 4h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-default:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-flaky:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-reboot:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-serial:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-slow:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-updown:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable2-gpu:
-    cron: 30 0-23/4 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
-  # ci-kubernetes-gke-cos1-k8sstable3-*
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-alphafeatures:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-autoscaling:
-    interval: 6h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-default:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-flaky:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-reboot:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-serial:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-slow:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-updown:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos1-k8sstable3-gpu:
-    cron: 0 3-23/6 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
-  # ci-kubernetes-gke-cos2-k8sbeta-*
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-alphafeatures:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-autoscaling:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-default:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-flaky:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-reboot:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-serial:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-slow:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-updown:
-    interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sbeta-gpu:
-    cron: 30 0-23/2 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
-  # ci-kubernetes-gke-cos2-k8sstable1-*
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-alphafeatures:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-autoscaling:
-    interval: 4h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-default:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-flaky:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-reboot:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-serial:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-slow:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-updown:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable1-gpu:
-    cron: 30 3-23/4 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
-  # ci-kubernetes-gke-cos2-k8sstable2-*
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-alphafeatures:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-autoscaling:
-    interval: 4h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-default:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-flaky:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-reboot:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-serial:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-slow:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-updown:
-    interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable2-gpu:
-    cron: 30 1-23/4 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
-  # ci-kubernetes-gke-cos2-k8sstable3-*
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-alphafeatures:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-autoscaling:
-    interval: 6h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-default:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-flaky:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-reboot:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-serial:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-slow:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-updown:
-    interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-cos2-k8sstable3-gpu:
-    cron: 0 5-23/6 * * *
-    sigOwners: [sig-gcp]
-    args:
-    - --gcp-zone=us-west1-b
-
   # Ubuntu image validation.
   #
   # +---------+--------+----------+------------+------------+------------+
@@ -765,266 +315,224 @@ jobs:
   # ci-kubernetes-gke-ubuntu1-k8sbeta-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures:
     interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling:
-    interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-gpu:
     cron: 0 1-23/2 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu1-k8sstable1-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures:
     interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling:
-    interval: 4h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-gpu:
     cron: 0 2-23/4 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu1-k8sstable2-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures:
     interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling:
-    interval: 6h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-gpu:
     cron: 30 5-23/6 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu1-k8sstable3-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures:
     interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling:
-    interval: 6h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-gpu:
     cron: 30 0-23/6 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sbeta-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures:
     interval: 2h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling:
-    interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-flaky:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-serial:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-slow:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-updown:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu:
     cron: 30 1-23/2 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sstable1-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures:
     interval: 4h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling:
-    interval: 4h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-default:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-reboot:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-serial:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-slow:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-updown:
     interval: 4h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu:
     cron: 30 2-23/4 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sstable2-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-alphafeatures:
     interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling:
-    interval: 6h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-flaky:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-serial:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-slow:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-updown:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu:
     cron: 30 2-23/6 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sstable3-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures:
     interval: 6h
-    sigOwners: [sig-gcp]
-  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling:
-    interval: 6h
-    sigOwners: [sig-gcp]
-    args:
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-default:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-reboot:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-serial:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-slow:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-updown:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu:
     cron: 0 1-23/6 * * *
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     args:
     - --gcp-zone=us-west1-b
 
@@ -1032,191 +540,216 @@ jobs:
   # beta release (inactive)
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
     interval: 1h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
     interval: 1h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sbeta-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 1h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
     interval: 1h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
     interval: 1h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
     interval: 1h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-reboot:
     interval: 1h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-default:
     interval: 1h
     args:
-    - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
-    sigOwners: [sig-gcp]
+    - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-serial:
     interval: 1h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-slow:
     interval: 1h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
     interval: 1h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
       --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-ingress:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
     interval: 2h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
     interval: 2h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-slow:
     interval: 2h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable1-ingress:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-reboot:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-default:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-serial:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-slow:
     interval: 2h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures:
     interval: 2h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
       --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-default:
     interval: 6h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
     interval: 6h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
     interval: 6h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable2-ingress:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-reboot:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-default:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-serial:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-slow:
     interval: 6h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
     interval: 6h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
       --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
   # stable3
   ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
     interval: 24h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
     interval: 24h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-default:
     interval: 24h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
     interval: 24h
-    sigOwners: [sig-gcp]
-    releaseBlocking: true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
     interval: 24h
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable3-ingress:
     interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-reboot:
     interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-default:
     interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-serial:
     interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-slow:
     interval: 6h # runs more frequently because it's also used in cos image validation.
-    sigOwners: [sig-gcp]
+    sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
     interval: 24h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true
-    sigOwners: [sig-gcp]
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
+    sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
 # The following settings are used by cluster e2e tests.
@@ -1277,19 +810,19 @@ k8sVersions:
   beta:
     args:
     - --extract=ci/k8s-beta
-    version: '1.15'
+    version: '1.17'
   stable1:
     args:
     - --extract=ci/k8s-stable1
-    version: '1.14'
+    version: '1.16'
   stable2:
     args:
     - --extract=ci/k8s-stable2
-    version: '1.13'
+    version: '1.15'
   stable3:
     args:
     - --extract=ci/k8s-stable3
-    version: '1.12'
+    version: '1.14'
 
 testSuites:
   alphafeatures:
@@ -1297,11 +830,6 @@ testSuites:
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\]
       --minStartupPods=8
-  autoscaling:
-    args:
-    - --timeout=600m
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:ClusterSizeAutoscalingScaleWithNAP\]
-      --ginkgo.skip=\[Flaky\] --minStartupPods=8
   default:
     args:
     - --timeout=120m
@@ -1403,23 +931,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
   beta:
     args:
-    - --repo=k8s.io/kubernetes=release-1.15
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.15
+    - --repo=k8s.io/kubernetes=release-1.17
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.17
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.14
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.14
+    - --repo=k8s.io/kubernetes=release-1.16
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.16
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.13
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.13
+    - --repo=k8s.io/kubernetes=release-1.15
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.15
   stable3:
     args:
-    - --repo=k8s.io/kubernetes=release-1.12
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-1.12
+    - --repo=k8s.io/kubernetes=release-1.14
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-1.14
 
 nodeTestSuites:
   default:

@@ -76,7 +76,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 
 func generatePresubmits(c config.JobConfig, version string) (map[string][]config.Presubmit, error) {
 	newPresubmits := map[string][]config.Presubmit{}
-	for repo, presubmits := range c.Presubmits {
+	for repo, presubmits := range c.PresubmitsStatic {
 		for _, presubmit := range presubmits {
 			if presubmit.Annotations[forkAnnotation] != "true" {
 				continue
@@ -273,10 +273,19 @@ func fixTestgridAnnotations(annotations map[string]string, version string, isPre
 	didDashboards := false
 annotations:
 	for k, v := range annotations {
+		if isPresubmit {
+			// Forked presubmits do not get renamed, and so their annotations will be applied to master.
+			// In some cases, they will do things that are so explicitly contradictory the run will fail.
+			// Therefore, if we're forking a presubmit, just drop all testgrid config and defer to master.
+			if strings.HasPrefix(k, "testgrid-") {
+				continue
+			}
+		}
 		switch k {
 		case testgridDashboardsAnnotation:
+			fmt.Println(v)
 			v = r.Replace(v)
-			if !isPresubmit {
+			if !inOtherSigReleaseDashboard(v, version) {
 				v += ", " + "sig-release-" + version + "-all"
 			}
 			didDashboards = true
@@ -294,6 +303,10 @@ annotations:
 	}
 	return a
 
+}
+
+func inOtherSigReleaseDashboard(existingDashboards, version string) bool {
+	return strings.Contains(existingDashboards, "sig-release-"+version)
 }
 
 func generateNameVariant(name, version string, generic bool) string {

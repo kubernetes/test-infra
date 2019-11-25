@@ -17,7 +17,7 @@ The process is as follows:
     rewriting it to better support external usage.
 - Add the GCS bucket info to [buckets.yaml](/kettle/buckets.yaml) via a PR (use the
   previously designated github handle for the `contact` field).
-- Add jobs and dashboards to the [testgrid config](/testgrid/config.yaml) via
+- Add jobs and dashboards to the [testgrid config](/config/testgrids) via
   a PR (use the previously designated point of contact info in a comment next to
   added `test_group`s, or even better in the `description` field for added
   `dashboard_tab`s)

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-IMAGE ?= gcr.io/k8s-test-infra-aws/aws-janitor
+IMAGE ?= gcr.io/k8s-prow/boskos/aws-janitor-boskos
 VERSION ?= $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 image:
-	CGO_ENABLED=0 go build k8s.io/test-infra/maintenance/aws-janitor
+	GO111MODULE=on CGO_ENABLED=0 go build k8s.io/test-infra/maintenance/aws-janitor
 	docker build -t "$(IMAGE):$(VERSION)" .
 
 push: image

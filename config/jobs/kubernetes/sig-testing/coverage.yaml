@@ -20,10 +20,10 @@ periodics:
     base_ref: master
     path_alias: k8s.io/release
   decoration_config:
-    timeout: 3h
+    timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       command:
       - runner.sh
       - bash
@@ -39,15 +39,16 @@ periodics:
           --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
           --gcp-zone=us-west1-b \
           --provider=gce \
-          --timeout=150m \
-          --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
-        cd ../test-infra
-        bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
-        bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
-        bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
-        bazel run //gopherage -- filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
-        bazel run //gopherage -- html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/conformance.html"
-        bazel run //gopherage -- junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
+          --timeout=300m \
+          --test_args="--ginkgo.focus=\[Conformance\]"
+        cd ../test-infra/gopherage
+        GO111MODULE=on go build .
+        ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/conformance.html"
+        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
@@ -57,7 +58,10 @@ periodics:
         value: "n"
       securityContext:
         privileged: true
-# coverage for same tests that run in ci-kubernetes-e2e-gci-gce
+  # coverage for same tests that run in ci-kubernetes-e2e-gci-gce
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
 - interval: 1h
   name: ci-kubernetes-coverage-e2e-gci-gce
   decorate: true
@@ -82,7 +86,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       command:
       - runner.sh
       - bash
@@ -105,13 +109,14 @@ periodics:
           --provider=gce \
           --timeout=150m \
           --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8"
-        cd ../test-infra
-        bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
-        bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
-        bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
-        bazel run //gopherage -- filter --exclude-path=zz_generated,third_party/,cmd/,cloudprovider/providers/ "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
-        bazel run //gopherage -- html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/e2e.html"
-        bazel run //gopherage -- junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
+        cd ../test-infra/gopherage
+        GO111MODULE=on go build .
+        ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/e2e.html"
+        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
@@ -119,5 +124,35 @@ periodics:
         value: "n"
       - name: KUBE_BUILD_CONFORMANCE
         value: "n"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
+- interval: 1h
+  name: ci-kubernetes-coverage-unit
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -c
+      - |
+        local result=0
+        go install k8s.io/kubernetes/vendor/gotest.tools/gotestsum || result=$?
+        make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" || result=$?
+        grep -v -E 'zz_generated|generated\.pb\.go' "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+        go tool cover -html="${ARTIFACTS}/filtered.cov" -o "${ARTIFACTS}/filtered.html" || result=$?
+        exit $result
       securityContext:
         privileged: true

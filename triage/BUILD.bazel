@@ -8,7 +8,6 @@ py_test(
         "summarize_test.py",
     ],
     python_version = "PY3",
-    deps = ["@six"],
 )
 
 py_test(
@@ -18,16 +17,6 @@ py_test(
         "berghelroach_test.py",
     ],
     python_version = "PY3",
-)
-
-# workaround for https://github.com/bazelbuild/bazel/issues/4815
-py_runtime(
-    name = "myruntime",
-    files = [],
-    interpreter_path = select({
-        "@bazel_tools//tools/python:PY2": "/usr/bin/python2",
-        "@bazel_tools//tools/python:PY3": "/usr/bin/python3",
-    }),
 )
 
 jasmine_node_test(

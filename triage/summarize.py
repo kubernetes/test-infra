@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -32,9 +32,6 @@ import re
 import sys
 import time
 import zlib
-
-import six
-from six.moves import range
 
 import berghelroach
 
@@ -167,11 +164,13 @@ def file_memoize(description, name):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             if os.path.exists(name):
-                data = json.load(open(name))
-                logging.info('done (cached) %s', description)
-                return data
+                with open(name) as f:
+                    data = json.load(f)
+                    logging.info('done (cached) %s', description)
+                    return data
             data = func(*args, **kwargs)
-            json.dump(data, open(name, 'w'))
+            with open(name, 'w') as f:
+                json.dump(data, f)
             logging.info('done %s', description)
             return data
         wrapper.__wrapped__ = func
@@ -193,22 +192,25 @@ def load_failures(builds_file, tests_files):
         { test_name: [{build: gs://foo/bar, name: test_name, failure_text: xxx}, ...], ...}
     """
     builds = {}
-    for build in json.load(open(builds_file)):
-        if not build['started'] or not build['number']:
-            continue
-        for attr in ('started', 'tests_failed', 'number', 'tests_run'):
-            build[attr] = int(build[attr])
-        build['elapsed'] = int(float(build['elapsed']))
-        if 'pr-logs' in build['path']:
-            build['pr'] = build['path'].split('/')[-3]
-        builds[build['path']] = build
+    with open(builds_file) as f:
+        for build in json.load(f):
+            if not build['started'] or not build['number']:
+                continue
+            for attr in ('started', 'tests_failed', 'number', 'tests_run'):
+                build[attr] = int(build[attr])
+            build['elapsed'] = int(float(build['elapsed']))
+            if 'pr-logs' in build['path']:
+                build['pr'] = build['path'].split('/')[-3]
+            builds[build['path']] = build
 
     failed_tests = {}
     for tests_file in tests_files:
-        for line in open(tests_file, 'r'):
-            test = json.loads(line)
-            failed_tests.setdefault(test['name'], []).append(test)
-    for tests in six.itervalues(failed_tests):
+        with open(tests_file) as f:
+            for line in f:
+                test = json.loads(line)
+                failed_tests.setdefault(test['name'], []).append(test)
+
+    for tests in failed_tests.values():
         tests.sort(key=lambda t: t['build'])
 
     return builds, failed_tests
@@ -280,7 +282,7 @@ def cluster_local(failed_tests):
     logging.info("Clustering failures for %d unique tests...", len(failed_tests))
     # Look at tests with the most failures first
     for n, (test_name, tests) in enumerate(
-            sorted(six.iteritems(failed_tests),
+            sorted(failed_tests.items(),
                    key=lambda x: len(x[1]),
                    reverse=True),
             1):
@@ -323,17 +325,17 @@ def cluster_global(clustered, previous_clustered):
             clusters[cluster['key']] = {}
         logging.info('Seeding with %d previous clusters', len(clusters))
         if n:
-            logging.warn('!!! %d clusters lost from different normalization! !!!', n)
+            logging.warning('!!! %d clusters lost from different normalization! !!!', n)
 
     # Look at tests with the most failures over all clusters first
     for n, (test_name, test_clusters) in enumerate(
-            sorted(six.iteritems(clustered),
-                   key=lambda kv: sum(len(x) for x in six.itervalues(kv[1])),
+            sorted(clustered.items(),
+                   key=lambda kv: sum(len(x) for x in kv[1].values()),
                    reverse=True),
             1):
         logging.info('%4d/%4d, %d clusters, %s', n, len(clustered), len(test_clusters), test_name)
         # Look at clusters with the most failures first
-        for key, tests in sorted(six.iteritems(test_clusters),
+        for key, tests in sorted(test_clusters.items(),
                                  key=lambda x: len(x[1]), reverse=True):
             num_failures += len(tests)
             if key in clusters:
@@ -347,7 +349,7 @@ def cluster_global(clustered, previous_clustered):
 
     # If we seeded clusters using the previous run's keys, some of those
     # clusters may have disappeared. Remove the resulting empty entries.
-    for k in {k for k, v in six.iteritems(clusters) if not v}:
+    for k in {k for k, v in clusters.items() if not v}:
         clusters.pop(k)
 
     elapsed = time.time() - start
@@ -367,7 +369,7 @@ def tests_group_by_job(tests, builds):
             continue
         if 'number' in build:
             groups.setdefault(build['job'], set()).add(build['number'])
-    return sorted(((key, sorted(value, reverse=True)) for key, value in six.iteritems(groups)),
+    return sorted(((key, sorted(value, reverse=True)) for key, value in groups.items()),
                   key=lambda kv: (-len(kv[1]), kv[0]))
 
 
@@ -440,11 +442,11 @@ def builds_to_columns(builds):
 
     cols = {v: [] for v in 'started tests_failed elapsed tests_run result executor pr'.split()}
     out = {'jobs': jobs, 'cols': cols, 'job_paths': {}}
-    for build in sorted(six.itervalues(builds), key=lambda b: (b['job'], b['number'])):
+    for build in sorted(builds.values(), key=lambda b: (b['job'], b['number'])):
         if 'number' not in build:
             continue
         index = len(cols['started'])
-        for key, entries in six.iteritems(cols):
+        for key, entries in cols.items():
             entries.append(build.get(key))
         job = jobs.setdefault(build['job'], {})
         if not job:
@@ -469,8 +471,8 @@ def builds_to_columns(builds):
 
 def render(builds, clustered):
     clustered_sorted = sorted(
-        six.iteritems(clustered),
-        key=lambda kv: (-sum(len(ts) for ts in six.itervalues(kv[1])), kv[0]))
+        clustered.items(),
+        key=lambda kv: (-sum(len(ts) for ts in kv[1].values()), kv[0]))
     clustered_tuples = [(k,
                          make_ngram_counts_digest(k),
                          sorted(clusters.items(), key=lambda nt: (-len(nt[1]), nt[0])))
@@ -491,7 +493,7 @@ def annotate_owners(data, builds, owners):
             sig.replace('-', '_'),  # regex group names can't have -
             '|'.join(re.escape(p) for p in prefixes)
         )
-        for sig, prefixes in six.iteritems(owners)
+        for sig, prefixes in owners.items()
     ))
     job_paths = data['builds']['job_paths']
     yesterday = max(data['builds']['cols']['started']) - (60 * 60 * 24)
@@ -506,7 +508,7 @@ def annotate_owners(data, builds, owners):
                 m = owner_re.match(normalize_name(test['name']))
                 if not m or not m.groupdict():
                     continue
-                owner = next(k for k, v in six.iteritems(m.groupdict()) if v)
+                owner = next(k for k, v in m.groupdict().items() if v)
             owner = owner.replace('_', '-')
             counts = owner_counts.setdefault(owner, [0, 0])
             for job in test['jobs']:
@@ -514,7 +516,10 @@ def annotate_owners(data, builds, owners):
                     continue
                 job_path = job_paths[job['name']]
                 for build in job['builds']:
-                    if builds['%s/%s' % (job_path, build)]['started'] > yesterday:
+                    bucket_key = '%s/%s' % (job_path, build)
+                    if bucket_key not in builds:
+                        continue
+                    elif builds[bucket_key]['started'] > yesterday:
                         counts[0] += 1
                     else:
                         counts[1] += 1
@@ -540,7 +545,7 @@ def render_slice(data, builds, prefix='', owner=''):
         for test in cluster['tests']:
             for job in test['jobs']:
                 jobs.add(job['name'])
-    for path, build in six.iteritems(builds):
+    for path, build in builds.items():
         if build['job'] in jobs:
             builds_out[path] = build
     return {'clustered': clustered, 'builds': builds_to_columns(builds_out)}
@@ -590,22 +595,20 @@ def main(args):
         owners = json.load(args.owners)
         annotate_owners(data, builds, owners)
 
-    json.dump(data, open(args.output, 'w'),
-              sort_keys=True)
+    with open(args.output, 'w') as f:
+        json.dump(data, f, sort_keys=True)
 
     if args.output_slices:
         assert 'PREFIX' in args.output_slices
         for subset in range(256):
             id_prefix = '%02x' % subset
-            json.dump(render_slice(data, builds, id_prefix),
-                      open(args.output_slices.replace('PREFIX', id_prefix), 'w'),
-                      sort_keys=True)
+            with open(args.output_slices.replace('PREFIX', id_prefix), 'w') as f:
+                json.dump(render_slice(data, builds, id_prefix), f, sort_keys=True)
         if args.owners:
             owners.setdefault('testing', [])  # for output
             for owner in owners:
-                json.dump(render_slice(data, builds, prefix='', owner=owner),
-                          open(args.output_slices.replace('PREFIX', 'sig-' + owner), 'w'),
-                          sort_keys=True)
+                with open(args.output_slices.replace('PREFIX', 'sig-' + owner), 'w') as f:
+                    json.dump(render_slice(data, builds, prefix='', owner=owner), f, sort_keys=True)
     elapsed = time.time() - start
     logging.info('Finished rendering results in %dm%ds', elapsed / 60, elapsed % 60)
 

@@ -25,20 +25,24 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/validation"
-
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
 
+var (
+	fakeNow = now()
+	testTTL = time.Millisecond
+)
+
 func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
 	resourceClient := crds.NewTestResourceClient()
-	s, _ := ranch.NewStorage(crds.NewCRDStorage(resourceClient), "")
+	dRLCClient := crds.NewTestDRLCClient()
+	s := ranch.NewTestingStorage(crds.NewCRDStorage(resourceClient), crds.NewCRDStorage(dRLCClient), func() time.Time { return fakeNow })
 	for _, r := range resources {
 		s.AddResource(r)
 	}
-	r, _ := ranch.NewRanch("", s)
+	r, _ := ranch.NewRanch("", s, testTTL)
 	return r
 }
 
@@ -774,39 +778,6 @@ func TestDefault(t *testing.T) {
 		handler.ServeHTTP(rr, req)
 		if rr.Code != tc.code {
 			t.Errorf("%s - Wrong error code. Got %v, expect %v", tc.name, rr.Code, tc.code)
-		}
-	}
-}
-
-func TestConfig(t *testing.T) {
-	resources, err := ranch.ParseConfig("resources.yaml")
-	if err != nil {
-		t.Errorf("parseConfig error: %v", err)
-	}
-
-	if len(resources) == 0 {
-		t.Errorf("empty data")
-	}
-	resourceNames := map[string]bool{}
-
-	for _, p := range resources {
-		if p.Name == "" {
-			t.Errorf("empty resource name: %s", p.Name)
-		}
-
-		errs := validation.IsQualifiedName(p.Name)
-		if len(errs) != 0 {
-			t.Errorf("resource name %s is not a qualified k8s object name, errs: %v", p.Name, errs)
-		}
-
-		if p.Type == "" {
-			t.Errorf("empty resource type: %s", p.Name)
-		}
-
-		if _, ok := resourceNames[p.Name]; ok {
-			t.Errorf("duplicated resource name: %s", p.Name)
-		} else {
-			resourceNames[p.Name] = true
 		}
 	}
 }

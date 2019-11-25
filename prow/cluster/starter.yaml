@@ -116,7 +116,7 @@ spec:
     type: string
     JSONPath: .status.state
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -130,6 +130,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: hook
   template:
     metadata:
       labels:
@@ -139,7 +142,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/hook:v20191121-1ff2207db
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -218,7 +221,7 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/plank:v20191121-1ff2207db
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -237,7 +240,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -245,6 +248,9 @@ metadata:
   labels:
     app: sinker
 spec:
+  selector:
+    matchLabels:
+      app: sinker
   replicas: 1
   template:
     metadata:
@@ -254,7 +260,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/sinker:v20191121-1ff2207db
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -266,7 +272,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -280,6 +286,9 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: deck
   template:
     metadata:
       labels:
@@ -289,17 +298,25 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/deck:v20191121-1ff2207db
         args:
         - --config-path=/etc/config/config.yaml
+        - --plugin-config=/etc/plugins/plugins.yaml
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
+        - --github-token-path=/etc/github/oauth
         ports:
           - name: http
             containerPort: 8080
         volumeMounts:
         - name: config
           mountPath: /etc/config
+          readOnly: true
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: plugins
+          mountPath: /etc/plugins
           readOnly: true
         livenessProbe:
           httpGet:
@@ -318,6 +335,12 @@ spec:
       - name: config
         configMap:
           name: config
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: plugins
+        configMap:
+          name: plugins
 ---
 apiVersion: v1
 kind: Service
@@ -332,7 +355,7 @@ spec:
     targetPort: 8080
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -343,6 +366,9 @@ spec:
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: horologium
   template:
     metadata:
       labels:
@@ -352,7 +378,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/horologium:v20191121-1ff2207db
         args:
         - --config-path=/etc/config/config.yaml
         volumeMounts:
@@ -364,7 +390,7 @@ spec:
         configMap:
           name: config
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -375,6 +401,9 @@ spec:
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: tide
   template:
     metadata:
       labels:
@@ -383,7 +412,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/tide:v20191121-1ff2207db
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -424,10 +453,13 @@ metadata:
   namespace: default
   name: ing
 spec:
+  backend: # specify the default backend for `ingress-gce` (https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#default_backend)
+    serviceName: deck
+    servicePort: 80
   rules:
   - http:
       paths:
-      - path: /* # Correct for GKE, need / on many other distros
+      - path: /
         backend:
           serviceName: deck
           servicePort: 80
@@ -436,7 +468,7 @@ spec:
           serviceName: hook
           servicePort: 8888
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: statusreconciler
@@ -445,6 +477,9 @@ metadata:
     app: statusreconciler
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: statusreconciler
   template:
     metadata:
       labels:
@@ -454,7 +489,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20190528-0d7c4b53a
+        image: gcr.io/k8s-prow/status-reconciler:v20191121-1ff2207db
         args:
         - --dry-run=false
         - --continue-on-error=true
@@ -533,6 +568,10 @@ rules:
     verbs:
       - get
       - list
+      # Required when deck runs with `--rerun-creates-job=true`
+      # **Warning:** Only use this for non-public deck instances, this allows
+      # anyone with access to your Deck instance to create new Prowjobs
+      # - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -601,6 +640,7 @@ rules:
       - create
       - list
       - update
+      - patch
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -663,6 +703,24 @@ rules:
     verbs:
       - delete
       - list
+      - watch
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - prow-sinker-leaderlock
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - events
+    verbs:
+      - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1

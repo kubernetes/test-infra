@@ -4,15 +4,41 @@ postsubmits:
   - name: ci-kind-build
     decorate: true
     path_alias: sigs.k8s.io/kind
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         command:
-        - "./hack/ci/build-all.sh"
-      # trialing this on kind jobs, we are using FQDN for in-cluster services, now
-      # so use ndots 1 to improve dns performance
-      # TODO(bentheelder): consider setting this at the cluster level instead
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
+        - runner.sh
+        - ./hack/ci/push-latest-cli.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      testgrid-tab-name: ci build
+      testgrid-alert-email: bentheelder@google.com
+      description: kind CI build
+  - name: ci-kind-unit
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+        command:
+        - runner.sh
+        - make
+        - unit
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      testgrid-tab-name: ci unit test
+      testgrid-alert-email: bentheelder@google.com
+      description: kind CI unit test

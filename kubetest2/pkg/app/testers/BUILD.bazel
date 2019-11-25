@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//kubetest2/pkg/types:go_default_library",
-        "//vendor/github.com/pkg/errors:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
     ],
 )
 

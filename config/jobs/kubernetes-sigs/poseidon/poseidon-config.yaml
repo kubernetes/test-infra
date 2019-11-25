@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -28,6 +28,10 @@ presubmits:
         - --timeout=60m
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-poseidon
+      testgrid-tab-name: e2e
+      testgrid-num-columns-recent: '20'
   - name: pull-poseidon-bazel
     always_run: true
     labels:
@@ -35,7 +39,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -52,6 +56,9 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+    annotations:
+      testgrid-dashboards: presubmits-poseidon
+      testgrid-tab-name: bazel
   - name: pull-poseidon-verify
     branches:
     - master
@@ -71,3 +78,6 @@ presubmits:
         - --
         - make
         - verify
+    annotations:
+      testgrid-dashboards: presubmits-poseidon
+      testgrid-tab-name: verify

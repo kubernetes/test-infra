@@ -11,6 +11,9 @@ presubmits:
         - make
         args:
         - compile
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: build
   - name: pull-cluster-api-provider-digitalocean-test
     always_run: true
     decorate: true
@@ -22,17 +25,23 @@ presubmits:
         - make
         args:
         - test-unit
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: test
   - name: pull-cluster-api-provider-digitalocean-verify
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-digitalocean
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         command:
         - make
         args:
         - verify
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: verify
   - name: pull-cluster-api-provider-digitalocean-lint
     always_run: true
     decorate: true
@@ -44,3 +53,6 @@ presubmits:
         - make
         args:
         - lint
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: lint

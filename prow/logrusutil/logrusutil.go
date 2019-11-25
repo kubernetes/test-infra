@@ -18,7 +18,13 @@ limitations under the License.
 package logrusutil
 
 import (
+	"bytes"
+	"strings"
+
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/version"
 )
 
 // DefaultFieldsFormatter wraps another logrus.Formatter, injecting
@@ -27,39 +33,97 @@ import (
 type DefaultFieldsFormatter struct {
 	WrappedFormatter logrus.Formatter
 	DefaultFields    logrus.Fields
+	PrintLineNumber  bool
 }
 
-// NewDefaultFieldsFormatter returns a DefaultFieldsFormatter,
-// if wrappedFormatter is nil &logrus.JSONFormatter{} will be used instead
-func NewDefaultFieldsFormatter(
-	wrappedFormatter logrus.Formatter, defaultFields logrus.Fields,
-) *DefaultFieldsFormatter {
-	res := &DefaultFieldsFormatter{
-		WrappedFormatter: wrappedFormatter,
-		DefaultFields:    defaultFields,
+// Init set Logrus formatter
+// if DefaultFieldsFormatter.wrappedFormatter is nil &logrus.JSONFormatter{} will be used instead
+func Init(formatter *DefaultFieldsFormatter) {
+	if formatter == nil {
+		return
 	}
-	if res.WrappedFormatter == nil {
-		res.WrappedFormatter = &logrus.JSONFormatter{}
+	if formatter.WrappedFormatter == nil {
+		formatter.WrappedFormatter = &logrus.JSONFormatter{}
 	}
-	return res
+	logrus.SetFormatter(formatter)
+	logrus.SetReportCaller(formatter.PrintLineNumber)
+}
+
+// ComponentInit is a syntax sugar for easier Init
+func ComponentInit() {
+	Init(
+		&DefaultFieldsFormatter{
+			PrintLineNumber: true,
+			DefaultFields:   logrus.Fields{"component": version.Name},
+		},
+	)
 }
 
 // Format implements logrus.Formatter's Format. We allocate a new Fields
 // map in order to not modify the caller's Entry, as that is not a thread
 // safe operation.
-func (d *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	data := make(logrus.Fields, len(entry.Data)+len(d.DefaultFields))
-	for k, v := range d.DefaultFields {
+func (f *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields))
+	for k, v := range f.DefaultFields {
 		data[k] = v
 	}
 	for k, v := range entry.Data {
 		data[k] = v
 	}
-	return d.WrappedFormatter.Format(&logrus.Entry{
+	return f.WrappedFormatter.Format(&logrus.Entry{
 		Logger:  entry.Logger,
 		Data:    data,
 		Time:    entry.Time,
 		Level:   entry.Level,
 		Message: entry.Message,
+		Caller:  entry.Caller,
 	})
+}
+
+// CensoringFormatter represents a logrus formatter that
+// can be used to censor sensitive information
+type CensoringFormatter struct {
+	delegate   logrus.Formatter
+	getSecrets func() sets.String
+}
+
+func (f CensoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	raw, err := f.delegate.Format(entry)
+	if err != nil {
+		return raw, err
+	}
+	return f.censor(raw), nil
+}
+
+const censored = "CENSORED"
+
+var (
+	censoredBytes = []byte(censored)
+	standardLog   = logrus.NewEntry(logrus.StandardLogger())
+)
+
+// Censor replaces sensitive parts of the content with a placeholder.
+func (f CensoringFormatter) censor(content []byte) []byte {
+	for _, secret := range f.getSecrets().List() {
+		trimmedSecret := strings.TrimSpace(secret)
+		if trimmedSecret != secret {
+			standardLog.Warning("Secret is not trimmed")
+			secret = trimmedSecret
+		}
+		if secret == "" {
+			standardLog.Warning("Secret is an empty string, ignoring")
+			continue
+		}
+		content = bytes.ReplaceAll(content, []byte(secret), censoredBytes)
+	}
+	return content
+}
+
+// NewCensoringFormatter generates a `CensoringFormatter` with
+// a formatter as delegate and a set of strings to censor
+func NewCensoringFormatter(f logrus.Formatter, getSecrets func() sets.String) CensoringFormatter {
+	return CensoringFormatter{
+		getSecrets: getSecrets,
+		delegate:   f,
+	}
 }

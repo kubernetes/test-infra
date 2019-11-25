@@ -153,6 +153,22 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				"pr-logs/pull/org_repo/1/job/latest-build.txt",
 			},
 		},
+		{
+			name:    "only job dir files should be output in local mode",
+			jobType: prowapi.PresubmitJob,
+			options: Options{
+				Items: []string{"something", "more"},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					PathStrategy:   prowapi.PathStrategyExplicit,
+					LocalOutputDir: "/output",
+				},
+			},
+			paths: []string{"something/", "something/else", "more", "notforupload"},
+			expected: []string{
+				"something/else",
+				"more",
+			},
+		},
 	}
 
 	for _, testCase := range testCases {

@@ -22,6 +22,9 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-make
   - name: pull-cluster-api-provider-ibmcloud-test
     always_run: true
     decorate: true
@@ -37,6 +40,9 @@ presubmits:
         args:
         - make
         - test
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-test
   - name: pull-cluster-api-provider-ibmcloud-check
     always_run: true
     decorate: true
@@ -54,3 +60,6 @@ presubmits:
         args:
         - make
         - check
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-check

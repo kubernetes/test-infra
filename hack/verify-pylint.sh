@@ -17,6 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+DIR=$( cd "$( dirname "$0" )" && pwd )
 
 if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
   echo "Linting python..." >&2
@@ -32,7 +33,9 @@ else
 fi
 
 export PYLINTHOME=$TEST_TMPDIR
-pylint="$(dirname $0)/pylint_bin"
 
 shopt -s extglob globstar
-${pylint} !(gubernator|external|vendor|bazel-*)/**/*.py
+
+# TODO(clarketm) there is no version of `pylint` that supports "both" PY2 and PY3
+# I am disabling pylint checks for python3 files until migration complete
+"$DIR/pylint_bin" !(kettle|metrics|triage|velodrome|hack|gubernator|external|vendor|testgrid|bazel-*)/**/*.py

@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 // NewOptions returns an empty Options with no nil fields.
@@ -66,6 +66,9 @@ type Options struct {
 // Validate ensures that the set of options are
 // self-consistent and valid.
 func (o *Options) Validate() error {
+	if o.LocalOutputDir != "" {
+		return nil
+	}
 	if o.gcsPath.String() != "" {
 		o.Bucket = o.gcsPath.Bucket()
 		o.PathPrefix = o.gcsPath.Object()
@@ -127,6 +130,8 @@ func (o *Options) AddFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&o.DryRun, "dry-run", true, "do not interact with GCS")
 
 	fs.Var(&o.mediaTypes, "media-type", "Optional comma-delimited set of extension media types.  Each entry is colon-delimited {extension}:{media-type}, for example, log:text/plain.")
+
+	fs.StringVar(&o.LocalOutputDir, "local-output-dir", "", "If specified, files are copied to this dir instead of uploading to GCS.")
 }
 
 const (

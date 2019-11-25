@@ -43,6 +43,7 @@ if find -L . -type f -not \( \
     -o -path '*/node_modules/*' \
     -o -path '*/localdata/*' \
     -o -path '*/gubernator/*' \
+    -o -path '*/prow/bugzilla/client_test.go' \
     \) -prune \
     \) -exec grep -Hn 'Git'hub '{}' '+' ; then
   false

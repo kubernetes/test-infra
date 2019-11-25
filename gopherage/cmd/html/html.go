@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -66,10 +67,14 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		os.Exit(2)
 	}
 
-	// This path assumes we're being run using bazel.
-	resourceDir := "gopherage/cmd/html/static"
+	var resourceDir string
+	if exe, err := os.Executable(); err == nil {
+		resourceDir = path.Join(path.Dir(exe), "cmd/html/static")
+	} else {
+		resourceDir = "gopherage/cmd/html/static"
+	}
 	if _, err := os.Stat(resourceDir); os.IsNotExist(err) {
-		fmt.Fprintf(os.Stderr, "Resource directory does not exist.")
+		fmt.Fprintf(os.Stderr, "Resource directory %q does not exist. Are you trying to use go run? You must build this program.\n", resourceDir)
 		os.Exit(1)
 	}
 

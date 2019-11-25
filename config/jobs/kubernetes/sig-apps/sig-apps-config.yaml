@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=github.com/kubernetes-sigs/application=master
       - --upload=gs://kubernetes-jenkins/logs/
@@ -34,6 +34,9 @@ periodics:
           cpu: 6
           memory: "8Gi"
 
+  annotations:
+    testgrid-dashboards: sig-apps
+    description: Periodic builds and testing of the Application Type on GKE.
 - interval: 30m
   name: ci-kubernetes-e2e-gce-taint-evict
   labels:
@@ -54,9 +57,12 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:TaintEviction\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
 
 
+  annotations:
+    testgrid-dashboards: google-gce
+    testgrid-tab-name: gce-taint-evict
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-statefulset
   labels:
@@ -75,4 +81,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+  annotations:
+    testgrid-dashboards: google-gce
+    testgrid-tab-name: gci-gce-statefulset

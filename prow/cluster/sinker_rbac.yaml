@@ -17,6 +17,24 @@ rules:
     verbs:
       - delete
       - list
+      - watch
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - prow-sinker-leaderlock
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - events
+    verbs:
+      - create
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1

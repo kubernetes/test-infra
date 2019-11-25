@@ -36,6 +36,7 @@ ts_library(
         ":api",
         ":common",
         ":histogram",
+        "@npm//@types/gtag.js",
         "@npm//moment",
     ],
 )
@@ -61,7 +62,8 @@ jasmine_node_test(
 
 rollup_bundle(
     name = "prow_bundle",
-    entry_point = "prow/cmd/deck/static/prow/prow",
+    enable_code_splitting = False,
+    entry_point = ":prow/prow.ts",
     deps = [
         ":prow",
         "@npm//moment",
@@ -73,21 +75,24 @@ ts_library(
     srcs = glob(["plugin-help/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
+        ":common",
     ],
 )
 
 rollup_bundle(
     name = "plugin_help_bundle",
-    entry_point = "prow/cmd/deck/static/plugin-help/plugin-help",
+    enable_code_splitting = False,
+    entry_point = ":plugin-help/plugin-help.ts",
     deps = [
         ":plugin_help",
+        "@npm//code-prettify",
         "@npm//dialog-polyfill",
     ],
 )
 
 ts_library(
     name = "pr",
-    srcs = glob(["pr/*.ts"]),
+    srcs = glob(["pr/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
         ":common",
@@ -96,7 +101,8 @@ ts_library(
 
 rollup_bundle(
     name = "pr_bundle",
-    entry_point = "prow/cmd/deck/static/pr/pr",
+    enable_code_splitting = False,
+    entry_point = "pr/pr.ts",
     deps = [
         ":pr",
         "@npm//dialog-polyfill",
@@ -115,7 +121,8 @@ ts_library(
 
 rollup_bundle(
     name = "tide_bundle",
-    entry_point = "prow/cmd/deck/static/tide/tide",
+    enable_code_splitting = False,
+    entry_point = ":tide/tide.ts",
     deps = [
         ":tide",
         "@npm//moment",
@@ -134,7 +141,8 @@ ts_library(
 
 rollup_bundle(
     name = "tide_history_bundle",
-    entry_point = "prow/cmd/deck/static/tide-history/tide-history",
+    enable_code_splitting = False,
+    entry_point = ":tide-history/tide-history.ts",
     deps = [
         ":tide_history",
         "@npm//moment",
@@ -146,12 +154,14 @@ ts_library(
     srcs = glob(["command-help/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
+        ":common",
     ],
 )
 
 rollup_bundle(
     name = "command_help_bundle",
-    entry_point = "prow/cmd/deck/static/command-help/command-help",
+    enable_code_splitting = False,
+    entry_point = ":command-help/command-help.ts",
     deps = [
         ":command_help",
         "@npm//dialog-polyfill",
@@ -170,6 +180,7 @@ ts_library(
     name = "spyglass_lens",
     srcs = ["spyglass/lens.ts"],
     deps = [
+        ":common",
         ":spyglass_common",
     ],
 )
@@ -181,7 +192,8 @@ ts_library(
 
 rollup_bundle(
     name = "spyglass_bundle",
-    entry_point = "prow/cmd/deck/static/spyglass/spyglass",
+    enable_code_splitting = False,
+    entry_point = ":spyglass/spyglass.ts",
     deps = [
         ":spyglass",
         ":spyglass_common",
@@ -190,7 +202,8 @@ rollup_bundle(
 
 rollup_bundle(
     name = "spyglass_lens_bundle",
-    entry_point = "prow/cmd/deck/static/spyglass/lens",
+    enable_code_splitting = False,
+    entry_point = ":spyglass/lens.ts",
     deps = [
         ":spyglass_common",
         ":spyglass_lens",

@@ -30,6 +30,11 @@ type updateClient interface {
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 }
 
+type ensureClient interface {
+	updateClient
+	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
+}
+
 func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int, error) {
 	if matchTitle == "" {
 		return nil, nil
@@ -41,7 +46,7 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 		return nil, fmt.Errorf("bot name: %v", err)
 	}
 
-	issues, err := gc.FindIssues("is:open is:pr archived:false in:title author:"+me+" "+matchTitle, "updated", true)
+	issues, err := gc.FindIssues("is:open is:pr archived:false in:title author:"+me+" "+matchTitle, "updated", false)
 	if err != nil {
 		return nil, fmt.Errorf("find issues: %v", err)
 	} else if len(issues) == 0 {
@@ -58,4 +63,20 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 	}
 
 	return &n, nil
+}
+
+func EnsurePR(org, repo, title, body, source, branch, matchTitle string, gc ensureClient) (*int, error) {
+	n, err := UpdatePR(org, repo, title, body, matchTitle, gc)
+	if err != nil {
+		return nil, fmt.Errorf("update error: %v", err)
+	}
+	if n == nil {
+		allowMods := true
+		pr, err := gc.CreatePullRequest(org, repo, title, body, source, branch, allowMods)
+		if err != nil {
+			return nil, fmt.Errorf("create error: %v", err)
+		}
+		n = &pr
+	}
+	return n, nil
 }

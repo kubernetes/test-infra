@@ -7,7 +7,7 @@ presets:
     # remove this after https://github.com/kubernetes/kubernetes/pull/69051
   - name: KUBE_CUSTOM_NETD_YAML
     # we want to keep extra spaces for the yaml file.
-    value: |2+
+    value: |2
         kind: ClusterRole
         apiVersion: rbac.authorization.k8s.io/v1
         metadata:
@@ -196,7 +196,7 @@ presets:
     # remove this after https://github.com/kubernetes/kubernetes/pull/69051
   - name: KUBE_CUSTOM_NETD_YAML
     # we want to keep extra spaces for the yaml file.
-    value: |2+
+    value: |2
         kind: ClusterRole
         apiVersion: rbac.authorization.k8s.io/v1
         metadata:
@@ -377,7 +377,7 @@ presets:
   - name: KUBE_ENABLE_NETD
     value: true
   - name: KUBE_CUSTOM_CALICO_NODE_DAEMONSET_YAML
-    value: |2+
+    value: |2
         kind: DaemonSet
         apiVersion: extensions/v1beta1
         metadata:
@@ -658,7 +658,7 @@ presets:
   - name: KUBE_UP_AUTOMATIC_CLEANUP
     value: true
   - name: KUBE_CUSTOM_CALICO_NODE_DAEMONSET_YAML
-    value: |2+
+    value: |2
         kind: DaemonSet
         apiVersion: extensions/v1beta1
         metadata:
@@ -840,7 +840,7 @@ presets:
                 - key: CriticalAddonsOnly
                   operator: Exists
   - name: KUBE_CUSTOM_TYPHA_DEPLOYMENT_YAML
-    value: |2+
+    value: |2
         apiVersion: extensions/v1beta1
         kind: Deployment
         metadata:
@@ -938,8 +938,12 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+  annotations:
+    testgrid-dashboards: sig-network-netd
+    testgrid-tab-name: e2e-gci-gce-netd
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 2h
   name: ci-kubernetes-e2e-gci-gce-netd-calico
   labels:
@@ -961,11 +965,15 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
-
+  annotations:
+    testgrid-dashboards: sig-network-netd
+    testgrid-tab-name: e2e-gci-gce-netd-calico
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 2h
   name: ci-kubernetes-e2e-ubuntu-gce-netd
   labels:
@@ -989,8 +997,12 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+  annotations:
+    testgrid-dashboards: sig-network-netd
+    testgrid-tab-name: e2e-ubuntu-gce-netd
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 2h
   name: ci-kubernetes-e2e-ubuntu-gce-netd-calico
   labels:
@@ -1013,11 +1025,15 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
-
+  annotations:
+    testgrid-dashboards: sig-network-netd
+    testgrid-tab-name: e2e-ubuntu-gce-netd-calico
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-netd
   labels:
@@ -1045,8 +1061,12 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+  annotations:
+    testgrid-dashboards: sig-network-netd
+    testgrid-tab-name: e2e-containerd-gce-netd
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-netd-calico
   labels:
@@ -1074,11 +1094,15 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
-
+  annotations:
+    testgrid-dashboards: sig-network-netd
+    testgrid-tab-name: e2e-containerd-gce-netd-calico
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'
 - interval: 2h
   name: ci-kubernetes-e2e-containerd-gce-calico
   labels:
@@ -1106,4 +1130,9 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+  annotations:
+    testgrid-dashboards: sig-network-netd
+    testgrid-tab-name: e2e-containerd-gce-calico
+    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+    testgrid-alert-stale-results-hours: '24'

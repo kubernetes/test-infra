@@ -131,7 +131,7 @@ func (c *FakeProwJobs) DeleteCollection(options *v1.DeleteOptions, listOptions v
 // Patch applies the patch and returns the patched prowJob.
 func (c *FakeProwJobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(prowjobsResource, c.ns, name, data, subresources...), &prowjobsv1.ProwJob{})
+		Invokes(testing.NewPatchSubresourceAction(prowjobsResource, c.ns, name, pt, data, subresources...), &prowjobsv1.ProwJob{})
 
 	if obj == nil {
 		return nil, err

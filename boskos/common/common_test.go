@@ -86,5 +86,4 @@ func TestUserData_JSON(t *testing.T) {
 	if !reflect.DeepEqual(ud.ToMap(), decodedUD.ToMap()) {
 		t.Errorf("src %v does not match %v", ud.ToMap(), decodedUD.ToMap())
 	}
-
 }

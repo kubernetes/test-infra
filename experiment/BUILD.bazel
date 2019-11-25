@@ -1,7 +1,10 @@
+load("@py_deps//:requirements.bzl", "requirement")
+
 py_binary(
     name = "flakedetector",
     srcs = ["flakedetector.py"],
-    deps = ["@requests"],
+    python_version = "PY3",
+    deps = [requirement("requests")],
 )
 
 py_binary(
@@ -10,28 +13,31 @@ py_binary(
     data = [
         "test_config.yaml",
         "//config:prowjobs",
+        "//config:testgrids",
+        "//config/prow:configs",
         "//jobs",
-        "//prow:configs",
-        "//testgrid:config-yaml",
     ],
-    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
-)
-
-py_binary(
-    name = "fix_testgrid_config",
-    srcs = ["fix_testgrid_config.py"],
-    data = [
-        "//testgrid:config-yaml",
-    ],
-    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
+    python_version = "PY3",
+    deps = [requirement("ruamel.yaml")],
 )
 
 py_binary(
     name = "prepare_release_branch",
     srcs = ["prepare_release_branch.py"],
+    args = [
+        "$(location //experiment/config-rotator)",
+        "$(location //experiment/config-forker)",
+        "$(location :generate_tests)",
+    ],
+    data = [
+        ":generate_tests",
+        "//experiment/config-forker",
+        "//experiment/config-rotator",
+    ],
+    python_version = "PY3",
     deps = [
-        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
-        "@sh",
+        requirement("ruamel.yaml"),
+        requirement("sh"),
     ],
 )
 
@@ -58,6 +64,7 @@ filegroup(
         "//experiment/logviewer/gcsreader:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/resultstore:all-srcs",
+        "//experiment/service-account-creator:all-srcs",
         "//experiment/slack-oncall-updater:all-srcs",
         "//experiment/tracer:all-srcs",
     ],

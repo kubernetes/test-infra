@@ -26,10 +26,10 @@ import (
 	"html/template"
 	"path/filepath"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"k8s.io/test-infra/testgrid/metadata"
 )
 
 const (
@@ -56,7 +56,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the <head> from template.html.
-func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string {
+func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string, config json.RawMessage) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -69,19 +69,19 @@ func (lens Lens) Header(artifacts []lenses.Artifact, resourceDir string) string 
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string) string {
+func (lens Lens) Callback(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	return ""
 }
 
 // Body creates a view for prow job metadata.
-func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string) string {
+func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data string, config json.RawMessage) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
 		Status       string
 		StartTime    time.Time
 		FinishedTime time.Time
 		Elapsed      time.Duration
-		Metadata     map[string]string
+		Metadata     map[string]interface{}
 	}
 	metadataViewData := MetadataViewData{Status: "Pending"}
 	started := gcs.Started{}
@@ -117,14 +117,12 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		metadataViewData.Elapsed = metadataViewData.Elapsed.Round(time.Second)
 	}
 
-	metadataViewData.Metadata = map[string]string{"node": started.Node}
+	metadataViewData.Metadata = map[string]interface{}{"node": started.Node}
 
 	metadatas := []metadata.Metadata{started.Metadata, finished.Metadata}
 	for _, m := range metadatas {
-		for k, v := range m {
-			if s, ok := v.(string); ok && v != "" {
-				metadataViewData.Metadata[k] = s
-			}
+		for k, v := range lens.flattenMetadata(m) {
+			metadataViewData.Metadata[k] = v
 		}
 	}
 
@@ -137,4 +135,22 @@ func (lens Lens) Body(artifacts []lenses.Artifact, resourceDir string, data stri
 		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()
+}
+
+// flattenMetadata flattens the metadata for use by Body.
+func (lens Lens) flattenMetadata(metadata map[string]interface{}) map[string]string {
+	results := map[string]string{}
+
+	for k1, v1 := range metadata {
+		if s, ok := v1.(map[string]interface{}); ok && len(s) > 0 {
+			subObjectResults := lens.flattenMetadata(s)
+			for k2, v2 := range subObjectResults {
+				results[fmt.Sprintf("%s.%s", k1, k2)] = v2
+			}
+		} else if s, ok := v1.(string); ok && v1 != "" { // We ought to consider relaxing this so that non-strings will be considered
+			results[k1] = s
+		}
+	}
+
+	return results
 }

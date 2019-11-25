@@ -24,6 +24,7 @@ py_test(
         "kubernetes_e2e.py",
         "kubernetes_e2e_test.py",
     ],
+    python_version = "PY2",
 )
 
 py_test(
@@ -32,4 +33,5 @@ py_test(
         "kubernetes_bazel.py",
         "kubernetes_bazel_test.py",
     ],
+    python_version = "PY2",
 )

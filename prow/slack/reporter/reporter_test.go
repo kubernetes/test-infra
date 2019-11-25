@@ -95,11 +95,24 @@ func TestShouldReport(t *testing.T) {
 			},
 			expected: false,
 		},
+		{
+			name:   "Empty config should not report",
+			config: config.SlackReporter{},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+				},
+			},
+			expected: false,
+		},
 	}
 
 	for _, tc := range testCases {
-		cfgGetter := func() *config.SlackReporter {
-			return &tc.config
+		cfgGetter := func(*v1.Refs) config.SlackReporter {
+			return tc.config
 		}
 		t.Run(tc.name, func(t *testing.T) {
 			reporter := &slackReporter{
@@ -115,8 +128,8 @@ func TestShouldReport(t *testing.T) {
 }
 
 func TestReloadsConfig(t *testing.T) {
-	cfg := &config.SlackReporter{}
-	cfgGetter := func() *config.SlackReporter {
+	cfg := config.SlackReporter{}
+	cfgGetter := func(*v1.Refs) config.SlackReporter {
 		return cfg
 	}
 
@@ -143,5 +156,185 @@ func TestReloadsConfig(t *testing.T) {
 
 	if shouldReport := reporter.ShouldReport(pj); !shouldReport {
 		t.Error("Did expect shouldReport to be true after config change")
+	}
+}
+
+func TestUsesChannelOverrideFromJob(t *testing.T) {
+	testCases := []struct {
+		name          string
+		config        func() config.Config
+		pj            *v1.ProwJob
+		expected      string
+		emptyExpected bool
+	}{
+		{
+			name: "No job-level config, use global default",
+			config: func() config.Config {
+				slackCfg := map[string]config.SlackReporter{
+					"*": {
+						Channel: "global-default",
+					},
+				}
+				return config.Config{
+					ProwConfig: config.ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			pj:       &v1.ProwJob{Spec: v1.ProwJobSpec{}},
+			expected: "global-default",
+		},
+		{
+			name: "org/repo for ref exists in config, use it",
+			config: func() config.Config {
+				slackCfg := map[string]config.SlackReporter{
+					"*": {
+						Channel: "global-default",
+					},
+					"istio/proxy": {
+						Channel: "org-repo-config",
+					},
+				}
+				return config.Config{
+					ProwConfig: config.ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Org:  "istio",
+						Repo: "proxy",
+					},
+				}},
+			expected: "org-repo-config",
+		},
+		{
+			name: "org for ref exists in config, use it",
+			config: func() config.Config {
+				slackCfg := map[string]config.SlackReporter{
+					"*": {
+						Channel: "global-default",
+					},
+					"istio": {
+						Channel: "org-config",
+					},
+				}
+				return config.Config{
+					ProwConfig: config.ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Org:  "istio",
+						Repo: "proxy",
+					},
+				}},
+			expected: "org-config",
+		},
+		{
+			name: "org/repo takes precedence over org",
+			config: func() config.Config {
+				slackCfg := map[string]config.SlackReporter{
+					"*": {
+						Channel: "global-default",
+					},
+					"istio": {
+						Channel: "org-config",
+					},
+					"istio/proxy": {
+						Channel: "org-repo-config",
+					},
+				}
+				return config.Config{
+					ProwConfig: config.ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Org:  "istio",
+						Repo: "proxy",
+					},
+				}},
+			expected: "org-repo-config",
+		},
+		{
+			name: "Job-level config present, use it",
+			config: func() config.Config {
+				slackCfg := map[string]config.SlackReporter{
+					"*": {
+						Channel: "global-default",
+					},
+					"istio": {
+						Channel: "org-config",
+					},
+					"istio/proxy": {
+						Channel: "org-repo-config",
+					},
+				}
+				return config.Config{
+					ProwConfig: config.ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					ReporterConfig: &v1.ReporterConfig{
+						Slack: &v1.SlackReporterConfig{
+							Channel: "team-a",
+						},
+					},
+				},
+			},
+			expected: "team-a",
+		},
+		{
+			name: "No matching slack config",
+			config: func() config.Config {
+				slackCfg := map[string]config.SlackReporter{
+					"istio": {
+						Channel: "org-config",
+					},
+					"istio/proxy": {
+						Channel: "org-repo-config",
+					},
+				}
+				return config.Config{
+					ProwConfig: config.ProwConfig{
+						SlackReporterConfigs: slackCfg,
+					},
+				}
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Org:  "unknownorg",
+						Repo: "unknownrepo",
+					},
+				}},
+			emptyExpected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfgGetter := func(refs *v1.Refs) config.SlackReporter {
+				return tc.config().SlackReporterConfigs.GetSlackReporter(refs)
+			}
+
+			slackCfg := cfgGetter(tc.pj.Spec.Refs)
+
+			if result := channel(slackCfg, tc.pj); result != tc.expected {
+				t.Fatalf("Expected result to be %q, was %q", tc.expected, result)
+			}
+		})
 	}
 }

@@ -6,9 +6,9 @@ go_library(
     importpath = "k8s.io/test-infra/images/bootstrap/barnacle",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/docker/docker/api/types:go_default_library",
-        "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
-        "//vendor/github.com/docker/docker/client:go_default_library",
+        "@com_github_docker_docker//api/types:go_default_library",
+        "@com_github_docker_docker//api/types/filters:go_default_library",
+        "@com_github_docker_docker//client:go_default_library",
     ],
 )
 

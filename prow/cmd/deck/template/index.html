@@ -2,9 +2,11 @@
 
 {{define "scripts"}}
 <script type="text/javascript" src="/static/prow_bundle.min.js"></script>
-<script type="text/javascript" src="data.js?var=allBuilds"></script>
+<script type="text/javascript" src="prowjobs.js?var=allBuilds&omit=annotations,labels,decoration_config,pod_spec"></script>
 <script type="text/javascript">
   var spyglass = {{.SpyglassEnabled}};
+  var rerunCreatesJob = {{.ReRunCreatesJob}};
+  var allowAnyone = {{.AllowAnyone}};
 </script>
 {{end}}
 
@@ -61,6 +63,7 @@
       <table id="builds">
         <thead>
         <tr>
+          <th></th>
           <th></th>
           <th></th>
           <th></th>

@@ -1,16 +1,8 @@
-import "dialog-polyfill";
+import dialogPolyfill from "dialog-polyfill";
 import {Command, Help, PluginHelp} from "../api/help";
+import {getParameterByName} from '../common/urls';
 
 declare const allHelp: Help;
-
-declare const dialogPolyfill: {
-    registerDialog(element: HTMLDialogElement): void;
-};
-
-function getParameterByName(name: string): string | null {  // http://stackoverflow.com/a/5158301/3694
-    const match = new RegExp(`[?&]${name}=([^&/]*)`).exec(window.location.search);
-    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-}
 
 function redrawOptions(): void {
     const rs = allHelp.AllRepos.sort();

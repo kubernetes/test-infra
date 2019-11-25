@@ -153,7 +153,7 @@ func TestFallback(t *testing.T) {
 var c *config.Config
 
 func TestMain(m *testing.M) {
-	conf, err := config.Load("../../config.yaml", "../../../config/jobs")
+	conf, err := config.Load("../../../config/prow/config.yaml", "../../../config/jobs")
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
@@ -202,11 +202,11 @@ func TestGetURL(t *testing.T) {
 		{
 			name: "fallback bucket - periodic",
 
-			jobName: "ci-kubernetes-cross-build",
+			jobName: "ci-kubernetes-build",
 			c:       c,
 			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
 
-			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-cross-build/latest-build.txt",
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-build/latest-build.txt",
 		},
 		{
 			name: "fallback bucket - unknown",

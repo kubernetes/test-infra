@@ -3,7 +3,7 @@
 
 ## Introduction
 
-Mason creates and update virtual resources from existing physical resources. As an example, in order to create
+Mason creates and updates virtual resources from existing physical resources. As an example, in order to create
 a GKE cluster you need a GCP Project. Mason will construct virtual resources based on the configuration of a
 given resource type. Each configuration defines its physical resources requirement. Mason will acquire those
 resources from Boskos and pass them to the specific implementation that will turn them into a virtual resource.
@@ -11,41 +11,33 @@ Mason only handles lease and release of physical resources.
 
 ## Configuration
 
-Each configuration is represented by a name. The name of configuration maps to the virtual resource type in Boskos.
+Mason configuration are now merged in Boskos config. Each configuration is represented by a boskos resource type.
 
 Here is an example configuration:
 
 ```yaml
 
-configs:
+resources:
 - name: type2
+  state: dirty
+  min-count: 10
+  max-count: 20
+  lifespan: 48h
   needs:
     type1: 1
   config:
-    type: GCPResourceConfig
-    content: |
-      projectconfigs:
-      - type: type1
-        clusters:
-        - machinetype: n1-standard-2
-          numnodes: 4
-          version: 1.7
-          zone: us-central-1f
-        vms:
-        - machinetype: n1-standard-4
-          sourceimage: projects/debian-cloud/global/images/debian-9-stretch-v20180105
-          zone: us-central-1f
-          tags:
-          - http-server
-          - https-server
-          scopes:
-          - https://www.googleapis.com/auth/cloud-platform
-
+    type: ResourceTypeImpl
+    content: "..."
 ```
 
 As you can see in this example. In order to create a virtual resource of type2 we need one resource
 of type1. Once we have acquired the right resources, we need Masonable interface of type GCPResourceConfig
 that will know how to parse this configuration.
+
+Mason will create at least 10 resources of type2, with generated name, and will
+delete any resources above 20. All resource will have a lifespan of 48 hours
+once they are set as free. After 48h, assuming the resource is not in used, it
+will be deleted, and another resource will be created.
 
 ## Operation
 
@@ -68,7 +60,7 @@ func main() {
 
   // Registering Masonable Converters
   if err := mason.RegisterConfigConverter(gcp.ResourceConfigType, gcp.ConfigConverter); err != nil {
-    logrus.WithError(err).Panicf("unable tp register config converter")
+    logrus.WithError(err).Panicf("unable to register config converter")
   }
   if err := mason.UpdateConfigs(*configPath); err != nil {
     logrus.WithError(err).Panicf("failed to update mason config")

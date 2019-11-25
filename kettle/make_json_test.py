@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cStringIO as StringIO
+import io as StringIO
 import json
 import time
 import unittest
@@ -26,7 +26,7 @@ import model
 class ValidateBuckets(unittest.TestCase):
     def test_buckets(self):
         prefixes = set()
-        for name, options in sorted(make_json.BUCKETS.iteritems()):
+        for name, options in sorted(make_json.BUCKETS.items()):
             if name == 'gs://kubernetes-jenkins/logs/':
                 continue  # only bucket without a prefix
             prefix = options.get('prefix', '')

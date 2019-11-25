@@ -44,6 +44,10 @@ var (
 	errProwjobNotFound = errors.New("prowjob not found")
 )
 
+func IsErrProwJobNotFound(err error) bool {
+	return err == errProwjobNotFound
+}
+
 // Job holds information about a job prow is running/has run.
 // TODO(#5216): Remove this, and all associated machinery.
 type Job struct {
@@ -187,11 +191,13 @@ func (ja *JobAgent) tryUpdate() {
 	}
 }
 
-type byStartTime []Job
+type byPJStartTime []prowapi.ProwJob
 
-func (a byStartTime) Len() int           { return len(a) }
-func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
+func (a byPJStartTime) Len() int      { return len(a) }
+func (a byPJStartTime) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byPJStartTime) Less(i, j int) bool {
+	return a[i].Status.StartTime.Time.After(a[j].Status.StartTime.Time)
+}
 
 func (ja *JobAgent) update() error {
 	pjs, err := ja.kc.ListProwJobs(labels.Everything().String())
@@ -201,6 +207,9 @@ func (ja *JobAgent) update() error {
 	var njs []Job
 	njsMap := make(map[string]Job)
 	njsIDMap := make(map[string]map[string]prowapi.ProwJob)
+
+	sort.Sort(byPJStartTime(pjs))
+
 	for _, j := range pjs {
 		ft := time.Time{}
 		if j.Status.CompletionTime != nil {
@@ -243,7 +252,6 @@ func (ja *JobAgent) update() error {
 		}
 		njsIDMap[j.Spec.Job][buildID] = j
 	}
-	sort.Sort(byStartTime(njs))
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()

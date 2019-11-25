@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -27,3 +27,7 @@ periodics:
       - --test-cmd=../examples/integration_tests.sh
       - --test-cmd-name=kustomize-integration
       - --timeout=120m
+  annotations:
+    testgrid-dashboards: sig-cli-misc
+    testgrid-tab-name: kustomize-periodic-default-gke
+    description: Periodic integration testing of kustomize.

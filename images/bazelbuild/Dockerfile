@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Includes git, gcloud, and bazel.
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     openssh-client \
     python \
+    python2.7 \
+    python3 \
     python-pip \
     rpm \
     unzip \

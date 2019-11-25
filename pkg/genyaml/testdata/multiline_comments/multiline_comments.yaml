@@ -1,0 +1,28 @@
+# StringField1 comment
+# second line
+# third line
+string1: string1
+
+
+# StringField2 comment
+# second line
+# third line
+string2: string2
+
+
+# StringField3 comment
+# second line
+# third line
+string3: string3
+
+
+# Paragraph line
+string4: string4
+
+
+# Paragraph block
+string5: string5
+
+
+# Tab Tab TabTab
+string6: string6

@@ -1,54 +1,16 @@
 periodics:
-# gce
-# copy of ci-kubernetes-e2e-gci-gce-scalability with node killer enabled
-- interval: 1h
-  name: ci-kubernetes-e2e-gci-gce-scalability-killer
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=140
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=e2e-big
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=100
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/100_nodes/override.yaml
-      - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
-      - --test-cmd-args=--testoverrides=./testing/prometheus/scrape-etcd.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=120m
-      - --use-logexporter
-
 - name: ci-kubernetes-e2e-gce-node-throughput
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-node
+    testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -72,183 +34,45 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
-
-# gke
-- cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
-  name: ci-kubernetes-e2e-gke-large-performance
-  tags:
-  - "perfDashPrefix: gke-2000Nodes"
-  - "perfDashJobType: performance"
+- name: ci-kubernetes-e2e-gce-node-containerd-throughput
+  interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-e2e-scalability-node-containerd: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-node
+    testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - args:
-      - --timeout=600
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
+      - --repo=github.com/containerd/cri=master
       - --root=/go/src
+      - --timeout=60
       - --scenario=kubernetes_e2e
       - --
-      - --cluster=gke-scale-cluster
-      - --deployment=gke
-      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
-      - --extract=ci/k8s-beta
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --check-leaked-resources
+      - --cluster=
+      # We need to override KUBELET_TEST_ARGS to concatenation of things
+      # from the two presents we use that set it.
+      - --env=KUBELET_TEST_ARGS="--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100 --runtime-cgroups=/system.slice/containerd.service"
+      - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-project=kubernetes-scale
-      - --gcp-zone=us-east1-b
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
-      - --gke-environment=staging
-      - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
-      - --provider=gke
+      - --gcp-nodes=1
+      - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=2000
-      - --test-cmd-args=--provider=gke
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
+      - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=570m
+      - --timeout=40m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-      resources:
-        requests:
-          cpu: 6
-          memory: "16Gi"
-
-- cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
-  name: ci-kubernetes-e2e-gke-large-performance-regional
-  tags:
-  - "perfDashPrefix: gke-2000Nodes-regional"
-  - "perfDashJobType: performance"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=600
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=gke-regional-cluster
-      - --deployment=gke
-      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
-      - --extract=ci/k8s-beta
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gcp-node-image=gci
-      - --gcp-project=kubernetes-scale
-      - --gcp-region=us-east1
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet-regional --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
-      - --gke-environment=staging
-      - --gke-node-locations=us-east1-b
-      - '--gke-shape={"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
-      - --provider=gke
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=2000
-      - --test-cmd-args=--provider=gke
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=570m
-      - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-      resources:
-        requests:
-          cpu: 6
-          memory: "16Gi"
-
-- cron: '1 3 * * 6' # Run at 19:01PST on Friday (03:01 UTC on Saturday)
-  name: ci-kubernetes-e2e-gke-scale-correctness
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=240
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=gke-scale-cluster
-      - --deployment=gke
-      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
-      - --extract=ci/k8s-beta
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gcp-node-image=gci
-      - --gcp-project=kubernetes-scale
-      - --gcp-zone=us-east1-b
-      - --ginkgo-parallel=30
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
-      - --gke-environment=staging
-      - '--gke-shape={"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-32"}}'
-      - --provider=gke
-      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
-      - --timeout=210m
-      - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-      resources:
-        requests:
-          cpu: 6
-          memory: "16Gi"
-
-- cron: '1 8 * * 6' # Run at 00:01PST (8:01 UTC) on Sat
-  name: ci-kubernetes-e2e-gke-scale-performance
-  tags:
-  - "perfDashPrefix: gke-5000Nodes"
-  - "perfDashJobType: performance"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=1320
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=gke-scale-cluster
-      - --deployment=gke
-      # TODO(wojtek-t): get rid of it once GKE is fixed in master.
-      - --extract=ci/k8s-beta
-      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-      - --gcp-node-image=gci
-      - --gcp-project=kubernetes-scale
-      - --gcp-zone=us-east1-b
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
-      - --gke-environment=staging
-      - '--gke-shape={"default":{"Nodes":4999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-32"}}'
-      - --provider=gke
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--nodes=5000
-      - --test-cmd-args=--provider=gke
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=1270m
-      - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-      resources:
-        requests:
-          cpu: 6
-          memory: "16Gi"
 
 #kubemark
 - name: ci-kubernetes-kubemark-100-gce
@@ -256,14 +80,20 @@ periodics:
   - "perfDashPrefix: kubemark-100Nodes"
   - "perfDashJobType: performance"
   interval: 3h
+  # TODO(oxddr): renable this once we have a project pool in scalability build cluster
+  # cluster: scalability
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-100
+    testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -287,12 +117,25 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
+      # TODO(oxddr): renable this once the current impact is understood
+      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
+      - --use-logexporter
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -307,10 +150,13 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
-    preset-e2e-kubemark-gce-big: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-500
+    testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -338,9 +184,17 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=70m
+      - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -356,9 +210,14 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
     preset-e2e-kubemark-gce-scale: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-5000
+    testgrid-num-failures-to-alert: '1'
+    testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -380,13 +239,25 @@ periodics:
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
+      # TODO(oxddr): renable this once the current impact is understood
+      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
+      - --use-logexporter
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
@@ -405,9 +276,13 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-kubemark
+    testgrid-tab-name: kubemark-100-high-density
+    testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -435,48 +310,31 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/600_nodes/high_density_override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_daemonsets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
+      - --use-logexporter
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
-# perf tests
-- name: ci-perf-tests-e2e-gce-clusterloader
-  interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=80
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=clusterloader
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader
-      - --test-cmd-name=ClusterLoader
-      - --timeout=60m
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-perf-tests
+    testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -490,25 +348,27 @@ periodics:
   - "perfDashPrefix: scheduler-benchmark"
   - "perfDashJobType: benchmark"
   interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: scheduler
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=55
-      - --root=/go/src
-      - --scenario=execute
-      - --
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      command:
       - ./hack/jenkins/benchmark-dockerized.sh
+      args:
       - ./test/integration/scheduler_perf
       env:
-      - name: GOPATH
-        value: /go
       - name: KUBE_TIMEOUT
-        value: --timeout 40m
+        value: --timeout=1h50m
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
@@ -518,9 +378,12 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -542,8 +405,48 @@ periodics:
       - --test-cmd-name=KubeDnsBenchmark
       - --timeout=120m
 
+- name: ci-benchmark-nodelocal-dns-master
+  interval: 2h
+  tags:
+  - "perfDashPrefix: node-local-dns benchmark"
+  - "perfDashJobType: dnsBenchmark"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: node-local-dns
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=node-local-dns-benchmark
+      - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --extract=ci/latest
+      - --gcp-nodes=3
+      - --gcp-zone=us-east1-b
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=node-local-dns
+      - --test-cmd-args=/workspace/_artifacts/out
+      - --test-cmd-args=/workspace/_artifacts
+      - --test-cmd-args=169.254.20.10
+      - --test-cmd-name=KubeDnsBenchmark
+      - --timeout=120m
+
 - name: ci-benchmark-microbenchmarks
   interval: 20m
+  annotations:
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: microbenchmarks
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -565,35 +468,8 @@ periodics:
       - ./pkg/benchmarkjunit
       - --log-file=$(ARTIFACTS)/benchmark-log.txt
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
-      - ../kubernetes/pkg/api/testing/...
-      - ../kubernetes/vendor/k8s.io/apiserver/pkg/endpoints/...
-
-# Experimental config for testing private gce clusters.
-- name: ci-kubernetes-e2e-gce-private-cluster-correctness
-  # TODO(mm4tt): Lower the timeout once we know how long the test takes.
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
-        args:
-          - --timeout=300
-          - --bare
-          - --scenario=kubernetes_e2e
-          - --
-          - --cluster=private-gce-test
-          - --env=KUBE_GCE_PRIVATE_CLUSTER=true
-          - --extract=ci/latest
-          - --gcp-master-image=gci
-          - --gcp-node-image=gci
-          - --gcp-nodes=5
-          - --gcp-ssh-proxy-instance-name=private-gce-test-master
-          - --gcp-zone=us-east1-b
-          - --ginkgo-parallel=5
-          - --provider=gce
-          - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
-          - --timeout=240m
-          - --use-logexporter
+      - ../kubernetes/pkg/...
+      - ../kubernetes/plugin/...
+      - ../kubernetes/vendor/k8s.io/apimachinery/...
+      - ../kubernetes/vendor/k8s.io/apiserver/...
+      - ../kubernetes/vendor/k8s.io/client-go/...

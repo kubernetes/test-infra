@@ -19,3 +19,6 @@ periodics:
       - --output=$(ARTIFACTS)/junit_benchmarks.xml
       - --pass-on-error
       - ./experiment/dummybenchmarks/...
+      env:
+      - name: GO111MODULE
+        value: "on"

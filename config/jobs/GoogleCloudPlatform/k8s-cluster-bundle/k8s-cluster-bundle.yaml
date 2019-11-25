@@ -19,6 +19,9 @@ presubmits:
       volumes:
       - name: empty-workspace
         emptyDir: {}
+    annotations:
+      testgrid-dashboards: presubmits-misc
+      testgrid-num-columns-recent: '30'
 postsubmits:
   GoogleCloudPlatform/k8s-cluster-bundle:
   - name: post-k8s-cluster-bundle-bazel-test
@@ -39,3 +42,5 @@ postsubmits:
       volumes:
       - name: empty-workspace
         emptyDir: {}
+    annotations:
+      testgrid-dashboards: presubmits-misc

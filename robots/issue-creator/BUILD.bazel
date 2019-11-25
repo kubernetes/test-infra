@@ -7,7 +7,10 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-prow_image(name = "image")
+prow_image(
+    name = "image",
+    visibility = ["//visibility:public"],
+)
 
 prow_push(
     name = "push",
@@ -44,11 +47,4 @@ filegroup(
         "//robots/issue-creator/testowner:all-srcs",
     ],
     visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "test-owners-csv",
-    srcs = [
-        "test_owners.csv",
-    ],
 )

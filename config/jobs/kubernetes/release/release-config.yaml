@@ -29,20 +29,74 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         resources:
           requests:
             memory: "6Gi"
-
-  - name: unit-test
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-cluster-up
+      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-test
     always_run: true
     decorate: true
     path_alias: k8s.io/release
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
     spec:
       containers:
-        - image: golang:1.12
-          command:
-            - go
-          args:
-            - test
-            - ./...
+      - image: launcher.gcr.io/google/bazel:0.29.1
+        command:
+        - ../test-infra/hack/bazel.sh
+        args:
+        - test
+        - //...
+    annotations:
+      testgrid-dashboards: sig-release-misc
+      testgrid-tab-name: release-test
+      testgrid-alert-email: release-managers@kubernetes.io
+      testgrid-num-columns-recent: '30'
+# package tests
+periodics:
+- name: periodic-release-verify-packages-debs
+  interval: 6h
+  annotations:
+    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-debs
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: quay.io/k8s/release-tools:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-debs
+- name: periodic-release-verify-packages-rpms
+  interval: 6h
+  annotations:
+    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-dashboards: sig-release-master-informing
+    testgrid-tab-name: verify-packages-rpms
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: quay.io/k8s/release-tools-centos:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-rpms

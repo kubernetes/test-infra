@@ -23,7 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/traiana/storage"
 
-	"k8s.io/test-infra/testgrid/util/gcs"
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 )
 
 type downloadResult struct {

@@ -24,4 +24,8 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+  annotations:
+    testgrid-dashboards: google-gce, sig-storage-kubernetes
+    testgrid-tab-name: gce-containerd
+    description: node gce e2e tests for master branch using containerd

@@ -46,6 +46,9 @@ const (
 	// DefaultAPIEndpoint is the default GitHub API endpoint.
 	DefaultAPIEndpoint = "https://api.github.com"
 
+	// DefaultHost is the default GitHub base endpoint.
+	DefaultHost = "github.com"
+
 	// DefaultGraphQLEndpoint is the default GitHub GraphQL API endpoint.
 	DefaultGraphQLEndpoint = "https://api.github.com/graphql"
 )
@@ -153,15 +156,26 @@ type CombinedStatus struct {
 
 // User is a GitHub user account.
 type User struct {
-	Login   string `json:"login"`
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	ID      int    `json:"id"`
-	HTMLURL string `json:"html_url"`
+	Login       string          `json:"login"`
+	Name        string          `json:"name"`
+	Email       string          `json:"email"`
+	ID          int             `json:"id"`
+	HTMLURL     string          `json:"html_url"`
+	Permissions RepoPermissions `json:"permissions"`
+	Type        string          `json:"type"`
 }
 
+const (
+	// UserTypeUser identifies an actual user account in the User.Type field
+	UserTypeUser = "User"
+	// UserTypeBot identifies a github app bot user in the User.Type field
+	UserTypeBot = "Bot"
+)
+
 // NormLogin normalizes GitHub login strings
-var NormLogin = strings.ToLower
+func NormLogin(login string) string {
+	return strings.TrimPrefix(strings.ToLower(login), "@")
+}
 
 // PullRequestEventAction enumerates the triggers for this
 // webhook payload type. See also:
@@ -240,6 +254,8 @@ type PullRequest struct {
 	// background job was started to compute it. When the job is complete, the response
 	// will include a non-null value for the mergeable attribute.
 	Mergable *bool `json:"mergeable,omitempty"`
+	// If the PR doesn't have any milestone, `milestone` is null and is unmarshaled to nil.
+	Milestone *Milestone `json:"milestone,omitempty"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -287,19 +303,115 @@ type PullRequestChange struct {
 // Repo contains general repository information.
 // See also https://developer.github.com/v3/repos/#get
 type Repo struct {
-	Owner         User   `json:"owner"`
-	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
-	HTMLURL       string `json:"html_url"`
-	Fork          bool   `json:"fork"`
-	DefaultBranch string `json:"default_branch"`
-	Archived      bool   `json:"archived"`
-
+	Owner            User   `json:"owner"`
+	Name             string `json:"name"`
+	FullName         string `json:"full_name"`
+	HTMLURL          string `json:"html_url"`
+	Fork             bool   `json:"fork"`
+	DefaultBranch    string `json:"default_branch"`
+	Archived         bool   `json:"archived"`
+	Private          bool   `json:"private"`
+	Description      string `json:"description"`
+	Homepage         string `json:"homepage"`
+	HasIssues        bool   `json:"has_issues"`
+	HasProjects      bool   `json:"has_projects"`
+	HasWiki          bool   `json:"has_wiki"`
+	AllowSquashMerge bool   `json:"allow_squash_merge"`
+	AllowMergeCommit bool   `json:"allow_merge_commit"`
+	AllowRebaseMerge bool   `json:"allow_rebase_merge"`
 	// Permissions reflect the permission level for the requester, so
 	// on a repository GET call this will be for the user whose token
 	// is being used, if listing a team's repos this will be for the
 	// team's privilege level in the repo
 	Permissions RepoPermissions `json:"permissions"`
+}
+
+// RepoRequest contains metadata used in requests to create or update a Repo.
+// Compared to `Repo`, its members are pointers to allow the "not set/use default
+// semantics.
+// See also:
+// - https://developer.github.com/v3/repos/#create
+// - https://developer.github.com/v3/repos/#edit
+type RepoRequest struct {
+	Name             *string `json:"name,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	Homepage         *string `json:"homepage,omitempty"`
+	Private          *bool   `json:"private,omitempty"`
+	HasIssues        *bool   `json:"has_issues,omitempty"`
+	HasProjects      *bool   `json:"has_projects,omitempty"`
+	HasWiki          *bool   `json:"has_wiki,omitempty"`
+	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+}
+
+// RepoCreateRequest contains metadata used in requests to create a repo.
+// See also: https://developer.github.com/v3/repos/#create
+type RepoCreateRequest struct {
+	RepoRequest `json:",omitempty"`
+
+	AutoInit          *bool   `json:"auto_init,omitempty"`
+	GitignoreTemplate *string `json:"gitignore_template,omitempty"`
+	LicenseTemplate   *string `json:"license_template,omitempty"`
+}
+
+func (r RepoRequest) ToRepo() *Repo {
+	setString := func(dest, src *string) {
+		if src != nil {
+			*dest = *src
+		}
+	}
+	setBool := func(dest, src *bool) {
+		if src != nil {
+			*dest = *src
+		}
+	}
+
+	var repo Repo
+	setString(&repo.Name, r.Name)
+	setString(&repo.Description, r.Description)
+	setString(&repo.Homepage, r.Homepage)
+	setBool(&repo.Private, r.Private)
+	setBool(&repo.HasIssues, r.HasIssues)
+	setBool(&repo.HasProjects, r.HasProjects)
+	setBool(&repo.HasWiki, r.HasWiki)
+	setBool(&repo.AllowSquashMerge, r.AllowSquashMerge)
+	setBool(&repo.AllowMergeCommit, r.AllowMergeCommit)
+	setBool(&repo.AllowRebaseMerge, r.AllowRebaseMerge)
+
+	return &repo
+}
+
+// Defined returns true if at least one of the pointer fields are not nil
+func (r RepoRequest) Defined() bool {
+	return r.Name != nil || r.Description != nil || r.Homepage != nil || r.Private != nil ||
+		r.HasIssues != nil || r.HasProjects != nil || r.HasWiki != nil || r.AllowSquashMerge != nil ||
+		r.AllowMergeCommit != nil || r.AllowRebaseMerge != nil
+}
+
+// RepoUpdateRequest contains metadata used for updating a repository
+// See also: https://developer.github.com/v3/repos/#edit
+type RepoUpdateRequest struct {
+	RepoRequest `json:",omitempty"`
+
+	DefaultBranch *string `json:"default_branch,omitempty"`
+	Archived      *bool   `json:"archived,omitempty"`
+}
+
+func (r RepoUpdateRequest) ToRepo() *Repo {
+	repo := r.RepoRequest.ToRepo()
+	if r.DefaultBranch != nil {
+		repo.DefaultBranch = *r.DefaultBranch
+	}
+	if r.Archived != nil {
+		repo.Archived = *r.Archived
+	}
+
+	return repo
+}
+
+func (r RepoUpdateRequest) Defined() bool {
+	return r.RepoRequest.Defined() || r.DefaultBranch != nil || r.Archived != nil
 }
 
 // RepoPermissions describes which permission level an entity has in a
@@ -350,6 +462,14 @@ func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
 	return nil
 }
 
+type TeamPermission string
+
+const (
+	RepoPull  TeamPermission = "pull"
+	RepoPush  TeamPermission = "push"
+	RepoAdmin TeamPermission = "admin"
+)
+
 // Branch contains general branch information.
 type Branch struct {
 	Name      string `json:"name"`
@@ -357,14 +477,44 @@ type Branch struct {
 	// TODO(fejta): consider including undocumented protection key
 }
 
-// BranchProtectionRequest represents
-// protections in place for a branch.
-// See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
-type BranchProtectionRequest struct {
+// BranchProtection represents protections
+// currently in place for a branch
+// See also: https://developer.github.com/v3/repos/branches/#get-branch-protection
+type BranchProtection struct {
 	RequiredStatusChecks       *RequiredStatusChecks       `json:"required_status_checks"`
-	EnforceAdmins              *bool                       `json:"enforce_admins"`
+	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+}
+
+// EnforceAdmins specifies whether to enforce the
+// configured branch restrictions for administrators.
+type EnforceAdmins struct {
+	Enabled bool `json:"enabled"`
+}
+
+// RequiredPullRequestReviews exposes the state of review rights.
+type RequiredPullRequestReviews struct {
+	DismissalRestrictions        *Restrictions `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool          `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool          `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int           `json:"required_approving_review_count"`
+}
+
+// Restrictions exposes restrictions in github for an activity to people/teams.
+type Restrictions struct {
+	Users []User `json:"users,omitempty"`
+	Teams []Team `json:"teams,omitempty"`
+}
+
+// BranchProtectionRequest represents
+// protections to put in place for a branch.
+// See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
+type BranchProtectionRequest struct {
+	RequiredStatusChecks       *RequiredStatusChecks              `json:"required_status_checks"`
+	EnforceAdmins              *bool                              `json:"enforce_admins"`
+	RequiredPullRequestReviews *RequiredPullRequestReviewsRequest `json:"required_pull_request_reviews"`
+	Restrictions               *RestrictionsRequest               `json:"restrictions"`
 }
 
 func (r BranchProtectionRequest) String() string {
@@ -381,21 +531,23 @@ type RequiredStatusChecks struct {
 	Contexts []string `json:"contexts"`
 }
 
-// RequiredPullRequestReviews controls review rights.
-type RequiredPullRequestReviews struct {
-	DismissalRestrictions        Restrictions `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool         `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool         `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int          `json:"required_approving_review_count"`
+// RequiredPullRequestReviewsRequest controls a request for review rights.
+type RequiredPullRequestReviewsRequest struct {
+	DismissalRestrictions        RestrictionsRequest `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                 `json:"required_approving_review_count"`
 }
 
-// Restrictions tells github to restrict an activity to people/teams.
+// RestrictionsRequest tells github to restrict an activity to people/teams.
 //
 // Use *[]string in order to distinguish unset and empty list.
 // This is needed by dismissal_restrictions to distinguish
 // do not restrict (empty object) and restrict everyone (nil user/teams list)
-type Restrictions struct {
+type RestrictionsRequest struct {
+	// Users is a list of user logins
 	Users *[]string `json:"users,omitempty"`
+	// Teams is a list of team slugs
 	Teams *[]string `json:"teams,omitempty"`
 }
 
@@ -450,6 +602,8 @@ const (
 	IssueActionOpened IssueEventAction = "opened"
 	// IssueActionEdited means issue body was edited.
 	IssueActionEdited IssueEventAction = "edited"
+	// IssueActionDeleted means the issue was deleted.
+	IssueActionDeleted IssueEventAction = "deleted"
 	// IssueActionMilestoned means the milestone was added/changed.
 	IssueActionMilestoned IssueEventAction = "milestoned"
 	// IssueActionDemilestoned means a milestone was removed.
@@ -462,6 +616,12 @@ const (
 	IssueActionPinned IssueEventAction = "pinned"
 	// IssueActionUnpinned means the issue was unpinned.
 	IssueActionUnpinned IssueEventAction = "unpinned"
+	// IssueActionTransferred means the issue was transferred to another repo.
+	IssueActionTransferred IssueEventAction = "transferred"
+	// IssueActionLocked means the issue was locked.
+	IssueActionLocked IssueEventAction = "locked"
+	// IssueActionUnlocked means the issue was unlocked.
+	IssueActionUnlocked IssueEventAction = "unlocked"
 )
 
 // IssueEvent represents an issue event from a webhook payload (not from the events API).
@@ -790,12 +950,14 @@ const (
 
 // Team is a github organizational team
 type Team struct {
-	ID           int    `json:"id,omitempty"`
-	Name         string `json:"name"`
-	Description  string `json:"description,omitempty"`
-	Privacy      string `json:"privacy,omitempty"`
-	Parent       *Team  `json:"parent,omitempty"`         // Only present in responses
-	ParentTeamID *int   `json:"parent_team_id,omitempty"` // Only valid in creates/edits
+	ID           int            `json:"id,omitempty"`
+	Name         string         `json:"name"`
+	Slug         string         `json:"slug"`
+	Description  string         `json:"description,omitempty"`
+	Privacy      string         `json:"privacy,omitempty"`
+	Parent       *Team          `json:"parent,omitempty"`         // Only present in responses
+	ParentTeamID *int           `json:"parent_team_id,omitempty"` // Only valid in creates/edits
+	Permission   TeamPermission `json:"permission,omitempty"`
 }
 
 // TeamMember is a member of an organizational team

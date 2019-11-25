@@ -17,19 +17,18 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/interrupts"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	_ "k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
@@ -49,7 +48,7 @@ type options struct {
 	continueOnError         bool
 	addedPresubmitBlacklist prowflagutil.Strings
 	dryRun                  bool
-	kubernetes              prowflagutil.ExperimentalKubernetesOptions
+	kubernetes              prowflagutil.KubernetesOptions
 	github                  prowflagutil.GitHubOptions
 
 	tokenBurst    int
@@ -88,14 +87,14 @@ func (o *options) Validate() error {
 }
 
 func main() {
+	logrusutil.ComponentInit()
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "status-reconciler"}),
-	)
+	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf()
 
@@ -114,7 +113,7 @@ func main() {
 	}
 
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig, false); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 
@@ -131,9 +130,8 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-
 	c := statusreconciler.NewController(o.continueOnError, sets.NewString(o.addedPresubmitBlacklist.Strings()...), prowJobClient, githubClient, configAgent, pluginAgent)
-	c.Run(sig, changes)
+	interrupts.Run(func(ctx context.Context) {
+		c.Run(ctx, changes)
+	})
 }

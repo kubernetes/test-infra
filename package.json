@@ -1,14 +1,21 @@
 {
   "dependencies": {
-    "dialog-polyfill": "^0.4.10",
-    "moment": "^2.22.2"
+    "code-prettify": "^0.1.0",
+    "color": "^3.1.2",
+    "dialog-polyfill": "^0.5.0",
+    "moment": "^2.22.2",
+    "pako": "^1.0.10"
   },
   "devDependencies": {
-    "@bazel/jasmine": "0.29.2",
-    "@bazel/typescript": "0.29.2",
+    "@bazel/bazel": "0.27.0",
+    "@bazel/jasmine": "0.36.0",
+    "@bazel/typescript": "0.36.0",
+    "@types/color": "^3.0.0",
     "@types/google.visualization": "^0.0.43",
-    "@types/jasmine": "~2.8.0",
-    "jasmine": "~2.8.0",
+    "@types/gtag.js": "^0.0.0",
+    "@types/jasmine": "~3.3.13",
+    "@types/pako": "^1.0.1",
+    "jasmine": "~3.4.0",
     "tslint": "^5.12.1",
     "typescript": ">=2.8 <2.9"
   }

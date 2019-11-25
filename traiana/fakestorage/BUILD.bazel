@@ -11,7 +11,7 @@ go_library(
     deps = [
         "//traiana:go_default_library",
         "//traiana/storage:go_default_library",
-        "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
+        "@com_github_fsouza_fake_gcs_server//fakestorage:go_default_library",
     ],
 )
 

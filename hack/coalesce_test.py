@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -36,9 +36,11 @@ class TestCoalesce(unittest.TestCase):
             inner = '<failure>something bad</failure>'
         else:
             inner = ''
-        with open(pkg + '/test.log', 'w') as fp:
+        # Pass the encoding parameter to avoid ascii decode error for some
+        # platform.
+        with open(pkg + '/test.log', 'w', encoding='utf-8') as fp:
             fp.write(error)
-        with open(pkg + '/test.xml', 'w') as fp:
+        with open(pkg + '/test.xml', 'w', encoding='utf-8') as fp:
             fp.write('''<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
   <testsuite name="{name}" tests="1" failures="0" errors="0">
@@ -49,8 +51,8 @@ class TestCoalesce(unittest.TestCase):
         return pkg
 
     def test_utf8(self):
-        uni_string = u'\u8a66\u3057'
-        pkg = self.make_result(name='coal', error=uni_string.encode('utf8'))
+        uni_string = '\u8a66\u3057'
+        pkg = self.make_result(name='coal', error=uni_string)
         result = coalesce.result(pkg)
         self.assertEqual(result.find('failure').text, uni_string)
 
@@ -80,7 +82,9 @@ something bad'''
 
         coalesce.main()
 
-        with open('_artifacts/junit_bazel.xml') as fp:
+        # Pass the encoding parameter to avoid ascii decode error for some
+        # platform.
+        with open('_artifacts/junit_bazel.xml', encoding='utf-8') as fp:
             data = fp.read()
 
         root = ET.fromstring(data)

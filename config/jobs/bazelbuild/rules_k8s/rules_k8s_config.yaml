@@ -7,7 +7,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/rules-k8s/gcloud-bazel:v20190507-v0.1-58-g37b9460
+      - image: gcr.io/rules-k8s/gcloud-bazel:v20191007-v0.1-141-gf150cbe
         args:
         - bash
         - -c
@@ -26,3 +26,5 @@ presubmits:
       - name: service-account
         secret:
           secretName: service-account
+    annotations:
+      testgrid-dashboards: google-rules_k8s

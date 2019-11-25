@@ -82,6 +82,10 @@ func (fb *fakeBoskos) ReleaseOne(name string, dest string) error {
 	return fmt.Errorf("no resource %v", name)
 }
 
+func (fb *fakeBoskos) SyncAll() error {
+	return nil
+}
+
 // waitTimeout waits for the waitgroup for the specified max timeout.
 // Returns true if waiting timed out.
 func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {

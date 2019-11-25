@@ -1,0 +1,23 @@
+# Dashboard Group
+
+dashboard_groups:
+- name: sig-testing
+  dashboard_names:
+  - sig-testing-misc
+  - sig-testing-canaries
+  - sig-testing-fejtabot
+  - sig-testing-kind
+  - sig-testing-maintenance
+  - sig-testing-prow
+  - sig-testing-images
+
+# Dashboards
+
+dashboards:
+- name: sig-testing-misc
+- name: sig-testing-canaries
+- name: sig-testing-fejtabot
+- name: sig-testing-kind
+- name: sig-testing-maintenance
+- name: sig-testing-prow
+- name: sig-testing-images

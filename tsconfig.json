@@ -7,7 +7,7 @@
     // NB: Bazel ignores whatever we put here, so any other values won't work.
     "baseUrl": ".",
     "paths": {
-      "test_infra/*": ["*"]
+      "io_k8s_test_infra/*": ["*"]
     }
   },
   "bazelOptions": {

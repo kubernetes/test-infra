@@ -74,7 +74,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, pe *github.PullReque
 	msg := "@%s: You tried to add the `%s` label manually. This is forbidden, as this label is " +
 		"reserved and should only be added using one of my commands. I'm going to remove the label now."
 	if err := ghc.CreateComment(org, repo, number, fmt.Sprintf(msg, pe.Sender.Login, pe.Label.Name)); err != nil {
-		log.WithError(err).Error("Failed to create comment in %s/%s#%d.", org, repo, number)
+		log.WithError(err).Errorf("Failed to create comment in %s/%s#%d.", org, repo, number)
 	}
 
 	if err := ghc.RemoveLabel(pe.Repo.Owner.Login, pe.Repo.Name, pe.Number, pe.Label.Name); err != nil {

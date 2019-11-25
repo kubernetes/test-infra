@@ -41,6 +41,7 @@ type fghc struct {
 	allPRs []struct {
 		PullRequest pullRequest `graphql:"... on PullRequest"`
 	}
+	pr *github.PullRequest
 
 	initialLabels []github.Label
 	mergeable     bool
@@ -50,13 +51,14 @@ type fghc struct {
 	IssueLabelsAdded, IssueLabelsRemoved map[string][]string
 }
 
-func newFakeClient(prs []pullRequest, initialLabels []string, mergeable bool) *fghc {
+func newFakeClient(prs []pullRequest, initialLabels []string, mergeable bool, pr *github.PullRequest) *fghc {
 	f := &fghc{
 		mergeable:          mergeable,
 		commentCreated:     make(map[string]bool),
 		commentDeleted:     make(map[string]bool),
 		IssueLabelsAdded:   make(map[string][]string),
 		IssueLabelsRemoved: make(map[string][]string),
+		pr:                 pr,
 	}
 	for _, pr := range prs {
 		s := struct {
@@ -113,6 +115,13 @@ func (f *fghc) Query(_ context.Context, q interface{}, _ map[string]interface{})
 	return nil
 }
 
+func (f *fghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+	if f.pr != nil {
+		return f.pr, nil
+	}
+	return nil, fmt.Errorf("didn't find pull request %s/%s#%d", org, repo, number)
+}
+
 func (f *fghc) compareExpected(t *testing.T, org, repo string, num int, expectedAdded []string, expectedRemoved []string, expectComment bool, expectDeletion bool) {
 	key := testKey(org, repo, num)
 	sort.Strings(expectedAdded)
@@ -137,7 +146,95 @@ func (f *fghc) compareExpected(t *testing.T, org, repo string, num int, expected
 	}
 }
 
-func TestHandleEvent(t *testing.T) {
+func TestHandleIssueCommentEvent(t *testing.T) {
+
+	pr := func() *github.PullRequest {
+		pr := github.PullRequest{
+			Base: github.PullRequestBranch{
+				Repo: github.Repo{
+					Name:  "repo",
+					Owner: github.User{Login: "org"},
+				},
+			},
+			Number: 5,
+		}
+		return &pr
+	}
+
+	oldSleep := sleep
+	sleep = func(time.Duration) { return }
+	defer func() { sleep = oldSleep }()
+
+	testCases := []struct {
+		name string
+		pr   *github.PullRequest
+
+		mergeable bool
+		merged    bool
+		labels    []string
+
+		expectedAdded   []string
+		expectedRemoved []string
+		expectComment   bool
+		expectDeletion  bool
+	}{
+		{
+			name: "No pull request, ignoring",
+		},
+		{
+			name:      "mergeable no-op",
+			pr:        pr(),
+			mergeable: true,
+			labels:    []string{labels.LGTM, labels.NeedsSig},
+		},
+		{
+			name:      "unmergeable no-op",
+			pr:        pr(),
+			mergeable: false,
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+		},
+		{
+			name:      "mergeable -> unmergeable",
+			pr:        pr(),
+			mergeable: false,
+			labels:    []string{labels.LGTM, labels.NeedsSig},
+
+			expectedAdded: []string{labels.NeedsRebase},
+			expectComment: true,
+		},
+		{
+			name:      "unmergeable -> mergeable",
+			pr:        pr(),
+			mergeable: true,
+			labels:    []string{labels.LGTM, labels.NeedsSig, labels.NeedsRebase},
+
+			expectedRemoved: []string{labels.NeedsRebase},
+			expectDeletion:  true,
+		},
+		{
+			name:   "merged pr is ignored",
+			pr:     pr(),
+			merged: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fake := newFakeClient(nil, tc.labels, tc.mergeable, tc.pr)
+			ice := &github.IssueCommentEvent{}
+			if tc.pr != nil {
+				ice.Issue.PullRequest = &struct{}{}
+				tc.pr.Merged = tc.merged
+			}
+			if err := HandleIssueCommentEvent(logrus.WithField("plugin", PluginName), fake, ice); err != nil {
+				t.Fatalf("error handling issue comment event: %v", err)
+			}
+			fake.compareExpected(t, "org", "repo", 5, tc.expectedAdded, tc.expectedRemoved, tc.expectComment, tc.expectDeletion)
+		})
+	}
+}
+
+func TestHandlePullRequestEvent(t *testing.T) {
 	oldSleep := sleep
 	sleep = func(time.Duration) { return }
 	defer func() { sleep = oldSleep }()
@@ -146,6 +243,7 @@ func TestHandleEvent(t *testing.T) {
 		name string
 
 		mergeable bool
+		merged    bool
 		labels    []string
 
 		expectedAdded   []string
@@ -179,20 +277,29 @@ func TestHandleEvent(t *testing.T) {
 			expectedRemoved: []string{labels.NeedsRebase},
 			expectDeletion:  true,
 		},
+		{
+			name:   "merged pr is ignored",
+			merged: true,
+		},
 	}
 
 	for _, tc := range testCases {
-		fake := newFakeClient(nil, tc.labels, tc.mergeable)
+		fake := newFakeClient(nil, tc.labels, tc.mergeable, nil)
 		pre := &github.PullRequestEvent{
 			Action: github.PullRequestActionSynchronize,
-			Repo: github.Repo{
-				Name:  "repo",
-				Owner: github.User{Login: "org"},
+			PullRequest: github.PullRequest{
+				Base: github.PullRequestBranch{
+					Repo: github.Repo{
+						Name:  "repo",
+						Owner: github.User{Login: "org"},
+					},
+				},
+				Merged: tc.merged,
+				Number: 5,
 			},
-			Number: 5,
 		}
 		t.Logf("Running test scenario: %q", tc.name)
-		if err := HandleEvent(logrus.WithField("plugin", PluginName), fake, pre); err != nil {
+		if err := HandlePullRequestEvent(logrus.WithField("plugin", PluginName), fake, pre); err != nil {
 			t.Fatalf("Unexpected error handling event: %v.", err)
 		}
 		fake.compareExpected(t, "org", "repo", 5, tc.expectedAdded, tc.expectedRemoved, tc.expectComment, tc.expectDeletion)
@@ -251,7 +358,7 @@ func TestHandleAll(t *testing.T) {
 		}
 		prs = append(prs, pr)
 	}
-	fake := newFakeClient(prs, nil, false)
+	fake := newFakeClient(prs, nil, false, nil)
 	config := &plugins.Configuration{
 		Plugins: map[string][]string{"/": {labels.LGTM, PluginName}},
 

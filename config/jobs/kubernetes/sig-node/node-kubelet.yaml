@@ -14,7 +14,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -41,7 +41,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -61,6 +61,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-alpha
 - name: ci-kubernetes-node-kubelet-benchmark
   interval: 2h
   labels:
@@ -68,7 +71,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -88,6 +91,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-benchmark
 - name: ci-kubernetes-node-kubelet-conformance
   interval: 2h
   labels:
@@ -96,7 +102,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -119,6 +125,9 @@ periodics:
       securityContext:
         privileged: true
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-conformance
 - name: ci-kubernetes-node-kubelet-features
   interval: 1h
   labels:
@@ -127,9 +136,11 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-node-kubelet, sig-release-master-informing
+    testgrid-tab-name: node-kubelet-features
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -156,7 +167,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -176,6 +187,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-flaky
 - name: ci-kubernetes-node-kubelet-orphans
   interval: 12h
   labels:
@@ -183,7 +197,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=400
@@ -203,6 +217,9 @@ periodics:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-orphans
 - name: ci-kubernetes-node-kubelet-serial
   interval: 4h30m
   labels:
@@ -210,10 +227,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
-      - --timeout=265
+      - --timeout=320
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
@@ -225,11 +242,43 @@ periodics:
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]"
-      - --timeout=245m
+      - --timeout=300m
       env:
       - name: GOPATH
         value: /go
 
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-serial
+- name: ci-kubernetes-node-kubelet-serial-alpha
+  interval: 3h30m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=200
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-project=k8s-jkns-ci-node-e2e
+      - --gcp-zone=us-west1-b
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+      - --node-test-args=--feature-gates=StartupProbe=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[Serial\].*\[NodeAlphaFeature:.+\]"
+      - --timeout=180m
+      env:
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-serial-alpha
 - name: ci-kubernetes-node-kubelet-serial-cpu-manager
   interval: 4h
   labels:
@@ -237,7 +286,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -256,3 +305,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+  annotations:
+    testgrid-dashboards: wg-resource-management
+    testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
+    testgrid-alert-email: balaji.warft@gmail.com, connor.p.d@gmail.com

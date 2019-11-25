@@ -35,7 +35,7 @@ const (
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
-	Issues              []github.Issue
+	Issues              map[int]*github.Issue
 	OrgMembers          map[string][]string
 	Collaborators       []string
 	IssueComments       map[int][]github.IssueComment
@@ -97,8 +97,10 @@ type FakeClient struct {
 	ColumnIDMap map[string]map[int]string
 
 	// The project and column names for an issue or PR
-	Project string
-	Column  string
+	Project            string
+	Column             string
+	OrgRepoIssueLabels map[string][]github.Label
+	OrgProjects        map[string][]github.Project
 }
 
 // BotName returns authenticated login.
@@ -114,6 +116,16 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// ListOpenIssues returns f.issues
+// To mock a mix of issues and pull requests, see github.Issue.PullRequest
+func (f *FakeClient) ListOpenIssues(org, repo string) ([]github.Issue, error) {
+	var issues []github.Issue
+	for _, issue := range f.Issues {
+		issues = append(issues, *issue)
+	}
+	return issues, nil
 }
 
 // ListIssueComments returns comments.
@@ -204,9 +216,36 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
 	val, exists := f.PullRequests[number]
 	if !exists {
-		return nil, fmt.Errorf("Pull request number %d does not exit", number)
+		return nil, fmt.Errorf("pull request number %d does not exist", number)
 	}
 	return val, nil
+}
+
+// EditPullRequest edits the pull request.
+func (f *FakeClient) EditPullRequest(org, repo string, number int, issue *github.PullRequest) (*github.PullRequest, error) {
+	if _, exists := f.PullRequests[number]; !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	f.PullRequests[number] = issue
+	return issue, nil
+}
+
+// GetIssue returns the issue.
+func (f *FakeClient) GetIssue(owner, repo string, number int) (*github.Issue, error) {
+	val, exists := f.Issues[number]
+	if !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	return val, nil
+}
+
+// EditIssue edits the issue.
+func (f *FakeClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
+	if _, exists := f.Issues[number]; !exists {
+		return nil, fmt.Errorf("issue number %d does not exist", number)
+	}
+	f.Issues[number] = issue
+	return issue, nil
 }
 
 // GetPullRequestChanges returns the file modifications in a PR.
@@ -316,7 +355,11 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 
 // FindIssues returns f.Issues
 func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
-	return f.Issues, nil
+	var issues []github.Issue
+	for _, issue := range f.Issues {
+		issues = append(issues, *issue)
+	}
+	return issues, nil
 }
 
 // AssignIssue adds assignees.
@@ -466,6 +509,16 @@ func (f *FakeClient) CreateProjectCard(columnID int, projectCard github.ProjectC
 	}
 
 	for project, columnIDMap := range f.ColumnIDMap {
+		if _, exists := columnIDMap[columnID]; exists {
+			for id := range columnIDMap {
+				// Make sure that we behave same as github API
+				// Create project will generate an error when the card already exist in the project
+				card, err := f.GetColumnProjectCard(id, projectCard.ContentURL)
+				if err == nil && card != nil {
+					return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
+				}
+			}
+		}
 		columnName, exists := columnIDMap[columnID]
 		if exists {
 			f.ColumnCardsMap[columnID] = append(
@@ -512,12 +565,22 @@ func (f *FakeClient) DeleteProjectCard(projectCardID int) error {
 	return nil
 }
 
-// GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
-func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
+// GetColumnProjectCards fetches project cards  under given column
+func (f *FakeClient) GetColumnProjectCards(columnID int) ([]github.ProjectCard, error) {
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
-	for _, existingCard := range f.ColumnCardsMap[columnID] {
+	return f.ColumnCardsMap[columnID], nil
+}
+
+// GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
+func (f *FakeClient) GetColumnProjectCard(columnID int, contentURL string) (*github.ProjectCard, error) {
+	cards, err := f.GetColumnProjectCards(columnID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, existingCard := range cards {
 		if existingCard.ContentURL == contentURL {
 			return &existingCard, nil
 		}
@@ -594,4 +657,14 @@ func (f *FakeClient) TeamHasMember(teamID int, memberLogin string) (bool, error)
 		}
 	}
 	return false, nil
+}
+
+func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error) {
+	teams, _ := f.ListTeams(org)
+	for _, team := range teams {
+		if team.Name == slug {
+			return &team, nil
+		}
+	}
+	return &github.Team{}, nil
 }

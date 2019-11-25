@@ -17,10 +17,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         resources:
           requests:
             memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
+      testgrid-tab-name: pr-make
   - name: pull-cluster-api-provider-openstack-test
     always_run: true
     decorate: true
@@ -29,12 +32,15 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         command:
         - runner.sh
         args:
         - make
         - test
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
+      testgrid-tab-name: pr-test
   - name: pull-cluster-api-provider-openstack-check
     always_run: true
     decorate: true
@@ -45,9 +51,12 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20190528-0d7c4b5-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191121-55b023d-master
         command:
         - runner.sh
         args:
         - make
         - check
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
+      testgrid-tab-name: pr-check

@@ -23,8 +23,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -55,8 +57,11 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 }
 
 func main() {
+	logrusutil.ComponentInit()
+
 	o := parseOptions()
-	logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "admission"})
+
+	defer interrupts.WaitForGracefulShutdown()
 
 	pjutil.ServePProf()
 	health := pjutil.NewHealth()
@@ -70,6 +75,5 @@ func main() {
 	}
 
 	health.ServeReady()
-
-	logrus.Error(s.ListenAndServeTLS(o.cert, o.privateKey))
+	interrupts.ListenAndServeTLS(&s, o.cert, o.privateKey, 5*time.Second)
 }

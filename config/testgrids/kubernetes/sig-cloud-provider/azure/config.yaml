@@ -1,0 +1,11 @@
+dashboard_groups:
+- name: provider-azure
+  dashboard_names:
+    - provider-azure-master
+    - provider-azure-on-call
+    - provider-azure-scalability
+
+dashboards:
+- name: provider-azure-master
+- name: provider-azure-on-call
+- name: provider-azure-scalability

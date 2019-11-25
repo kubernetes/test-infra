@@ -33,8 +33,8 @@ import (
 	"google.golang.org/api/iterator"
 	"k8s.io/test-infra/traiana/storage"
 
+	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 	"k8s.io/test-infra/prow/spyglass/lenses"
-	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 const (
@@ -81,7 +81,7 @@ func fieldsForJob(src *gcsJobSource) logrus.Fields {
 
 // newGCSJobSource creates a new gcsJobSource from a given bucket and jobPrefix
 func newGCSJobSource(src string) (*gcsJobSource, error) {
-	gcsURL, err := url.Parse(fmt.Sprintf("s3://%s", src))
+	gcsURL, err := url.Parse(fmt.Sprintf("gs://%s", src))
 	if err != nil {
 		return &gcsJobSource{}, err
 	}
@@ -141,8 +141,7 @@ func (af *GCSArtifactFetcher) artifacts(key string) ([]string, error) {
 		artifacts = append(artifacts, strings.TrimPrefix(oAttrs.Name, prefix))
 		i = 0
 	}
-	listElapsed := time.Since(listStart)
-	logrus.WithField("duration", listElapsed).Infof("Listed %d artifacts.", len(artifacts))
+	logrus.WithField("duration", time.Since(listStart).String()).Infof("Listed %d artifacts.", len(artifacts))
 	return artifacts, nil
 }
 
