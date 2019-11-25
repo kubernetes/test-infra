@@ -376,7 +376,7 @@ func TestRelease(t *testing.T) {
 			resName:     "res",
 			owner:       "user",
 			dest:        "d",
-			expectErr:   &OwnerNotMatch{"merlin", "user"},
+			expectErr:   &OwnerNotMatch{"user", "merlin"},
 			expectedRes: common.NewResource("res", "t", "s", "merlin", startTime),
 		},
 		{
@@ -554,7 +554,7 @@ func TestUpdate(t *testing.T) {
 			resName:   "res",
 			owner:     "user",
 			state:     "s",
-			expectErr: &OwnerNotMatch{"merlin", "user"},
+			expectErr: &OwnerNotMatch{"user", "merlin"},
 		},
 		{
 			name: "wrong state",
