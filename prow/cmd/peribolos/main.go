@@ -210,6 +210,7 @@ type dumpClient interface {
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	ListTeamRepos(id int) ([]github.Repo, error)
+	GetRepo(owner, name string) (github.FullRepo, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 	BotName() (string, error)
 }
@@ -356,20 +357,24 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	}
 	logrus.Debugf("Found %d repos", len(repos))
 	out.Repos = make(map[string]org.Repo, len(repos))
-	for idx, repo := range repos {
-		logrus.WithField("repo", repo.FullName).Debug("Recording repo.")
-		out.Repos[repos[idx].Name] = pruneRepoDefaults(org.Repo{
-			Description:      &repos[idx].Description,
-			HomePage:         &repos[idx].Homepage,
-			Private:          &repos[idx].Private,
-			HasIssues:        &repos[idx].HasIssues,
-			HasProjects:      &repos[idx].HasProjects,
-			HasWiki:          &repos[idx].HasWiki,
-			AllowMergeCommit: &repos[idx].AllowMergeCommit,
-			AllowSquashMerge: &repos[idx].AllowSquashMerge,
-			AllowRebaseMerge: &repos[idx].AllowRebaseMerge,
-			Archived:         &repos[idx].Archived,
-			DefaultBranch:    &repos[idx].DefaultBranch,
+	for _, repo := range repos {
+		full, err := client.GetRepo(orgName, repo.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get repo: %v", err)
+		}
+		logrus.WithField("repo", full.FullName).Debug("Recording repo.")
+		out.Repos[full.Name] = pruneRepoDefaults(org.Repo{
+			Description:      &full.Description,
+			HomePage:         &full.Homepage,
+			Private:          &full.Private,
+			HasIssues:        &full.HasIssues,
+			HasProjects:      &full.HasProjects,
+			HasWiki:          &full.HasWiki,
+			AllowMergeCommit: &full.AllowMergeCommit,
+			AllowSquashMerge: &full.AllowSquashMerge,
+			AllowRebaseMerge: &full.AllowRebaseMerge,
+			Archived:         &full.Archived,
+			DefaultBranch:    &full.DefaultBranch,
 		})
 	}
 
@@ -896,9 +901,10 @@ func configureOrg(opt options, client github.Client, orgName string, orgConfig o
 }
 
 type repoClient interface {
+	GetRepo(orgName, repo string) (github.FullRepo, error)
 	GetRepos(orgName string, isUser bool) ([]github.Repo, error)
-	CreateRepo(owner string, isUser bool, repo github.RepoCreateRequest) (*github.Repo, error)
-	UpdateRepo(owner, name string, repo github.RepoUpdateRequest) (*github.Repo, error)
+	CreateRepo(owner string, isUser bool, repo github.RepoCreateRequest) (*github.FullRepo, error)
+	UpdateRepo(owner, name string, repo github.RepoUpdateRequest) (*github.FullRepo, error)
 }
 
 func newRepoCreateRequest(name string, definition org.Repo) github.RepoCreateRequest {
@@ -954,7 +960,7 @@ func validateRepos(repos map[string]org.Repo) error {
 
 // newRepoUpdateRequest creates a minimal github.RepoUpdateRequest instance
 // needed to update the current repo into the target state.
-func newRepoUpdateRequest(current github.Repo, name string, repo org.Repo) github.RepoUpdateRequest {
+func newRepoUpdateRequest(current github.FullRepo, name string, repo org.Repo) github.RepoUpdateRequest {
 	setString := func(current string, want *string) *string {
 		if want != nil && *want != current {
 			return want
@@ -1006,8 +1012,8 @@ func sanitizeRepoDelta(opt options, delta *github.RepoUpdateRequest) []error {
 	return errs
 }
 
-func repoExists(repos map[string]github.Repo, name string, previousNames []string) (*github.Repo, error) {
-	var ret *github.Repo
+func repoExists(repos map[string]github.FullRepo, name string, previousNames []string) (*github.FullRepo, error) {
+	var ret *github.FullRepo
 	for _, name := range append([]string{name}, previousNames...) {
 		if repo, exists := repos[strings.ToLower(name)]; exists {
 			switch {
@@ -1032,9 +1038,13 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 		return fmt.Errorf("failed to get repos: %v", err)
 	}
 	logrus.Debugf("Found %d repositories", len(repoList))
-	byName := make(map[string]github.Repo, len(repoList))
+	byName := make(map[string]github.FullRepo, len(repoList))
 	for _, repo := range repoList {
-		byName[strings.ToLower(repo.Name)] = repo
+		full, err := client.GetRepo(orgName, repo.Name)
+		if err != nil {
+			return fmt.Errorf("failed to get details about repo: %v", err)
+		}
+		byName[strings.ToLower(full.Name)] = full
 	}
 
 	var allErrors []error

@@ -84,17 +84,17 @@ type fakeClient struct {
 	teams             []github.Team
 }
 
-func (c fakeClient) GetRepo(org string, repo string) (github.Repo, error) {
+func (c fakeClient) GetRepo(org string, repo string) (github.FullRepo, error) {
 	r, ok := c.repos[org]
 	if !ok {
-		return github.Repo{}, fmt.Errorf("Unknown org: %s", org)
+		return github.FullRepo{}, fmt.Errorf("Unknown org: %s", org)
 	}
 	for _, item := range r {
 		if item.Name == repo {
-			return item, nil
+			return github.FullRepo{Repo: item}, nil
 		}
 	}
-	return github.Repo{}, fmt.Errorf("Unknown repo: %s", repo)
+	return github.FullRepo{}, fmt.Errorf("Unknown repo: %s", repo)
 }
 
 func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {

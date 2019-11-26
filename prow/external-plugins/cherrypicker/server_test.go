@@ -78,10 +78,10 @@ func (f *fghc) IsMember(org, user string) (bool, error) {
 	return f.isMember, nil
 }
 
-func (f *fghc) GetRepo(owner, name string) (github.Repo, error) {
+func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 	f.Lock()
 	defer f.Unlock()
-	return github.Repo{}, nil
+	return github.FullRepo{}, nil
 }
 
 var expectedFmt = `title=%q body=%q head=%s base=%s`

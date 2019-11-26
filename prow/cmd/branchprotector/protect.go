@@ -141,7 +141,7 @@ type client interface {
 	RemoveBranchProtection(org, repo, branch string) error
 	UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error
 	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
-	GetRepo(owner, name string) (github.Repo, error)
+	GetRepo(owner, name string) (github.FullRepo, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
 	ListCollaborators(org, repo string) ([]github.User, error)
 	ListRepoTeams(org, repo string) ([]github.Team, error)
