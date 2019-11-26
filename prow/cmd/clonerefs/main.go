@@ -25,7 +25,7 @@ import (
 )
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("clonerefs")
 
 	o := &clonerefs.Options{}
 	if err := options.Load(o); err != nil {

@@ -125,7 +125,7 @@ func flagOptions() *options {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("ghproxy")
 
 	o := flagOptions()
 	flag.Parse()

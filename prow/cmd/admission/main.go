@@ -57,7 +57,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("admission")
 
 	o := parseOptions()
 

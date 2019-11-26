@@ -213,7 +213,7 @@ func (st *syncTime) Update(newState client.LastSyncState) error {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("gerrit")
 
 	defer interrupts.WaitForGracefulShutdown()
 

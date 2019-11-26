@@ -90,7 +90,7 @@ func (e *Errors) add(err error) {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("branchprotector")
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

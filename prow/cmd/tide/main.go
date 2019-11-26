@@ -105,7 +105,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("tide")
 
 	defer interrupts.WaitForGracefulShutdown()
 
