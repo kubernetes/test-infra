@@ -5,33 +5,31 @@
         name: 'Tide progress',
         rules: [
           {
-            alert: 'TideSyncLoopDuration',
+            alert: 'Sync controller heartbeat',
             expr: |||
-              avg_over_time(syncdur{job="tide"}[15m]) > 120
+              sum(increase(tidesyncheartbeat{controller="sync"}[15m])) < 1
             |||,
-            'for': '5m',
             labels: {
               severity: 'warning',
             },
             annotations: {
-              message: 'The Tide sync controllers loop period has averaged more than 2 minutes for the last 15 mins. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
+              message: 'The Tide "sync" controller has not synced in 15 minutes. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
             },
           },
           {
-            alert: 'TideStatusUpdateLoopDuration',
+            alert: 'Status-update controller heartbeat',
             expr: |||
-              avg_over_time(statusupdatedur{job="tide"}[15m]) > 120
+              sum(increase(tidesyncheartbeat{controller="status-update"}[30m])) < 1
             |||,
-            'for': '5m',
             labels: {
               severity: 'warning',
             },
             annotations: {
-              message: 'The Tide status update controllers loop period has averaged more than 2 minutes for the last 15 mins. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
+              message: 'The Tide "status-update" controller has not synced in 30 minutes. See the <https://monitoring.prow.k8s.io/d/d69a91f76d8110d3e72885ee5ce8038e/tide-dashboard?orgId=1&from=now-24h&to=now&fullscreen&panelId=7|processing time graph>.',
             },
           },
           {
-            alert: 'TidePoolErrorRateIndividual',
+            alert: 'TidePool error rate: individual',
             expr: |||
               (max(sum(increase(tidepoolerrors{org!="kubeflow"}[10m])) by (org, repo, branch)) or vector(0)) >= 3
             |||,
@@ -44,7 +42,7 @@
             },
           },
           {
-            alert: 'TidePoolErrorRateMultiple',
+            alert: 'TidePool error rate: multiple',
             expr: |||
               (count(sum(increase(tidepoolerrors[10m])) by (org, repo) >= 3) or vector(0)) >= 3
             |||,

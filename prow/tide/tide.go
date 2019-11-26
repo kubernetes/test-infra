@@ -187,9 +187,9 @@ var (
 			"branch",
 		}),
 
-		// Don't use the sync period gauges, they are deprecated. Use the sync
-		// heartbeat counter instead.
-		// Remove these gauges after March 2020
+		// Use the sync heartbeat counter to monitor for liveness. Use the duration
+		// gauges for precise sync duration graphs since the prometheus scrape
+		// period is likely much larger than the loop periods.
 		syncDuration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "syncdur",
 			Help: "The duration of the last loop of the sync controller.",
