@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -448,20 +447,16 @@ func (u *UtilityConfig) Validate() error {
 		// Trim user from uri if exists.
 		cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
 
-		if u.DecorationConfig != nil && len(u.DecorationConfig.SSHKeySecrets) > 0 {
-			if len(u.CloneURI) == 0 {
-				return errors.New("SSH key secrets provided but no clone_uri has been found")
+		if len(u.CloneURI) != 0 {
+			uri, err := url.Parse(cloneURI)
+			if err != nil {
+				return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
 			}
-		}
 
-		uri, err := url.Parse(cloneURI)
-		if err != nil {
-			return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
-		}
-
-		if u.DecorationConfig != nil && u.DecorationConfig.OauthTokenSecret != nil {
-			if uri.Scheme != schemeHTTP && uri.Scheme != schemeHTTPS {
-				return fmt.Errorf("scheme must be http or https when OAuth secret is specified: %s", cloneURI)
+			if u.DecorationConfig != nil && u.DecorationConfig.OauthTokenSecret != nil {
+				if uri.Scheme != schemeHTTP && uri.Scheme != schemeHTTPS {
+					return fmt.Errorf("scheme must be http or https when OAuth secret is specified: %s", cloneURI)
+				}
 			}
 		}
 
