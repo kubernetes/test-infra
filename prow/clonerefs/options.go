@@ -52,6 +52,9 @@ type Options struct {
 	// when cloning. Will be added to `ssh-agent`.
 	KeyFiles []string `json:"key_files,omitempty"`
 
+	// OauthTokenFile is the path of a file that contains an OAuth token.
+	OauthTokenFile string `json:"oauth_token_file,omitempty"`
+
 	// HostFingerPrints are ssh-keyscan host fingerprint lines to use
 	// when cloning. Will be added to ~/.ssh/known_hosts
 	HostFingerprints []string `json:"host_fingerprints,omitempty"`

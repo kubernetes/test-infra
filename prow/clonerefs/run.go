@@ -55,6 +55,16 @@ func (o Options) Run() error {
 		env = append(env, envVar)
 	}
 
+	var oauthToken string
+	if len(o.OauthTokenFile) > 0 {
+		data, err := ioutil.ReadFile(o.OauthTokenFile)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to read oauth key file.")
+		} else {
+			oauthToken = strings.TrimSpace(string(data))
+		}
+	}
+
 	var numWorkers int
 	if o.MaxParallelWorkers != 0 {
 		numWorkers = o.MaxParallelWorkers
@@ -71,7 +81,7 @@ func (o Options) Run() error {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env)
+				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, oauthToken)
 			}
 		}()
 	}

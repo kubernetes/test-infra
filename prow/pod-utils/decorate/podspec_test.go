@@ -335,6 +335,50 @@ func TestCloneRefs(t *testing.T) {
 			},
 			volumes: []coreapi.Volume{tmpVolume, cookieVolumeOnly("oatmeal")},
 		},
+		{
+			name: "include oauth token secret when set",
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					ExtraRefs: []prowapi.Refs{{}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
+						OauthTokenSecret: &prowapi.OauthTokenSecret{
+							Name: "oauth-secret",
+							Key:  "oauth-file",
+						},
+					},
+				},
+			},
+			expected: &coreapi.Container{
+				Name:    cloneRefsName,
+				Command: []string{cloneRefsCommand},
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:        []prowapi.Refs{{}},
+					GitUserEmail:   clonerefs.DefaultGitUserEmail,
+					GitUserName:    clonerefs.DefaultGitUserName,
+					SrcRoot:        codeMount.MountPath,
+					Log:            CloneLogPath(logMount),
+					OauthTokenFile: "/secrets/oauth/oauth-token",
+				}),
+				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount,
+					{Name: "oauth-secret-oauth-secret", ReadOnly: true, MountPath: "/secrets/oauth"}, tmpMount,
+				},
+			},
+			volumes: []coreapi.Volume{
+				{
+					Name: "oauth-secret-oauth-secret",
+					VolumeSource: coreapi.VolumeSource{
+						Secret: &coreapi.SecretVolumeSource{
+							SecretName: "oauth-secret",
+							Items: []coreapi.KeyToPath{{
+								Key:  "oauth-file",
+								Path: "./oauth-token"}},
+						},
+					},
+				},
+				tmpVolume,
+			},
+		},
 	}
 
 	for _, tc := range cases {
