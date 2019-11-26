@@ -146,7 +146,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 	cmd := exec.Command("gcloud", args...)
 
 	if o.logDir != "" {
-		p := path.Join(o.logDir, jobName+".log")
+		p := path.Join(o.logDir, strings.Replace(jobName, "/", "-", -1)+".log")
 		f, err := os.Create(p)
 
 		if err != nil {
