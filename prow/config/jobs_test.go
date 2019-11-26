@@ -959,7 +959,8 @@ func TestUtilityConfigValidation(t *testing.T) {
 			},
 		},
 		{
-			id: "ssh_keys specified but clone_uri is empty, error",
+			id:    "ssh_keys specified but clone_uri is empty, no error",
+			valid: true,
 			uc: UtilityConfig{
 				DecorationConfig: &prowapi.DecorationConfig{
 					SSHKeySecrets: []string{"ssh-secret"},
