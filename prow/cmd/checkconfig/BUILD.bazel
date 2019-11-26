@@ -72,7 +72,9 @@ go_test(
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/errorutil:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
