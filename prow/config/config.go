@@ -1092,7 +1092,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
 		return nil // jenkins jobs have no spec
 	}
-	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0) {
+	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(v.RerunAuthConfig.GitHubOrgs) > 0) {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
 	}
 	if err := v.UtilityConfig.Validate(); err != nil {
@@ -1308,7 +1308,7 @@ func parseProwConfig(c *Config) error {
 
 	// If a whitelist is specified, the user probably does not intend for anyone to be able
 	// to rerun any job.
-	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0) {
+	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(c.Deck.RerunAuthConfig.GitHubOrgs) > 0) {
 		return fmt.Errorf("allow_anyone is set to true and authorized users or teams are specified.")
 	}
 
