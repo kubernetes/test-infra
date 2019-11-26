@@ -311,6 +311,9 @@ func (g *gkeDeployer) Up() error {
 	if strings.ToUpper(g.image) == "CUSTOM" {
 		args = append(args, "--image-family="+g.imageFamily)
 		args = append(args, "--image-project="+g.imageProject)
+		// gcloud enables node auto-upgrade by default, which doesn't work with CUSTOM image.
+		// We disable auto-upgrade explicitly here.
+		args = append(args, "--no-enable-autoupgrade")
 	}
 	if g.subnetwork != "" {
 		args = append(args, "--subnetwork="+g.subnetwork)
