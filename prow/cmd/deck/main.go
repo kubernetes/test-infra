@@ -109,6 +109,7 @@ type options struct {
 	cookieSecretFile      string
 	redirectHTTPTo        string
 	hiddenOnly            bool
+	rerunHiddenOnly       bool
 	pregeneratedData      string
 	staticFilesLocation   string
 	templateFilesLocation string
@@ -173,6 +174,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
 	fs.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
+	fs.BoolVar(&o.rerunHiddenOnly, "rerun-hidden-only", false, "Job re-run is only enabled for the members of the organizations that are hidden.")
 	fs.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
 	fs.BoolVar(&o.showHidden, "show-hidden", false, "Show all jobs, including hidden ones")
 	fs.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
@@ -567,7 +569,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 	}, podLogClients, cfg)
 	ja.Start()
 
-	cfgGetter := func() *prowapi.RerunAuthConfig { return &cfg().Deck.RerunAuthConfig }
+	cfgGetter := initAuthCfgGetter(o, cfg)
 
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
@@ -728,6 +730,14 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, cfg, o, logrus.WithField("handler", "/view"))))
 	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, c, logrus.WithField("handler", "/job-history"))))
 	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c, gitHubClient, gitClient, logrus.WithField("handler", "/pr-history"))))
+}
+
+// initAuthCfgGetter returns an authCfgGetter based on the specified options to dynamically load a config.
+func initAuthCfgGetter(o options, cfg config.Getter) authCfgGetter {
+	if o.rerunHiddenOnly {
+		return func() *prowapi.RerunAuthConfig { return &prowapi.RerunAuthConfig{GitHubOrgs: cfg().Deck.HiddenOrgs()} }
+	}
+	return func() *prowapi.RerunAuthConfig { return &cfg().Deck.RerunAuthConfig }
 }
 
 func loadToken(file string) ([]byte, error) {

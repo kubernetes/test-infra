@@ -471,6 +471,55 @@ func TestRerun(t *testing.T) {
 	}
 }
 
+func TestInitAuthCfgGetter(t *testing.T) {
+	testCases := []struct {
+		name     string
+		options  options
+		config   config.Getter
+		expected *prowapi.RerunAuthConfig
+	}{
+		{
+			name:    "rerunHiddenOnly true",
+			options: options{rerunHiddenOnly: true},
+			config: func() *config.Config {
+				return &config.Config{
+					ProwConfig: config.ProwConfig{
+						Deck: config.Deck{
+							HiddenRepos:     []string{"istio/test-infra"},
+							RerunAuthConfig: prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+						},
+					},
+				}
+			},
+			expected: &prowapi.RerunAuthConfig{GitHubOrgs: []string{"istio"}},
+		},
+		{
+			name:    "rerunHiddenOnly false",
+			options: options{rerunHiddenOnly: false},
+			config: func() *config.Config {
+				return &config.Config{
+					ProwConfig: config.ProwConfig{
+						Deck: config.Deck{
+							HiddenRepos:     []string{"istio/test-infra"},
+							RerunAuthConfig: prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+						},
+					},
+				}
+			},
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := initAuthCfgGetter(tc.options, tc.config)()
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("Expected %v, got %v", tc.expected, actual)
+			}
+		})
+	}
+}
+
 func TestTide(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		pools := []tide.Pool{
