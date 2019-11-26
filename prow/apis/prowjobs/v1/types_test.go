@@ -255,3 +255,51 @@ func TestRefsToString(t *testing.T) {
 		}
 	}
 }
+
+func TestRerunAuthConfigValidate(t *testing.T) {
+	var testCases = []struct {
+		name   string
+		config *RerunAuthConfig
+		valid  bool
+	}{
+		{
+			name:   "valid - disallow all",
+			config: &RerunAuthConfig{AllowAnyone: false},
+			valid:  true,
+		},
+		{
+			name:   "valid - no restrictions",
+			config: &RerunAuthConfig{},
+			valid:  true,
+		},
+		{
+			name:   "valid - allow any",
+			config: &RerunAuthConfig{AllowAnyone: true},
+			valid:  true,
+		},
+		{
+			name:   "valid - restrict orgs",
+			config: &RerunAuthConfig{GitHubOrgs: []string{"istio"}},
+			valid:  true,
+		},
+		{
+			name:   "valid - restrict orgs and users",
+			config: &RerunAuthConfig{GitHubOrgs: []string{"istio", "kubernetes"}, GitHubUsers: []string{"clarketm", "scoobydoo"}},
+			valid:  true,
+		},
+		{
+			name:   "invalid - allow any and has restriction",
+			config: &RerunAuthConfig{AllowAnyone: true, GitHubOrgs: []string{"istio"}},
+			valid:  false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if actual := tc.config.Validate(); actual != tc.valid {
+				t.Errorf("Expected %v, got %v", tc.valid, actual)
+			}
+		})
+	}
+}

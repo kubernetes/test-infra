@@ -238,6 +238,17 @@ func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient
 	return false, nil
 }
 
+// Validate returns true if the RerunAuthConfig is valid.
+func (rac *RerunAuthConfig) Validate() bool {
+	hasRestriction := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamIDs) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
+
+	if rac.AllowAnyone && hasRestriction {
+		return false
+	}
+
+	return true
+}
+
 type ReporterConfig struct {
 	Slack *SlackReporterConfig `json:"slack,omitempty"`
 }
