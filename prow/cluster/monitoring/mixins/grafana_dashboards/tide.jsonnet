@@ -136,10 +136,10 @@ dashboard.new(
         legend_rightSide=true,
     ) + legendConfig)
     .addTarget(prometheus.target(
-        'max(syncdur and (changes(syncdur[1h]) > 0))',
+        'max(syncdur and (changes(syncdur[10m]) > 0))',
         legendFormat='Sync time',
     )).addTarget(prometheus.target(
-        'max(statusupdatedur and (changes(statusupdatedur[1h]) > 0))',
+        'max(statusupdatedur and (changes(statusupdatedur[10m]) > 0))',
         legendFormat='Status update time',
     )), gridPos={
     h: 9,
