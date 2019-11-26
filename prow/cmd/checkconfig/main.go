@@ -171,7 +171,7 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("checkconfig")
 
 	o, err := parseOptions()
 	if err != nil {

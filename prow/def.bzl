@@ -37,7 +37,6 @@ def prow_image(
         goarch = "amd64",
         goos = "linux",
         pure = "on",
-        x_defs = {"k8s.io/test-infra/prow/version.Name": name},
     )
 
     container_image(

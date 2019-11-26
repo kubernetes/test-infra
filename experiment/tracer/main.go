@@ -73,7 +73,7 @@ func gatherOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("tracer")
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

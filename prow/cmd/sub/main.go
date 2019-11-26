@@ -86,7 +86,7 @@ func init() {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("pubsub-subscriber")
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(flagOptions.configPath, flagOptions.jobConfigPath); err != nil {

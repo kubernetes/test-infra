@@ -76,7 +76,7 @@ func (o *options) Validate() error {
 
 func main() {
 	var errors int
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("config-bootstrapper")
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

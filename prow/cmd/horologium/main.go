@@ -72,7 +72,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("horologium")
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {

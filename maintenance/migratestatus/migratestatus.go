@@ -107,7 +107,7 @@ func (o *options) Validate() error {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("migratestatus")
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {

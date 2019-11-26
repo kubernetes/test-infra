@@ -147,7 +147,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("peribolos")
 
 	o := parseOptions()
 

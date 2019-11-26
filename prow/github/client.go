@@ -37,10 +37,8 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/version"
 )
 
 type timeClient interface {
@@ -249,15 +247,14 @@ type delegate struct {
 	maxSleepTime  time.Duration
 	initialDelay  time.Duration
 
-	userAgent string
-	gqlc      gqlClient
-	client    httpClient
-	bases     []string
-	dry       bool
-	fake      bool
-	throttle  throttler
-	getToken  func() []byte
-	censor    func([]byte) []byte
+	gqlc     gqlClient
+	client   httpClient
+	bases    []string
+	dry      bool
+	fake     bool
+	throttle throttler
+	getToken func() []byte
+	censor   func([]byte) []byte
 
 	mut      sync.Mutex // protects botName and email
 	userData *User
@@ -437,8 +434,7 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
-			time:      &standardTime{},
-			userAgent: version.UserAgent(),
+			time: &standardTime{},
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
@@ -475,8 +471,7 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, cen
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
-			time:      &standardTime{},
-			userAgent: version.UserAgent(),
+			time: &standardTime{},
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
@@ -741,9 +736,6 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	} else {
 		req.Header.Add("Accept", accept)
-	}
-	if c.userAgent != "" {
-		req.Header.Add("User-Agent", c.userAgent)
 	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.

@@ -58,7 +58,7 @@ func init() {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("boskos-metrics")
 	boskos := client.NewClient("Metrics", "http://boskos")
 	logrus.Infof("Initialzied boskos client!")
 
