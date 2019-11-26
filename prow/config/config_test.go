@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"sync"
 	"testing"
 	"text/template"
@@ -3536,6 +3537,50 @@ func TestInRepoConfigEnabled(t *testing.T) {
 
 			if result := tc.config.InRepoConfigEnabled("org/repo"); result != tc.expected {
 				t.Errorf("Expected %t, got %t", tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestDeckHiddenOrgs(t *testing.T) {
+	testCases := []struct {
+		name     string
+		deck     Deck
+		expected []string
+	}{
+		{
+			name:     "Ignore repos",
+			deck:     Deck{HiddenRepos: []string{"istio/istio", "istio-private/proxy", "istio-ecosystem/authservice"}},
+			expected: []string{"istio", "istio-private", "istio-ecosystem"},
+		},
+		{
+			name:     "Remove dupes",
+			deck:     Deck{HiddenRepos: []string{"istio/istio", "istio/proxy", "istio/cni"}},
+			expected: []string{"istio"},
+		},
+		{
+			name:     "Remove dupes and ignore repos",
+			deck:     Deck{HiddenRepos: []string{"istio/istio", "istio/test-infra", "istio-private", "istio-releases", "istio-ecosystem", "istio-private/istio"}},
+			expected: []string{"istio", "istio-private", "istio-releases", "istio-ecosystem"},
+		},
+		{
+			name:     "Handle empty",
+			deck:     Deck{HiddenRepos: []string{}},
+			expected: []string{},
+		},
+	}
+
+	for idx := range testCases {
+		tc := testCases[idx]
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.deck.HiddenOrgs()
+			sort.Strings(actual)
+
+			expected := tc.expected
+			sort.Strings(expected)
+
+			if !reflect.DeepEqual(actual, expected) {
+				t.Errorf("Expected %v, got %v", expected, actual)
 			}
 		})
 	}

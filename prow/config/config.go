@@ -556,6 +556,18 @@ type Deck struct {
 	RerunAuthConfig prowapi.RerunAuthConfig `json:"rerun_auth_config,omitempty"`
 }
 
+// HiddenOrgs is a list of orgs that should not be displayed by Deck.
+func (d *Deck) HiddenOrgs() []string {
+	orgs := sets.String{}
+
+	for _, orgrepo := range d.HiddenRepos {
+		org := strings.Split(orgrepo, "/")[0]
+		orgs.Insert(org)
+	}
+
+	return orgs.List()
+}
+
 // ExternalAgentLog ensures an external agent like Jenkins can expose
 // its logs in prow.
 type ExternalAgentLog struct {
