@@ -253,7 +253,7 @@ func (r *Ranch) Release(name, dest, owner string) error {
 		return &ResourceNotFound{name}
 	}
 	if owner != res.Owner {
-		return &OwnerNotMatch{owner: owner, request: res.Owner}
+		return &OwnerNotMatch{request: owner, owner: res.Owner}
 	}
 
 	res.Owner = ""
@@ -296,7 +296,7 @@ func (r *Ranch) Update(name, owner, state string, ud *common.UserData) error {
 		return &ResourceNotFound{name}
 	}
 	if owner != res.Owner {
-		return &OwnerNotMatch{owner: owner, request: res.Owner}
+		return &OwnerNotMatch{request: owner, owner: res.Owner}
 	}
 	if state != res.State {
 		return &StateNotMatch{res.State, state}
