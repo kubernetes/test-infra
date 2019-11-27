@@ -351,7 +351,7 @@ func (r *Repo) Am(path string) error {
 	}
 	output := string(b)
 	r.logger.WithError(err).Infof("Patch apply failed with output: %s", output)
-	if b, abortErr := r.gitCommand("am", "--abort").CombinedOutput(); err != nil {
+	if b, abortErr := r.gitCommand("am", "--abort").CombinedOutput(); abortErr != nil {
 		r.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(b))
 	}
 	applyMsg := "The copy of the patch that failed is found in: .git/rebase-apply/patch"
