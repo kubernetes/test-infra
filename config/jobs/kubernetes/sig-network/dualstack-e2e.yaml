@@ -156,7 +156,7 @@ periodics:
       - --acsengine-location=westus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://gist.githubusercontent.com/aramase/21c3bdb44509c0f70f71389903d49c67/raw/1a9957626edc2b5c7913c741b9487fde123d0570/dualstack-prow.json
-      - --acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.44.0/aks-engine-v0.44.0-linux-amd64.tar.gz
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
