@@ -91,13 +91,14 @@ type JobConfig struct {
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
-	Tide                 Tide                 `json:"tide,omitempty"`
-	Plank                Plank                `json:"plank,omitempty"`
-	Sinker               Sinker               `json:"sinker,omitempty"`
-	Deck                 Deck                 `json:"deck,omitempty"`
-	BranchProtection     BranchProtection     `json:"branch-protection,omitempty"`
-	Gerrit               Gerrit               `json:"gerrit,omitempty"`
-	GitHubReporter       GitHubReporter       `json:"github_reporter,omitempty"`
+	Tide             Tide             `json:"tide,omitempty"`
+	Plank            Plank            `json:"plank,omitempty"`
+	Sinker           Sinker           `json:"sinker,omitempty"`
+	Deck             Deck             `json:"deck,omitempty"`
+	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
+	Gerrit           Gerrit           `json:"gerrit,omitempty"`
+	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
+	// Deprecated: this option will be removed in May 2020.
 	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
 	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
