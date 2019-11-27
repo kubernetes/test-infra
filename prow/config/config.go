@@ -1081,7 +1081,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
-	if err := validatePodSpec(jobType, v.Spec); err != nil {
+	if err := validatePodSpec(jobType, v.Decorate, v.Spec); err != nil {
 		return err
 	}
 	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
@@ -1644,26 +1644,34 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 	return nil
 }
 
-func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec) error {
+func validatePodSpec(jobType prowapi.ProwJobType, decorated bool, spec *v1.PodSpec) error {
 	if spec == nil {
 		return nil
 	}
 
-	if len(spec.InitContainers) != 0 {
-		return errors.New("pod spec may not use init containers")
+	if len(spec.InitContainers) != 0 && decorated {
+		return errors.New("pod spec may not use init containers when decorate is true")
 	}
 
-	if n := len(spec.Containers); n != 1 {
-		return fmt.Errorf("pod spec must specify exactly 1 container, found: %d", n)
+	if n := len(spec.Containers); n != 1 && decorated {
+		return fmt.Errorf("pod spec must specify exactly 1 container when decorate is true, found: %d", n)
+	} else if n == 0 {
+		return fmt.Errorf("pod spec must specify at leaset 1 container, found: %d", n)
 	}
 
-	for _, env := range spec.Containers[0].Env {
-		for _, prowEnv := range downwardapi.EnvForType(jobType) {
-			if env.Name == prowEnv {
-				// TODO(fejta): consider allowing this
-				return fmt.Errorf("env %s is reserved", env.Name)
+	for _, container := range spec.Containers {
+		for _, env := range container.Env {
+			for _, prowEnv := range downwardapi.EnvForType(jobType) {
+				if env.Name == prowEnv {
+					// TODO(fejta): consider allowing this
+					return fmt.Errorf("env %s is reserved", env.Name)
+				}
 			}
 		}
+	}
+
+	if !decorated {
+		return nil
 	}
 
 	for _, mount := range spec.Containers[0].VolumeMounts {

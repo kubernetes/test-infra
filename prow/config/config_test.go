@@ -542,11 +542,12 @@ func TestValidatePodSpec(t *testing.T) {
 	postEnv := sets.NewString(downwardapi.EnvForType(prowapi.PostsubmitJob)...)
 	preEnv := sets.NewString(downwardapi.EnvForType(prowapi.PresubmitJob)...)
 	cases := []struct {
-		name    string
-		jobType prowapi.ProwJobType
-		spec    func(s *v1.PodSpec)
-		noSpec  bool
-		pass    bool
+		name     string
+		decorate bool
+		jobType  prowapi.ProwJobType
+		spec     func(s *v1.PodSpec)
+		noSpec   bool
+		pass     bool
 	}{
 		{
 			name:   "allow nil spec",
@@ -558,12 +559,23 @@ func TestValidatePodSpec(t *testing.T) {
 			pass: true,
 		},
 		{
-			name: "reject init containers",
+			name:     "reject init containers",
+			decorate: true,
 			spec: func(s *v1.PodSpec) {
 				s.InitContainers = []v1.Container{
 					{},
 				}
 			},
+		},
+		{
+			name:     "allow init containers if not decorated",
+			decorate: false,
+			spec: func(s *v1.PodSpec) {
+				s.InitContainers = []v1.Container{
+					{},
+				}
+			},
+			pass: true,
 		},
 		{
 			name: "reject 0 containers",
@@ -572,10 +584,19 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject 2 containers",
+			name:     "reject 2 containers",
+			decorate: true,
 			spec: func(s *v1.PodSpec) {
 				s.Containers = append(s.Containers, v1.Container{})
 			},
+		},
+		{
+			name:     "allow 2 containers if not decorated",
+			decorate: false,
+			spec: func(s *v1.PodSpec) {
+				s.Containers = append(s.Containers, v1.Container{})
+			},
+			pass: true,
 		},
 		{
 			name:    "reject reserved presubmit env",
@@ -620,7 +641,8 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject reserved mount name",
+			name:     "reject reserved mount name",
+			decorate: true,
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      decorate.VolumeMounts()[0],
@@ -629,7 +651,8 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject reserved mount path",
+			name:     "reject reserved mount path",
+			decorate: true,
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "fun",
@@ -638,7 +661,8 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject conflicting mount paths (decorate in user)",
+			name:     "reject conflicting mount paths (decorate in user)",
+			decorate: true,
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
@@ -647,7 +671,8 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject conflicting mount paths (user in decorate)",
+			name:     "reject conflicting mount paths (user in decorate)",
+			decorate: true,
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
@@ -656,7 +681,8 @@ func TestValidatePodSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "reject reserved volume",
+			name:     "reject reserved volume",
+			decorate: true,
 			spec: func(s *v1.PodSpec) {
 				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts()[0]})
 			},
@@ -681,7 +707,7 @@ func TestValidatePodSpec(t *testing.T) {
 			} else if tc.spec != nil {
 				tc.spec(current)
 			}
-			switch err := validatePodSpec(jt, current); {
+			switch err := validatePodSpec(jt, tc.decorate, current); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
