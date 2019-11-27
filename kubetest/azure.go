@@ -95,7 +95,7 @@ var (
 	aksAzureEnv            = flag.String("aksengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
-	aksCustomK8sComponents = flag.Bool("aksengine-custom-k8s-comopnents", false, "Set to True if you want to build individual components from a k8s branch and deploy them via aks-engine")
+	aksCustomK8sComponents = flag.Bool("aksengine-custom-k8s-components", false, "Set to True if you want to build individual components from a k8s branch and deploy them via aks-engine")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	// Azure File CSI Driver flag
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
@@ -384,7 +384,7 @@ func checkParams() error {
 		return fmt.Errorf("--aksengine-cnm cannot be true without --aksengine-ccm also being true")
 	}
 	if *aksHyperKube && *aksCustomK8sComponents {
-		return fmt.Errorf("--aksengine-custom-k8s-comopnents and --aksengine-hyperkube cannot be true at the same time. For k8s 1.17 and onward, use --aksengine-custom-k8s-comopnents. Otherwise, use --aksengine-hyperkube")
+		return fmt.Errorf("--aksengine-custom-k8s-components and --aksengine-hyperkube cannot be true at the same time. For k8s 1.17 and onward, use --aksengine-custom-k8s-components. Otherwise, use --aksengine-hyperkube")
 	}
 
 	return nil
@@ -766,6 +766,7 @@ func (c *Cluster) dockerLogin() error {
 
 func dockerPush(image string) error {
 	log.Printf("Pushing docker image %s", image)
+
 	cmd := exec.Command("docker", "push", image)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to push %s: %v", image, err)
@@ -780,7 +781,7 @@ func getDockerImage(imageName string) string {
 func (c *Cluster) buildAzureCloudComponents() error {
 	log.Println("Building cloud controller manager and cloud node manager.")
 
-	// Set environment variables for building cloud comopnents' images
+	// Set environment variables for building cloud components' images
 	if err := os.Setenv("IMAGE_REGISTRY", imageRegistry); err != nil {
 		return err
 	}
