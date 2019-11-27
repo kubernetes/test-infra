@@ -1408,8 +1408,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "gopkg.in/yaml.v2",
-        sum = "h1:ymVxjfMaHvXD8RqPRmzHHsB3VvucivSkIAvJFDI5O3c=",
-        version = "v2.2.5",
+        sum = "h1:VUgggvou5XRW9mHwD/yXxIYSMtY0zoKQf/v226p2nyo=",
+        version = "v2.2.7",
     )
     go_repository(
         name = "io_etcd_go_bbolt",
@@ -1726,8 +1726,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/gorilla/csrf",
-        sum = "h1:wua1OxOTarfqtUVfiSvzs2zTr3qV57cXVGclVETJXXc=",
-        version = "v1.6.1",
+        sum = "h1:QqQ/OWwuFp4jMKgBFAzJVW3FMULdyUW7JoM4pEWuqKg=",
+        version = "v1.6.2",
     )
     go_repository(
         name = "in_gopkg_yaml_v3",
