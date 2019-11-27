@@ -12,7 +12,7 @@ periodics:
     testgrid-tab-name: gce-private-cluster-correctness
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191126-9d3c810-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
       args:
       - --timeout=300
       - --bare
@@ -47,7 +47,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-pod
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191126-9d3c810-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -89,7 +89,7 @@ periodics:
 #    testgrid-tab-name: max-persistent-vol-per-node
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191126-9d3c810-master
+#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --repo=k8s.io/perf-tests=master
@@ -130,7 +130,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191126-9d3c810-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -169,7 +169,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191126-9d3c810-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: "calico"
