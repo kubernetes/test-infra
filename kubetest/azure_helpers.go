@@ -121,6 +121,7 @@ type KubernetesConfig struct {
 	ServiceCidr                      string            `json:"serviceCidr,omitempty"`
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	OutboundRuleIdleTimeoutInMinutes int32             `json:"outboundRuleIdleTimeoutInMinutes,omitempty"`
+	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
 }
 
 type OrchestratorProfile struct {
