@@ -212,11 +212,12 @@ func (bucket gcsBucket) listBuildIDs(root string) ([]int64, error) {
 			return ids, fmt.Errorf("failed to list GCS directories: %v", err)
 		}
 		for _, dir := range dirs {
-			i, err := strconv.ParseInt(path.Base(dir), 10, 64)
+			leaf := path.Base(dir)
+			i, err := strconv.ParseInt(leaf, 10, 64)
 			if err == nil {
 				ids = append(ids, i)
 			} else {
-				logrus.Warningf("unrecognized directory name (expected int64): %s", dir)
+				logrus.WithField("gcs-path", dir).Warningf("unrecognized directory name (expected int64): %s", leaf)
 			}
 		}
 	} else {
