@@ -85,7 +85,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-1.15
         command:
         - sh
         - -c
@@ -117,7 +117,7 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.12
+      base_ref: release-1.14
       path_alias: k8s.io/kubernetes
     - org: kubernetes
       repo: test-infra
@@ -129,7 +129,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-1.14
         command:
         - sh
         - -c
@@ -161,7 +161,7 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.12
+      base_ref: release-1.14
       path_alias: k8s.io/kubernetes
     - org: kubernetes
       repo: test-infra
@@ -173,7 +173,7 @@ presubmits:
     spec:
       containers:
       - name: pull-cri-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-1.14
         command:
         - sh
         - -c
