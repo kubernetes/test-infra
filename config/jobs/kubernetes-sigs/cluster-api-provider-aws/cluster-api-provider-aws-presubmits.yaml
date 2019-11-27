@@ -32,6 +32,10 @@ presubmits:
     decorate: true
     labels:
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
@@ -39,24 +43,14 @@ presubmits:
         command:
         - "runner.sh"
         - "./scripts/ci-integration.sh"
+        env:
+          - name: BOSKOS_HOST
+            value: "boskos.test-pods.svc.cluster.local"
+          - name: AWS_REGION
+            value: "us-west-2"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-      volumes:
-      - name: modules
-        hostPath:
-          path: /lib/modules
-          type: Directory
-      - name: cgroup
-        hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-integration
