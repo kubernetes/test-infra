@@ -3,13 +3,13 @@ test_groups:
 - name: osd-int-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2
 - name: osd-int-4.3
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.3
 - name: osd-upgrade-int-4.2-4.2
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.2
 - name: osd-upgrade-int-4.2-4.3
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.3
 - name: osd-upgrade-int-4.3-4.3
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.2-4.2
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-osde2e-master-e2e-int-4.3-4.3
 
 # OpenShift Dedicated staging
 - name: osd-stage-4.2
