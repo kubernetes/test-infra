@@ -110,12 +110,10 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 	}
 	log.Debugf("Found %d commits in PR", len(allCommits))
 
-	var invalidCommits []github.GitCommit
+	var invalidCommits []github.RepositoryCommit
 	for _, commit := range allCommits {
 		if closeIssueRegex.MatchString(commit.Commit.Message) || atMentionRegex.MatchString(commit.Commit.Message) {
-			c := commit.Commit
-			c.SHA = commit.SHA
-			invalidCommits = append(invalidCommits, c)
+			invalidCommits = append(invalidCommits, commit)
 		}
 	}
 
