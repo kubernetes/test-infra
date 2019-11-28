@@ -254,6 +254,12 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: e11d21
+      description: Categorizes issue or PR as related to a feature/enhancement marked for deprecation.
+      name: kind/deprecation
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: c7def8
       description: Categorizes issue or PR as related to design.
       name: kind/design
