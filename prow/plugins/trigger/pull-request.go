@@ -47,10 +47,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		return pr.PullRequest.Head.SHA, nil
 	}
 
-	presubmits, err := c.Config.GetPresubmits(c.GitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
-	if err != nil {
-		return fmt.Errorf("failed to get presubmits: %v", err)
-	}
+	presubmits := getPresubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if len(presubmits) == 0 {
 		return nil
 	}
