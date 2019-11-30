@@ -19,6 +19,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"regexp"
 	"testing"
@@ -1109,6 +1111,31 @@ func TestOptions(t *testing.T) {
 			},
 			expectedError: false,
 		},
+		{
+			name: "prow-yaml-path gets defaulted",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--plugin-config=prow/plugins/plugin.yaml",
+				"--job-config-path=config/jobs/org/job.yaml",
+				"--prow-yaml-repo-name=my/repo",
+			},
+			expectedOptions: &options{
+				configPath:       "prow/config.yaml",
+				pluginConfig:     "prow/plugins/plugin.yaml",
+				jobConfigPath:    "config/jobs/org/job.yaml",
+				prowYAMLRepoName: "my/repo",
+				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",
+				github:           defaultGitHubOptions,
+			},
+			expectedError: false,
+		},
+		{
+			name: "prow-yaml-path without prow-yaml-repo-name is invalid",
+			args: []string{
+				"--prow-yaml-path=my-file",
+			},
+			expectedError: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1178,5 +1205,55 @@ func TestValidateJobExtraRefs(t *testing.T) {
 					diff.ObjectGoPrintDiff(tc.expected, err))
 			}
 		})
+	}
+}
+
+func TestValidateInRepoConfig(t *testing.T) {
+	testCases := []struct {
+		name         string
+		prowYAMLData []byte
+		expectedErr  string
+	}{
+		{
+			name:         "Valid prowYAML, no err",
+			prowYAMLData: []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+		},
+		{
+			name:         "Invalid prowYAML, err",
+			prowYAMLData: []byte(`presubmits: [{"name": "hans"}]`),
+			expectedErr:  "failed to validate .prow.yaml: invalid presubmit job hans: kubernetes jobs require a spec",
+		},
+	}
+
+	for _, tc := range testCases {
+		tempFile, err := ioutil.TempFile("/tmp", "prow-test")
+		if err != nil {
+			t.Fatalf("failed to get tempfile: %v", err)
+		}
+		defer func() {
+			if err := tempFile.Close(); err != nil {
+				t.Errorf("failed to close tempFile: %v", err)
+			}
+			if err := os.Remove(tempFile.Name()); err != nil {
+				t.Errorf("failed to remove tempfile: %v", err)
+			}
+		}()
+
+		if _, err := tempFile.Write(tc.prowYAMLData); err != nil {
+			t.Fatalf("failed to write to tempfile: %v", err)
+		}
+
+		cfg := &config.Config{
+			ProwConfig: config.ProwConfig{PodNamespace: "my-ns"},
+		}
+		err = validateInRepoConfig(cfg, tempFile.Name(), "my/repo")
+		var errString string
+		if err != nil {
+			errString = err.Error()
+		}
+
+		if errString != tc.expectedErr {
+			t.Errorf("expected error %q does not match actual error %q", tc.expectedErr, errString)
+		}
 	}
 }

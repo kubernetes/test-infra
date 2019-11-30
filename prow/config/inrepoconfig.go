@@ -99,7 +99,7 @@ func defaultProwYAMLGetter(
 		return nil, fmt.Errorf("failed to unmarshal %q: %v", inRepoConfigFileName, err)
 	}
 
-	if err := defaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
+	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
 		return nil, err
 	}
 
@@ -107,7 +107,7 @@ func defaultProwYAMLGetter(
 	return prowYAML, nil
 }
 
-func defaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error {
+func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error {
 	if err := defaultPresubmits(p.Presubmits, c, identifier); err != nil {
 		return err
 	}
