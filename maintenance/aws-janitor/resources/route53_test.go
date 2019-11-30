@@ -29,24 +29,24 @@ func TestManagedNames(t *testing.T) {
 		expected bool
 	}{
 		{
-			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("api.e2e-61246-dba53.test-cncf-aws.k8s.io.")},
+			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("api.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.")},
 			expected: true,
 		},
 		{
-			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("api.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.")},
+			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("api.internal.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.")},
 			expected: true,
 		},
 		{
-			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("etcd-b.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.")},
+			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("etcd-b.internal.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.")},
 			expected: true,
 		},
 		{
-			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("etcd-events-b.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.")},
+			rrs:      &route53.ResourceRecordSet{Type: aws.String("A"), Name: aws.String("etcd-events-b.internal.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.")},
 			expected: true,
 		},
 		{
 			// Ignores non-A records
-			rrs:      &route53.ResourceRecordSet{Type: aws.String("CNAME"), Name: aws.String("api.e2e-61246-dba53.test-cncf-aws.k8s.io.")},
+			rrs:      &route53.ResourceRecordSet{Type: aws.String("CNAME"), Name: aws.String("api.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.")},
 			expected: false,
 		},
 		{
