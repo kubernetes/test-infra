@@ -275,7 +275,7 @@ periodics:
       - --deployment=acsengine
       - --build=bazel
       - --provider=skeleton
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=1
       - --test-ccm=True
       - --acsengine-agentpoolcount=2
       - --acsengine-admin-username=azureuser
