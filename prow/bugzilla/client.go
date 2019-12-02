@@ -272,6 +272,10 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		return false, fmt.Errorf("failed to unmarshal JSONRPC response: %v", err)
 	}
 	if response.Error != nil {
+		if response.Error.Code == 100500 && strings.Contains(response.Error.Message, `duplicate key value violates unique constraint "ext_bz_bug_map_bug_id_idx"`) {
+			// adding the external bug failed since it is already added, this is not an error
+			return false, nil
+		}
 		return false, fmt.Errorf("JSONRPC error %d: %v", response.Error.Code, response.Error.Message)
 	}
 	if response.ID != rpcPayload.ID {
