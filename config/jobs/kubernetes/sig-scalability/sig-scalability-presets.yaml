@@ -81,6 +81,11 @@ presets:
     value: "false"
   - name: HOLLOW_PROXY_TEST_ARGS
     value: "--use-real-proxier=false"
+  - name: HEAPSTER_KUBELET_TEST_ARGS
+    value: "--register-with-taints=monitoring=:NoSchedule"
+  - name: HEAPSTER_MACHINE_TYPE
+    value: "n1-standard-8"
+
 
 ###### Scalability Envs
 ### Common env variables for all scalability-related suites.
