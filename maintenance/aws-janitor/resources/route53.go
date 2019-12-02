@@ -44,17 +44,17 @@ func zoneIsManaged(z *route53.HostedZone) bool {
 }
 
 var managedNameRegexes = []*regexp.Regexp{
-	// e.g. api.e2e-61246-dba53.test-cncf-aws.k8s.io.
-	regexp.MustCompile(`^api\.e2e-[0-9]+-`),
+	// e.g. api.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^api\.e2e-[0-9a-z]{1,10}-[0-9a-f]{5}\.`),
 
-	// e.g. api.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.
-	regexp.MustCompile(`^api\.internal\.e2e-[0-9]+-`),
+	// e.g. api.internal.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^api\.internal\.e2e-[0-9a-z]{1,10}-[0-9a-f]{5}\.`),
 
-	// e.g. etcd-b.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.
-	regexp.MustCompile(`^etcd-[a-z]\.internal\.e2e-[0-9]+-`),
+	// e.g. etcd-b.internal.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^etcd-[a-z]\.internal\.e2e-[0-9a-z]{1,10}-[0-9a-f]{5}\.`),
 
-	// e.g. etcd-events-b.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.
-	regexp.MustCompile(`^etcd-events-[a-z]\.internal\.e2e-[0-9]+-`),
+	// e.g. etcd-events-b.internal.e2e-71149fffac-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^etcd-events-[a-z]\.internal\.e2e-[0-9a-z]{1,10}-[0-9a-f]{5}\.`),
 }
 
 // resourceRecordSetIsManaged checks if the resource record should be managed (and thus deleted) by us
