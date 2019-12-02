@@ -35,7 +35,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         command:
         - "./test-e2e/e2e-entrypoint-from-container.sh"
         env:
@@ -61,7 +61,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         command:
         - "make"
         args:
