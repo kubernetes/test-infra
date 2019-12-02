@@ -341,7 +341,7 @@ func (c *Controller) Sync() error {
 		tideMetrics.syncHeartbeat.WithLabelValues("sync").Inc()
 	}()
 	defer c.changedFiles.prune()
-	c.config().BranchProtectionWarnings(c.logger)
+	c.config().BranchProtectionWarnings(c.logger, c.config().PresubmitsStatic)
 
 	c.logger.Debug("Building tide pool.")
 	prs := make(map[string]PullRequest)

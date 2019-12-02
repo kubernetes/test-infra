@@ -254,7 +254,6 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies {
-				logrus.Warnf("%s/%s=%s has required jobs but has protect: false", org, repo, branch)
 				return nil, nil
 			}
 			return nil, fmt.Errorf("required prow jobs require branch protection")
@@ -288,11 +287,16 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 	return &policy, nil
 }
 
-func isUnprotected(policy Policy, allowDisabledPolicies bool) bool {
-	if allowDisabledPolicies && policy.Protect != nil && !*policy.Protect {
-		policy.Protect = nil
-		if policy.defined() {
+func isUnprotected(policy Policy, allowDisabledPolicies bool, hasRequiredContexts bool, allowDisabledJobPolicies bool) bool {
+	if policy.Protect != nil && !*policy.Protect {
+		if hasRequiredContexts && allowDisabledJobPolicies {
 			return true
+		}
+		if allowDisabledPolicies {
+			policy.Protect = nil
+			if policy.defined() {
+				return true
+			}
 		}
 	}
 	return false
@@ -303,7 +307,7 @@ func (c *Config) reposWithDisabledPolicy() []string {
 	for orgName, org := range c.BranchProtection.Orgs {
 		for repoName := range org.Repos {
 			repoPolicy := c.BranchProtection.GetOrg(orgName).GetRepo(repoName)
-			if isUnprotected(repoPolicy.Policy, c.BranchProtection.AllowDisabledPolicies) {
+			if isUnprotected(repoPolicy.Policy, c.BranchProtection.AllowDisabledPolicies, false, false) {
 				repoWarns.Insert(fmt.Sprintf("%s/%s", orgName, repoName))
 			}
 		}
@@ -311,7 +315,11 @@ func (c *Config) reposWithDisabledPolicy() []string {
 	return repoWarns.List()
 }
 
-func (c *Config) unprotectedBranches() []string {
+// unprotectedBranches returns the set of names of branches
+// which have protection flag set to false, but have either:
+// a. a protection policy, or
+// b. a required context
+func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string {
 	branchWarns := sets.NewString()
 	for orgName, org := range c.BranchProtection.Orgs {
 		for repoName, repo := range org.Repos {
@@ -322,10 +330,11 @@ func (c *Config) unprotectedBranches() []string {
 					continue
 				}
 				policy, err := c.GetPolicy(orgName, repoName, branchName, *b, []Presubmit{})
-				if err != nil {
+				if err != nil || policy == nil {
 					continue
 				}
-				if policy != nil && isUnprotected(*policy, c.BranchProtection.AllowDisabledPolicies) {
+				requiredContexts, _, _ := BranchRequirements(branchName, presubmits[orgName+"/"+repoName])
+				if isUnprotected(*policy, c.BranchProtection.AllowDisabledPolicies, len(requiredContexts) > 0, c.BranchProtection.AllowDisabledJobPolicies) {
 					branches.Insert(branchName)
 				}
 			}
@@ -341,12 +350,12 @@ func (c *Config) unprotectedBranches() []string {
 // - The list of repos with unprotected branches,
 // - The list of repos with disabled policies, i.e. Protect set to false,
 //     because any branches not explicitly specified in the configuration will be unprotected.
-func (c *Config) BranchProtectionWarnings(logger *logrus.Entry) {
+func (c *Config) BranchProtectionWarnings(logger *logrus.Entry, presubmits map[string][]Presubmit) {
 	if warnings := c.reposWithDisabledPolicy(); len(warnings) > 0 {
 		logger.Warnf("The following repos define a policy, but have protect: false: %s", strings.Join(warnings, ","))
 	}
-	if warnings := c.unprotectedBranches(); len(warnings) > 0 {
-		logger.Warnf("The following repos define a policy, but have one or more branches with protect: false: %s", strings.Join(warnings, ","))
+	if warnings := c.unprotectedBranches(presubmits); len(warnings) > 0 {
+		logger.Warnf("The following repos define a policy or require context(s), but have one or more branches with protect: false: %s", strings.Join(warnings, ","))
 	}
 }
 
