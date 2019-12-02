@@ -79,7 +79,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         command:
         - hack/check-format.sh
     annotations:
@@ -95,7 +95,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         command:
         - hack/check-lint.sh
     annotations:
@@ -111,7 +111,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         command:
         - hack/check-vet.sh
     annotations:
@@ -164,7 +164,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         command:
         - hack/verify-crds.sh
     annotations:
@@ -182,7 +182,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         resources:
           requests:
             cpu: "500m"
@@ -209,7 +209,7 @@ presubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         resources:
           requests:
             cpu: "1000m"
@@ -243,7 +243,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         resources:
           requests:
             cpu: "1000m"
@@ -274,7 +274,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         resources:
           requests:
             cpu: "1000m"

@@ -8,7 +8,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -59,7 +59,7 @@ presubmits:
       preset-cloudprovider-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -87,7 +87,7 @@ presubmits:
       preset-cloudprovider-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -116,7 +116,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
