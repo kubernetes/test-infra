@@ -22,9 +22,9 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-	"k8s.io/test-infra/maintenance/aws-janitor/account"
-	"k8s.io/test-infra/maintenance/aws-janitor/regions"
-	"k8s.io/test-infra/maintenance/aws-janitor/resources"
+	"k8s.io/test-infra/boskos/aws-janitor/account"
+	"k8s.io/test-infra/boskos/aws-janitor/regions"
+	"k8s.io/test-infra/boskos/aws-janitor/resources"
 )
 
 var (

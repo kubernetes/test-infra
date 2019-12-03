@@ -2,14 +2,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["s3.go"],
-    importpath = "k8s.io/test-infra/maintenance/aws-janitor/s3",
+    srcs = ["account.go"],
+    importpath = "k8s.io/test-infra/boskos/aws-janitor/account",
     visibility = ["//visibility:public"],
     deps = [
-        "//maintenance/aws-janitor/regions:go_default_library",
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
-        "@com_github_aws_aws_sdk_go//service/s3:go_default_library",
+        "@com_github_aws_aws_sdk_go//service/iam:go_default_library",
     ],
 )
 
