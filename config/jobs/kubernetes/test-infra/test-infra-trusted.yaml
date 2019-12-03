@@ -1230,7 +1230,7 @@ periodics:
         secretName: k8s-artifacts-prod-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
-  # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
+# TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
 - interval: 1h
   cluster: test-infra-trusted
   max_concurrency: 1
