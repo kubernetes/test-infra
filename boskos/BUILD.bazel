@@ -18,8 +18,8 @@ prow_image(
 prow_push(
     name = "push",
     images = tags(targets = {
-        "{STABLE_PROW_REPO}/boskos/aws-janitor": "//maintenance/aws-janitor:image",
-        "{STABLE_PROW_REPO}/boskos/aws-janitor-boskos": "//maintenance/aws-janitor/cmd/aws-janitor-boskos:image",
+        "{STABLE_PROW_REPO}/boskos/aws-janitor": "//boskos/aws-janitor:image",
+        "{STABLE_PROW_REPO}/boskos/aws-janitor-boskos": "//boskos/aws-janitor/cmd/aws-janitor-boskos:image",
         "{STABLE_PROW_REPO}/boskos/boskos": "//boskos:image",
         "{STABLE_PROW_REPO}/boskos/fake-mason": "//boskos/mason/fake-mason:image",
         "{STABLE_PROW_REPO}/boskos/cleaner": "//boskos/cleaner/cmd:image",
@@ -72,6 +72,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//boskos/aws-janitor:all-srcs",
         "//boskos/cleaner:all-srcs",
         "//boskos/client:all-srcs",
         "//boskos/cmd/cli:all-srcs",

@@ -27,7 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"k8s.io/klog"
 
-	s3path "k8s.io/test-infra/maintenance/aws-janitor/s3"
+	s3path "k8s.io/test-infra/boskos/aws-janitor/s3"
 )
 
 // Set keeps track of the first time we saw a particular

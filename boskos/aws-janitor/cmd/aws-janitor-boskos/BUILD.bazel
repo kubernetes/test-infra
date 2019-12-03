@@ -17,13 +17,13 @@ prow_image(
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/maintenance/aws-janitor/cmd/aws-janitor-boskos",
+    importpath = "k8s.io/test-infra/boskos/aws-janitor/cmd/aws-janitor-boskos",
     visibility = ["//visibility:private"],
     deps = [
+        "//boskos/aws-janitor/resources:go_default_library",
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
         "//boskos/common/aws:go_default_library",
-        "//maintenance/aws-janitor/resources:go_default_library",
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",

@@ -177,7 +177,7 @@ postsubmits:
           secretName: deployer-service-account
   - name: post-test-infra-push-boskos
     cluster: test-infra-trusted
-    run_if_changed: '^(boskos\/|maintenance\/aws-janitor)'
+    run_if_changed: '^boskos/'
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "boskos"

@@ -25,8 +25,8 @@ import (
 	"github.com/pkg/errors"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog"
-	"k8s.io/test-infra/maintenance/aws-janitor/account"
-	"k8s.io/test-infra/maintenance/aws-janitor/regions"
+	"k8s.io/test-infra/boskos/aws-janitor/account"
+	"k8s.io/test-infra/boskos/aws-janitor/regions"
 )
 
 // CleanAll cleans all of the resources for all of the regions visible to
