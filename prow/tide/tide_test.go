@@ -512,6 +512,8 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
+	err error
+
 	prs       []PullRequest
 	refs      map[string]string
 	merged    int
@@ -524,7 +526,7 @@ type fgc struct {
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
-	return f.refs[o+"/"+r+" "+ref], nil
+	return f.refs[o+"/"+r+" "+ref], f.err
 }
 
 func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
