@@ -31,6 +31,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -95,7 +96,7 @@ var (
 	aksAzureEnv            = flag.String("aksengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
 	aksIdentitySystem      = flag.String("aksengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
 	aksCustomCloudURL      = flag.String("aksengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
-	aksCustomK8sComponents = flag.Bool("aksengine-custom-k8s-components", false, "Set to True if you want to build individual components from a k8s branch and deploy them via aks-engine")
+	aksDeployCustomK8s     = flag.Bool("aksengine-deploy-custom-k8s", false, "Set to True if you want to deploy custom-built k8s via aks-engine")
 	testCcm                = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	// Azure File CSI Driver flag
 	testAzureFileCSIDriver = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
@@ -124,6 +125,16 @@ const (
 	kubeControllerManagerImageName = "kube-controller-manager-amd64"
 	kubeSchedulerImageName         = "kube-scheduler-amd64"
 	kubeProxyImageName             = "kube-proxy-amd64"
+)
+
+type aksDeploymentMethod int
+
+const (
+	// https://github.com/Azure/aks-engine/blob/master/docs/topics/kubernetes-developers.md#kubernetes-116-or-earlier
+	customHyperkube aksDeploymentMethod = iota
+	// https://github.com/Azure/aks-engine/blob/master/docs/topics/kubernetes-developers.md#kubernetes-117
+	customK8sComponents
+	normal
 )
 
 type Creds struct {
@@ -172,6 +183,7 @@ type Cluster struct {
 	k8sVersion                       string
 	networkPlugin                    string
 	azureClient                      *AzureClient
+	aksDeploymentMethod              aksDeploymentMethod
 }
 
 // IsAzureStackCloud return true if the cloud is AzureStack
@@ -383,9 +395,6 @@ func checkParams() error {
 	if *aksCnm && !*aksCcm {
 		return fmt.Errorf("--aksengine-cnm cannot be true without --aksengine-ccm also being true")
 	}
-	if *aksHyperKube && *aksCustomK8sComponents {
-		return fmt.Errorf("--aksengine-custom-k8s-components and --aksengine-hyperkube cannot be true at the same time. For k8s 1.17 and onward, use --aksengine-custom-k8s-components. Otherwise, use --aksengine-hyperkube")
-	}
 
 	return nil
 }
@@ -430,6 +439,7 @@ func newAksEngine() (*Cluster, error) {
 		customKubeSchedulerImage:         "",
 		customKubeBinaryURL:              "",
 		aksEngineBinaryPath:              "aks-engine", // use the one in path by default
+		aksDeploymentMethod:              getAKSDeploymentMethod(*acsOrchestratorRelease),
 	}
 	c.getAzCredentials()
 	err = c.SetCustomCloudProfileEnvironment()
@@ -451,6 +461,34 @@ func newAksEngine() (*Cluster, error) {
 	}
 
 	return &c, nil
+}
+
+func getAKSDeploymentMethod(k8sRelease string) aksDeploymentMethod {
+	if *aksHyperKube {
+		return customHyperkube
+	}
+
+	if !*aksDeployCustomK8s {
+		return normal
+	}
+
+	// k8sRelease should be in the format of X.XX
+	s := strings.Split(k8sRelease, ".")
+	if len(s) != 2 {
+		return normal
+	}
+
+	minor, err := strconv.Atoi(s[1])
+	if err != nil {
+		return normal
+	}
+
+	// Deploy custom-built individual k8s components because
+	// there is no hyperkube support in aks-engine for 1.17+
+	if minor >= 17 {
+		return customK8sComponents
+	}
+	return customHyperkube
 }
 
 func (c *Cluster) populateApiModelTemplate() error {
@@ -566,24 +604,25 @@ func (c *Cluster) populateApiModelTemplate() error {
 	}
 
 	// Populate PrivateAzureRegistryServer field if we are using ACR and custom-built k8s components
-	if strings.Contains(imageRegistry, "azurecr") && (*aksCustomK8sComponents || *aksHyperKube) {
+	if strings.Contains(imageRegistry, "azurecr") && c.aksDeploymentMethod != normal {
 		v.Properties.OrchestratorProfile.KubernetesConfig.PrivateAzureRegistryServer = imageRegistry
 	}
 
-	if *aksCustomK8sComponents { // k8s 1.17+
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeAPIServerImage = c.customKubeAPIServerImage
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeControllerManagerImage = c.customKubeControllerManagerImage
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeProxyImage = c.customKubeProxyImage
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeSchedulerImage = c.customKubeSchedulerImage
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeBinaryURL = c.customKubeBinaryURL
-		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = ""
-	} else if *aksHyperKube { // k8s 1.16 or earlier
+	switch c.aksDeploymentMethod {
+	case customHyperkube:
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeAPIServerImage = ""
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeControllerManagerImage = ""
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeProxyImage = ""
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeSchedulerImage = ""
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeBinaryURL = ""
 		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = c.customHyperkubeImage
+	case customK8sComponents:
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeAPIServerImage = c.customKubeAPIServerImage
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeControllerManagerImage = c.customKubeControllerManagerImage
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeProxyImage = c.customKubeProxyImage
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeSchedulerImage = c.customKubeSchedulerImage
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomKubeBinaryURL = c.customKubeBinaryURL
+		v.Properties.OrchestratorProfile.KubernetesConfig.CustomHyperkubeImage = ""
 	}
 
 	if c.isAzureStackCloud() {
@@ -944,7 +983,7 @@ func (c *Cluster) Up() error {
 			return fmt.Errorf("error building Azure cloud components: %v", err)
 		}
 	}
-	if *aksHyperKube == true {
+	if *aksHyperKube == true || c.aksDeploymentMethod == customHyperkube {
 		err = c.buildHyperKube()
 		if err != nil {
 			return fmt.Errorf("error building hyperkube %v", err)
@@ -991,7 +1030,7 @@ func (c *Cluster) Up() error {
 }
 
 func (c *Cluster) BuildK8s(b buildStrategy) error {
-	if !*aksCustomK8sComponents {
+	if c.aksDeploymentMethod != customK8sComponents {
 		return b.Build()
 	}
 
