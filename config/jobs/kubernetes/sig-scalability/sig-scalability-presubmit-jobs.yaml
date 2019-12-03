@@ -152,6 +152,32 @@ presubmits:
           requests:
             memory: "6Gi"
 
+  - name: pull-kubernetes-e2e-scheduler-performance
+    always_run: true
+    max_concurrency: 12
+    decorate: true
+    annotations:
+      testgrid-create-test-group: "true"
+    branches:
+    - master
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 1h55m
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191127-ee0721a-master
+        command:
+        - ./hack/jenkins/benchmark-dockerized.sh
+        args:
+        - ./test/integration/scheduler_perf
+        env:
+        - name: KUBE_TIMEOUT
+          value: --timeout=1h50m
+
   - name: pull-kubernetes-kubemark-e2e-gce-big
     always_run: true
     skip_report: false

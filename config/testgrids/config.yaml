@@ -759,6 +759,9 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-storage-disruptive
     test_group_name: pull-kubernetes-e2e-gce-storage-disruptive
     base_options: width=10
+  - name: pull-kubernetes-e2e-scheduler-performance
+    test_group_name: pull-kubernetes-e2e-scheduler-performance
+    base_options: width=10
 
 - name: presubmits-cloud-provider-vsphere-blocking
 - name: vmware-presubmits-cloud-provider-vsphere
@@ -776,6 +779,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-large-performance
     test_group_name: pull-kubernetes-e2e-gce-large-performance
+    base_options: width=10
+  - name: pull-kubernetes-e2e-scheduler-performance
+    test_group_name: pull-kubernetes-e2e-scheduler-performance
     base_options: width=10
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
