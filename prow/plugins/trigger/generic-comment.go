@@ -52,12 +52,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	}
 
 	refGetter := config.NewRefGetterForGitHubPullRequest(c.GitHubClient, org, repo, number)
-
-	presubmits, err := c.Config.GetPresubmits(c.GitClient, org+"/"+repo, refGetter.BaseSHA, refGetter.HeadSHA)
-	if err != nil {
-		return fmt.Errorf("failed to get presubmits: %v", err)
-	}
-
+	presubmits := getPresubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, refGetter.BaseSHA, refGetter.HeadSHA)
 	// Skip comments not germane to this plugin
 	if !pjutil.RetestRe.MatchString(gc.Body) && !pjutil.OkToTestRe.MatchString(gc.Body) && !pjutil.TestAllRe.MatchString(gc.Body) {
 		matched := false

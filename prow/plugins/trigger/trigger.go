@@ -263,3 +263,15 @@ func skipRequested(c Client, pr *github.PullRequest, skippedJobs []config.Presub
 	}
 	return errorutil.NewAggregate(errors...)
 }
+
+func getPresubmits(log *logrus.Entry, gc *git.Client, cfg *config.Config, orgRepo string, baseSHAGetter, headSHAGetter config.RefGetter) []config.Presubmit {
+
+	presubmits, err := cfg.GetPresubmits(gc, orgRepo, baseSHAGetter, headSHAGetter)
+	if err != nil {
+		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
+		// inrepoconfig. Tide will still respect errors here and not merge.
+		log.WithError(err).Debug("Failed to get presubmits")
+		presubmits = cfg.PresubmitsStatic[orgRepo]
+	}
+	return presubmits
+}
