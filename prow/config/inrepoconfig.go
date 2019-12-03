@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
 	"sigs.k8s.io/yaml"
 )
 
@@ -47,7 +46,12 @@ func defaultProwYAMLGetter(
 		return nil, errors.New("gitClient is nil")
 	}
 
-	repo, err := gc.Clone(identifier)
+	identifierSlashSplit := strings.Split(identifier, "/")
+	if len(identifierSlashSplit) != 2 {
+		return nil, fmt.Errorf("didn't get two but %d results when splitting repo identifier %q", len(identifierSlashSplit), identifier)
+	}
+	organization, repository := identifierSlashSplit[0], identifierSlashSplit[1]
+	repo, err := gc.Clone(organization, repository)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone repo for %q: %v", identifier, err)
 	}
@@ -67,15 +71,8 @@ func defaultProwYAMLGetter(
 		return nil, err
 	}
 
-	var mergeMethod github.PullRequestMergeType
-	identifierSlashSplit := strings.Split(identifier, "/")
-	if len(identifierSlashSplit) == 2 {
-		mergeMethod = c.Tide.MergeMethod(identifierSlashSplit[0], identifierSlashSplit[1])
-		log.Debugf("Using merge strategy %q.", mergeMethod)
-	} else {
-		return nil, fmt.Errorf("didn't get two but %d results when splitting repo identifier %q", len(identifierSlashSplit), identifier)
-	}
-
+	mergeMethod := c.Tide.MergeMethod(organization, repository)
+	log.Debugf("Using merge strategy %q.", mergeMethod)
 	if err := repo.MergeAndCheckout(baseSHA, mergeMethod, headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to merge: %v", err)
 	}

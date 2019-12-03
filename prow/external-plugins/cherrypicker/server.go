@@ -358,7 +358,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.Clone(org + "/" + repo)
+	r, err := s.gc.Clone(org, repo)
 	if err != nil {
 		return err
 	}
