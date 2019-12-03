@@ -51,6 +51,56 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-e2e-gce-storage-snapshot
+    always_run: false
+    optional: true
+    # All the files owned by sig-storage. Keep in sync across
+    # all sig-storage-jobs
+    #
+    # pkg/controller/volume
+    # pkg/kubelet/volumemanager
+    # pkg/volume
+    # pkg/util/mount
+    # test/e2e/storage
+    # test/e2e/testing-manifests/storage-csi
+    run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=125
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --runtime-config=batch/v2alpha1=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
+        - --test_args=--ginkgo.focus=\[sig-storage\].\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=80m
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191108-9467d02-master
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-e2e-gce-storage-slow-rbe
     always_run: false
     optional: true
@@ -338,6 +388,40 @@ periodics:
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      resources:
+        requests:
+          memory: "6Gi"
+  annotations:
+    testgrid-num-columns-recent: '20'
+- interval: 24h
+  name: ci-kubernetes-e2e-snapshot
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-pull-kubernetes-e2e: "true"
+    preset-pull-kubernetes-e2e-gce: "true"
+  spec:
+    containers:
+    - args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=$(PULL_REFS)
+      - --repo=k8s.io/release
+      - --upload=gs://kubernetes-jenkins/pr-logs
+      - --timeout=150
+      - --scenario=kubernetes_e2e
+      - --
+      - --build=bazel
+      - --cluster=
+      - --extract=local
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --runtime-config=batch/v2alpha1=true
+      - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-snapshot
+      - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191108-9467d02-master
       resources:
         requests:
           memory: "6Gi"
