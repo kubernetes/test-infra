@@ -1267,12 +1267,17 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 		}
 	}
 
+	// filtered PRs contains all PRs for which we were able to get the presubmits
+	var filteredPRs []PullRequest
+
 	for _, pr := range sp.prs {
+		log := c.logger.WithField("base-sha", sp.sha).WithFields(pr.logFields())
 		presubmitsForPull, err := c.config().GetPresubmits(c.gc, sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(string(pr.HeadRefOID)))
 		if err != nil {
-			return nil, fmt.Errorf("failed to get presubmits for PR %d: %v", int(pr.Number), err)
+			c.logger.WithError(err).Debug("Failed to get presubmits for PR, excluding from subpool")
+			continue
 		}
-		log := c.logger.WithFields(logrus.Fields{"repo": sp.repo, "org": sp.org, "base-sha": sp.sha, "base-branch": sp.branch, "pr": int(pr.Number)})
+		filteredPRs = append(filteredPRs, pr)
 		log.Debugf("Found %d possible presubmits", len(presubmitsForPull))
 
 		for _, ps := range presubmitsForPull {
@@ -1292,6 +1297,8 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 			record(int(pr.Number), ps)
 		}
 	}
+
+	sp.prs = filteredPRs
 	return presubmits, nil
 }
 

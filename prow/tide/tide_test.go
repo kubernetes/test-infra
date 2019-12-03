@@ -2429,6 +2429,27 @@ func TestPresubmitsByPull(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "broken inrepoconfig doesn't break the whole subpool",
+			presubmits: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "always"},
+			}},
+			prowYAMLGetter: func(_ *config.Config, _ *git.Client, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+				if len(headRefs) == 1 && headRefs[0] == "1" {
+					return nil, errors.New("you shall not get jobs")
+				}
+				return &config.ProwYAML{}, nil
+			},
+			prs: []PullRequest{
+				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{
+				100: {
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "always"}},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
