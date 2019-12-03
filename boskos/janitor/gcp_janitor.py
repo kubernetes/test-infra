@@ -164,7 +164,7 @@ def collect(project, age, resource, filt, clear_all):
     cmd.extend([
         'list',
         '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
-        '--filter="%s"' % filt,
+        '--filter=%s' % filt,
         '--project=%s' % project])
     log('%r' % cmd)
 
@@ -289,7 +289,7 @@ def clean_gke_cluster(project, age, filt):
         cmd = [
             'gcloud', 'container', '-q', 'clusters', 'list',
             '--project=%s' % project,
-            '--filter="%s"' % filt,
+            '--filter=%s' % filt,
             '--format=json(name,createTime,zone)'
         ]
         log('running %s' % cmd)
