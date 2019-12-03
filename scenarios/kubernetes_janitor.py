@@ -72,7 +72,7 @@ def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
     if VERBOSE:
         cmd.append('--verbose')
     if filt:
-        cmd.append('--filter="%s"' % filt)
+        cmd.append('--filter=%s' % filt)
 
     try:
         check(*cmd)
