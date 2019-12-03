@@ -1223,30 +1223,39 @@ func TestValidateInRepoConfig(t *testing.T) {
 			prowYAMLData: []byte(`presubmits: [{"name": "hans"}]`),
 			expectedErr:  "failed to validate .prow.yaml: invalid presubmit job hans: kubernetes jobs require a spec",
 		},
+		{
+			name: "Absent prowYAML, no err",
+		},
 	}
 
 	for _, tc := range testCases {
-		tempFile, err := ioutil.TempFile("/tmp", "prow-test")
-		if err != nil {
-			t.Fatalf("failed to get tempfile: %v", err)
-		}
-		defer func() {
-			if err := tempFile.Close(); err != nil {
-				t.Errorf("failed to close tempFile: %v", err)
-			}
-			if err := os.Remove(tempFile.Name()); err != nil {
-				t.Errorf("failed to remove tempfile: %v", err)
-			}
-		}()
+		prowYAMLFileName := "/this-must-not-exist"
 
-		if _, err := tempFile.Write(tc.prowYAMLData); err != nil {
-			t.Fatalf("failed to write to tempfile: %v", err)
+		if tc.prowYAMLData != nil {
+			tempFile, err := ioutil.TempFile("/tmp", "prow-test")
+			if err != nil {
+				t.Fatalf("failed to get tempfile: %v", err)
+			}
+			defer func() {
+				if err := tempFile.Close(); err != nil {
+					t.Errorf("failed to close tempFile: %v", err)
+				}
+				if err := os.Remove(tempFile.Name()); err != nil {
+					t.Errorf("failed to remove tempfile: %v", err)
+				}
+			}()
+
+			if _, err := tempFile.Write(tc.prowYAMLData); err != nil {
+				t.Fatalf("failed to write to tempfile: %v", err)
+			}
+
+			prowYAMLFileName = tempFile.Name()
 		}
 
 		cfg := &config.Config{
 			ProwConfig: config.ProwConfig{PodNamespace: "my-ns"},
 		}
-		err = validateInRepoConfig(cfg, tempFile.Name(), "my/repo")
+		err := validateInRepoConfig(cfg, prowYAMLFileName, "my/repo")
 		var errString string
 		if err != nil {
 			errString = err.Error()

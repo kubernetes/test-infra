@@ -995,7 +995,10 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) error {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("failed to read file %q: %v", filePath, err)
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to read file %q: %v", filePath, err)
+		}
+		return nil
 	}
 
 	prowYAML := &config.ProwYAML{}
