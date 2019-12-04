@@ -2907,6 +2907,17 @@ func TestConfigureRepos(t *testing.T) {
 			repos:         []github.FullRepo{{Repo: github.Repo{Name: "CAMELCASE", Description: newDescription}}},
 			expectedRepos: []github.Repo{{Name: "CamelCase", Description: newDescription}},
 		},
+		{
+			description: "avoid creating archived repo",
+			orgConfig: org.Config{
+				Repos: map[string]org.Repo{
+					oldName: {Archived: &yes},
+				},
+			},
+			repos:         []github.FullRepo{},
+			expectError:   true,
+			expectedRepos: []github.Repo{},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
