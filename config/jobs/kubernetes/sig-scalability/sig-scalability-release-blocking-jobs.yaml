@@ -86,6 +86,7 @@ periodics:
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/density/5000_nodes/override.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
