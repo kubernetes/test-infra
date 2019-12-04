@@ -20,7 +20,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto

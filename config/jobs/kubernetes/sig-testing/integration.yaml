@@ -12,7 +12,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20191115-95b1cd9
+      - image: gcr.io/k8s-testimages/bootstrap:v20191203-6fb6647
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -46,7 +46,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-master
         command:
         - runner.sh
         args:
@@ -68,7 +68,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-1.17
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-1.17
         command:
         - runner.sh
         args:
@@ -101,7 +101,7 @@ periodics:
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-master
       command:
       - runner.sh
       args:
