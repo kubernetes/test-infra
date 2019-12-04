@@ -34,6 +34,8 @@ import (
 
 var (
 	boskosURL          = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	username           = flag.String("username", "", "Username used to access the Boskos server")
+	passwordFile       = flag.String("password-file", "", "The path to password file used to access the Boskos server")
 	region             = flag.String("region", "", "The region to clean (otherwise defaults to all regions)")
 	sweepCount         = flag.Int("sweep-count", 5, "Number of times to sweep the resources")
 	sweepSleep         = flag.String("sweep-sleep", "30s", "The duration to pause between sweeps")
@@ -54,8 +56,10 @@ func main() {
 	}
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-
-	boskos := client.NewClient("AWSJanitor", *boskosURL)
+	boskos, err := client.NewClient("AWSJanitor", *boskosURL, *username, *passwordFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a Boskos client")
+	}
 	if err := run(boskos); err != nil {
 		logrus.WithError(err).Error("Janitor failure")
 	}
