@@ -188,7 +188,8 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		logger: c.logger,
 		git:    c.git,
 		base:   base,
-		repo:   repo,
+		org:    organization,
+		repo:   repository,
 		user:   user,
 		pass:   pass,
 	}, nil
@@ -204,7 +205,9 @@ type Repo struct {
 	git string
 	// base is the base path for remote git fetch calls.
 	base string
-	// repo is the full repo name: "org/repo".
+	// org is the organization name: "org" in "org/repo".
+	org string
+	// repo is the repository name: "repo" in "org/repo".
 	repo string
 	// user is used for pushing to the remote repo.
 	user string
@@ -383,8 +386,8 @@ func (r *Repo) Push(branch string) error {
 
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
-	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
-	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
+	r.logger.Infof("Fetching and checking out %s/%s#%d.", r.org, r.repo, number)
+	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.org+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))
