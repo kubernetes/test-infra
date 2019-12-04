@@ -2,7 +2,7 @@ load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
 container_image(
     name = "image",
-    base = "@gcloud-go//image",  # Needs linux and git, not gcloud or go
+    base = "@bazel-base//image",  # Needs linux, git, and bazel
     directory = "/",
     entrypoint = ["/transfigure.sh"],
     files = [
