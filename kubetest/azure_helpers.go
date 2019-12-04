@@ -130,6 +130,11 @@ type KubernetesConfig struct {
 	DNSServiceIP                     string            `json:"dnsServiceIP,omitempty"`
 	OutboundRuleIdleTimeoutInMinutes int32             `json:"outboundRuleIdleTimeoutInMinutes,omitempty"`
 	ClusterSubnet                    string            `json:"clusterSubnet,omitempty"`
+	CustomKubeAPIServerImage         string            `json:"customKubeAPIServerImage,omitempty"`
+	CustomKubeControllerManagerImage string            `json:"customKubeControllerManagerImage,omitempty"`
+	CustomKubeProxyImage             string            `json:"customKubeProxyImage,omitempty"`
+	CustomKubeSchedulerImage         string            `json:"customKubeSchedulerImage,omitempty"`
+	CustomKubeBinaryURL              string            `json:"customKubeBinaryURL,omitempty"`
 }
 
 type OrchestratorProfile struct {

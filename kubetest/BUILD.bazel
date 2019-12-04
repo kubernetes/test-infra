@@ -62,6 +62,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "anywhere_test.go",
+        "azure_test.go",
         "dump_test.go",
         "extract_test.go",
         "kubernetes_test.go",
