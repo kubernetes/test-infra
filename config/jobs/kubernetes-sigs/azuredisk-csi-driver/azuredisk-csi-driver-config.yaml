@@ -156,8 +156,7 @@ presubmits:
       description: "Run E2E tests on a single-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az
-    always_run: false
-    optional: true
+    always_run: true
     branches:
     - master
     labels:
