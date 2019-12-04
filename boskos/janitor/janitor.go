@@ -36,6 +36,8 @@ var (
 	updateFrequency time.Duration
 	janitorPath     = flag.String("janitor-path", "/bin/gcp_janitor.py", "Path to janitor binary path")
 	boskosURL       = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	username        = flag.String("username", "", "Username used to access the Boskos server")
+	passwordFile    = flag.String("password-file", "", "The path to password file used to access the Boskos server")
 )
 
 func init() {
@@ -50,7 +52,10 @@ func main() {
 	extraJanitorFlags := flag.CommandLine.Args()
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	boskos := client.NewClient("Janitor", *boskosURL)
+	boskos, err := client.NewClient("Janitor", *boskosURL, *username, *passwordFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a Boskos client")
+	}
 	logrus.Info("Initialized boskos client!")
 
 	if len(rTypes) == 0 {

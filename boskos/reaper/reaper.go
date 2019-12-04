@@ -28,6 +28,8 @@ import (
 var (
 	rTypes         common.CommaSeparatedStrings
 	boskosURL      = flag.String("boskos-url", "http://boskos", "Boskos URL")
+	username       = flag.String("username", "", "Username used to access the Boskos server")
+	passwordFile   = flag.String("password-file", "", "The path to password file used to access the Boskos server")
 	expiryDuration = flag.Duration("expire", 30*time.Minute, "The expiry time (in minutes) after which reaper will reset resources.")
 	targetState    = flag.String("target-state", common.Dirty, "The state to move resources to when reaped.")
 )
@@ -38,7 +40,10 @@ func init() {
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	boskos := client.NewClient("Reaper", *boskosURL)
+	boskos, err := client.NewClient("Reaper", *boskosURL, *username, *passwordFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a Boskos client")
+	}
 	logrus.Infof("Initialized boskos client!")
 	flag.Parse()
 

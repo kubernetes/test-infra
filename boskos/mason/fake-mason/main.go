@@ -44,6 +44,8 @@ const (
 
 var (
 	boskosURL         = flag.String("boskos-url", "http://boskos", "Boskos Server URL")
+	username          = flag.String("username", "", "Username used to access the Boskos server")
+	passwordFile      = flag.String("password-file", "", "The path to password file used to access the Boskos server")
 	cleanerCount      = flag.Int("cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
 	kubeClientOptions crds.KubernetesClientOptions
 )
@@ -76,7 +78,10 @@ func main() {
 
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	client := client.NewClient(defaultOwner, *boskosURL)
+	client, err := client.NewClient(defaultOwner, *boskosURL, *username, *passwordFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a Boskos client")
+	}
 	mason := mason.NewMason(*cleanerCount, client, defaultBoskosRetryPeriod, defaultBoskosSyncPeriod, st)
 
 	// Registering Masonable Converters
