@@ -46,12 +46,6 @@ presubmits:
         - "--timeout=420m"
         securityContext:
           privileged: true
-    annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
-      testgrid-tab-name: pr-k8s-e2e-1.14
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      description: Run e2e tests
-      testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-azure-disk
     always_run: false
     optional: true
@@ -99,12 +93,6 @@ presubmits:
         env:
           - name: AZURE_STORAGE_DRIVER
             value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-    annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
-      testgrid-tab-name: pr-k8s-e2e-azure-disk-1.14
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin.
-      testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-azure-disk-vmss
     always_run: false
     optional: true
@@ -152,9 +140,3 @@ presubmits:
         env:
           - name: AZURE_STORAGE_DRIVER
             value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-    annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
-      testgrid-tab-name: pr-k8s-e2e-azure-disk-vmss-1.14
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      description: Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin.
-      testgrid-num-columns-recent: '30'
