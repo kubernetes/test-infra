@@ -1251,8 +1251,6 @@ periodics:
       # needs it to be defined).
       - name: GOPATH
         value: /go
-      - name: GCRANE_REF
-        value: f8574ec722f4dd4e2703689ea2ffe10c2021adc9 # Known-good commit from 2019-11-15
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/k8s-artifacts-prod-bak-service-account/service-account.json
       volumeMounts:
