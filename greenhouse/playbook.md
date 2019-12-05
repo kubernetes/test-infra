@@ -23,7 +23,7 @@ greenhouse. <!--TODO: link to prow info for doing this on our deployment-->
 The greenhouse pods should have the label `app=greenhouse`, you can view
 the logs with `kubectl logs -l=app=greenhouse`.
 
-The logs may also be stored in [StackDriver] / the host cluster's logging
+The logs may also be stored in [Stackdriver] / the host cluster's logging
 integration(s).
 
 ### Monitoring
@@ -130,7 +130,7 @@ issue.
 [remote-build-cache]: https://docs.bazel.build/versions/master/remote-caching.html
 [deployment.yaml]: ./deployment.yaml
 [service.yaml]: ./deployment.yaml
-[prow-k8s-io]: TODO
+[prow-k8s-io]: https://prow.k8s.io
 [bazel#4558]: https://github.com/bazelbuild/bazel/issues/4558
 [velodrome]: http://velodrome.k8s.io/dashboard/db/bazel-cache?refresh=1m&orgId=1
-[StackDriver]: https://cloud.google.com/stackdriver/
+[Stackdriver]: https://cloud.google.com/stackdriver/
