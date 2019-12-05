@@ -22,6 +22,10 @@ config will be automatically updated once the PR is merged, else you will need
 to run `make update-config`. This does not require redeploying any binaries,
 and will take effect within a few minutes.
 
+Alternatively, the [inrepoconfig](/prow/inrepoconfig.md) feature can be used to version Presubmit jobs
+in the same repository that also contains the code and have Prow load them dynamically.
+See [its documentation](/prow/inrepoconfig.md) for more details.
+
 Prow requires you to have a basic understanding of kubernetes, such
 that you can define pods in yaml.  Please see kubernetes documentation
 for help here, for example the [Pod overview] and [PodSpec api
@@ -278,4 +282,3 @@ The format to send your `deck` URL is `/badge.svg?jobs=single-job-name` or `/bad
 [`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
 [`plugins.yaml`]: /config/prow/plugins.yaml
 [deployed]: https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md
-
