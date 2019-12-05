@@ -548,6 +548,7 @@ plugins:
 
   kubernetes/cloud-provider-openstack:
   - override
+  - release-note
 
   kubernetes/community:
   - blockade
