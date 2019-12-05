@@ -149,6 +149,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `priority/critical` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Non Org Member Can't Add",
@@ -176,6 +178,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Area Labels",
@@ -212,6 +216,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `area/urgent` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Priority-Area Mismatch)",
@@ -221,6 +227,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `priority/infra` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Area Labels (Some Valid)",
@@ -230,6 +238,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `area/lgtm` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Committee Labels (Some Valid)",
@@ -239,6 +249,8 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("committee/steering"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
+			expectedCommentText:   "The label(s) `committee/calamity` cannot be applied, because the repository doesn't have them",
 		},
 		{
 			name:                  "Add Multiple Types of Labels Different Lines",
