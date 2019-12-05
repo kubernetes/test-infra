@@ -146,6 +146,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 	}
 	var (
 		nonexistent         []string
+		noSuchLabelsInRepo  []string
 		noSuchLabelsOnIssue []string
 		labelsToAdd         []string
 		labelsToRemove      []string
@@ -160,6 +161,7 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		}
 
 		if !RepoLabelsExisting.Has(labelToAdd) {
+			noSuchLabelsInRepo = append(noSuchLabelsInRepo, labelToAdd)
 			continue
 		}
 
@@ -187,6 +189,12 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 	if len(nonexistent) > 0 {
 		log.Infof("Nonexistent labels: %v", nonexistent)
 		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`", strings.Join(nonexistent, ", "), strings.Join(additionalLabels, ", "))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+	}
+
+	if len(noSuchLabelsInRepo) > 0 {
+		log.Infof("Labels missing in repo: %v", noSuchLabelsInRepo)
+		msg := fmt.Sprintf("The label(s) `%s` cannot be applied, because the repository doesn't have them", strings.Join(noSuchLabelsInRepo, ", "))
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
