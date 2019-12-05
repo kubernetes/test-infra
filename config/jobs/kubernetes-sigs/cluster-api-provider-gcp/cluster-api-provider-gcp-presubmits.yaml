@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -20,7 +20,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -36,7 +36,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -76,7 +76,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-b31f32c-experimental
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-experimental
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
