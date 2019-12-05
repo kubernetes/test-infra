@@ -40,6 +40,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
@@ -939,44 +940,47 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 
 // defaultPresubmits defaults the presubmits for one repo
 func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
+	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
 		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 	c.defaultPresubmitFields(presubmits)
 	if err := SetPresubmitRegexes(presubmits); err != nil {
-		return fmt.Errorf("could not set regex: %v", err)
+		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // defaultPostsubmits defaults the postsubmits for one repo
 func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
+	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
 		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 	c.defaultPostsubmitFields(postsubmits)
 	if err := SetPostsubmitRegexes(postsubmits); err != nil {
-		return fmt.Errorf("could not set regex: %v", err)
+		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // defaultPeriodics defaults periodics
 func defaultPeriodics(periodics []Periodic, c *Config) error {
+	var errs []error
 	c.defaultPeriodicFields(periodics)
 	for _, periodic := range periodics {
 		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, c.Presets); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // finalizeJobConfig mutates and fixes entries for jobspecs
@@ -1101,23 +1105,24 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 	validPresubmits := map[string][]Presubmit{}
 
+	var errs []error
 	for _, ps := range presubmits {
 		// Checking that no duplicate job in prow config exists on the same branch.
 		for _, existingJob := range validPresubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				return fmt.Errorf("duplicated presubmit job: %s", ps.Name)
+				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
 			}
 		}
 		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
-			return fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err)
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		if err := validateTriggering(ps); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // ValidateRefs validates the extra refs on a presubmit for one repo

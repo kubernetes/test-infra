@@ -119,7 +119,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			},
 			config: &Config{JobConfig: JobConfig{
 				PresubmitsStatic: map[string][]Presubmit{
-					org + "/" + repo: {{JobBase: JobBase{Name: "hans"}}},
+					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
 				},
 			}},
 			validate: func(_ *ProwYAML, err error) error {
@@ -143,6 +143,22 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 					return errors.New("error is nil")
 				}
 				expectedErrMsg := `job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml"`
+				if err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				}
+				return nil
+			},
+		},
+		{
+			name: "Multiple errors are aggregated",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]},{"name": "gretel", "spec": {"containers": [{}]}, "branches":["master"]}]`),
+			},
+			validate: func(_ *ProwYAML, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+				expectedErrMsg := `[job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml", job "gretel" contains branchconfig. This is not allowed for jobs in ".prow.yaml"]`
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}

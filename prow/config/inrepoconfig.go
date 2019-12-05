@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/git"
 	"sigs.k8s.io/yaml"
@@ -112,11 +113,12 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 		return err
 	}
 
+	var errs []error
 	for _, ps := range p.Presubmits {
 		if ps.Branches != nil || ps.SkipBranches != nil {
-			return fmt.Errorf("job %q contains branchconfig. This is not allowed for jobs in %q", ps.Name, inRepoConfigFileName)
+			errs = append(errs, fmt.Errorf("job %q contains branchconfig. This is not allowed for jobs in %q", ps.Name, inRepoConfigFileName))
 		}
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
