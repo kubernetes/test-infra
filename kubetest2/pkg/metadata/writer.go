@@ -50,9 +50,18 @@ func (w *Writer) WrapStep(name string, doStep func() error) error {
 	start := w.timeNow()
 	err := doStep()
 	finish := w.timeNow()
+	duration := finish.Sub(start).Seconds()
 	tc := testCase{
 		Name: name,
-		Time: finish.Sub(start).Seconds(),
+		Time: duration,
+		Properties: &properties{
+			Property: []property{
+				{
+					Name:  "runtime",
+					Value: duration,
+				},
+			},
+		},
 	}
 	if err != nil {
 		tc.Failure = err.Error()

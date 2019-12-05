@@ -83,10 +83,27 @@ func (t *testSuite) AddTestCase(tc testCase) {
 //
 // This will become a row in testgrid.
 type testCase struct {
-	XMLName   xml.Name `xml:"testcase"`
-	Name      string   `xml:"name,attr"`
-	Time      float64  `xml:"time,attr"`
-	Failure   string   `xml:"failure,omitempty"`
-	Skipped   string   `xml:"skipped,omitempty"`
-	SystemOut string   `xml:"system-out,omitempty"`
+	XMLName    xml.Name    `xml:"testcase"`
+	Name       string      `xml:"name,attr"`
+	Time       float64     `xml:"time,attr"`
+	Failure    string      `xml:"failure,omitempty"`
+	Skipped    string      `xml:"skipped,omitempty"`
+	SystemOut  string      `xml:"system-out,omitempty"`
+	Properties *properties `xml:"properties,omitempty"`
+}
+
+// properties holds one or more property of the result of a test/step/command.
+type properties struct {
+	XMLName  xml.Name `xml:"properties"`
+	Property []property
+}
+
+// property holds a specific value of a test/step/command that needs to be
+// highlighted in testgrid.
+//
+// Testgrid will collect this property to use for status purpose if configured.
+type property struct {
+	XMLName xml.Name `xml:"property"`
+	Name    string   `xml:"name,attr"`
+	Value   float64  `xml:"value,attr"`
 }
