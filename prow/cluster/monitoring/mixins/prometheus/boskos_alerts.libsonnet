@@ -20,7 +20,7 @@
               < 10
             |||,
             labels: {
-              severity: 'warning',
+              severity: 'high',
               'boskos-type': '{{ $labels.type }}',
             },
             annotations: {
