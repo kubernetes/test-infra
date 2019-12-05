@@ -342,6 +342,8 @@ postsubmits:
   - name: ci-cluster-api-provider-aws-e2e-conformance-release-0-4
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     decorate: true
+    decoration_config:
+      timeout: 3h
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
