@@ -95,7 +95,7 @@ larger set of contributors to apply/remove them.
 | <a id="sig/multicluster" href="#sig/multicluster">`sig/multicluster`</a> | Categorizes an issue or PR as relevant to sig-multicluster. <br><br> This was previously `sig/federation`, `sig/federation (deprecated - do not use)`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/network" href="#sig/network">`sig/network`</a> | Categorizes an issue or PR as relevant to sig-network.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/node" href="#sig/node">`sig/node`</a> | Categorizes an issue or PR as relevant to sig-node.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="sig/onprem" href="#sig/onprem">`sig/onprem`</a> | Categorizes an issue or PR as relevant to sig-onprem.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="sig/onprem" href="#sig/onprem">`sig/onprem`</a> | REMOVING. This will be deleted after 2019-12-06 00:00:00 +0000 UTC <br><br> Categorizes an issue or PR as relevant to sig-onprem.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/pm" href="#sig/pm">`sig/pm`</a> | Categorizes an issue or PR as relevant to sig-pm.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/release" href="#sig/release">`sig/release`</a> | Categorizes an issue or PR as relevant to sig-release.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/scalability" href="#sig/scalability">`sig/scalability`</a> | Categorizes an issue or PR as relevant to sig-scalability.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
