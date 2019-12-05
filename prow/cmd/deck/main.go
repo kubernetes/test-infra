@@ -546,6 +546,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			logrus.Info("Manager stopped gracefully.")
 		}
 	}()
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer mgrSyncCtxCancel()
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+		logrus.Fatal("Timed out waiting for cachesync")
+	}
 
 	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
 	if err != nil {
