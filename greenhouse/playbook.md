@@ -1,6 +1,6 @@
-# Greenhouse Run Book
+# Greenhouse Playbook
 
-This is the run book for GreenHouse. See also [the run book index][runbooks].
+This is the playbook for GreenHouse. See also [the playbook index][playbooks].
 
 TDLR: Greenhouse is a [bazel] [remote build cache][remote-build-cache].
 
@@ -124,7 +124,7 @@ issue.
 <!--URLS-->
 [OWNERS]: ./OWNERS 
 [README]: ./README.md 
-[runbooks]: ./../docs/runbooks.md
+[playbooks]: ./../docs/playbooks.md
 <!--Additional URLS-->
 [bazel]: https://bazel.build/
 [remote-build-cache]: https://docs.bazel.build/versions/master/remote-caching.html

@@ -1,6 +1,6 @@
-# Run Book Index
+# Playbook Index
 
-This is an index of the oncall run books for our various services.
+This is an index of the oncall playbooks for our various services.
 
 These are intended to help you diagnose and repair our infrastructure.
 
@@ -8,7 +8,7 @@ These are intended to help you diagnose and repair our infrastructure.
 
 ## Greenhouse
 
-[Run Book][greenhouse-runbook]
+[Playbook][greenhouse-playbook]
 
 TDLR: Greenhouse is a bazel [remote build cache] service.
 
@@ -17,5 +17,5 @@ in presubmit on Prow.
 
 <!--URLS-->
 [kubernetes-repo]: https://github.com/kubernetes/kubernetes
-[greenhouse-runbook]: ./../greenhouse/runbook.md
+[greenhouse-playbook]: ./../greenhouse/playbook.md
 [remote build cache]: https://docs.bazel.build/versions/master/remote-caching.html
