@@ -85,7 +85,9 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-release-0-4
   decorate: true
-  interval: 3h
+  decoration_config:
+    timeout: 3h
+  interval: 4h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
