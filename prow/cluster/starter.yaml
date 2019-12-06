@@ -202,7 +202,7 @@ spec:
   - port: 8888
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -210,6 +210,9 @@ metadata:
   labels:
     app: plank
 spec:
+  selector:
+    matchLabels:
+      app: plank
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
