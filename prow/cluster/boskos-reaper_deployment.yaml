@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: boskos-reaper
@@ -6,6 +6,9 @@ metadata:
     app: boskos-reaper
   namespace: test-pods
 spec:
+  selector:
+    matchLabels:
+      app: boskos-reaper
   replicas: 1  # one canonical source of resources
   template:
     metadata:
