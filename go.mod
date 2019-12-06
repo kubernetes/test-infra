@@ -29,6 +29,7 @@ require (
 	github.com/aws/aws-sdk-go v1.23.22
 	github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/bwmarrin/snowflake v0.0.0
 	github.com/clarketm/json v1.13.4
 	github.com/client9/misspell v0.3.4
