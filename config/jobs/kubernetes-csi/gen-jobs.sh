@@ -25,7 +25,7 @@ latest_stable_k8s_version="1.16.2"
 latest_stable_k8s_minor_version="1.16"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191112-9f04410-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -522,9 +522,6 @@ for tests in non-alpha alpha; do
       args:
       - ./.prow.sh
       env:
-      # TODO: https://github.com/kubernetes-csi/csi-release-tools/issues/39
-      - name: CSI_PROW_KIND_VERSION
-        value: "86bc23d84ac12dcb56a0528890736e2c347c2dc3"
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
       - name: CSI_PROW_BUILD_JOB
@@ -577,9 +574,6 @@ for kubernetes in 1.14.6 1.15.3 1.16.2 master; do
       args:
       - ./.prow.sh
       env:
-      # TODO: https://github.com/kubernetes-csi/csi-release-tools/issues/39
-      - name: CSI_PROW_KIND_VERSION
-        value: "86bc23d84ac12dcb56a0528890736e2c347c2dc3"
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
       - name: CSI_PROW_BUILD_JOB
