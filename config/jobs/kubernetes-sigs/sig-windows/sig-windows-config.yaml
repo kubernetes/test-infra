@@ -77,7 +77,7 @@ presubmits:
         - "--acsengine-win-binaries"
         - "--acsengine-hyperkube"
         - "--acsengine-agentpoolcount=2"
-        - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
+        - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
         - "--timeout=450m"
         securityContext:
           privileged: true
@@ -122,7 +122,7 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=620m"
       securityContext:
         privileged: true
@@ -166,7 +166,7 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
       - "--timeout=620m"
       securityContext:
         privileged: true
@@ -210,7 +210,7 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|GMSA"
       - "--timeout=620m"
       securityContext:
         privileged: true
@@ -254,7 +254,7 @@ periodics:
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
       - "--acsengine-agentpoolcount=2"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--test_args=--num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=620m"
       securityContext:
         privileged: true
@@ -297,7 +297,7 @@ periodics:
       - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=450m"
       securityContext:
         privileged: true
@@ -340,7 +340,7 @@ periodics:
       - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
       - "--acsengine-win-binaries"
       - "--acsengine-hyperkube"
-      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--test_args=--num-nodes=3 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption --ginkgo.skip=\\[LinuxOnly\\]|\\[Serial\\]|Guestbook.application.should.create.and.stop.a.working.application"
       - "--timeout=450m"
       securityContext:
         privileged: true

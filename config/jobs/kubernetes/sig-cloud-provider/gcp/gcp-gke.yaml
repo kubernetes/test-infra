@@ -36,7 +36,7 @@ presubmits:
         - --provider=gke
         - --stage=gs://kubernetes-release-dev/ci
         - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=65m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
         resources:

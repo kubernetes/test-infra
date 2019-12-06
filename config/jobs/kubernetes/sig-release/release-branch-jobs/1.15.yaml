@@ -480,7 +480,7 @@ presubmits:
         - --ginkgo-parallel
         - --provider=aws
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.15
         name: ""
@@ -689,7 +689,7 @@ presubmits:
         - --provider=gke
         - --stage=gs://kubernetes-release-dev/ci
         - --stage-suffix=pull-kubernetes-e2e-gke
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=65m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.15
@@ -723,7 +723,6 @@ presubmits:
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
-          --flakeAttempts=2
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.15
