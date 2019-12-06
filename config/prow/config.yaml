@@ -67,17 +67,18 @@ prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
 
-slack_reporter:
-  job_types_to_report:
-    - postsubmit
-    - periodic
-    - batch
-  job_states_to_report:
-    - failure
-    - error
-  channel: test-failures
-  # The template shown below is the default
-  report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
+slack_reporter_configs:
+  '*':
+    job_types_to_report:
+      - postsubmit
+      - periodic
+      - batch
+    job_states_to_report:
+      - failure
+      - error
+    channel: test-failures
+    # The template shown below is the default
+    report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
 
 branch-protection:
   allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
