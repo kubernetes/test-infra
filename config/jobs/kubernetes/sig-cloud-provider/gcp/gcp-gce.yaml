@@ -2,8 +2,6 @@ presets:
 - labels:
     preset-pull-kubernetes-e2e: "true"
   env:
-  - name: GINKGO_TOLERATE_FLAKES
-    value: "y"
   - name: KUBE_GCS_UPDATE_LATEST
     value: "n"
 - labels:
