@@ -11,7 +11,7 @@
             ||| % name,
             'for': '5m',
             labels: {
-              severity: 'slack',
+              severity: 'critical',
             },
             annotations: {
               message: '@test-infra-oncall The service %s has been down for 5 minutes.' % name,
