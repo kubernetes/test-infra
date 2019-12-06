@@ -14,6 +14,10 @@ in_repo_config:
     "kubernetes/kubernetes": true
 ```
 
+Additionally, `Deck` must be configured with an oauth token if that is not already the case. To do
+so, the `--github-token-path=` flag must be set and point to a valid token file that has permissions
+to read all your repositories.
+
 Afterwards, you need to add a config verification job to make sure people people get told about
 mistakes in their `.prow.yaml` rather than the PR being stuck. It makes sense to define this
 job in the central repository rather than the code repository, so the `checkconfig` version used
