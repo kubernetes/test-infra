@@ -24,3 +24,28 @@ periodics:
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-proto
+
+- interval: 24h
+  name: ci-kubernetes-e2e-gci-gce-network-proxy
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_EGRESS_VIA_KONNECTIVITY_SERVICE=true
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191126-9d3c810-master
+  annotations:
+    testgrid-dashboards: sig-api-machinery-network-proxy
