@@ -16,14 +16,14 @@ this even if you'd just setting up a prow instance to work against your own
 personal repos.
 
 1. Ensure the bot user has the following permissions
-  - Write access to the repos you plan on handling
-  - Owner access (and org membership) for the orgs you plan on handling (note
-    it is possible to handle specific repos in an org without this)
+    - Write access to the repos you plan on handling
+    - Owner access (and org membership) for the orgs you plan on handling (note
+      it is possible to handle specific repos in an org without this)
 1. Create a [personal access token][1] for the GitHub bot account, adding the
    following scopes (more details [here][8])
-  - Must have the `public_repo` and `repo:status` scopes
-  - Add the `repo` scope if you plan on handing private repos
-  - Add the `admin_org:hook` scope if you plan on handling a github org
+    - Must have the `public_repo` and `repo:status` scopes
+    - Add the `repo` scope if you plan on handing private repos
+    - Add the `admin_org:hook` scope if you plan on handling a github org
 1. Set this token aside for later (we'll assume you wrote it to a file on your
    workstation at `/path/to/oauth/secret`)
 
