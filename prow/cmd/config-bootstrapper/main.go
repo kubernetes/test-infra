@@ -34,6 +34,8 @@ import (
 	"k8s.io/test-infra/prow/plugins/updateconfig"
 )
 
+const bootstrapMode = true
+
 type options struct {
 	sourcePath string
 
@@ -135,7 +137,7 @@ func main() {
 			logrus.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
-		if err := updateconfig.Update(&updateconfig.OSFileGetter{Root: o.sourcePath}, configMapClient, cm.Name, cm.Namespace, data, nil, logger); err != nil {
+		if err := updateconfig.Update(&updateconfig.OSFileGetter{Root: o.sourcePath}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, nil, logger); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 			errors++
 		} else {
