@@ -1,8 +1,9 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
     srcs = [
+        "http.go",
         "metrics.go",
         "push.go",
     ],
@@ -11,6 +12,7 @@ go_library(
     deps = [
         "//prow/config:go_default_library",
         "//prow/interrupts:go_default_library",
+        "//prow/simplifypath:go_default_library",
         "@com_github_prometheus_client_golang//prometheus:go_default_library",
         "@com_github_prometheus_client_golang//prometheus/promhttp:go_default_library",
         "@com_github_prometheus_common//expfmt:go_default_library",
@@ -34,4 +36,11 @@ filegroup(
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["http_test.go"],
+    embed = [":go_default_library"],
+    deps = ["@io_k8s_utils//diff:go_default_library"],
 )
