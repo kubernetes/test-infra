@@ -66,12 +66,12 @@ func init() {
 }
 
 var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
-	l("/acquire"),
-	l("/acquirebystate"),
-	l("/release"),
-	l("/reset"),
-	l("/update"),
-	l("/metric"),
+	l("acquire"),
+	l("acquirebystate"),
+	l("release"),
+	l("reset"),
+	l("update"),
+	l("metric"),
 ))
 
 // l keeps the tree legible
