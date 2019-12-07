@@ -33,7 +33,11 @@ import (
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/simplifypath"
 )
 
 const (
@@ -54,6 +58,13 @@ func main() {
 	kubeClientOptions.Validate()
 
 	logrusutil.ComponentInit("boskos")
+	defer interrupts.WaitForGracefulShutdown()
+	pjutil.ServePProf()
+	metrics.ExposeMetrics("boskos", config.PushGateway{})
+	// signal to the world that we are healthy
+	// this needs to be in a separate port as we don't start the
+	// main server with the main mux until we're ready
+	health := pjutil.NewHealth()
 
 	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
@@ -76,8 +87,8 @@ func main() {
 		logrus.WithError(err).Fatalf("failed to create ranch! Config: %v", *configPath)
 	}
 
-	boskos := http.Server{
-		Handler: NewBoskosHandler(r),
+	boskos := &http.Server{
+		Handler: traceHandler(NewBoskosHandler(r)),
 		Addr:    ":8080",
 	}
 
@@ -97,7 +108,10 @@ func main() {
 	r.StartRequestGC(defaultRequestGCPeriod)
 
 	logrus.Info("Start Service")
-	logrus.WithError(boskos.ListenAndServe()).Fatal("ListenAndServe returned.")
+	interrupts.ListenAndServe(boskos, 5*time.Second)
+
+	// signal to the world that we're ready
+	health.ServeReady()
 }
 
 //NewBoskosHandler constructs the boskos handler.
