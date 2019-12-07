@@ -87,7 +87,7 @@ up to date
 
 ### Dependency Management
 
-Please see [/docs/deps.md]
+Please see [/docs/dep.md]
 
 ### Prow Jobs
 
