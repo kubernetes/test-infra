@@ -302,7 +302,7 @@ func TestTerminateDupes(t *testing.T) {
 					PodNamespace:     "pods",
 					Plank: config.Plank{
 						Controller: config.Controller{
-							AllowCancellations: tc.allowCancellations,
+							AllowCancellations: &tc.allowCancellations,
 						},
 					},
 				},

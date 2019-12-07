@@ -281,7 +281,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 		toCancel := pjs[cancelIndex]
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in GitHub pull requests.
-		if c.config().AllowCancellations {
+		if ac := c.config().AllowCancellations; ac == nil || *ac {
 			build, buildExists := jbs[toCancel.ObjectMeta.Name]
 			// Avoid cancelling enqueued builds.
 			if buildExists && build.IsEnqueued() {

@@ -371,7 +371,8 @@ type Controller struct {
 	// commits that have been superseded by newer commits in GitHub pull
 	// requests.
 	// This option will be removed and set to always true in March 2020.
-	AllowCancellations bool `json:"allow_cancellations,omitempty"`
+	// TODO(fejta): delete this Mar 2020
+	AllowCancellations *bool `json:"allow_cancellations,omitempty"`
 }
 
 // Plank is config for the plank controller.
@@ -1259,8 +1260,8 @@ func parseProwConfig(c *Config) error {
 		c.Plank.PodRunningTimeout = &metav1.Duration{Duration: 48 * time.Hour}
 	}
 
-	if !c.Plank.AllowCancellations {
-		logrus.Warning("The `plank.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
+	if c.Plank.AllowCancellations != nil {
+		logrus.Warning("The plank.allow_cancellations setting is deprecated. It will be removed and set to always true in March 2020")
 	}
 
 	if c.Gerrit.TickInterval == nil {
@@ -1300,7 +1301,7 @@ func parseProwConfig(c *Config) error {
 			return errors.New("label_selector is invalid when used for a single jenkins-operator")
 		}
 
-		if !c.JenkinsOperators[i].AllowCancellations {
+		if c.JenkinsOperators[i].AllowCancellations != nil {
 			logrus.Warning("The `jenkins_operators.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
 		}
 	}
