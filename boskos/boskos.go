@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 const (
@@ -52,7 +53,7 @@ func main() {
 	flag.Parse()
 	kubeClientOptions.Validate()
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrusutil.ComponentInit("boskos")
 
 	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
