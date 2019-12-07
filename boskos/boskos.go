@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -36,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/simplifypath"
 )
@@ -51,6 +53,31 @@ var (
 	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
 )
+
+var (
+	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 120)
+	httpResponseSize    = metrics.HttpResponseSize("boskos", 128, 65536)
+	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
+)
+
+func init() {
+	prometheus.MustRegister(httpRequestDuration)
+	prometheus.MustRegister(httpResponseSize)
+}
+
+var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+	l("/acquire"),
+	l("/acquirebystate"),
+	l("/release"),
+	l("/reset"),
+	l("/update"),
+	l("/metric"),
+))
+
+// l keeps the tree legible
+func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
+	return simplifypath.L(fragment, children...)
+}
 
 func main() {
 	kubeClientOptions.AddFlags(flag.CommandLine)

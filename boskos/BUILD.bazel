@@ -58,6 +58,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/interrupts:go_default_library",
         "//prow/logrusutil:go_default_library",
+        "//prow/metrics:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/simplifypath:go_default_library",
         "@com_github_fsnotify_fsnotify//:go_default_library",
