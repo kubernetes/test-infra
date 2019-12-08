@@ -70,6 +70,11 @@ presets:
   # Disable kubernetes-dashboard
   - name: KUBE_ENABLE_CLUSTER_UI
     value: "false"
+  # Enable assertions on scheduler throughput in density test.
+  # Setting the threshold to 90 should allow us to catch regressions like
+  # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
+  - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+    value: 90
 
 ### kubemark-gce-scale
 - labels:
@@ -149,6 +154,11 @@ presets:
   # Disable kubernetes-dashboard
   - name: KUBE_ENABLE_CLUSTER_UI
     value: "false"
+  # Enable assertions on scheduler throughput in density test.
+  # Setting the threshold to 90 should allow us to catch regressions like
+  # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
+  - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+    value: 90
 
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.
