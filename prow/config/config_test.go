@@ -29,7 +29,7 @@ import (
 	"time"
 
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
@@ -1708,6 +1708,49 @@ postsubmits:
 			verify: func(c *Config) error {
 				if c.ProwYAMLGetter == nil {
 					return errors.New("config.ProwYAMLGetter is nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "InRepoConfigAllowedClusters gets defaulted if unset",
+			verify: func(c *Config) error {
+				if len(c.InRepoConfig.AllowedClusters) != 1 ||
+					len(c.InRepoConfig.AllowedClusters["*"]) != 1 ||
+					c.InRepoConfig.AllowedClusters["*"][0] != kube.DefaultClusterAlias {
+					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain exactly one global entry to allow the buildcluster, was %v", c.InRepoConfig.AllowedClusters)
+				}
+				return nil
+			},
+		},
+		{
+			name: "InRepoConfigAllowedClusters gets defaulted if no global setting",
+			prowConfig: `
+in_repo_config:
+  allowed_clusters:
+    foo/bar: ["my-cluster"]
+`,
+			verify: func(c *Config) error {
+				if len(c.InRepoConfig.AllowedClusters) != 2 ||
+					len(c.InRepoConfig.AllowedClusters["*"]) != 1 ||
+					c.InRepoConfig.AllowedClusters["*"][0] != kube.DefaultClusterAlias {
+					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain exactly one global entry to allow the buildcluster, was %v", c.InRepoConfig.AllowedClusters)
+				}
+				return nil
+			},
+		},
+		{
+			name: "InRepoConfigAllowedClusters doesn't get overwritten",
+			prowConfig: `
+in_repo_config:
+  allowed_clusters:
+    foo/bar: ["my-cluster"]
+`,
+			verify: func(c *Config) error {
+				if len(c.InRepoConfig.AllowedClusters) != 2 ||
+					len(c.InRepoConfig.AllowedClusters["foo/bar"]) != 1 ||
+					c.InRepoConfig.AllowedClusters["foo/bar"][0] != "my-cluster" {
+					return fmt.Errorf("expected c.InRepoConfig.AllowedClusters to contain exactly one entry for foo/bar, was %v", c.InRepoConfig.AllowedClusters)
 				}
 				return nil
 			},
@@ -3663,5 +3706,80 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 		presubmits[0].Name != "my-static-presubmit" ||
 		presubmits[1].Name != "hans" {
 		t.Errorf(`expected exactly two presubmits named "my-static-presubmit" and "hans", got %d (%v)`, n, presubmits)
+	}
+}
+
+func TestInRepoConfigAllowsCluster(t *testing.T) {
+	const clusterName = "that-cluster"
+
+	testCases := []struct {
+		name            string
+		repoIdentifier  string
+		allowedClusters map[string][]string
+
+		expectedResult bool
+	}{
+		{
+			name:           "Nothing configured, nothing allowed",
+			repoIdentifier: "foo",
+			expectedResult: false,
+		},
+		{
+			name:            "Allowed on repolevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo/repo": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Not allowed on repolevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo/repo": {"different-cluster"}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed for different repo",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"bar/repo": {clusterName}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed on orglevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Not allowed on orglevel",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"foo": {"different-cluster"}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed on for different org",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"bar": {clusterName}},
+			expectedResult:  false,
+		},
+		{
+			name:            "Allowed globally",
+			repoIdentifier:  "foo/repo",
+			allowedClusters: map[string][]string{"*": {clusterName}},
+			expectedResult:  true,
+		},
+	}
+
+	for idx := range testCases {
+		tc := testCases[idx]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := &Config{
+				ProwConfig: ProwConfig{InRepoConfig: InRepoConfig{AllowedClusters: tc.allowedClusters}},
+			}
+
+			if actual := cfg.InRepoConfigAllowsCluster(clusterName, tc.repoIdentifier); actual != tc.expectedResult {
+				t.Errorf("expected result %t, got result %t", tc.expectedResult, actual)
+			}
+		})
 	}
 }

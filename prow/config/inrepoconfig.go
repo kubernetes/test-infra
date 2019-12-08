@@ -118,6 +118,9 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 		if ps.Branches != nil || ps.SkipBranches != nil {
 			errs = append(errs, fmt.Errorf("job %q contains branchconfig. This is not allowed for jobs in %q", ps.Name, inRepoConfigFileName))
 		}
+		if !c.InRepoConfigAllowsCluster(ps.Cluster, identifier) {
+			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", ps.Cluster, identifier))
+		}
 	}
 
 	return utilerrors.NewAggregate(errs)

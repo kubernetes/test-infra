@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestDefaultProwYAMLGetter(t *testing.T) {
@@ -166,6 +167,22 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			},
 		},
 		{
+			name: "Not allowed cluster is rejected",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "cluster": "privileged", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(_ *ProwYAML, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+				expectedErrMsg := "cluster \"privileged\" is not allowed for repository \"org/repo\""
+				if err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				}
+				return nil
+			},
+		},
+		{
 			name:              "No panic on nil gitClient",
 			dontPassGitClient: true,
 			validate: func(_ *ProwYAML, err error) error {
@@ -222,7 +239,13 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			}
 
 			if tc.config == nil {
-				tc.config = &Config{}
+				tc.config = &Config{
+					ProwConfig: ProwConfig{
+						InRepoConfig: InRepoConfig{
+							AllowedClusters: map[string][]string{"*": {kube.DefaultClusterAlias}},
+						},
+					},
+				}
 			}
 			// Validation fails when no NS is provided
 			tc.config.PodNamespace = "my-ns"
