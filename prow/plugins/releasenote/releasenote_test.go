@@ -467,9 +467,10 @@ func TestReleaseNotePR(t *testing.T) {
 
 func TestGetReleaseNote(t *testing.T) {
 	tests := []struct {
-		body                        string
-		expectedReleaseNote         string
-		expectedReleaseNoteVariable string
+		body                               string
+		hasPreExistingReleaseNoteNoneLabel bool
+		expectedReleaseNote                string
+		expectedReleaseNoteVariable        string
 	}{
 		{
 			body:                        "**Release note**:  ```NONE```",
@@ -526,6 +527,12 @@ func TestGetReleaseNote(t *testing.T) {
 			expectedReleaseNote:         "",
 			expectedReleaseNoteVariable: ReleaseNoteLabelNeeded,
 		},
+		{
+			body:                               "",
+			hasPreExistingReleaseNoteNoneLabel: true,
+			expectedReleaseNote:                "",
+			expectedReleaseNoteVariable:        releaseNoteNone,
+		},
 	}
 
 	for testNum, test := range tests {
@@ -533,7 +540,7 @@ func TestGetReleaseNote(t *testing.T) {
 		if test.expectedReleaseNote != calculatedReleaseNote {
 			t.Errorf("Test %v: Expected %v as the release note, got %v", testNum, test.expectedReleaseNote, calculatedReleaseNote)
 		}
-		calculatedLabel := determineReleaseNoteLabel(test.body)
+		calculatedLabel := determineReleaseNoteLabel(test.body, test.hasPreExistingReleaseNoteNoneLabel)
 		if test.expectedReleaseNoteVariable != calculatedLabel {
 			t.Errorf("Test %v: Expected %v as the release note label, got %v", testNum, test.expectedReleaseNoteVariable, calculatedLabel)
 		}
