@@ -41,7 +41,8 @@ import (
 )
 
 const (
-	pluginName = "config-updater"
+	pluginName    = "config-updater"
+	bootstrapMode = false
 )
 
 func init() {
@@ -89,8 +90,10 @@ func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
 	return ioutil.ReadFile(filepath.Join(g.Root, filename))
 }
 
-// Update updates the configmap with the data from the identified files
-func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, metrics *prometheus.GaugeVec, logger *logrus.Entry) error {
+// Update updates the configmap with the data from the identified files.
+// Existing configmap keys that are not included in the updates are left alone
+// unless bootstrap is true in which case they are deleted.
+func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, bootstrap bool, metrics *prometheus.GaugeVec, logger *logrus.Entry) error {
 	cm, getErr := kc.Get(name, metav1.GetOptions{})
 	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
@@ -105,10 +108,10 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 			},
 		}
 	}
-	if cm.Data == nil {
+	if cm.Data == nil || bootstrap {
 		cm.Data = map[string]string{}
 	}
-	if cm.BinaryData == nil {
+	if cm.BinaryData == nil || bootstrap {
 		cm.BinaryData = map[string][]byte{}
 	}
 
@@ -317,7 +320,7 @@ func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, bu
 			log.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
-		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, metrics, logger); err != nil {
+		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, metrics, logger); err != nil {
 			return err
 		}
 		updated = append(updated, message(cm.Name, cm.Cluster, cm.Namespace, data, indent))
