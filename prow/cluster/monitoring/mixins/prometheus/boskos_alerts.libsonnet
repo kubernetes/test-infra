@@ -21,7 +21,7 @@
             |||,
             labels: {
               severity: 'warning',
-              'boskos-type': '{{ $labels.type }}',
+              'boskos_type': '{{ $labels.type }}',
             },
             annotations: {
               message: 'The Boskos resource "{{ $labels.type }}" has low availability (currently {{ printf "%0.2f" $value }}% free). See the <https://monitoring.prow.k8s.io/d/wSrfvNxWz/boskos-resource-usage?orgId=1|Boskos resource usage dashboard>.',
