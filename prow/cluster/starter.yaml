@@ -571,6 +571,7 @@ rules:
     verbs:
       - get
       - list
+      - watch
       # Required when deck runs with `--rerun-creates-job=true`
       # **Warning:** Only use this for non-public deck instances, this allows
       # anyone with access to your Deck instance to create new Prowjobs
@@ -826,6 +827,8 @@ rules:
     verbs:
       - create
       - list
+      - get
+      - watch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
