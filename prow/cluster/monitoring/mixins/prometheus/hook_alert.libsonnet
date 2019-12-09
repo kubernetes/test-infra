@@ -11,12 +11,12 @@
               (sum(increase(prow_webhook_counter[1m])) == 0 or absent(prow_webhook_counter))
               and ((day_of_week() > 0) and (day_of_week() < 6) and (hour() >= 16))
             |||,
-            'for': '5m',
+            'for': '10m',
             labels: {
-              severity: 'slack',
+              severity: 'high',
             },
             annotations: {
-              message: 'There have been no webhook calls on working hours for 5 minutes',
+              message: 'There have been no webhook calls on working hours for 10 minutes',
             },
           },
         ],
