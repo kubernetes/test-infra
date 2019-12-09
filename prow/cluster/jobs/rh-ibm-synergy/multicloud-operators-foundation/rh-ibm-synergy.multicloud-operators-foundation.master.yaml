@@ -21,6 +21,27 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_multicloud-operators-foundation
+    branches:
+    - ^master$
+    decorate: true
+    always_run: true
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    rerun_command: /test check multicloud-operators-foundation
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
   - name: test_multicloud-operators-foundation
     branches:
     - ^master$
@@ -45,6 +66,20 @@ presubmits:
 
 postsubmits:
   rh-ibm-synergy/multicloud-operators-foundation:
+  - name: check-multicloud-operators-foundation_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
   - name: test-multicloud-operators-foundation_postsubmit
     branches:
     - ^master$
