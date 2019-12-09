@@ -25,6 +25,10 @@ presubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
     always_run: true
     path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
     rerun_command: /test check multicloud-operators-foundation
@@ -70,6 +74,10 @@ postsubmits:
     branches:
     - ^master$
     decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
     path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
     spec:
       containers:
