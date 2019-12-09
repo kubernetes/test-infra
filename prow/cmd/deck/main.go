@@ -552,6 +552,10 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Git client.")
 		}
+	} else {
+		if len(cfg().InRepoConfig.Enabled) > 0 {
+			logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
+		}
 	}
 
 	if o.spyglass {

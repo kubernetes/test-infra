@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -206,6 +207,9 @@ func getGCSDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient 
 	toSearch := make(map[string]sets.String)
 	fullRepo := org + "/" + repo
 
+	if c.InRepoConfigEnabled(fullRepo) && gitHubClient == nil {
+		return nil, errors.New("inrepoconfig is enabled but no --github-token-path configured on deck")
+	}
 	prRefGetter := config.NewRefGetterForGitHubPullRequest(gitHubClient, org, repo, prNumber)
 	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
 	if err != nil {
