@@ -9,6 +9,7 @@
             expr: |||
               sum(increase(tidesyncheartbeat{controller="sync"}[15m])) < 1
             |||,
+            'for': '5m',
             labels: {
               severity: 'warning',
             },
@@ -21,6 +22,7 @@
             expr: |||
               sum(increase(tidesyncheartbeat{controller="status-update"}[30m])) < 1
             |||,
+            'for': '5m',
             labels: {
               severity: 'warning',
             },
