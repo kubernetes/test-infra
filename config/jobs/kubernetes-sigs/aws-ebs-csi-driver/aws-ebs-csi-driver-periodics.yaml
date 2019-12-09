@@ -3,7 +3,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 1h20m
-  interval: 1h30m
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
