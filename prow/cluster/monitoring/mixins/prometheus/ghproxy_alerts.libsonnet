@@ -34,11 +34,11 @@
             expr: |||
               github_token_usage{job="ghproxy"} <  1500
               and
-              predict_linear(github_token_usage{job="ghproxy"}[30m], 1 * 3600) < 0
+              predict_linear(github_token_usage{job="ghproxy"}[1h], 1 * 3600) < 0
             |||,
             'for': '5m',
             labels: {
-              severity: 'high',
+              severity: 'warning',
             },
             annotations: {
               message: 'token {{ $labels.token_hash }} will run out of API quota before the next reset.',
