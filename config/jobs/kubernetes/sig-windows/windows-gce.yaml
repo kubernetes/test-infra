@@ -12,6 +12,11 @@ presets:
     value: "windows"
   - name: KUBELET_TEST_ARGS
     value: "--feature-gates=KubeletPodResources=false"
+- labels:
+    preset-e2e-gce-windows-containerd: "true"
+  env:
+  - name: KUBE_CONTAINER_RUNTIME
+    value: "containerd"
 
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-poc
@@ -180,6 +185,46 @@ periodics:
   annotations:
     testgrid-dashboards: google-windows
     testgrid-tab-name: windows-gce-serial
+
+- name: ci-kubernetes-e2e-windows-containerd-gce
+  decorate: true
+  extra_refs:
+  - org: yujuhong
+    repo: gce-k8s-windows-testing
+    base_ref: master
+    path_alias: k8s.io/gce-k8s-windows-testing
+  interval: 2h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-e2e-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/k8s-master
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=8
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
+      - --test-cmd-args=--node-os-distro=windows
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191201-9ade087-master
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extract=ci/k8s-master -> --extract=ci/k8s-beta"
+    testgrid-dashboards: google-windows, sig-windows, sig-release-master-informing, sig-node-containerd
+    testgrid-tab-name: gce-windows-containerd-master
+    description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
+
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-windows-gce
