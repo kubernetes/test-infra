@@ -456,6 +456,12 @@ func newAksEngine() (*Cluster, error) {
 		return nil, err
 	}
 
+	// CLOUD_CONFIG is required when running Azure-specific e2e tests
+	// See https://github.com/kubernetes/kubernetes/blob/master/hack/ginkgo-e2e.sh#L113-L118
+	if err = c.populateAzureCloudConfig(); err != nil {
+		return nil, err
+	}
+
 	if err := c.dockerLogin(); err != nil {
 		return nil, err
 	}
@@ -767,6 +773,31 @@ func (c *Cluster) createCluster() error {
 	}
 	return nil
 
+}
+
+func (c *Cluster) populateAzureCloudConfig() error {
+	cloudConfig, err := json.MarshalIndent(map[string]string{
+		"cloud":           c.azureEnvironment,
+		"tenantId":        c.credentials.TenantID,
+		"subscriptionId":  c.credentials.SubscriptionID,
+		"aadClientId":     c.credentials.ClientID,
+		"aadClientSecret": c.credentials.ClientSecret,
+		"resourceGroup":   c.resourceGroup,
+		"location":        c.location,
+	}, "", "    ")
+	if err != nil {
+		return fmt.Errorf("error creating Azure cloud config: %v", err)
+	}
+
+	cloudConfigPath := path.Join(c.outputDir, "azure.json")
+	if err := ioutil.WriteFile(cloudConfigPath, cloudConfig, 0644); err != nil {
+		return fmt.Errorf("cannot write Azure cloud config to file: %v", err)
+	}
+	if err := os.Setenv("CLOUD_CONFIG", cloudConfigPath); err != nil {
+		return fmt.Errorf("error setting CLOUD_CONFIG=%s: %v", cloudConfigPath, err)
+	}
+
+	return nil
 }
 
 func (c *Cluster) dockerLogin() error {
