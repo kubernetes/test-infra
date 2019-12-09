@@ -10,7 +10,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-1.16
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -34,7 +34,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-1.16
         resources:
           requests:
             memory: "6Gi"
@@ -51,7 +51,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-1.16
         command:
         - "runner.sh"
         - "make"
@@ -69,7 +69,7 @@ presubmits:
     - gh-pages
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-1.16
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -90,7 +90,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-1.16
         command:
         - runner.sh
         - ./scripts/ci-integration.sh
