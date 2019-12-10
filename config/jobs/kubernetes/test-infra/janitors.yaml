@@ -19,7 +19,7 @@ periodics:
       env:
       - name: AWS_SHARED_CREDENTIALS_FILE
         value: /workspace/.aws/credentials
-      image: gcr.io/k8s-prow/boskos/aws-janitor:v20191207-18719f195
+      image: gcr.io/k8s-prow/boskos/aws-janitor:v20191209-15bc10984
       volumeMounts:
       - mountPath: /workspace/.aws
         name: aws-cred
@@ -55,7 +55,7 @@ periodics:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/janitor/gcp_janitor.py
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       resources:
         requests:
           cpu: 5
@@ -80,7 +80,7 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
       resources:
         requests:
           cpu: 5
@@ -106,7 +106,7 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-experimental
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
       resources:
         requests:
           cpu: 5
