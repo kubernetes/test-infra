@@ -59,7 +59,7 @@ func TerminateOlderJobs(pjc prowClient, log *logrus.Entry, pjs []prowapi.ProwJob
 	cleanup ProwJobResourcesCleanup) error {
 	dupes := map[string]int{}
 	for i, pj := range pjs {
-		if pj.Complete() || !(pj.Spec.Type == prowapi.PresubmitJob || pj.Spec.Type == prowapi.BatchJob) {
+		if pj.Complete() || pj.Spec.Type != prowapi.PresubmitJob {
 			continue
 		}
 
