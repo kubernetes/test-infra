@@ -17,6 +17,8 @@ presets:
   env:
   - name: KUBE_CONTAINER_RUNTIME
     value: "containerd"
+  - name: PREPULL_TIMEOUT
+    value: "30m"
 
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-poc
@@ -216,7 +218,7 @@ periodics:
       - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
-      - --timeout=120m
+      - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-master
   annotations:
     fork-per-release: "true"
