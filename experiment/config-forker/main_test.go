@@ -163,7 +163,7 @@ func TestPerformArgReplacements(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := performArgReplacements(tc.args, "1.15", tc.replacements)
+			result, err := performReplacement(tc.args, "1.15", tc.replacements)
 			if err != nil {
 				if !tc.expectErr {
 					t.Fatalf("Unexpected error: %v", err)
@@ -551,6 +551,7 @@ func TestGeneratePeriodics(t *testing.T) {
 					},
 				},
 			},
+			Tags: []string{"ver: stable"},
 		},
 		{
 			Interval: "2h",
@@ -612,6 +613,7 @@ func TestGeneratePeriodics(t *testing.T) {
 					},
 				},
 			},
+			Tags: []string{"ver: 1.15"},
 		},
 		{
 			Interval: "2h",

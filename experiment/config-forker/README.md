@@ -12,7 +12,7 @@ config-forker forks presubmit, periodic, and postsubmit job configs with the `fo
 ## Supported annotations
 
 - `fork-per-release`: only jobs with this set to `"true"` will be forked.
-- `fork-per-release-replacements`: allows replacing values in container `args` (see [Custom replacements](#custom-replacements)).
+- `fork-per-release-replacements`: allows replacing values in job `tags` (periodics only) and container `args` (see [Custom replacements](#custom-replacements)).
 - `fork-per-release-periodic-interval`: if set, forked jobs will use this value for `interval`. If multiple space-separated values are provided, the first will be used.
 - `fork-per-release-cron`: if set, forked jobs will use this value for `cron`. If multiple values separated with `, ` are provided, the first will be used.
 
@@ -55,8 +55,8 @@ For periodics only:
  
 ## Custom replacements
 
-The `fork-per-release-replacements` annotation can be used for custom replacements in your `args`. It takes the form
-of a comma-separated list of replacements, like this:
+The `fork-per-release-replacements` annotation can be used for custom replacements in your `args` or `tags` (periodic jobs only).
+It takes the form of a comma-separated list of replacements, like this:
 
 ```
 fork-per-release-replacements: "original1 -> replacement1, original2 -> replacement2"
