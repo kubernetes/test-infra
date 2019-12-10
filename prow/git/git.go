@@ -295,16 +295,18 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 // It returns true if the merge completes. It returns an error if the abort fails.
 func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.PullRequestMergeType) (bool, error) {
 	r.logger.Infof("Merging %s.", commitlike)
-	mergeFlag := ""
 	switch mergeStrategy {
 	case prowgithub.MergeMerge:
-		mergeFlag = "--no-ff"
+		return r.mergeWithMergeStrategyMerge(commitlike)
 	case prowgithub.MergeSquash:
-		mergeFlag = "--squash"
+		return r.mergeWithMergeStrategySquash(commitlike)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
 	}
-	co := r.gitCommand("merge", mergeFlag, "--no-stat", "-m merge", commitlike)
+}
+
+func (r *Repo) mergeWithMergeStrategyMerge(commitlike string) (bool, error) {
+	co := r.gitCommand("merge", "--no-ff", "--no-stat", "-m merge", commitlike)
 
 	b, err := co.CombinedOutput()
 	if err == nil {
@@ -317,6 +319,27 @@ func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.Pul
 	}
 
 	return false, nil
+}
+
+func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
+	co := r.gitCommand("merge", "--squash", "--no-stat", commitlike)
+
+	b, err := co.CombinedOutput()
+	if err != nil {
+		r.logger.WithError(err).Infof("Merge failed with output: %s", string(b))
+		if b, err := r.gitCommand("reset", "--hard", "HEAD").CombinedOutput(); err != nil {
+			return false, fmt.Errorf("error resetting after failed squash for commitlike %s: %v. output: %s", commitlike, err, string(b))
+		}
+		return false, nil
+	}
+
+	b, err = r.gitCommand("commit", "--no-stat", "-m", "merge").CombinedOutput()
+	if err != nil {
+		r.logger.WithError(err).Infof("Commit after squash failed with output: %s", string(b))
+		return false, err
+	}
+
+	return true, nil
 }
 
 // MergeAndCheckout merges the provided headSHAs in order onto baseSHA using the provided strategy.

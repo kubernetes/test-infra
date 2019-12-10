@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
+	prowgithub "k8s.io/test-infra/prow/github"
 )
 
 func TestClone(t *testing.T) {
@@ -391,4 +392,94 @@ func TestMergeAndCheckout(t *testing.T) {
 		})
 	}
 
+}
+
+func TestMerging(t *testing.T) {
+	testCases := []struct {
+		name     string
+		strategy prowgithub.PullRequestMergeType
+		// branch -> filename -> content
+		branches   map[string]map[string][]byte
+		mergeOrder []string
+	}{
+		{
+			name:     "Multiple branches, squash strategy",
+			strategy: prowgithub.MergeSquash,
+			branches: map[string]map[string][]byte{
+				"pr-1": {"file-1": []byte("some-content")},
+				"pr-2": {"file-2": []byte("some-content")},
+			},
+			mergeOrder: []string{"pr-1", "pr-2"},
+		},
+		{
+			name:     "Multiple branches, mergeMerge strategy",
+			strategy: prowgithub.MergeMerge,
+			branches: map[string]map[string][]byte{
+				"pr-1": {"file-1": []byte("some-content")},
+				"pr-2": {"file-2": []byte("some-content")},
+			},
+			mergeOrder: []string{"pr-1", "pr-2"},
+		},
+	}
+
+	const org, repo = "org", "repo"
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc := tc
+			t.Parallel()
+
+			lg, c, err := localgit.New()
+			if err != nil {
+				t.Fatalf("Making local git repo: %v", err)
+			}
+			logrus.SetLevel(logrus.DebugLevel)
+			defer func() {
+				if err := lg.Clean(); err != nil {
+					t.Errorf("Error cleaning LocalGit: %v", err)
+				}
+				if err := c.Clean(); err != nil {
+					t.Errorf("Error cleaning Client: %v", err)
+				}
+			}()
+			if err := lg.MakeFakeRepo(org, repo); err != nil {
+				t.Fatalf("Making fake repo: %v", err)
+			}
+			baseSHA, err := lg.RevParse(org, repo, "HEAD")
+			if err != nil {
+				t.Fatalf("rev-parse HEAD: %v", err)
+			}
+
+			for branchName, branchContent := range tc.branches {
+				if err := lg.CheckoutNewBranch(org, repo, branchName); err != nil {
+					t.Fatalf("checkout new branch: %v", err)
+				}
+				if err := lg.AddCommit(org, repo, branchContent); err != nil {
+					t.Fatalf("addCommit: %v", err)
+				}
+			}
+
+			if err := lg.Checkout(org, repo, baseSHA); err != nil {
+			}
+
+			r, err := c.Clone(org, repo)
+			if err != nil {
+				t.Fatalf("clone: %v", err)
+			}
+			if err := r.Config("user.name", "prow"); err != nil {
+				t.Fatalf("config user.name: %v", err)
+			}
+			if err := r.Config("user.email", "prow@localhost"); err != nil {
+				t.Fatalf("config user.email: %v", err)
+			}
+			if err := r.Checkout(baseSHA); err != nil {
+				t.Fatalf("checkout baseSHA: %v", err)
+			}
+
+			for _, branch := range tc.mergeOrder {
+				if _, err := r.MergeWithStrategy("origin/"+branch, tc.strategy); err != nil {
+					t.Fatalf("mergeWithStrategy %s: %v", branch, err)
+				}
+			}
+		})
+	}
 }
