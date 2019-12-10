@@ -117,15 +117,24 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 	r.resourcesLock.Lock()
 	defer r.resourcesLock.Unlock()
 
-	// Finding Request Priority
+	logger := logrus.WithFields(logrus.Fields{
+		"type":       rType,
+		"state":      state,
+		"dest":       dest,
+		"owner":      owner,
+		"identifier": requestID,
+	})
+	logger.Debug("Determining request priority...")
 	ts := acquireRequestPriorityKey{rType: rType, state: state}
 	rank, new := r.requestMgr.GetRank(ts, requestID)
+	logger.WithFields(logrus.Fields{"rank": rank, "new": new}).Debug("Determined request priority.")
 
 	resources, err := r.Storage.GetResources()
 	if err != nil {
-		logrus.WithError(err).Errorf("could not get resources")
+		logger.WithError(err).Errorf("could not get resources")
 		return nil, &ResourceNotFound{rType}
 	}
+	logger.Debugf("Considering %d resources.", len(resources))
 
 	// For request priority we need to go over all the list until a matching rank
 	matchingResoucesCount := 0
@@ -137,17 +146,21 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 			if state == res.State && res.Owner == "" {
 				matchingResoucesCount++
 				if matchingResoucesCount >= rank {
+					logger = logger.WithField("resource", res.Name)
 					res.Owner = owner
 					res.State = dest
+					logger.Debug("Updating resource.")
 					updatedRes, err := r.Storage.UpdateResource(res)
 					if err != nil {
-						logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+						logger.WithError(err).Errorf("could not update resource %s", res.Name)
 						return nil, err
 					}
 					// Deleting this request since it has been fulfilled
 					if requestID != "" {
+						logger.Debug("Cleaning up requests.")
 						r.requestMgr.Delete(ts, requestID)
 					}
+					logger.Debug("Successfully acquired resource.")
 					return &updatedRes, nil
 				}
 			}
@@ -155,17 +168,17 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 	}
 
 	if new {
-		// Checking if this a dynamic resource
+		logger.Debug("Checking for associated dynamic resource type...")
 		lifeCycle, err := r.Storage.GetDynamicResourceLifeCycle(rType)
 		// Assuming error means no associated dynamic resource
 		if err == nil {
 			if typeCount < lifeCycle.MaxCount {
-				// Adding a new resource
+				logger.Debug("Adding new dynamic resources...")
 				res := common.NewResourceFromNewDynamicResourceLifeCycle(r.Storage.generateName(), &lifeCycle, r.now())
 				if err := r.Storage.AddResource(res); err != nil {
-					logrus.WithError(err).Warningf("unable to add a new resource of type %s", rType)
+					logger.WithError(err).Warningf("unable to add a new resource of type %s", rType)
 				}
-				logrus.Infof("Added dynamic resource %s of type %s", res.Name, res.Type)
+				logger.Infof("Added dynamic resource %s of type %s", res.Name, res.Type)
 			}
 		}
 	}
