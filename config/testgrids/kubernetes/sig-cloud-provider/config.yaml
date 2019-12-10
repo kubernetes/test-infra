@@ -2,6 +2,8 @@ dashboard_groups:
 - name: sig-cloud-provider
   dashboard_names:
     - sig-cloud-provider-apiserver-network-proxy
+    - sig-cloud-provider-image-pushes
 
 dashboards:
 - name: sig-cloud-provider-apiserver-network-proxy
+- name: sig-cloud-provider-image-pushes
