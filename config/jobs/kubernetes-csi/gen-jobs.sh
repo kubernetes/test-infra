@@ -21,11 +21,11 @@
 base="$(dirname $0)"
 
 # The latest stable Kubernetes version for testing alpha repos
-latest_stable_k8s_version="1.16.2"
-latest_stable_k8s_minor_version="1.16"
+latest_stable_k8s_version="1.17.0"
+latest_stable_k8s_minor_version="1.17"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -265,8 +265,8 @@ presubmits:
 EOF
 
     for tests in non-alpha alpha; do
-        for deployment in 1.14 1.15 1.16 1.17; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
-            for kubernetes in 1.14.6 1.15.3 1.16.2; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
+        for deployment in 1.15 1.16 1.17; do # must have a deploy/kubernetes-<version> dir in csi-driver-host-path
+            for kubernetes in 1.15.3 1.16.2 1.17.0; do # these versions must have pre-built kind images (see https://hub.docker.com/r/kindest/node/tags)
                 # We could generate these pre-submit jobs for all combinations, but to save resources in the Prow
                 # cluster we only do it for those cases where the deployment matches the Kubernetes version.
                 # Once we have more than two supported Kubernetes releases we should limit this to the most
@@ -485,8 +485,8 @@ periodics:
 EOF
 
 for tests in non-alpha alpha; do
-    for deployment in 1.14 1.15 1.16; do
-        for kubernetes in 1.14 1.15 1.16 master; do
+    for deployment in 1.15 1.16 1.17; do
+        for kubernetes in 1.15 1.16 1.17 master; do
             if [ "$tests" = "alpha" ]; then
                 # No version skew testing of alpha features, deployment has to match Kubernetes.
                 if ! echo "$kubernetes" | grep -q "^$deployment"; then
@@ -542,7 +542,7 @@ done
 # The canary builds use the latest sidecars from master and run them on
 # specific Kubernetes versions, using the default deployment for that Kubernetes
 # release.
-for kubernetes in 1.14.6 1.15.3 1.16.2 master; do
+for kubernetes in 1.15.3 1.16.2 1.17.0 master; do
     actual="${kubernetes/master/latest}"
 
     for tests in non-alpha alpha; do
