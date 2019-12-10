@@ -227,7 +227,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
-      - --gcp-nodes=83
+      - --gcp-nodes=84
       - --gcp-project=kubemark-scalability-testing
       - --gcp-zone=us-east1-b
       - --kubemark
