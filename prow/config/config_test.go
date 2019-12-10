@@ -1758,93 +1758,96 @@ in_repo_config:
 	}
 
 	for _, tc := range testCases {
-		// save the config
-		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		t.Run(tc.name, func(t *testing.T) {
 
-		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
-			t.Fatalf("fail to write prow config: %v", err)
-		}
-
-		jobConfig := ""
-		if len(tc.jobConfigs) > 0 {
-			jobConfigDir, err := ioutil.TempDir("", "jobConfig")
+			// save the config
+			prowConfigDir, err := ioutil.TempDir("", "prowConfig")
 			if err != nil {
 				t.Fatalf("fail to make tempdir: %v", err)
 			}
-			defer os.RemoveAll(jobConfigDir)
+			defer os.RemoveAll(prowConfigDir)
 
-			// cover both job config as a file & a dir
-			if len(tc.jobConfigs) == 1 {
-				// a single file
-				jobConfig = filepath.Join(jobConfigDir, "config.yaml")
-				if err := ioutil.WriteFile(jobConfig, []byte(tc.jobConfigs[0]), 0666); err != nil {
-					t.Fatalf("fail to write job config: %v", err)
+			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+			if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			jobConfig := ""
+			if len(tc.jobConfigs) > 0 {
+				jobConfigDir, err := ioutil.TempDir("", "jobConfig")
+				if err != nil {
+					t.Fatalf("fail to make tempdir: %v", err)
 				}
-			} else {
-				// a dir
-				jobConfig = jobConfigDir
-				for idx, config := range tc.jobConfigs {
-					subConfig := filepath.Join(jobConfigDir, fmt.Sprintf("config_%d.yaml", idx))
-					if err := ioutil.WriteFile(subConfig, []byte(config), 0666); err != nil {
+				defer os.RemoveAll(jobConfigDir)
+
+				// cover both job config as a file & a dir
+				if len(tc.jobConfigs) == 1 {
+					// a single file
+					jobConfig = filepath.Join(jobConfigDir, "config.yaml")
+					if err := ioutil.WriteFile(jobConfig, []byte(tc.jobConfigs[0]), 0666); err != nil {
 						t.Fatalf("fail to write job config: %v", err)
 					}
-				}
-			}
-		}
-
-		cfg, err := Load(prowConfig, jobConfig)
-		if tc.expectError && err == nil {
-			t.Errorf("tc %s: Expect error, but got nil", tc.name)
-		} else if !tc.expectError && err != nil {
-			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
-		}
-
-		if err == nil {
-			if tc.expectPodNameSpace == "" {
-				tc.expectPodNameSpace = "default"
-			}
-
-			if cfg.PodNamespace != tc.expectPodNameSpace {
-				t.Errorf("tc %s: Expect PodNamespace %s, but got %v", tc.name, tc.expectPodNameSpace, cfg.PodNamespace)
-			}
-
-			if len(tc.expectEnv) > 0 {
-				for _, j := range cfg.AllStaticPresubmits(nil) {
-					if envs, ok := tc.expectEnv[j.Name]; ok {
-						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
-							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
-						}
-					}
-				}
-
-				for _, j := range cfg.AllPostsubmits(nil) {
-					if envs, ok := tc.expectEnv[j.Name]; ok {
-						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
-							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
-						}
-					}
-				}
-
-				for _, j := range cfg.AllPeriodics() {
-					if envs, ok := tc.expectEnv[j.Name]; ok {
-						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
-							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+				} else {
+					// a dir
+					jobConfig = jobConfigDir
+					for idx, config := range tc.jobConfigs {
+						subConfig := filepath.Join(jobConfigDir, fmt.Sprintf("config_%d.yaml", idx))
+						if err := ioutil.WriteFile(subConfig, []byte(config), 0666); err != nil {
+							t.Fatalf("fail to write job config: %v", err)
 						}
 					}
 				}
 			}
-		}
 
-		if tc.verify != nil {
-			if err := tc.verify(cfg); err != nil {
-				t.Fatalf("verify failed:  %v", err)
+			cfg, err := Load(prowConfig, jobConfig)
+			if tc.expectError && err == nil {
+				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+			} else if !tc.expectError && err != nil {
+				t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
-		}
+
+			if err == nil {
+				if tc.expectPodNameSpace == "" {
+					tc.expectPodNameSpace = "default"
+				}
+
+				if cfg.PodNamespace != tc.expectPodNameSpace {
+					t.Errorf("tc %s: Expect PodNamespace %s, but got %v", tc.name, tc.expectPodNameSpace, cfg.PodNamespace)
+				}
+
+				if len(tc.expectEnv) > 0 {
+					for _, j := range cfg.AllStaticPresubmits(nil) {
+						if envs, ok := tc.expectEnv[j.Name]; ok {
+							if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+								t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+							}
+						}
+					}
+
+					for _, j := range cfg.AllPostsubmits(nil) {
+						if envs, ok := tc.expectEnv[j.Name]; ok {
+							if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+								t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+							}
+						}
+					}
+
+					for _, j := range cfg.AllPeriodics() {
+						if envs, ok := tc.expectEnv[j.Name]; ok {
+							if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+								t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+							}
+						}
+					}
+				}
+			}
+
+			if tc.verify != nil {
+				if err := tc.verify(cfg); err != nil {
+					t.Fatalf("verify failed:  %v", err)
+				}
+			}
+		})
 	}
 }
 
