@@ -323,7 +323,11 @@ presubmits:
         command:
           - "bazel"
         args:
+          - "--host_jvm_args=-Xmx500m"
+          - "--host_jvm_args=-Xms500m"
           - "test"
+          - "--noshow_progress"
+          - "--noshow_loading_progress"
           - "--define=grpc_no_ares=true"
           - "//backend/..."
   - name: kubeflow-pipeline-e2e-test
