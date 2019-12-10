@@ -127,6 +127,12 @@ const (
 	kubeProxyImageName             = "kube-proxy-amd64"
 )
 
+const (
+	vmTypeVMSS              = "vmss"
+	vmTypeStandard          = "standard"
+	availabilityProfileVMSS = "VirtualMachineScaleSets"
+)
+
 type aksDeploymentMethod int
 
 const (
@@ -456,12 +462,6 @@ func newAksEngine() (*Cluster, error) {
 		return nil, err
 	}
 
-	// CLOUD_CONFIG is required when running Azure-specific e2e tests
-	// See https://github.com/kubernetes/kubernetes/blob/master/hack/ginkgo-e2e.sh#L113-L118
-	if err = c.populateAzureCloudConfig(); err != nil {
-		return nil, err
-	}
-
 	if err := c.dockerLogin(); err != nil {
 		return nil, err
 	}
@@ -497,7 +497,7 @@ func getAKSDeploymentMethod(k8sRelease string) aksDeploymentMethod {
 	return customHyperkube
 }
 
-func (c *Cluster) populateApiModelTemplate() error {
+func (c *Cluster) populateAPIModelTemplate() error {
 	var err error
 	v := AksEngineAPIModel{}
 	if c.apiModelPath != "" {
@@ -634,6 +634,15 @@ func (c *Cluster) populateApiModelTemplate() error {
 	if c.isAzureStackCloud() {
 		v.Properties.CustomCloudProfile.PortalURL = c.azureCustomCloudURL
 	}
+
+	if len(v.Properties.AgentPoolProfiles) > 0 {
+		// Default to VirtualMachineScaleSets if AvailabilityProfile is empty
+		isVMSS := v.Properties.AgentPoolProfiles[0].AvailabilityProfile == "" || v.Properties.AgentPoolProfiles[0].AvailabilityProfile == availabilityProfileVMSS
+		if err := c.populateAzureCloudConfig(isVMSS); err != nil {
+			return err
+		}
+	}
+
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
 	err = ioutil.WriteFile(c.apiModelPath, apiModel, 0644)
@@ -775,8 +784,10 @@ func (c *Cluster) createCluster() error {
 
 }
 
-func (c *Cluster) populateAzureCloudConfig() error {
-	cloudConfig, err := json.MarshalIndent(map[string]string{
+func (c *Cluster) populateAzureCloudConfig(isVMSS bool) error {
+	// CLOUD_CONFIG is required when running Azure-specific e2e tests
+	// See https://github.com/kubernetes/kubernetes/blob/master/hack/ginkgo-e2e.sh#L113-L118
+	cc := map[string]string{
 		"cloud":           c.azureEnvironment,
 		"tenantId":        c.credentials.TenantID,
 		"subscriptionId":  c.credentials.SubscriptionID,
@@ -784,7 +795,14 @@ func (c *Cluster) populateAzureCloudConfig() error {
 		"aadClientSecret": c.credentials.ClientSecret,
 		"resourceGroup":   c.resourceGroup,
 		"location":        c.location,
-	}, "", "    ")
+	}
+	if isVMSS {
+		cc["vmType"] = vmTypeVMSS
+	} else {
+		cc["vmType"] = vmTypeStandard
+	}
+
+	cloudConfig, err := json.MarshalIndent(cc, "", "    ")
 	if err != nil {
 		return fmt.Errorf("error creating Azure cloud config: %v", err)
 	}
@@ -1034,7 +1052,7 @@ func (c *Cluster) Up() error {
 		c.apiModelPath = templateFile
 	}
 
-	err = c.populateApiModelTemplate()
+	err = c.populateAPIModelTemplate()
 	if err != nil {
 		return fmt.Errorf("failed to populate aks-engine apimodel template: %v", err)
 	}
@@ -1057,7 +1075,8 @@ func (c *Cluster) Up() error {
 	if err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
 	}
-	return err
+
+	return nil
 }
 
 func (c *Cluster) BuildK8s(b buildStrategy) error {
