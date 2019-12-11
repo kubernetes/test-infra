@@ -326,8 +326,9 @@ periodics:
       name: ""
       resources: {}
   tags:
-  - 'perfDashPrefix: gce-100Nodes-stable3'
+  - 'perfDashPrefix: gce-100Nodes-1.14'
   - 'perfDashJobType: performance'
+  - "perfDashBuildsCount: 500"
 - annotations:
     description: Runs tests on a Kubernetes 1.14 cluster with Windows nodes on GCE
     fork-per-release-generic-suffix: "true"
