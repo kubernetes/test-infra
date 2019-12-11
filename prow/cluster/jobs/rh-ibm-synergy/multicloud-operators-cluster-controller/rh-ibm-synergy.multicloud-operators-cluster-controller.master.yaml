@@ -1,0 +1,150 @@
+presubmits:
+  rh-ibm-synergy/multicloud-operators-cluster-controller:
+  - name: build_multicloud-operators-cluster-controller
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
+    always_run: true
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
+    rerun_command: /test build multicloud-operators-cluster-controller
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_multicloud-operators-cluster-controller
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
+    always_run: true
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
+    rerun_command: /test check multicloud-operators-cluster-controller
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_multicloud-operators-cluster-controller
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
+    always_run: true
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
+    rerun_command: /test test multicloud-operators-cluster-controller
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  rh-ibm-synergy/multicloud-operators-cluster-controller:
+  - name: check-multicloud-operators-cluster-controller_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
+    spec:
+      containers:
+      - command:
+        - make
+        - lint
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test-multicloud-operators-cluster-controller_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
+  # - name: coverage-multicloud-operators-cluster-controller_postsubmit
+  #   branches:
+  #   - ^master$
+  #   decorate: true
+  #   decoration_config:
+  #     ssh_key_secrets:
+  #     - ssh-secret
+  #   clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
+  #   path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
+  #   spec:
+  #     containers:
+  #     - command:
+  #       - make
+  #       - coverage
+  #       image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+  #       name: ""
+  #       env:
+  #       - name: CODECOV_TOKEN
+  #         valueFrom:
+  #           secretKeyRef:
+  #             name: rh-ibm-synergy-multicloud-operators-cluster-controller-codecov-token
+  #             key: codecov-token
+  #       securityContext:
+  #         privileged: true
+  - name: build-multicloud-operators-cluster-controller_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
+    spec:
+      containers:
+      - command:
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tools:2019-10-08T07-03-25
+        name: ""
+        securityContext:
+          privileged: true
