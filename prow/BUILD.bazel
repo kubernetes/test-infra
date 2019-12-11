@@ -155,7 +155,6 @@ filegroup(
         "//prow/statusreconciler:all-srcs",
         "//prow/test:all-srcs",
         "//prow/tide:all-srcs",
-        "//prow/version:all-srcs",
     ],
     tags = ["automanaged"],
 )

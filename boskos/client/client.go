@@ -33,12 +33,13 @@ import (
 	"syscall"
 	"time"
 
-	multierror "github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/go-multierror"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
+	"k8s.io/test-infra/prow/config/secret"
 )
 
 var (
@@ -60,9 +61,11 @@ type Client struct {
 	// http is the http.Client used to interact with the boskos REST API
 	http http.Client
 
-	owner string
-	url   string
-	lock  sync.Mutex
+	owner       string
+	url         string
+	username    string
+	getPassword func() []byte
+	lock        sync.Mutex
 
 	storage storage.PersistenceLayer
 }
@@ -71,12 +74,37 @@ type Client struct {
 //
 // Clients created with this function default to retrying failed connection
 // attempts three times with a ten second pause between each attempt.
-func NewClient(owner string, url string) *Client {
+func NewClient(owner string, urlString, username, passwordFile string) (*Client, error) {
+
+	if (username == "") != (passwordFile == "") {
+		return nil, fmt.Errorf("username and passwordFile must be specified together")
+	}
+
+	var getPassword func() []byte
+	if passwordFile != "" {
+		u, err := url.Parse(urlString)
+		if err != nil {
+			return nil, err
+		}
+		if u.Scheme != "https" {
+			// returning error here would make the tests hard
+			// we print out a warning message here instead
+			fmt.Printf("[WARNING] should NOT use password without enabling TLS: '%s'\n", urlString)
+		}
+
+		sa := &secret.Agent{}
+		if err := sa.Start([]string{passwordFile}); err != nil {
+			logrus.WithError(err).Fatal("Failed to start secrets agent")
+		}
+		getPassword = sa.GetTokenGenerator(passwordFile)
+	}
 
 	client := &Client{
-		url:     url,
-		owner:   owner,
-		storage: storage.NewMemoryStorage(),
+		url:         urlString,
+		username:    username,
+		getPassword: getPassword,
+		owner:       owner,
+		storage:     storage.NewMemoryStorage(),
 	}
 
 	// Configure the dialer to attempt three additional times to establish
@@ -104,7 +132,7 @@ func NewClient(owner string, url string) *Client {
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 
-	return client
+	return client, nil
 }
 
 // public method
@@ -518,6 +546,9 @@ func (c *Client) httpGet(action string, values url.Values) (*http.Response, erro
 	if err != nil {
 		return nil, err
 	}
+	if c.username != "" && c.getPassword != nil {
+		req.SetBasicAuth(c.username, string(c.getPassword()))
+	}
 	return c.http.Do(req)
 }
 
@@ -528,6 +559,9 @@ func (c *Client) httpPost(action string, values url.Values, contentType string, 
 	req, err := http.NewRequest(http.MethodPost, u.String(), body)
 	if err != nil {
 		return nil, err
+	}
+	if c.username != "" && c.getPassword != nil {
+		req.SetBasicAuth(c.username, string(c.getPassword()))
 	}
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)

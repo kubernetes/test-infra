@@ -33,7 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/errorutil"
@@ -63,6 +63,9 @@ type options struct {
 	jobConfigPath string
 	pluginConfig  string
 
+	prowYAMLRepoName string
+	prowYAMLPath     string
+
 	warnings        flagutil.Strings
 	excludeWarnings flagutil.Strings
 	strict          bool
@@ -90,6 +93,7 @@ const (
 	tideStrictBranchWarning      = "tide-strict-branch"
 	nonDecoratedJobsWarning      = "non-decorated-jobs"
 	jobNameLengthWarning         = "long-job-names"
+	jobRefsDuplicationWarning    = "duplicate-job-refs"
 	needsOkToTestWarning         = "needs-ok-to-test"
 	validateOwnersWarning        = "validate-owners"
 	missingTriggerWarning        = "missing-trigger"
@@ -104,6 +108,7 @@ var defaultWarnings = []string{
 	mismatchedTideLenientWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
+	jobRefsDuplicationWarning,
 	needsOkToTestWarning,
 	validateOwnersWarning,
 	missingTriggerWarning,
@@ -123,10 +128,19 @@ func getAllWarnings() []string {
 	return all
 }
 
-func (o *options) Validate() error {
+func (o *options) DefaultAndValidate() error {
 	allWarnings := getAllWarnings()
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
+	}
+
+	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
+		return errors.New("--prow-yaml-repo-path requires --prow-yaml-repo-name to be set")
+	}
+	if o.prowYAMLRepoName != "" {
+		if o.prowYAMLPath == "" {
+			o.prowYAMLPath = fmt.Sprintf("/home/prow/go/src/github.com/%s/.prow.yaml", o.prowYAMLRepoName)
+		}
 	}
 	for _, warning := range o.warnings.Strings() {
 		found := false
@@ -156,6 +170,8 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
+	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
@@ -164,14 +180,14 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	if err := flag.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %v", err)
 	}
-	if err := o.Validate(); err != nil {
+	if err := o.DefaultAndValidate(); err != nil {
 		return fmt.Errorf("Invalid options: %v", err)
 	}
 	return nil
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("checkconfig")
 
 	o, err := parseOptions()
 	if err != nil {
@@ -192,6 +208,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error loading Prow config.")
 	}
 	cfg := configAgent.Config()
+
+	if o.prowYAMLRepoName != "" {
+		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName); err != nil {
+			logrus.WithError(err).Fatal("Error validating .prow.yaml")
+		}
+	}
 
 	pluginAgent := plugins.ConfigAgent{}
 	var pcfg *plugins.Configuration
@@ -246,6 +268,11 @@ func main() {
 	}
 	if o.warningEnabled(jobNameLengthWarning) {
 		if err := validateJobRequirements(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(jobRefsDuplicationWarning) {
+		if err := validateJobExtraRefs(cfg.JobConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -519,6 +546,18 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
 		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
+	}
+	return errorutil.NewAggregate(validationErrs...)
+}
+
+func validateJobExtraRefs(cfg config.JobConfig) error {
+	var validationErrs []error
+	for repo, presubmits := range cfg.PresubmitsStatic {
+		for _, presubmit := range presubmits {
+			if err := config.ValidateRefs(repo, presubmit.JobBase); err != nil {
+				validationErrs = append(validationErrs, err)
+			}
+		}
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -950,5 +989,26 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	if missing := configured.difference(enabled).items(); len(missing) > 0 {
 		return fmt.Errorf("the following repos have jobs configured but do not have the %s plugin enabled: %s", trigger.PluginName, strings.Join(missing, ", "))
 	}
+	return nil
+}
+
+func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) error {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("failed to read file %q: %v", filePath, err)
+		}
+		return nil
+	}
+
+	prowYAML := &config.ProwYAML{}
+	if err := yaml.Unmarshal(data, prowYAML); err != nil {
+		return fmt.Errorf("failed to deserialize content of %q: %v", filePath, err)
+	}
+
+	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
+		return fmt.Errorf("failed to validate .prow.yaml: %v", err)
+	}
+
 	return nil
 }

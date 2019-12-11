@@ -61,7 +61,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 					c.Env = fixEnvVars(c.Env, version)
 					c.Image = fixImage(c.Image, version)
 					var err error
-					c.Args, err = performArgReplacements(c.Args, version, p.Annotations[replacementAnnotation])
+					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %v", postsubmit.Name, err)
 					}
@@ -90,7 +90,7 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 					c.Env = fixEnvVars(c.Env, version)
 					c.Image = fixImage(c.Image, version)
 					var err error
-					c.Args, err = performArgReplacements(c.Args, version, p.Annotations[replacementAnnotation])
+					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %v", presubmit.Name, err)
 					}
@@ -121,7 +121,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 					c.Args = fixBootstrapArgs(c.Args, version)
 				}
 				var err error
-				c.Args, err = performArgReplacements(c.Args, version, p.Annotations[replacementAnnotation])
+				c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 				if err != nil {
 					return nil, fmt.Errorf("%s: %v", periodic.Name, err)
 				}
@@ -148,6 +148,11 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 				p.Interval = ""
 				p.Annotations[cronAnnotation] = strings.Join(c[1:], ", ")
 			}
+		}
+		var err error
+		p.Tags, err = performReplacement(p.Tags, version, p.Annotations[replacementAnnotation])
+		if err != nil {
+			return nil, fmt.Errorf("%s: %v", periodic.Name, err)
 		}
 		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
 		newPeriodics = append(newPeriodics, p)
@@ -185,7 +190,7 @@ func evaluateTemplate(s string, c interface{}) (string, error) {
 	return wr.String(), nil
 }
 
-func performArgReplacements(args []string, version, replacements string) ([]string, error) {
+func performReplacement(args []string, version, replacements string) ([]string, error) {
 	if args == nil {
 		return nil, nil
 	}

@@ -35,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
+	utilpointer "k8s.io/utils/pointer"
 )
 
 func TestHelpProvider(t *testing.T) {
@@ -597,6 +598,84 @@ func TestTrustedUser(t *testing.T) {
 			}
 			if trusted != tc.expectedTrusted {
 				t.Errorf("For case %s, expect result: %v, but got: %v", tc.name, tc.expectedTrusted, trusted)
+			}
+		})
+	}
+}
+
+func TestGetPresubmits(t *testing.T) {
+	const orgRepo = "my-org/my-repo"
+
+	testCases := []struct {
+		name string
+		cfg  *config.Config
+
+		expectedPresubmits sets.String
+	}{
+		{
+			name: "Result of GetPresubmits is used by default",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						orgRepo: {{
+							JobBase: config.JobBase{Name: "my-static-presubmit"},
+						}},
+					},
+					ProwYAMLGetter: func(_ *config.Config, _ *git.Client, _, _ string, _ ...string) (*config.ProwYAML, error) {
+						return &config.ProwYAML{
+							Presubmits: []config.Presubmit{{
+								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
+							}},
+						}, nil
+					},
+				},
+				ProwConfig: config.ProwConfig{
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+				},
+			},
+
+			expectedPresubmits: sets.NewString("my-inrepoconfig-presubmit", "my-static-presubmit"),
+		},
+		{
+			name: "Fallback to static presubmits",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						orgRepo: {{
+							JobBase: config.JobBase{Name: "my-static-presubmit"},
+						}},
+					},
+					ProwYAMLGetter: func(_ *config.Config, _ *git.Client, _, _ string, _ ...string) (*config.ProwYAML, error) {
+						return &config.ProwYAML{
+							Presubmits: []config.Presubmit{{
+								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
+							}},
+						}, errors.New("some error")
+					},
+				},
+				ProwConfig: config.ProwConfig{
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+				},
+			},
+
+			expectedPresubmits: sets.NewString("my-static-presubmit"),
+		},
+	}
+
+	shaGetter := func() (string, error) {
+		return "", nil
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			presubmits := getPresubmits(logrus.NewEntry(logrus.New()), nil, tc.cfg, orgRepo, shaGetter, shaGetter)
+			actualPresubmits := sets.String{}
+			for _, presubmit := range presubmits {
+				actualPresubmits.Insert(presubmit.Name)
+			}
+
+			if !tc.expectedPresubmits.Equal(actualPresubmits) {
+				t.Errorf("got a different set of presubmits than expected, diff: %v", tc.expectedPresubmits.Difference(actualPresubmits))
 			}
 		})
 	}

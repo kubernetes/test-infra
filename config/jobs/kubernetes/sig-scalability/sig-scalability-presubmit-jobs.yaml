@@ -52,7 +52,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         resources:
           requests:
             memory: "6Gi"
@@ -96,10 +96,11 @@ presubmits:
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=240m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         resources:
           requests:
             memory: "6Gi"
@@ -144,10 +145,11 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testoverrides=./testing/density/2000_nodes/override.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=540m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         resources:
           requests:
             memory: "6Gi"
@@ -169,7 +171,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -241,7 +243,7 @@ presubmits:
       preset-e2e-kubemark-gce-scale: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -257,7 +259,7 @@ presubmits:
         - --cluster=
         - --extract=local
         - --gcp-node-size=n1-standard-8
-        - --gcp-nodes=83
+        - --gcp-nodes=84
         - --gcp-project=k8s-presubmit-scale
         - --gcp-zone=us-east1-b
         - --kubemark
@@ -273,6 +275,7 @@ presubmits:
         - --test-cmd-args=--report-dir=/workspace/_artifacts
         - --test-cmd-args=--testconfig=testing/density/config.yaml
         - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=1200m
         - --use-logexporter
@@ -338,7 +341,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=100m
         - --use-logexporter
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         resources:
           requests:
             memory: "6Gi"
@@ -402,7 +405,7 @@ presubmits:
             - --test-cmd-name=ClusterLoaderV2
             - --timeout=100m
             - --use-logexporter
-          image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+          image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
           resources:
             requests:
               memory: "6Gi"

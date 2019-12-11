@@ -549,7 +549,7 @@ func TestParseOwnersFile(t *testing.T) {
 				Patch:    test.patch,
 			}
 
-			r, err := c.Clone("org/repo")
+			r, err := c.Clone("org", "repo")
 			if err != nil {
 				t.Fatalf("error cloning the repo: %v", err)
 			}

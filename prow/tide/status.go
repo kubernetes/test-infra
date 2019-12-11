@@ -334,10 +334,9 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 		repo := string(pr.Repository.Name)
 		branch := string(pr.BaseRef.Name)
 		headSHA := string(pr.HeadRefOID)
+		// baseSHA is an empty string for any PR that doesn't have a corresponding merge pool
 		baseSHA := baseSHAs[poolKey(org, repo, branch)]
-		baseSHAGetter := func() (string, error) {
-			return baseSHA, nil
-		}
+		baseSHAGetter := newBaseSHAGetter(baseSHAs, sc.ghc, org, repo, branch)
 
 		cr, err := getContextCheckerWithRequiredContexts(sc.config(), sc.gc, org, repo, branch, baseSHAGetter, headSHA, requiredContexts[prKey(pr)])
 		if err != nil {
@@ -485,6 +484,9 @@ func (sc *statusController) waitSync() {
 			pool := sc.poolPRs
 			blocks := sc.blocks
 			baseSHAs := sc.baseSHAs
+			if baseSHAs == nil {
+				baseSHAs = map[string]string{}
+			}
 			requiredContexts := sc.requiredContexts
 			sc.Unlock()
 			sc.sync(pool, blocks, baseSHAs, requiredContexts)
@@ -550,6 +552,22 @@ func (sc *statusController) search() []PullRequest {
 	sc.LatestPR.Time = latest.Add(-30 * time.Second)
 	log.WithField("latestPR", sc.LatestPR).Debug("Advanced start time")
 	return prs
+}
+
+// newBaseSHAGetter is a refGetter that will look up the baseSHA from GitHub if necessary
+// and if it did so, store in in the baseSHA map
+func newBaseSHAGetter(baseSHAs map[string]string, ghc githubClient, org, repo, branch string) config.RefGetter {
+	return func() (string, error) {
+		if sha, exists := baseSHAs[poolKey(org, repo, branch)]; exists {
+			return sha, nil
+		}
+		baseSHA, err := ghc.GetRef(org, repo, "heads/"+branch)
+		if err != nil {
+			return "", err
+		}
+		baseSHAs[poolKey(org, repo, branch)] = baseSHA
+		return baseSHAs[poolKey(org, repo, branch)], nil
+	}
 }
 
 func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {

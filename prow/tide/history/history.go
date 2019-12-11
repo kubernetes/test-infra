@@ -83,7 +83,12 @@ func readHistory(maxRecordsPerKey int, opener io.Opener, path string) (map[strin
 }
 
 func writeHistory(opener io.Opener, path string, hist map[string][]*Record) error {
-	writer, err := opener.Writer(context.Background(), path)
+	// a write's duration will scale with the volume of data to write but large
+	// data sets can finish in about 500ms; a timeout of 30s should not evict
+	// well-behaved writes
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	writer, err := opener.Writer(ctx, path)
 	if err != nil {
 		return fmt.Errorf("open: %v", err)
 	}

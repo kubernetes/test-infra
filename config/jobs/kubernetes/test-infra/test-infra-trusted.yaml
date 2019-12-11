@@ -177,7 +177,7 @@ postsubmits:
           secretName: deployer-service-account
   - name: post-test-infra-push-boskos
     cluster: test-infra-trusted
-    run_if_changed: '^(boskos\/|maintenance\/aws-janitor)'
+    run_if_changed: '^boskos/'
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "boskos"
@@ -877,7 +877,7 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20191024-5047392
+      - image: gcr.io/k8s-testimages/image-builder:v20191126-282e49f
         command:
         - /run.sh
         args:
@@ -1120,7 +1120,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20191125-74998fac1
+      image: gcr.io/k8s-prow/branchprotector:v20191210-5844d8374
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1154,7 +1154,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20191125-74998fac1
+      image: gcr.io/k8s-prow/label_sync:v20191210-5844d8374
       command:
       - /app/label_sync/app.binary
       args:
@@ -1230,7 +1230,7 @@ periodics:
         secretName: k8s-artifacts-prod-service-account
   annotations:
     testgrid-dashboards: sig-release-misc
-  # TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
+# TODO: Move this job to a K8s cluster owned by kubernetes-wg-k8s-infra@googlegroups.com.
 - interval: 1h
   cluster: test-infra-trusted
   max_concurrency: 1
@@ -1242,7 +1242,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-1.17
       command:
       - infra/gcp/backup_tools/backup.sh
       env:
@@ -1251,8 +1251,6 @@ periodics:
       # needs it to be defined).
       - name: GOPATH
         value: /go
-      - name: GCRANE_REF
-        value: f8574ec722f4dd4e2703689ea2ffe10c2021adc9 # Known-good commit from 2019-11-15
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/k8s-artifacts-prod-bak-service-account/service-account.json
       volumeMounts:

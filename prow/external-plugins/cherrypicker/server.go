@@ -30,7 +30,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -49,7 +49,7 @@ type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	GetPullRequests(org, repo string) ([]github.PullRequest, error)
-	GetRepo(owner, name string) (github.Repo, error)
+	GetRepo(owner, name string) (github.FullRepo, error)
 	IsMember(org, user string) (bool, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
@@ -79,9 +79,9 @@ type Server struct {
 	botName        string
 	email          string
 
-	gc *git.Client
+	gc git.ClientFactory
 	// Used for unit testing
-	push func(repo, newBranch string) error
+	push func(newBranch string) error
 	ghc  githubClient
 	log  *logrus.Entry
 
@@ -358,7 +358,7 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.Clone(org + "/" + repo)
+	r, err := s.gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}
@@ -422,12 +422,12 @@ func (s *Server) handle(l *logrus.Entry, requestor string, comment *github.Issue
 		return s.createComment(org, repo, num, comment, resp)
 	}
 
-	push := r.Push
+	push := r.ForcePush
 	if s.push != nil {
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(repo, newBranch); err != nil {
+	if err := push(newBranch); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.createComment(org, repo, num, comment, resp)
@@ -509,7 +509,7 @@ func waitForRepo(owner, name string, ghc githubClient) error {
 				continue
 			}
 			ghErr = ""
-			if repoExists(owner+"/"+name, []github.Repo{repo}) {
+			if repoExists(owner+"/"+name, []github.Repo{repo.Repo}) {
 				return nil
 			}
 		case <-after:

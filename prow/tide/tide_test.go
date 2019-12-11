@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilpointer "k8s.io/utils/pointer"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -89,11 +90,11 @@ func TestAccumulateBatch(t *testing.T) {
 		state prowapi.ProwJobState
 	}
 	tests := []struct {
-		name             string
-		presubmits       []config.Presubmit
-		pulls            []pull
-		prowJobs         []prowjob
-		fakeInRepoConfig map[string][]config.Presubmit
+		name           string
+		presubmits     []config.Presubmit
+		pulls          []pull
+		prowJobs       []prowjob
+		prowYAMLGetter config.ProwYAMLGetter
 
 		merges  []int
 		pending bool
@@ -187,13 +188,10 @@ func TestAccumulateBatch(t *testing.T) {
 				{job: "bar", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
 				{job: "baz", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
 			},
-			// We need to use the concatenated headSHAs of all PRs here, as GetPresubmits is called
-			// for the whole batch and not for individual PRs, because inrepoconfig allows one Pr to
-			// change the required PRs for all batch members
-			fakeInRepoConfig: map[string][]config.Presubmit{"ab": {{
+			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"a", "b"}, []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "boo"},
-			}}},
+			}}),
 		},
 		{
 			name:       "successful run with PR that requires additional job",
@@ -205,10 +203,6 @@ func TestAccumulateBatch(t *testing.T) {
 				{job: "baz", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
 				{job: "boo", state: prowapi.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
 			},
-			fakeInRepoConfig: map[string][]config.Presubmit{"b": {{
-				AlwaysRun: true,
-				Reporter:  config.Reporter{Context: "boo"},
-			}}},
 			merges: []int{1, 2},
 		},
 		{
@@ -263,6 +257,11 @@ func TestAccumulateBatch(t *testing.T) {
 			for idx := range test.presubmits {
 				test.presubmits[idx].AlwaysRun = true
 			}
+
+			inrepoconfig := config.InRepoConfig{}
+			if test.prowYAMLGetter != nil {
+				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+			}
 			c := &Controller{
 				config: func() *config.Config {
 					return &config.Config{
@@ -270,7 +269,10 @@ func TestAccumulateBatch(t *testing.T) {
 							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": test.presubmits,
 							},
-							FakeInRepoConfig: test.fakeInRepoConfig,
+							ProwYAMLGetter: test.prowYAMLGetter,
+						},
+						ProwConfig: config.ProwConfig{
+							InRepoConfig: inrepoconfig,
 						},
 					}
 				},
@@ -510,6 +512,8 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
+	err error
+
 	prs       []PullRequest
 	refs      map[string]string
 	merged    int
@@ -522,7 +526,7 @@ type fgc struct {
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
-	return f.refs[o+"/"+r+" "+ref], nil
+	return f.refs[o+"/"+r+" "+ref], f.err
 }
 
 func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
@@ -2208,7 +2212,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		initialChangeCache map[changeCacheKey][]string
 		presubmits         []config.Presubmit
 		prs                []PullRequest
-		fakeInRepoConfig   map[string][]config.Presubmit
+		prowYAMLGetter     config.ProwYAMLGetter
 
 		expectedPresubmits  map[int][]config.Presubmit
 		expectedChangeCache map[changeCacheKey][]string
@@ -2410,10 +2414,10 @@ func TestPresubmitsByPull(t *testing.T) {
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "always"},
 			}},
-			fakeInRepoConfig: map[string][]config.Presubmit{"1": {{
+			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"1"}, []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "inrepoconfig"},
-			}}},
+			}}),
 			prs: []PullRequest{
 				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
 			},
@@ -2422,6 +2426,27 @@ func TestPresubmitsByPull(t *testing.T) {
 					{AlwaysRun: true, Reporter: config.Reporter{Context: "always"}},
 					{AlwaysRun: true, Reporter: config.Reporter{Context: "inrepoconfig"}},
 				},
+				100: {
+					{AlwaysRun: true, Reporter: config.Reporter{Context: "always"}},
+				},
+			},
+		},
+		{
+			name: "broken inrepoconfig doesn't break the whole subpool",
+			presubmits: []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "always"},
+			}},
+			prowYAMLGetter: func(_ *config.Config, _ *git.Client, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+				if len(headRefs) == 1 && headRefs[0] == "1" {
+					return nil, errors.New("you shall not get jobs")
+				}
+				return &config.ProwYAML{}, nil
+			},
+			prs: []PullRequest{
+				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{
 				100: {
 					{AlwaysRun: true, Reporter: config.Reporter{Context: "always"}},
 				},
@@ -2444,7 +2469,10 @@ func TestPresubmitsByPull(t *testing.T) {
 			"/":       tc.presubmits,
 			"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
 		})
-		cfg.FakeInRepoConfig = tc.fakeInRepoConfig
+		if tc.prowYAMLGetter != nil {
+			cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+			cfg.ProwYAMLGetter = tc.prowYAMLGetter
+		}
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{
@@ -2844,12 +2872,12 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 
 func TestPresubmitsForBatch(t *testing.T) {
 	testCases := []struct {
-		name         string
-		prs          []PullRequest
-		changedFiles *changedFilesAgent
-		jobs         []config.Presubmit
-		inrepoconfig map[string][]config.Presubmit
-		expected     []config.Presubmit
+		name           string
+		prs            []PullRequest
+		changedFiles   *changedFilesAgent
+		jobs           []config.Presubmit
+		prowYAMLGetter config.ProwYAMLGetter
+		expected       []config.Presubmit
 	}{
 		{
 			name: "All jobs get picked",
@@ -2936,12 +2964,10 @@ func TestPresubmitsForBatch(t *testing.T) {
 					Reporter:  config.Reporter{Context: "foo"},
 				},
 			},
-			inrepoconfig: map[string][]config.Presubmit{
-				"sha": {{
-					AlwaysRun: true,
-					Reporter:  config.Reporter{Context: "bar"},
-				}},
-			},
+			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"sha", ""}, []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "bar"},
+			}}),
 			expected: []config.Presubmit{
 				{
 					AlwaysRun: true,
@@ -2967,12 +2993,10 @@ func TestPresubmitsForBatch(t *testing.T) {
 					Reporter:  config.Reporter{Context: "foo"},
 				},
 			},
-			inrepoconfig: map[string][]config.Presubmit{
-				"other-sha": {{
-					AlwaysRun: true,
-					Reporter:  config.Reporter{Context: "bar"},
-				}},
-			},
+			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"other-sha", ""}, []config.Presubmit{{
+				AlwaysRun: true,
+				Reporter:  config.Reporter{Context: "bar"},
+			}}),
 			expected: []config.Presubmit{
 				{
 					AlwaysRun: true,
@@ -3003,6 +3027,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 			if err := config.SetPresubmitRegexes(tc.jobs); err != nil {
 				t.Fatalf("failed to set presubmit regexes: %v", err)
 			}
+
+			inrepoconfig := config.InRepoConfig{}
+			if tc.prowYAMLGetter != nil {
+				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+			}
 			c := &Controller{
 				changedFiles: tc.changedFiles,
 				config: func() *config.Config {
@@ -3011,7 +3040,10 @@ func TestPresubmitsForBatch(t *testing.T) {
 							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": tc.jobs,
 							},
-							FakeInRepoConfig: tc.inrepoconfig,
+							ProwYAMLGetter: tc.prowYAMLGetter,
+						},
+						ProwConfig: config.ProwConfig{
+							InRepoConfig: inrepoconfig,
 						},
 					}
 				},
@@ -3260,4 +3292,19 @@ func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...
 
 	*pjList = result
 	return nil
+}
+
+func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit) config.ProwYAMLGetter {
+	return func(_ *config.Config, _ *git.Client, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+		if len(headRefsToLookFor) != len(headRefs) {
+			return nil, fmt.Errorf("expcted %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
+		}
+		var presubmits []config.Presubmit
+		if sets.NewString(headRefsToLookFor...).Equal(sets.NewString(headRefs...)) {
+			presubmits = ps
+		}
+		return &config.ProwYAML{
+			Presubmits: presubmits,
+		}, nil
+	}
 }

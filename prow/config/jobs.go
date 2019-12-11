@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -30,6 +29,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
+)
+
+const (
+	schemeHTTP  = "http"
+	schemeHTTPS = "https"
 )
 
 // Preset is intended to match the k8s' PodPreset feature, and may be removed
@@ -437,20 +441,25 @@ type UtilityConfig struct {
 	DecorationConfig *prowapi.DecorationConfig `json:"decoration_config,omitempty"`
 }
 
+// Validate ensures all the values set in the UtilityConfig are valid.
 func (u *UtilityConfig) Validate() error {
 	cloneURIValidate := func(cloneURI string) error {
 		// Trim user from uri if exists.
 		cloneURI = cloneURI[strings.Index(cloneURI, "@")+1:]
 
-		if u.DecorationConfig != nil && len(u.DecorationConfig.SSHKeySecrets) > 0 {
-			if len(u.CloneURI) == 0 {
-				return errors.New("SSH key secrets provided but no clone_uri has been found")
+		if len(u.CloneURI) != 0 {
+			uri, err := url.Parse(cloneURI)
+			if err != nil {
+				return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
+			}
+
+			if u.DecorationConfig != nil && u.DecorationConfig.OauthTokenSecret != nil {
+				if uri.Scheme != schemeHTTP && uri.Scheme != schemeHTTPS {
+					return fmt.Errorf("scheme must be http or https when OAuth secret is specified: %s", cloneURI)
+				}
 			}
 		}
 
-		if _, err := url.Parse(cloneURI); err != nil {
-			return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
-		}
 		return nil
 	}
 

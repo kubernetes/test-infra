@@ -1,5 +1,4 @@
 plank:
-  allow_cancellations: true
   job_url_template: '{{if .Spec.Refs}}{{if eq .Spec.Refs.Org "kubernetes-security"}}https://console.cloud.google.com/storage/browser/kubernetes-security-prow/{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
   report_template: '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://gubernator.k8s.io/pr/{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
   job_url_prefix_config:
@@ -10,10 +9,10 @@ plank:
       timeout: 2h
       grace_period: 15s
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20191125-74998fac1"
-        initupload: "gcr.io/k8s-prow/initupload:v20191125-74998fac1"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20191125-74998fac1"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20191125-74998fac1"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20191210-5844d8374"
+        initupload: "gcr.io/k8s-prow/initupload:v20191210-5844d8374"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20191210-5844d8374"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20191210-5844d8374"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -66,6 +65,19 @@ deck:
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
+
+slack_reporter_configs:
+  '*':
+    job_types_to_report:
+      - postsubmit
+      - periodic
+      - batch
+    job_states_to_report:
+      - failure
+      - error
+    channel: test-failures
+    # The template shown below is the default
+    report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
 
 branch-protection:
   allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
@@ -569,6 +581,31 @@ presets:
   volumeMounts:
   - name: aws-ssh
     mountPath: /etc/aws-ssh
+    readOnly: true
+- labels:
+    preset-azure-cred: "true"
+  env:
+  - name: AZURE_CREDENTIALS
+    value: /etc/azure-cred/credentials
+  - name: AZURE_SSH_PUBLIC_KEY_FILE
+    value: /etc/azure-ssh/azure-ssh-pub
+  - name: REGISTRY
+    value: k8sprow.azurecr.io
+  - name: KUBE_VERBOSE
+    value: "0"
+  volumes:
+  - name: azure-cred
+    secret:
+      secretName: azure-cred
+  - name: azure-ssh
+    secret:
+      secretName: azure-ssh
+  volumeMounts:
+  - name: azure-cred
+    mountPath: /etc/azure-cred
+    readOnly: true
+  - name: azure-ssh
+    mountPath: /etc/azure-ssh
     readOnly: true
 # storage / caching presets
 - labels:

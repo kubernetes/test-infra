@@ -90,7 +90,7 @@ func (e *Errors) add(err error) {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("branchprotector")
 
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
@@ -101,7 +101,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
 	}
-	cfg.BranchProtectionWarnings(logrus.NewEntry(logrus.StandardLogger()))
+	cfg.BranchProtectionWarnings(logrus.NewEntry(logrus.StandardLogger()), cfg.PresubmitsStatic)
 
 	secretAgent := &secret.Agent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
@@ -141,7 +141,7 @@ type client interface {
 	RemoveBranchProtection(org, repo, branch string) error
 	UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error
 	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
-	GetRepo(owner, name string) (github.Repo, error)
+	GetRepo(owner, name string) (github.FullRepo, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
 	ListCollaborators(org, repo string) ([]github.User, error)
 	ListRepoTeams(org, repo string) ([]github.Team, error)

@@ -19,6 +19,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"regexp"
 	"testing"
@@ -27,7 +29,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -1107,6 +1111,31 @@ func TestOptions(t *testing.T) {
 			},
 			expectedError: false,
 		},
+		{
+			name: "prow-yaml-path gets defaulted",
+			args: []string{
+				"--config-path=prow/config.yaml",
+				"--plugin-config=prow/plugins/plugin.yaml",
+				"--job-config-path=config/jobs/org/job.yaml",
+				"--prow-yaml-repo-name=my/repo",
+			},
+			expectedOptions: &options{
+				configPath:       "prow/config.yaml",
+				pluginConfig:     "prow/plugins/plugin.yaml",
+				jobConfigPath:    "config/jobs/org/job.yaml",
+				prowYAMLRepoName: "my/repo",
+				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",
+				github:           defaultGitHubOptions,
+			},
+			expectedError: false,
+		},
+		{
+			name: "prow-yaml-path without prow-yaml-repo-name is invalid",
+			args: []string{
+				"--prow-yaml-path=my-file",
+			},
+			expectedError: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1124,5 +1153,116 @@ func TestOptions(t *testing.T) {
 				t.Errorf("actual %#v != expected %#v", actualOptions, *tc.expectedOptions)
 			}
 		})
+	}
+}
+
+func TestValidateJobExtraRefs(t *testing.T) {
+	testCases := []struct {
+		name      string
+		extraRefs []prowapi.Refs
+		expected  error
+	}{
+		{
+			name: "validation error if extra ref specifies the repo for which the job is configured",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "repo",
+				},
+			},
+			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+				"org/repo"),
+		},
+		{
+			name: "no errors if there are no duplications",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "foo",
+					Repo: "bar",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			config := config.JobConfig{
+				PresubmitsStatic: map[string][]config.Presubmit{
+					"org/repo": {
+						{
+							JobBase: config.JobBase{
+								Name: "test",
+								UtilityConfig: config.UtilityConfig{
+									ExtraRefs: tc.extraRefs,
+								},
+							},
+						},
+					},
+				},
+			}
+			if err := validateJobExtraRefs(config); !reflect.DeepEqual(err, errorutil.NewAggregate(tc.expected)) {
+				t.Errorf("%s: did not get expected validation error:\n%v", tc.name,
+					diff.ObjectGoPrintDiff(tc.expected, err))
+			}
+		})
+	}
+}
+
+func TestValidateInRepoConfig(t *testing.T) {
+	testCases := []struct {
+		name         string
+		prowYAMLData []byte
+		expectedErr  string
+	}{
+		{
+			name:         "Valid prowYAML, no err",
+			prowYAMLData: []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+		},
+		{
+			name:         "Invalid prowYAML, err",
+			prowYAMLData: []byte(`presubmits: [{"name": "hans"}]`),
+			expectedErr:  "failed to validate .prow.yaml: invalid presubmit job hans: kubernetes jobs require a spec",
+		},
+		{
+			name: "Absent prowYAML, no err",
+		},
+	}
+
+	for _, tc := range testCases {
+		prowYAMLFileName := "/this-must-not-exist"
+
+		if tc.prowYAMLData != nil {
+			tempFile, err := ioutil.TempFile("/tmp", "prow-test")
+			if err != nil {
+				t.Fatalf("failed to get tempfile: %v", err)
+			}
+			defer func() {
+				if err := tempFile.Close(); err != nil {
+					t.Errorf("failed to close tempFile: %v", err)
+				}
+				if err := os.Remove(tempFile.Name()); err != nil {
+					t.Errorf("failed to remove tempfile: %v", err)
+				}
+			}()
+
+			if _, err := tempFile.Write(tc.prowYAMLData); err != nil {
+				t.Fatalf("failed to write to tempfile: %v", err)
+			}
+
+			prowYAMLFileName = tempFile.Name()
+		}
+
+		cfg := &config.Config{
+			ProwConfig: config.ProwConfig{PodNamespace: "my-ns"},
+		}
+		err := validateInRepoConfig(cfg, prowYAMLFileName, "my/repo")
+		var errString string
+		if err != nil {
+			errString = err.Error()
+		}
+
+		if errString != tc.expectedErr {
+			t.Errorf("expected error %q does not match actual error %q", tc.expectedErr, errString)
+		}
 	}
 }

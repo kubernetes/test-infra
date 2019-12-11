@@ -1985,7 +1985,7 @@ func TestCreateRepo(t *testing.T) {
 		statusCode  int
 
 		expectError bool
-		expectRepo  *Repo
+		expectRepo  *FullRepo
 	}{
 		{
 			description: "create repo as user",
@@ -1997,9 +1997,11 @@ func TestCreateRepo(t *testing.T) {
 				},
 			},
 			statusCode: http.StatusCreated,
-			expectRepo: &Repo{
-				Name:        "users-repository",
-				Description: "CREATED",
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "users-repository",
+					Description: "CREATED",
+				},
 			},
 		},
 		{
@@ -2012,9 +2014,11 @@ func TestCreateRepo(t *testing.T) {
 				},
 			},
 			statusCode: http.StatusCreated,
-			expectRepo: &Repo{
-				Name:        "orgs-repository",
-				Description: "CREATED",
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "orgs-repository",
+					Description: "CREATED",
+				},
 			},
 		},
 		{
@@ -2084,7 +2088,7 @@ func TestUpdateRepo(t *testing.T) {
 		statusCode  int
 
 		expectError bool
-		expectRepo  *Repo
+		expectRepo  *FullRepo
 	}{
 		{
 			description: "Update repository",
@@ -2095,10 +2099,12 @@ func TestUpdateRepo(t *testing.T) {
 				Archived: &yes,
 			},
 			statusCode: http.StatusOK,
-			expectRepo: &Repo{
-				Name:        "repository",
-				Description: "UPDATED",
-				Archived:    true,
+			expectRepo: &FullRepo{
+				Repo: Repo{
+					Name:        "repository",
+					Description: "UPDATED",
+					Archived:    true,
+				},
 			},
 		},
 		{

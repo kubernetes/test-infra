@@ -7,7 +7,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -21,7 +21,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -37,7 +37,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         command:
         - "runner.sh"
         - "./scripts/ci-integration.sh"
@@ -63,6 +63,29 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: pr-integration
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-e2e
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: true
+    optional: false
+    decorate: true
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
+        command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: pr-e2e
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-verify
     always_run: true
     optional: false
@@ -70,7 +93,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         command:
         - "runner.sh"
         - "make"
@@ -88,7 +111,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify-bazel.sh"
@@ -105,7 +128,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-test.sh"
@@ -122,7 +145,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         imagePullPolicy: Always
         command:
         - "./scripts/ci-bazel-build.sh"
@@ -139,7 +162,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-experimental
         imagePullPolicy: Always
         command:
         - "./hack/verify_boilerplate.py"

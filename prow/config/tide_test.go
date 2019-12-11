@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	utilpointer "k8s.io/utils/pointer"
 )
 
 var testQuery = TideQuery{
@@ -502,18 +503,21 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			name: "jobs from inrepoconfig are considered",
 			config: Config{
 				JobConfig: JobConfig{
-					FakeInRepoConfig: map[string][]Presubmit{
-						"some-sha": {
-							{
-								AlwaysRun: true,
-								Reporter:  Reporter{Context: "ir0"},
-							},
-							{
-								AlwaysRun: true,
-								Optional:  true,
-								Reporter:  Reporter{Context: "ir1"},
-							},
+					ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{
+						{
+							AlwaysRun: true,
+							Reporter:  Reporter{Context: "ir0"},
 						},
+						{
+							AlwaysRun: true,
+							Optional:  true,
+							Reporter:  Reporter{Context: "ir1"},
+						},
+					}),
+				},
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)},
 					},
 				},
 			},
@@ -544,18 +548,21 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 							},
 						},
 					},
-					FakeInRepoConfig: map[string][]Presubmit{
-						"some-sha": {
-							{
-								AlwaysRun: true,
-								Reporter:  Reporter{Context: "ir0"},
-							},
-							{
-								AlwaysRun: true,
-								Optional:  true,
-								Reporter:  Reporter{Context: "ir1"},
-							},
+					ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{
+						{
+							AlwaysRun: true,
+							Reporter:  Reporter{Context: "ir0"},
 						},
+						{
+							AlwaysRun: true,
+							Optional:  true,
+							Reporter:  Reporter{Context: "ir1"},
+						},
+					}),
+				},
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)},
 					},
 				},
 			},
@@ -1023,5 +1030,13 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 		if !sets.NewString(missingContexts...).Equal(sets.NewString(tc.expectedContexts...)) {
 			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)
 		}
+	}
+}
+
+func fakeProwYAMLGetterFactory(presubmits []Presubmit) ProwYAMLGetter {
+	return func(_ *Config, _ *git.Client, _, _ string, _ ...string) (*ProwYAML, error) {
+		return &ProwYAML{
+			Presubmits: presubmits,
+		}, nil
 	}
 }

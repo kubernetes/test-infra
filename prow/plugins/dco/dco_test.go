@@ -294,6 +294,39 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedStatus: github.StatusSuccess,
 		},
 		{
+			name: "should add label and update status context if one commit is signed-off and another is from a trusted user",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: true,
+				TrustedOrg:             "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+				{
+					SHA:    "sha2",
+					Commit: github.GitCommit{Message: "Signed-off-by: someone"},
+					Author: github.User{
+						Login: "contributor",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
+			expectedStatus: github.StatusSuccess,
+		},
+		{
 			name: "should fail dco check as one unsigned commit is from member not from the trusted org",
 			config: plugins.Dco{
 				SkipDCOCheckForMembers: true,

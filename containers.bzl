@@ -78,3 +78,11 @@ def repositories():
         repository = "k8s-testimages/gcloud-in-go",
         tag = "v20190125-cc5d6ecff3",  # TODO(fejta): update or replace
     )
+
+    container_pull(
+        name = "bazel-base",
+        digest = "sha256:0bfc1ffe6dfd4779f578ef58c5d9a9c6fb9c6fb8103223391033bcb6a40dff2b",  # 2019/11/25
+        registry = "gcr.io",
+        repository = "cloud-marketplace-containers/google/bazel",
+        tag = "1.2.0",
+    )

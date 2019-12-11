@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"sync"
 	"testing"
@@ -33,9 +34,21 @@ func TestRun(t *testing.T) {
 
 	srcRoot, err := ioutil.TempDir("", "clonerefs_unittest")
 	if err != nil {
-		t.Fatalf("Error creating temp dir: %v.", err)
+		t.Fatalf("Error while creating temp dir: %v.", err)
 	}
 	defer os.RemoveAll(srcRoot)
+
+	oauthTokenDir, err := ioutil.TempDir("", "oauth")
+	if err != nil {
+		t.Fatalf("Error while creating oauth token dir: %v.", err)
+	}
+	defer os.RemoveAll(oauthTokenDir)
+
+	oauthTokenFilePath := filepath.Join(oauthTokenDir, "oauth-token")
+	oauthTokenValue := []byte("12345678")
+	if err := ioutil.WriteFile(oauthTokenFilePath, oauthTokenValue, 0644); err != nil {
+		t.Fatalf("Error while create oauth token file: %v", err)
+	}
 
 	type cloneRec struct {
 		refs        prowapi.Refs
@@ -43,12 +56,13 @@ func TestRun(t *testing.T) {
 		user, email string
 		cookiePath  string
 		env         []string
+		oauthToken  string
 	}
 
 	var recordedClones []cloneRec
 	var lock sync.Mutex
 	cloneFuncOld := cloneFunc
-	cloneFunc = func(refs prowapi.Refs, root, user, email, cookiePath string, env []string) clone.Record {
+	cloneFunc = func(refs prowapi.Refs, root, user, email, cookiePath string, env []string, oauthToken string) clone.Record {
 		lock.Lock()
 		defer lock.Unlock()
 		recordedClones = append(recordedClones, cloneRec{
@@ -58,6 +72,7 @@ func TestRun(t *testing.T) {
 			email:      email,
 			cookiePath: cookiePath,
 			env:        env,
+			oauthToken: oauthToken,
 		})
 		return clone.Record{}
 	}
@@ -159,6 +174,52 @@ func TestRun(t *testing.T) {
 						BaseRef:   "master",
 						PathAlias: "k8s.io/release",
 					},
+				},
+			},
+		},
+		{
+			name: "single PR clone with oauth token",
+			opts: Options{
+				OauthTokenFile: oauthTokenFilePath,
+				SrcRoot:        srcRoot,
+				Log:            path.Join(srcRoot, "log.txt"),
+				GitUserName:    "me",
+				GitUserEmail:   "me@domain.com",
+				CookiePath:     "cookies/path",
+				GitRefs: []prowapi.Refs{
+					{
+						Org:       "kubernetes",
+						Repo:      "test-infra",
+						BaseRef:   "master",
+						PathAlias: "k8s.io/test-infra",
+						Pulls: []v1.Pull{
+							{
+								Number: 5,
+								SHA:    "FEEDDAD",
+							},
+						},
+					},
+				},
+			},
+			expectedClones: []cloneRec{
+				{
+					refs: prowapi.Refs{
+						Org:       "kubernetes",
+						Repo:      "test-infra",
+						BaseRef:   "master",
+						PathAlias: "k8s.io/test-infra",
+						Pulls: []v1.Pull{
+							{
+								Number: 5,
+								SHA:    "FEEDDAD",
+							},
+						},
+					},
+					root:       srcRoot,
+					user:       "me",
+					email:      "me@domain.com",
+					cookiePath: "cookies/path",
+					oauthToken: "12345678",
 				},
 			},
 		},

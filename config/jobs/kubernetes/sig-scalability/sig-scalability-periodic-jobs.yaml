@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -45,7 +45,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -93,7 +93,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -131,8 +131,6 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/load/kubemark/throughput_override.yaml
-      # TODO(oxddr): renable this once the current impact is understood
-      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=240m
       - --use-logexporter
@@ -156,7 +154,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -217,7 +215,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -229,7 +227,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
-      - --gcp-nodes=83
+      - --gcp-nodes=84
       - --gcp-project=kubemark-scalability-testing
       - --gcp-zone=us-east1-b
       - --kubemark
@@ -246,6 +244,7 @@ periodics:
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_configmaps.yaml
@@ -253,8 +252,6 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_jobs.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_secrets.yaml
       - --test-cmd-args=--testoverrides=./testing/load/experimental/overrides/enable_statefulsets.yaml
-      # TODO(oxddr): renable this once the current impact is understood
-      # - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
       - --use-logexporter
@@ -282,7 +279,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -334,7 +331,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
@@ -361,7 +358,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -383,7 +380,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
@@ -418,7 +415,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

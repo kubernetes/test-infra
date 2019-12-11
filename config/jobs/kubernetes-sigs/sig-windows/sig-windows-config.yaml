@@ -49,7 +49,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -97,7 +97,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -140,7 +140,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-1.14
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-1.14
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -184,7 +184,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-1.15
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-1.15
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -228,7 +228,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-1.16
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -272,7 +272,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-1.17
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-1.17
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -315,7 +315,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -348,3 +348,46 @@ periodics:
     testgrid-dashboards: sig-windows
     testgrid-tab-name: aks-engine-azure-windows-master-staging
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 10h
+  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1903
+  labels:
+    preset-service-account: "true"
+    preset-azure-acsengine: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191207-18719f1-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=650"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--provider=skeleton"
+      - "--build=host-go"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-admin-password=AdminPassw0rd"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-winZipBuildScript=$WIN_BUILD"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1903_master.json"
+      - "--acsengine-win-binaries"
+      - "--acsengine-hyperkube"
+      - "--acsengine-agentpoolcount=2"
+      - "--test_args=--ginkgo.flakeAttempts=2 --num-nodes=2 --node-os-distro=windows --ginkgo.focus=\\[Conformance\\]|\\[NodeConformance\\]|\\[sig-windows\\]|\\[sig-apps\\].CronJob|\\[sig-api-machinery\\].ResourceQuota|\\[sig-scheduling\\].SchedulerPreemption|\\[sig-autoscaling\\].\\[Feature:HPA\\]  --ginkgo.skip=\\[LinuxOnly\\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application"
+      - "--timeout=620m"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows, provider-azure-on-call
+    testgrid-tab-name: aks-engine-azure-windows-1903-master
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"

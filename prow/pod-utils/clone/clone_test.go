@@ -66,6 +66,7 @@ func TestCommandsForRefs(t *testing.T) {
 		env                                        []string
 		expectedBase                               []cloneCommand
 		expectedPull                               []cloneCommand
+		oauthToken                                 string
 	}{
 		{
 			name: "simplest case, minimal refs",
@@ -178,6 +179,27 @@ func TestCommandsForRefs(t *testing.T) {
 			expectedPull: nil,
 		},
 		{
+			name:       "minimal refs with oauth token",
+			oauthToken: "12345678",
+			refs: prowapi.Refs{
+				Org:     "org",
+				Repo:    "repo",
+				BaseRef: "master",
+			},
+			dir: "/go",
+			expectedBase: []cloneCommand{
+				{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@github.com/org/repo.git", "--tags", "--prune"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@github.com/org/repo.git", "master"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []cloneCommand{
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			}},
+		{
 			name: "refs with clone URI override",
 			refs: prowapi.Refs{
 				Org:      "org",
@@ -191,6 +213,29 @@ func TestCommandsForRefs(t *testing.T) {
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "internet.com", "--tags", "--prune"}},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "internet.com", "master"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []cloneCommand{
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
+		{
+			name:       "refs with clone URI override and oauth token specified",
+			oauthToken: "12345678",
+			refs: prowapi.Refs{
+				Org:      "org",
+				Repo:     "repo",
+				BaseRef:  "master",
+				CloneURI: "https://internet.com",
+			},
+			dir: "/go",
+			expectedBase: []cloneCommand{
+				{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@internet.com", "--tags", "--prune"}},
+				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@internet.com", "master"}},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
 				{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
@@ -353,15 +398,18 @@ func TestCommandsForRefs(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		g := gitCtxForRefs(testCase.refs, testCase.dir, testCase.env)
-		actualBase := g.commandsForBaseRef(testCase.refs, testCase.gitUserName, testCase.gitUserEmail, testCase.cookiePath)
-		if !reflect.DeepEqual(actualBase, testCase.expectedBase) {
-			t.Errorf("%s: generated incorrect commands: %v", testCase.name, diff.ObjectGoPrintDiff(testCase.expectedBase, actualBase))
-		}
-		actualPull := g.commandsForPullRefs(testCase.refs, fakeTimestamp)
-		if !reflect.DeepEqual(actualPull, testCase.expectedPull) {
-			t.Errorf("%s: generated incorrect commands: %v", testCase.name, diff.ObjectGoPrintDiff(testCase.expectedPull, actualPull))
-		}
+		t.Run(testCase.name, func(t *testing.T) {
+			g := gitCtxForRefs(testCase.refs, testCase.dir, testCase.env, testCase.oauthToken)
+			actualBase := g.commandsForBaseRef(testCase.refs, testCase.gitUserName, testCase.gitUserEmail, testCase.cookiePath)
+			if !reflect.DeepEqual(actualBase, testCase.expectedBase) {
+				t.Errorf("generated incorrect commands:\nGot: %#v\nExpected:%#v", actualBase, testCase.expectedBase)
+			}
+
+			actualPull := g.commandsForPullRefs(testCase.refs, fakeTimestamp)
+			if !reflect.DeepEqual(actualPull, testCase.expectedPull) {
+				t.Errorf("generated incorrect commands: %v", diff.ObjectGoPrintDiff(testCase.expectedPull, actualPull))
+			}
+		})
 	}
 }
 

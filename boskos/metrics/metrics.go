@@ -39,6 +39,9 @@ var (
 		Name: "boskos_resources",
 		Help: "Number of resources recorded in Boskos",
 	}, []string{"type", "state"})
+	boskosURL         string
+	username          string
+	passwordFile      string
 	resources, states common.CommaSeparatedStrings
 	defaultStates     = []string{
 		common.Busy,
@@ -52,14 +55,20 @@ var (
 )
 
 func init() {
+	flag.StringVar(&boskosURL, "boskos-url", "http://boskos", "Boskos Server URL")
+	flag.StringVar(&username, "username", "", "Username used to access the Boskos server")
+	flag.StringVar(&passwordFile, "password-file", "", "The path to password file used to access the Boskos server")
 	flag.Var(&resources, "resource-type", "comma-separated list of resources need to have metrics collected.")
 	flag.Var(&states, "resource-state", "comma-separated list of states need to have metrics collected.")
 	prometheus.MustRegister(resourceMetric)
 }
 
 func main() {
-	logrusutil.ComponentInit()
-	boskos := client.NewClient("Metrics", "http://boskos")
+	logrusutil.ComponentInit("boskos-metrics")
+	boskos, err := client.NewClient("Metrics", boskosURL, username, passwordFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a Boskos client")
+	}
 	logrus.Infof("Initialzied boskos client!")
 
 	flag.Parse()

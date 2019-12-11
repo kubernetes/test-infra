@@ -156,7 +156,7 @@ func parseOptions() options {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("crier")
 
 	o := parseOptions()
 

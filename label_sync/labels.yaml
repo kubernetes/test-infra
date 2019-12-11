@@ -254,6 +254,12 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: e11d21
+      description: Categorizes issue or PR as related to a feature/enhancement marked for deprecation.
+      name: kind/deprecation
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: c7def8
       description: Categorizes issue or PR as related to design.
       name: kind/design
@@ -500,6 +506,7 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+      deleteAfter: 2019-12-06T00:00:00+00:00
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-pm.
       name: sig/pm

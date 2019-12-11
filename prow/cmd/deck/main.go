@@ -196,64 +196,16 @@ func staticHandlerFromDir(dir string) http.Handler {
 }
 
 var (
-	deckMetrics = struct {
-		httpRequestDuration *prometheus.HistogramVec
-		httpResponseSize    *prometheus.HistogramVec
-	}{
-		httpRequestDuration: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "deck_http_request_duration_seconds",
-				Help:    "http request duration in seconds",
-				Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 20},
-			},
-			[]string{"path", "method", "status", "user_agent"},
-		),
-		httpResponseSize: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "deck_http_response_size_bytes",
-				Help:    "http response size in bytes",
-				Buckets: []float64{16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432},
-			},
-			[]string{"path", "method", "status", "user_agent"},
-		),
-	}
+	httpRequestDuration = metrics.HttpRequestDuration("deck", 0.005, 20)
+	httpResponseSize    = metrics.HttpResponseSize("deck", 16384, 33554432)
+	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
 )
 
 type authCfgGetter func() *prowapi.RerunAuthConfig
 
-type traceResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	size       int
-}
-
-func (trw *traceResponseWriter) WriteHeader(code int) {
-	trw.statusCode = code
-	trw.ResponseWriter.WriteHeader(code)
-}
-
-func (trw *traceResponseWriter) Write(data []byte) (int, error) {
-	size, err := trw.ResponseWriter.Write(data)
-	trw.size += size
-	return size, err
-}
-
 func init() {
-	prometheus.MustRegister(deckMetrics.httpRequestDuration)
-	prometheus.MustRegister(deckMetrics.httpResponseSize)
-}
-
-func traceHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t := time.Now()
-		// Initialize the status to 200 in case WriteHeader is not called
-		trw := &traceResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-		h.ServeHTTP(trw, r)
-		latency := time.Since(t)
-		labels := prometheus.Labels{"path": simplifier.Simplify(r.URL.Path), "method": r.Method, "status": strconv.Itoa(trw.statusCode), "user_agent": r.Header.Get("User-Agent")}
-		deckMetrics.httpRequestDuration.With(labels).Observe(latency.Seconds())
-		deckMetrics.httpResponseSize.With(labels).Observe(float64(trw.size))
-	})
+	prometheus.MustRegister(httpRequestDuration)
+	prometheus.MustRegister(httpResponseSize)
 }
 
 var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
@@ -304,7 +256,7 @@ func v(fragment string, children ...simplifypath.Node) simplifypath.Node {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("deck")
 
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
@@ -546,6 +498,11 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 			logrus.Info("Manager stopped gracefully.")
 		}
 	}()
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer mgrSyncCtxCancel()
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+		logrus.Fatal("Timed out waiting for cachesync")
+	}
 
 	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
 	if err != nil {
@@ -594,6 +551,10 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, o options
 		gitClient, err = o.github.GitClient(secretAgent, o.dryRun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+	} else {
+		if len(cfg().InRepoConfig.Enabled) > 0 {
+			logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
 		}
 	}
 

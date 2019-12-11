@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"k8s.io/test-infra/prow/git/v2"
 	"sync"
 	"testing"
 
@@ -78,10 +79,10 @@ func (f *fghc) IsMember(org, user string) (bool, error) {
 	return f.isMember, nil
 }
 
-func (f *fghc) GetRepo(owner, name string) (github.Repo, error) {
+func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 	f.Lock()
 	defer f.Unlock()
-	return github.Repo{}, nil
+	return github.FullRepo{}, nil
 }
 
 var expectedFmt = `title=%q body=%q head=%s base=%s`
@@ -234,8 +235,8 @@ func TestCherryPickIC(t *testing.T) {
 
 	s := &Server{
 		botName:        botName,
-		gc:             c,
-		push:           func(repo, newBranch string) error { return nil },
+		gc:             git.ClientFactoryFrom(c),
+		push:           func(newBranch string) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -372,8 +373,8 @@ func TestCherryPickPR(t *testing.T) {
 
 	s := &Server{
 		botName:        botName,
-		gc:             c,
-		push:           func(repo, newBranch string) error { return nil },
+		gc:             git.ClientFactoryFrom(c),
+		push:           func(newBranch string) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -513,8 +514,8 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 
 		s := &Server{
 			botName:        botName,
-			gc:             c,
-			push:           func(repo, newBranch string) error { return nil },
+			gc:             git.ClientFactoryFrom(c),
+			push:           func(newBranch string) error { return nil },
 			ghc:            ghc,
 			tokenGenerator: getSecret,
 			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),

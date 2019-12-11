@@ -128,7 +128,7 @@ func (st *syncTime) init(hostProjects client.ProjectsFlag) error {
 			}
 		}
 		st.val = state
-		logrus.Warnf("Reset lastSyncFallback to %v", st.val)
+		logrus.WithField("lastSync", st.val).Infoln("Initialized successfully from lastSyncFallback.")
 	} else {
 		targetState := client.LastSyncState{}
 		for host, projects := range hostProjects {
@@ -158,6 +158,7 @@ func (st *syncTime) currentState() (client.LastSyncState, error) {
 	var state client.LastSyncState
 	if err := json.Unmarshal(buf, &state); err != nil {
 		// Don't error on unmarshall error, let it default
+		logrus.WithField("lastSync", st.val).Warnln("Failed to unmarshal lastSyncFallback, resetting all last update times to current.")
 		return nil, nil
 	}
 	return state, nil
@@ -213,7 +214,7 @@ func (st *syncTime) Update(newState client.LastSyncState) error {
 }
 
 func main() {
-	logrusutil.ComponentInit()
+	logrusutil.ComponentInit("gerrit")
 
 	defer interrupts.WaitForGracefulShutdown()
 

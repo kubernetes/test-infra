@@ -790,10 +790,12 @@ func TestCreateRefs(t *testing.T) {
 func TestSpecFromJobBase(t *testing.T) {
 	permittedGroups := []int{1234, 5678}
 	permittedUsers := []string{"authorized_user", "another_authorized_user"}
+	permittedOrgs := []string{"kubernetes", "kubernetes-sigs"}
 	rerunAuthConfig := prowapi.RerunAuthConfig{
 		AllowAnyone:   false,
 		GitHubTeamIDs: permittedGroups,
 		GitHubUsers:   permittedUsers,
+		GitHubOrgs:    permittedOrgs,
 	}
 	testCases := []struct {
 		name    string
@@ -837,6 +839,9 @@ func TestSpecFromJobBase(t *testing.T) {
 				}
 				if pj.RerunAuthConfig.GitHubUsers == nil {
 					return errors.New("Expected RerunAuthConfig.GitHubUsers to be non-nil")
+				}
+				if pj.RerunAuthConfig.GitHubOrgs == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubOrgs to be non-nil")
 				}
 				return nil
 			},

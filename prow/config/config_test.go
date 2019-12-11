@@ -1053,6 +1053,72 @@ func TestValidateJobBase(t *testing.T) {
 	}
 }
 
+func TestValidateRefs(t *testing.T) {
+	cases := []struct {
+		name      string
+		extraRefs []prowapi.Refs
+		expected  error
+	}{
+		{
+			name: "validation error for extra ref specifying the same repo for which the job is configured",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "repo",
+				},
+			},
+			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+				"org/repo"),
+		},
+		{
+			name: "validation error lists all duplications",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "repo",
+				},
+				{
+					Org:  "org",
+					Repo: "foo",
+				},
+				{
+					Org:  "org",
+					Repo: "bar",
+				},
+				{
+					Org:  "org",
+					Repo: "foo",
+				},
+			},
+			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+				"org/foo,org/repo"),
+		},
+		{
+			name: "no errors if there are no duplications",
+			extraRefs: []prowapi.Refs{
+				{
+					Org:  "org",
+					Repo: "foo",
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			job := JobBase{
+				Name: "test",
+				UtilityConfig: UtilityConfig{
+					ExtraRefs: tc.extraRefs,
+				},
+			}
+			if err := ValidateRefs("org/repo", job); !reflect.DeepEqual(err, tc.expected) {
+				t.Errorf("expected %#v\n!=\nactual %#v", tc.expected, err)
+			}
+		})
+	}
+}
+
 // integration test for fake config loading
 func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
@@ -1633,6 +1699,15 @@ postsubmits:
 			verify: func(c *Config) error {
 				if c.AllRepos == nil {
 					return errors.New("config.AllRepos is nil")
+				}
+				return nil
+			},
+		},
+		{
+			name: "prowYAMLGetter gets set",
+			verify: func(c *Config) error {
+				if c.ProwYAMLGetter == nil {
+					return errors.New("config.ProwYAMLGetter is nil")
 				}
 				return nil
 			},
@@ -3477,14 +3552,6 @@ func TestInRepoConfigEnabled(t *testing.T) {
 		expected bool
 	}{
 		{
-			name: "FakeInRepoConfig takes highest precedence",
-			config: Config{
-				JobConfig: JobConfig{
-					FakeInRepoConfig: map[string][]Presubmit{}},
-			},
-			expected: true,
-		},
-		{
 			name: "Exact match",
 			config: Config{
 				ProwConfig: ProwConfig{
@@ -3538,5 +3605,63 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				t.Errorf("Expected %t, got %t", tc.expected, result)
 			}
 		})
+	}
+}
+
+func TestGetPresubmitsDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T) {
+	t.Parallel()
+
+	var baseSHAGetterCalled, headSHAGetterCalled bool
+	baseSHAGetter := func() (string, error) {
+		baseSHAGetterCalled = true
+		return "", nil
+	}
+	headSHAGetter := func() (string, error) {
+		headSHAGetterCalled = true
+		return "", nil
+	}
+
+	c := &Config{}
+	if _, err := c.GetPresubmits(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+		t.Fatalf("error calling GetPresubmits: %v", err)
+	}
+	if baseSHAGetterCalled {
+		t.Error("baseSHAGetter got called")
+	}
+	if headSHAGetterCalled {
+		t.Error("headSHAGetter got called")
+	}
+}
+
+func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
+	t.Parallel()
+
+	org, repo := "org", "repo"
+	c := &Config{
+		ProwConfig: ProwConfig{
+			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+		},
+		JobConfig: JobConfig{
+			PresubmitsStatic: map[string][]Presubmit{
+				org + "/" + repo: {{
+					JobBase:  JobBase{Name: "my-static-presubmit"},
+					Reporter: Reporter{Context: "my-static-presubmit"},
+				}},
+			},
+			ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{{
+				JobBase: JobBase{Name: "hans"},
+			}}),
+		},
+	}
+
+	presubmits, err := c.GetPresubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	if err != nil {
+		t.Fatalf("Error calling GetPresubmits: %v", err)
+	}
+
+	if n := len(presubmits); n != 2 ||
+		presubmits[0].Name != "my-static-presubmit" ||
+		presubmits[1].Name != "hans" {
+		t.Errorf(`expected exactly two presubmits named "my-static-presubmit" and "hans", got %d (%v)`, n, presubmits)
 	}
 }

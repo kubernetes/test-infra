@@ -40,6 +40,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
@@ -85,19 +86,21 @@ type JobConfig struct {
 	// for which a tide query is configured.
 	AllRepos sets.String `json:"-"`
 
-	// FakeInRepoConfig is used for tests. Its key is the headSHA.
-	FakeInRepoConfig map[string][]Presubmit `json:"-"`
+	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
+	// provide their own implementation.
+	ProwYAMLGetter ProwYAMLGetter `json:"-"`
 }
 
 // ProwConfig is config for all prow controllers
 type ProwConfig struct {
-	Tide                 Tide                 `json:"tide,omitempty"`
-	Plank                Plank                `json:"plank,omitempty"`
-	Sinker               Sinker               `json:"sinker,omitempty"`
-	Deck                 Deck                 `json:"deck,omitempty"`
-	BranchProtection     BranchProtection     `json:"branch-protection,omitempty"`
-	Gerrit               Gerrit               `json:"gerrit,omitempty"`
-	GitHubReporter       GitHubReporter       `json:"github_reporter,omitempty"`
+	Tide             Tide             `json:"tide,omitempty"`
+	Plank            Plank            `json:"plank,omitempty"`
+	Sinker           Sinker           `json:"sinker,omitempty"`
+	Deck             Deck             `json:"deck,omitempty"`
+	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
+	Gerrit           Gerrit           `json:"gerrit,omitempty"`
+	GitHubReporter   GitHubReporter   `json:"github_reporter,omitempty"`
+	// Deprecated: this option will be removed in May 2020.
 	SlackReporter        *SlackReporter       `json:"slack_reporter,omitempty"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
 	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
@@ -156,15 +159,8 @@ type InRepoConfig struct {
 	Enabled map[string]*bool `json:"enabled,omitempty"`
 }
 
-// InRepoConfigEnabled returns whether InRepoConfig is enabled. Currently
-// a no-op that always returns false, as the underlying feature is not implemented
-// yet. See https://github.com/kubernetes/test-infra/issues/13370 for a current
-// status.
+// InRepoConfigEnabled returns whether InRepoConfig is enabled for a given repository.
 func (c *Config) InRepoConfigEnabled(identifier string) bool {
-	// Used in tests
-	if c.FakeInRepoConfig != nil {
-		return true
-	}
 	if c.InRepoConfig.Enabled[identifier] != nil {
 		return *c.InRepoConfig.Enabled[identifier]
 	}
@@ -265,12 +261,11 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 	return rg.baseSHA, nil
 }
 
-// GetPresubmits will return all presumits for the given identifier.
-// Once https://github.com/kubernetes/test-infra/issues/13370 is resolved, it will
-// also return Presubmits that are versioned inside the tested repo, if that feature
+// GetPresubmits will return all presumits for the given identifier. This includes
+// Presubmits that are versioned inside the tested repo, if the `inrepoconfig feature
 // is enabled.
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
-// also need the result of that GitHub call just keep a pointer to its result, bust must
+// also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 	if identifier == "" {
@@ -292,13 +287,12 @@ func (c *Config) GetPresubmits(gc *git.Client, identifier string, baseSHAGetter 
 		}
 		headSHAs = append(headSHAs, headSHA)
 	}
-	// Pending implementation of https://github.com/kubernetes/test-infra/issues/13370
-	// Currently, only a fake implementation exists for tests.
-	_ = baseSHA
-	if c.FakeInRepoConfig != nil {
-		return append(c.PresubmitsStatic[identifier], c.FakeInRepoConfig[strings.Join(headSHAs, "")]...), nil
+	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
 	}
-	return nil, errors.New("inrepoconfig is not yet implemented :/")
+
+	return append(c.PresubmitsStatic[identifier], prowYAML.Presubmits...), nil
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
@@ -377,7 +371,8 @@ type Controller struct {
 	// commits that have been superseded by newer commits in GitHub pull
 	// requests.
 	// This option will be removed and set to always true in March 2020.
-	AllowCancellations bool `json:"allow_cancellations,omitempty"`
+	// TODO(fejta): delete this Mar 2020
+	AllowCancellations *bool `json:"allow_cancellations,omitempty"`
 }
 
 // Plank is config for the plank controller.
@@ -769,6 +764,9 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 			nc.AllRepos.Insert(repo)
 		}
 	}
+
+	nc.ProwYAMLGetter = defaultProwYAMLGetter
+
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
 	if jobConfig == "" {
@@ -943,44 +941,47 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 
 // defaultPresubmits defaults the presubmits for one repo
 func defaultPresubmits(presubmits []Presubmit, c *Config, repo string) error {
+	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
 		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 	c.defaultPresubmitFields(presubmits)
 	if err := SetPresubmitRegexes(presubmits); err != nil {
-		return fmt.Errorf("could not set regex: %v", err)
+		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // defaultPostsubmits defaults the postsubmits for one repo
 func defaultPostsubmits(postsubmits []Postsubmit, c *Config, repo string) error {
+	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
 		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, c.Presets); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 	c.defaultPostsubmitFields(postsubmits)
 	if err := SetPostsubmitRegexes(postsubmits); err != nil {
-		return fmt.Errorf("could not set regex: %v", err)
+		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
 	}
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // defaultPeriodics defaults periodics
 func defaultPeriodics(periodics []Periodic, c *Config) error {
+	var errs []error
 	c.defaultPeriodicFields(periodics)
 	for _, periodic := range periodics {
 		if err := resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, c.Presets); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // finalizeJobConfig mutates and fixes entries for jobspecs
@@ -1092,7 +1093,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
 		return nil // jenkins jobs have no spec
 	}
-	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0) {
+	if v.RerunAuthConfig != nil && v.RerunAuthConfig.AllowAnyone && (len(v.RerunAuthConfig.GitHubUsers) > 0 || len(v.RerunAuthConfig.GitHubTeamIDs) > 0 || len(v.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(v.RerunAuthConfig.GitHubOrgs) > 0) {
 		return errors.New("allow anyone is set to true and permitted users or groups are specified")
 	}
 	if err := v.UtilityConfig.Validate(); err != nil {
@@ -1105,22 +1106,46 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 	validPresubmits := map[string][]Presubmit{}
 
+	var errs []error
 	for _, ps := range presubmits {
 		// Checking that no duplicate job in prow config exists on the same branch.
 		for _, existingJob := range validPresubmits[ps.Name] {
 			if existingJob.Brancher.Intersects(ps.Brancher) {
-				return fmt.Errorf("duplicated presubmit job: %s", ps.Name)
+				errs = append(errs, fmt.Errorf("duplicated presubmit job: %s", ps.Name))
 			}
 		}
 		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
-			return fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err)
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
 		}
 		if err := validateTriggering(ps); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
 	}
 
+	return utilerrors.NewAggregate(errs)
+}
+
+// ValidateRefs validates the extra refs on a presubmit for one repo
+func ValidateRefs(repo string, jobBase JobBase) error {
+	gitRefs := map[string]int{
+		repo: 1,
+	}
+	for _, ref := range jobBase.UtilityConfig.ExtraRefs {
+		gitRefs[fmt.Sprintf("%s/%s", ref.Org, ref.Repo)]++
+	}
+
+	dupes := sets.NewString()
+	for gitRef, count := range gitRefs {
+		if count > 1 {
+			dupes.Insert(gitRef)
+		}
+	}
+
+	if dupes.Len() > 0 {
+		return fmt.Errorf("Invalid job %s on repo %s: the following refs specified more than once: %s",
+			jobBase.Name, repo, strings.Join(dupes.List(), ","))
+	}
 	return nil
 }
 
@@ -1235,8 +1260,8 @@ func parseProwConfig(c *Config) error {
 		c.Plank.PodRunningTimeout = &metav1.Duration{Duration: 48 * time.Hour}
 	}
 
-	if !c.Plank.AllowCancellations {
-		logrus.Warning("The `plank.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
+	if c.Plank.AllowCancellations != nil {
+		logrus.Warning("The plank.allow_cancellations setting is deprecated. It will be removed and set to always true in March 2020")
 	}
 
 	if c.Gerrit.TickInterval == nil {
@@ -1276,7 +1301,7 @@ func parseProwConfig(c *Config) error {
 			return errors.New("label_selector is invalid when used for a single jenkins-operator")
 		}
 
-		if !c.JenkinsOperators[i].AllowCancellations {
+		if c.JenkinsOperators[i].AllowCancellations != nil {
 			logrus.Warning("The `jenkins_operators.allow_cancellations` setting is deprecated. It will be removed and set to always true in March 2020")
 		}
 	}
@@ -1308,7 +1333,7 @@ func parseProwConfig(c *Config) error {
 
 	// If a whitelist is specified, the user probably does not intend for anyone to be able
 	// to rerun any job.
-	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0) {
+	if c.Deck.RerunAuthConfig.AllowAnyone && (len(c.Deck.RerunAuthConfig.GitHubUsers) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamIDs) > 0 || len(c.Deck.RerunAuthConfig.GitHubTeamSlugs) > 0 || len(c.Deck.RerunAuthConfig.GitHubOrgs) > 0) {
 		return fmt.Errorf("allow_anyone is set to true and authorized users or teams are specified.")
 	}
 

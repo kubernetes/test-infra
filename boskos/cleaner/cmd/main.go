@@ -41,11 +41,15 @@ var (
 	kubeClientOptions crds.KubernetesClientOptions
 
 	boskosURL    string
+	username     string
+	passwordFile string
 	cleanerCount int
 )
 
 func init() {
 	flag.StringVar(&boskosURL, "boskos-url", "http://boskos", "Boskos Server URL")
+	flag.StringVar(&username, "username", "", "Username used to access the Boskos server")
+	flag.StringVar(&passwordFile, "password-file", "", "The path to password file used to access the Boskos server")
 	flag.IntVar(&cleanerCount, "cleaner-count", defaultCleanerCount, "Number of threads running cleanup")
 	kubeClientOptions.AddFlags(flag.CommandLine)
 }
@@ -64,7 +68,10 @@ func main() {
 	st, _ := ranch.NewStorage(nil, resStorage, "")
 
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	client := client.NewClient(defaultOwner, boskosURL)
+	client, err := client.NewClient(defaultOwner, boskosURL, username, passwordFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("unable to create a Boskos client")
+	}
 	cleaner := cleaner.NewCleaner(cleanerCount, client, defaultBoskosRetryPeriod, st)
 
 	cleaner.Start()

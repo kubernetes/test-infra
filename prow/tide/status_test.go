@@ -17,6 +17,7 @@ limitations under the License.
 package tide
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -772,5 +773,53 @@ func TestSetStatusRespectsRequiredContexts(t *testing.T) {
 	}
 	if val.Description != expectedDescription {
 		t.Errorf("Expected description to be %q, was %q", expectedDescription, val.Description)
+	}
+}
+
+func TestNewBaseSHAGetter(t *testing.T) {
+	org, repo, branch := "org", "repo", "branch"
+	testCases := []struct {
+		name     string
+		baseSHAs map[string]string
+		ghc      githubClient
+
+		expectedSHA string
+		expectErr   bool
+	}{
+		{
+			name:        "Default to content of baseSHAs map",
+			baseSHAs:    map[string]string{"org/repo:branch": "123"},
+			expectedSHA: "123",
+		},
+		{
+			name:        "BaseSHAs map has no entry, ask GitHub",
+			baseSHAs:    map[string]string{},
+			ghc:         &fgc{refs: map[string]string{"org/repo heads/branch": "SHA"}},
+			expectedSHA: "SHA",
+		},
+		{
+			name:      "Error is returned",
+			baseSHAs:  map[string]string{},
+			ghc:       &fgc{err: errors.New("some-failure")},
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := newBaseSHAGetter(tc.baseSHAs, tc.ghc, org, repo, branch)()
+			if err != nil && !tc.expectErr {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.expectErr {
+				return
+			}
+			if result != tc.expectedSHA {
+				t.Errorf("expected %q, got %q", tc.expectedSHA, result)
+			}
+			if val := tc.baseSHAs[org+"/"+repo+":"+branch]; val != tc.expectedSHA {
+				t.Errorf("baseSHA in the map (%q) does not match expected(%q)", val, tc.expectedSHA)
+			}
+		})
 	}
 }

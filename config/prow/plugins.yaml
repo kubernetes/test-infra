@@ -542,6 +542,7 @@ plugins:
 
   kubernetes/cloud-provider-openstack:
   - override
+  - release-note
 
   kubernetes/community:
   - blockade
@@ -805,20 +806,25 @@ external_plugins:
   kubernetes:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-sigs:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-csi:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-client:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request
   kubernetes-incubator:
   - name: needs-rebase
     events:
+      - issue_comment
       - pull_request

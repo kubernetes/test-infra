@@ -27,12 +27,19 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/simplifypath"
 )
 
 const (
@@ -45,14 +52,52 @@ var (
 	storagePath       = flag.String("storage", "", "Path to persistent volume to load the state")
 	requestTTL        = flag.Duration("request-ttl", defaultRequestTTL, "request TTL before losing priority in the queue")
 	kubeClientOptions crds.KubernetesClientOptions
+	logLevel          = flag.String("log-level", "info", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 )
 
+var (
+	httpRequestDuration = metrics.HttpRequestDuration("boskos", 0.005, 360)
+	httpResponseSize    = metrics.HttpResponseSize("boskos", 128, 65536)
+	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
+)
+
+func init() {
+	prometheus.MustRegister(httpRequestDuration)
+	prometheus.MustRegister(httpResponseSize)
+}
+
+var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+	l("acquire"),
+	l("acquirebystate"),
+	l("release"),
+	l("reset"),
+	l("update"),
+	l("metric"),
+))
+
+// l keeps the tree legible
+func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
+	return simplifypath.L(fragment, children...)
+}
+
 func main() {
+	logrusutil.ComponentInit("boskos")
+	level, err := logrus.ParseLevel(*logLevel)
+	if err != nil {
+		logrus.WithError(err).Fatal("invalid log level specified")
+	}
+	logrus.SetLevel(level)
 	kubeClientOptions.AddFlags(flag.CommandLine)
 	flag.Parse()
 	kubeClientOptions.Validate()
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	defer interrupts.WaitForGracefulShutdown()
+	pjutil.ServePProf()
+	metrics.ExposeMetrics("boskos", config.PushGateway{})
+	// signal to the world that we are healthy
+	// this needs to be in a separate port as we don't start the
+	// main server with the main mux until we're ready
+	health := pjutil.NewHealth()
 
 	rc, err := kubeClientOptions.Client(crds.ResourceType)
 	if err != nil {
@@ -75,8 +120,8 @@ func main() {
 		logrus.WithError(err).Fatalf("failed to create ranch! Config: %v", *configPath)
 	}
 
-	boskos := http.Server{
-		Handler: NewBoskosHandler(r),
+	boskos := &http.Server{
+		Handler: traceHandler(NewBoskosHandler(r)),
 		Addr:    ":8080",
 	}
 
@@ -96,7 +141,10 @@ func main() {
 	r.StartRequestGC(defaultRequestGCPeriod)
 
 	logrus.Info("Start Service")
-	logrus.WithError(boskos.ListenAndServe()).Fatal("ListenAndServe returned.")
+	interrupts.ListenAndServe(boskos, 5*time.Second)
+
+	// signal to the world that we're ready
+	health.ServeReady()
 }
 
 //NewBoskosHandler constructs the boskos handler.

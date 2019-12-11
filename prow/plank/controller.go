@@ -310,7 +310,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, pm map[string]coreapi
 	return pjutil.TerminateOlderJobs(c.prowJobClient, log, pjs, func(toCancel prowapi.ProwJob) error {
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in GitHub pull requests.
-		if c.config().Plank.AllowCancellations {
+		if ac := c.config().Plank.AllowCancellations; ac == nil || *ac {
 			if pod, exists := pm[toCancel.ObjectMeta.Name]; exists {
 				c.log.WithField("name", pod.ObjectMeta.Name).Debug("Delete Pod.")
 				if client, ok := c.buildClients[toCancel.ClusterAlias()]; !ok {

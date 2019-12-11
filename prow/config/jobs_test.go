@@ -959,7 +959,8 @@ func TestUtilityConfigValidation(t *testing.T) {
 			},
 		},
 		{
-			id: "ssh_keys specified but clone_uri is empty, error",
+			id:    "ssh_keys specified but clone_uri is empty, no error",
+			valid: true,
 			uc: UtilityConfig{
 				DecorationConfig: &prowapi.DecorationConfig{
 					SSHKeySecrets: []string{"ssh-secret"},
@@ -1038,6 +1039,109 @@ func TestUtilityConfigValidation(t *testing.T) {
 				CloneURI: "git@github.com:kubernetes/test-infra.git",
 			},
 			valid: true,
+		},
+		{
+			id: "oauth token secret provided and all clone_uri have valid http(s) a scheme, no error",
+			uc: UtilityConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
+					OauthTokenSecret: &prowapi.OauthTokenSecret{
+						Name: "secret",
+						Key:  "token",
+					},
+				},
+				CloneURI: "http://github.com/kubernetes/test-infra.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "https://github.com/org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "http://github.com/org1/repo1.git",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			id: "oauth token secret provided but clone_uri doesn't contain a scheme, error",
+			uc: UtilityConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
+					OauthTokenSecret: &prowapi.OauthTokenSecret{
+						Name: "secret",
+						Key:  "token",
+					},
+				},
+				CloneURI: "github.com/kubernetes/test-infra.git",
+			},
+		},
+		{
+			id: "oauth token secret provided but one of the clone_uri doesn't contain a scheme, error",
+			uc: UtilityConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
+					OauthTokenSecret: &prowapi.OauthTokenSecret{
+						Name: "secret",
+						Key:  "token",
+					},
+				},
+				CloneURI: "https://github.com/kubernetes/test-infra.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "github.com/org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "http://github.com/org1/repo1.git",
+					},
+				},
+			},
+		},
+		{
+			id: "oauth token secret provided but clone_uri doesn't contain a http(s) scheme, error",
+			uc: UtilityConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
+					OauthTokenSecret: &prowapi.OauthTokenSecret{
+						Name: "secret",
+						Key:  "token",
+					},
+				},
+				CloneURI: "ssh://github.com/kubernetes/test-infra.git",
+			},
+		},
+		{
+			id: "oauth token secret provided but one of the clone_uri doesn't contain a http(s) scheme, error",
+			uc: UtilityConfig{
+				DecorationConfig: &prowapi.DecorationConfig{
+					OauthTokenSecret: &prowapi.OauthTokenSecret{
+						Name: "secret",
+						Key:  "token",
+					},
+				},
+				CloneURI: "https://github.com/kubernetes/test-infra.git",
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:      "org1",
+						Repo:     "repo1",
+						BaseSHA:  "master",
+						CloneURI: "ssh://git@github.com:org1/repo1.git",
+					},
+					{
+						Org:      "org2",
+						Repo:     "repo2",
+						BaseSHA:  "master",
+						CloneURI: "http://github.com/org1/repo1.git",
+					},
+				},
+			},
 		},
 	}
 

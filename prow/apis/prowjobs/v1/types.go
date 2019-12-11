@@ -185,6 +185,8 @@ type RerunAuthConfig struct {
 	GitHubTeamSlugs []GitHubTeamSlug `json:"github_team_slugs,omitempty"`
 	// GitHubUsers contains names of individual users who can rerun the job
 	GitHubUsers []string `json:"github_users,omitempty"`
+	// GitHubOrgs contains names of GitHub organizations whose members can rerun the job
+	GitHubOrgs []string `json:"github_orgs,omitempty"`
 }
 
 // IsSpecifiedUser returns true if AllowAnyone is set to true or if the given user is
@@ -201,6 +203,15 @@ func (rac *RerunAuthConfig) IsAuthorized(user string, cli prowgithub.RerunClient
 	// if there is no client, no token was provided, so we cannot access the teams
 	if cli == nil {
 		return false, nil
+	}
+	for _, gho := range rac.GitHubOrgs {
+		isOrgMember, err := cli.IsMember(gho, user)
+		if err != nil {
+			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %v", gho, err)
+		}
+		if isOrgMember {
+			return true, nil
+		}
 	}
 	for _, ght := range rac.GitHubTeamIDs {
 		member, err := cli.TeamHasMember(ght, user)
@@ -302,6 +313,18 @@ type DecorationConfig struct {
 	// CookieFileSecret is the name of a kubernetes secret that contains
 	// a git http.cookiefile, which should be used during the cloning process.
 	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
+	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
+	// which is going to be used for fetching a private repository.
+	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+}
+
+// OauthTokenSecret holds the information of the oauth token's secret name and key.
+type OauthTokenSecret struct {
+	// Name is the name of a kubernetes secret.
+	Name string `json:"name,omitempty"`
+	// Key is the a key of the corresponding kubernetes secret that
+	// holds the value of the OAuth token.
+	Key string `json:"key,omitempty"`
 }
 
 // ApplyDefault applies the defaults for the ProwJob decoration. If a field has a zero value, it
@@ -377,6 +400,9 @@ func (d *DecorationConfig) Validate() error {
 	}
 	if err := d.GCSConfiguration.Validate(); err != nil {
 		return fmt.Errorf("GCS configuration is invalid: %v", err)
+	}
+	if d.OauthTokenSecret != nil && len(d.SSHKeySecrets) > 0 {
+		return errors.New("both OAuth token and SSH key secrets are specified")
 	}
 	return nil
 }

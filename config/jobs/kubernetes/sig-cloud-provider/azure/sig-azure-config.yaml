@@ -1,30 +1,3 @@
-presets:
-- labels:
-    preset-azure-cred: "true"
-  env:
-  - name: AZURE_CREDENTIALS
-    value: /etc/azure-cred/credentials
-  - name: AZURE_SSH_PUBLIC_KEY_FILE
-    value: /etc/azure-ssh/azure-ssh-pub
-  - name: REGISTRY
-    value: k8sprow.azurecr.io
-  - name: KUBE_VERBOSE
-    value: 0
-  volumes:
-  - name: azure-cred
-    secret:
-      secretName: azure-cred
-  - name: azure-ssh
-    secret:
-      secretName: azure-ssh
-  volumeMounts:
-  - name: azure-cred
-    mountPath: /etc/azure-cred
-    readOnly: true
-  - name: azure-ssh
-    mountPath: /etc/azure-ssh
-    readOnly: true
-
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-aks-engine-azure
@@ -38,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -90,7 +63,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -143,7 +116,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"

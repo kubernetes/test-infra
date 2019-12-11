@@ -66,7 +66,10 @@ func TestAcquireUpdate(t *testing.T) {
 		r := MakeTestRanch([]common.Resource{tc.resource})
 		boskos := makeTestBoskos(r)
 		owner := "owner"
-		client := client.NewClient(owner, boskos.URL)
+		client, err := client.NewClient(owner, boskos.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		userData := common.UserDataFromMap(common.UserDataMap{"test": "new"})
 
 		newState := "acquired"
@@ -149,7 +152,10 @@ func TestAcquireByState(t *testing.T) {
 	for _, tc := range testcases {
 		r := MakeTestRanch(tc.resources)
 		boskos := makeTestBoskos(r)
-		client := client.NewClient(owner, boskos.URL)
+		client, err := client.NewClient(owner, boskos.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
 		receivedRes, err := client.AcquireByState(tc.state, newState, tc.names)
 		boskos.Close()
 		if !reflect.DeepEqual(err, tc.err) {
@@ -217,8 +223,11 @@ func TestClientServerUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		r := MakeTestRanch([]common.Resource{tc.resource})
 		boskos := makeTestBoskos(r)
-		client := client.NewClient(owner, boskos.URL)
-		_, err := client.Acquire(rType, initialState, finalState)
+		client, err := client.NewClient(owner, boskos.URL, "", "")
+		if err != nil {
+			t.Fatalf("failed to create the Boskos client")
+		}
+		_, err = client.Acquire(rType, initialState, finalState)
 		if err != nil {
 			t.Errorf("failed to acquire resource")
 		}

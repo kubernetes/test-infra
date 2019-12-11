@@ -19,18 +19,28 @@ package clone
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
-func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
+func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string, oauthToken string) Record {
+	if len(oauthToken) > 0 {
+		logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.String {
+			return sets.NewString(oauthToken)
+		}))
+	}
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
 
@@ -53,7 +63,7 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 		return nil
 	}
 
-	g := gitCtxForRefs(refs, dir, env)
+	g := gitCtxForRefs(refs, dir, env, oauthToken)
 	if err := runCommands(g.commandsForBaseRef(refs, gitUserName, gitUserEmail, cookiePath)); err != nil {
 		return record
 	}
@@ -96,7 +106,7 @@ type gitCtx struct {
 }
 
 // gitCtxForRefs creates a gitCtx based on the provide refs and baseDir.
-func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string) gitCtx {
+func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, oauthToken string) gitCtx {
 	g := gitCtx{
 		cloneDir:      PathForRefs(baseDir, refs),
 		env:           env,
@@ -105,6 +115,13 @@ func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string) gitCtx {
 	if refs.CloneURI != "" {
 		g.repositoryURI = refs.CloneURI
 	}
+
+	if len(oauthToken) > 0 {
+		u, _ := url.Parse(g.repositoryURI)
+		u.User = url.UserPassword(oauthToken, "x-oauth-basic")
+		g.repositoryURI = u.String()
+	}
+
 	return g
 }
 

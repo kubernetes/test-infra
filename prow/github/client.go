@@ -37,10 +37,8 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/version"
 )
 
 type timeClient interface {
@@ -138,7 +136,7 @@ type CommitClient interface {
 
 // RepositoryClient interface for repository related API actions
 type RepositoryClient interface {
-	GetRepo(owner, name string) (Repo, error)
+	GetRepo(owner, name string) (FullRepo, error)
 	GetRepos(org string, isUser bool) ([]Repo, error)
 	GetBranches(org, repo string, onlyProtected bool) ([]Branch, error)
 	GetBranchProtection(org, repo, branch string) (*BranchProtection, error)
@@ -155,8 +153,8 @@ type RepositoryClient interface {
 	ListCollaborators(org, repo string) ([]User, error)
 	CreateFork(owner, repo string) error
 	ListRepoTeams(org, repo string) ([]Team, error)
-	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*Repo, error)
-	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*Repo, error)
+	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error)
+	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
 }
 
 // TeamClient interface for team related API actions
@@ -249,15 +247,14 @@ type delegate struct {
 	maxSleepTime  time.Duration
 	initialDelay  time.Duration
 
-	userAgent string
-	gqlc      gqlClient
-	client    httpClient
-	bases     []string
-	dry       bool
-	fake      bool
-	throttle  throttler
-	getToken  func() []byte
-	censor    func([]byte) []byte
+	gqlc     gqlClient
+	client   httpClient
+	bases    []string
+	dry      bool
+	fake     bool
+	throttle throttler
+	getToken func() []byte
+	censor   func([]byte) []byte
 
 	mut      sync.Mutex // protects botName and email
 	userData *User
@@ -437,8 +434,7 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
-			time:      &standardTime{},
-			userAgent: version.UserAgent(),
+			time: &standardTime{},
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
@@ -475,8 +471,7 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, cen
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		delegate: &delegate{
-			time:      &standardTime{},
-			userAgent: version.UserAgent(),
+			time: &standardTime{},
 			gqlc: githubql.NewEnterpriseClient(
 				graphqlEndpoint,
 				&http.Client{
@@ -741,9 +736,6 @@ func (c *client) doRequest(method, path, accept string, body interface{}) (*http
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	} else {
 		req.Header.Add("Accept", accept)
-	}
-	if c.userAgent != "" {
-		req.Header.Add("User-Agent", c.userAgent)
 	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.
@@ -1667,10 +1659,10 @@ func (c *client) ListStatuses(org, repo, ref string) ([]Status, error) {
 // GetRepo returns the repo for the provided owner/name combination.
 //
 // See https://developer.github.com/v3/repos/#get
-func (c *client) GetRepo(owner, name string) (Repo, error) {
+func (c *client) GetRepo(owner, name string) (FullRepo, error) {
 	c.log("GetRepo", owner, name)
 
-	var repo Repo
+	var repo FullRepo
 	_, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s", owner, name),
@@ -1681,7 +1673,7 @@ func (c *client) GetRepo(owner, name string) (Repo, error) {
 
 // CreateRepo creates a new repository
 // See https://developer.github.com/v3/repos/#create
-func (c *client) CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*Repo, error) {
+func (c *client) CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error) {
 	c.log("CreateRepo", owner, isUser, repo)
 
 	if repo.Name == nil || *repo.Name == "" {
@@ -1697,7 +1689,7 @@ func (c *client) CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (
 	if !isUser {
 		path = fmt.Sprintf("/orgs/%s/repos", owner)
 	}
-	var retRepo Repo
+	var retRepo FullRepo
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        path,
@@ -1709,7 +1701,7 @@ func (c *client) CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (
 
 // UpdateRepo edits an existing repository
 // See https://developer.github.com/v3/repos/#edit
-func (c *client) UpdateRepo(owner, name string, repo RepoUpdateRequest) (*Repo, error) {
+func (c *client) UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error) {
 	c.log("UpdateRepo", owner, name, repo)
 
 	if c.fake {
@@ -1719,7 +1711,7 @@ func (c *client) UpdateRepo(owner, name string, repo RepoUpdateRequest) (*Repo, 
 	}
 
 	path := fmt.Sprintf("/repos/%s/%s", owner, name)
-	var retRepo Repo
+	var retRepo FullRepo
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        path,
@@ -3190,7 +3182,7 @@ func (c *client) GetColumnProjectCards(columnID int) ([]ProjectCard, error) {
 	var cards []ProjectCard
 	err := c.readPaginatedResults(
 		path,
-		//projects api requies the accept header to be set this way
+		// projects api requies the accept header to be set this way
 		"application/vnd.github.inertia-preview+json",
 		func() interface{} {
 			return &[]ProjectCard{}
