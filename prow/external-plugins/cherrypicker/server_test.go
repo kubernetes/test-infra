@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"k8s.io/test-infra/prow/git/v2"
 	"sync"
 	"testing"
 
@@ -235,7 +234,7 @@ func TestCherryPickIC(t *testing.T) {
 
 	s := &Server{
 		botName:        botName,
-		gc:             git.ClientFactoryFrom(c),
+		gc:             c,
 		push:           func(newBranch string) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
@@ -373,7 +372,7 @@ func TestCherryPickPR(t *testing.T) {
 
 	s := &Server{
 		botName:        botName,
-		gc:             git.ClientFactoryFrom(c),
+		gc:             c,
 		push:           func(newBranch string) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
@@ -514,7 +513,7 @@ func TestCherryPickPRWithLabels(t *testing.T) {
 
 		s := &Server{
 			botName:        botName,
-			gc:             git.ClientFactoryFrom(c),
+			gc:             c,
 			push:           func(newBranch string) error { return nil },
 			ghc:            ghc,
 			tokenGenerator: getSecret,

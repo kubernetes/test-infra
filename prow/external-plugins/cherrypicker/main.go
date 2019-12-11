@@ -29,7 +29,6 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
@@ -118,7 +117,7 @@ func main() {
 		botName:        botName,
 		email:          email,
 
-		gc:  git.ClientFactoryFrom(gitClient),
+		gc:  gitClient,
 		ghc: githubClient,
 		log: log,
 
