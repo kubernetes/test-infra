@@ -76,6 +76,9 @@ func ResolveSpecFromEnv() (*JobSpec, error) {
 }
 
 const (
+	// ci represents whether the current environment is a CI environment
+	ci = "CI"
+
 	// JobSpecEnv is the name that contains JobSpec marshaled into a string.
 	JobSpecEnv = "JOB_SPEC"
 
@@ -99,6 +102,7 @@ const (
 // to their values that should be available for a job spec
 func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env := map[string]string{
+		ci:           "true",
 		jobNameEnv:   spec.Job,
 		buildIDEnv:   spec.BuildID,
 		prowJobIDEnv: spec.ProwJobID,
@@ -139,7 +143,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType prowapi.ProwJobType) []string {
-	baseEnv := []string{jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
+	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
 	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
 
