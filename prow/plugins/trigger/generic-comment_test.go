@@ -29,7 +29,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
@@ -858,7 +857,7 @@ func TestHandleGenericComment(t *testing.T) {
 			ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(fakeConfig.ProwJobNamespace),
 			Config:        fakeConfig,
 			Logger:        logrus.WithField("plugin", PluginName),
-			GitClient:     &git.Client{},
+			GitClient:     nil,
 		}
 		presubmits := tc.Presubmits
 		if presubmits == nil {

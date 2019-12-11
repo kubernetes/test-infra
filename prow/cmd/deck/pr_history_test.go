@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -425,7 +424,7 @@ func TestGetGCSDirsForPR(t *testing.T) {
 				123: {Number: 123},
 			},
 		}
-		toSearch, err := getGCSDirsForPR(tc.config, gitHubClient, &git.Client{}, tc.org, tc.repo, tc.pr)
+		toSearch, err := getGCSDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, tc.pr)
 		if (err != nil) != tc.expErr {
 			t.Errorf("%s: unexpected error %v", tc.name, err)
 		}

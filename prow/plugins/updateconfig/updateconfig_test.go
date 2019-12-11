@@ -32,8 +32,8 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
 
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -94,7 +94,7 @@ var remoteFiles = map[string]map[string]string{
 	},
 }
 
-func setupLocalGitRepo(t *testing.T, org, repo string) *git.Client {
+func setupLocalGitRepo(t *testing.T, org, repo string) git.ClientFactory {
 	lg, c, err := localgit.New()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
@@ -1317,7 +1317,7 @@ func TestUpdate(t *testing.T) {
 		repo := "repo"
 		c := setupLocalGitRepo(t, org, repo)
 
-		gitRepo, err := c.Clone(org, repo)
+		gitRepo, err := c.ClientFor(org, repo)
 		if err != nil {
 			t.Fatalf("Failed to clone: %v.", err)
 		}

@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"sigs.k8s.io/yaml"
 )
 
@@ -27,14 +27,14 @@ type ProwYAML struct {
 
 // ProwYAMLGetter is used to retrieve a ProwYAML. Tests should provide
 // their own implementation and set that on the Config.
-type ProwYAMLGetter func(c *Config, gc *git.Client, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
+type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
 // Verify defaultProwYAMLGetter is a ProwYAMLGetter
 var _ ProwYAMLGetter = defaultProwYAMLGetter
 
 func defaultProwYAMLGetter(
 	c *Config,
-	gc *git.Client,
+	gc git.ClientFactory,
 	identifier string,
 	baseSHA string,
 	headSHAs ...string) (*ProwYAML, error) {
@@ -52,7 +52,7 @@ func defaultProwYAMLGetter(
 		return nil, fmt.Errorf("didn't get two but %d results when splitting repo identifier %q", len(identifierSlashSplit), identifier)
 	}
 	organization, repository := identifierSlashSplit[0], identifierSlashSplit[1]
-	repo, err := gc.Clone(organization, repository)
+	repo, err := gc.ClientFor(organization, repository)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone repo for %q: %v", identifier, err)
 	}
@@ -74,7 +74,7 @@ func defaultProwYAMLGetter(
 
 	mergeMethod := c.Tide.MergeMethod(organization, repository)
 	log.Debugf("Using merge strategy %q.", mergeMethod)
-	if err := repo.MergeAndCheckout(baseSHA, mergeMethod, headSHAs...); err != nil {
+	if err := repo.MergeAndCheckout(baseSHA, string(mergeMethod), headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to merge: %v", err)
 	}
 

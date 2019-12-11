@@ -43,8 +43,8 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/tide/history"
 )
@@ -696,7 +696,7 @@ func TestDividePool(t *testing.T) {
 
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, &git.Client{}, nil, nil,
+		logrus.NewEntry(logrus.StandardLogger()), fc, mgr, configGetter, nil, nil, nil,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -1704,7 +1704,7 @@ func TestSync(t *testing.T) {
 			pjClient:       fakectrlruntimeclient.NewFakeClient(),
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,
-			gc:             &git.Client{},
+			gc:             nil,
 			config:         ca.Config,
 			newPoolPending: make(chan bool, 1),
 			shutDown:       make(chan bool),
@@ -1714,7 +1714,7 @@ func TestSync(t *testing.T) {
 		c := &Controller{
 			config:        ca.Config,
 			ghc:           fgc,
-			gc:            &git.Client{},
+			gc:            nil,
 			prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 			logger:        logrus.WithField("controller", "sync"),
 			sc:            sc,
@@ -2437,7 +2437,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "always"},
 			}},
-			prowYAMLGetter: func(_ *config.Config, _ *git.Client, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+			prowYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 				if len(headRefs) == 1 && headRefs[0] == "1" {
 					return nil, errors.New("you shall not get jobs")
 				}
@@ -2483,7 +2483,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		c := &Controller{
 			config: cfgAgent.Config,
 			ghc:    &fgc{},
-			gc:     &git.Client{},
+			gc:     nil,
 			changedFiles: &changedFilesAgent{
 				ghc:             &fgc{},
 				changeCache:     tc.initialChangeCache,
@@ -3295,7 +3295,7 @@ func (c *indexingClient) List(ctx context.Context, list runtime.Object, opts ...
 }
 
 func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit) config.ProwYAMLGetter {
-	return func(_ *config.Config, _ *git.Client, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+	return func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 		if len(headRefsToLookFor) != len(headRefs) {
 			return nil, fmt.Errorf("expcted %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
 		}

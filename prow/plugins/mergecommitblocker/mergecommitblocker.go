@@ -22,7 +22,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -75,7 +75,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handle(pc.GitHubClient, pc.GitClient, cp, pc.Logger, &pre)
 }
 
-func handle(ghc githubClient, gc *git.Client, cp pruneClient, log *logrus.Entry, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, gc git.ClientFactory, cp pruneClient, log *logrus.Entry, pre *github.PullRequestEvent) error {
 	var (
 		org  = pre.PullRequest.Base.Repo.Owner.Login
 		repo = pre.PullRequest.Base.Repo.Name
@@ -83,7 +83,7 @@ func handle(ghc githubClient, gc *git.Client, cp pruneClient, log *logrus.Entry,
 	)
 
 	// Clone the repo, checkout the PR.
-	r, err := gc.Clone(org, repo)
+	r, err := gc.ClientFor(org, repo)
 	if err != nil {
 		return err
 	}

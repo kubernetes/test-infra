@@ -34,7 +34,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
@@ -141,7 +141,7 @@ type Agent struct {
 	ProwJobClient             prowv1.ProwJobInterface
 	KubernetesClient          kubernetes.Interface
 	BuildClusterCoreV1Clients map[string]corev1.CoreV1Interface
-	GitClient                 *git.Client
+	GitClient                 git.ClientFactory
 	SlackClient               *slack.Client
 	BugzillaClient            bugzilla.Client
 
@@ -206,7 +206,7 @@ type ClientAgent struct {
 	ProwJobClient             prowv1.ProwJobInterface
 	KubernetesClient          kubernetes.Interface
 	BuildClusterCoreV1Clients map[string]corev1.CoreV1Interface
-	GitClient                 *git.Client
+	GitClient                 git.ClientFactory
 	SlackClient               *slack.Client
 	OwnersClient              *repoowners.Client
 	BugzillaClient            bugzilla.Client
