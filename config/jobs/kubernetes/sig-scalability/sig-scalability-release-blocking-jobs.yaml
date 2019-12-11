@@ -107,7 +107,7 @@ periodics:
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce-scalability
   tags:
-  - "perfDashPrefix: gce-100Nodes"
+  - "perfDashPrefix: gce-100Nodes-master"
   - "perfDashJobType: performance"
   - "perfDashBuildsCount: 500"
   labels:
@@ -116,8 +116,9 @@ periodics:
     preset-e2e-scalability-common: "true"
   annotations:
     fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
     fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-replacements: "gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, google-gce, google-gci
     testgrid-tab-name: gce-cos-master-scalability-100
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
