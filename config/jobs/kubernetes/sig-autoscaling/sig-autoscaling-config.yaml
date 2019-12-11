@@ -135,7 +135,7 @@ periodics:
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
-      - --timeout=105
+      - --timeout=115
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
@@ -146,7 +146,7 @@ periodics:
       - --test=false
       - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
       - --test-cmd-args=updater
-      - --timeout=85m
+      - --timeout=95m
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
