@@ -241,3 +241,35 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
+  - name: ci-npd-e2e-test
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/node-problem-detector
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191211-04e540b-master
+        env:
+        - name: ZONE
+          value: us-central1-a
+        - name: IMAGE_FAMILY
+          value: cos-73-lts
+        - name: IMAGE_PROJECT
+          value: cos-cloud
+        - name: BOSKOS_PROJECT_TYPE
+          value: gce-project
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - >-
+          ./test/build.sh install-lib &&
+          SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
+    annotations:
+      testgrid-dashboards: presubmits-node-problem-detector
+      testgrid-num-columns-recent: '30'
