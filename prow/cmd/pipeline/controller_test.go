@@ -914,7 +914,7 @@ func TestMakeResources(t *testing.T) {
 				pr.Spec.Resources[0].ResourceRef = pipelinev1alpha1.PipelineResourceRef{
 					Name: pr.Name + "-implicit-ref",
 				}
-				pr.Spec.Params[3].Value = pipelinev1alpha1.ArrayOrString{
+				pr.Spec.Params[4].Value = pipelinev1alpha1.ArrayOrString{
 					Type:      pipelinev1alpha1.ParamTypeString,
 					StringVal: string(prowjobv1.PresubmitJob),
 				}
@@ -1066,6 +1066,13 @@ func TestMakeResources(t *testing.T) {
 					Value: pipelinev1alpha1.ArrayOrString{
 						Type:      pipelinev1alpha1.ParamTypeString,
 						StringVal: randomPipelineRunID,
+					},
+				},
+				{
+					Name: "CI",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: "true",
 					},
 				},
 				{
