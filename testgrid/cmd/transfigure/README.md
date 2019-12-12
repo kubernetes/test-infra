@@ -6,39 +6,7 @@ It is used specifically for Prow instances other than the k8s instance of Prow.
 ## Usage with Prow
 
 To have your instance of Prow push to TestGrid automatically, add a [Prow Job](/prow/jobs.md)
-similar to the one below:
-```yaml
-postsubmits:
-  YOUR-ORG/YOUR-REPO: # TODO: Replace this
-  - name: post-[repo-name]-upload-testgrid-config # TODO: Rename this 
-    cluster: test-infra-trusted # TODO: You may need to specify a cluster, depending on your Prow config
-    run_if_changed: '^(dir/to/your/prowjobs/.*\.yaml)|(dir/to/your/testgrid/default\.yaml)$' # TODO: Replace this
-    decorate: true
-    branches:
-    - master
-    annotations:
-      testgrid-create-test-group: "false"
-    spec:
-      containers:
-      - image: gcr.io/k8s-prow/transfigure
-        command:
-        - /transfigure.sh
-        args: # TODO: Replace these (see arguments in README)
-        - [github_token]
-        - [prow_config]
-        - [prow_job_config]
-        - [testgrid_yaml]
-        - [repo_subdir]
-        - (optional_remote_fork_repo)
-        volumeMounts:
-        - name: github
-          mountPath: /etc/github-token
-          readOnly: true
-      volumes:
-      - name: github
-        secret:
-          secretName: oauth-token
-```
+like the ones in this [example file](./example-prowjobs.yaml).
 
 ## Arguments
 
