@@ -148,3 +148,24 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
+  - name: images-multicloud-operators-foundation_postsubmit
+    branches:
+    - ^master$
+    decorate: true
+    decoration_config:
+      ssh_key_secrets:
+      - ssh-secret
+    clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-foundation.git"
+    path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-foundation
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
+        name: ""
+        securityContext:
+          privileged: true
