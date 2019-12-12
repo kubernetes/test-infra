@@ -127,10 +127,7 @@ func main() {
 		return nil
 	})
 
-	for cm, data := range updateconfig.FilterChanges(pluginAgent.Config().ConfigUpdater, changes, logrus.NewEntry(logrus.StandardLogger())) {
-		if cm.Namespace == "" {
-			cm.Namespace = configAgent.Config().ProwJobNamespace
-		}
+	for cm, data := range updateconfig.FilterChanges(pluginAgent.Config().ConfigUpdater, changes, configAgent.Config().ProwJobNamespace, logrus.NewEntry(logrus.StandardLogger())) {
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
 		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
 		if err != nil {
