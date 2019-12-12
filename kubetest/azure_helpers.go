@@ -29,7 +29,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
-type AksEngineAPIModel struct {
+type AKSEngineAPIModel struct {
 	Location   string            `json:"location,omitempty"`
 	Name       string            `json:"name,omitempty"`
 	Tags       map[string]string `json:"tags,omitempty"`
