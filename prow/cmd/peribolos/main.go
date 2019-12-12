@@ -810,7 +810,7 @@ func configureOrgMeta(client orgMetadataClient, orgName string, want org.Metadat
 	change = updateString(&cur.Location, want.Location) || change
 	if want.DefaultRepositoryPermission != nil {
 		w := string(*want.DefaultRepositoryPermission)
-		change = updateString(&cur.DefaultRepositoryPermission, &w)
+		change = updateString(&cur.DefaultRepositoryPermission, &w) || change
 	}
 	change = updateBool(&cur.HasOrganizationProjects, want.HasOrganizationProjects) || change
 	change = updateBool(&cur.HasRepositoryProjects, want.HasRepositoryProjects) || change
