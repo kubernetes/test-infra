@@ -225,6 +225,7 @@ periodics:
       - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json"
       - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
       - "--test-azure-disk-csi-driver=True"
+      - "--test_args=--ginkgo.skip=attach\\sall\\sto\\sdifferent\\spods\\son\\sthe\\ssame\\snode"
       - "--timeout=420m"
       securityContext:
         privileged: true
