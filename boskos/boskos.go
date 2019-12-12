@@ -82,13 +82,13 @@ func l(fragment string, children ...simplifypath.Node) simplifypath.Node {
 
 func main() {
 	logrusutil.ComponentInit("boskos")
+	kubeClientOptions.AddFlags(flag.CommandLine)
+	flag.Parse()
 	level, err := logrus.ParseLevel(*logLevel)
 	if err != nil {
 		logrus.WithError(err).Fatal("invalid log level specified")
 	}
 	logrus.SetLevel(level)
-	kubeClientOptions.AddFlags(flag.CommandLine)
-	flag.Parse()
 	kubeClientOptions.Validate()
 
 	defer interrupts.WaitForGracefulShutdown()
