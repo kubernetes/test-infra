@@ -188,7 +188,7 @@ type ConfigMapUpdate struct {
 
 // FilterChanges determines which of the changes are relevant for config updating, returning mapping of
 // config map to key to filename to update that key from.
-func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, log *logrus.Entry) map[plugins.ConfigMapID][]ConfigMapUpdate {
+func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, defaultNamespace string, log *logrus.Entry) map[plugins.ConfigMapID][]ConfigMapUpdate {
 	toUpdate := map[plugins.ConfigMapID][]ConfigMapUpdate{}
 	for _, change := range changes {
 		var cm plugins.ConfigMapSpec
@@ -240,6 +240,18 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 			}
 		}
 	}
+	return handleDefaultNamespace(toUpdate, defaultNamespace)
+}
+
+// handleDefaultNamespace ensures plugins.ConfigMapID.Namespace is not empty string
+func handleDefaultNamespace(toUpdate map[plugins.ConfigMapID][]ConfigMapUpdate, defaultNamespace string) map[plugins.ConfigMapID][]ConfigMapUpdate {
+	for cm, data := range toUpdate {
+		if cm.Namespace == "" {
+			key := plugins.ConfigMapID{Name: cm.Name, Namespace: defaultNamespace, Cluster: cm.Cluster}
+			toUpdate[key] = append(toUpdate[key], data...)
+			delete(toUpdate, cm)
+		}
+	}
 	return toUpdate
 }
 
@@ -289,7 +301,7 @@ func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, bu
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
-	toUpdate := FilterChanges(config, changes, log)
+	toUpdate := FilterChanges(config, changes, defaultNamespace, log)
 
 	var updated []string
 	indent := " " // one space
@@ -311,9 +323,6 @@ func handle(gc githubClient, gitClient gitClient, kc corev1.ConfigMapsGetter, bu
 	}
 
 	for cm, data := range toUpdate {
-		if cm.Namespace == "" {
-			cm.Namespace = defaultNamespace
-		}
 		logger := log.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
 		configMapClient, err := GetConfigMapClient(kc, cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
 		if err != nil {

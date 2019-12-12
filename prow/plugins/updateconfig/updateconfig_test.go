@@ -1200,6 +1200,97 @@ func TestUpdateConfig(t *testing.T) {
 	}
 }
 
+func TestHandleDefaultNamespace(t *testing.T) {
+	testcases := []struct {
+		name     string
+		given    map[plugins.ConfigMapID][]ConfigMapUpdate
+		expected map[plugins.ConfigMapID][]ConfigMapUpdate
+	}{
+		{
+			name:     "nil map",
+			given:    nil,
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{},
+		},
+		{
+			name:     "empty map",
+			given:    map[plugins.ConfigMapID][]ConfigMapUpdate{},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{},
+		},
+		{
+			name: "no empty string as namespace",
+			given: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+		},
+		{
+			name: "some empty string as namespace",
+			given: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "other-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+		},
+		{
+			name: "some empty string as namespace with potential conflicting id",
+			given: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "multikey-config", Cluster: "default"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "multikey-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+				},
+			},
+			expected: map[plugins.ConfigMapID][]ConfigMapUpdate{
+				{Name: "some-config", Namespace: "ns1", Cluster: "build01"}: {
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+				{Name: "multikey-config", Namespace: "default", Cluster: "default"}: {
+					{Key: "bar.yaml", Filename: "config/bar.yaml"},
+					{Key: "foo.yaml", Filename: "config/foo.yaml"},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		actual := handleDefaultNamespace(tc.given, defaultNamespace)
+		if !equality.Semantic.DeepEqual(tc.expected, actual) {
+			t.Errorf("%s: incorrect changes: %v", tc.name, diff.ObjectReflectDiff(tc.expected, actual))
+		}
+	}
+}
+
 func TestUpdate(t *testing.T) {
 
 	testcases := []struct {
