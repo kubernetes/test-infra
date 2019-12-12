@@ -128,6 +128,7 @@ func (ca *Agent) Config() *Config {
 }
 
 // Set sets the config. Useful for testing.
+// Also used by statusreconciler to load last known config
 func (ca *Agent) Set(c *Config) {
 	ca.mut.Lock()
 	defer ca.mut.Unlock()
