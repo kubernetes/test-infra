@@ -114,9 +114,6 @@ type acquireRequestPriorityKey struct {
 // Out: A valid Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
 func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Resource, error) {
-	r.resourcesLock.Lock()
-	defer r.resourcesLock.Unlock()
-
 	logger := logrus.WithFields(logrus.Fields{
 		"type":       rType,
 		"state":      state,
@@ -124,6 +121,10 @@ func (r *Ranch) Acquire(rType, state, dest, owner, requestID string) (*common.Re
 		"owner":      owner,
 		"identifier": requestID,
 	})
+	logger.Debug("Acquiring resource lock...")
+	r.resourcesLock.Lock()
+	defer r.resourcesLock.Unlock()
+
 	logger.Debug("Determining request priority...")
 	ts := acquireRequestPriorityKey{rType: rType, state: state}
 	rank, new := r.requestMgr.GetRank(ts, requestID)
