@@ -140,3 +140,100 @@ presubmits:
         env:
           - name: AZURE_STORAGE_DRIVER
             value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+periodics:
+- interval: 4h
+  name: kubernetes-e2e-azure-disk-1-15
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191211-04e540b-1.15
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--repo=k8s.io/kubernetes=release-1.15"
+      - "--repo=sigs.k8s.io/azuredisk-csi-driver"
+      - "--upload=gs://kubernetes-jenkins/pr-logs"
+      - "--timeout=460"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--gce-ssh="
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--build=host-go"
+      - "--provider=skeleton"
+      - "--ginkgo-parallel=1"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-orchestratorRelease=1.15"
+      - "--acsengine-hyperkube=True"
+      - "--acsengine-location=westus2"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree.json"
+      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--test-azure-disk-csi-driver=True"
+      - "--timeout=420m"
+      securityContext:
+        privileged: true
+      env:
+        - name: AZURE_STORAGE_DRIVER
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+  annotations:
+    testgrid-dashboards: provider-azure-master, provider-azure-on-call
+    testgrid-tab-name: kubernetes-e2e-azure-disk-1-15
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin.
+    testgrid-num-columns-recent: '30'
+- interval: 4h
+  name: kubernetes-e2e-azure-disk-vmss-1-15
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191211-04e540b-1.15
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--repo=k8s.io/kubernetes=release-1.15"
+      - "--repo=sigs.k8s.io/azuredisk-csi-driver"
+      - "--upload=gs://kubernetes-jenkins/pr-logs"
+      - "--timeout=460"
+      - "--scenario=kubernetes_e2e"
+      - --
+      - "--gce-ssh="
+      - "--test=true"
+      - "--up=true"
+      - "--down=true"
+      - "--deployment=acsengine"
+      - "--build=host-go"
+      - "--provider=skeleton"
+      - "--ginkgo-parallel=1"
+      - "--acsengine-admin-username=azureuser"
+      - "--acsengine-creds=$AZURE_CREDENTIALS"
+      - "--acsengine-orchestratorRelease=1.15"
+      - "--acsengine-hyperkube=True"
+      - "--acsengine-location=westus2"
+      - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
+      - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json"
+      - "--acsengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--test-azure-disk-csi-driver=True"
+      - "--timeout=420m"
+      securityContext:
+        privileged: true
+      env:
+        - name: AZURE_STORAGE_DRIVER
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+  annotations:
+    testgrid-dashboards: provider-azure-master, provider-azure-on-call
+    testgrid-tab-name: kubernetes-e2e-azure-disk-vmss-1-15
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin.
+    testgrid-num-columns-recent: '30'
