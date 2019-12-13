@@ -57,8 +57,6 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 	switch {
 	case pj.Labels[client.GerritReportLabel] != "":
 		return false // TODO(fejta): opt-in to github reporting
-	case !pj.Spec.Report:
-		return false // Respect report field
 	case pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob:
 		return false // Report presubmit and postsubmit github jobs for github reporter
 	case c.reportAgent != "" && pj.Spec.Agent != c.reportAgent:

@@ -251,7 +251,7 @@ func (c *Controller) processNextItem() bool {
 	}
 
 	// not belong to the current reporter
-	if !c.reporter.ShouldReport(pj) {
+	if !pj.Spec.Report || !c.reporter.ShouldReport(pj) {
 		c.queue.Forget(key)
 		return true
 	}
