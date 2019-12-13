@@ -61,7 +61,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "master"
@@ -113,7 +113,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
@@ -165,7 +165,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-experimental
         env:
           - name: "CAPI_BRANCH"
             value: "stable"
