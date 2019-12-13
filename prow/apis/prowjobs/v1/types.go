@@ -119,7 +119,7 @@ type ProwJobSpec struct {
 	// need to be cloned, determined from config
 	ExtraRefs []Refs `json:"extra_refs,omitempty"`
 	// Report determines if the result of this job should
-	// be posted as a status on GitHub
+	// be reported (e.g. status on GitHub, message in Slack, etc.)
 	Report bool `json:"report,omitempty"`
 	// Context is the name of the status context used to
 	// report back to GitHub

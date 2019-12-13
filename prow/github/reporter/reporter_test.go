@@ -33,16 +33,6 @@ func TestShouldReport(t *testing.T) {
 		reportAgent v1.ProwJobAgent
 	}{
 		{
-			name: "should not report skip report job",
-			pj: v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Type:   v1.PresubmitJob,
-					Report: false,
-				},
-			},
-			report: false,
-		},
-		{
 			name: "should not report periodic job",
 			pj: v1.ProwJob{
 				Spec: v1.ProwJobSpec{
