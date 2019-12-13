@@ -44,7 +44,7 @@ var (
 		"cos",
 		"cri-o",
 		"istio",
-		"google-oss",
+		"googleoss",
 		"google",
 		"kopeio",
 		"redhat",
