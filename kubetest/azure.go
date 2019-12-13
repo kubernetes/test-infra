@@ -51,13 +51,13 @@ var (
 	acsResourceName        = flag.String("acsengine-resource-name", "", "Azure Resource Name")
 	acsResourceGroupName   = flag.String("acsengine-resourcegroup-name", "", "Azure Resource Group Name")
 	acsLocation            = flag.String("acsengine-location", "", "Azure ACS location")
-	acsMasterVmSize        = flag.String("acsengine-mastervmsize", "", "Azure Master VM size")
-	acsAgentVmSize         = flag.String("acsengine-agentvmsize", "", "Azure Agent VM size")
+	acsMasterVMSize        = flag.String("acsengine-mastervmsize", "", "Azure Master VM size")
+	acsAgentVMSize         = flag.String("acsengine-agentvmsize", "", "Azure Agent VM size")
 	acsAdminUsername       = flag.String("acsengine-admin-username", "", "Admin username")
 	acsAdminPassword       = flag.String("acsengine-admin-password", "", "Admin password")
 	acsAgentPoolCount      = flag.Int("acsengine-agentpoolcount", 0, "Azure Agent Pool Count")
 	acsTemplateURL         = flag.String("acsengine-template-url", "", "Azure Template URL.")
-	acsDnsPrefix           = flag.String("acsengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
+	acsDNSPrefix           = flag.String("acsengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
 	acsEngineURL           = flag.String("acsengine-download-url", "", "Download URL for ACS engine")
 	acsEngineMD5           = flag.String("acsengine-md5-sum", "", "Checksum for acs engine download")
 	acsSSHPublicKeyPath    = flag.String("acsengine-public-key", "", "Path to SSH Public Key")
@@ -75,13 +75,13 @@ var (
 	aksResourceName        = flag.String("aksengine-resource-name", "", "Azure Resource Name")
 	aksResourceGroupName   = flag.String("aksengine-resourcegroup-name", "", "Azure Resource Group Name")
 	aksLocation            = flag.String("aksengine-location", "", "Azure AKS location")
-	aksMasterVmSize        = flag.String("aksengine-mastervmsize", "", "Azure Master VM size")
-	aksAgentVmSize         = flag.String("aksengine-agentvmsize", "", "Azure Agent VM size")
+	aksMasterVMSize        = flag.String("aksengine-mastervmsize", "", "Azure Master VM size")
+	aksAgentVMSize         = flag.String("aksengine-agentvmsize", "", "Azure Agent VM size")
 	aksAdminUsername       = flag.String("aksengine-admin-username", "", "Admin username")
 	aksAdminPassword       = flag.String("aksengine-admin-password", "", "Admin password")
 	aksAgentPoolCount      = flag.Int("aksengine-agentpoolcount", 0, "Azure Agent Pool Count")
 	aksTemplateURL         = flag.String("aksengine-template-url", "", "Azure Template URL.")
-	aksDnsPrefix           = flag.String("aksengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
+	aksDNSPrefix           = flag.String("aksengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
 	aksEngineURL           = flag.String("aksengine-download-url", "", "Download URL for AKS engine")
 	aksEngineMD5           = flag.String("aksengine-md5-sum", "", "Checksum for aks engine download")
 	aksSSHPublicKeyPath    = flag.String("aksengine-public-key", "", "Path to SSH Public Key")
@@ -285,21 +285,21 @@ func (c *Cluster) getAzCredentials() error {
 }
 
 func validateAzureStackCloudProfile() error {
-	if *acsLocation == "" {
+	if *aksLocation == "" {
 		return fmt.Errorf("no location specified for Azure Stack")
 	}
 
-	if *acsCustomCloudURL == "" {
+	if *aksCustomCloudURL == "" {
 		return fmt.Errorf("no custom cloud portal URL specified for Azure Stack")
 	}
 
-	if !strings.HasPrefix(*acsCustomCloudURL, fmt.Sprintf("https://portal.%s.", *acsLocation)) {
-		return fmt.Errorf("custom cloud portal URL needs to start with https://portal.%s. ", *acsLocation)
+	if !strings.HasPrefix(*aksCustomCloudURL, fmt.Sprintf("https://portal.%s.", *aksLocation)) {
+		return fmt.Errorf("custom cloud portal URL needs to start with https://portal.%s. ", *aksLocation)
 	}
 	return nil
 }
 
-func randomAksEngineLocation() string {
+func randomAKSEngineLocation() string {
 	var AzureLocations = []string{
 		"westeurope",
 		"westus2",
@@ -311,13 +311,6 @@ func randomAksEngineLocation() string {
 }
 
 func checkParams() error {
-	if strings.EqualFold(*acsAzureEnv, AzureStackCloud) {
-		if err := validateAzureStackCloudProfile(); err != nil {
-			return err
-		}
-	} else if *acsLocation == "" {
-		*acsLocation = randomAksEngineLocation()
-	}
 	//TODO: remove acs related lines after baking period
 	if *acsLocation != "" {
 		*aksLocation = *acsLocation
@@ -328,11 +321,11 @@ func checkParams() error {
 	if *acsResourceGroupName != "" {
 		*aksResourceGroupName = *acsResourceGroupName
 	}
-	if *acsMasterVmSize != "" {
-		*aksMasterVmSize = *acsMasterVmSize
+	if *acsMasterVMSize != "" {
+		*aksMasterVMSize = *acsMasterVMSize
 	}
-	if *acsAgentVmSize != "" {
-		*aksAgentVmSize = *acsAgentVmSize
+	if *acsAgentVMSize != "" {
+		*aksAgentVMSize = *acsAgentVMSize
 	}
 	if *acsAdminUsername != "" {
 		*aksAdminUsername = *acsAdminUsername
@@ -346,8 +339,8 @@ func checkParams() error {
 	if *acsTemplateURL != "" {
 		*aksTemplateURL = *acsTemplateURL
 	}
-	if *acsDnsPrefix != "" {
-		*aksDnsPrefix = *acsDnsPrefix
+	if *acsDNSPrefix != "" {
+		*aksDNSPrefix = *acsDNSPrefix
 	}
 	if *acsEngineURL != "" {
 		*aksEngineURL = *acsEngineURL
@@ -379,7 +372,24 @@ func checkParams() error {
 	if *acsNetworkPlugin != "azure" {
 		*aksNetworkPlugin = *acsNetworkPlugin
 	}
+	if *acsAzureEnv != "AzurePublicCloud" {
+		*aksAzureEnv = *acsAzureEnv
+	}
+	if *acsIdentitySystem != "azure_ad" {
+		*aksIdentitySystem = *acsIdentitySystem
+	}
+	if *acsCustomCloudURL != "" {
+		*aksCustomCloudURL = *acsCustomCloudURL
+	}
 
+	// Validate flags
+	if strings.EqualFold(*aksAzureEnv, AzureStackCloud) {
+		if err := validateAzureStackCloudProfile(); err != nil {
+			return err
+		}
+	} else if *aksLocation == "" {
+		*aksLocation = randomAKSEngineLocation()
+	}
 	if *aksCredentialsFile == "" {
 		return fmt.Errorf("no credentials file path specified")
 	}
@@ -389,8 +399,8 @@ func checkParams() error {
 	if *aksResourceGroupName == "" {
 		*aksResourceGroupName = *aksResourceName
 	}
-	if *aksDnsPrefix == "" {
-		*aksDnsPrefix = *aksResourceName
+	if *aksDNSPrefix == "" {
+		*aksDNSPrefix = *aksResourceName
 	}
 	if *aksSSHPublicKeyPath == "" {
 		*aksSSHPublicKeyPath = os.Getenv("HOME") + "/.ssh/id_rsa.pub"
@@ -405,7 +415,7 @@ func checkParams() error {
 	return nil
 }
 
-func newAksEngine() (*Cluster, error) {
+func newAKSEngine() (*Cluster, error) {
 	if err := checkParams(); err != nil {
 		return nil, fmt.Errorf("error creating Azure K8S cluster: %v", err)
 	}
@@ -419,22 +429,22 @@ func newAksEngine() (*Cluster, error) {
 		ctx:                              context.Background(),
 		apiModelPath:                     *aksTemplateURL,
 		name:                             *aksResourceName,
-		dnsPrefix:                        *aksDnsPrefix,
+		dnsPrefix:                        *aksDNSPrefix,
 		location:                         *aksLocation,
 		resourceGroup:                    *aksResourceGroupName,
 		outputDir:                        tempdir,
 		sshPublicKey:                     fmt.Sprintf("%s", sshKey),
 		credentials:                      &Creds{},
-		masterVMSize:                     *acsMasterVmSize,
-		agentVMSize:                      *acsAgentVmSize,
-		adminUsername:                    *acsAdminUsername,
-		adminPassword:                    *acsAdminPassword,
-		agentPoolCount:                   *acsAgentPoolCount,
-		k8sVersion:                       *acsOrchestratorRelease,
-		networkPlugin:                    *acsNetworkPlugin,
-		azureEnvironment:                 *acsAzureEnv,
-		azureIdentitySystem:              *acsIdentitySystem,
-		azureCustomCloudURL:              *acsCustomCloudURL,
+		masterVMSize:                     *aksMasterVMSize,
+		agentVMSize:                      *aksAgentVMSize,
+		adminUsername:                    *aksAdminUsername,
+		adminPassword:                    *aksAdminPassword,
+		agentPoolCount:                   *aksAgentPoolCount,
+		k8sVersion:                       *aksOrchestratorRelease,
+		networkPlugin:                    *aksNetworkPlugin,
+		azureEnvironment:                 *aksAzureEnv,
+		azureIdentitySystem:              *aksIdentitySystem,
+		azureCustomCloudURL:              *aksCustomCloudURL,
 		customHyperkubeImage:             "",
 		aksCustomWinBinariesURL:          "",
 		customCcmImage:                   "",
@@ -445,7 +455,7 @@ func newAksEngine() (*Cluster, error) {
 		customKubeSchedulerImage:         "",
 		customKubeBinaryURL:              "",
 		aksEngineBinaryPath:              "aks-engine", // use the one in path by default
-		aksDeploymentMethod:              getAKSDeploymentMethod(*acsOrchestratorRelease),
+		aksDeploymentMethod:              getAKSDeploymentMethod(*aksOrchestratorRelease),
 	}
 	c.getAzCredentials()
 	err = c.SetCustomCloudProfileEnvironment()
@@ -499,7 +509,7 @@ func getAKSDeploymentMethod(k8sRelease string) aksDeploymentMethod {
 
 func (c *Cluster) populateAPIModelTemplate() error {
 	var err error
-	v := AksEngineAPIModel{}
+	v := AKSEngineAPIModel{}
 	if c.apiModelPath != "" {
 		// template already exists, read it
 		template, err := ioutil.ReadFile(path.Join(c.outputDir, "kubernetes.json"))
@@ -652,7 +662,7 @@ func (c *Cluster) populateAPIModelTemplate() error {
 	return nil
 }
 
-func (c *Cluster) getAksEngine(retry int) error {
+func (c *Cluster) getAKSEngine(retry int) error {
 	downloadPath := path.Join(os.Getenv("HOME"), "aks-engine.tar.gz")
 	f, err := os.Create(downloadPath)
 	if err != nil {
@@ -1058,7 +1068,7 @@ func (c *Cluster) Up() error {
 	}
 
 	if *aksEngineURL != "" {
-		err = c.getAksEngine(2)
+		err = c.getAKSEngine(2)
 		if err != nil {
 			return fmt.Errorf("failed to get AKS Engine binary: %v", err)
 		}
