@@ -151,7 +151,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v12122019-e74afc453
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -186,7 +186,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v12122019-e74afc453
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -221,7 +221,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
+      - image: quay.io/kubernetes-ingress-controller/e2e-prow:v12122019-e74afc453
         command:
         - /usr/local/bin/runner.sh
         args:
@@ -263,7 +263,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v09052019-1433cde9e
+    - image: quay.io/kubernetes-ingress-controller/e2e-prow:v12122019-e74afc453
       command:
       - /usr/local/bin/runner.sh
       args:
