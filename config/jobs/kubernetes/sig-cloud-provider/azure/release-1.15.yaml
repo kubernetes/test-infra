@@ -156,7 +156,7 @@ periodics:
       - "--service-account=/etc/service-account/service-account.json"
       - "--repo=k8s.io/kubernetes=release-1.15"
       - "--repo=sigs.k8s.io/azuredisk-csi-driver"
-      - "--upload=gs://kubernetes-jenkins/pr-logs"
+      - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=460"
       - "--scenario=kubernetes_e2e"
       - --
@@ -204,7 +204,7 @@ periodics:
       - "--service-account=/etc/service-account/service-account.json"
       - "--repo=k8s.io/kubernetes=release-1.15"
       - "--repo=sigs.k8s.io/azuredisk-csi-driver"
-      - "--upload=gs://kubernetes-jenkins/pr-logs"
+      - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=460"
       - "--scenario=kubernetes_e2e"
       - --
