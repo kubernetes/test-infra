@@ -325,36 +325,24 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-pull-kubernetes-e2e: "true"
-    preset-pull-kubernetes-e2e-gce: "true"
   spec:
     containers:
     - args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes=$(PULL_REFS)
-      - --repo=k8s.io/release
-      - --upload=gs://kubernetes-jenkins/pr-logs
       - --timeout=150
+      - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --build=bazel
-      - --cluster=
-      - --extract=local
+      - --check-leaked-resources
+      - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --ginkgo-parallel=30
-      - --runtime-config=batch/v2alpha1=true
-      - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-iscsi
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-master
-      resources:
-        requests:
-          memory: "6Gi"
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -362,35 +350,23 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-pull-kubernetes-e2e: "true"
-    preset-pull-kubernetes-e2e-gce: "true"
   spec:
     containers:
     - args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes=$(PULL_REFS)
-      - --repo=k8s.io/release
-      - --upload=gs://kubernetes-jenkins/pr-logs
       - --timeout=150
+      - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --build=bazel
-      - --cluster=
-      - --extract=local
+      - --check-leaked-resources
+      - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --runtime-config=batch/v2alpha1=true
-      - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-iscsi-serial
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-master
-      resources:
-        requests:
-          memory: "6Gi"
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -398,32 +374,22 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-pull-kubernetes-e2e: "true"
-    preset-pull-kubernetes-e2e-gce: "true"
   spec:
     containers:
     - args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes=$(PULL_REFS)
-      - --repo=k8s.io/release
-      - --upload=gs://kubernetes-jenkins/pr-logs
       - --timeout=150
+      - --bare
       - --scenario=kubernetes_e2e
       - --
-      - --build=bazel
-      - --cluster=
-      - --extract=local
+      - --check-leaked-resources
+      - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --runtime-config=batch/v2alpha1=true
-      - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-snapshot
       - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-master
-      resources:
-        requests:
-          memory: "6Gi"
   annotations:
     testgrid-num-columns-recent: '20'
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
