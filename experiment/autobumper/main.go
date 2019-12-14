@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -85,6 +86,20 @@ func validateOptions(o options) error {
 		return fmt.Errorf("--git-name and --git-email must be specified together")
 	}
 	return nil
+}
+
+// updateConfig attempts to generate test jobs based on config at releng/test_config.yaml.
+func updateConfig(stdout, stderr io.Writer) error {
+	logrus.Info("Updating generated config...")
+	return bumper.Call(
+		stdout,
+		stderr,
+		"bazel",
+		"run",
+		"//releng:generate_tests",
+		"--",
+		"--yaml-config-path=releng/test_config.yaml",
+	)
 }
 
 func getOncaller() (string, error) {
@@ -156,6 +171,10 @@ func main() {
 	images, err := bumper.UpdateReferences([]string{"."}, extraFiles)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to update references.")
+	}
+
+	if err := updateConfig(stdout, stderr); err != nil {
+		logrus.WithError(err).Fatal("Failed to update generated config.")
 	}
 
 	changed, err := bumper.HasChanges()
