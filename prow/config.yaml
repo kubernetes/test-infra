@@ -68,17 +68,17 @@ tide:
 branch-protection:
   orgs:
     IBM:
-      protect: true
-      # TODO: add ibm cla
-      # required_status_checks:
-      #   contexts:
-      #   - cla/ibm
-      exclude:
-        - "^revert-" # don't protect revert branches
-        - "^dependabot/" # don't protect branches created by dependabot
-        - "^greenkeeper/" # don't protect branches created by greenkeeper
       repos:
         go-repo-template:
+          protect: true
+          # TODO: add ibm cla
+          # required_status_checks:
+          #   contexts:
+          #   - cla/ibm
+          exclude:
+            - "^revert-" # don't protect revert branches
+            - "^dependabot/" # don't protect branches created by dependabot
+            - "^greenkeeper/" # don't protect branches created by greenkeeper
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
