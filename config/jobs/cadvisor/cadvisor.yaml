@@ -42,7 +42,7 @@ presubmits:
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=1--flakeAttempts=2
+        - --test_args=--nodes=1
         - --timeout=10m
 
     annotations:
@@ -98,7 +98,7 @@ periodics:
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1--flakeAttempts=2
+      - --test_args=--nodes=1
       - --timeout=10m
       env:
       - name: GOPATH
