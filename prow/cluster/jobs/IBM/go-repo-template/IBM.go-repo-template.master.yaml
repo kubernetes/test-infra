@@ -116,20 +116,3 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: images_go-repo-template_postsubmit
-    branches:
-    - ^master$
-    decorate: true
-    path_alias: github.com/IBM/go-repo-template
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - images
-        image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
-        name: ""
-        securityContext:
-          privileged: true
