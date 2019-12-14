@@ -912,7 +912,7 @@ func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o opti
 	src = strings.TrimSuffix(src, "/")
 	realPath, err := sg.ResolveSymlink(src)
 	if err != nil {
-		return "", fmt.Errorf("error when resolving real path '%v': %v", src, err)
+		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
 	}
 	src = realPath
 
