@@ -126,8 +126,8 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-generic-suffix: "true"
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
-    testgrid-dashboards: sig-release-1.15-blocking, google-unit
+    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
+    testgrid-dashboards: sig-release-1.15-blocking
     testgrid-tab-name: build-1.15
   interval: 1h
   labels:
@@ -305,7 +305,7 @@ periodics:
 - annotations:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 24h
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers@kubernetes.io
     testgrid-dashboards: sig-release-1.15-blocking, google-unit
     testgrid-tab-name: verify-1.15
   decorate: true

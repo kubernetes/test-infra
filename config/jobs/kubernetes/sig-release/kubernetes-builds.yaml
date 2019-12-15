@@ -62,7 +62,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers@kubernetes.io,kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
 
 - interval: 5m
   name: ci-kubernetes-build-fast
