@@ -34,8 +34,7 @@ periodics:
         secret:
           secretName: deployer-service-account
   annotations:
-    fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
+    # TODO(justaugustus): Enable forking for prototype GCB-based build jobs.
     testgrid-dashboards: sig-release-prototype-master-blocking
     testgrid-tab-name: build-master
     testgrid-alert-email: release-managers@kubernetes.io
