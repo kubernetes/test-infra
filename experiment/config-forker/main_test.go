@@ -358,6 +358,12 @@ func TestFixTestgridAnnotations(t *testing.T) {
 			isPresubmit: false,
 		},
 		{
+			name:        "periodic updates with no dashboard annotation points to job-config-errors",
+			annotations: map[string]string{},
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors"},
+			isPresubmit: false,
+		},
+		{
 			name:        "drop 'description'",
 			annotations: map[string]string{descriptionAnnotation: "some description"},
 			expected:    map[string]string{},
@@ -366,7 +372,7 @@ func TestFixTestgridAnnotations(t *testing.T) {
 		{
 			name:        "update tab names",
 			annotations: map[string]string{testgridTabNameAnnotation: "foo master"},
-			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all", testgridTabNameAnnotation: "foo 1.15"},
+			expected:    map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors", testgridTabNameAnnotation: "foo 1.15"},
 			isPresubmit: false,
 		},
 	}
@@ -526,13 +532,6 @@ func TestGeneratePeriodics(t *testing.T) {
 			},
 		},
 		{
-			Cron: "0 * * * *",
-			JobBase: config.JobBase{
-				Name:        "some-generic-periodic-will-end-up-in-all-master",
-				Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true", testgridDashboardsAnnotation: "google-unit"},
-			},
-		},
-		{
 			Interval: "1h",
 			JobBase: config.JobBase{
 				Name: "periodic-with-replacements",
@@ -578,21 +577,14 @@ func TestGeneratePeriodics(t *testing.T) {
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
 				Name:        "some-forked-periodic-1-15",
-				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all"},
+				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors"},
 			},
 		},
 		{
 			Cron: "0 * * * *",
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-beta",
-				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-1.15-all"},
-			},
-		},
-		{
-			Cron: "0 * * * *",
-			JobBase: config.JobBase{
-				Name:        "some-generic-periodic-will-end-up-in-all-beta",
-				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "google-unit, sig-release-1.15-all"},
+				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-job-config-errors"},
 			},
 		},
 		{
@@ -601,7 +593,7 @@ func TestGeneratePeriodics(t *testing.T) {
 				Name: "periodic-with-replacements-1-15",
 				Annotations: map[string]string{
 					periodicIntervalAnnotation:   "12h 24h 24h",
-					testgridDashboardsAnnotation: "sig-release-1.15-all",
+					testgridDashboardsAnnotation: "sig-release-job-config-errors",
 				},
 				Spec: &v1.PodSpec{
 					Containers: []v1.Container{
@@ -619,7 +611,7 @@ func TestGeneratePeriodics(t *testing.T) {
 			Interval: "2h",
 			JobBase: config.JobBase{
 				Name:        "decorated-periodic-1-15",
-				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all"},
+				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors"},
 				UtilityConfig: config.UtilityConfig{
 					Decorate:  true,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"}},
@@ -712,7 +704,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 			{
 				JobBase: config.JobBase{
 					Name:        "post-kubernetes-e2e-1-15",
-					Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-1.15-all"},
+					Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors"},
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
@@ -735,7 +727,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Name: "post-kubernetes-generic-will-end-up-in-all-beta",
 					Annotations: map[string]string{
 						suffixAnnotation:             "true",
-						testgridDashboardsAnnotation: "google-unit, sig-release-1.15-all",
+						testgridDashboardsAnnotation: "google-unit, sig-release-job-config-errors",
 					},
 				},
 				Brancher: config.Brancher{
@@ -747,7 +739,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Name: "post-replace-some-things-1-15",
 					Annotations: map[string]string{
 						"some-annotation":            "yup",
-						testgridDashboardsAnnotation: "sig-release-1.15-all",
+						testgridDashboardsAnnotation: "sig-release-job-config-errors",
 					},
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
