@@ -64,7 +64,6 @@ postsubmits:
     - master
     annotations:
       fork-per-release: "true"
-      fork-per-release-replacements: "latest-bazel.txt -> latest-bazel-{{.Version}}.txt"
       testgrid-dashboards: google-unit
       description: "Builds kubernetes using bazel"
     labels:
@@ -86,7 +85,6 @@ postsubmits:
         - "--release=//build/release-tars"
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
-        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
         resources:
           requests:
             memory: "6Gi"
@@ -119,8 +117,7 @@ postsubmits:
               "--build=//... -//vendor/..." \
               --release=//build/release-tars \
               --gcs=gs://kubernetes-release-dev/ci-rbe \
-              --version-suffix=-bazel-rbe \
-              --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-rbe.txt
+              --version-suffix=-bazel-rbe
 
     annotations:
       testgrid-dashboards: sig-release-master-informing
@@ -226,8 +223,7 @@ periodics:
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
             --gcs=gs://kubernetes-release-dev/ci-periodic \
-            --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-periodic.txt
+            --version-suffix=-bazel
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
@@ -266,8 +262,7 @@ periodics:
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
             --gcs=gs://kubernetes-release-dev/ci-canary \
-            --version-suffix=-bazel \
-            --publish-version=gs://kubernetes-release-dev/ci/latest-bazel-canary.txt
+            --version-suffix=-bazel
   rerun_auth_config:
     github_team_ids:
       - 2241179 # release-managers
