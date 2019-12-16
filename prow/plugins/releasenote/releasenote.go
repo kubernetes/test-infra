@@ -152,7 +152,7 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 	}
 
 	// Don't allow the /release-note-none command if the release-note block contains a valid release note.
-	blockNL := determineReleaseNoteLabel(ic.Issue.Body)
+	blockNL := determineReleaseNoteLabel(ic.Issue.Body, false)
 	if blockNL == releaseNote || blockNL == releaseNoteActionRequired {
 		format := "you can only set the release note label to %s if the release-note block in the PR body text is empty or \"none\"."
 		resp := fmt.Sprintf(format, releaseNoteNone)
@@ -217,7 +217,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	}
 
 	var comments []github.IssueComment
-	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body)
+	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body, prLabels.Has(releaseNoteNone))
 	if labelToAdd == ReleaseNoteLabelNeeded {
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
@@ -305,10 +305,13 @@ func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.P
 
 // determineReleaseNoteLabel returns the label to be added based on the contents of the 'release-note'
 // section of a PR's body text.
-func determineReleaseNoteLabel(body string) string {
+func determineReleaseNoteLabel(body string, hasReleaseNoteNone bool) string {
 	composedReleaseNote := strings.ToLower(strings.TrimSpace(getReleaseNote(body)))
 
 	if composedReleaseNote == "" {
+		if hasReleaseNoteNone {
+			return releaseNoteNone
+		}
 		return ReleaseNoteLabelNeeded
 	}
 	if noneRe.MatchString(composedReleaseNote) {
