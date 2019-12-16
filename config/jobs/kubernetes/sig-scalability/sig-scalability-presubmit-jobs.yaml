@@ -11,6 +11,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
       - args:
@@ -67,6 +68,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
       - args:
@@ -115,6 +117,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
       - args:
@@ -166,6 +169,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     annotations:
       fork-per-release: "true"
       testgrid-create-test-group: "true"
@@ -241,6 +245,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-kubemark-gce-scale: "true"
+      preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
@@ -301,6 +306,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
@@ -358,6 +364,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
+      preset-e2e-scalability-presubmits: "true"
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
