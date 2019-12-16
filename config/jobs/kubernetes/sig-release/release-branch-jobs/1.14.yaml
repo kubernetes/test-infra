@@ -709,6 +709,7 @@ presubmits:
       preset-e2e-kubemark-common: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
+      preset-e2e-scalability-presubmits: "true"
     max_concurrency: 12
     name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
