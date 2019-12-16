@@ -13,7 +13,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
       command:
       - "./scripts/ci-aws-cred-test.sh"
   annotations:
@@ -35,7 +35,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -67,7 +67,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -101,7 +101,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-conformance.sh"
@@ -295,7 +295,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -325,7 +325,7 @@ postsubmits:
       - release-0.4
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -357,7 +357,7 @@ postsubmits:
       - release-0.4
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-conformance.sh"
