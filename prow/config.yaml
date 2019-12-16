@@ -81,7 +81,7 @@ branch-protection:
             - "^greenkeeper/" # don't protect branches created by greenkeeper
           required_status_checks:
             contexts:
-            - continuous-integration/travis-ci
+            - continuous-integration/travis-ci/pr
 
 presets:
 - labels:
