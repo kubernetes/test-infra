@@ -285,3 +285,7 @@ presets:
     value: ""
   - name: NON_MASQUERADE_CIDR
     value: 0.0.0.0/0
+
+- labels:
+    preset-e2e-scalability-presubmits: "true"
+  env:
