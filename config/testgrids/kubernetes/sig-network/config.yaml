@@ -7,6 +7,7 @@ dashboard_groups:
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
     - sig-network-netd
+    - sig-network-service-apis
 
 dashboards:
 - name: sig-network-dualstack-azure-e2e
@@ -150,3 +151,4 @@ dashboards:
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
 - name: sig-network-netd
+- name: sig-network-service-apis
