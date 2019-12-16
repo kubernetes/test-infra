@@ -23,6 +23,8 @@ import (
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
 
 	"k8s.io/test-infra/prow/config"
@@ -76,8 +78,48 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func main() {
+func run(sourcePath, defaultNamespace string, configUpdater plugins.ConfigUpdater, client kubernetes.Interface, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface) int {
 	var errors int
+	// act like the whole repo just got committed
+	var changes []github.PullRequestChange
+	filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		// we know path will be below sourcePath, but we can't
+		// communicate that to the filepath module. We can ignore
+		// this error as we can be certain it won't occur
+		if relPath, err := filepath.Rel(sourcePath, path); err == nil {
+			changes = append(changes, github.PullRequestChange{
+				Filename: relPath,
+				Status:   github.PullRequestFileAdded,
+			})
+			logrus.Infof("added to mock change: %s", relPath)
+		} else {
+			logrus.WithError(err).Warn("unexpected error determining relative path to file")
+			errors++
+		}
+		return nil
+	})
+
+	for cm, data := range updateconfig.FilterChanges(configUpdater, changes, defaultNamespace, logrus.NewEntry(logrus.StandardLogger())) {
+		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
+		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
+		if err != nil {
+			logrus.WithError(err).Errorf("Failed to find configMap client")
+			continue
+		}
+		if err := updateconfig.Update(&updateconfig.OSFileGetter{Root: sourcePath}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, nil, logger); err != nil {
+			logger.WithError(err).Error("failed to update config on cluster")
+			errors++
+		} else {
+			logger.Info("Successfully processed configmap")
+		}
+	}
+	return errors
+}
+
+func main() {
 	logrusutil.ComponentInit("config-bootstrapper")
 
 	o := gatherOptions()
@@ -105,44 +147,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting Kubernetes clients for build cluster.")
 	}
 
-	// act like the whole repo just got committed
-	var changes []github.PullRequestChange
-	filepath.Walk(o.sourcePath, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		// we know path will be below sourcePath, but we can't
-		// communicate that to the filepath module. We can ignore
-		// this error as we can be certain it won't occur
-		if relPath, err := filepath.Rel(o.sourcePath, path); err == nil {
-			changes = append(changes, github.PullRequestChange{
-				Filename: relPath,
-				Status:   github.PullRequestFileAdded,
-			})
-			logrus.Infof("added to mock change: %s", relPath)
-		} else {
-			logrus.WithError(err).Warn("unexpected error determining relative path to file")
-			errors++
-		}
-		return nil
-	})
-
-	for cm, data := range updateconfig.FilterChanges(pluginAgent.Config().ConfigUpdater, changes, configAgent.Config().ProwJobNamespace, logrus.NewEntry(logrus.StandardLogger())) {
-		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
-		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
-		if err != nil {
-			logrus.WithError(err).Errorf("Failed to find configMap client")
-			continue
-		}
-		if err := updateconfig.Update(&updateconfig.OSFileGetter{Root: o.sourcePath}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, nil, logger); err != nil {
-			logger.WithError(err).Error("failed to update config on cluster")
-			errors++
-		} else {
-			logger.Info("Successfully processed configmap")
-		}
-	}
-
-	if errors > 0 {
+	if errors := run(o.sourcePath, configAgent.Config().ProwJobNamespace, pluginAgent.Config().ConfigUpdater, client, buildClusterCoreV1Clients); errors > 0 {
 		logrus.WithField("fail-count", errors).Fatalf("errors occurred during update")
 	}
 }
