@@ -291,7 +291,7 @@ annotations:
 			fmt.Println(v)
 			v = r.Replace(v)
 			if !inOtherSigReleaseDashboard(v, version) {
-				v += ", " + "sig-release-" + version + "-all"
+				v += ", " + "sig-release-job-config-errors"
 			}
 			didDashboards = true
 			break
@@ -304,7 +304,7 @@ annotations:
 		a[k] = v
 	}
 	if !didDashboards && !isPresubmit {
-		a[testgridDashboardsAnnotation] = "sig-release-" + version + "-all"
+		a[testgridDashboardsAnnotation] = "sig-release-job-config-errors"
 	}
 	return a
 
