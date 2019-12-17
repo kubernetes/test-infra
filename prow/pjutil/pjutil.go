@@ -136,6 +136,8 @@ func PostsubmitSpec(p config.Postsubmit, refs prowapi.Refs) prowapi.ProwJobSpec 
 // PeriodicSpec initializes a ProwJobSpec for a given periodic job.
 func PeriodicSpec(p config.Periodic) prowapi.ProwJobSpec {
 	pjs := specFromJobBase(p.JobBase)
+	// It is currently not possible to disable reporting for individual periodics.
+	pjs.Report = true
 	pjs.Type = prowapi.PeriodicJob
 
 	return pjs
