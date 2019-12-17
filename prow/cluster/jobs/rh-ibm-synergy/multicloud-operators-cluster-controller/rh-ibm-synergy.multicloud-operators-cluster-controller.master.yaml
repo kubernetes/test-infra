@@ -1,7 +1,7 @@
 presets:
 - env:
   - name: GOPRIVATE
-    value: github.com/rh-ibm-synergy
+    value: github.ibm.com,github.com/rh-ibm-synergy
 
 presubmits:
   rh-ibm-synergy/multicloud-operators-cluster-controller:
