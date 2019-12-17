@@ -24,15 +24,16 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/pjutil"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plank"
 )
 
@@ -113,17 +114,21 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, o.dryRun)
+	infrastructureClusterConfig, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting prowjob client.")
+		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
+	}
+	infrastructureClusterClient, err := ctrlruntimeclient.New(infrastructureClusterConfig, ctrlruntimeclient.Options{})
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting infrastructure cluster client.")
 	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, o.dryRun)
+	buildClusterClients, err := o.kubernetes.BuildClusterUncachedRuntimeClients(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating build cluster clients.")
 	}
 
-	c, err := plank.NewController(prowJobClient, buildClusterClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := plank.NewController(infrastructureClusterClient, buildClusterClients, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
