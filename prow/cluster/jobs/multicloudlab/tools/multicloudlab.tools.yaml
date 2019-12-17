@@ -8,10 +8,10 @@ postsubmits:
         - ^master$
       labels:
         preset-service-account: "true"
-      run_if_changed: 'docker/build-tools/Dockerfile'
+      run_if_changed: "docker/*"
       spec:
         containers:
-          - image: quay.io/multicloudlab/multicloudlab-builder:v20190927-1ed9e5c
+          - image: quay.io/multicloudlab/multicloudlab-builder:v20191216-eed1a07
             # docker in docker
             securityContext:
               privileged: true
