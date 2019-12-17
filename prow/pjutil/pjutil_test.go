@@ -869,3 +869,28 @@ func TestSpecFromJobBase(t *testing.T) {
 		})
 	}
 }
+
+func TestPeriodicSpec(t *testing.T) {
+	testCases := []struct {
+		name   string
+		config config.Periodic
+		verify func(prowapi.ProwJobSpec) error
+	}{
+		{
+			name:   "Report gets set to true",
+			config: config.Periodic{},
+			verify: func(p prowapi.ProwJobSpec) error {
+				if !p.Report {
+					return errors.New("report is not true")
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		if err := tc.verify(PeriodicSpec(tc.config)); err != nil {
+			t.Error(err)
+		}
+	}
+}
