@@ -87,7 +87,7 @@ up to date
 
 ### Dependency Management
 
-Please see [/docs/deps.md]
+Please see [/docs/dep.md]
 
 ### Prow Jobs
 
@@ -134,7 +134,7 @@ has test coverage in a variety of environments. For more info please see
 [/README.md]: /README.md
 [/config/jobs/README.md]: /config/jobs/README.md
 [/docs/contributing-test-results.md]: /docs/contributing-test-results.md
-[/docs/deps.md]: /docs/deps.md
+[/docs/dep.md]: /docs/dep.md
 [/label_sync/README.md]: /label_sync/README.md
 [/testgrid/README.md]: /testgrid/README.md
 
