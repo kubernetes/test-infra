@@ -25,7 +25,7 @@ latest_stable_k8s_version="1.17.0"
 latest_stable_k8s_minor_version="1.17"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191209-15bc109-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -237,10 +237,10 @@ pull_optional() {
 
     if [ "$tests" == "alpha" ]; then
         echo "true"
-    elif [ "$kubernetes" == "1.16.2" ]; then
-        # Testing 1.16 requires release-tools to be updated in all
-        # kubernetes-csi repos. Once that is done, and tests
-        # are passing, this can be removed.
+    elif [ "$kubernetes" == "1.18.0" ]; then
+        # Testing 1.18 may require updates to release-tools.
+        # Once that is done, and tests are passing,
+        # this can be set to the next k8s version
         echo "true"
     else
         echo "false"
