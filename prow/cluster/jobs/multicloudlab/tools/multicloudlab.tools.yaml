@@ -2,7 +2,7 @@ presubmits:
 
 postsubmits:
   multicloudlab/tools:
-    - name: tools-images
+    - name: multicloudlab-create-build-tool-images
       decorate: true
       branches:
         - ^master$
@@ -11,7 +11,7 @@ postsubmits:
       run_if_changed: "docker/*"
       spec:
         containers:
-          - image: quay.io/multicloudlab/multicloudlab-builder:v20191216-eed1a07
+          - image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
             # docker in docker
             securityContext:
               privileged: true

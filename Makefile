@@ -76,14 +76,11 @@ build:
 # images section
 ############################################################
 
-# images: build build-push-images
+images: build-push-images
 
-# build-push-images: config-docker
-# 	@docker build . -f Dockerfile -t $(REGISTRY)/$(IMG):$(VERSION)
-# 	@docker push $(REGISTRY)/$(IMG):$(VERSION)
-
-build-tools-images: config-docker
-	@cd docker/build-tools && ./build-and-push.sh
+build-push-images: config-docker
+	@cd prow/docker/build-tools && ./build-and-push.sh
+	@cd prow/docker/docker-in-docker && ./build-and-push.sh
 
 ############################################################
 # clean section
