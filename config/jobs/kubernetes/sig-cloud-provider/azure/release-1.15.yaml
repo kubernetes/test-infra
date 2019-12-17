@@ -91,8 +91,8 @@ presubmits:
         securityContext:
           privileged: true
         env:
-          - name: AZURE_STORAGE_DRIVER
-            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+        - name: AZURE_STORAGE_DRIVER
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
   - name: pull-kubernetes-e2e-azure-disk-vmss
     always_run: false
     optional: true
@@ -138,8 +138,8 @@ presubmits:
         securityContext:
           privileged: true
         env:
-          - name: AZURE_STORAGE_DRIVER
-            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+        - name: AZURE_STORAGE_DRIVER
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
 periodics:
 - interval: 4h
   name: kubernetes-e2e-azure-disk-1-15
@@ -181,8 +181,8 @@ periodics:
       securityContext:
         privileged: true
       env:
-        - name: AZURE_STORAGE_DRIVER
-          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+      - name: AZURE_STORAGE_DRIVER
+        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
   annotations:
     testgrid-dashboards: provider-azure-master, provider-azure-on-call
     testgrid-tab-name: kubernetes-e2e-azure-disk-1-15
@@ -229,8 +229,8 @@ periodics:
       securityContext:
         privileged: true
       env:
-        - name: AZURE_STORAGE_DRIVER
-          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+      - name: AZURE_STORAGE_DRIVER
+        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
   annotations:
     testgrid-dashboards: provider-azure-master, provider-azure-on-call
     testgrid-tab-name: kubernetes-e2e-azure-disk-vmss-1-15
