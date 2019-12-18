@@ -53,6 +53,8 @@ periodics:
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-release-0-4
   decorate: true
+  decoration_config:
+    timeout: 3h
   interval: 1h
   labels:
     preset-dind-enabled: "true"
