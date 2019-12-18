@@ -3,8 +3,7 @@ presubmits:
   - name: pull-kubernetes-integration
     always_run: true
     branches:
-    # we migrated to podutils for v1.17+
-    - release-1.16
+    # we migrated to podutils for v1.16+
     - release-1.15
     - release-1.14
     labels:
@@ -69,6 +68,28 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.17
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 4
+  - name: pull-kubernetes-integration
+    always_run: true
+    decorate: true
+    branches:
+    - release-1.16 # per-release job
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
         command:
         - runner.sh
         args:

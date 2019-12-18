@@ -289,23 +289,25 @@ periodics:
     preset-dind-enabled: "true"
     preset-service-account: "true"
   name: ci-kubernetes-integration-stable1
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.16
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - args:
-      - --repo=k8s.io/kubernetes=release-1.16
-      - --timeout=100
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.16
-      - --force
-      - --prow
-      image: gcr.io/k8s-testimages/bootstrap:v20191203-6fb6647
-      name: ""
-      resources:
-        requests:
-          cpu: "4"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-1.16
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/test-dockerized.sh
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
+      resources:
+        requests:
+          cpu: 4
 - annotations:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 6h 24h
