@@ -84,6 +84,7 @@ branch-protection:
             - continuous-integration/travis-ci/pr
 
 presets:
+# presets for private repos
 - labels:
     preset-service-account: "true"
   env:
@@ -99,6 +100,17 @@ presets:
   - name: service
     secret:
       secretName: service-account
+# presets for private repos
+- labels:
+    preset-private-repo: "true"
+  env:
+  - name: GOPRIVATE
+    value: github.ibm.com,github.com/rh-ibm-synergy
+  volumeMounts:
+  - mountPath: /home/ssh
+    name: ssh-keys-ssh-secret
+    readOnly: true
+
 # Enable GOPROXY by default
 - env:
   - name: GOPROXY
