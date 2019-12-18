@@ -26,7 +26,7 @@ postsubmits:
               # images are pushed to.
               - --project=k8s-staging-provider-azure
               # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
+              - --scratch-bucket=gs://k8s-staging-provider-azure-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
             env:
