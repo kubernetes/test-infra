@@ -43,6 +43,35 @@ periodics:
     testgrid-tab-name: unit tests
     testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
     testgrid-num-failures-to-alert: "2"
+- name: ci-cluster-api-e2e-test
+  interval: 1h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: master
+      path_alias: sigs.k8s.io/cluster-api
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
+        args:
+          - runner.sh
+          - "./scripts/ci-capd-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: e2e tests
+    testgrid-alert-email: kubernetes-sig-cluster-lifecycle-cluster-api-alerts@googlegroups.com
+    testgrid-num-failures-to-alert: "2"
 - name: ci-cluster-api-build-release-0-2
   interval: 1h
   decorate: true
