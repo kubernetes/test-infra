@@ -15,7 +15,7 @@ and `cloudbuild.yaml`. For example, a subset of the `kubekins-e2e` variants look
 variants:
   '1.16':
     CONFIG: '1.16'
-    GO_VERSION: 1.12.12
+    GO_VERSION: 1.13.4
     K8S_RELEASE: stable-1.16
     BAZEL_VERSION: 0.23.2
   '1.15':
