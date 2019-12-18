@@ -78,9 +78,6 @@ presubmits:
         # tell kind CI script to use ipv6
         - name: "IP_FAMILY"
           value: "ipv6"
-        # skip serial tests and run with --ginkgo-parallel
-        - name: "PARALLEL"
-          value: "true"
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
