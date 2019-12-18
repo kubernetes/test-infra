@@ -553,6 +553,9 @@ plugins:
   - milestone
   - require-sig
 
+  kubernetes/dashboard:
+  - override
+
   kubernetes/enhancements:
   - blockade
   - milestone
