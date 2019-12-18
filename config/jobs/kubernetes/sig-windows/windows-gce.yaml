@@ -263,8 +263,6 @@ periodics:
     testgrid-dashboards: google-windows
     testgrid-tab-name: windows-gce-node-throughput
   decorate: true
-  decoration_config:
-    timeout: 6h
   extra_refs:
   - org: gcpwin
     repo: gce-k8s-windows-testing
@@ -277,7 +275,7 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
       - --root=/go/src
-      - --timeout=60
+      - --timeout=60m
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
