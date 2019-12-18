@@ -37,7 +37,7 @@ func (LoadBalancers) MarkAndSweep(sess *session.Session, account string, region 
 
 	pageFunc := func(page *elb.DescribeLoadBalancersOutput, _ bool) bool {
 		for _, lb := range page.LoadBalancerDescriptions {
-			a := &loadBalancer{region: region, account: account, name: *lb.LoadBalancerName}
+			a := &loadBalancer{region: region, account: account, name: *lb.LoadBalancerName, dnsName: *lb.DNSName}
 			if set.Mark(a) {
 				klog.Warningf("%s: deleting %T: %s", a.ARN(), a, a.name)
 				toDelete = append(toDelete, a)
@@ -75,6 +75,7 @@ func (LoadBalancers) ListAll(sess *session.Session, acct, region string) (*Set, 
 				region:  region,
 				account: acct,
 				name:    *lb.LoadBalancerName,
+				dnsName: *lb.DNSName,
 			}.ARN()
 			set.firstSeen[arn] = now
 		}
@@ -89,10 +90,11 @@ type loadBalancer struct {
 	region  string
 	account string
 	name    string
+	dnsName string
 }
 
 func (lb loadBalancer) ARN() string {
-	return "fakearn:elb:" + lb.region + ":" + lb.account + ":" + lb.name
+	return "fakearn:elb:" + lb.region + ":" + lb.account + ":" + lb.dnsName
 }
 
 func (lb loadBalancer) ResourceKey() string {
