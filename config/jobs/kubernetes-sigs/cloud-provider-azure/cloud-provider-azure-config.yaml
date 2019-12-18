@@ -718,7 +718,7 @@ periodics:
       - --acsengine-ccm=True
       - --aksengine-cnm=True
       - --acsengine-hyperkube=True
-      - --acsengine-location=westus2
+      - --acsengine-location=eastus2
       - --acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE
       - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json
       - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.44.0/aks-engine-v0.44.0-linux-amd64.tar.gz

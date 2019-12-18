@@ -187,7 +187,7 @@ presubmits:
         - "--acsengine-admin-username=azureuser"
         - "--acsengine-creds=$AZURE_CREDENTIALS"
         - "--acsengine-orchestratorRelease=1.16"
-        - "--acsengine-location=westus2"
+        - "--acsengine-location=eastus2"
         - "--acsengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json"
         - "--acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.43.1/aks-engine-v0.43.1-linux-amd64.tar.gz"
