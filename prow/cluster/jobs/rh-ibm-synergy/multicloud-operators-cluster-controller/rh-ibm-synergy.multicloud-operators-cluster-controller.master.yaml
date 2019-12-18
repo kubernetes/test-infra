@@ -2,10 +2,6 @@ presets:
 - env:
   - name: GOPRIVATE
     value: github.ibm.com,github.com/rh-ibm-synergy
-- volumes:
-  - name: ssh-keys-ssh-secret
-    secret:
-      secretName: ssh-secret
 - volumeMounts:
   - mountPath: /home/ssh
     name: ssh-keys-ssh-secret
