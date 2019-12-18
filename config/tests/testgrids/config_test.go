@@ -341,6 +341,7 @@ func TestConfig(t *testing.T) {
 var noPresubmitsInTestgridPrefixes = []string{
 	"containerd/cri",
 	"GoogleCloudPlatform/k8s-multicluster-ingress",
+	"GoogleCloudPlatform/k8s-cloud-provider",
 	"kubeflow/pipelines",
 	"kubernetes-sigs/gcp-compute-persistent-disk-csi-driver",
 	"kubernetes-sigs/gcp-filestore-csi-driver",

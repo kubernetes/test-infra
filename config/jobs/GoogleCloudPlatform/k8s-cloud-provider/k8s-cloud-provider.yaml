@@ -1,0 +1,20 @@
+presubmits:
+  GoogleCloudPlatform/k8s-cloud-provider:
+  - name: pull-k8s-cloud-provider-test
+    branches:
+    - master
+    always_run: true         # Run for every PR, or only when requested.
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master
+        args:
+        - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - --
+        - test

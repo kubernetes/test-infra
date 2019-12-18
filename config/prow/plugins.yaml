@@ -781,6 +781,9 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
+  
+  GoogleCloudPlatform/k8s-cloud-provider:
+  - trigger
 
   GoogleCloudPlatform/k8s-cluster-bundle:
   - trigger
