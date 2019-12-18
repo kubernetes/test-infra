@@ -16,9 +16,10 @@ presubmits:
     spec:
       containers:
       - command:
+        - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
@@ -140,7 +141,7 @@ postsubmits:
   #             key: codecov-token
   #       securityContext:
   #         privileged: true
-  - name: build-multicloud-operators-cluster-controller_postsubmit
+  - name: images-multicloud-operators-cluster-controller_postsubmit
     branches:
     - ^master$
     decorate: true
@@ -149,14 +150,16 @@ postsubmits:
       - ssh-secret
     labels:
       preset-private-repo: "true"
+      preset-service-account: "true"
     clone_uri: "git@github.com:rh-ibm-synergy/multicloud-operators-cluster-controller.git"
     path_alias: github.ibm.com/IBMPrivateCloud/multicloud-operators-cluster-controller
     spec:
       containers:
       - command:
+        - entrypoint
         - make
-        - build
-        image: quay.io/multicloudlab/build-tools:v20191217-d33a10d
+        - images
+        image: quay.io/multicloudlab/multicloudlab-builder:v20191217-d33a10d
         name: ""
         securityContext:
           privileged: true
