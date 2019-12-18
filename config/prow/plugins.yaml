@@ -304,6 +304,11 @@ milestone_applier:
     master: v1.18
   kubernetes/test-infra:
     master: v1.18
+  kubernetes/kops:
+    master: v1.18
+    release-1.17: v1.17
+    release-1.16: v1.16
+    release-1.15: v1.15
 
 repo_milestone:
   # Default maintainer
