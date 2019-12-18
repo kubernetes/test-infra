@@ -66,8 +66,10 @@ function readOptions() {
   if (!opts.ci) url += '&ci=0';
   if (opts.pr) url += '&pr=1';
   if (opts.sig.length) url += '&sig=' + opts.sig.join(',');
-  for (var name of ["text", "job", "test"]) {
-    var re = opts['re' + name[0].toUpperCase() + name.slice(1)];
+  for (var name of ["text", "job", "test", "xtext", "xjob", "xtest"]) {
+    var re = (name[0] == 'x') ?
+      opts['reX' + name[1].toUpperCase() + name.slice(2)] :
+      opts['re'  + name[0].toUpperCase() + name.slice(1)];
     if (re) {
       var baseRe = re.toString().replace(/im$/, '').replace(/\\\//g, '/').slice(1, -1);
       url += '&' + name + '=' + encodeURIComponent(baseRe);
