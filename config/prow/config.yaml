@@ -593,6 +593,8 @@ presets:
     value: k8sprow.azurecr.io
   - name: KUBE_VERBOSE
     value: "0"
+  - name: AZ_STORAGE_CONTAINER_NAME
+    value: mystoragecontainer
   volumes:
   - name: azure-cred
     secret:
