@@ -272,9 +272,9 @@ presets:
   - name: LOG_DUMP_SYSTEMD_SERVICES
     value: containerd containerd-installation
   - name: KUBE_MASTER_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+    value: user-data=/go/src/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
   - name: KUBE_NODE_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+    value: user-data=/go/src/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
   - name: KUBE_CONTAINER_RUNTIME
     value: remote
   - name: KUBE_CONTAINER_RUNTIME_ENDPOINT
