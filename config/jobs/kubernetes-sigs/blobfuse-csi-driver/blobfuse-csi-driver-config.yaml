@@ -1,0 +1,134 @@
+presubmits:
+  kubernetes-sigs/blobfuse-csi-driver:
+  - name: pull-blobfuse-csi-driver-verify
+    decorate: true
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-blobfuse-csi-driver-verify
+      description: "Run code verification tests for Blobfuse CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-blobfuse-csi-driver-unit
+    decorate: true
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-blobfuse-csi-driver-unit
+      description: "Run unit tests for Blobfuse CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-blobfuse-csi-driver-sanity
+    decorate: true
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-cloudprovider-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - sanity-test
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-blobfuse-csi-driver-sanity
+      description: "Run sanity tests for Blobfuse CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-blobfuse-csi-driver-integration
+    decorate: true
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-cloudprovider-azure-cred: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration-test
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-blobfuse-csi-driver-integration
+      description: "Run integration tests for Blobfuse CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-blobfuse-csi-driver-e2e
+    decorate: true
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-cloudprovider-azure-cred: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191204-a3f3e16-master
+        command:
+        - runner.sh
+        - kubetest
+        args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --build=bazel
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=acsengine
+        - --acsengine-agentpoolcount=2
+        - --acsengine-admin-username=azureuser
+        - --acsengine-creds=$(AZURE_CREDENTIALS)
+        - --acsengine-orchestratorRelease=1.16
+        - --acsengine-mastervmsize=Standard_DS2_v2
+        - --acsengine-agentvmsize=Standard_D4s_v3
+        - --acsengine-location=eastus2
+        - --acsengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --acsengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
+        - --acsengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.39.1/aks-engine-v0.39.1-linux-amd64.tar.gz
+        - --test-blobfuse-csi-driver
+        # Specific test args
+        - --ginkgo-parallel=1
+        - --timeout=420m
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-blobfuse-csi-driver-e2e
+      description: "Run E2E tests for Blobfuse CSI driver."
+      testgrid-num-columns-recent: '30'
