@@ -1,17 +1,20 @@
 presets:
 - labels:
-    preset-e2e-gce-windows: "true"
+    preset-common-gce-windows: "true"
   env:
   - name: KUBE_GCE_ENABLE_IP_ALIASES
     value: "true"
-  - name: NUM_WINDOWS_NODES
-    value: "3"
-  - name: NUM_NODES
-    value: "2"
   - name: KUBERNETES_NODE_PLATFORM
     value: "windows"
   - name: KUBELET_TEST_ARGS
     value: "--feature-gates=KubeletPodResources=false"
+- labels:
+    preset-e2e-gce-windows: "true"
+  env:
+  - name: NUM_WINDOWS_NODES
+    value: "3"
+  - name: NUM_NODES
+    value: "2"
 - labels:
     preset-e2e-gce-windows-containerd: "true"
   env:
@@ -22,12 +25,6 @@ presets:
 - labels:
     preset-load-gce-windows: "true"
   env:
-  - name: KUBE_GCE_ENABLE_IP_ALIASES
-    value: "true"
-  - name: KUBERNETES_NODE_PLATFORM
-    value: "windows"
-  - name: KUBELET_TEST_ARGS
-    value: "--feature-gates=KubeletPodResources=false"
   - name: MASTER_SIZE
     value: "n1-standard-4"
   - name: NUM_WINDOWS_NODES
@@ -65,6 +62,7 @@ periodics:
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -111,6 +109,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
   spec:
     containers:
@@ -149,6 +148,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
   spec:
     containers:
@@ -190,6 +190,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
   spec:
     containers:
@@ -225,6 +226,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
   spec:
@@ -258,6 +260,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-common-gce-windows: "true"
     preset-load-gce-windows: "true"
   annotations:
     testgrid-dashboards: google-windows
@@ -314,6 +317,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
+      preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
