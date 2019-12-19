@@ -21,51 +21,20 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 )
 
-func Test_gatherOptions(t *testing.T) {
+func TestGatherOptions(t *testing.T) {
 	cases := []struct {
 		name     string
 		args     map[string]string
-		del      sets.String
 		expected func(*options)
-		err      bool
 	}{
 		{
 			name: "minimal flags work",
 		},
 		{
-			name: "explicitly set --config-path",
-			args: map[string]string{
-				"--config-path": "/random/value",
-			},
-			expected: func(o *options) {
-				o.configPath = "/random/value"
-			},
-		},
-		{
-			name: "empty config-path defaults to old value",
-			args: map[string]string{
-				"--config-path": "",
-			},
-			expected: func(o *options) {
-				o.configPath = config.DefaultConfigPath
-			},
-		},
-		{
-			name: "expicitly set --dry-run=false",
-			args: map[string]string{
-				"--dry-run": "false",
-			},
-			expected: func(o *options) {
-				o.dryRun = false
-			},
-		},
-		{
-			name: "gcs-credentials-file sets the credentials on the storage client",
+			name: "gcs-credentials-file sets the GCS credentials on the storage client",
 			args: map[string]string{
 				"-gcs-credentials-file": "/creds",
 			},
@@ -76,7 +45,7 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "s3-credentials-file sets the credentials on the storage client",
+			name: "s3-credentials-file sets the S3 credentials on the storage client",
 			args: map[string]string{
 				"-s3-credentials-file": "/creds",
 			},
@@ -86,28 +55,17 @@ func Test_gatherOptions(t *testing.T) {
 				}
 			},
 		},
-		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				port:              8888,
-				configPath:        "yo",
-				jobConfigPath:     "",
-				dryRun:            true,
-				syncThrottle:      800,
-				statusThrottle:    400,
-				maxRecordsPerPool: 1000,
-				github:            flagutil.GitHubOptions{},
-				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
+				dryRun:        true,
+				configPath:    "yo",
+				pluginConfig:  "/etc/plugins/plugins.yaml",
+				kubernetes:    flagutil.KubernetesOptions{DeckURI: "http://whatever"},
+				tokenBurst:    100,
+				tokensPerHour: 300,
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
@@ -122,10 +80,6 @@ func Test_gatherOptions(t *testing.T) {
 			for k, v := range tc.args {
 				argMap[k] = v
 			}
-			for k := range tc.del {
-				delete(argMap, k)
-			}
-
 			var args []string
 			for k, v := range argMap {
 				args = append(args, k+"="+v)
@@ -134,11 +88,7 @@ func Test_gatherOptions(t *testing.T) {
 			actual := gatherOptions(fs, args...)
 			switch err := actual.Validate(); {
 			case err != nil:
-				if !tc.err {
-					t.Errorf("unexpected error: %v", err)
-				}
-			case tc.err:
-				t.Errorf("failed to receive expected error")
+				t.Errorf("unexpected error: %v", err)
 			case !reflect.DeepEqual(*expected, actual):
 				t.Errorf("%#v != expected %#v", actual, *expected)
 			}

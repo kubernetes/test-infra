@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("//prow:def.bzl", "prow_image")
 
 NAME = "status-reconciler"
@@ -24,7 +24,6 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/flagutil:go_default_library",
-        "//pkg/io:go_default_library",
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
@@ -50,4 +49,11 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["main_test.go"],
+    embed = [":go_default_library"],
+    deps = ["//prow/flagutil:go_default_library"],
 )
