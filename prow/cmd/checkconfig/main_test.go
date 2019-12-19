@@ -1232,7 +1232,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 		prowYAMLFileName := "/this-must-not-exist"
 
 		if tc.prowYAMLData != nil {
-			tempFile, err := ioutil.TempFile("/tmp", "prow-test")
+			tempFile, err := ioutil.TempFile("", "prow-test")
 			if err != nil {
 				t.Fatalf("failed to get tempfile: %v", err)
 			}
@@ -1252,10 +1252,25 @@ func TestValidateInRepoConfig(t *testing.T) {
 			prowYAMLFileName = tempFile.Name()
 		}
 
-		cfg := &config.Config{
-			ProwConfig: config.ProwConfig{PodNamespace: "my-ns"},
+		// Need an empty file to load the config from so we go through its defaulting
+		tempConfig, err := ioutil.TempFile("/tmp", "prow-test")
+		if err != nil {
+			t.Fatalf("failed to get tempfile: %v", err)
 		}
-		err := validateInRepoConfig(cfg, prowYAMLFileName, "my/repo")
+		defer func() {
+			if err := os.Remove(tempConfig.Name()); err != nil {
+				t.Errorf("failed to remove tempfile: %v", err)
+			}
+		}()
+		if err := tempConfig.Close(); err != nil {
+			t.Errorf("failed to close tempFile: %v", err)
+		}
+
+		cfg, err := config.Load(tempConfig.Name(), "")
+		if err != nil {
+			t.Fatalf("failed to load config: %v", err)
+		}
+		err = validateInRepoConfig(cfg, prowYAMLFileName, "my/repo")
 		var errString string
 		if err != nil {
 			errString = err.Error()

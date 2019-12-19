@@ -9,9 +9,17 @@ To enable it, add the following to your Prows `config.yaml`:
 ```
 in_repo_config:
   enabled:
-    # The key can be one of "*" for "globally", "org" for the GitHub organization or "org/repo" for
-    # a specific repo. The narrowest match is used.
-    "kubernetes/kubernetes": true
+    # The key can be one of "*" for "globally", "org" or "org/repo".
+    # The narrowest match is used.
+    kubernetes/kubernetes: true
+
+  # Clusters must be allowed before they can be used. Below is the default: Allow the `default` cluster
+  # globally.
+  # This setting also allows using "*" for "globally", "org" or "org/repo" as key.
+	# a given repo. All clusters that are allowed for the specific repo, its org or
+	# globally can be used.
+  allowed_clusters:
+    "*": ["default"]
 ```
 
 Additionally, `Deck` must be configured with an oauth token if that is not already the case. To do
