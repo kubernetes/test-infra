@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 
@@ -90,6 +91,10 @@ func main() {
 	}
 	logrus.SetLevel(level)
 	kubeClientOptions.Validate()
+
+	// collect data on mutex holders and blocking profiles
+	runtime.SetBlockProfileRate(1)
+	runtime.SetMutexProfileFraction(1)
 
 	defer interrupts.WaitForGracefulShutdown()
 	pjutil.ServePProf()
