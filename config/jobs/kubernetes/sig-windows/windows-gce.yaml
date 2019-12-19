@@ -38,8 +38,6 @@ presets:
   # Ensure good enough architecture for master machines.
   - name: MASTER_MIN_CPU_ARCHITECTURE
     value: "Intel Broadwell"
-  # Bump max pods per node in Kubelet, because there are more than 10
-  # system pods in 1-linux-node cluster.
   - name: MAX_PODS_PER_NODE
     value: "128"
 
@@ -267,10 +265,10 @@ periodics:
     testgrid-tab-name: windows-gce-node-throughput
   decorate: true
   extra_refs:
-  - org: gcpwin
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/gce-k8s-windows-testing
+    path_alias: k8s.io/windows-testing
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-master
@@ -288,7 +286,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=1
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/load-test.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/load-test.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
