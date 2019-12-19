@@ -100,6 +100,7 @@ presubmits:
       repo: kubernetes
       base_ref: master
       path_alias: k8s.io/kubernetes
+      workdir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191218-bcc4f6d-master
