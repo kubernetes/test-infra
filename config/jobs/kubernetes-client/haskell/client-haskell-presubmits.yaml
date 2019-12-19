@@ -3,6 +3,7 @@ presubmits:
   - name: client-haskell-unit-tests
     always_run: true
     decorate: true
+    optional: true
     spec:
       containers:
       - image: docker.io/ubuntu:bionic
