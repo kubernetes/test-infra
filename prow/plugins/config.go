@@ -1462,6 +1462,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 
 	if child.ExcludeDefaults == nil || !*child.ExcludeDefaults {
 		// populate with the parent
+		if parent.ExcludeDefaults != nil {
+			output.ExcludeDefaults = parent.ExcludeDefaults
+		}
 		if parent.ValidateByDefault != nil {
 			output.ValidateByDefault = parent.ValidateByDefault
 		}
@@ -1505,6 +1508,9 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 	}
 
 	// override with the child
+	if child.ExcludeDefaults != nil {
+		output.ExcludeDefaults = child.ExcludeDefaults
+	}
 	if child.ValidateByDefault != nil {
 		output.ValidateByDefault = child.ValidateByDefault
 	}
@@ -1525,7 +1531,6 @@ func ResolveBugzillaOptions(parent, child BugzillaBranchOptions) BugzillaBranchO
 		}
 		output.ValidStates = mergeStatusesIntoStates(output.ValidStates, child.Statuses)
 	}
-
 	if child.DependentBugStates != nil {
 		output.DependentBugStates = child.DependentBugStates
 	}
@@ -1584,7 +1589,6 @@ func (b *Bugzilla) OptionsForBranch(org, repo, branch string) BugzillaBranchOpti
 		return options
 	}
 	options = ResolveBugzillaOptions(options, OptionsForItem(branch, repoOptions.Branches))
-
 	return options
 }
 

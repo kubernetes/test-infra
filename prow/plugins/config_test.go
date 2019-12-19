@@ -552,10 +552,17 @@ func TestResolveBugzillaOptions(t *testing.T) {
 			expected: BugzillaBranchOptions{ValidStates: &[]BugzillaBugState{postState}, DependentBugStates: &[]BugzillaBugState{postState}, StateAfterMerge: &postState, StateAfterValidation: &postState},
 		},
 		{
+			name:     "child overrides parent on defaults",
+			parent:   BugzillaBranchOptions{ExcludeDefaults: &no, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &postState},
+			child:    BugzillaBranchOptions{ExcludeDefaults: &yes},
+			expected: BugzillaBranchOptions{ExcludeDefaults: &yes},
+		},
+		{
 			name:   "child overrides parent on all fields",
-			parent: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
-			child:  BugzillaBranchOptions{ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &preState, StateAfterMerge: &preState},
+			parent: BugzillaBranchOptions{ExcludeDefaults: &yes, ValidateByDefault: &yes, IsOpen: &open, TargetRelease: &one, ValidStates: &[]BugzillaBugState{verifiedState}, DependentBugStates: &[]BugzillaBugState{verifiedState}, StateAfterValidation: &postState, StateAfterMerge: &postState},
+			child:  BugzillaBranchOptions{ExcludeDefaults: &no, ValidateByDefault: &no, IsOpen: &closed, TargetRelease: &two, ValidStates: &[]BugzillaBugState{modifiedState}, DependentBugStates: &[]BugzillaBugState{modifiedState}, StateAfterValidation: &preState, StateAfterMerge: &preState},
 			expected: BugzillaBranchOptions{
+				ExcludeDefaults:      &no,
 				ValidateByDefault:    &no,
 				IsOpen:               &closed,
 				TargetRelease:        &two,
@@ -574,7 +581,7 @@ func TestResolveBugzillaOptions(t *testing.T) {
 		})
 	}
 
-	var i int = 0
+	var i = 0
 	managedCol1 := ManagedColumn{ID: &i, Name: "col1", State: "open", Labels: []string{"area/conformance", "area/testing"}, Org: "org1"}
 	managedCol3 := ManagedColumn{ID: &i, Name: "col2", State: "open", Labels: []string{}, Org: "org2"}
 	managedColx := ManagedColumn{ID: &i, Name: "col2", State: "open", Labels: []string{"area/conformance", "area/testing"}, Org: "org2"}
@@ -670,6 +677,7 @@ func TestOptionsForBranch(t *testing.T) {
 	verifiedState, modifiedState := BugzillaBugState{Status: "VERIFIED"}, BugzillaBugState{Status: "MODIFIED"}
 	postState, preState, releaseState, notabugState := BugzillaBugState{Status: post}, BugzillaBugState{Status: pre}, BugzillaBugState{Status: release}, BugzillaBugState{Status: notabug}
 	closedErrata := BugzillaBugState{Status: "CLOSED", Resolution: "ERRATA"}
+	superDuper, specialRelease := "super-duper", "special-release"
 
 	rawConfig := `default:
   "*":
@@ -717,7 +725,15 @@ orgs:
             - VERIFIED
             validate_by_default: true
             status_after_validation: MODIFIED
-            status_after_merge: NOTABUG`
+            status_after_merge: NOTABUG
+      special:
+        branches:
+          "*":
+            exclude_defaults: true
+            target_release: super-duper
+            status_after_validation: NOTABUG
+          master:
+            target_release: special-release`
 	var config Bugzilla
 	if err := yaml.Unmarshal([]byte(rawConfig), &config); err != nil {
 		t.Fatalf("couldn't unmarshal config: %v", err)
@@ -770,6 +786,20 @@ orgs:
 			branch:   "my-repo-branch",
 			expected: BugzillaBranchOptions{ValidateByDefault: &yes, IsOpen: &closed, TargetRelease: &repoBranch, ValidStates: &[]BugzillaBugState{modifiedState, closedErrata}, StateAfterValidation: &preState, StateAfterMerge: &notabugState},
 		},
+		{
+			name:     "unconfigured branch on special repo gets repo default with no parent data",
+			org:      "some-org",
+			repo:     "special",
+			branch:   "some-branch",
+			expected: BugzillaBranchOptions{TargetRelease: &superDuper, StateAfterValidation: &notabugState, ExcludeDefaults: &yes},
+		},
+		{
+			name:     "configured branch on special repo gets branch default parent data",
+			org:      "some-org",
+			repo:     "special",
+			branch:   "master",
+			expected: BugzillaBranchOptions{TargetRelease: &specialRelease, StateAfterValidation: &notabugState, ExcludeDefaults: &yes},
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -800,6 +830,15 @@ orgs:
 			expected: map[string]BugzillaBranchOptions{
 				"*":             {IsOpen: &open, TargetRelease: &orgDefault, StateAfterValidation: &preState},
 				"my-org-branch": {IsOpen: &open, TargetRelease: &orgBranchDefault, StateAfterValidation: &postState},
+			},
+		},
+		{
+			name: "repo in configured org with no parent data gets no default",
+			org:  "my-org",
+			repo: "special",
+			expected: map[string]BugzillaBranchOptions{
+				"*":      {TargetRelease: &superDuper, StateAfterValidation: &notabugState, ExcludeDefaults: &yes},
+				"master": {TargetRelease: &specialRelease, StateAfterValidation: &notabugState, ExcludeDefaults: &yes},
 			},
 		},
 		{
