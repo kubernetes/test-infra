@@ -10,6 +10,15 @@ Prow has a number of optional cluster components and a suite of plugins for `hoo
 
 Some Prow components expose prometheus metrics that can be used for monitoring, alerting, and pretty graphs. You can find details in the [README](/prow/metrics/README.md) in the [`prow/metrics`](/prow/metrics) directory.
 
+## Make Prow update and deploy itself!
+
+You can easily make your Prow instance automatically update itself when changes are made to its component's kubernetes resource files. This is achieved with a postsubmit job that `kubectl apply`s the resource files whenever they are changed (based on a `run_if_changed` regexp). Since this job requires priviledged credentials to deploy to the cluster, it is important that it is run in a separate build cluster that is isolated from all presubmit jobs. See the [documentation about separate build clusters](/prow/scaling.md#separate-build-clusters) for details. An example of such a job can be found [here](https://github.com/istio/test-infra/blob/45526926b4f1cd09147d54d23abc4a4258e62860/prow/cluster/jobs/istio/test-infra/istio.test-infra.trusted.master.yaml#L2-L28).
+Once you have a postsubmit deploy job, any changes to Prow component files are automatically applied to the cluster when the changes merge.
+
+With the help of the [Prow Autobump utility](/prow/cmd/autobump#prow-autobump) you can easily create commits that update all references to Prow images to the latest image version that has been vetted by the https://prow.k8s.io instance. If your Prow component resource files live in GitHub, this utility can even automatically create/update a Pull Request that includes these changes. This works great when run as a periodic job since it will maintain a single open PR that is periodically updated to reference the most recent upstream version. See the [README](/prow/cmd/autobump#prow-autobump) for details and an example.
+
+Combining a postsubmit deploy job with a periodic job that runs the Prow Autobump utility allows Prow to be updated to the latest version by simply merging the automatically created Pull Request (or letting Tide merge it after it has been approved).
+
 ## Use other tools with Prow
 
 * If you find that your GitHub bot is running low on API tokens consider using [`ghproxy`](/ghproxy) to cache requests to GitHub and take advantage of the strange re-validation rules that allow for additional API token savings.
