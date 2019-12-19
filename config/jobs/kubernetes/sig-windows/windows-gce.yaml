@@ -1,17 +1,20 @@
 presets:
 - labels:
-    preset-e2e-gce-windows: "true"
+    preset-common-gce-windows: "true"
   env:
   - name: KUBE_GCE_ENABLE_IP_ALIASES
     value: "true"
-  - name: NUM_WINDOWS_NODES
-    value: "3"
-  - name: NUM_NODES
-    value: "2"
   - name: KUBERNETES_NODE_PLATFORM
     value: "windows"
   - name: KUBELET_TEST_ARGS
     value: "--feature-gates=KubeletPodResources=false"
+- labels:
+    preset-e2e-gce-windows: "true"
+  env:
+  - name: NUM_WINDOWS_NODES
+    value: "3"
+  - name: NUM_NODES
+    value: "2"
 - labels:
     preset-e2e-gce-windows-containerd: "true"
   env:
@@ -19,6 +22,24 @@ presets:
     value: "containerd"
   - name: PREPULL_TIMEOUT
     value: "30m"
+- labels:
+    preset-load-gce-windows: "true"
+  env:
+  - name: MASTER_SIZE
+    value: "n1-standard-4"
+  - name: NUM_WINDOWS_NODES
+    value: "1"
+  - name: NUM_NODES
+    value: "1"
+  - name: NODE_SIZE
+    value: "n1-standard-8"
+  - name: NODE_DISK_SIZE
+    value: "100GB"
+  # Ensure good enough architecture for master machines.
+  - name: MASTER_MIN_CPU_ARCHITECTURE
+    value: "Intel Broadwell"
+  - name: MAX_PODS_PER_NODE
+    value: "128"
 
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-poc
@@ -39,6 +60,7 @@ periodics:
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -85,6 +107,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
   spec:
     containers:
@@ -123,6 +146,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
   spec:
     containers:
@@ -164,6 +188,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
   spec:
     containers:
@@ -199,6 +224,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
   spec:
@@ -227,6 +253,49 @@ periodics:
     testgrid-tab-name: gce-windows-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 
+- name: ci-kubernetes-e2e-windows-node-throughput
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-common-gce-windows: "true"
+    preset-load-gce-windows: "true"
+  annotations:
+    testgrid-dashboards: google-windows
+    testgrid-tab-name: windows-gce-node-throughput
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=60m
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/k8s-master
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --gcp-nodes=1
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/load-test.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=40m
+
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-windows-gce
@@ -246,6 +315,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
+      preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
