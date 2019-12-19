@@ -5,7 +5,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: ubuntu:bionic
+      - image: docker.io/ubuntu:bionic
         env:
         command:
         - bash
