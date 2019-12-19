@@ -11,7 +11,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191218-bcc4f6d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -63,7 +63,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191218-bcc4f6d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -116,7 +116,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191218-bcc4f6d-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
