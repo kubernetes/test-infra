@@ -424,16 +424,12 @@ require_matching_label:
   issues: true
   regexp: ^(sig|wg|committee)/
   missing_comment: |
-    There are no sig labels on this issue. Please add a sig label by either:
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
 
-    1. mentioning a sig: `@kubernetes/sig-<group-name>-<group-suffix>`
-        e.g., `@kubernetes/sig-contributor-experience-<group-suffix>` to notify the contributor experience sig, OR
-
-    2. specifying the label manually: `/sig <group-name>`
-        e.g., `/sig scalability` to apply the `sig/scalability` label
-
-    Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md).
-    The `<group-suffix>` in method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_.
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
 - missing_label: needs-priority
   org: kubernetes
   repo: kubernetes
