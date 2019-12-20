@@ -76,8 +76,11 @@ type JobConfig struct {
 	// inside the code repo, hence giving an incomplete view. Use
 	// `GetPresubmits` instead if possible.
 	PresubmitsStatic map[string][]Presubmit `json:"presubmits,omitempty"`
-	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
-	Postsubmits map[string][]Postsubmit `json:"postsubmits,omitempty"`
+	// .PostsubmitsStatic contains the postsubmits in Prows main config.
+	// **Warning:** This does not return dynamic Postsubmits configured
+	// inside the code repo, hence giving an incomplete view. Use
+	// `GetPostsubmits` instead if possible.
+	PostsubmitsStatic map[string][]Postsubmit `json:"postsubmits,omitempty"`
 
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
@@ -290,7 +293,7 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 	return rg.baseSHA, nil
 }
 
-// GetPresubmits will return all presumits for the given identifier. This includes
+// GetPresubmits will return all presubmits for the given identifier. This includes
 // Presubmits that are versioned inside the tested repo, if the `inrepoconfig feature
 // is enabled.
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
@@ -322,6 +325,40 @@ func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAG
 	}
 
 	return append(c.PresubmitsStatic[identifier], prowYAML.Presubmits...), nil
+}
+
+// GetPostsubmits will return all postsubmits for the given identifier. This includes
+// Postsubmits that are versioned inside the tested repo, if the `inrepoconfig feature
+// is enabled.
+// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
+// also need the result of that GitHub call just keep a pointer to its result, but must
+// nilcheck that pointer before accessing it.
+func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+	if identifier == "" {
+		return nil, errors.New("no identifier for repo given")
+	}
+	if !c.InRepoConfigEnabled(identifier) {
+		return c.PresubmitsStatic[identifier], nil
+	}
+
+	baseSHA, err := baseSHAGetter()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
+	}
+	var headSHAs []string
+	for _, headSHAGetter := range headSHAGetters {
+		headSHA, err := headSHAGetter()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get headRef: %v", err)
+		}
+		headSHAs = append(headSHAs, headSHA)
+	}
+	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(c.PostsubmitsStatic[identifier], prowYAML.Postsubmits...), nil
 }
 
 // OwnersDirBlacklist is used to configure regular expressions matching directories
