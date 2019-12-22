@@ -371,6 +371,26 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-packages
+  - name: pull-kops-verify-staticcheck
+    branches:
+      - master
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+          args:
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+            - "--root=/go/src"
+            - "--upload=gs://kubernetes-jenkins/pr-logs"
+            - --scenario=execute
+            - --
+            - ./hack/verify-staticcheck.sh
+
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-staticcheck
 periodics:
 - interval: 30m
   name: ci-kops-build
