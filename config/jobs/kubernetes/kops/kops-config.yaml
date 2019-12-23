@@ -18,13 +18,12 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
+        - "--"
         - "make"
         - "bazel-build"
         resources:
           requests:
             memory: "2Gi"
-
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: bazel-build
@@ -46,13 +45,12 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
+        - "--"
         - "make"
         - "bazel-test"
         resources:
           requests:
             memory: "2Gi"
-
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: bazel-test
@@ -236,14 +234,13 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-bazel.sh
-
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "verify-bazel"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-bazel
-
   - name: pull-kops-verify-generated
     branches:
     - master
@@ -257,13 +254,13 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-generate.sh
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "verify-generate"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-generated
-
   - name: pull-kops-verify-gomod
     branches:
     - master
@@ -277,10 +274,10 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-gomod
-
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "verify-gomod"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-gomod
@@ -297,10 +294,10 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-boilerplate.sh
-
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "verify-boilerplate"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-boilerplate
@@ -321,12 +318,12 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - ./hack/verify-gofmt.sh
+        - "--"
+        - "make"
+        - "verify-gofmt"
         resources:
           requests:
             memory: "2Gi"
-
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-gofmt
@@ -343,11 +340,10 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - make
-        - govet
-
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "govet"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-govet
@@ -364,10 +360,10 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-packages.sh
-
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "verify-packages"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-packages
@@ -384,10 +380,10 @@ presubmits:
             - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
             - "--root=/go/src"
             - "--upload=gs://kubernetes-jenkins/pr-logs"
-            - --scenario=execute
-            - --
-            - ./hack/verify-staticcheck.sh
-
+            - "--scenario=execute"
+            - "--"
+            - "make"
+            - "verify-staticcheck"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-staticcheck
@@ -413,7 +409,6 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-release-misc
     testgrid-tab-name: kops-build
@@ -437,7 +432,7 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--timeout=60"
         - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
+        - "--"
         - "make"
         - "prow-postsubmit"
         - "UPLOAD_DEST=gs://kubernetes-release-dev/kops/ci"
