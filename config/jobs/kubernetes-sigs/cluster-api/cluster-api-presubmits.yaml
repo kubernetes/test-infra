@@ -104,3 +104,27 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: pr-integration
+  - name: pull-cluster-api-capd-e2e
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api
+    optional: true
+    always_run: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-master
+          args:
+            - runner.sh
+            - "./scripts/ci-capd-e2e.sh"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: pr-e2e
