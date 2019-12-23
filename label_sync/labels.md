@@ -338,6 +338,7 @@ larger set of contributors to apply/remove them.
 | <a id="language/ja" href="#language/ja">`language/ja`</a> | Issues or PRs related to Japanese language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/ko" href="#language/ko">`language/ko`</a> | Issues or PRs related to Korean language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/no" href="#language/no">`language/no`</a> | Issues or PRs related to Norwegian language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="language/pl" href="#language/pl">`language/pl`</a> | Issues or PRs related to Polish language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/pt" href="#language/pt">`language/pt`</a> | Issues or PRs related to Portuguese language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/ru" href="#language/ru">`language/ru`</a> | Issues or PRs related to Russian language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/vi" href="#language/vi">`language/vi`</a> | Issues or PRs related to Vietnamese language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
