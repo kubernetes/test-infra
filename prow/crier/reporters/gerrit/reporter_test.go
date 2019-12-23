@@ -176,6 +176,35 @@ func TestReport(t *testing.T) {
 			numExpectedReport: 1,
 		},
 		{
+			name: "1 job, passed, empty label, should report, but not vote",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
+			numExpectedReport: 1,
+		},
+		{
 			name: "1 job, ABORTED, should not report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{

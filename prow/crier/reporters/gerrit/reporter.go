@@ -206,26 +206,22 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 		logger.Warn("Tried to report empty or aborted jobs.")
 		return nil, nil
 	}
-
-	vote := client.LBTM
-	if report.success == report.total {
-		vote = client.LGTM
+	var reviewLabels map[string]string
+	if reportLabel != "" {
+		vote := client.LBTM
+		if report.success == report.total {
+			vote = client.LGTM
+		}
+		reviewLabels = map[string]string{reportLabel: vote}
 	}
-	reviewLabels := map[string]string{reportLabel: vote}
 
 	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
-		logger.WithError(err).Errorf("fail to set review with %s label on change ID %s", reportLabel, gerritID)
-
-		// possibly don't have label permissions, try without labels
-		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
-		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
-			return nil, err
-		}
+		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
+		return nil, err
 	}
-	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
 
+	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
 	return toReportJobs, nil
 }
 
