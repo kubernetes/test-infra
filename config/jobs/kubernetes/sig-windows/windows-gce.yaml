@@ -271,14 +271,11 @@ periodics:
     path_alias: k8s.io/windows-testing
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-master
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=60m
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=
       - --extract=ci/k8s-master
@@ -355,7 +352,7 @@ presubmits:
       testgrid-dashboards: google-windows
       testgrid-tab-name: pull-windows-gce
   - name: pull-kubernetes-e2e-windows-node-throughput
-    interval: 2h
+    path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -371,20 +368,23 @@ presubmits:
     always_run: false
     optional: true
     extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     - org: kubernetes-sigs
       repo: windows-testing
       base_ref: master
       path_alias: k8s.io/windows-testing
+    branches:
+    - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-master
         args:
-        - --repo=k8s.io/kubernetes=master
-        - --repo=k8s.io/perf-tests=master
-        - --root=/go/src
-        - --timeout=60m
-        - --scenario=kubernetes_e2e
-        - --
         - --check-leaked-resources
         - --cluster=
         - --extract=ci/k8s-master
