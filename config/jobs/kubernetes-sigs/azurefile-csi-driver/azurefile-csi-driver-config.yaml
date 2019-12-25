@@ -155,3 +155,28 @@ presubmits:
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run E2E tests for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-windows-build
+    always_run: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - --
+        - make
+        - azurefile-windows
+    annotations:
+      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-tab-name: pr-azurefile-csi-driver-windows-build
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      description: "Run make azurefile-windows for Azure File CSI driver."
+      testgrid-num-columns-recent: '30'
