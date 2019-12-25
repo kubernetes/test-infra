@@ -53,9 +53,7 @@ presubmits:
       description: "Run lint check tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e
-    # Disable always_run because of https://github.com/kubernetes/test-infra/pull/11887
-    # TODO(feiskyer): enable the tests after it's fixed and published in the image
-    always_run: false
+    always_run: true
     branches:
     - master
     labels:
