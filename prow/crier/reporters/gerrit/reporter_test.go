@@ -430,6 +430,61 @@ func TestReport(t *testing.T) {
 			},
 		},
 		{
+			name: "2 jobs, 1 passed, 1 pending, empty labels, should not wait for aggregation, no vote",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    "presubmit",
+						client.GerritReportLabel: "",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job: "ci-foo",
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    "presubmit",
+							client.GerritReportLabel: "",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.PendingState,
+						URL:   "guber/bar",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job: "ci-bar",
+					},
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
+			reportExclude:     []string{"2", "bar"},
+			numExpectedReport: 1,
+		},
+		{
 			name: "2 jobs, one passed, other job failed, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{

@@ -115,17 +115,16 @@ func (c *Client) ShouldReport(pj *v1.ProwJob) bool {
 		return false
 	}
 
-	// Only report when all jobs of the same type on the same revision finished
-	selector := labels.Set{
-		client.GerritRevision: pj.ObjectMeta.Labels[client.GerritRevision],
-		kube.ProwJobTypeLabel: pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
+	// Don't wait for report aggregation if not voting on any label
+	if pj.ObjectMeta.Labels[client.GerritReportLabel] == "" {
+		return true
 	}
 
-	if pj.ObjectMeta.Labels[client.GerritReportLabel] == "" {
-		// Shouldn't happen, adapter should already have defaulted to Code-Review
-		logrus.Errorf("Gerrit report label not set for job %s", pj.Spec.Job)
-	} else {
-		selector[client.GerritReportLabel] = pj.ObjectMeta.Labels[client.GerritReportLabel]
+	// Only report when all jobs of the same type on the same revision finished
+	selector := labels.Set{
+		client.GerritRevision:    pj.ObjectMeta.Labels[client.GerritRevision],
+		kube.ProwJobTypeLabel:    pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
+		client.GerritReportLabel: pj.ObjectMeta.Labels[client.GerritReportLabel],
 	}
 
 	pjs, err := c.lister.List(selector.AsSelector())
@@ -159,36 +158,35 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	selector := labels.Set{
 		clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
 		pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
-	}
-	if pj.ObjectMeta.Labels[gerritReportLabel] == "" {
-		// Shouldn't happen, adapter should already have defaulted to Code-Review
-		logger.Errorf("Gerrit report label not set for job %s", pj.Spec.Job)
-	} else {
-		selector[gerritReportLabel] = pj.ObjectMeta.Labels[gerritReportLabel]
+		gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
 	}
 
-	// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
-
-	pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
-	if err != nil {
-		logger.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-		return nil, err
-	}
-
-	// generate an aggregated report:
 	var toReportJobs []*v1.ProwJob
-	mostRecentJob := map[string]*v1.ProwJob{}
-	for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
-		job, ok := mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job]
-		if !ok || job.CreationTimestamp.Time.Before(pjOnRevisionWithSameLabel.CreationTimestamp.Time) {
-			mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = pjOnRevisionWithSameLabel
+	if pj.ObjectMeta.Labels[gerritReportLabel] == "" {
+		toReportJobs = append(toReportJobs, pj)
+	} else { // generate an aggregated report
+
+		// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
+
+		pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
+		if err != nil {
+			logger.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+			return nil, err
 		}
-	}
-	for _, pjOnRevisionWithSameLabel := range mostRecentJob {
-		if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
-			continue
+
+		mostRecentJob := map[string]*v1.ProwJob{}
+		for _, pjOnRevisionWithSameLabel := range pjsOnRevisionWithSameLabel {
+			job, ok := mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job]
+			if !ok || job.CreationTimestamp.Time.Before(pjOnRevisionWithSameLabel.CreationTimestamp.Time) {
+				mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = pjOnRevisionWithSameLabel
+			}
 		}
-		toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
+		for _, pjOnRevisionWithSameLabel := range mostRecentJob {
+			if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
+				continue
+			}
+			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
+		}
 	}
 	report := generateReport(toReportJobs)
 	message := report.header + report.message
