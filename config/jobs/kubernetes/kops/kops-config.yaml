@@ -229,7 +229,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -269,7 +269,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -289,7 +289,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -335,7 +335,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -355,7 +355,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -375,7 +375,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/gcloud-in-go:v20190125-cc5d6ecff3
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
           args:
             - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
             - "--root=/go/src"
