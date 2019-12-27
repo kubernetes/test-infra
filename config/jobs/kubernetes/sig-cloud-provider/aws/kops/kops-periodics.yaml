@@ -221,7 +221,7 @@ periodics:
         - --env=KUBE_SSH_USER=admin
         - --extract=ci/latest
         - --ginkgo-parallel
-        - --kops-args="--image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2 --container-runtime=containerd --networking calico"
+        - --kops-args="--image=redhat.com/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2 --container-runtime=containerd --networking=calico"
         - --kops-ssh-user=admin
         - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
         - --provider=aws
