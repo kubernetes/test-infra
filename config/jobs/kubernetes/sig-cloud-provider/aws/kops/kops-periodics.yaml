@@ -203,6 +203,36 @@ periodics:
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-imageubuntu1604
+- interval: 4h
+  name: ci-kubernetes-e2e-kops-aws-containerd
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  spec:
+    containers:
+      - args:
+        - --timeout=140
+        - --bare
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
+        - --deployment=kops
+        - --env=KUBE_SSH_USER=admin
+        - --extract=ci/latest
+        - --ginkgo-parallel
+        - --kops-args="--image=309956199498/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2 --container-runtime=containerd --networking calico"
+        - --kops-ssh-user=admin
+        - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+        - --provider=aws
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+        - --timeout=120m
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+
+  annotations:
+    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
+    testgrid-tab-name: kops-aws-containerd
 - interval: 1h
   name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
   labels:
