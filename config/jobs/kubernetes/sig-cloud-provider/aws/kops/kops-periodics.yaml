@@ -445,7 +445,7 @@ periodics:
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
-      - --ginkgo-parallel
+      - --ginkgo-parallel=15
       - --kops-args=--networking=amazon-vpc-routed-eni --node-size=m5.large
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
