@@ -566,6 +566,7 @@ plugins:
 
   kubernetes/kops:
   - milestone
+  - milestoneapplier
 
   kubernetes/kubernetes:
   - blockade
