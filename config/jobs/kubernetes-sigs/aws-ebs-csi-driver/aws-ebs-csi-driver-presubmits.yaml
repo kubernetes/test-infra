@@ -54,25 +54,6 @@ presubmits:
       testgrid-tab-name: sanity-test
       description: aws ebs csi driver sanity test
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-ebs-csi-driver-integration
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-aws-credential-aws-oss-testing: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master
-        command:
-        - runner.sh
-        args:
-        - make
-        - test-integration
-    annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
-      testgrid-tab-name: integration-test
-      description: aws ebs csi driver integration test
-      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     always_run: true
     decorate: true
