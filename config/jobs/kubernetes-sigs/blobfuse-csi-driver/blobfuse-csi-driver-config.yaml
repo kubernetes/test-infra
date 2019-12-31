@@ -47,7 +47,7 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-cloudprovider-azure-cred: "true"
+      preset-azure-cred: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master
@@ -70,7 +70,7 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-cloudprovider-azure-cred: "true"
+      preset-azure-cred: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master
@@ -93,7 +93,7 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-cloudprovider-azure-cred: "true"
+      preset-azure-cred: "true"
       preset-dind-enabled: "true"
     extra_refs:
     - org: kubernetes
