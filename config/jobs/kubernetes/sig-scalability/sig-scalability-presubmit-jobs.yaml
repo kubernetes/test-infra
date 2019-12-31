@@ -4,14 +4,16 @@ presubmits:
     always_run: true
     skip_report: false
     max_concurrency: 12
-    branches:
-    - master
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      fork-per-release: "true"
     spec:
       containers:
       - args:
