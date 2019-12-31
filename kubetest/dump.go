@@ -59,6 +59,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 		"kube-scheduler",
 		"rescheduler",
 		"kube-controller-manager",
+		"kops-controller",
 		"etcd",
 		"etcd-events",
 		"glbc",
