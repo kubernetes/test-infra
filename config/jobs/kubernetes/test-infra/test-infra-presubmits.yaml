@@ -65,3 +65,26 @@ presubmits:
         - prow/cluster
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-test-infra-prow-checkconfig
+    branches:
+      - master
+    decorate: true
+    cluster: build
+    run_if_changed: '^config/prow/(config|plugins).yaml$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/checkconfig:v20191219-b8438ff62
+        command:
+        - /checkconfig
+        args:
+        - --config-path=config/prow/config.yaml
+        - --job-config-path=config/jobs
+        - --plugin-config=config/prow/plugins.yaml
+        - --strict
+        - --warnings=mismatched-tide-lenient
+        - --warnings=tide-strict-branch
+        - --warnings=needs-ok-to-test
+        - --warnings=validate-owners
+        - --warnings=missing-trigger
+        - --warnings=validate-urls
+        - --warnings=unknown-fields
