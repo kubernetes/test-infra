@@ -250,24 +250,6 @@ py_binary(
     ],
 )
 
-sh_test(
-    name = "verify-config",
-    srcs = ["verify-config.sh"],
-    args = [
-        "$(location //prow/cmd/checkconfig)",
-        "--config-path=config/prow/config.yaml",
-        "--job-config-path=config/jobs",
-        "--plugin-config=config/prow/plugins.yaml",
-    ],
-    data = [
-        "//config:all-srcs",
-        "//config/prow:config.yaml",
-        "//config/prow:plugins.yaml",
-        "//prow/cmd/checkconfig",
-    ],
-    tags = ["lint"],
-)
-
 sh_binary(
     name = "update-gopherage",
     srcs = ["update-gopherage.sh"],
