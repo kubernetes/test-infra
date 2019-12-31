@@ -39,7 +39,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-e2e-scalability-node-containerd: "true"
+    preset-e2e-scalability-node: "true"
   annotations:
     testgrid-dashboards: sig-scalability-node
     testgrid-tab-name: node-containerd-throughput
@@ -49,16 +49,15 @@ periodics:
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master
-      - --repo=github.com/containerd/cri=master
       - --root=/go/src
       - --timeout=60
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --cluster=
-      # We need to override KUBELET_TEST_ARGS to concatenation of things
-      # from the two presents we use that set it.
-      - --env=KUBELET_TEST_ARGS="--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100 --runtime-cgroups=/system.slice/containerd.service"
+      - --env=KUBE_CONTAINER_RUNTIME=containerd
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
