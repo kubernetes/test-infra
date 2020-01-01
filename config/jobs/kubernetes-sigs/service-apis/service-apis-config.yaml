@@ -4,12 +4,20 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-network-service-apis
       testgrid-tab-name: build
+    labels:
+      preset-dind-enabled: "true"
     decorate: true
     path_alias: sigs.k8s.io/service-apis
     always_run: true
     skip_report: false
     spec:
       containers:
-      - image: golang:1.13
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
         command:
-        - make
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
