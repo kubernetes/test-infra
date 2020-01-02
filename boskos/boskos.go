@@ -224,7 +224,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 		resource, err := r.Acquire(rtype, state, dest, owner, requestID)
 
 		if err != nil {
-			logrus.WithError(err).Errorf("No available resource")
+			logrus.WithError(err).Infof("No available resource")
 			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}
@@ -283,7 +283,7 @@ func handleAcquireByState(r *ranch.Ranch) http.HandlerFunc {
 		resources, err := r.AcquireByState(state, dest, owner, rNames)
 
 		if err != nil {
-			logrus.WithError(err).Errorf("No available resources")
+			logrus.WithError(err).Infof("No available resources")
 			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}
