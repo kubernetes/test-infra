@@ -21,6 +21,34 @@ presubmits:
         # Without account keys (-key-files), we should not be trying to activate
         # any service accounts.
         - -no-service-account
+  # Check that changes to backup scripts are valid.
+  - name: pull-k8sio-backup
+    decorate: true
+    run_if_changed: '^infra/gcp/backup_tools/'
+    max_concurrency: 1
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191124-4beb966-1.17
+        command:
+        - infra/gcp/backup_tools/backup_test.sh
+        env:
+        # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+        # here anyway in case the underlying image changes (the backup_test.sh
+        # script needs it to be defined).
+        - name: GOPATH
+          value: /go
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /creds/service-account.json
+        volumeMounts:
+        - name: creds
+          mountPath: /creds
+          readOnly: true
+      volumes:
+      - name: creds
+        secret:
+          secretName: k8s-gcr-backup-test-prod-bak-service-account
   kubernetes-sigs/k8s-container-image-promoter:
   # Run promoter e2e tests.
   - name: pull-cip-e2e
