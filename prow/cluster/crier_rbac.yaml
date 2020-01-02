@@ -33,6 +33,20 @@ rules:
     - "watch"
     - "list"
     - "patch"
+# TODO: figure out whether either of these are correct.
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+  verbs:
+    - "get"
+- apiGroups:
+    - ""
+  resources:
+    - "events"
+  verbs:
+    - "get"
+    - "list"
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
