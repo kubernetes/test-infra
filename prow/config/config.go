@@ -1411,6 +1411,25 @@ func parseProwConfig(c *Config) error {
 		return fmt.Errorf("tide has invalid max_goroutines (%d), it needs to be a positive number", c.Tide.MaxGoroutines)
 	}
 
+	if c.Tide.PRStatusBaseURLs == nil {
+		c.Tide.PRStatusBaseURLs = map[string]string{}
+	}
+
+	if len(c.Tide.PRStatusBaseURL) > 0 {
+		if len(c.Tide.PRStatusBaseURLs) > 0 {
+			return fmt.Errorf("both pr_status_base_url and pr_status_base_urls are defined")
+		} else {
+			logrus.Warning("The `pr_status_base_url` setting is deprecated and it has been replaced by `pr_status_base_urls`. It will be removed in June 2020")
+			c.Tide.PRStatusBaseURLs["*"] = c.Tide.PRStatusBaseURL
+		}
+	}
+
+	if len(c.Tide.PRStatusBaseURLs) > 0 {
+		if _, ok := c.Tide.PRStatusBaseURLs["*"]; !ok {
+			return fmt.Errorf("pr_status_base_urls is defined but the default value ('*') is missing")
+		}
+	}
+
 	for name, method := range c.Tide.MergeType {
 		if method != github.MergeMerge &&
 			method != github.MergeRebase &&
