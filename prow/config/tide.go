@@ -187,20 +187,15 @@ func (t *Tide) MergeCommitTemplate(org, repo string) TideMergeCommitTemplate {
 }
 
 func (t *Tide) GetPRStatusBaseURL(org, repo string) string {
-	def := t.PRStatusBaseURL
-
-	if len(t.PRStatusBaseURLs) > 0 {
-		def = t.PRStatusBaseURLs["*"]
-	}
-
 	orgRepo := fmt.Sprintf("%s/%s", org, repo)
+
 	if byOrgRepo, ok := t.PRStatusBaseURLs[orgRepo]; ok {
 		return byOrgRepo
 	} else if byOrg, ok := t.PRStatusBaseURLs[org]; ok {
 		return byOrg
 	}
 
-	return def
+	return t.PRStatusBaseURLs["*"]
 }
 
 // TideQuery is turned into a GitHub search query. See the docs for details:
