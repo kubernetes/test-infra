@@ -23,7 +23,9 @@ import (
 	"os"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/api/option"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/pjutil"
@@ -34,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	gcsreporter "k8s.io/test-infra/prow/gcs/reporter"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	gerritreporter "k8s.io/test-infra/prow/gerrit/reporter"
 	githubreporter "k8s.io/test-infra/prow/github/reporter"
@@ -61,8 +64,11 @@ type options struct {
 	pubsubWorkers int
 	githubWorkers int
 	slackWorkers  int
+	gcsWorkers    int
 
 	slackTokenFile string
+
+	gcsCredentialsFile string
 
 	dryrun      bool
 	reportAgent string
@@ -85,7 +91,7 @@ func (o *options) validate() error {
 		o.githubWorkers = 1
 	}
 
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -111,6 +117,10 @@ func (o *options) validate() error {
 		}
 	}
 
+	if o.gcsWorkers > 0 && o.gcsCredentialsFile == "" && !o.dryrun {
+		logrus.Warn("Using GCS without a credentials file is unlikely to work.")
+	}
+
 	if err := o.client.Validate(o.dryrun); err != nil {
 		return err
 	}
@@ -128,6 +138,8 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
+	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
+	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Location of the GCS credentials file, if gcs-workers is non-zero")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
@@ -251,6 +263,28 @@ func main() {
 				prowjobInformerFactory.Prow().V1().ProwJobs(),
 				githubReporter,
 				o.githubWorkers))
+	}
+
+	if o.gcsWorkers > 0 {
+		var c *storage.Client
+		if o.gcsCredentialsFile == "" {
+			c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
+		} else {
+			c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+		}
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating storage client for gcs workers.")
+		}
+
+		gcsReporter := gcsreporter.New(cfg, c, o.dryrun)
+		controllers = append(
+			controllers,
+			crier.NewController(
+				prowjobClientset,
+				kube.RateLimiter(gcsReporter.GetName()),
+				prowjobInformerFactory.Prow().V1().ProwJobs(),
+				gcsReporter,
+				o.gcsWorkers))
 	}
 
 	if len(controllers) == 0 {

@@ -116,6 +116,7 @@ filegroup(
         "//prow/external-plugins/needs-rebase:all-srcs",
         "//prow/external-plugins/refresh:all-srcs",
         "//prow/flagutil:all-srcs",
+        "//prow/gcs/reporter:all-srcs",
         "//prow/gcsupload:all-srcs",
         "//prow/genfiles:all-srcs",
         "//prow/gerrit/adapter:all-srcs",
