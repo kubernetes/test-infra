@@ -54,6 +54,8 @@ release(
     component("pipeline", "deployment"),
     component("plank", "service", "deployment"),
     component("prow-canary-k8s-io", "managedcertificate"),
+    component("prow-k8s-io", "managedcertificate"),
+    component("prow-kubernetes-io", "managedcertificate"),
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
     component("sinker", "service", "deployment"),
