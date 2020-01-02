@@ -654,7 +654,6 @@ dashboards:
     test_group_name: pull-cluster-registry-verify-gosrc
     base_options: width=10
 
-- name: presubmits-test-infra
 - name: presubmits-misc
 - name: presubmits-kops
 - name: presubmits-poseidon
