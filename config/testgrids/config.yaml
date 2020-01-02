@@ -645,27 +645,6 @@ dashboards:
     test_group_name: pull-perf-tests-clusterloader2-kubemark
     base_options: width=10
 
-- name: presubmits-test-infra
-  dashboard_tab:
-  - name: bazel
-    test_group_name: pull-test-infra-bazel
-    base_options: width=10
-  - name: bazel-canary
-    test_group_name: pull-test-infra-bazel-canary
-    base_options: width=10
-  - name: gubernator
-    test_group_name: pull-test-infra-gubernator
-    base_options: width=10
-  - name: repo-infra
-    test_group_name: pull-repo-infra-tests
-    base_options: width=10
-  - name: verify-file-perms
-    test_group_name: pull-test-infra-verify-file-perms
-    base_options: width=10
-  - name: verify-yaml
-    test_group_name: pull-test-infra-yamllint
-    base_options: width=10
-
 - name: presubmits-cluster-registry
   dashboard_tab:
   - name: verify-gensrc
@@ -675,6 +654,7 @@ dashboards:
     test_group_name: pull-cluster-registry-verify-gosrc
     base_options: width=10
 
+- name: presubmits-test-infra
 - name: presubmits-misc
 - name: presubmits-kops
 - name: presubmits-poseidon
