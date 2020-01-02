@@ -634,7 +634,7 @@ func TestTargetUrl(t *testing.T) {
 		{
 			name:        "PR dashboard config and overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseURL: "pr.status.com"},
+			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
 			expectedURL: "tide.com",
 		},
 		{
@@ -652,8 +652,77 @@ func TestTargetUrl(t *testing.T) {
 				}{NameWithOwner: githubql.String("org/repo")},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseURL: "pr.status.com"},
+			config:      config.Tide{PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
 			expectedURL: "pr.status.com?query=is%3Apr+repo%3Aorg%2Frepo+author%3Aauthor+head%3Ahead",
+		},
+		{
+			name: "generate link by default config",
+			pr: &PullRequest{
+				Author: struct {
+					Login githubql.String
+				}{Login: githubql.String("author")},
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Owner:         struct{ Login githubql.String }{Login: githubql.String("testOrg")},
+					Name:          githubql.String("testRepo"),
+					NameWithOwner: githubql.String("testOrg/testRepo"),
+				},
+				HeadRefName: "head",
+			},
+			config:      config.Tide{PRStatusBaseURLs: map[string]string{"*": "default.pr.status.com"}},
+			expectedURL: "default.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
+		},
+		{
+			name: "generate link by org config",
+			pr: &PullRequest{
+				Author: struct {
+					Login githubql.String
+				}{Login: githubql.String("author")},
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Owner:         struct{ Login githubql.String }{Login: githubql.String("testOrg")},
+					Name:          githubql.String("testRepo"),
+					NameWithOwner: githubql.String("testOrg/testRepo"),
+				},
+				HeadRefName: "head",
+			},
+			config:      config.Tide{PRStatusBaseURLs: map[string]string{"testOrg": "byorg.pr.status.com"}},
+			expectedURL: "byorg.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
+		},
+		{
+			name: "generate link by repo config",
+			pr: &PullRequest{
+				Author: struct {
+					Login githubql.String
+				}{Login: githubql.String("author")},
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Owner:         struct{ Login githubql.String }{Login: githubql.String("testOrg")},
+					Name:          githubql.String("testRepo"),
+					NameWithOwner: githubql.String("testOrg/testRepo"),
+				},
+				HeadRefName: "head",
+			},
+			config: config.Tide{PRStatusBaseURLs: map[string]string{
+				"testOrg":          "byorg.pr.status.com",
+				"testOrg/testRepo": "byrepo.pr.status.com"},
+			},
+			expectedURL: "byrepo.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 	}
 
