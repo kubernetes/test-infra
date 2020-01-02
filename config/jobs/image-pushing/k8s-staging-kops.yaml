@@ -19,7 +19,7 @@ postsubmits:
               - --project=k8s-staging-kops
               - --scratch-bucket=gs://k8s-staging-kops-gcb
               - --env-passthrough=PULL_BASE_REF
-              - ci/postsubmit/push-to-staging/
+              - .
             env:
               - name: GOOGLE_APPLICATION_CREDENTIALS
                 value: /creds/service-account.json
