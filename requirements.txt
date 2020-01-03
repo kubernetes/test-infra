@@ -13,12 +13,12 @@ jinja2==2.10.1
 lazy-object-proxy==1.4.1
 MarkupSafe==1.1.1
 mccabe==0.6.1
-pylint==1.9.5
+pylint==1.9.4
 python-dateutil==2.8.0
 pytz==2019.2
 PyYAML==5.1.1
 requests==2.22.0
-ruamel.yaml==0.15.97
+ruamel.yaml==0.15.98
 setuptools==41.1.0
 sh==1.12.14
 singledispatch==3.4.0.3
