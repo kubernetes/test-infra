@@ -67,8 +67,7 @@ presubmits:
       testgrid-create-test-group: 'true'
   - name: pull-test-infra-prow-checkconfig
     decorate: true
-    always_run: true
-    skip_report: true
+    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
       - image: gcr.io/k8s-prow/checkconfig:v20191219-b8438ff62
