@@ -25,7 +25,7 @@ latest_stable_k8s_version="1.17.0"
 latest_stable_k8s_minor_version="1.17"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191213-55437e3-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -497,6 +497,13 @@ for tests in non-alpha alpha; do
                 if [ "$kubernetes" != "$latest_stable_k8s_minor_version" ] && [ "$kubernetes" != "master" ]; then
                     continue
                 fi
+            fi
+
+            # Skip generating tests where the k8s version is lower than the deployment version
+            # because we do not support running newer deployments and sidecars on older kubernetes releases.
+            # The recommended Kubernetes version can be found in each kubernetes-csi sidecar release.
+			if [[ $kubernetes < $deployment ]]; then
+                continue
             fi
             actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
             cat >>"$base/csi-driver-host-path/csi-driver-host-path-config.yaml" <<EOF
