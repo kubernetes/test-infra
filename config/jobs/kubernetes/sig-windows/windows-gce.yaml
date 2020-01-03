@@ -293,11 +293,11 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=/logs/artifacts
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
       - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=40m
+      - --timeout=60m
 
 presubmits:
   kubernetes/kubernetes:
@@ -357,57 +357,3 @@ presubmits:
     annotations:
       testgrid-dashboards: google-windows
       testgrid-tab-name: pull-windows-gce
-  - name: pull-kubernetes-e2e-windows-node-throughput
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-common-gce-windows: "true"
-      preset-load-gce-windows: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-    annotations:
-      testgrid-dashboards: google-windows
-      testgrid-tab-name: pull-windows-gce-node-throughput
-    decorate: true
-    always_run: false
-    optional: true
-    extra_refs:
-    - org: kubernetes
-      repo: release
-      base_ref: master
-      path_alias: k8s.io/release
-    - org: kubernetes-sigs
-      repo: windows-testing
-      base_ref: master
-      path_alias: k8s.io/windows-testing
-    - org: kubernetes
-      repo: perf-tests
-      base_ref: master
-      path_alias: k8s.io/perf-tests
-    branches:
-    - master
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-master
-        args:
-        - --check-leaked-resources
-        - --cluster=
-        - --extract=ci/k8s-master
-        - --gcp-zone=us-west1-b
-        - --provider=gce
-        - --gcp-nodes=1
-        - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/load-test.sh
-        - --test-cmd-args=cluster-loader2
-        - --test-cmd-args=--nodes=1
-        - --test-cmd-args=--provider=gce
-        - --test-cmd-args=--report-dir=/workspace/_artifacts
-        - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
-        - --test-cmd-args=--testoverrides=./testing/node-throughput/windows_override.yaml
-        - --test-cmd-name=ClusterLoaderV2
-        - --timeout=40m
