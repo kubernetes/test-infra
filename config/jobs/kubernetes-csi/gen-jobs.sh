@@ -502,7 +502,7 @@ for tests in non-alpha alpha; do
             # Skip generating tests where the k8s version is lower than the deployment version
             # because we do not support running newer deployments and sidecars on older kubernetes releases.
             # The recommended Kubernetes version can be found in each kubernetes-csi sidecar release.
-			if [[ $kubernetes < $deployment ]]; then
+            if [[ $kubernetes < $deployment ]]; then
                 continue
             fi
             actual="$(if [ "$kubernetes" = "master" ]; then echo latest; else echo "release-$kubernetes"; fi)"
