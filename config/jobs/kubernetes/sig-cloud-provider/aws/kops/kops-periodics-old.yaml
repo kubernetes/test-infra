@@ -1,6 +1,6 @@
 periodics:
 - interval: 4h
-  name: e2e-kops-aws-k8s-1.9
+  name: e2e-kops-aws-k8s-1-9
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -30,7 +30,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.9
 - interval: 4h
-  name: e2e-kops-aws-k8s-1.10
+  name: e2e-kops-aws-k8s-1-10
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -60,7 +60,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.10
 - interval: 4h
-  name: e2e-kops-aws-k8s-1.11
+  name: e2e-kops-aws-k8s-1-11
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -90,7 +90,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.11
 - interval: 4h
-  name: e2e-kops-aws-k8s-1.12
+  name: e2e-kops-aws-k8s-1-12
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -120,7 +120,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.12
 - interval: 4h
-  name: e2e-kops-aws-k8s-1.13
+  name: e2e-kops-aws-k8s-1-13
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -150,7 +150,7 @@ periodics:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.13
 - interval: 4h
-  name: e2e-kops-aws-k8s-1.14
+  name: e2e-kops-aws-k8s-1-14
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
