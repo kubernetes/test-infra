@@ -131,7 +131,7 @@ user-from-token() {
     user=$(curl -H "Authorization: token $(cat "${token}")" "https://api.github.com/user" 2>/dev/null | sed -n "s/\s\+\"login\": \"\(.*\)\",/\1/p")
     echo "Using user from GitHub: ${user}"
   else
-    echo "Using email from Argument: ${user}"
+    echo "Using user from Argument: ${user}"
   fi
 }
 
