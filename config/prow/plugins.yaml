@@ -565,7 +565,6 @@ plugins:
   - stage
 
   kubernetes/kops:
-  - docs-no-retest
   - milestone
   - milestoneapplier
 
