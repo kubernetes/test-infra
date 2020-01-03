@@ -134,6 +134,8 @@ presubmits:
         - /md/lint
         - -i
         - vendor
+        - -i
+        - contrib/haproxy/openapi
         - .
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
