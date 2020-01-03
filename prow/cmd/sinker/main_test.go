@@ -40,8 +40,9 @@ import (
 )
 
 const (
-	maxProwJobAge = 2 * 24 * time.Hour
-	maxPodAge     = 12 * time.Hour
+	maxProwJobAge    = 2 * 24 * time.Hour
+	maxPodAge        = 12 * time.Hour
+	terminatedPodTTL = 30 * time.Minute // must be less than maxPodAge
 )
 
 type fca struct {
@@ -55,8 +56,9 @@ func newFakeConfigAgent() *fca {
 				ProwJobNamespace: "ns",
 				PodNamespace:     "ns",
 				Sinker: config.Sinker{
-					MaxProwJobAge: &metav1.Duration{Duration: maxProwJobAge},
-					MaxPodAge:     &metav1.Duration{Duration: maxPodAge},
+					MaxProwJobAge:    &metav1.Duration{Duration: maxProwJobAge},
+					MaxPodAge:        &metav1.Duration{Duration: maxPodAge},
+					TerminatedPodTTL: &metav1.Duration{Duration: terminatedPodTTL},
 				},
 			},
 			JobConfig: config.JobConfig{
@@ -320,6 +322,57 @@ func TestClean(t *testing.T) {
 				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
 			},
 		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-expired",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+				ContainerStatuses: []corev1api.ContainerStatus{
+					{
+						State: corev1api.ContainerState{
+							Terminated: &corev1api.ContainerStateTerminated{
+								FinishedAt: metav1.Time{Time: time.Now().Add(-terminatedPodTTL).Add(-time.Second)},
+							},
+						},
+					},
+				},
+			},
+		},
+		&corev1api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-not-expired",
+				Namespace: "ns",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: corev1api.PodStatus{
+				Phase:     corev1api.PodFailed,
+				StartTime: startTime(time.Now().Add(-terminatedPodTTL * 2)),
+				ContainerStatuses: []corev1api.ContainerStatus{
+					{
+						State: corev1api.ContainerState{
+							Terminated: &corev1api.ContainerStateTerminated{
+								FinishedAt: metav1.Time{Time: time.Now().Add(-terminatedPodTTL).Add(-time.Second)},
+							},
+						},
+					},
+					{
+						State: corev1api.ContainerState{
+							Terminated: &corev1api.ContainerStateTerminated{
+								FinishedAt: metav1.Time{Time: time.Now().Add(-time.Second)},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	deletedPods := sets.NewString(
 		"job-complete-pod-failed",
@@ -333,6 +386,7 @@ func TestClean(t *testing.T) {
 		"old-succeeded",
 		"old-pending-abort",
 		"old-running",
+		"ttl-expired",
 	)
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -492,6 +546,26 @@ func TestClean(t *testing.T) {
 			},
 			Status: prowv1.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+				CompletionTime: setComplete(-time.Second),
+			},
+		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-expired",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
+				CompletionTime: setComplete(-terminatedPodTTL - time.Second),
+			},
+		},
+		&prowv1.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ttl-not-expired",
+				Namespace: "ns",
+			},
+			Status: prowv1.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-terminatedPodTTL * 2)),
 				CompletionTime: setComplete(-time.Second),
 			},
 		},

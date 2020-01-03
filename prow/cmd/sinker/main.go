@@ -26,6 +26,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	corev1api "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -55,6 +56,7 @@ type options struct {
 const (
 	reasonPodAged     = "aged"
 	reasonPodOrphaned = "orphaned"
+	reasonPodTTLed    = "ttled"
 
 	reasonProwJobAged         = "aged"
 	reasonProwJobAgedPeriodic = "aged-periodic"
@@ -370,9 +372,15 @@ func (c *controller) clean() {
 		}
 		metrics.podsCreated += len(pods.Items)
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
+		terminatedPodTTL := c.config().Sinker.TerminatedPodTTL.Duration
 		for _, pod := range pods.Items {
-			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
 			reason := reasonPodAged
+			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
+			if !clean {
+				terminationTime := podTerminationTime(&pod)
+				clean = !terminationTime.IsZero() && time.Since(terminationTime) > terminatedPodTTL
+				reason = reasonPodTTLed
+			}
 
 			// by default, use the pod name as the key to match the associated prow job
 			// this is to support legacy plank in case the kube.ProwJobIDLabel label is not set
@@ -399,7 +407,7 @@ func (c *controller) clean() {
 
 			// Delete old finished or orphan pods. Don't quit if we fail to delete one.
 			if err := client.Delete(pod.ObjectMeta.Name, &metav1.DeleteOptions{}); err == nil {
-				c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
+				c.logger.WithFields(logrus.Fields{"pod": pod.ObjectMeta.Name, "reason": reason}).Info("Deleted old completed pod.")
 				metrics.podsRemoved[reason]++
 			} else {
 				c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
@@ -425,4 +433,28 @@ func (c *controller) clean() {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
 	c.logger.Info("Sinker reconciliation complete.")
+}
+
+// podTerminationTime returns the "termination time" of the pod (a concept that
+// pods do not actually have), calculating it as the termination time of the
+// last pod to terminate.
+// This is probably meaningless for pods that restart containers.
+func podTerminationTime(pod *corev1api.Pod) time.Time {
+	var endTime time.Time
+	if pod.Status.Phase != corev1api.PodSucceeded && pod.Status.Phase != corev1api.PodFailed {
+		return endTime
+	}
+
+	for _, container := range pod.Status.InitContainerStatuses {
+		if container.State.Terminated != nil && container.State.Terminated.FinishedAt.After(endTime) {
+			endTime = container.State.Terminated.FinishedAt.Time
+		}
+	}
+
+	for _, container := range pod.Status.ContainerStatuses {
+		if container.State.Terminated != nil && container.State.Terminated.FinishedAt.After(endTime) {
+			endTime = container.State.Terminated.FinishedAt.Time
+		}
+	}
+	return endTime
 }
