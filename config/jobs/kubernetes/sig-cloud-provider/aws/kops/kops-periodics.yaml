@@ -148,13 +148,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-imagecentos7.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=centos
@@ -296,13 +298,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-stable1.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
