@@ -1,6 +1,10 @@
 # Announcements
 
 New features added to each component:
+ - *January 03, 2020* Added a `pr_status_base_urls` option to the Tide config
+   that allows to specify different tide's URL for each organization or a specific repository.
+   The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaces with the
+   `*` value in `pr_status_base_urls`.
  - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
     by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
     The fields _namespace_ and _additional_namespaces_ are deprecated.

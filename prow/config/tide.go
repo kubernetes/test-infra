@@ -101,7 +101,12 @@ type Tide struct {
 	// PRStatusBaseURL is the base URL for the PR status page.
 	// This is used to link to a merge requirements overview
 	// in the tide status context.
+	// Will be deprecated on June 2020.
 	PRStatusBaseURL string `json:"pr_status_base_url,omitempty"`
+
+	// PRStatusBaseURLs is the base URL for the PR status page
+	// mapped by org or org/repo level.
+	PRStatusBaseURLs map[string]string `json:"pr_status_base_urls,omitempty"`
 
 	// BlockerLabel is an optional label that is used to identify merge blocking
 	// GitHub issues.
@@ -180,6 +185,18 @@ func (t *Tide) MergeCommitTemplate(org, repo string) TideMergeCommitTemplate {
 	}
 
 	return v
+}
+
+func (t *Tide) GetPRStatusBaseURL(org, repo string) string {
+	orgRepo := fmt.Sprintf("%s/%s", org, repo)
+
+	if byOrgRepo, ok := t.PRStatusBaseURLs[orgRepo]; ok {
+		return byOrgRepo
+	} else if byOrg, ok := t.PRStatusBaseURLs[org]; ok {
+		return byOrg
+	}
+
+	return t.PRStatusBaseURLs["*"]
 }
 
 // TideQuery is turned into a GitHub search query. See the docs for details:

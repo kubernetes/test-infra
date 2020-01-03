@@ -300,7 +300,7 @@ func targetURL(c config.Getter, pr *PullRequest, log *logrus.Entry) string {
 	var link string
 	if tideURL := c().Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c().Tide.PRStatusBaseURL; baseURL != "" {
+	} else if baseURL := c().Tide.GetPRStatusBaseURL(string(pr.Repository.Owner.Login), string(pr.Repository.Name)); baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
