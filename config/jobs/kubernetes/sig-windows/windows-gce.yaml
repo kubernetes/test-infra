@@ -40,6 +40,8 @@ presets:
     value: "Intel Broadwell"
   - name: MAX_PODS_PER_NODE
     value: "128"
+  - name: PREPULL_TIMEOUT
+    value: "10m"
 
 periodics:
 - name: ci-kubernetes-e2e-windows-gce-poc
