@@ -8,31 +8,17 @@ py_binary(
 )
 
 py_binary(
-    name = "generate_tests",
-    srcs = ["generate_tests.py"],
-    data = [
-        "test_config.yaml",
-        "//config:prowjobs",
-        "//config:testgrids",
-        "//config/prow:configs",
-        "//jobs",
-    ],
-    python_version = "PY3",
-    deps = [requirement("ruamel.yaml")],
-)
-
-py_binary(
     name = "prepare_release_branch",
     srcs = ["prepare_release_branch.py"],
     args = [
         "$(location //experiment/config-rotator)",
         "$(location //experiment/config-forker)",
-        "$(location :generate_tests)",
+        "$(location //experiment/generate_tests)",
     ],
     data = [
-        ":generate_tests",
         "//experiment/config-forker",
         "//experiment/config-rotator",
+        "//experiment/generate_tests",
     ],
     python_version = "PY3",
     deps = [
@@ -61,6 +47,7 @@ filegroup(
         "//experiment/config-rotator:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/dummybenchmarks:all-srcs",
+        "//experiment/generate_tests:all-srcs",
         "//experiment/image-bumper:all-srcs",
         "//experiment/logviewer/gcsreader:all-srcs",
         "//experiment/manual-trigger:all-srcs",

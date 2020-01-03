@@ -1,0 +1,30 @@
+load("@py_deps//:requirements.bzl", "requirement")
+
+py_binary(
+    name = "generate_tests",
+    srcs = ["generate_tests.py"],
+    data = [
+        "test_config.yaml",
+        "//config:prowjobs",
+        "//config:testgrids",
+        "//config/prow:configs",
+        "//jobs",
+    ],
+    python_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [requirement("ruamel.yaml")],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
