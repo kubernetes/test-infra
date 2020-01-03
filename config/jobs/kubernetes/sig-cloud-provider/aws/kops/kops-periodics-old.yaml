@@ -25,6 +25,7 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
           - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.9
@@ -54,6 +55,7 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
           - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.10
@@ -83,6 +85,7 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
           - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.11
@@ -112,6 +115,7 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
           - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.12
@@ -141,6 +145,7 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
           - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.13
@@ -170,6 +175,7 @@ periodics:
           - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
           - --timeout=120m
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
     testgrid-tab-name: kops-aws-k8s-1.14
