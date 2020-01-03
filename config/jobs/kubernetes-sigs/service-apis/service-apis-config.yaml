@@ -18,6 +18,6 @@ presubmits:
           - runner.sh
         args:
           - make
-        # docker-in-docker needs privileged mode
+        # docker-in-docker needs privileged mode.
         securityContext:
           privileged: true
