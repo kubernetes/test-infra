@@ -6,13 +6,15 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --aws
       - --cluster=e2e-kops-aws.test-cncf-aws.k8s.io
       - --env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-green.txt
@@ -33,13 +35,15 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-e2e-platform-aws: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --aws
       - --cluster=e2e-kops-aws-beta.test-cncf-aws.k8s.io
       - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-beta.txt
@@ -59,13 +63,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-channelalpha.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -88,13 +94,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-ena-nvme.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -118,13 +126,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-ha-uswest2.k8s.local
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -181,13 +191,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-imageubuntu1604.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ubuntu
@@ -211,26 +223,28 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-      - args:
-        - --timeout=140
-        - --bare
-        - --scenario=kubernetes_e2e
-        - --
-        - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
-        - --deployment=kops
-        - --env=KUBE_SSH_USER=ec2-user
-        - --extract=ci/latest
-        - --ginkgo-parallel
-        - --kops-args=--image=redhat.com/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2 --container-runtime=containerd --networking=calico
-        - --kops-ssh-user=ec2-user
-        - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-        - --provider=aws
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-        imagePullPolicy: Always
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=ec2-user
+      - --extract=ci/latest
+      - --ginkgo-parallel
+      - --kops-args=--image=redhat.com/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2 --container-runtime=containerd --networking=calico
+      - --kops-ssh-user=ec2-user
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
 
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
@@ -241,13 +255,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-kopeio-vxlan.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -270,13 +286,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-newrunner.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -327,13 +345,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-stable2.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -354,13 +374,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-stable3.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -381,13 +403,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 50m
   spec:
     containers:
-    - args:
-      - --timeout=50
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-updown.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -409,13 +433,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-weave.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -438,13 +464,15 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-aws-vpc-cni.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
@@ -465,13 +493,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-gce.k8s.local
       - --deployment=kops
       - --env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-gce-green.txt
@@ -492,13 +522,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-gce-channelalpha.k8s.local
       - --deployment=kops
       - --extract=ci/latest
@@ -519,13 +551,15 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
   spec:
     containers:
-    - args:
-      - --timeout=140
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
       - --cluster=e2e-kops-gce-ha.k8s.local
       - --deployment=kops
       - --extract=ci/latest
