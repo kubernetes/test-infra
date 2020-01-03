@@ -2,7 +2,7 @@ periodics:
 - name: ci-kubernetes-e2e-gce-node-throughput
   tags:
   - "perfDashPrefix: docker-node-throughput"
-  - "perfDashJobType: storage"
+  - "perfDashJobType: throughput"
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -40,7 +40,7 @@ periodics:
 - name: ci-kubernetes-e2e-gce-node-containerd-throughput
   tags:
   - "perfDashPrefix: containerd-node-throughput"
-  - "perfDashJobType: storage"
+  - "perfDashJobType: throughput"
   interval: 1h
   labels:
     preset-service-account: "true"
