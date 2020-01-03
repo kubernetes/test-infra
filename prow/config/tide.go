@@ -101,6 +101,7 @@ type Tide struct {
 	// PRStatusBaseURL is the base URL for the PR status page.
 	// This is used to link to a merge requirements overview
 	// in the tide status context.
+	// Will be deprecated on June 2020.
 	PRStatusBaseURL string `json:"pr_status_base_url,omitempty"`
 
 	// PRStatusBaseURLs is the base URL for the PR status page
