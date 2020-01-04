@@ -20,7 +20,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=---kubernetes-version=1.9
+      - --kops-args=--kubernetes-version=1.9
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -51,7 +51,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=---kubernetes-version=1.10
+      - --kops-args=--kubernetes-version=1.10
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -82,7 +82,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=---kubernetes-version=1.11
+      - --kops-args=--kubernetes-version=1.11
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -113,7 +113,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=---kubernetes-version=1.12
+      - --kops-args=--kubernetes-version=1.12
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -144,7 +144,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=---kubernetes-version=1.13
+      - --kops-args=--kubernetes-version=1.13
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -175,7 +175,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=---kubernetes-version=1.14
+      - --kops-args=--kubernetes-version=1.14
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
@@ -206,7 +206,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-args=---kubernetes-version=1.15
+      - --kops-args=--kubernetes-version=1.15
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
