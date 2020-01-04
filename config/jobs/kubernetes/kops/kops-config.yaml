@@ -9,16 +9,16 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_execute_bazel.py
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "bazel-build"
         resources:
@@ -36,16 +36,16 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_execute_bazel.py
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "bazel-test"
         resources:
@@ -64,18 +64,16 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -105,18 +103,16 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -147,18 +143,16 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -189,18 +183,16 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -227,15 +219,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_execute_bazel.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-bazel"
     annotations:
@@ -247,15 +240,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-generate"
     annotations:
@@ -267,15 +261,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-gomod"
     annotations:
@@ -287,15 +282,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-boilerplate"
     annotations:
@@ -309,16 +305,16 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_execute_bazel.py
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "verify-gofmt"
         resources:
@@ -333,15 +329,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "govet"
     annotations:
@@ -353,15 +350,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-packages"
     annotations:
@@ -373,17 +371,18 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191219-72db7a6-experimental
-          args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--root=/go/src"
-            - "--upload=gs://kubernetes-jenkins/pr-logs"
-            - "--scenario=execute"
-            - "--"
-            - "make"
-            - "verify-staticcheck"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/execute.py
+        args:
+        - "make"
+        - "verify-staticcheck"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-staticcheck
@@ -393,16 +392,16 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 30m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_execute_bazel.py
       args:
-      - --repo=k8s.io/kops
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=30
-      - --scenario=execute
-      - --
       - make
       - gcs-publish-ci
       - GCS_LOCATION=gs://kops-ci/bin
@@ -422,17 +421,16 @@ postsubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 60m
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_execute_bazel.py
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--timeout=60"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "prow-postsubmit"
         - "UPLOAD_DEST=gs://kubernetes-release-dev/kops/ci"
