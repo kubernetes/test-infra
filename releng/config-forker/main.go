@@ -46,7 +46,7 @@ const (
 
 func generatePostsubmits(c config.JobConfig, version string) (map[string][]config.Postsubmit, error) {
 	newPostsubmits := map[string][]config.Postsubmit{}
-	for repo, postsubmits := range c.Postsubmits {
+	for repo, postsubmits := range c.PostsubmitsStatic {
 		for _, postsubmit := range postsubmits {
 			if postsubmit.Annotations[forkAnnotation] != "true" {
 				continue

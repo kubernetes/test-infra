@@ -758,7 +758,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 		},
 	}
 
-	result, err := generatePostsubmits(config.JobConfig{Postsubmits: postsubmits}, "1.15")
+	result, err := generatePostsubmits(config.JobConfig{PostsubmitsStatic: postsubmits}, "1.15")
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

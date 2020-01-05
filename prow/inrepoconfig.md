@@ -1,6 +1,6 @@
 # Inrepoconfig
 
-Inrepoconfig is a Prow feature that allows versioning Presubmit jobs in the same repository
+Inrepoconfig is a Prow feature that allows versioning Presubmit and Postsubmit jobs in the same repository
 that also holds the code. If enabled, Prow will use both the centrally-defined jobs and the
 ones defined in the code repository. The latter ones are dynamically loaded on-demand.
 
@@ -58,6 +58,20 @@ named `.prow.yaml` to the root of the repository that holds your code:
 ```yaml
 presubmits:
 - name: pull-test-infra-yamllint
+  always_run: true
+  decorate: true
+  spec:
+    containers:
+    - image: quay.io/kubermatic/yamllint:0.1
+      command:
+      - yamllint
+      - -c
+      - config/jobs/.yamllint.conf
+      - config/jobs
+      - prow/cluster
+
+postsubmits:
+- name: push-test-infra-yamllint
   always_run: true
   decorate: true
   spec:

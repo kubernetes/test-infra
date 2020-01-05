@@ -691,7 +691,7 @@ func TestProcessChange(t *testing.T) {
 							},
 						},
 					},
-					Postsubmits: map[string][]config.Postsubmit{
+					PostsubmitsStatic: map[string][]config.Postsubmit{
 						"gerrit/postsubmits-project": {
 							{
 								JobBase: config.JobBase{

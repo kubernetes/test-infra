@@ -680,3 +680,81 @@ func TestGetPresubmits(t *testing.T) {
 		})
 	}
 }
+
+func TestGetPostsubmits(t *testing.T) {
+	const orgRepo = "my-org/my-repo"
+
+	testCases := []struct {
+		name string
+		cfg  *config.Config
+
+		expectedPostsubmits sets.String
+	}{
+		{
+			name: "Result of GetPostsubmits is used by default",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PostsubmitsStatic: map[string][]config.Postsubmit{
+						orgRepo: {{
+							JobBase: config.JobBase{Name: "my-static-postsubmit"},
+						}},
+					},
+					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+						return &config.ProwYAML{
+							Postsubmits: []config.Postsubmit{{
+								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},
+							}},
+						}, nil
+					},
+				},
+				ProwConfig: config.ProwConfig{
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+				},
+			},
+
+			expectedPostsubmits: sets.NewString("my-inrepoconfig-postsubmit", "my-static-postsubmit"),
+		},
+		{
+			name: "Fallback to static postsubmits",
+			cfg: &config.Config{
+				JobConfig: config.JobConfig{
+					PostsubmitsStatic: map[string][]config.Postsubmit{
+						orgRepo: {{
+							JobBase: config.JobBase{Name: "my-static-postsubmit"},
+						}},
+					},
+					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+						return &config.ProwYAML{
+							Postsubmits: []config.Postsubmit{{
+								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},
+							}},
+						}, errors.New("some error")
+					},
+				},
+				ProwConfig: config.ProwConfig{
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+				},
+			},
+
+			expectedPostsubmits: sets.NewString("my-static-postsubmit"),
+		},
+	}
+
+	shaGetter := func() (string, error) {
+		return "", nil
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			postsubmits := getPostsubmits(logrus.NewEntry(logrus.New()), nil, tc.cfg, orgRepo, shaGetter)
+			actualPostsubmits := sets.String{}
+			for _, postsubmit := range postsubmits {
+				actualPostsubmits.Insert(postsubmit.Name)
+			}
+
+			if !tc.expectedPostsubmits.Equal(actualPostsubmits) {
+				t.Errorf("got a different set of postsubmits than expected, diff: %v", tc.expectedPostsubmits.Difference(actualPostsubmits))
+			}
+		})
+	}
+}

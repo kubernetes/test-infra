@@ -323,7 +323,7 @@ func TestTrustedJobs(t *testing.T) {
 	}
 
 	// Trusted postsubmits must be defined in trustedPath
-	for _, post := range c.AllPostsubmits(nil) {
+	for _, post := range c.AllStaticPostsubmits(nil) {
 		if post.Cluster != trusted {
 			continue
 		}
@@ -428,7 +428,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	// config/jobs/<org>/<project>/<project>-trusted.yaml can and only can use restricted
 	// secrets for <org>/repo>.
 	jobs := []cfg.JobBase{}
-	for _, job := range c.AllPostsubmits(nil) {
+	for _, job := range c.AllStaticPostsubmits(nil) {
 		jobs = append(jobs, job.JobBase)
 	}
 	for _, job := range c.AllPeriodics() {
@@ -470,7 +470,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 			}
 		}
 	}
-	for repo, jobs := range c.Postsubmits {
+	for repo, jobs := range c.PostsubmitsStatic {
 		if strings.HasPrefix(repo, "kubernetes-security/") {
 			for _, job := range jobs {
 				if job.Agent != "jenkins" && job.Cluster != "security" {
@@ -514,7 +514,7 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil {
 			if err := checkDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
 				t.Errorf("Error in postsubmit: %v", err)
@@ -564,7 +564,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
@@ -662,7 +662,7 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 
-	for _, postsubmit := range c.AllPostsubmits(nil) {
+	for _, postsubmit := range c.AllStaticPostsubmits(nil) {
 		if postsubmit.Spec != nil && !postsubmit.Decorate {
 			if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
@@ -889,7 +889,7 @@ func TestValidScenarioArgs(t *testing.T) {
 		}
 	}
 
-	for _, job := range c.AllPostsubmits(nil) {
+	for _, job := range c.AllStaticPostsubmits(nil) {
 		if job.Spec != nil && !job.Decorate {
 			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)

@@ -19,8 +19,9 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 		dontPassGitClient bool
 		validate          func(*ProwYAML, error) error
 	}{
+		// presubmits
 		{
-			name: "Basic happy path",
+			name: "Basic happy path (presubmits)",
 			baseContent: map[string][]byte{
 				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
 			},
@@ -35,22 +36,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			},
 		},
 		{
-			name: "Yaml unmarshaling is not strict",
-			baseContent: map[string][]byte{
-				".prow.yaml": []byte(`presubmits: [{"name": "hans", "undef_attr": true, "spec": {"containers": [{}]}}]`),
-			},
-			validate: func(p *ProwYAML, err error) error {
-				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
-				}
-				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
-					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
-				}
-				return nil
-			},
-		},
-		{
-			name: "Merging is executed",
+			name: "Merging is executed (presubmits)",
 			headContent: map[string][]byte{
 				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
 			},
@@ -60,21 +46,6 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
-				}
-				return nil
-			},
-		},
-		{
-			name: "No prow.yaml, no error, no nullpointer",
-			validate: func(p *ProwYAML, err error) error {
-				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
-				}
-				if p == nil {
-					return errors.New("prowYAML is nil")
-				}
-				if n := len(p.Presubmits); n != 0 {
-					return fmt.Errorf("expected to get zero presubmits, got %d", n)
 				}
 				return nil
 			},
@@ -143,7 +114,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := `job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml"`
+				expectedErrMsg := `presubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml"`
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -151,7 +122,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			},
 		},
 		{
-			name: "Multiple errors are aggregated",
+			name: "Multiple errors are aggregated (presubmits)",
 			baseContent: map[string][]byte{
 				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]},{"name": "gretel", "spec": {"containers": [{}]}, "branches":["master"]}]`),
 			},
@@ -159,7 +130,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 				if err == nil {
 					return errors.New("error is nil")
 				}
-				expectedErrMsg := `[job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml", job "gretel" contains branchconfig. This is not allowed for jobs in ".prow.yaml"]`
+				expectedErrMsg := `[presubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml", presubmit job "gretel" contains branchconfig. This is not allowed for jobs in ".prow.yaml"]`
 				if err.Error() != expectedErrMsg {
 					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
 				}
@@ -167,7 +138,7 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			},
 		},
 		{
-			name: "Not allowed cluster is rejected",
+			name: "Not allowed cluster is rejected (presubmits)",
 			baseContent: map[string][]byte{
 				".prow.yaml": []byte(`presubmits: [{"name": "hans", "cluster": "privileged", "spec": {"containers": [{}]}}]`),
 			},
@@ -182,6 +153,157 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 				return nil
 			},
 		},
+		// postsubmits
+		{
+			name: "Basic happy path (postsubmits)",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Postsubmit defaulting is executed",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
+				}
+				if p.Postsubmits[0].Context != "hans" {
+					return fmt.Errorf(`expected defaulting to set context to "hans", was %q`, p.Postsubmits[0].Context)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Postsubmit validation is executed",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}},{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(_ *ProwYAML, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+				expectedErrMsg := "duplicated postsubmit job: hans"
+				if err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				}
+				return nil
+			},
+		},
+		{
+			name: "Postsubmit validation includes static postsubmits",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			config: &Config{JobConfig: JobConfig{
+				PostsubmitsStatic: map[string][]Postsubmit{
+					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
+				},
+			}},
+			validate: func(_ *ProwYAML, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+				expectedErrMsg := "duplicated postsubmit job: hans"
+				if err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				}
+				return nil
+			},
+		},
+		{
+			name: "Branchconfig on postsubmit is not allowed",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]}]`),
+			},
+			validate: func(_ *ProwYAML, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+				expectedErrMsg := `postsubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml"`
+				if err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				}
+				return nil
+			},
+		},
+		{
+			name: "Multiple errors are aggregated (postsubmits)",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "spec": {"containers": [{}]}, "branches":["master"]},{"name": "gretel", "spec": {"containers": [{}]}, "branches":["master"]}]`),
+			},
+			validate: func(_ *ProwYAML, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+				expectedErrMsg := `[postsubmit job "hans" contains branchconfig. This is not allowed for jobs in ".prow.yaml", postsubmit job "gretel" contains branchconfig. This is not allowed for jobs in ".prow.yaml"]`
+				if err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				}
+				return nil
+			},
+		},
+		// prowyaml
+		{
+			name: "Not allowed cluster is rejected",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "cluster": "privileged", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(_ *ProwYAML, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				}
+				expectedErrMsg := "cluster \"privileged\" is not allowed for repository \"org/repo\""
+				if err.Error() != expectedErrMsg {
+					return fmt.Errorf("expected error message to be %q, was %q", expectedErrMsg, err.Error())
+				}
+				return nil
+			},
+		},
+		{
+			name: "No prow.yaml, no error, no nullpointer",
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if p == nil {
+					return errors.New("prowYAML is nil")
+				}
+				if n := len(p.Presubmits); n != 0 {
+					return fmt.Errorf("expected to get zero presubmits, got %d", n)
+				}
+				return nil
+			},
+		},
+		{
+			name: "Yaml unmarshaling is not strict",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`postsubmits: [{"name": "hans", "undef_attr": true, "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %v", err)
+				}
+				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
+				}
+				return nil
+			},
+		},
+		// git client
 		{
 			name:              "No panic on nil gitClient",
 			dontPassGitClient: true,
@@ -265,7 +387,6 @@ func TestDefaultProwYAMLGetter(t *testing.T) {
 			if err := tc.validate(p, err); err != nil {
 				t.Fatal(err)
 			}
-
 		})
 	}
 }

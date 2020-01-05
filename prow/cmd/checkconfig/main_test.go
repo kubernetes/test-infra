@@ -1219,9 +1219,14 @@ func TestValidateInRepoConfig(t *testing.T) {
 			prowYAMLData: []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
 		},
 		{
-			name:         "Invalid prowYAML, err",
+			name:         "Invalid prowYAML presubmit, err",
 			prowYAMLData: []byte(`presubmits: [{"name": "hans"}]`),
 			expectedErr:  "failed to validate .prow.yaml: invalid presubmit job hans: kubernetes jobs require a spec",
+		},
+		{
+			name:         "Invalid prowYAML postsubmit, err",
+			prowYAMLData: []byte(`postsubmits: [{"name": "hans"}]`),
+			expectedErr:  "failed to validate .prow.yaml: invalid postsubmit job hans: kubernetes jobs require a spec",
 		},
 		{
 			name: "Absent prowYAML, no err",

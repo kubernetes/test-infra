@@ -29,7 +29,7 @@ import (
 	"time"
 
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
@@ -1824,7 +1824,7 @@ in_repo_config:
 						}
 					}
 
-					for _, j := range cfg.AllPostsubmits(nil) {
+					for _, j := range cfg.AllStaticPostsubmits(nil) {
 						if envs, ok := tc.expectEnv[j.Name]; ok {
 							if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
 								t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
@@ -3654,7 +3654,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 	}
 }
 
-func TestGetPresubmitsDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T) {
+func TestGetProwYAMLDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T) {
 	t.Parallel()
 
 	var baseSHAGetterCalled, headSHAGetterCalled bool
@@ -3668,8 +3668,8 @@ func TestGetPresubmitsDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing
 	}
 
 	c := &Config{}
-	if _, err := c.GetPresubmits(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
-		t.Fatalf("error calling GetPresubmits: %v", err)
+	if _, err := c.getProwYAML(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+		t.Fatalf("error calling GetProwYAML: %v", err)
 	}
 	if baseSHAGetterCalled {
 		t.Error("baseSHAGetter got called")
@@ -3694,9 +3694,14 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 					Reporter: Reporter{Context: "my-static-presubmit"},
 				}},
 			},
-			ProwYAMLGetter: fakeProwYAMLGetterFactory([]Presubmit{{
-				JobBase: JobBase{Name: "hans"},
-			}}),
+			ProwYAMLGetter: fakeProwYAMLGetterFactory(
+				[]Presubmit{
+					{
+						JobBase: JobBase{Name: "hans"},
+					},
+				},
+				nil,
+			),
 		},
 	}
 
@@ -3709,6 +3714,44 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 		presubmits[0].Name != "my-static-presubmit" ||
 		presubmits[1].Name != "hans" {
 		t.Errorf(`expected exactly two presubmits named "my-static-presubmit" and "hans", got %d (%v)`, n, presubmits)
+	}
+}
+
+func TestGetPostsubmitsReturnsStaticAndInrepoconfigPostsubmits(t *testing.T) {
+	t.Parallel()
+
+	org, repo := "org", "repo"
+	c := &Config{
+		ProwConfig: ProwConfig{
+			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+		},
+		JobConfig: JobConfig{
+			PostsubmitsStatic: map[string][]Postsubmit{
+				org + "/" + repo: {{
+					JobBase:  JobBase{Name: "my-static-postsubmits"},
+					Reporter: Reporter{Context: "my-static-postsubmits"},
+				}},
+			},
+			ProwYAMLGetter: fakeProwYAMLGetterFactory(
+				nil,
+				[]Postsubmit{
+					{
+						JobBase: JobBase{Name: "hans"},
+					},
+				},
+			),
+		},
+	}
+
+	postsubmits, err := c.GetPostsubmits(nil, org+"/"+repo, func() (string, error) { return "", nil })
+	if err != nil {
+		t.Fatalf("Error calling GetPostsubmits: %v", err)
+	}
+
+	if n := len(postsubmits); n != 2 ||
+		postsubmits[0].Name != "my-static-postsubmits" ||
+		postsubmits[1].Name != "hans" {
+		t.Errorf(`expected exactly two postsubmits named "my-static-postsubmits" and "hans", got %d (%v)`, n, postsubmits)
 	}
 }
 

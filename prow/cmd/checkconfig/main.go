@@ -33,7 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/errorutil"
@@ -520,7 +520,7 @@ func validateJobRequirements(c config.JobConfig) error {
 			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
 		}
 	}
-	for repo, jobs := range c.Postsubmits {
+	for repo, jobs := range c.PostsubmitsStatic {
 		for _, job := range jobs {
 			validationErrs = append(validationErrs, validatePostsubmitJob(repo, job))
 		}
@@ -852,7 +852,7 @@ func validateDecoratedJobs(cfg *config.Config) error {
 		}
 	}
 
-	for _, postsubmit := range cfg.AllPostsubmits([]string{}) {
+	for _, postsubmit := range cfg.AllStaticPostsubmits([]string{}) {
 		if postsubmit.Agent == string(v1.KubernetesAgent) && !postsubmit.Decorate {
 			nonDecoratedJobs = append(nonDecoratedJobs, postsubmit.Name)
 		}
@@ -979,7 +979,7 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	for orgRepo := range cfg.JobConfig.PresubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
-	for orgRepo := range cfg.JobConfig.Postsubmits {
+	for orgRepo := range cfg.JobConfig.PostsubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
 

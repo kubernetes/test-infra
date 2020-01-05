@@ -77,7 +77,7 @@ func (o *options) genJobSpec(conf *config.Config, name string) (config.JobBase, 
 			}
 		}
 	}
-	for fullRepoName, ps := range conf.Postsubmits {
+	for fullRepoName, ps := range conf.PostsubmitsStatic {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)

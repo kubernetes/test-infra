@@ -56,11 +56,21 @@ func createRefs(pe github.PushEvent) prowapi.Refs {
 }
 
 func handlePE(c Client, pe github.PushEvent) error {
-	if pe.Deleted {
+	if pe.Deleted || pe.After == "0000000000000000000000000000000000000000" {
 		// we should not trigger jobs for a branch deletion
 		return nil
 	}
-	for _, j := range c.Config.Postsubmits[pe.Repo.FullName] {
+
+	org := pe.Repo.Owner.Login
+	repo := pe.Repo.Name
+
+	shaGetter := func() (string, error) {
+		return pe.After, nil
+	}
+
+	postsubmits := getPostsubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, shaGetter)
+
+	for _, j := range postsubmits {
 		if shouldRun, err := j.ShouldRun(pe.Branch(), listPushEventChanges(pe)); err != nil {
 			return err
 		} else if !shouldRun {
