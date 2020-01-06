@@ -19,12 +19,11 @@ periodics:
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_RUN_OBSOLETE_VERSION=true
-      - --extract=release/latest-1.9
+      - --extract=release/stable-1.9
       - --ginkgo-parallel
-      - --kops-args=--kubernetes-version=1.9.11
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
       imagePullPolicy: Always
@@ -51,12 +50,11 @@ periodics:
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
       - --env=KOPS_RUN_OBSOLETE_VERSION=true
-      - --extract=release/latest-1.10
+      - --extract=release/stable-1.10
       - --ginkgo-parallel
-      - --kops-args=--kubernetes-version=1.10.13
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
       imagePullPolicy: Always
@@ -82,12 +80,11 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.11.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=release/latest-1.11
+      - --extract=release/stable-1.11
       - --ginkgo-parallel
-      - --kops-args=--kubernetes-version=1.11.10
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.11
       imagePullPolicy: Always
@@ -113,12 +110,11 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.12.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=release/latest-1.12
+      - --extract=release/stable-1.12
       - --ginkgo-parallel
-      - --kops-args=--kubernetes-version=1.12.10
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource|Lease|hostAliases|NodePort
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.12
       imagePullPolicy: Always
@@ -144,12 +140,11 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.13.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=release/latest-1.13
+      - --extract=release/stable-1.13
       - --ginkgo-parallel
-      - --kops-args=--kubernetes-version=1.13.12
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource|Lease
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.13
       imagePullPolicy: Always
@@ -175,12 +170,11 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.14.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=release/latest-1.14
+      - --extract=release/stable-1.14
       - --ginkgo-parallel
-      - --kops-args=--kubernetes-version=1.14.10
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\Aggregator|\[sig-api-machinery\]\CustomResource
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
       imagePullPolicy: Always
@@ -206,12 +200,11 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.15.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=release/latest-1.15
+      - --extract=release/stable-1.15
       - --ginkgo-parallel
-      - --kops-args=--kubernetes-version=1.15.7
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.15
       imagePullPolicy: Always
