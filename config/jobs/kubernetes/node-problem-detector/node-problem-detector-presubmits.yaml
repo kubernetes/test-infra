@@ -241,7 +241,7 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
-  - name: ci-npd-e2e-test
+  - name: pull-npd-e2e-test
     branches:
     - master
     always_run: true
