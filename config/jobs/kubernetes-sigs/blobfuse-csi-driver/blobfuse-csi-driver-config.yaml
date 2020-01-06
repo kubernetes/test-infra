@@ -3,6 +3,7 @@ presubmits:
   - name: pull-blobfuse-csi-driver-verify
     decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/blobfuse-csi-driver
     branches:
     - master
     labels:
@@ -23,6 +24,7 @@ presubmits:
   - name: pull-blobfuse-csi-driver-unit
     decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/blobfuse-csi-driver
     branches:
     - master
     labels:
@@ -43,6 +45,7 @@ presubmits:
   - name: pull-blobfuse-csi-driver-sanity
     decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/blobfuse-csi-driver
     branches:
     - master
     labels:
@@ -66,6 +69,7 @@ presubmits:
   - name: pull-blobfuse-csi-driver-integration
     decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/blobfuse-csi-driver
     branches:
     - master
     labels:
@@ -89,6 +93,7 @@ presubmits:
   - name: pull-blobfuse-csi-driver-e2e
     decorate: true
     always_run: true
+    path_alias: sigs.k8s.io/blobfuse-csi-driver
     branches:
     - master
     labels:
