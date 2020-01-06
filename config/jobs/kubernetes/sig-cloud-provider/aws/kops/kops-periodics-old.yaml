@@ -23,7 +23,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
       imagePullPolicy: Always
@@ -54,7 +54,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
       imagePullPolicy: Always
@@ -84,7 +84,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.11
       imagePullPolicy: Always
@@ -114,7 +114,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease|hostAliases|NodePort
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.12
       imagePullPolicy: Always
@@ -144,7 +144,7 @@ periodics:
       - --ginkgo-parallel
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|AdmissionWebhook|Aggregator|CustomResource|SchedulerPredicates|Lease
       - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.13
       imagePullPolicy: Always
