@@ -354,6 +354,7 @@ periodics:
     repo: gce-k8s-windows-testing
   interval: 2h
   labels:
+    preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
