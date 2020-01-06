@@ -45,7 +45,7 @@ import (
 )
 
 // kopsAWSMasterSize is the default ec2 instance type for kops on aws
-const kopsAWSMasterSize = "c4.large"
+const kopsAWSMasterSize = "c5.large"
 
 var (
 
@@ -381,7 +381,7 @@ func (k kops) Up() error {
 
 	var featureFlags []string
 
-	// We are defaulting the master size to c4.large on AWS because m3.larges are getting less previlent.
+	// We are defaulting the master size to c5.large on AWS because it's cheapest non-throttled instance type.
 	// When we are using GCE, then we need to handle the flag differently.
 	// If we are not using gce then add the masters size flag, or if we are using gce, and the
 	// master size is not set to the aws default, then add the master size flag.
