@@ -8,7 +8,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 90m
   spec:
     containers:
     - command:
@@ -18,14 +18,15 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.9.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
+      - --env=KOPS_RUN_OBSOLETE_VERSION=true
+      - --extract=release/latest-1.9
       - --ginkgo-parallel
       - --kops-args=--kubernetes-version=1.9.11
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.9
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
@@ -39,7 +40,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 90m
   spec:
     containers:
     - command:
@@ -49,13 +50,14 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.10.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
+      - --env=KOPS_RUN_OBSOLETE_VERSION=true
+      - --extract=release/latest-1.10
       - --ginkgo-parallel
       - --kops-args=--kubernetes-version=1.10.13
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.10
       imagePullPolicy: Always
   annotations:
@@ -70,7 +72,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 90m
   spec:
     containers:
     - command:
@@ -80,13 +82,13 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.11.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
+      - --extract=release/latest-1.11
       - --ginkgo-parallel
       - --kops-args=--kubernetes-version=1.11.10
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.11
       imagePullPolicy: Always
   annotations:
@@ -101,7 +103,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 90m
   spec:
     containers:
     - command:
@@ -111,13 +113,13 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.12.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
+      - --extract=release/latest-1.12
       - --ginkgo-parallel
       - --kops-args=--kubernetes-version=1.12.10
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource|Lease|hostAliases|NodePort
+      - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.12
       imagePullPolicy: Always
   annotations:
@@ -132,7 +134,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 90m
   spec:
     containers:
     - command:
@@ -142,13 +144,13 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.13.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
+      - --extract=release/latest-1.13
       - --ginkgo-parallel
       - --kops-args=--kubernetes-version=1.13.12
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource|Lease
+      - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.13
       imagePullPolicy: Always
   annotations:
@@ -163,7 +165,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 90m
   spec:
     containers:
     - command:
@@ -173,13 +175,13 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.14.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
+      - --extract=release/latest-1.14
       - --ginkgo-parallel
       - --kops-args=--kubernetes-version=1.14.10
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\Aggregator|\[sig-api-machinery\]\CustomResource
+      - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.14
       imagePullPolicy: Always
   annotations:
@@ -194,7 +196,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 140m
+    timeout: 90m
   spec:
     containers:
     - command:
@@ -204,13 +206,13 @@ periodics:
       - --cluster=e2e-kops-aws-k8s-1.15.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
+      - --extract=release/latest-1.15
       - --ginkgo-parallel
       - --kops-args=--kubernetes-version=1.15.7
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[sig-api-machinery\]\sAdmissionWebhook|\[sig-api-machinery\]\sAggregator|\[sig-api-machinery\]\sCustomResource
+      - --timeout=60m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.15
       imagePullPolicy: Always
   annotations:
