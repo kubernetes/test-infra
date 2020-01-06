@@ -22,36 +22,26 @@ presets:
       secretKeyRef:
         name: clusterapi-provider-vsphere-ci-prow
         key: vsphere-password
-  - name: TARGET_VM_SSH
-    valueFrom:
-      secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
-        key: target-vm-ssh
-  - name: TARGET_VM_SSH_PUB
-    valueFrom:
-      secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
-        key: target-vm-ssh-pub
   volumeMounts:
-  - name: jumphost-key
-    mountPath: /root/ssh/.jumphost
-  - name: bootstrapper-key
-    mountPath: /root/ssh/.bootstrapper
+  - name: vpn-conf
+    mountPath: /root/.openvpn
   volumes:
-  - name: jumphost-key
+  - name: vpn-conf
     secret:
-      secretName: clusterapi-provider-vsphere-ci-prow
+      secretName: cluster-api-provider-vsphere-vpn-config
       defaultMode: 256
       items:
-      - key: jumphost-key
-        path: jumphost-key
-  - name: bootstrapper-key
-    secret:
-      secretName: clusterapi-provider-vsphere-ci-prow
-      defaultMode: 256
-      items:
-      - key: bootstrapper-key
-        path: bootstrapper-key
+      - key: prow.ovpn
+        path: prow.ovpn
+      - key: client.crt
+        path: client.crt
+      - key: client.key
+        path: client.key
+      - key: ca.crt
+        path: ca.crt
+      - key: tls.key
+        path: tls.key
+
 - labels:
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
   env:
@@ -218,10 +208,12 @@ presubmits:
         command:
         - runner.sh
         args:
-        - ./scripts/e2e/e2e.sh
+        - ./hack/e2e.sh
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e
