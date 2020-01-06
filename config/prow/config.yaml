@@ -468,7 +468,8 @@ tide:
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
-  pr_status_base_url: https://prow.k8s.io/pr
+  pr_status_base_urls:
+    '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
   squash_label: tide/merge-method-squash
   rebase_label: tide/merge-method-rebase
