@@ -235,15 +235,15 @@ periodics:
       - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
       - --deployment=kops
       - --env=KUBE_SSH_USER=ec2-user
-      - --extract=ci/latest
+      - --extract=release/stable-1.17
       - --ginkgo-parallel
       - --kops-args=--image=redhat.com/RHEL-8.1.0_HVM-20191029-x86_64-0-Hourly2-GP2 --container-runtime=containerd --networking=calico
       - --kops-ssh-user=ec2-user
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
       - --provider=aws
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.17
       imagePullPolicy: Always
 
   annotations:
