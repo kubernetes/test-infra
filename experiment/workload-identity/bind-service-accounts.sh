@@ -27,7 +27,7 @@ current=$(current-annotation || echo MISSING)
 
 if [[ "$current" != "$gcp_service_account" ]]; then
   echo "Service account has wrong/missing annotation, please declare the following to $namespace/$name in $context:" >&2
-  echo '{"metadata": {"annotations": "iam.gke.io/gcp-service-account": "$gcp_service_account"}}'
+  echo '"{"metadata": {"annotations": "iam.gke.io/gcp-service-account": '"\"$gcp_service_account\"}}"
   exit 1
 fi
 
