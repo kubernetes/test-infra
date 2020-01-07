@@ -203,9 +203,6 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191231-77c7890-master
-        resources:
-          requests:
-            cpu: "1000m"
         command:
         - runner.sh
         args:
@@ -215,6 +212,10 @@ presubmits:
           privileged: true
           capabilities:
             add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e
