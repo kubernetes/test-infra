@@ -23,7 +23,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=POD_THROUGHPUT=2
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -35,6 +34,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/node-throughput/docker_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
@@ -62,7 +62,6 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=POD_THROUGHPUT=6
       - --env=KUBE_CONTAINER_RUNTIME=containerd
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --extract=ci/latest
@@ -76,6 +75,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-args=--testconfig=testing/node-throughput/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/node-throughput/containerd_override.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=40m
       - --use-logexporter
