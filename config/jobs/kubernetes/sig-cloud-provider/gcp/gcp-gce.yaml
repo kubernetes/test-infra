@@ -169,7 +169,7 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20191231-77c7890-master
   annotations:
-    testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
+    testgrid-dashboards: sig-release-master-blocking, google-gce, google-gci
     testgrid-tab-name: gce-cos-master-default
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-email: kubernetes-release-team@googlegroups.com
