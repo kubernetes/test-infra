@@ -1,36 +1,9 @@
-presets:
-- labels:
-    preset-cloudprovider-azure-creds: "true"
-  env:
-  - name: AZURE_CREDENTIALS
-    value: /etc/azure-cred/credentials
-  - name: AZURE_SSH_PUBLIC_KEY_FILE
-    value: /etc/azure-ssh/azure-ssh-pub
-  - name: REGISTRY
-    value: k8sprow.azurecr.io
-  - name: KUBE_VERBOSE
-    value: 0
-  volumes:
-  - name: azure-cred
-    secret:
-      secretName: azure-cred
-  - name: azure-ssh
-    secret:
-      secretName: azure-ssh
-  volumeMounts:
-  - name: azure-cred
-    mountPath: /etc/azure-cred
-    readOnly: true
-  - name: azure-ssh
-    mountPath: /etc/azure-ssh
-    readOnly: true
-
 periodics:
 - interval: 6h
   name: ci-dualstack-azure-e2e-1-16
   labels:
     preset-service-account: "true"
-    preset-cloudprovider-azure-creds: "true"
+    preset-azure-cred: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
@@ -66,7 +39,7 @@ periodics:
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
-         privileged: true
+        privileged: true
   annotations:
     testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-on-call
     testgrid-tab-name: dualstack-azure-e2e-1-16
@@ -76,7 +49,7 @@ periodics:
   name: ci-dualstack-azure-e2e-1-17
   labels:
     preset-service-account: "true"
-    preset-cloudprovider-azure-creds: "true"
+    preset-azure-cred: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
@@ -113,7 +86,7 @@ periodics:
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
-         privileged: true
+        privileged: true
   annotations:
     testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-on-call
     testgrid-tab-name: dualstack-azure-e2e-1-17
@@ -123,7 +96,7 @@ periodics:
   name: ci-dualstack-azure-e2e-master
   labels:
     preset-service-account: "true"
-    preset-cloudprovider-azure-creds: "true"
+    preset-azure-cred: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
@@ -160,7 +133,7 @@ periodics:
       - --timeout=450m
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
       securityContext:
-         privileged: true
+        privileged: true
   annotations:
     testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-on-call
     testgrid-tab-name: dualstack-azure-e2e-master

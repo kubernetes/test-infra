@@ -1,37 +1,11 @@
 presets:
 - labels:
-    preset-azure-aksengine: "true"
+    preset-azure-windows: "true"
   env:
-  - name: AZURE_CREDENTIALS
-    value: /etc/azure-cred/credentials
-  - name: AZURE_SSH_PUBLIC_KEY_FILE
-    value: /etc/azure-ssh/azure-ssh-pub
-  - name: CLOUD_CONFIG
-    value: random
-  - name: AZ_STORAGE_CONTAINER_NAME
-    value: mystoragecontainer
-  - name: REGISTRY
-    value: k8se2eimages.azurecr.io
   - name: WIN_BUILD
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/build/build-windows-k8s.sh
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
-  - name: KUBE_VERBOSE
-    value: 0
-  volumes:
-  - name: azure-cred
-    secret:
-      secretName: azure-cred
-  - name: azure-ssh
-    secret:
-      secretName: azure-ssh
-  volumeMounts:
-  - name: azure-cred
-    mountPath: /etc/azure-cred
-    readOnly: true
-  - name: azure-ssh
-    mountPath: /etc/azure-ssh
-    readOnly: true
 
 presubmits:
   kubernetes/kubernetes:
@@ -44,7 +18,8 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-azure-aksengine: "true"
+      preset-azure-cred: "true"
+      preset-azure-windows: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
@@ -92,7 +67,8 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows
   labels:
     preset-service-account: "true"
-    preset-azure-aksengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
@@ -135,7 +111,8 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-14-windows
   labels:
     preset-service-account: "true"
-    preset-azure-aksengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
@@ -179,7 +156,8 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-15-windows
   labels:
     preset-service-account: "true"
-    preset-azure-aksengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
@@ -223,7 +201,8 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-16-windows
   labels:
     preset-service-account: "true"
-    preset-azure-aksengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
@@ -267,7 +246,8 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-17-windows
   labels:
     preset-service-account: "true"
-    preset-azure-aksengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
@@ -310,7 +290,8 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows
   labels:
     preset-service-account: "true"
-    preset-azure-aksengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
@@ -352,7 +333,8 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1903
   labels:
     preset-service-account: "true"
-    preset-azure-aksengine: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   spec:
