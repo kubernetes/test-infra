@@ -147,3 +147,69 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-node-kubelet-serial-cpu-manager
+    always_run: false
+    optional: true
+    skip_report: true
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: wg-resource-management
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-master
+          args:
+            - --repo=k8s.io/kubernetes=master
+            - --timeout=240
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-pr-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
+  - name: pull-kubernetes-node-kubelet-serial-topology-manager
+    always_run: false
+    optional: true
+    skip_report: true
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: wg-resource-management
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20191212-28f7cbc-master
+          args:
+            - --repo=k8s.io/kubernetes=master
+            - --timeout=240
+            - --root=/go/src
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-project=k8s-jkns-pr-node-e2e
+            - --gcp-zone=us-west1-b
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --skip="" --focus="\[Feature:TopologyManager\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
