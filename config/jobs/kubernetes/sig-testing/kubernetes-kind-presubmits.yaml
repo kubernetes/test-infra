@@ -371,3 +371,58 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
+
+  - name: pull-kubernetes-e2e-kind-ipv6-canary
+    optional: true
+    always_run: false # manual for testing new configurations
+    decorate: true
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decoration_config:
+      timeout: 60m
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/krte:latest-master
+        imagePullPolicy: Always # pull latest image for canary testing
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - gsutil cp -P gs://bentheelder-kind-ci-builds/latest/kind-linux-amd64 "${PATH%%:*}/kind" && gsutil cat gs://bentheelder-kind-ci-builds/latest/e2e-k8s.sh | sh
+        env:
+        - name: FOCUS
+          value: "."
+        # TODO(bentheelder): reduce the skip list further
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Dynamic.PV|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|ReplicationController.light.Should.scale.from.1.pod.to.2.pods|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
+        - name: PARALLEL
+          value: "true"
+        - name: BUILD_TYPE
+          value: bazel
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # TODO(BenTheElder): adjust these everywhere
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
