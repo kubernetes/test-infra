@@ -332,14 +332,6 @@ presubmits:
       timeout: 60m
     path_alias: k8s.io/kubernetes
     spec:
-      # run on the ubuntu node pool, which has ipv6 modules
-      tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "ubuntu"
-        effect: "NoSchedule"
-      nodeSelector:
-        dedicated: "ubuntu"
       containers:
       - image: gcr.io/k8s-testimages/krte:v20191106-0490589-master
         command:
