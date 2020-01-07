@@ -372,6 +372,8 @@ periodics:
       env:
       - name: KUBE_TIMEOUT
         value: --timeout=1h50m
+      - name: TEST_PREFIX
+        value: BenchmarkScheduling
 
 - name: ci-benchmark-kube-dns-master
   interval: 2h
