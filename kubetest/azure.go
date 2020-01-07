@@ -46,32 +46,6 @@ import (
 )
 
 var (
-	// azure specific flags
-	// TODO: Remove acs related flags after baking period
-	acsResourceName        = flag.String("acsengine-resource-name", "", "Azure Resource Name")
-	acsResourceGroupName   = flag.String("acsengine-resourcegroup-name", "", "Azure Resource Group Name")
-	acsLocation            = flag.String("acsengine-location", "", "Azure ACS location")
-	acsMasterVMSize        = flag.String("acsengine-mastervmsize", "", "Azure Master VM size")
-	acsAgentVMSize         = flag.String("acsengine-agentvmsize", "", "Azure Agent VM size")
-	acsAdminUsername       = flag.String("acsengine-admin-username", "", "Admin username")
-	acsAdminPassword       = flag.String("acsengine-admin-password", "", "Admin password")
-	acsAgentPoolCount      = flag.Int("acsengine-agentpoolcount", 0, "Azure Agent Pool Count")
-	acsTemplateURL         = flag.String("acsengine-template-url", "", "Azure Template URL.")
-	acsDNSPrefix           = flag.String("acsengine-dnsprefix", "", "Azure K8s Master DNS Prefix")
-	acsEngineURL           = flag.String("acsengine-download-url", "", "Download URL for ACS engine")
-	acsEngineMD5           = flag.String("acsengine-md5-sum", "", "Checksum for acs engine download")
-	acsSSHPublicKeyPath    = flag.String("acsengine-public-key", "", "Path to SSH Public Key")
-	acsWinBinaries         = flag.Bool("acsengine-win-binaries", false, "Set to True if you want kubetest to build a custom zip with windows binaries for aks-engine")
-	acsHyperKube           = flag.Bool("acsengine-hyperkube", false, "Set to True if you want kubetest to build a custom hyperkube for aks-engine")
-	acsCcm                 = flag.Bool("acsengine-ccm", false, "Set to True if you want kubetest to build a custom cloud controller manager for aks-engine")
-	acsCredentialsFile     = flag.String("acsengine-creds", "", "Path to credential file for Azure")
-	acsOrchestratorRelease = flag.String("acsengine-orchestratorRelease", "", "Orchestrator Profile for acs-engine")
-	acsWinZipBuildScript   = flag.String("acsengine-winZipBuildScript", "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh", "Build script to create custom zip containing win binaries for acs-engine")
-	acsNetworkPlugin       = flag.String("acsengine-networkPlugin", "azure", "Network pluging to use with acs-engine")
-	acsAzureEnv            = flag.String("acsengine-azure-env", "AzurePublicCloud", "The target Azure cloud")
-	acsIdentitySystem      = flag.String("acsengine-identity-system", "azure_ad", "identity system (default:`azure_ad`, `adfs`)")
-	acsCustomCloudURL      = flag.String("acsengine-custom-cloud-url", "", "management portal URL to use in custom Azure cloud (i.e Azure Stack etc)")
-	// aks flags
 	aksResourceName        = flag.String("aksengine-resource-name", "", "Azure Resource Name")
 	aksResourceGroupName   = flag.String("aksengine-resourcegroup-name", "", "Azure Resource Group Name")
 	aksLocation            = flag.String("aksengine-location", "", "Azure AKS location")
@@ -310,77 +284,6 @@ func randomAKSEngineLocation() string {
 }
 
 func checkParams() error {
-	//TODO: remove acs related lines after baking period
-	if *acsLocation != "" {
-		*aksLocation = *acsLocation
-	}
-	if *acsResourceName != "" {
-		*aksResourceName = *acsResourceName
-	}
-	if *acsResourceGroupName != "" {
-		*aksResourceGroupName = *acsResourceGroupName
-	}
-	if *acsMasterVMSize != "" {
-		*aksMasterVMSize = *acsMasterVMSize
-	}
-	if *acsAgentVMSize != "" {
-		*aksAgentVMSize = *acsAgentVMSize
-	}
-	if *acsAdminUsername != "" {
-		*aksAdminUsername = *acsAdminUsername
-	}
-	if *acsAdminPassword != "" {
-		*aksAdminPassword = *acsAdminPassword
-	}
-	if *acsAgentPoolCount != 0 {
-		*aksAgentPoolCount = *acsAgentPoolCount
-	}
-	if *acsTemplateURL != "" {
-		*aksTemplateURL = *acsTemplateURL
-	}
-	if *acsDNSPrefix != "" {
-		*aksDNSPrefix = *acsDNSPrefix
-	}
-	if *acsEngineURL != "" {
-		*aksEngineURL = *acsEngineURL
-	}
-	if *acsEngineMD5 != "" {
-		*aksEngineMD5 = *acsEngineMD5
-	}
-	if *acsSSHPublicKeyPath != "" {
-		*aksSSHPublicKeyPath = *acsSSHPublicKeyPath
-	}
-	if *acsWinBinaries {
-		*aksWinBinaries = true
-	}
-	if *acsHyperKube {
-		*aksHyperKube = true
-	}
-	if *acsCcm {
-		*aksCcm = true
-	}
-	if *acsCredentialsFile != "" {
-		*aksCredentialsFile = *acsCredentialsFile
-	}
-	if *acsOrchestratorRelease != "" {
-		*aksOrchestratorRelease = *acsOrchestratorRelease
-	}
-	if *acsWinZipBuildScript != "https://raw.githubusercontent.com/Azure/acs-engine/master/scripts/build-windows-k8s.sh" {
-		*aksWinZipBuildScript = *acsWinZipBuildScript
-	}
-	if *acsNetworkPlugin != "azure" {
-		*aksNetworkPlugin = *acsNetworkPlugin
-	}
-	if *acsAzureEnv != "AzurePublicCloud" {
-		*aksAzureEnv = *acsAzureEnv
-	}
-	if *acsIdentitySystem != "azure_ad" {
-		*aksIdentitySystem = *acsIdentitySystem
-	}
-	if *acsCustomCloudURL != "" {
-		*aksCustomCloudURL = *acsCustomCloudURL
-	}
-
 	// Validate flags
 	if strings.EqualFold(*aksAzureEnv, AzureStackCloud) {
 		if err := validateAzureStackCloudProfile(); err != nil {
