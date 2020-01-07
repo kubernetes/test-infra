@@ -742,7 +742,7 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-kind-ipv6
     base_options: width=10
     alert_options:
-      alert_mail_to_addresses: antonio.ojea.garcia@gmail.com
+      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-e2e-aks-engine-azure
     test_group_name: pull-kubernetes-e2e-aks-engine-azure
     base_options: width=10
