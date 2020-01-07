@@ -199,7 +199,7 @@ presubmits:
     run_if_changed: '^((api|cmd|config|controllers|pkg|(scripts/e2e)|vendor)/)|Dockerfile'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    max_concurrency: 1
+    max_concurrency: 3
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191231-77c7890-master
