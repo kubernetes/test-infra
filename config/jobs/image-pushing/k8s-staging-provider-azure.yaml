@@ -20,7 +20,7 @@ postsubmits:
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20191218-a9abec7
+          - image: gcr.io/k8s-testimages/image-builder:v20200107-6bdb17e
             command:
               - /run.sh
             args:
