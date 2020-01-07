@@ -511,6 +511,11 @@ dashboards:
 
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
+  - name: pull-kubernetes-e2e-kind
+    test_group_name: pull-kubernetes-e2e-kind
+    base_options: width=10
+    alert_options:
+      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-bazel-build
     test_group_name: pull-kubernetes-bazel-build
     base_options: width=10
@@ -553,16 +558,12 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-rbe
     test_group_name: pull-kubernetes-e2e-gce-rbe
     base_options: width=10
-  - name: pull-kubernetes-e2e-kind
-    test_group_name: pull-kubernetes-e2e-kind
-    base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-e2e-kind-canary
     test_group_name: pull-kubernetes-e2e-kind-canary
     base_options: width=10
-    alert_options:
-      alert_mail_to_addresses: bentheelder+alerts@google.com
+  - name: pull-kubernetes-e2e-kind-ipv6-canary
+    test_group_name: pull-kubernetes-e2e-kind-ipv6-canary
+    base_options: width=10
   - name: pull-kubernetes-e2e-kind-ipv6
     test_group_name: pull-kubernetes-e2e-kind-ipv6
     base_options: width=10
