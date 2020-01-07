@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -499,6 +500,10 @@ type Sinker struct {
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
 	// Defaults to one day.
 	MaxPodAge *metav1.Duration `json:"max_pod_age,omitempty"`
+	// TerminatedPodTTL is how long a Pod can live after termination before it is
+	// garbage collected.
+	// Defaults to infinite.
+	TerminatedPodTTL *metav1.Duration `json:"terminated_pod_ttl,omitempty"`
 }
 
 // LensConfig names a specific lens, and optionally provides some configuration for it.
@@ -1437,6 +1442,11 @@ func parseProwConfig(c *Config) error {
 
 	if c.Sinker.MaxPodAge == nil {
 		c.Sinker.MaxPodAge = &metav1.Duration{Duration: 24 * time.Hour}
+	}
+
+	if c.Sinker.TerminatedPodTTL == nil {
+		// "Forever"
+		c.Sinker.TerminatedPodTTL = &metav1.Duration{Duration: math.MaxInt64}
 	}
 
 	if c.Tide.SyncPeriod == nil {
