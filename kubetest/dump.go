@@ -50,6 +50,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 	d.services = []string{
 		"node-problem-detector",
 		"kubelet",
+		"containerd",
 		"docker",
 		"kops-configuration",
 		"protokube",
