@@ -80,7 +80,7 @@ def resize_nodepool(pool, new_size, project, zone, cluster):
     cmd = [
         'gcloud', 'container', 'clusters', 'resize', cluster,
         '--zone', zone, '--project', project, '--node-pool', pool,
-        '--size', str(new_size), '--quiet',
+        '--num-nodes', str(new_size), '--quiet',
     ]
     print(cmd)
     subprocess.call(cmd)
