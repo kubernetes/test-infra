@@ -374,11 +374,15 @@ func (c *controller) clean() {
 		maxPodAge := c.config().Sinker.MaxPodAge.Duration
 		terminatedPodTTL := c.config().Sinker.TerminatedPodTTL.Duration
 		for _, pod := range pods.Items {
-			reason := reasonPodAged
-			clean := !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge
-			if !clean {
-				terminationTime := podTerminationTime(&pod)
-				clean = !terminationTime.IsZero() && time.Since(terminationTime) > terminatedPodTTL
+			reason := ""
+			clean := false
+			terminationTime := podTerminationTime(&pod)
+			switch {
+			case !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge:
+				clean = true
+				reason = reasonPodAged
+			case !terminationTime.IsZero() && time.Since(terminationTime) > terminatedPodTTL:
+				clean = true
 				reason = reasonPodTTLed
 			}
 
