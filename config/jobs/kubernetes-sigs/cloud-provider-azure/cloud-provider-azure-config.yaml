@@ -368,7 +368,7 @@ periodics:
       - --deployment=aksengine
       - --build=quick
       - --provider=skeleton
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=15
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$AZURE_CREDENTIALS
@@ -619,7 +619,7 @@ periodics:
       - --deployment=aksengine
       - --build=quick
       - --provider=skeleton
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=15
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$AZURE_CREDENTIALS
@@ -679,7 +679,7 @@ periodics:
       - --deployment=aksengine
       - --build=quick
       - --provider=skeleton
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=15
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$AZURE_CREDENTIALS
@@ -698,7 +698,7 @@ periodics:
       # 2. PSP related cases, reason: https://github.com/Azure/aks-engine/blob/master/parts/k8s/addons/kubernetesmasteraddons-pod-security-policy.yaml#L41
       # 3. cases in which PV will be created, for these shall be failed since AzureDisk will be disabled when ccm is enabled
       # 4. cases requiring node's public IP
-      - --test_args=--num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|Mount\spropagation\sshould\spropagate\smounts\sto\sthe\shost|PodSecurityPolicy|PVC\sProtection\sVerify|should\sprovide\sbasic\sidentity|should\sadopt\smatching\sorphans\sand\srelease|should\snot\sdeadlock\swhen\sa\spod's\spredecessor\sfails|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications\swith\sPVCs|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications|Services\sshould\sbe\sable\sto\screate\sa\sfunctioning\sNodePort\sservice$|volumeMode\sshould\snot\smount\s/\smap\sunused\svolumes\sin\sa\spod
+      - --test_args=--num-nodes=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete\sGrace\sPeriod|Should\srecreate\sevicted\sstatefulset|runs\sReplicaSets\sto\sverify\spreemption\srunning\spath|client\-go\sshould\snegotiate|should\scontain\scustom\scolumns\sfor\seach\sresource|Network\sshould\sset\sTCP\sCLOSE_WAIT\stimeout|Mount\spropagation\sshould\spropagate\smounts\sto\sthe\shost|PodSecurityPolicy|PVC\sProtection\sVerify|should\sprovide\sbasic\sidentity|should\sadopt\smatching\sorphans\sand\srelease|should\snot\sdeadlock\swhen\sa\spod's\spredecessor\sfails|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications\swith\sPVCs|should\sperform\srolling\supdates\sand\sroll\sbacks\sof\stemplate\smodifications|Services\sshould\sbe\sable\sto\screate\sa\sfunctioning\sNodePort\sservice$|volumeMode\sshould\snot\smount\s/\smap\sunused\svolumes\sin\sa\spod
       - --timeout=420m
       securityContext:
         privileged: true
