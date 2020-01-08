@@ -13,4 +13,5 @@ presubmits:
         command:
         - ./presubmit.sh
     annotations:
-      testgrid-create-test-group: 'true'
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: repo-infra

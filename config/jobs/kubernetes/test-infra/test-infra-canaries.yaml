@@ -19,9 +19,9 @@ presubmits:
         - --nobuild_tests_only
         - //...
     annotations:
-      testgrid-create-test-group: 'true'
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: test-infra-bazel
+      testgrid-dashboards: sig-testing-canaries, presubmits-test-infra
+      testgrid-tab-name: test-infra-bazel-canary
+
 # Testing to make sure things still update.
 periodics:
 - interval: 10m
