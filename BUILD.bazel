@@ -125,6 +125,7 @@ filegroup(
         "//pkg/ghclient:all-srcs",
         "//pkg/io:all-srcs",
         "//prow:all-srcs",
+        "//releng:all-srcs",
         "//robots/commenter:all-srcs",
         "//robots/coverage:all-srcs",
         "//robots/issue-creator:all-srcs",

@@ -26,7 +26,7 @@ import sh
 import ruamel.yaml as yaml
 
 
-TEST_CONFIG_YAML = "experiment/test_config.yaml"
+TEST_CONFIG_YAML = "releng/test_config.yaml"
 JOB_CONFIG = "config/jobs"
 BRANCH_JOB_DIR = "config/jobs/kubernetes/sig-release/release-branch-jobs"
 
@@ -104,7 +104,7 @@ def regenerate_files(generate_tests_bin, test_config):
 def main():
     if not os.environ.get('BUILD_WORKSPACE_DIRECTORY'):
         print("Please run me via bazel!")
-        print("bazel run //experiment:prepare_release_branch")
+        print("bazel run //releng:prepare_release_branch")
         sys.exit(1)
     rotator_bin = sys.argv[1]
     forker_bin = sys.argv[2]

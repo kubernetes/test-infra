@@ -14,8 +14,8 @@
 
 # To generate the test definitions and Prow configurations from this file:
 #
-#   bazel run //experiment:generate_tests -- \
-#     --yaml-config-path=experiment/test_config.yaml
+#   bazel run //releng:generate_tests -- \
+#     --yaml-config-path=releng/test_config.yaml
 
 # Supported tests:
 #
