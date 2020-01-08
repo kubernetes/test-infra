@@ -15,6 +15,9 @@ presubmits:
       - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
         command:
         - ./hack/verify-boilerplate.sh
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: boilerplate
@@ -33,6 +36,9 @@ presubmits:
       - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
         command:
         - ./hack/verify-codegen.sh
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: codegen
@@ -49,6 +55,9 @@ presubmits:
       - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
         command:
         - ./hack/verify-gofmt.sh
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: gofmt
@@ -67,6 +76,9 @@ presubmits:
       - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
         command:
         - ./hack/verify-golint.sh
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: golint
@@ -83,6 +95,9 @@ presubmits:
       - image: quay.io/kubernetes-ingress-controller/e2e:v01042020-8fb2695d5
         command:
         - ./hack/verify-lualint.sh
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: lualint
@@ -102,6 +117,9 @@ presubmits:
         command:
         - make
         - lua-test
+        env:
+        - name: DIND_TASKS
+          value: "false"
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test-lua
@@ -128,6 +146,8 @@ presubmits:
             secretKeyRef:
               name: ingress-nginx-codecov-token
               key: ingress-nginx-codecov-token
+        - name: DIND_TASKS
+          value: "false"
     volumes:
     - name: ingress-nginx-codecov-token
       secret:
@@ -167,6 +187,8 @@ presubmits:
           value: "15"
         - name: K8S_VERSION
           value: v1.15.6
+        - name: DIND_TASKS
+          value: "false"
         resources:
           requests:
             cpu: 2
@@ -202,6 +224,8 @@ presubmits:
           value: "15"
         - name: K8S_VERSION
           value: v1.16.3
+        - name: DIND_TASKS
+          value: "false"
         resources:
           requests:
             cpu: 2
@@ -237,6 +261,8 @@ presubmits:
           value: "15"
         - name: K8S_VERSION
           value: v1.17.0
+        - name: DIND_TASKS
+          value: "false"
         resources:
           requests:
             cpu: 2
@@ -277,6 +303,8 @@ periodics:
         value: https://github.com/kubernetes/ingress-nginx
       - name: E2E_NODES
         value: "15"
+      - name: DIND_TASKS
+        value: "false"
       resources:
         requests:
           cpu: 2
