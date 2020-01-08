@@ -155,8 +155,12 @@ periodics:
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
   annotations:
+    fork-per-release: "true"
+    fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
+    fork-per-release-generic-suffix: "true"
+    fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, perf-tests=master -> perf-tests=release-{{.Version}}, gcp-project=k8s-jenkins-blocking-kubemark -> gcp-project-type=scalability-project, us-central1-f -> us-east1-b"
     testgrid-dashboards: sig-scalability-kubemark
-    testgrid-tab-name: kubemark-500
+    testgrid-tab-name: kubemark-master-500
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:

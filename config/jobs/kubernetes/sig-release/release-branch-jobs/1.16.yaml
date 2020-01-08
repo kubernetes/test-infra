@@ -209,6 +209,60 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
+    fork-per-release-cron: 0 15 * * *, 0 21 * * *
+    fork-per-release-generic-suffix: "true"
+    testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
+    testgrid-num-failures-to-alert: "1"
+    testgrid-tab-name: kubemark-1.16-500
+  cron: 0 9 * * *
+  labels:
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  name: ci-kubernetes-kubemark-500-gce-stable1
+  spec:
+    containers:
+    - args:
+      - --repo=k8s.io/kubernetes=release-1.16
+      - --repo=k8s.io/perf-tests=release-1.16
+      - --root=/go/src
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=kubemark-500
+      - --extract=ci/latest
+      - --gcp-master-size=n1-standard-4
+      - --gcp-node-image=gci
+      - --gcp-node-size=n1-standard-8
+      - --gcp-nodes=8
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=500
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=500
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/load/kubemark/500_nodes/override.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=70m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-1.16
+      name: ""
+      resources: {}
+      securityContext:
+        privileged: true
+  tags:
+  - 'perfDashPrefix: kubemark-500Nodes-1.16'
+  - 'perfDashJobType: performance'
+- annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     testgrid-dashboards: sig-release-1.16-blocking, google-unit
     testgrid-tab-name: bazel-build-1.16
