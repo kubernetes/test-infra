@@ -24,10 +24,6 @@
 #
 # for nodefs on the prow builds cluster
 # USE AT YOUR OWN RISK.
-# TODO: delete this once dynamic kubelet config is available
-
-
-
 
 import sys
 import subprocess
