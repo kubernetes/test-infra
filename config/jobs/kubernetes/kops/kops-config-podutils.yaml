@@ -1,0 +1,229 @@
+presubmits:
+  kubernetes/kops:
+  - name: pull-kops-bazel-build-podutils
+    branches:
+    - master
+    optional: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "bazel-build"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: bazel-build-podutils
+  - name: pull-kops-bazel-test-podutils
+    branches:
+    - master
+    optional: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "bazel-test"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: bazel-test-podutils
+  - name: pull-kops-verify-bazel-podutils
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-bazel"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-bazel-podutils
+  - name: pull-kops-verify-generated-podutils
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-generate"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-generated-podutils
+  - name: pull-kops-verify-gomod-podutils
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gomod"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-gomod-podutils
+  - name: pull-kops-verify-boilerplate-podutils
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-boilerplate"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-boilerplate-podutils
+  - name: pull-kops-verify-gofmt-podutils
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gofmt"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-gofmt-podutils
+  - name: pull-kops-verify-govet-podutils
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "govet"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-govet-podutils
+  - name: pull-kops-verify-packages-podutils
+    branches:
+    - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-packages"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-packages-podutils
+  - name: pull-kops-verify-staticcheck-podutils
+    branches:
+      - master
+    optional: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20191221-fe232fc-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-staticcheck"
+    annotations:
+      testgrid-dashboards: presubmits-kops
+      testgrid-tab-name: verify-staticcheck-podutils
