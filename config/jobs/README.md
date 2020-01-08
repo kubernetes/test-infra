@@ -183,8 +183,9 @@ These test different master/node image versions against multiple k8s branches. I
 want to change these, update [`experiment/test_config.yaml`](/experiment/test_config.yaml)
 and then run
 
-```
-bazel run //experiment:generate_tests -- --yaml-config-path=experiment/test_config.yaml
+```shell
+# from test-infra root
+./hack/update-generated-tests.sh
 ```
 
 ### release-branch jobs

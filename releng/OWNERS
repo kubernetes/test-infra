@@ -1,0 +1,19 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- calebamiles
+- justaugustus
+- tpepper
+
+reviewers:
+- aleksandra-malinowska # Patch Release Team
+- cpanato # Branch Manager
+- dougm # Patch Release Team
+- feiskyer # Patch Release Team
+- hoegaarden # Patch Release Team
+- idealhack # Patch Release Team
+- saschagrunert # Branch Manager
+
+labels:
+- sig/release
+- area/release-eng
