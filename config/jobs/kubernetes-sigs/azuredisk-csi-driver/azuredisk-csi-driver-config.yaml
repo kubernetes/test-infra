@@ -20,9 +20,8 @@ presubmits:
         - make
         - verify
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-verify
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run code verification tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit
@@ -45,9 +44,8 @@ presubmits:
         - make
         - unit-test
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-unit
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run unit tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-sanity
@@ -73,9 +71,8 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-sanity
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run sanity tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration
@@ -101,9 +98,8 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-integration
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run integration tests for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az
@@ -150,9 +146,8 @@ presubmits:
           - name: ENABLE_TOPOLOGY
             value: "false"
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-single-az
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run E2E tests on a single-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az
@@ -199,9 +194,8 @@ presubmits:
           - name: ENABLE_TOPOLOGY
             value: "true"
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-multi-az
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run E2E tests on a multi-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-in-tree-azure-disk-e2e
@@ -250,9 +244,8 @@ presubmits:
           - name: AZURE_STORAGE_DRIVER
             value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-in-tree-azure-disk-e2e
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run Azure Disk e2e test with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
   - name: pull-in-tree-azure-disk-e2e-vmss
@@ -301,9 +294,8 @@ presubmits:
           - name: AZURE_STORAGE_DRIVER
             value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-in-tree-azure-disk-e2e-vmss
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin."
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build
@@ -326,8 +318,7 @@ presubmits:
         - make
         - azuredisk-windows
     annotations:
-      testgrid-dashboards: provider-azure-master, provider-azure-on-call
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-presubmit
       testgrid-tab-name: pr-azuredisk-csi-driver-windows-build
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: "Run make azuredisk-windows for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'

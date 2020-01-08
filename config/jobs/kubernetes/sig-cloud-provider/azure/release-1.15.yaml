@@ -184,8 +184,8 @@ periodics:
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
   annotations:
-    testgrid-dashboards: provider-azure-master, provider-azure-on-call
-    testgrid-tab-name: kubernetes-e2e-azure-disk-1-15
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-disk-1-15
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin.
     testgrid-num-columns-recent: '30'
@@ -232,8 +232,8 @@ periodics:
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
   annotations:
-    testgrid-dashboards: provider-azure-master, provider-azure-on-call
-    testgrid-tab-name: kubernetes-e2e-azure-disk-vmss-1-15
+    testgrid-dashboards: provider-azure-upstream, provider-azure-periodic
+    testgrid-tab-name: k8s-e2e-azure-disk-vmss-1-15
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure Disk e2e test on a VMSS-based cluster with Azure Disk in-tree volume plugin.
     testgrid-num-columns-recent: '30'
