@@ -164,7 +164,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	// Don't modify request, just pass to delegate.
 	resp, err := u.delegate.RoundTrip(req)
 	if err != nil {
-		logrus.WithField("cache-key", req.URL.String()).WithError(err).Error("Error from upstream (GitHub).")
+		ghmetrics.CollectRequestTimeoutMetrics(authHeaderHash, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
+		logrus.WithField("cache-key", req.URL.String()).WithError(err).Warn("Error from upstream (GitHub).")
 		return nil, err
 	}
 	responseTime := time.Now()
