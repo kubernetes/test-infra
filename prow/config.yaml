@@ -31,7 +31,7 @@ tide:
     IBM/multicloud-multi-tenancy: squash
     IBM/multicloud-application-monitoring-dashboard: squash
 
-  target_url: http://35.227.205.240/tide
+  target_url: http://prow.purple-chesterfield.com/tide
   queries:
   - repos:
     - multicloudlab/oasis
