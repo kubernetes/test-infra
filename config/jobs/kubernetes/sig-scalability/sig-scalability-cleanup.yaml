@@ -1,5 +1,5 @@
 periodics:
-- interval: 1h
+- interval: 24h
   name: ci-kubernetes-e2e-scalability-cleanup
   labels:
      preset-service-account: "true"
@@ -17,7 +17,7 @@ periodics:
       - --
       - $GOPATH/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
       # Command (list|delete)
-      - list
+      - delete
       # Comma-separated list of projects to process
       # It should match projects list for type: scalability-project in prow/cluster/boskos-resources.yaml
       - k8s-e2e-gce-scalability-1-1,k8s-e2e-gce-scalability-1-2,k8s-e2e-gci-gce-scale-1-4,k8s-e2e-gci-gce-scale-1-5,k8s-jenkins-gci-scalability,k8s-jenkins-gci-scalability-2,k8s-jenkins-kubemark,k8s-jenkins-scalability-2,k8s-jenkins-scalability-3,k8s-jenkins-scalability-4,k8s-jenkins-scalability-5
