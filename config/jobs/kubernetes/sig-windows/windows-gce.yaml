@@ -51,10 +51,10 @@ periodics:
     repo: kubernetes
     base_ref: windows-gce-poc
     path_alias: k8s.io/kubernetes
-  - org: yujuhong
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/gce-k8s-windows-testing
+    path_alias: k8s.io/windows-testing
   - org: kubernetes
     repo: release
     base_ref: master
@@ -83,7 +83,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
@@ -101,10 +101,10 @@ periodics:
 - name: ci-kubernetes-e2e-windows-gce
   decorate: true
   extra_refs:
-  - org: yujuhong
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/gce-k8s-windows-testing
+    path_alias: k8s.io/windows-testing
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -125,7 +125,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
@@ -140,10 +140,10 @@ periodics:
 - name: ci-kubernetes-e2e-windows-gce-alpha-features
   decorate: true
   extra_refs:
-  - org: yujuhong
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/gce-k8s-windows-testing
+    path_alias: k8s.io/windows-testing
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -164,7 +164,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=120m
@@ -182,10 +182,10 @@ periodics:
   decoration_config:
     timeout: 6h
   extra_refs:
-  - org: yujuhong
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/gce-k8s-windows-testing
+    path_alias: k8s.io/windows-testing
   interval: 6h
   labels:
     preset-k8s-ssh: "true"
@@ -206,7 +206,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]|DaemonRestart --ginkgo.skip=\[Flaky\]|\[LinuxOnly\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=350m
@@ -218,10 +218,10 @@ periodics:
 - name: ci-kubernetes-e2e-windows-containerd-gce
   decorate: true
   extra_refs:
-  - org: yujuhong
-    repo: gce-k8s-windows-testing
+  - org: kubernetes-sigs
+    repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/gce-k8s-windows-testing
+    path_alias: k8s.io/windows-testing
   interval: 2h
   labels:
     preset-k8s-ssh: "true"
@@ -243,7 +243,7 @@ periodics:
       - --provider=gce
       - --gcp-nodes=2
       - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+      - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
       - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --timeout=150m
@@ -311,10 +311,10 @@ presubmits:
       repo: release
       base_ref: master
       path_alias: k8s.io/release
-    - org: yujuhong
-      repo: gce-k8s-windows-testing
+    - org: kubernetes-sigs
+      repo: windows-testing
       base_ref: master
-      path_alias: k8s.io/gce-k8s-windows-testing
+      path_alias: k8s.io/windows-testing
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -343,7 +343,7 @@ presubmits:
         - --gcp-nodes=2
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-windows-gce
         - --test=false
-        - --test-cmd=$GOPATH/src/k8s.io/gce-k8s-windows-testing/run-e2e.sh
+        - --test-cmd=$GOPATH/src/k8s.io/windows-testing/gce/run-e2e.sh
         - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:.+\] --minStartupPods=8
         - --test-cmd-args=--node-os-distro=windows
         - --timeout=150m
