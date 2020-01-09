@@ -64,18 +64,17 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -105,18 +104,17 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -147,18 +145,17 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -189,18 +186,17 @@ presubmits:
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
       preset-e2e-platform-aws: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
         - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
         - --check-leaked-resources=false
@@ -430,17 +426,16 @@ postsubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--timeout=60"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "prow-postsubmit"
         - "UPLOAD_DEST=gs://kubernetes-release-dev/kops/ci"
