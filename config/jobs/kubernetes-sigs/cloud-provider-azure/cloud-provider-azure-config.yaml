@@ -724,6 +724,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
     preset-e2e-kubemark-common: "true"
+    preset-azure-cred: "true"
   annotations:
     testgrid-dashboards: provider-azure-scalability
     testgrid-tab-name: ci-kubernetes-kubemark-100-azure
