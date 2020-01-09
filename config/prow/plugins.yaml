@@ -435,6 +435,42 @@ require_matching_label:
     - `/committee <group-name>`
 
     Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes
+  repo: community
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
+
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes
+  repo: enhancements
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
+
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-sig
+  org: kubernetes-sigs
+  repo: contributor-playground
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
+
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
 - missing_label: needs-priority
   org: kubernetes
   repo: kubernetes
@@ -552,7 +588,7 @@ plugins:
   kubernetes/community:
   - blockade
   - milestone
-  - require-sig
+  - require-matching-label
 
   kubernetes/dashboard:
   - override
@@ -561,7 +597,7 @@ plugins:
   - blockade
   - milestone
   - milestoneapplier
-  - require-sig
+  - require-matching-label
   - stage
 
   kubernetes/kops:
@@ -759,7 +795,7 @@ plugins:
   - milestone
 
   kubernetes-sigs/contributor-playground:
-  - require-sig
+  - require-matching-label
 
   containerd/cri:
   - assign
