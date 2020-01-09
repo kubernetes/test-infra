@@ -9,16 +9,16 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "bazel-build"
         resources:
@@ -36,16 +36,16 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "bazel-test"
         resources:
@@ -227,15 +227,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-bazel"
     annotations:
@@ -247,15 +248,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-generate"
     annotations:
@@ -267,15 +269,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-gomod"
     annotations:
@@ -287,15 +290,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-boilerplate"
     annotations:
@@ -309,16 +313,16 @@ presubmits:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--"
         - "make"
         - "verify-gofmt"
         resources:
@@ -333,15 +337,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "govet"
     annotations:
@@ -353,15 +358,16 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=execute"
-        - "--"
         - "make"
         - "verify-packages"
     annotations:
@@ -373,20 +379,22 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
-          args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--root=/go/src"
-            - "--upload=gs://kubernetes-jenkins/pr-logs"
-            - "--scenario=execute"
-            - "--"
-            - "make"
-            - "verify-staticcheck"
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-experimental
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-staticcheck"
     annotations:
       testgrid-dashboards: presubmits-kops
       testgrid-tab-name: verify-staticcheck
+
 periodics:
 - interval: 30m
   name: ci-kops-build
