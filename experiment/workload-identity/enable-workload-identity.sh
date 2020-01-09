@@ -36,6 +36,13 @@ pool-identities() {
   call-gcloud node-pools list "--cluster=$cluster" --format='value(name,config.workloadMetadataConfig.nodeMetadata)'
 }
 
+fix_service=
+service=iamcredentials.googleapis.com
+
+if [[ -z "$(gcloud services list "--project=$project" --filter "name:/$service")" ]]; then
+  fix_service=yes
+fi
+
 fix_cluster=
 
 actual=$(cluster-identity)
@@ -53,12 +60,15 @@ for line in "$(IFS=\n pool-identities)"; do
   fi
 done
 
-if [[ -z "$fix_cluster" && ${#fix_pools[@]} == 0 ]]; then
+if [[ -z "$fix_service" && -z "$fix_cluster" && ${#fix_pools[@]} == 0 ]]; then
   echo "Nothing to do"
   exit 0
 fi
 
 echo "Enable workload identity on:"
+if [[ -n "$fix_service" ]]; then
+  echo "  project: $project"
+fi
 if [[ -n "$fix_cluster" ]]; then
   echo "  cluster: $cluster"
 fi
@@ -74,6 +84,10 @@ case $ans in
     exit 1
     ;;
 esac
+
+if [[ -n "$fix_service" ]]; then
+  gcloud services enable "--project=$project" "$service"
+fi
 
 if [[ -n "$fix_cluster" ]]; then
   call-gcloud clusters update "$cluster" "--identity-namespace=$cluster_namespace"
