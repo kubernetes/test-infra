@@ -43,7 +43,7 @@ var (
 func init() {
 	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
 	flag.IntVar(&poolSize, "pool-size", 20, "number of concurrent janitor goroutine")
-	flag.DurationVar(&updateFrequency, "update-freqency", 5*time.Minute, "How often to heartbeat owning resources.")
+	flag.DurationVar(&updateFrequency, "update-frequency", 5*time.Minute, "How often to heartbeat owning resources.")
 }
 
 func main() {
