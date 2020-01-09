@@ -10,17 +10,14 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
         command:
         - cip
         args:
         # Pod Utilities already sets pwd to
         # /home/prow/go/src/github.com/{{.Org}}/{{.Repo}}, so just '.' should
         # suffice, but it's nice to be explicit.
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
-        # Without account keys (-key-files), we should not be trying to activate
-        # any service accounts.
-        - -no-service-account
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
     decorate: true
