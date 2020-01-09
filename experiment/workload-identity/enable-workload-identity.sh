@@ -81,6 +81,7 @@ case $ans in
   y*|Y*)
     ;;
   *)
+    echo "ABORTING" >&2
     exit 1
     ;;
 esac

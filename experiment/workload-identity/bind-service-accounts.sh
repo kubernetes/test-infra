@@ -53,6 +53,22 @@ done
     --role=roles/iam.workloadIdentityUser \
     "--member=$want" \
     $gcp_service_account
-)
+) > /dev/null
+
+pod-identity() {
+  (
+    set -o xtrace
+    kubectl run --rm=true -i --generator=run-pod/v1 \
+      "--context=$context" "--namespace=$namespace" "--serviceaccount=$name" \
+      --image=google/cloud-sdk:slim workload-identity-test \
+      <<< "gcloud config get-value core/account"
+  ) | head -n 1
+}
+
+got=$(pod-identity 2> >(grep -v "try pressing enter"))
+if [[ "$got" != "$gcp_service_account" ]]; then
+  echo "Bad identity, got $got, want $gcp_service_account" >&2
+  exit 1
+fi
 
 echo DONE
