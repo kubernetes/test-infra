@@ -784,13 +784,14 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
         command:
         - cip
         args:
         - -manifest=prow/cip-manifest.yaml
         - -key-files=/etc/service-account/service-account.json
         - -dry-run=false
+        - -use-service-account
         volumeMounts:
         - name: service-account
           mountPath: /etc/service-account
@@ -818,13 +819,14 @@ postsubmits:
     - ^master$
     spec:
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
         command:
         - cip
         args:
-        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
+        - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
         - -dry-run=false
+        - -use-service-account
         volumeMounts:
         - name: k8s-artifacts-prod-service-account-creds
           mountPath: /etc/k8s-artifacts-prod-service-account
@@ -1213,13 +1215,14 @@ periodics:
     # interactive bash session:
     #
     #   docker run --rm -it gcr.io/cip-demo-staging/cip:<tag> "cd /cip && bash"
-    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20191026-v2.3.1-36-g0e656d8
+    - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:20200107-v2.3.1-71-gfd2fae8
       command:
       - cip
       args:
-      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io/manifests
+      - -thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - -key-files=/etc/k8s-artifacts-prod-service-account/service-account.json
       - -dry-run=false
+      - -use-service-account
       volumeMounts:
       - name: k8s-artifacts-prod-service-account-creds
         mountPath: /etc/k8s-artifacts-prod-service-account
