@@ -274,7 +274,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
     testgrid-tab-name: gci-gce-autoscaling-migs-hpa
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa-cm
   labels:
     preset-gke-alpha-service: "true"
