@@ -41,14 +41,6 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
       base_options: include-filter-by-regex=sig-instrumentation
       description: sig-instrumentation gce stackdriver logging e2e tests for master branch
-    - name: gce-stackdriver
-      test_group_name: ci-kubernetes-e2e-gce-stackdriver
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gce stackdriver monitoring e2e tests for master branch
-    - name: gke-stackdriver
-      test_group_name: ci-kubernetes-e2e-gke-stackdriver
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gke stackdriver monitoring e2e tests for master branch
     - name: gke-sd-logging-gci-latest
       test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
       base_options: include-filter-by-regex=sig-instrumentation
@@ -73,11 +65,3 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
       base_options: include-filter-by-regex=sig-instrumentation
       description: sig-instrumentation gke stackdriver logging e2e tests for 1.13 branch with Ubuntu
-    - name: gce-prometheus
-      test_group_name: ci-kubernetes-e2e-gce-prometheus
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gce prometheus monitoring e2e tests for master branch
-    - name: gce-influxdb
-      test_group_name: ci-kubernetes-e2e-gce-influxdb
-      base_options: include-filter-by-regex=sig-instrumentation
-      description: sig-instrumentation gce influxdb monitoring e2e tests for master branch
