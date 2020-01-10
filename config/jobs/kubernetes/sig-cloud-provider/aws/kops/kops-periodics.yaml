@@ -5,8 +5,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-e2e-platform-aws: "true"
   decorate: true
   decoration_config:
@@ -36,8 +34,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-e2e-platform-aws: "true"
   decorate: true
   decoration_config:
@@ -67,8 +63,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -100,8 +94,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -134,8 +126,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -168,8 +158,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -202,8 +190,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -235,8 +221,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -267,8 +251,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -298,8 +280,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -329,8 +309,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -360,8 +338,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 50m
@@ -392,8 +368,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -425,8 +399,6 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -456,8 +428,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -487,8 +457,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
@@ -518,8 +486,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 140m
