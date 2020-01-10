@@ -31,44 +31,57 @@ if [[ "$current" != "$gcp_service_account" ]]; then
   exit 1
 fi
 
+# Extract GOAL from someone@GOAL.iam.gserviceaccount.com
+gcp_sa_project=${gcp_service_account##*@}
+gcp_sa_project=${gcp_sa_project%%.*}
+
 role=roles/iam.workloadIdentityUser
 members=($(
-  gcloud iam service-accounts get-iam-policy "$gcp_service_account" "--project=$project" \
+  gcloud iam service-accounts get-iam-policy \
+    "--project=$gcp_sa_project" "$gcp_service_account" \
     --filter="bindings.role=$role" \
-    --format=json --format='value[delimiter=" "](bindings[0].members)'
+    --flatten=bindings --format='value[delimiter=" "](bindings.members)'
 ))
 
 want="serviceAccount:$project.svc.id.goog[$namespace/$name]"
+fix_policy=yes
 for member in "${members[@]}"; do
   if [[ "$want" == "$member" ]]; then
-    echo "$want already a member of $role for $gcp_service_account, nothing to do."
-    exit 0
+    fix_policy=
+    break
   fi
 done
 
-(
-  set -o xtrace
-  gcloud iam service-accounts add-iam-policy-binding \
-    "--project=$project" \
-    --role=roles/iam.workloadIdentityUser \
-    "--member=$want" \
-    $gcp_service_account
-) > /dev/null
+
+if [[ -z "${fix_policy}" ]]; then
+    echo "ALREADY MEMBER: $want has $role for $gcp_service_account."
+else
+  (
+    set -o xtrace
+    gcloud iam service-accounts add-iam-policy-binding \
+      "--project=$gcp_sa_project" \
+      --role=roles/iam.workloadIdentityUser \
+      "--member=$want" \
+      $gcp_service_account
+  ) > /dev/null
+fi
 
 pod-identity() {
-  (
+  head -n 1 <(
+    entropy=$(date +%S)
     set -o xtrace
     kubectl run --rm=true -i --generator=run-pod/v1 \
       "--context=$context" "--namespace=$namespace" "--serviceaccount=$name" \
-      --image=google/cloud-sdk:slim workload-identity-test \
+      --image=google/cloud-sdk:slim "workload-identity-test-$entropy" \
       <<< "gcloud config get-value core/account"
-  ) | head -n 1
+  )
 }
 
-got=$(pod-identity 2> >(grep -v "try pressing enter"))
+# Filter out the  the "try pressing enter" message from stderr
+got=$((pod-identity 3>&1 1>&2 2>&3 | grep -v "try pressing enter") 3>&1 1>&2 2>&3)
 if [[ "$got" != "$gcp_service_account" ]]; then
   echo "Bad identity, got $got, want $gcp_service_account" >&2
   exit 1
 fi
 
-echo DONE
+echo "DONE: --context=$context --namespace=$namespace serviceaccounts/$name acts as $gcp_service_account"
