@@ -13,6 +13,7 @@ presubmits:
         - go
         args:
         - test
+        - -race
         - ./...
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
