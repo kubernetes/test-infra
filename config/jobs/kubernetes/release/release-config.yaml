@@ -41,16 +41,17 @@ presubmits:
   - name: pull-release-test
     always_run: true
     decorate: true
+    path_alias: k8s.io/release
     extra_refs:
     - org: kubernetes
-      repo: release
+      repo: test-infra
       base_ref: master
-      path_alias: k8s.io/release
+      path_alias: k8s.io/test-infra
     spec:
       containers:
       - image: gcr.io/k8s-staging-release-test/releng-ci-bazel:latest
         command:
-        - bazel
+        - ../test-infra/hack/bazel.sh
         args:
         - test
         - //...
