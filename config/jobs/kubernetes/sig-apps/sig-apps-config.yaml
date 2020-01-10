@@ -1,5 +1,5 @@
 periodics:
-- interval: 2h
+- interval: 10000h # original: 2h
   name: application-periodic-default-gke
   labels:
     preset-service-account: "true"

@@ -1,6 +1,6 @@
 periodics:
 # GKE upgrades
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -34,7 +34,7 @@ periodics:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-new-gci-master-upgrade-cluster
     description: Upgrade master and node, in gke(gci), from 1.14 to master
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -66,7 +66,7 @@ periodics:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-new-gci-master-upgrade-cluster-new
     description: Upgrade master and node, in gke(gci), from 1.14 to master, and run skewed e2e tests; skipping slow tests as we run serially
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new-parallel
   labels:
     preset-service-account: "true"
@@ -99,7 +99,7 @@ periodics:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-new-gci-master-upgrade-cluster-new-parallel
     description: Upgrade master and node, in gke(gci), from 1.14 to master, and run skewed e2e tests; skipping serial and disruptive tests as we run in parallel
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
   labels:
     preset-service-account: "true"
@@ -131,7 +131,7 @@ periodics:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-new-gci-master-upgrade-cluster-parallel
     description: Upgrade master and node, in gke(gci), from 1.14 to master, run parallel tests only
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
   labels:
     preset-service-account: "true"
@@ -162,7 +162,7 @@ periodics:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-new-gci-master-upgrade-master
     description: Upgrade master only, in gke(gci), from 1.14 to master
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   labels:
     preset-service-account: "true"
@@ -193,7 +193,7 @@ periodics:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-stable-gci-master-upgrade-master
     description: Upgrade master only, in gke, from gci 1.13 to gci master
-- interval: 12h
+- interval: 10000h # original: 12h
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   labels:
     preset-service-account: "true"
@@ -224,7 +224,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.13-gci-1.12-downgrade-cluster
-- interval: 12h
+- interval: 10000h # original: 12h
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
   labels:
     preset-service-account: "true"
@@ -256,7 +256,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.13-gci-1.12-downgrade-cluster-parallel
-- interval: 12h
+- interval: 10000h # original: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -287,7 +287,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.12-gci-1.13-upgrade-cluster
-- interval: 12h
+- interval: 10000h # original: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -318,7 +318,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.12-gci-1.13-upgrade-cluster-new
-- interval: 12h
+- interval: 10000h # original: 12h
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
   labels:
     preset-service-account: "true"
@@ -349,7 +349,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.12-gci-1.13-upgrade-master
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -380,7 +380,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.11-gci-1.13-upgrade-cluster
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -412,7 +412,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.11-gci-1.13-upgrade-cluster-new
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
   labels:
     preset-service-account: "true"
@@ -443,7 +443,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-1.11-gci-1.13-upgrade-master
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -474,7 +474,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-1.13-1.14-upgrade-cluster
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -505,7 +505,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-1.13-1.14-upgrade-cluster-new
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
   labels:
     preset-service-account: "true"
@@ -536,7 +536,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-1.13-1.14-upgrade-master
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
   labels:
     preset-service-account: "true"
@@ -567,7 +567,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-1.14-1.13-downgrade-cluster
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
   labels:
     preset-service-account: "true"
@@ -599,7 +599,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-1.14-1.13-downgrade-cluster-parallel
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
   labels:
     preset-service-account: "true"
@@ -631,7 +631,7 @@ periodics:
     testgrid-dashboards: google-gke-upgrade
     testgrid-tab-name: gke-gci-master-gci-new-downgrade-cluster
     description: Downgrade master and node, in gke(gci), from master to 1.14
-- interval: 2h
+- interval: 10000h # original: 2h
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
   labels:
     preset-service-account: "true"

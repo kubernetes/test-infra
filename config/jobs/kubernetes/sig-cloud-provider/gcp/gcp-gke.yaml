@@ -43,7 +43,7 @@ presubmits:
           requests:
             memory: "6Gi"
 periodics:
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke
   labels:
     preset-service-account: "true"
@@ -73,7 +73,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-features
   labels:
     preset-service-account: "true"
@@ -102,7 +102,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-alpha-features
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
   labels:
     preset-service-account: "true"
@@ -132,7 +132,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-alpha-enabled-default
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-flaky
   labels:
     preset-service-account: "true"
@@ -160,7 +160,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-flaky
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-multizone
   labels:
     preset-service-account: "true"
@@ -190,7 +190,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-multizone
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-reboot
   labels:
     preset-service-account: "true"
@@ -218,7 +218,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-reboot
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-serial
   labels:
     preset-service-account: "true"
@@ -246,7 +246,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-serial
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-slow
   labels:
     preset-service-account: "true"
@@ -275,7 +275,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-slow
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-updown
   labels:
     preset-service-account: "true"
@@ -303,7 +303,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gci-gke-updown
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-gke-regional
   labels:
     preset-service-account: "true"
@@ -332,7 +332,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-regional
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-gke-regional-serial
   labels:
     preset-service-account: "true"
@@ -359,7 +359,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-regional-serial
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-gke-regional-slow
   labels:
     preset-service-account: "true"
@@ -387,7 +387,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-regional-slow
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-gke-gci-ci-master
   labels:
     preset-service-account: "true"
@@ -415,7 +415,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gci
     testgrid-tab-name: ci-gke-master
-- interval: 12h
+- interval: 10000h # original: 12h
   name: ci-kubernetes-soak-gke-gci
   labels:
     preset-service-account: "true"
@@ -447,7 +447,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-soak
     testgrid-tab-name: gke-gci
-- interval: 2h
+- interval: 10000h # original: 2h
   name: istio-periodic-e2e-gke-addon
   labels:
     preset-istio-service: "true"

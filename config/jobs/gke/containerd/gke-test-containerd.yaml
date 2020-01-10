@@ -6,7 +6,7 @@ presets:
     value: "containerd containerd-installation"
 
 periodics:
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -37,7 +37,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-containerd-gke-alpha-cluster
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -68,7 +68,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-containerd-gke-1.14-alpha-cluster
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -98,7 +98,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-containerd-gke-1.14-alpha-cluster-features
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
   labels:
     preset-service-account: "true"
@@ -129,7 +129,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-containerd-gke-1.14
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
   labels:
     preset-service-account: "true"
@@ -160,7 +160,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-containerd-gke-1.13
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -191,7 +191,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-containerd-gke-1.13-alpha-cluster
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -222,7 +222,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-containerd-gke-1.13-alpha-cluster-features
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -252,7 +252,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-gke-1.14-alpha-cluster
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -281,7 +281,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-gke-1.14-alpha-cluster-features
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -311,7 +311,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-gke-1.13-alpha-cluster
-- interval: 1h
+- interval: 10000h # original: 1h
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -341,7 +341,7 @@ periodics:
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: cos-gke-1.13-alpha-cluster-features
-- interval: 12h
+- interval: 10000h # original: 12h
   name: ci-kubernetes-soak-gke-cos-containerd
   labels:
     preset-service-account: "true"

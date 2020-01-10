@@ -413,7 +413,7 @@ periodics:
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
 
-- interval: 30m
+- interval: 10000h # original: 30m
   name: ci-kubernetes-e2e-gci-gke-ingress
   labels:
     preset-service-account: "true"
@@ -443,7 +443,7 @@ periodics:
     testgrid-tab-name: gci-gke-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-alert-stale-results-hours: '24'
-- interval: 6h
+- interval: 10000h # original: 6h
   name: ci-kubernetes-e2e-gci-gke-network-policy
   labels:
     preset-service-account: "true"
