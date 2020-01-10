@@ -23,7 +23,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu
@@ -53,7 +53,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.16
@@ -83,7 +83,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:StackdriverAcceleratorMonitoring\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-num-failures-to-alert: '8'
     testgrid-alert-stale-results-hours: '24'
@@ -111,7 +111,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100
@@ -141,7 +141,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.16
@@ -171,7 +171,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.15
@@ -201,7 +201,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-p100-1.14
@@ -231,7 +231,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.15
@@ -261,7 +261,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-dashboards: google-gke
     testgrid-tab-name: gke-device-plugin-gpu-1.14
@@ -292,7 +292,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200107-164c5e8-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
     testgrid-num-failures-to-alert: '12'
     testgrid-alert-stale-results-hours: '24'
