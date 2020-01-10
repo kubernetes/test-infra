@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
@@ -45,11 +46,11 @@ type gcsReporter struct {
 }
 
 func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
-	ctx := context.Background() // TODO: get this from somewhere better?
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
 
 	_, _, err := gr.getJobDestination(pj)
 	if err != nil {
-		gr.logger.Infof("Not uploading %q (%s#%s) because we couldn't find a destination.", pj.Name, pj.Spec.Job, pj.Status.BuildID)
+		gr.logger.Infof("Not uploading %q (%s#%s) because we couldn't find a destination: %v", pj.Name, pj.Spec.Job, pj.Status.BuildID, err)
 		return []*prowv1.ProwJob{pj}, nil
 	}
 	stateErr := gr.reportJobState(ctx, pj)
@@ -70,23 +71,18 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) e
 
 // reportStartedJob uploads a started.json for the job, iff one did not already exist.
 func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob) error {
-	// We only upload started.json when we first start.
-	if pj.Status.State != prowv1.TriggeredState {
-		return nil
-	}
-
-	f := metadata.Started{
+	s := metadata.Started{
 		Timestamp: pj.Status.StartTime.Unix(),
 		Metadata:  metadata.Metadata{"uploader": "crier"},
 	}
-	output, err := json.Marshal(f)
+	output, err := json.Marshal(s)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal started metadata: %v", err)
 	}
 
 	bucketName, dir, err := gr.getJobDestination(pj)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
 	if gr.dryRun {
@@ -100,11 +96,6 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
 func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob) error {
-	// We don't upload a finished.json until we finish.
-	if !pj.Complete() {
-		return nil
-	}
-
 	completion := pj.Status.CompletionTime.Unix()
 	passed := pj.Status.State == prowv1.SuccessState
 	f := metadata.Finished{
@@ -115,12 +106,12 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 	}
 	output, err := json.Marshal(f)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal finished metadata: %v", err)
 	}
 
 	bucketName, dir, err := gr.getJobDestination(pj)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
 	if gr.dryRun {
@@ -136,12 +127,12 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 	// Unconditionally dump the prowjob to GCS, on all job updates.
 	output, err := json.Marshal(pj)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal prowjob: %v", err)
 	}
 
 	bucketName, dir, err := gr.getJobDestination(pj)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get job destination: %v", err)
 	}
 
 	if gr.dryRun {
@@ -182,7 +173,7 @@ func isErrUnexpected(err error) bool {
 	return true
 }
 
-func (gr *gcsReporter) getJobDestination(pj *prowv1.ProwJob) (bucket string, dir string, err error) {
+func (gr *gcsReporter) getJobDestination(pj *prowv1.ProwJob) (bucket, dir string, err error) {
 	// The decoration config is always provided for decorated jobs, but many
 	// jobs are not decorated, so we guess that we should use the default location
 	// for those jobs. This assumption is usually (but not always) correct.
@@ -198,16 +189,10 @@ func (gr *gcsReporter) getJobDestination(pj *prowv1.ProwJob) (bucket string, dir
 		return "", "", fmt.Errorf("couldn't figure out a GCS config for %q", pj.Spec.Job)
 	}
 
-	_, dir, _ = gcsupload.PathsForJob(gcsConfig, &downwardapi.JobSpec{
-		Type:      pj.Spec.Type,
-		Job:       pj.Spec.Job,
-		BuildID:   pj.Status.BuildID,
-		ProwJobID: pj.Name,
-		Refs:      pj.Spec.Refs,
-		ExtraRefs: pj.Spec.ExtraRefs,
-	}, "")
+	ps := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
+	_, d, _ := gcsupload.PathsForJob(gcsConfig, &ps, "")
 
-	return gcsConfig.Bucket, dir, nil
+	return gcsConfig.Bucket, d, nil
 }
 
 func (gr *gcsReporter) GetName() string {

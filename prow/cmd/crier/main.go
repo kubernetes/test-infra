@@ -117,10 +117,6 @@ func (o *options) validate() error {
 		}
 	}
 
-	if o.gcsWorkers > 0 && o.gcsCredentialsFile == "" && !o.dryrun {
-		logrus.Warn("Using GCS without a credentials file is unlikely to work.")
-	}
-
 	if err := o.client.Validate(o.dryrun); err != nil {
 		return err
 	}
@@ -267,11 +263,12 @@ func main() {
 
 	if o.gcsWorkers > 0 {
 		var c *storage.Client
-		if o.gcsCredentialsFile == "" {
-			c, err = storage.NewClient(context.Background(), option.WithoutAuthentication())
-		} else {
-			c, err = storage.NewClient(context.Background(), option.WithCredentialsFile(o.gcsCredentialsFile))
+		var opts []option.ClientOption
+		if o.gcsCredentialsFile != "" {
+			opts = append(opts, option.WithCredentialsFile(o.gcsCredentialsFile))
 		}
+		c, err = storage.NewClient(context.Background(), opts...)
+
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating storage client for gcs workers.")
 		}
