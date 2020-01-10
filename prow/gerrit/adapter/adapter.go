@@ -284,7 +284,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
 
-		if gerritLabel, ok := labels[client.GerritReportLabel]; !ok || gerritLabel == "" {
+		if _, ok := labels[client.GerritReportLabel]; !ok {
 			labels[client.GerritReportLabel] = client.CodeReview
 		}
 

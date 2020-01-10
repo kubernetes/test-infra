@@ -155,18 +155,18 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	pjTypeLabel := kube.ProwJobTypeLabel
 	gerritReportLabel := client.GerritReportLabel
 
-	selector := labels.Set{
-		clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
-		pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
-		gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
-	}
-
 	var toReportJobs []*v1.ProwJob
-	if pj.ObjectMeta.Labels[gerritReportLabel] == "" {
+	if pj.ObjectMeta.Labels[gerritReportLabel] == "" && pj.Status.State != v1.AbortedState {
 		toReportJobs = append(toReportJobs, pj)
 	} else { // generate an aggregated report
 
 		// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
+
+		selector := labels.Set{
+			clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
+			pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
+			gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
+		}
 
 		pjsOnRevisionWithSameLabel, err := c.lister.List(selector.AsSelector())
 		if err != nil {
@@ -216,6 +216,16 @@ func (c *Client) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
 	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
 		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
+
+		if reportLabel != "" {
+			// Retry without voting on a label
+			message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
+			if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
+				logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+				return nil, err
+			}
+		}
+
 		return nil, err
 	}
 
