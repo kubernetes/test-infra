@@ -8,8 +8,8 @@ postsubmits:
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
-        testgrid-dashboards: provider-azure-master
-        testgrid-tab-name: post-provider-azure-push-images
+        testgrid-dashboards: provider-azure-cloud-provider-azure
+        testgrid-tab-name: post-cloud-provider-azure-push-images
       decorate: true
       # this causes the job to only run on the master branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
