@@ -59,6 +59,8 @@ presubmits:
     path_alias: sigs.k8s.io/service-apis
     always_run: true
     skip_report: false
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20191017-ac4b4b5-master
@@ -67,6 +69,9 @@ presubmits:
           - runner.sh
         args:
         - ./hack/verify-docs.sh
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
 
   - name: pull-service-apis-build
     annotations:
