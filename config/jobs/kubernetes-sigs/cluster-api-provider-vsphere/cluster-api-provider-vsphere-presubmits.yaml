@@ -179,7 +179,8 @@ presubmits:
         command:
         - runner.sh
         args:
-        - make test
+        - make
+        - test
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-test
