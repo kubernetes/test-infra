@@ -23,6 +23,7 @@ spec:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --resource-type=gke-project
         - --pool-size=20
+        - --log-level=trace
         - --
         - --service_account=/etc/service-account/service-account.json
         - --hours=0
