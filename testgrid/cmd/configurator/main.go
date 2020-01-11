@@ -273,7 +273,11 @@ func main() {
 	var client *storage.Client
 	if strings.HasPrefix(opt.output, "gs://") {
 		var err error
-		client, err = gcs.ClientWithCreds(ctx, opt.creds)
+		var creds []string
+		if opt.creds != "" {
+			creds = append(creds, opt.creds)
+		}
+		client, err = gcs.ClientWithCreds(ctx, creds...)
 		if err != nil {
 			log.Fatalf("failed to create gcs client: %v", err)
 		}

@@ -756,7 +756,7 @@ postsubmits:
         command:
         - ./boskos/update_prow_config.sh
         env:
-        - name: PROW_SERVICE_ACCOUNT
+        - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /creds/service-account.json
         volumeMounts:
         - name: creds
