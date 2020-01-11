@@ -102,7 +102,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-zone=us-west1-b
+      - --gcp-zone=us-west1-c
       - --gke-environment=test
       - --provider=gke
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
