@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o errexit
 set -o nounset
@@ -64,6 +64,8 @@ else
       "--member=$want" \
       $gcp_service_account
   ) > /dev/null
+  echo "Sleeping 2m to allow credentials to propagate.." >&2
+  sleep 2m
 fi
 
 pod-identity() {
