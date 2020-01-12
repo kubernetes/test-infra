@@ -48,6 +48,7 @@ presubmits:
         - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
         - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
         - "--aksengine-winZipBuildScript=$WIN_BUILD"
+        - "--aksengine-orchestratorRelease=1.18"
         - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
         - "--aksengine-win-binaries"
         - "--aksengine-deploy-custom-k8s"
@@ -87,6 +88,7 @@ periodics:
       - "--deployment=aksengine"
       - "--provider=skeleton"
       - "--build=quick"
+      - "--aksengine-orchestratorRelease=1.18"
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
@@ -134,7 +136,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.31.2/aks-engine-v0.31.2-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.14"
@@ -179,7 +181,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.15"
@@ -224,7 +226,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-orchestratorRelease=1.16"
@@ -270,7 +272,7 @@ periodics:
       - "--aksengine-admin-username=azureuser"
       - "--aksengine-admin-password=AdminPassw0rd"
       - "--aksengine-creds=$AZURE_CREDENTIALS"
-      - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
+      - "--aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
@@ -317,6 +319,7 @@ periodics:
       - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-orchestratorRelease=1.18"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
       - "--aksengine-win-binaries"
       - "--aksengine-deploy-custom-k8s"
@@ -325,8 +328,9 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-windows
+    testgrid-dashboards: sig-windows, provider-azure-windows, provider-azure-periodic
     testgrid-tab-name: aks-engine-azure-windows-master-staging
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 10h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-1903
@@ -359,6 +363,7 @@ periodics:
       - "--aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz"
       - "--aksengine-public-key=$AZURE_SSH_PUBLIC_KEY_FILE"
       - "--aksengine-winZipBuildScript=$WIN_BUILD"
+      - "--aksengine-orchestratorRelease=1.18"
       - "--aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_1903_master.json"
       - "--aksengine-win-binaries"
       - "--aksengine-deploy-custom-k8s"
