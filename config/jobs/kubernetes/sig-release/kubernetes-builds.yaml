@@ -99,16 +99,12 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/deb-builder:latest
+    - image: gcr.io/k8s-staging-release-test/kubepkg:latest
       imagePullPolicy: Always
       command:
-      - ./debs
+      - ./kubepkg
       args:
-      # We explicitly don't build the cri-tools package as the tooling will attempt to
-      # fetch a release version of cri-tools from GitHub before it exists.
-      #
-      # ref: https://github.com/kubernetes/kubernetes/issues/84548
-      - -packages=kubelet,kubectl,kubeadm,kubernetes-cni
+      - debs
       resources:
         requests:
           cpu: 4
@@ -123,10 +119,12 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-release-test/rpm-builder:latest
+    - image: gcr.io/k8s-staging-release-test/kubepkg-rpm:latest
       imagePullPolicy: Always
       command:
-      - ./build.sh
+      - ./kubepkg
+      args:
+      - rpms
       resources:
         requests:
           cpu: 4
