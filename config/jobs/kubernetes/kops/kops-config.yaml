@@ -77,8 +77,8 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --deployment=kops
         - --check-leaked-resources=false
         - --cluster=
         - --extract=ci/latest
@@ -119,8 +119,8 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --deployment=kops
         - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.15.txt
@@ -162,8 +162,8 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --deployment=kops
         - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.16.txt
@@ -205,8 +205,8 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --aws
         - --aws-cluster-domain=test-cncf-aws.k8s.io
+        - --deployment=kops
         - --check-leaked-resources=false
         - --cluster=
         - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/latest-1.17.txt
