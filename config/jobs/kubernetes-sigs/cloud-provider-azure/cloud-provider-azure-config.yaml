@@ -438,11 +438,12 @@ periodics:
       - --aksengine-public-key=$KUBE_SSH_PUBLIC_KEY_PATH
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
       - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/v0.45.0/aks-engine-v0.45.0-linux-amd64.tar.gz
-      # Skip three kinds of test cases:
+      # Skip four kinds of test cases:
       # 1. regular resource usage tracking, haven't found the cause of the failures.
       # 2. validates MaxPods limit number of pods that are allowed to run, related to issue kubernetes/kubernetes#80177
       # 3. Checks that the node becomes unreachable, the external IP is unavailable since the corresponding configuration in aks-engine is set to false.
-      - --test_args=--num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun|Checks\sthat\sthe\snode\sbecomes\sunreachable --minStartupPods=8
+      # 4. Pod should be scheduled to node that don't match the PodAntiAffinity terms - deploying CSI drivers messes up the CPU and memory calculation in the test case. This is fixed in Azure/aks-engine#2541 by limiting CPU and memory usage of CSI containers
+      - --test_args=--num-nodes=2 --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular\sresource\susage\stracking\sresource\stracking\sfor|validates\sMaxPods\slimit\snumber\sof\spods\sthat\sare\sallowed\sto\srun|Checks\sthat\sthe\snode\sbecomes\sunreachable|Pod\sshould\sbe\sscheduled\sto\snode\sthat\sdon.t\smatch\sthe\sPodAntiAffinity\sterms --minStartupPods=8
       - --timeout=600m
       securityContext:
         privileged: true
