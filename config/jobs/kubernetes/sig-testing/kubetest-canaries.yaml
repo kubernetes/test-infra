@@ -168,7 +168,7 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: scalability
 
-- interval: 10000h # original: 30m
+- interval: 30m
   name: ci-kubernetes-e2e-gke-canary
   labels:
     preset-service-account: "true"

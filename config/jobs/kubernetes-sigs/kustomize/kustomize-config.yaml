@@ -1,5 +1,5 @@
 periodics:
-- interval: 10000h # original: 2h
+- interval: 2h
   name: ci-kustomize-periodic-default-gke
   labels:
     preset-service-account: "true"
