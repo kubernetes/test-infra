@@ -314,25 +314,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu1-k8sbeta-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-gpu:
     cron: 0 1-23/2 * * *
@@ -342,25 +342,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu1-k8sstable1-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-gpu:
     cron: 0 2-23/4 * * *
@@ -370,25 +370,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu1-k8sstable2-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-gpu:
     cron: 30 5-23/6 * * *
@@ -398,25 +398,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu1-k8sstable3-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-gpu:
     cron: 30 0-23/6 * * *
@@ -426,25 +426,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu2-k8sbeta-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-flaky:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-serial:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-slow:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-updown:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu:
     cron: 30 1-23/2 * * *
@@ -454,25 +454,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu2-k8sstable1-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-default:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-reboot:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-serial:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-slow:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-updown:
-    interval: 10000h # original:  4h
+    interval: 4h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu:
     cron: 30 2-23/4 * * *
@@ -482,25 +482,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu2-k8sstable2-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-alphafeatures:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-flaky:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-serial:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-slow:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-updown:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu:
     cron: 30 2-23/6 * * *
@@ -510,25 +510,25 @@ jobs:
 
   # ci-kubernetes-gke-ubuntu2-k8sstable3-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-default:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-reboot:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-serial:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-slow:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-updown:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu:
     cron: 0 1-23/6 * * *
@@ -565,21 +565,21 @@ jobs:
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
-    interval: 10000h # original:  1h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-reboot:
-    interval: 10000h # original:  1h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-default:
-    interval: 10000h # original:  1h
+    interval: 1h
     args:
     - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-serial:
-    interval: 10000h # original:  1h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sbeta-slow:
-    interval: 10000h # original:  1h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
     interval: 1h
@@ -621,19 +621,19 @@ jobs:
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable1-ingress:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-reboot:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-default:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-serial:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable1-slow:
-    interval: 10000h # original:  2h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures:
     interval: 2h
@@ -674,19 +674,19 @@ jobs:
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable2-ingress:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-reboot:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-default:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-serial:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable2-slow:
-    interval: 10000h # original:  6h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
     interval: 6h
@@ -727,19 +727,19 @@ jobs:
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gke-cos-k8sstable3-ingress:
-    interval: 10000h # original:  6h # runs more frequently because it's also used in cos image validation.
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-reboot:
-    interval: 10000h # original:  6h # runs more frequently because it's also used in cos image validation.
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-default:
-    interval: 10000h # original:  6h # runs more frequently because it's also used in cos image validation.
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-serial:
-    interval: 10000h # original:  6h # runs more frequently because it's also used in cos image validation.
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gke-cos-k8sstable3-slow:
-    interval: 10000h # original:  6h # runs more frequently because it's also used in cos image validation.
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: [sig-cloud-provider-gcp]
   ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
     interval: 24h
