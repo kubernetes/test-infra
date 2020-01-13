@@ -69,16 +69,15 @@ def get_started_finished(gcs_client, db, todo):
     pool = multiprocessing.pool.ThreadPool(16)
     try:
         for ack_id, (build_dir, started, finished) in pool.imap_unordered(
-                lambda ack_id_job_build: (ack_id_job_build[0], gcs_client.get_started_finished(
-                    ack_id_job_build[1], ack_id_job_build[2])),
+                lambda ack_id_job_build: (ack_id_job_build[0], gcs_client.get_started_finished(ack_id_job_build[1], ack_id_job_build[2])),
                 todo):
             if finished:
                 if not db.insert_build(build_dir, started, finished):
                     print('already present??')
                 start = time.localtime(started.get('timestamp', 0) if started else 0)
                 print((build_dir, bool(started), bool(finished),
-                       time.strftime('%F %T %Z', start),
-                       finished and finished.get('result')))
+                      time.strftime('%F %T %Z', start),
+                      finished and finished.get('result')))
                 build_dirs.append(build_dir)
                 acks.append(ack_id)
             else:

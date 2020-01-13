@@ -48,10 +48,10 @@ def repositories():
     # Python setup
     # pip_import() calls must live in WORKSPACE, otherwise we get a load() after non-load() error
     git_repository(
-        name = "rules_python",
-        commit = "94677401bc56ed5d756f50b441a6a5c7f735a6d4",
+        name = "io_bazel_rules_python",
+        commit = "9d68f24659e8ce8b736590ba1e4418af06ec2552",
         remote = "https://github.com/bazelbuild/rules_python.git",
-        shallow_since = "1573842889 -0500",
+        shallow_since = "1565801665 -0400",
     )
 
     # TODO(fejta): get this to work
