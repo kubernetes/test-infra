@@ -342,37 +342,37 @@ dashboards:
 - name: google-gci
 - name: google-gke
   dashboard_tab:
-  - name: gke-cos-1.11-ingress
+  - name: gke-cos-k8sstable3-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gke-cos-1.11-reboot
+  - name: gke-cos-k8sstable3-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gke-cos-1.11-default
+  - name: gke-cos-k8sstable3-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-  - name: gke-cos-1.11-serial
+  - name: gke-cos-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-  - name: gke-cos-1.11-slow
+  - name: gke-cos-k8sstable3-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
   # K8S stable2 branch on GKE
-  - name: gke-cos-1.12-ingress
+  - name: gke-cos-k8sstable2-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-  - name: gke-cos-1.12-reboot
+  - name: gke-cos-k8sstable2-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  - name: gke-cos-1.12-default
+  - name: gke-cos-k8sstable2-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
-  - name: gke-cos-1.12-serial
+  - name: gke-cos-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
-  - name: gke-cos-1.12-slow
+  - name: gke-cos-k8sstable2-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
   # K8S stable1 branch on GKE
-  - name: gke-cos-1.13-ingress
+  - name: gke-cos-k8sstable1-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  - name: gke-cos-1.13-reboot
+  - name: gke-cos-k8sstable1-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-  - name: gke-cos-1.13-default
+  - name: gke-cos-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
-  - name: gke-cos-1.13-serial
+  - name: gke-cos-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
-  - name: gke-cos-1.13-slow
+  - name: gke-cos-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
 - name: google-gke-stackdriver
 - name: google-gke-upgrade
@@ -388,12 +388,12 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-1.12
+  - name: gce-device-plugin-gpu-beta
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-device-plugin-gpu-1.11
+  - name: gce-device-plugin-gpu-stable1
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
@@ -403,12 +403,12 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-1.12
+  - name: gke-device-plugin-gpu-beta
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-1.11
+  - name: gke-device-plugin-gpu-stable1
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
@@ -418,12 +418,12 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-p100-1.12
+  - name: gke-device-plugin-gpu-p100-beta
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gke-device-plugin-gpu-p100-1.11
+  - name: gke-device-plugin-gpu-p100-stable1
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
@@ -438,32 +438,32 @@ dashboards:
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-1.12-gpu-master-upgrade
+  - name: gce-stable1-beta-gpu-master-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-1.12-gpu-cluster-upgrade
+  - name: gce-stable1-beta-gpu-cluster-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-master-gpu-master-upgrade
+  - name: gce-stable1-master-gpu-master-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.11-master-gpu-cluster-upgrade
+  - name: gce-stable1-master-gpu-cluster-upgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-1.12-1.11-gpu-cluster-downgrade
+  - name: gce-beta-stable1-gpu-cluster-downgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-accelerators-bugs@google.com
-  - name: gce-master-1.11-gpu-cluster-downgrade
+  - name: gce-master-stable1-gpu-cluster-downgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
     base_options: exclude-filter-by-regex=^BeforeSuite$
     alert_options:
