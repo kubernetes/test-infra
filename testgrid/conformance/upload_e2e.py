@@ -32,8 +32,6 @@
 #
 # Usage: see README.md
 
-# Required for pylint: 1.9.4 to tokenize the python3 print function.
-from __future__ import print_function
 
 import re
 import sys
@@ -112,7 +110,7 @@ def parse_e2e_logfile(file_handle, year):
         if passed is False:
             # if we already have found a failure, ignore subsequent pass/fails
             continue
-        elif E2E_LOG_SUCCESS_RE.match(line):
+        if E2E_LOG_SUCCESS_RE.match(line):
             passed = True
         elif E2E_LOG_FAIL_RE.match(line):
             passed = False

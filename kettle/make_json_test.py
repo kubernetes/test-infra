@@ -135,7 +135,7 @@ class MakeJsonTest(unittest.TestCase):
             for needle in negneedles:
                 # Only match negative needles in the middle of a word, to avoid
                 # failures on timestamps that happen to contain a short number.
-                self.assertNotRegexpMatches(result, r'\b%s\b' % needle)
+                self.assertNotRegexpMatches(result, r'\b%s\b' % needle) # pylint: disable=deprecated-method
 
         add_build('some-job/123', last_month, last_month + 10, 'SUCCESS', junits)
         add_build('some-job/456', now - 10, now, 'FAILURE', junits)
