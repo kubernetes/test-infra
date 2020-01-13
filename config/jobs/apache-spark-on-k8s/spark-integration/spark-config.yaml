@@ -1,5 +1,5 @@
 periodics:
-- interval: 10000h # original: 2h
+- interval: 2h
   name: spark-periodic-default-gke
   labels:
     preset-service-account: "true"
@@ -38,7 +38,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-big-data
     description: Periodic builds and testing of Apache Spark on default version of GKE.
-- interval: 10000h # original: 2h
+- interval: 2h
   name: spark-periodic-latest-gke
   labels:
     preset-service-account: "true"
