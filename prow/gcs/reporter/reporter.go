@@ -46,7 +46,8 @@ type gcsReporter struct {
 }
 
 func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // TODO: pass through a global context?
+	defer cancel()
 
 	_, _, err := gr.getJobDestination(pj)
 	if err != nil {
@@ -69,7 +70,9 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, pj *prowv1.ProwJob) e
 	return nil
 }
 
-// reportStartedJob uploads a started.json for the job, iff one did not already exist.
+// reportStartedJob uploads a started.json for the job. This will almost certainly
+// happen before the pod itself gets to upload one, at which point the pod will
+// upload its own. If for some reason one already exists, it will not be overwritten.
 func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob) error {
 	s := metadata.Started{
 		Timestamp: pj.Status.StartTime.Unix(),
