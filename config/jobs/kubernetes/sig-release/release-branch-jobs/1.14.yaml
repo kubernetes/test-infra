@@ -31,8 +31,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-periodic-interval: ""
-    testgrid-dashboards: sig-release-1.14-blocking, sig-node-kubelet,
-      sig-node-cri-1.12
+    testgrid-dashboards: sig-release-1.14-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-1.14
   interval: 24h
   labels:
