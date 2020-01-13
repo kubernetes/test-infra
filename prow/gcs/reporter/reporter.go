@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"path"
 	"time"
@@ -39,10 +40,26 @@ import (
 const reporterName = "gcsreporter"
 
 type gcsReporter struct {
-	cfg     config.Getter
-	dryRun  bool
-	logger  *logrus.Entry
-	storage *storage.Client
+	cfg    config.Getter
+	dryRun bool
+	logger *logrus.Entry
+	author author
+}
+
+type author interface {
+	NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser
+}
+
+type storageAuthor struct {
+	client *storage.Client
+}
+
+func (sa storageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) io.WriteCloser {
+	obj := sa.client.Bucket(bucket).Object(path)
+	if !overwrite {
+		obj = obj.If(storage.Conditions{DoesNotExist: true})
+	}
+	return obj.NewWriter(ctx)
 }
 
 func (gr *gcsReporter) Report(pj *prowv1.ProwJob) ([]*prowv1.ProwJob, error) {
@@ -92,9 +109,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, pj *prowv1.ProwJob)
 		gr.logger.Infof("Would upload started.json to %q/%q", bucketName, dir)
 		return nil
 	}
-	b := gr.storage.Bucket(bucketName)
-	w := b.Object(path.Join(dir, "started.json")).If(storage.Conditions{DoesNotExist: true}).NewWriter(ctx)
-	return gr.writeContent(w, output)
+	return gr.writeContent(ctx, bucketName, path.Join(dir, "started.json"), false, output)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -121,9 +136,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, pj *prowv1.ProwJob
 		gr.logger.Infof("Would upload finished.json info to %q/%q", bucketName, dir)
 		return nil
 	}
-	b := gr.storage.Bucket(bucketName)
-	w := b.Object(path.Join(dir, "finished.json")).If(storage.Conditions{DoesNotExist: true}).NewWriter(ctx)
-	return gr.writeContent(w, output)
+	return gr.writeContent(ctx, bucketName, path.Join(dir, "finished.json"), false, output)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) error {
@@ -142,22 +155,21 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, pj *prowv1.ProwJob) er
 		gr.logger.Infof("Would upload pod info to %q/%q", bucketName, dir)
 		return nil
 	}
-	b := gr.storage.Bucket(bucketName)
-	w := b.Object(path.Join(dir, "prowjob.json")).NewWriter(ctx)
-	return gr.writeContent(w, output)
+	return gr.writeContent(ctx, bucketName, path.Join(dir, "prowjob.json"), true, output)
 }
 
-func (gr *gcsReporter) writeContent(w *storage.Writer, content []byte) error {
+func (gr *gcsReporter) writeContent(ctx context.Context, bucket, path string, overwrite bool, content []byte) error {
+	w := gr.author.NewWriter(ctx, bucket, path, overwrite)
 	_, err := w.Write(content)
 	var reportErr error
 	if isErrUnexpected(err) {
 		reportErr = err
-		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": w.Bucket, "name": w.Name}).Warn("Uploading info to GCS failed (write)")
+		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (write)")
 	}
 	err = w.Close()
 	if isErrUnexpected(err) {
 		reportErr = err
-		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": w.Bucket, "name": w.Name}).Warn("Uploading info to GCS failed (close)")
+		gr.logger.WithError(err).WithFields(logrus.Fields{"bucket": bucket, "path": path}).Warn("Uploading info to GCS failed (close)")
 	}
 	return reportErr
 }
@@ -181,7 +193,7 @@ func (gr *gcsReporter) getJobDestination(pj *prowv1.ProwJob) (bucket, dir string
 	// jobs are not decorated, so we guess that we should use the default location
 	// for those jobs. This assumption is usually (but not always) correct.
 	// The TestGrid configurator uses the same assumption.
-	ddc := gr.cfg().Plank.GetDefaultDecorationConfigs(pj.Spec.Refs.Repo)
+	ddc := gr.cfg().Plank.GetDefaultDecorationConfigs(pj.Spec.Refs.Org + "/" + pj.Spec.Refs.Repo)
 
 	var gcsConfig *prowv1.GCSConfiguration
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.GCSConfiguration != nil {
@@ -207,10 +219,14 @@ func (gr *gcsReporter) ShouldReport(pj *prowv1.ProwJob) bool {
 }
 
 func New(cfg config.Getter, storage *storage.Client, dryRun bool) *gcsReporter {
+	return newWithAuthor(cfg, storageAuthor{client: storage}, dryRun)
+}
+
+func newWithAuthor(cfg config.Getter, author author, dryRun bool) *gcsReporter {
 	return &gcsReporter{
-		cfg:     cfg,
-		dryRun:  dryRun,
-		logger:  logrus.WithField("component", reporterName),
-		storage: storage,
+		cfg:    cfg,
+		dryRun: dryRun,
+		logger: logrus.WithField("component", reporterName),
+		author: author,
 	}
 }
