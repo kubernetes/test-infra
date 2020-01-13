@@ -4,7 +4,6 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 1h 2h 6h 24h
-    fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-release-master-blocking, sig-node-kubelet
     testgrid-tab-name: node-kubelet-master
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
@@ -60,10 +59,10 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-alpha
+
 - name: ci-kubernetes-node-kubelet-benchmark
   interval: 2h
   labels:
@@ -90,10 +89,10 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-benchmark
+
 - name: ci-kubernetes-node-kubelet-conformance
   interval: 2h
   labels:
@@ -124,10 +123,10 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-conformance
+
 - name: ci-kubernetes-node-kubelet-features
   interval: 1h
   labels:
@@ -135,7 +134,6 @@ periodics:
     preset-k8s-ssh: "true"
   annotations:
     fork-per-release: "true"
-    fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-master-informing
     testgrid-tab-name: node-kubelet-features
   spec:
@@ -186,10 +184,10 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-flaky
+
 - name: ci-kubernetes-node-kubelet-orphans
   interval: 12h
   labels:
@@ -216,10 +214,10 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-orphans
+
 - name: ci-kubernetes-node-kubelet-serial
   interval: 4h30m
   labels:
@@ -246,10 +244,10 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-serial
+
 - name: ci-kubernetes-node-kubelet-serial-alpha
   interval: 3h30m
   labels:
@@ -279,6 +277,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-serial-alpha
+
 - name: ci-kubernetes-node-kubelet-serial-cpu-manager
   interval: 4h
   labels:
@@ -306,6 +305,6 @@ periodics:
       - name: GOPATH
         value: /go
   annotations:
-    testgrid-dashboards: wg-resource-management
+    testgrid-dashboards: wg-resource-management, sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
     testgrid-alert-email: balaji.warft@gmail.com, connor.p.d@gmail.com

@@ -60,7 +60,6 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
     testgrid-dashboards: sig-release-1.16-blocking, sig-node-kubelet
@@ -69,7 +68,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-stable1
+  name: ci-kubernetes-node-kubelet-1-16
   spec:
     containers:
     - args:
@@ -94,14 +93,13 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-generic-suffix: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-1.16-informing
-    testgrid-tab-name: node-kubelet-features-stable1
+    testgrid-tab-name: node-kubelet-features-1.16
   interval: 1h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-  name: ci-kubernetes-node-kubelet-features-stable1
+  name: ci-kubernetes-node-kubelet-features-1-16
   spec:
     containers:
     - args:

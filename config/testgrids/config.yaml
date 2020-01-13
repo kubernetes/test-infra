@@ -6,48 +6,6 @@
 
 # Start testgroups
 test_groups:
-- name: ci-kubernetes-node-kubelet-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-orphans
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-orphans
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial-cpu-manager
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-cpu-manager
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-cri-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e
   test_name_config:
@@ -141,62 +99,6 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
-- name: ci-kubernetes-node-kubelet-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-alpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-beta
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-features-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features-beta
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable1
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-stable2
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable2
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-stable3
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable3
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
