@@ -127,6 +127,8 @@ presubmits:
         - --build=bazel
         - --cluster=
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+        - --env=KUBE_PROXY_DAEMONSET=true
+        - --env=ENABLE_POD_PRIORITY=true
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -225,7 +227,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --runtime-config=api/all=true
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource|CSIInlineVolume)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(StorageVersionHash|Audit|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes|RunAsGroup|TTLAfterFinished|NodeLease|VolumeSnapshotDataSource|CSIInlineVolume)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20200110-80c1ae9-master
   annotations:
