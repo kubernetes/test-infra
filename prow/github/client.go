@@ -2129,7 +2129,11 @@ func (c *client) AssignIssue(org, repo string, number int, logins []string) erro
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/assignees", org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
-		exitCodes:   []int{201},
+		// GitHub API ignores users who can not be assigned due to permission,
+		// etc., but returns 404 if even one of the specified users does not exist.
+		// The response body from 404 does not list the invalid users,
+		// so we treat 404 as all specified users being invalid.
+		exitCodes: []int{201, 404},
 	}, &i)
 	if err != nil {
 		return err

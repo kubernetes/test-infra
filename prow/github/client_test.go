@@ -680,7 +680,6 @@ func TestAssignIssue(t *testing.T) {
 			if ps["assignees"][0] != "george" || ps["assignees"][1] != "jungle" {
 				t.Errorf("Wrong assignees: %v", ps)
 			}
-
 		} else {
 			t.Errorf("Wrong assignees length: %v", ps)
 		}
@@ -699,6 +698,26 @@ func TestAssignIssue(t *testing.T) {
 	} else if merr, ok := err.(MissingUsers); ok {
 		if len(merr.Users) != 1 || merr.Users[0] != "not-in-the-org" {
 			t.Errorf("Expected [not-in-the-org], not %v", merr.Users)
+		}
+	} else {
+		t.Errorf("Expected MissingUsers error")
+	}
+}
+
+func TestAssignIssueWithInvalidUser(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, `{"message": "Not Found"}`, http.StatusNotFound)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	requestedUsers := []string{"george", "jungle", "not-in-the-org", "invalid-id"}
+	if err := c.AssignIssue("k8s", "kuber", 5, requestedUsers); err == nil {
+		t.Errorf("Expected an error")
+	} else if merr, ok := err.(MissingUsers); ok {
+		// invalid user id in request gets a 404 response, listing all users as
+		// invalid.
+		if !reflect.DeepEqual(merr.Users, requestedUsers) {
+			t.Errorf("Expected %v, not %v", requestedUsers, merr.Users)
 		}
 	} else {
 		t.Errorf("Expected MissingUsers error")
